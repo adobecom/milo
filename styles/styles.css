@@ -55,33 +55,16 @@ html {
 }
 
 body {
-  font-size: var(--body-font-size-m);
-  margin: 0;
   font-family: var(--body-font-family);
-  line-height: 1.6;
-  color: var(--text-color);
+  font-size: var(--body-font-size-m);
   background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
   display: none;
 }
 
 body.appear {
   display: unset;
-}
-
-header {
-  height: 64px;
-}
-
-main {
-  min-height: calc(100vh - 156px);
-}
-
-h1, h2, h3,
-h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  margin-top: 1em;
-  margin-bottom: .5em;
 }
 
 h1 { font-size: var(--heading-font-size-xxl) }
@@ -90,11 +73,6 @@ h3 { font-size: var(--heading-font-size-l) }
 h4 { font-size: var(--heading-font-size-m) }
 h5 { font-size: var(--heading-font-size-s) }
 h6 { font-size: var(--heading-font-size-xs) }
-
-p, dl, ol, ul, pre, blockquote {
-  margin-top: 1em;
-  margin-bottom: 1em;
-}
 
 a:any-link {
   color: var(--link-color);
@@ -111,91 +89,12 @@ code, pre, samp {
   font-size: var(--body-font-size-s);
 }
 
-code, samp {
-  padding: .125em;
-}
-
-pre {
-  overflow: scroll;
-}
-
-main input, main button {
-  font-size: 1.25rem;
-  width: 100%;
-  max-width: 50rem;
-  display: block;
-  margin-bottom: 1rem;
-  padding: 0.75rem 0.6rem;    
-  border-radius: 0.25rem;
-  box-sizing: border-box;
-}
-
-main button {
-  color: var(--background-color);
-  border: none;
-  background-color: var(--link-color);
-}
-
-main button:hover {
-  background-color: var(--link-hover-color);
-  cursor: pointer;
-}
-
-main input {
-  border: 1px solid var(--text-color);
-  color: var(--text-color);
-  background-color: var(--background-color);
-}
-
-main input:hover {
-  border: 1px solid var(--text-color);
-}
-
-main .section {
-  padding: 64px;
-}
-
-main pre {
-  background-color: var(--overlay-background-color);
-  padding: 1em;
-  border-radius: .25em;
-  overflow-x: auto;
-  white-space: pre;
-}
-
-main blockquote {
-  font-style: italic;
-  margin: 3rem;
-  text-indent: -1rem;
-  hanging-punctuation: first;
-}
-
-main blockquote p::before {
-  content: "“";
-  line-height: 0;
-}
-
-main blockquote p::after {
-  content: "”";
-  line-height: 0;
-}
-
-hr {
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
-  border: 0;
-  border-bottom: 1px solid var(--overlay-background-color);
-}
-
 main img {
   max-width: 100%;
   height: auto;
 }
 
 @media (min-width: 600px) {
-  main {
-    min-height: calc(100vh - 190px);
-  }
 }
 
 @media (min-width: 900px) {
@@ -207,23 +106,10 @@ main img {
     --heading-font-size-s: 24px;
     --heading-font-size-xs: 22px;  
   }
-  
-  main {
-    min-height: calc(100vh - 212px);
-  }
-
-  .section > div {
-    max-width: 800px;
-    margin: auto;
-  }
 }
 
 /* progressive section appearance */
 main .section[data-section-status='loading'],
 main .section[data-section-status='initialized'] {
   display: none;
-}
-
-main .section.highlight {
-  background-color: var(--highlight-background-color);
 }
