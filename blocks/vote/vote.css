@@ -47,7 +47,7 @@ label {
     border: none;
     background: #12805c;
     padding: 6px 12px;
-    font-family: 'Adobe Clean';
+    font-family: 'Adobe Clean', sans-serif;
     font-size: 18px;
     color: #FFF;
     border-radius: 4px 0px 0px 4px;

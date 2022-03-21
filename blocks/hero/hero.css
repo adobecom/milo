@@ -25,11 +25,12 @@
     padding: 24px 0;
     text-transform: uppercase;
     font-weight: 900;
-    font-size: 72px;
+    font-size: 48px;
 }
 
 @media (min-width: 1440px) {
     .hero h1 {
       width: 1200px;
+      font-size: 72px;
     }
 }
