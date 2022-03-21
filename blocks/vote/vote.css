@@ -1,0 +1,39 @@
+.vote {
+    width: 83.4%;
+    margin: 0 auto;
+}
+
+form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 24px;
+}
+
+.vote-card {
+    position: relative;
+    height: 320px;
+    border: 3px solid #494949;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+.vote-card:hover {
+    border: 3px solid #378ced;
+    background: #000;
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+label {
+    display: block;
+    font-weight: 900;
+}
+
+@media (min-width: 1440px) {
+    .vote {
+      width: 1200px;
+    }
+  }

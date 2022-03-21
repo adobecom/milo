@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Adobe. All rights reserved.
+ * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -20,7 +20,7 @@
   --text-color: #000;
 
   /* fonts */
-  --body-font-family: 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
+  --body-font-family: 'Adobe Clean', 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
@@ -35,14 +35,12 @@
   --heading-font-size-m: 24px;
   --heading-font-size-s: 20px;
   --heading-font-size-xs: 18px;
-
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
       --link-color: #15beec;
       --link-hover-color: #05aedc;
-      --background-color: #000;
       --overlay-background-color: #ffffff20;
       --highlight-background-color: #ffffff40;
       --text-color: #fff;
@@ -57,7 +55,7 @@ html {
 body {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
-  background-color: var(--background-color);
+  background-color: rgb(30, 30, 30);
   color: var(--text-color);
   margin: 0;
   display: none;
@@ -65,6 +63,12 @@ body {
 
 body.appear {
   display: unset;
+}
+
+header {
+  min-height: 64px;
+  display: flex;
+  align-content: stretch;
 }
 
 h1 { font-size: var(--heading-font-size-xxl) }
