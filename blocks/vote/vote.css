@@ -3,9 +3,14 @@
     margin: 0 auto;
 }
 
+.vote p {
+    margin: 36px 0;
+    line-height: 36px;
+}
+
 form {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-gap: 24px;
 }
 
@@ -18,7 +23,8 @@ form {
     cursor: pointer;
 }
 
-.vote-card:hover {
+.vote-card:hover,
+.vote-card.selected {
     border: 3px solid #378ced;
     background: #000;
 }
@@ -30,10 +36,40 @@ input[type="radio"] {
 label {
     display: block;
     font-weight: 900;
+    font-size: 32px;
+}
+
+.vote-card button {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 48px;
+    border: none;
+    background: #12805c;
+    padding: 6px 12px;
+    font-family: 'Adobe Clean';
+    font-size: 18px;
+    color: #FFF;
+    border-radius: 4px 0px 0px 4px;
+    font-weight: 700;
+}
+
+.vote-card button:hover {
+    background: #107154;
+}
+
+.vote-card.selected button {
+    display: unset;
+}
+
+@media (min-width: 900px) {
+    form {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
 }
 
 @media (min-width: 1440px) {
     .vote {
       width: 1200px;
     }
-  }
+}

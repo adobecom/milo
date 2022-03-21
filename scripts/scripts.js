@@ -521,17 +521,6 @@ document.addEventListener('click', () => sampleRUM('click'));
 
 loadPage(document);
 
-function buildHeroBlock(main) {
-  const h1 = main.querySelector('h1');
-  const picture = main.querySelector('picture');
-  // eslint-disable-next-line no-bitwise
-  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {
-    const section = document.createElement('div');
-    section.append(buildBlock('hero', { elems: [picture, h1] }));
-    main.prepend(section);
-  }
-}
-
 function loadHeader(header) {
   const headerBlock = buildBlock('header', '');
   header.append(headerBlock);
@@ -547,19 +536,6 @@ function loadFooter(footer) {
 }
 
 /**
- * Builds all synthetic blocks in a container element.
- * @param {Element} main The container element
- */
-function buildAutoBlocks(main) {
-  try {
-    buildHeroBlock(main);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Auto Blocking failed', error);
-  }
-}
-
-/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -568,7 +544,6 @@ export function decorateMain(main) {
   decoratePictures(main);
   // forward compatible link rewriting
   makeLinksRelative(main);
-  buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
 }
