@@ -15,9 +15,9 @@
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
   --background-color: #fff;
-  --overlay-background-color: #00000020;
-  --highlight-background-color: #00000040;
-  --text-color: #000;
+  --overlay-background-color: #ffffff20;
+  --highlight-background-color: #ffffff40;
+  --text-color: #fff;
 
   /* fonts */
   --body-font-family: 'Adobe Clean', 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
@@ -35,16 +35,6 @@
   --heading-font-size-m: 24px;
   --heading-font-size-s: 20px;
   --heading-font-size-xs: 18px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-      --link-color: #15beec;
-      --link-hover-color: #05aedc;
-      --overlay-background-color: #ffffff20;
-      --highlight-background-color: #ffffff40;
-      --text-color: #fff;
-  }
 }
 
 html {
