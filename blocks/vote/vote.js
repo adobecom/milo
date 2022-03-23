@@ -53,12 +53,26 @@ export default async function init(el) {
     }
   });
 
-  document.body.addEventListener('click', (e) => {
-    const currCard = e.target.closest('.vote-card');
-    if (!currCard) {
-      document.querySelector('.vote-card.selected')?.classList.remove('selected');
-    }
+  const send = document.createElement('button');
+  send.textContent = 'Send';
+  send.className = 'send-vote';
+
+  send.addEventListener('click', async (e) => {
+    const mock = {
+        data: [
+            { name: 'name', value: 'Clark Kent' },
+        ]
+    };
+    const resp = await fetch('/names', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(mock),
+    });
+    const json = await resp.text();
+    console.log(json);
   });
 
-  el.append(form);
+  el.append(send, form);
 }
