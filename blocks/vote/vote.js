@@ -59,9 +59,10 @@ export default async function init(el) {
 
   send.addEventListener('click', async (e) => {
     const mock = {
-        data: [
-            { name: 'name', value: 'Clark Kent' },
-        ]
+        data: {
+            name: 'Jessica Jones',
+            email: 'jj@example.com',
+        },
     };
     const resp = await fetch('/names', {
         method: 'POST',
