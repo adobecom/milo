@@ -1,12 +1,24 @@
-export default async function init(el) {
-  const ratingsText = el.querySelector('h2 + p');
-  const ratings = ratingsText.textContent.split(' ');
-  ratingsText.remove();
+function decorateRatings(el) {
+  const ratingsEl = el.querySelector('h2 + p');
+  const ratings = ratingsEl.textContent.split(' ');
+  ratingsEl.remove();
   const ratingsHeader = document.createElement('div');
   ratingsHeader.className = 'ratings-header';
-  ratings.forEach((text) => {
-    
-  });
+  const ratingsText = document.createElement('div');
+  ratingsText.className = 'ratings-text';
+  ratingsText.append(...ratings.map((text) => {
+    const ratingEl = document.createElement('p');
+    ratingEl.textContent = text;
+    return ratingEl;
+  }));
+  ratingsHeader.append(ratingsText);
+  return ratingsHeader;
+}
+
+export default async function init(el) {
+  // Setup Ratings Header
+  const ratingsHeader = decorateRatings(el);
+
 
 
   const form = document.createElement('form');
@@ -36,6 +48,8 @@ export default async function init(el) {
     const desc = document.createElement('p');
     desc.innerHTML = description;
 
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = 'slider-container';
     const slider = document.createElement('input');
     slider.className = 'slider';
     slider.type = 'range';
@@ -46,15 +60,16 @@ export default async function init(el) {
     slider.addEventListener('change', (e) => {
       slider.setAttribute('value', e.target.value);
     });
+    sliderContainer.append(slider);
 
     text.append(title, desc);
-    card.append(text, slider);
+    card.append(text, sliderContainer);
     form.append(card);
   });
 
-  // const send = document.createElement('button');
-  // send.textContent = 'Send';
-  // send.className = 'send-vote';
+  const send = document.createElement('button');
+  send.textContent = 'Send';
+  send.className = 'send-vote';
 
   // send.addEventListener('click', async (e) => {
   //   const mock = {
@@ -74,5 +89,5 @@ export default async function init(el) {
   //   console.log(json);
   // });
 
-  el.append(form);
+  el.append(ratingsHeader, form, send);
 }
