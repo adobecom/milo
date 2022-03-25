@@ -1,4 +1,14 @@
 export default async function init(el) {
+  const ratingsText = el.querySelector('h2 + p');
+  const ratings = ratingsText.textContent.split(' ');
+  ratingsText.remove();
+  const ratingsHeader = document.createElement('div');
+  ratingsHeader.className = 'ratings-header';
+  ratings.forEach((text) => {
+    
+  });
+
+
   const form = document.createElement('form');
   const resp = await fetch('names.json');
   const json = await resp.json();
@@ -14,66 +24,55 @@ export default async function init(el) {
     const card = document.createElement('div');
     card.className = 'vote-card';
 
-    // Radio
-    const input = document.createElement('input');
-    input.type = 'radio';
-    input.name = 'name';
-    input.id = name;
-    input.value = name;
+    // Text Container
+    const text = document.createElement('div');
+    text.className = 'text';
 
     // Label
-    const label = document.createElement('label');
-    label.setAttribute('for', name);
-    label.innerHTML = name;
+    const title = document.createElement('h3');
+    title.innerHTML = name;
 
     // Description
     const desc = document.createElement('p');
     desc.innerHTML = description;
 
-    // Confirm
-    const conf = document.createElement('button');
-    conf.textContent = 'Confirm vote';
+    const slider = document.createElement('input');
+    slider.className = 'slider';
+    slider.type = 'range';
+    slider.setAttribute('min', -1);
+    slider.setAttribute('value', 0);
+    slider.setAttribute('max', 1);
+    slider.id = name;
+    slider.addEventListener('change', (e) => {
+      slider.setAttribute('value', e.target.value);
+    });
 
-    card.append(input, label, description, conf);
+    text.append(title, desc);
+    card.append(text, slider);
     form.append(card);
   });
 
-  form.addEventListener('click', (e) => {
-    e.preventDefault();
-    const currCard = e.target.closest('.vote-card');
-    if (currCard) {
-        const prevCard = form.querySelector('.vote-card.selected');
-        if (prevCard !== currCard) {
-            currCard.classList.add('selected');
-            if (e.target.nodeName == 'BUTTON') {
-            
-            }
-        }
-        prevCard?.classList.remove('selected');
-    }
-  });
+  // const send = document.createElement('button');
+  // send.textContent = 'Send';
+  // send.className = 'send-vote';
 
-  const send = document.createElement('button');
-  send.textContent = 'Send';
-  send.className = 'send-vote';
+  // send.addEventListener('click', async (e) => {
+  //   const mock = {
+  //       data: {
+  //           name: 'Chris Millar',
+  //           email: 'cmillar@adobe.com',
+  //       },
+  //   };
+  //   const resp = await fetch('/names', {
+  //       method: 'POST',
+  //       headers: {
+  //           'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(mock),
+  //   });
+  //   const json = await resp.text();
+  //   console.log(json);
+  // });
 
-  send.addEventListener('click', async (e) => {
-    const mock = {
-        data: {
-            name: 'Jessica Jones',
-            email: 'jj@example.com',
-        },
-    };
-    const resp = await fetch('/names', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(mock),
-    });
-    const json = await resp.text();
-    console.log(json);
-  });
-
-  el.append(send, form);
+  el.append(form);
 }

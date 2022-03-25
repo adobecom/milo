@@ -3,69 +3,72 @@
     margin: 0 auto;
 }
 
+.vote .vote-card h3,
+.vote .vote-card p {
+    margin: 0;
+}
+
 .vote p {
     margin: 36px 0;
     line-height: 36px;
 }
 
-form {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-gap: 24px;
+.vote-card p {
+    font-size: 18px;
+    line-height: unset;
 }
 
 .vote-card {
-    position: relative;
-    height: 320px;
-    border: 3px solid #494949;
-    border-radius: 8px;
-    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+    height: 100px;
+    align-items: center;
+}
+
+.slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 6px; /* Specified height */
+    background: #388CED; /* Grey background */
+    outline: none;
+    filter: brightness(1);
+    transition: all .2s;
+    border-radius: 3px;
+}
+
+.slider:hover {
+    filter: brightness(1.1);
+}
+
+.slider[value="-1"] {
+    background: #BB121A;
+}
+
+.slider[value="1"] {
+    background: #12805C;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 40px;
+    height: 40px;
+    background: 50% 100% url('/blocks/vote/img/neutral.png') no-repeat;
+    background-size: 100%;
     cursor: pointer;
 }
 
-.vote-card:hover,
-.vote-card.selected {
-    border: 3px solid #378ced;
-    background: #000;
+.slider[value="-1"]::-webkit-slider-thumb {
+    background: 50% 100% url('/blocks/vote/img/dislike.png') no-repeat;
+    background-size: 100%;
 }
 
-input[type="radio"] {
-  display: none;
-}
-
-label {
-    display: block;
-    font-weight: 900;
-    font-size: 32px;
-}
-
-.vote-card button {
-    display: none;
-    position: absolute;
-    right: 0;
-    bottom: 48px;
-    border: none;
-    background: #12805c;
-    padding: 6px 12px;
-    font-family: 'Adobe Clean', sans-serif;
-    font-size: 18px;
-    color: #FFF;
-    border-radius: 4px 0px 0px 4px;
-    font-weight: 700;
-}
-
-.vote-card button:hover {
-    background: #107154;
-}
-
-.vote-card.selected button {
-    display: unset;
-}
-
-@media (min-width: 900px) {
-    form {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
+.slider[value="1"]::-webkit-slider-thumb {
+    background: 50% 100% url('/blocks/vote/img/like.png') no-repeat;
+    background-size: 100%;
 }
 
 @media (min-width: 1440px) {
