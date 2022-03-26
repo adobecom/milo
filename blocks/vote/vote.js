@@ -31,13 +31,17 @@ async function imsReady() {
     }
 }
 
+function getEnv() {
+  return window.location.hostname === 'main--wp4--adobecom.hlx.page' ? 'prod' : 'stg1';
+}
+
 function loadIms(el) {
   window.adobeid = {
     client_id: 'wp4',
     scope: 'AdobeID,openid',
     locale: 'en_US',
     autoValidateToken: true,
-    environment: 'stg1',
+    environment: getEnv(),
     useLocalStorage: false,
     onReady: () => { imsReady(el) },
   };
