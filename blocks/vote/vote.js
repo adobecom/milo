@@ -1,13 +1,32 @@
 import { loadScript } from '../../scripts/scripts.js';
 
 const data = {};
+const hello = [
+  'Hello',
+  'Hola',
+  'Bonjour',
+  'Guten tag',
+  'Salve',
+  'Nǐn hǎo',
+  'Olá',
+  'Asalaam alaikum',
+  'Konnichiwa',
+  'Anyoung haseyo'
+];
+
+function randomize(arr) {
+  return arr.map(value =>
+    ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+}
 
 function decorateRatings(el) {
   const ratingsEl = el.querySelector('h2 + p');
   const ratings = ratingsEl.textContent.split(' ');
   ratingsEl.remove();
-  const ratingsHeader = document.createElement('div');
-  ratingsHeader.className = 'ratings-header';
+  const header = document.createElement('div');
+  header.className = 'ratings-header';
   const ratingsText = document.createElement('div');
   ratingsText.className = 'ratings-text';
   ratingsText.append(...ratings.map((text) => {
@@ -15,8 +34,8 @@ function decorateRatings(el) {
     ratingEl.textContent = text;
     return ratingEl;
   }));
-  ratingsHeader.append(ratingsText);
-  return ratingsHeader;
+  header.append(ratingsText);
+  return header;
 }
 
 async function imsReady() {
@@ -26,6 +45,12 @@ async function imsReady() {
       data.id = profile.userId;
       document.querySelector('.login').classList.add('hide');
       document.querySelector('.vote').classList.remove('hide');
+      
+      const helloHead = document.createElement('h3');
+      helloHead.innerText = `${randomize(hello)[0]} ${profile.displayName},`;
+      console.log(randomize(hello));
+      const p = document.querySelector('.vote p');
+      p.parentNode.insertBefore(helloHead, p);
     } else {
       window.adobeIMS.signIn();
     }
@@ -50,6 +75,7 @@ function loadIms(el) {
 
 function buildRow(choice) {
   const { name, description } = choice;
+  data[name] = 0;
 
   // Card
   const card = document.createElement('div');
@@ -67,18 +93,16 @@ function buildRow(choice) {
   const desc = document.createElement('p');
   desc.innerHTML = description;
 
+  // Slider
   const sliderContainer = document.createElement('div');
   sliderContainer.className = 'slider-container';
   const slider = document.createElement('input');
   slider.className = 'slider';
+  slider.id = name;
   slider.type = 'range';
   slider.setAttribute('min', -1);
   slider.setAttribute('value', 0);
   slider.setAttribute('max', 1);
-  slider.id = name;
-
-  data[name] = 0;
-
   slider.addEventListener('change', (e) => {
     slider.setAttribute('value', e.target.value);
     data[name] = e.target.value;
@@ -101,17 +125,16 @@ function buildSend() {
 
   send.addEventListener('click', async (e) => {
     e.preventDefault();
-    console.log(data);
-    // const resp = await fetch('/names', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ data }),
-    // });
-    // if (resp.ok) {
-    //   localStorage.setItem('voted', true);
-    //   document.querySelector('.vote').classList.add('hide');
-    //   document.querySelector('.voted').classList.remove('hide');
-    // }
+    const resp = await fetch('/names', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data }),
+    });
+    if (resp.ok) {
+      localStorage.setItem('voted', true);
+      document.querySelector('.vote').remove();
+      document.querySelector('.voted').classList.remove('hide');
+    }
   });
   return send;
 }
@@ -125,17 +148,14 @@ export default async function init(el) {
     loadIms(el);
 
     // Setup Ratings Header
-    const ratingsHeader = decorateRatings(el);
+    const header = decorateRatings(el);
 
     const form = document.createElement('form');
     const resp = await fetch('names.json');
     const json = await resp.json();
 
     // Randomize choices
-    const choices = json.data.map(value =>
-      ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    const choices = randomize(json.data);
 
     choices.forEach((choice) => {
       const row = buildRow(choice);
@@ -143,6 +163,6 @@ export default async function init(el) {
     });
 
     form.append(buildSend());
-    el.append(ratingsHeader, form);
+    el.append(header, form);
   }
 }

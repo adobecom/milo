@@ -7,6 +7,15 @@
     box-sizing: border-box;
 }
 
+.vote h3 {
+    margin: 36px 0 12px 0;
+}
+
+.vote p {
+    margin: 12px 0 36px 0;
+    line-height: 36px;
+}
+
 .ratings-header {
     display: grid;
     grid-template-columns: 0 1fr;
@@ -45,11 +54,6 @@
 .vote .vote-card h3,
 .vote .vote-card p {
     margin: 0;
-}
-
-.vote p {
-    margin: 36px 0;
-    line-height: 36px;
 }
 
 .vote-card {
