@@ -7,11 +7,11 @@ const hello = [
   'Bonjour',
   'Guten tag',
   'Salve',
-  'Nǐn hǎo',
+  '你好',
   'Olá',
   'Asalaam alaikum',
-  'Konnichiwa',
-  'Anyoung haseyo'
+  'こんにちは',
+  '안녕하세요'
 ];
 
 function randomize(arr) {

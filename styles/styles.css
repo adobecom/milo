@@ -10,6 +10,30 @@
  * governing permissions and limitations under the License.
  */
 
+@font-face {
+  font-family:"adobe-clean";
+  src:url("/fonts/adobe-clean-400.woff2") format("woff2");
+  font-display:swap;font-style:normal;font-weight:400;
+}
+
+@font-face {
+  font-family:"adobe-clean";
+  src:url("/fonts/adobe-clean-400-italic.woff2") format("woff2");
+  font-display:swap;font-style:italic;font-weight:400;
+}
+
+@font-face {
+  font-family:"adobe-clean";
+  src:url("/fonts/adobe-clean-700.woff2") format("woff2");
+  font-display:swap;font-style:normal;font-weight:700;
+}
+
+@font-face {
+  font-family:"adobe-clean";
+  src:url("/fonts/adobe-clean-900.woff2") format("woff2");
+  font-display:swap;font-style:normal;font-weight:900;
+}
+
  :root {
   /* colors */
   --link-color: #035fe6;
@@ -20,7 +44,7 @@
   --text-color: #fff;
 
   /* fonts */
-  --body-font-family: 'Adobe Clean', 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
+  --body-font-family: 'adobe-clean', 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
