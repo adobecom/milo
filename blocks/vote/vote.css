@@ -24,6 +24,10 @@
     text-align: center;
 }
 
+.ratings-text p {
+    overflow: hidden;
+}
+
 .ratings-text p:first-child {
     text-align: left;
     background: 1000px url('/blocks/vote/img/dislike.png') no-repeat;

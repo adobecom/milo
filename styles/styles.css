@@ -88,6 +88,15 @@ main img {
   height: auto;
 }
 
+.contained {
+  width: 83.4%;
+  margin: 0 auto;
+}
+
+.hide {
+  display: none;
+}
+
 @media (min-width: 600px) {
 }
 
@@ -99,6 +108,13 @@ main img {
     --heading-font-size-m: 30px;
     --heading-font-size-s: 24px;
     --heading-font-size-xs: 22px;  
+  }
+}
+
+@media (min-width: 1440px) {
+  .contained {
+    width: 1200px;
+    margin: 0 auto;
   }
 }
 
