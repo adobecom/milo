@@ -150,6 +150,7 @@ function buildSend() {
         });
       }
     } else {
+      localStorage.setItem('voted', true);
       document.querySelector('.voted h2').textContent = 'Hmmm...';
       document.querySelector('.voted p').textContent = 'It looks like you already voted.';
     }
