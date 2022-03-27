@@ -1,4 +1,4 @@
-name: Clear Voter IDs
+name: Update voter IDs
 
 on:
   schedule:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Clear voter IDs
+    - name: Update voter IDs
       run: |
          chmod +x ./.github/clear-voter-ids.sh
          ./.github/clear-voter-ids.sh
