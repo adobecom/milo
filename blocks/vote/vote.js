@@ -131,29 +131,23 @@ function buildSend() {
     });
     if (!votedIds.includes(data.id)) {
       // Log the ID that is voting.
-      const ids = await fetch('/ids', {
+      fetch('/ids', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: { id: data.id } }),
       });
       // Cast the vote
-      const vote = await fetch('/voting', {
+      fetch('/voting', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data }),
       });
-      if (vote.ok) {
-        localStorage.setItem('voted', true);
-        // Clear the ID cache to minimize fraud.
-        fetch('https://admin.hlx3.page/preview/adobecom/wp4/main/ids.json', {
-          method: 'POST',
-        });
-      }
     } else {
-      localStorage.setItem('voted', true);
+      
       document.querySelector('.voted h2').textContent = 'Hmmm...';
       document.querySelector('.voted p').textContent = 'It looks like you already voted.';
     }
+    localStorage.setItem('voted', true);
     document.querySelector('.vote').remove();
     document.querySelector('.voted').classList.remove('hide');
   });
@@ -167,6 +161,10 @@ export default async function init(el) {
     document.querySelector('.voted').classList.remove('hide');
   } else {
     loadIms(el);
+    // Update the latest voted IDs.
+    fetch('https://admin.hlx3.page/preview/adobecom/wp4/main/ids.json', {
+      method: 'POST',
+    });
 
     // Setup Ratings Header
     const header = decorateRatings(el);
