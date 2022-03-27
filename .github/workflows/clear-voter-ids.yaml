@@ -1,3 +1,5 @@
+name: Clear Voter IDs
+
 on:
   schedule:
     - cron: "*/5 * * * *"
