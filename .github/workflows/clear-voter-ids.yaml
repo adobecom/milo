@@ -11,6 +11,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Clear voter IDs
       run: |
-         chmod +x ./github/clear-voter-ids.sh
-         ./github/clear-voter-ids.sh
+         chmod +x ./.github/clear-voter-ids.sh
+         ./.github/clear-voter-ids.sh
       shell: bash
