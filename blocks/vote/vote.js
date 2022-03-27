@@ -45,10 +45,8 @@ async function imsReady() {
       data.id = profile.userId;
       document.querySelector('.login').classList.add('hide');
       document.querySelector('.vote').classList.remove('hide');
-      
       const helloHead = document.createElement('h3');
       helloHead.innerText = `${randomize(hello)[0]} ${profile.displayName},`;
-      console.log(randomize(hello));
       const p = document.querySelector('.vote p');
       p.parentNode.insertBefore(helloHead, p);
     } else {
@@ -125,16 +123,38 @@ function buildSend() {
 
   send.addEventListener('click', async (e) => {
     e.preventDefault();
-    const resp = await fetch('/names', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data }),
+    e.target.disabled = true;
+    const idsResp = await fetch('/ids.json');
+    const json = await idsResp.json();
+    const votedIds = json.data.map((voted) => {
+      return voted.id;
     });
-    if (resp.ok) {
-      localStorage.setItem('voted', true);
-      document.querySelector('.vote').remove();
-      document.querySelector('.voted').classList.remove('hide');
+    if (!votedIds.includes(data.id)) {
+      // Log the ID that is voting.
+      const ids = await fetch('/ids', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: { id: data.id } }),
+      });
+      // Cast the vote
+      const vote = await fetch('/voting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data }),
+      });
+      if (vote.ok) {
+        localStorage.setItem('voted', true);
+        // Clear the ID cache to minimize fraud.
+        fetch('https://admin.hlx3.page/preview/adobecom/wp4/main/ids.json', {
+          method: 'POST',
+        });
+      }
+    } else {
+      document.querySelector('.voted h2').textContent = 'Hmmm...';
+      document.querySelector('.voted p').textContent = 'It looks like you already voted.';
     }
+    document.querySelector('.vote').remove();
+    document.querySelector('.voted').classList.remove('hide');
   });
   return send;
 }
