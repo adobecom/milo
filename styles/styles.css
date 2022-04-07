@@ -147,3 +147,7 @@ main .section[data-section-status='loading'],
 main .section[data-section-status='initialized'] {
   display: none;
 }
+
+a[href^="https://caas"] {
+  display: none;
+}

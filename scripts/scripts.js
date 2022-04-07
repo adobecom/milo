@@ -112,20 +112,6 @@ export function getMetadata(name) {
 }
 
 /**
- * Adds one or more URLs to the dependencies for publishing.
- * @param {string|[string]} url The URL(s) to add as dependencies
- */
-export function addPublishDependencies(url) {
-  const urls = Array.isArray(url) ? url : [url];
-  window.hlx = window.hlx || {};
-  if (window.hlx.dependencies && Array.isArray(window.hlx.dependencies)) {
-    window.hlx.dependencies = window.hlx.dependencies.concat(urls);
-  } else {
-    window.hlx.dependencies = urls;
-  }
-}
-
-/**
  * Sanitizes a name for use as class name.
  * @param {*} name The unsanitized name
  * @returns {string} The class name
@@ -551,6 +537,23 @@ function loadFooter(footer) {
   loadBlock(footerBlock);
 }
 
+function buildEmbeds() {
+  console.log('firing');
+  const embeds = [...document.querySelectorAll('a[href^="https://www.youtube.com"], a[href^="https://caas"]')];
+  embeds.forEach((embed) => {
+    embed.replaceWith(buildBlock('embed', embed.outerHTML));
+  });
+}
+
+export function buildAutoBlocks(main) {
+  try {
+    buildEmbeds(main);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Auto Blocking failed', error);
+  }
+}
+
 /**
  * Decorates the main element.
  * @param {Element} main The main element
@@ -558,6 +561,7 @@ function loadFooter(footer) {
 export function decorateMain(main) {
   // forward compatible pictures redecoration
   decoratePictures(main);
+  buildAutoBlocks(main);
   // forward compatible link rewriting
   makeLinksRelative(main);
   decorateSections(main);
