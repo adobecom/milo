@@ -84,7 +84,6 @@ code, pre, samp {
 
 main img {
   max-width: 100%;
-  height: auto;
 }
 
 .contained {
@@ -92,11 +91,8 @@ main img {
   margin: 0 auto;
 }
 
-.hide {
-  display: none;
-}
-
 @media (min-width: 600px) {
+
 }
 
 @media (min-width: 900px) {
@@ -118,7 +114,10 @@ main img {
 }
 
 /* progressive section appearance */
-main .section[data-section-status='loading'],
-main .section[data-section-status='initialized'] {
+main > div > [class] {
   display: none;
+}
+
+main > div > [data-status='loaded'] {
+  display: block;
 }

@@ -12,7 +12,7 @@
 
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['hero'];
+const LCP_BLOCKS = ['section'];
 const LINK_BLOCKS = [
   { youtube: 'a[href^="https://www.youtube.com"]' },
   { gist: 'a[href^="https://gist.github.com"]' },
