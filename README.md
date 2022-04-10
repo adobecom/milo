@@ -8,8 +8,8 @@ Milo is a shared set of features and services to power Helix-based websites on a
 
 ## Developing
 1. Install the [Helix CLI](https://github.com/adobe/helix-cli): `npm install -g @adobe/helix-cli`
-1. Run `hlx up` in the  (opens your browser at `http://localhost:3000`)
-1. Open the `{repo}` directory in your favorite IDE and start coding :)
+1. Run `hlx up` this repo's folder. (opens your browser at `http://localhost:3000`)
+1. Open this repo's folder in your favorite editor and start coding.
 
 ## Testing
 ```sh
