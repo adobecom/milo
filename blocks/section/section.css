@@ -26,7 +26,6 @@
 .section.hero .fg > div {
   grid-column: 2;
   grid-row: 3;
-  display: flex;
 }
 
 .section.hero h1 {
@@ -37,7 +36,7 @@
 
 .section.hero h1::before {
   content: '';
-  background: url(/img/open-curly.svg);
+  background: url('/img/open-curly.svg');
   width: 54px;
   height: 122px;
   display: block;
@@ -48,7 +47,7 @@
 
 .section.hero h1::after {
   content: '';
-  background: url(/img/curly-close.svg);
+  background: url('/img/curly-close.svg');
   width: 80px;
   height: 172px;
   display: block;
@@ -103,4 +102,10 @@
 
 .section.hero .bg-item.item-5 {
   grid-column: 11 / -1;
+}
+
+@media (min-width: 600px) {
+  .section.hero .fg > div {
+    display: flex;
+  }
 }
