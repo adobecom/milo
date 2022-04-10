@@ -1,12 +1,5 @@
 function decorateHero(el) {
-  // console.log(el);
-  // const name = el.querySelector('h1');
-  // const desc = el.querySelector('h1 + p');
-  // const parent = name.parentElement;
-  // const text = document.createElement('div');
-  // text.className = 'text-wrapper';
-  // text.append(name, desc);
-  // parent.parentElement.append(text);
+
 }
 
 function decorateEngage(el) {

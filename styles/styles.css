@@ -10,6 +10,20 @@
  * governing permissions and limitations under the License.
  */
 
+@font-face {
+  font-family: arial;
+  size-adjust: 95%;
+  src: local('Arial');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: arial;
+  size-adjust: 87%;
+  src: local('Arial');
+  font-weight: 400;
+}
+
  :root {
   /* colors */
   --link-color: #035fe6;
@@ -20,7 +34,7 @@
   --text-color: #2c2c2c;
 
   /* fonts */
-  --body-font-family: freight-sans-pro, sans-serif;
+  --body-font-family: freight-sans-pro, arial;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 

@@ -1,13 +1,69 @@
-.section {
+.section[data-status='loaded'] {
   position: relative;
+  display: grid;
+  color: #000;
 }
 
-.section .bg {
+.section .bg,
+.section .fg {
   height: 100vh;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(6, 1fr);
 }
+
+.section .bg {
+  position: relative;
+  z-index: 1;
+}
+
+.section .fg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.section.hero .fg > div {
+  grid-column: 2;
+  grid-row: 3;
+  display: flex;
+}
+
+.section.hero h1 {
+  position: relative;
+  font-size: 120px;
+  margin: 0 92px 0 54px;
+}
+
+.section.hero h1::before {
+  content: '';
+  background: url(/img/open-curly.svg);
+  width: 54px;
+  height: 122px;
+  display: block;
+  position: absolute;
+  top: 32px;
+  left: -54px;
+}
+
+.section.hero h1::after {
+  content: '';
+  background: url(/img/curly-close.svg);
+  width: 80px;
+  height: 172px;
+  display: block;
+  position: absolute;
+  top: 32px;
+  right: -68px;
+}
+
+.section.section.hero h1 + p {
+  font-family: freight-text-pro, serif;
+  font-size: 36px;
+  margin: 92px 0 0;
+  font-weight: 500;
+}
+
 
 .section.hero .bg-item {
   grid-row: 1 / -1;
@@ -42,14 +98,9 @@
 
 .section.hero .bg-item.item-4 {
   grid-column: 11 / 8;
+  grid-row: 2 / -1;
 }
 
 .section.hero .bg-item.item-5 {
   grid-column: 11 / -1;
-}
-
-.section .fg {
-  position: absolute;
-  left: 0;
-  top: 0;
 }
