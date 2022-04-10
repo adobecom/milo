@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "stylelint.vscode-stylelint",
+        "dbaeumer.vscode-eslint",
+        "editorconfig.editorconfig",
+        "ryanluker.vscode-coverage-gutters",
+        "eamodio.gitlens"
+    ]
+}

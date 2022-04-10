@@ -1,28 +1,34 @@
-# Run this action only for pull requests from this repository
-name: Tests
-
+name: Run tests
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
       - main
-
 jobs:
   build:
-    if: github.repository_owner == 'adobe' # replace 'adobe' with repo owner
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js
-      uses: actions/setup-node@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
       with:
-        node-version: '14'
-    - run: npm install
-      working-directory: test
-    - run: npm run lint
-    - run: npm test
-      working-directory: test
-      env:
-        CI: true
+        fetch-depth: 2
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+     
+    - name: Install XVFB
+      run: sudo apt-get install xvfb
+  
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run the tests
+      run: xvfb-run -a npm test
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
