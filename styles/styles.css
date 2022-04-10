@@ -10,30 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-@font-face {
-  font-family:"adobe-clean";
-  src:url("/fonts/adobe-clean-400.woff2") format("woff2");
-  font-display:swap;font-style:normal;font-weight:400;
-}
-
-@font-face {
-  font-family:"adobe-clean";
-  src:url("/fonts/adobe-clean-400-italic.woff2") format("woff2");
-  font-display:swap;font-style:italic;font-weight:400;
-}
-
-@font-face {
-  font-family:"adobe-clean";
-  src:url("/fonts/adobe-clean-700.woff2") format("woff2");
-  font-display:swap;font-style:normal;font-weight:700;
-}
-
-@font-face {
-  font-family:"adobe-clean";
-  src:url("/fonts/adobe-clean-900.woff2") format("woff2");
-  font-display:swap;font-style:normal;font-weight:900;
-}
-
  :root {
   /* colors */
   --link-color: #035fe6;
@@ -41,10 +17,10 @@
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
-  --text-color: #fff;
+  --text-color: #2c2c2c;
 
   /* fonts */
-  --body-font-family: 'adobe-clean', 'helvetica neue', helvetica, ubuntu, roboto, noto, sans-serif;
+  --body-font-family: freight-sans-pro, sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
@@ -69,10 +45,9 @@ html {
 body {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
-  background-color: rgb(30, 30, 30);
+  background-color: var(--background-color);
   color: var(--text-color);
   margin: 0;
-  display: none;
 }
 
 body.appear {
@@ -145,9 +120,5 @@ main img {
 /* progressive section appearance */
 main .section[data-section-status='loading'],
 main .section[data-section-status='initialized'] {
-  display: none;
-}
-
-a[href^="https://caas"] {
   display: none;
 }

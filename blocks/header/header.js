@@ -2,9 +2,7 @@
  * decorates the header, mainly the nav
  * @param {Element} block The header block element
  */
-export default async function decorate(block) {
-  const header = block.parentElement;
-
+export default async function init(header) {
   const navPath = '/nav';
   const resp = await fetch(`${navPath}.plain.html`);
   const html = await resp.text();
@@ -18,6 +16,6 @@ export default async function decorate(block) {
   toggle.classList.add('nav-toggle');
 
   nav.append(toggle, ...doc.querySelectorAll('div > *'));
+
   header.append(nav);
-  header.removeChild(block);
 }
