@@ -21,7 +21,7 @@ describe('Decorating', () => {
   it('Decorates blocks', async () => {
     const blocks = document.querySelectorAll('[class]');
     expect(blocks.length).to.equal(5);
-    expect(blocks[0].classList.length).to.equal(3);
+    expect(blocks[1].classList.length).to.equal(3);
   });
 
   it('Decorates pictures', async () => {
@@ -40,7 +40,7 @@ describe('Decorating', () => {
     const svgs = document.querySelectorAll('[src$="svg"]');
     expect(svgs.length).to.equal(2);
     expect(svgs[0].src).to.equal('http://localhost:2000/img/favicon.svg');
-    expect(svgs[1].parentElement.href).to.equal('https://www.adobe.com/');
+    expect(svgs[1].parentElement.parentElement.href).to.equal('https://www.adobe.com/');
   });
 
   it('Decorates auto blocks', async () => {

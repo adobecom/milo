@@ -13,7 +13,6 @@ export default async function init(header) {
   nav.setAttribute('role', 'navigation');
 
   const toggle = document.createElement('button');
-  toggle.classList.add('nav-toggle');
 
   nav.append(toggle, ...doc.querySelectorAll('div > *'));
 
