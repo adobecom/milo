@@ -20,7 +20,7 @@
 
 @font-face {
   font-family: 'Trebuchet MS';
-  size-adjust: 87%;
+  size-adjust: 93%;
   src: local('Trebuchet MS'),
        local('TrebuchetMS');
        font-weight: 400;
@@ -76,7 +76,10 @@ header {
   align-content: stretch;
 }
 
-h1 { font-size: var(--heading-font-size-xxl) }
+h1 {
+  font-size: var(--heading-font-size-xxl);
+  font-weight: 400;
+}
 h2 { font-size: var(--heading-font-size-xl) }
 h3 { font-size: var(--heading-font-size-l) }
 h4 { font-size: var(--heading-font-size-m) }
