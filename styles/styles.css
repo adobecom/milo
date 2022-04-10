@@ -11,17 +11,19 @@
  */
 
 @font-face {
-  font-family: arial;
+  font-family: 'Trebuchet MS';
   size-adjust: 95%;
-  src: local('Arial');
-  font-weight: 700;
+  src: local('Trebuchet MS'),
+       local('TrebuchetMS');
+       font-weight: 700;
 }
 
 @font-face {
-  font-family: arial;
+  font-family: 'Trebuchet MS';
   size-adjust: 87%;
-  src: local('Arial');
-  font-weight: 400;
+  src: local('Trebuchet MS'),
+       local('TrebuchetMS');
+       font-weight: 400;
 }
 
  :root {
@@ -34,7 +36,7 @@
   --text-color: #2c2c2c;
 
   /* fonts */
-  --body-font-family: freight-sans-pro, arial;
+  --body-font-family: 'adobe-clean', 'Trebuchet MS', sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 

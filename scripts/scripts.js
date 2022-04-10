@@ -159,7 +159,7 @@ async function loadLCP(blocks) {
 }
 
 async function loadLazy(blocks) {
-  loadStyle('https://use.typekit.net/hah7vzn.css');
+  loadStyle('/fonts/fonts.css');
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
