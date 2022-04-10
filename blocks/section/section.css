@@ -1,3 +1,55 @@
 .section {
-    min-height: 100vh;
+  position: relative;
+}
+
+.section .bg {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+}
+
+.section.hero .bg-item {
+  grid-row: 1 / -1;
+  position: relative;
+}
+
+.section.hero .bg-item picture {
+  position: absolute;
+  inset: 0;
+}
+
+.section.hero .bg-item picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.section.hero .bg-item.item-1 {
+  grid-column: 1 / 7;
+  z-index: 4;
+}
+
+.section.hero .bg-item.item-2 {
+  grid-column: 5 / 9;
+  z-index: 4;
+}
+
+.section.hero .bg-item.item-3 {
+  grid-column: -1 / 9;
+  z-index: 5;
+}
+
+.section.hero .bg-item.item-4 {
+  grid-column: 11 / 8;
+}
+
+.section.hero .bg-item.item-5 {
+  grid-column: 11 / -1;
+}
+
+.section .fg {
+  position: absolute;
+  left: 0;
+  top: 0;
 }

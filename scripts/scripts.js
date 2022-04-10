@@ -66,22 +66,6 @@ export async function loadBlock(block) {
   return block;
 }
 
-async function loadLCP(blocks) {
-  const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loadBlock(lcpBlock, true);
-  }
-}
-
-async function loadLazy(blocks) {
-  const loaded = blocks.map((block) => loadBlock(block));
-  await Promise.all(loaded);
-}
-
-function loadDelayed() {}
-
 function makeRelative(href) {
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(href);
@@ -96,11 +80,13 @@ function decorateSVG(a) {
   if (ext !== 'svg') return;
   const img = document.createElement('img');
   img.src = makeRelative(textContent);
+  const pic = document.createElement('picture');
+  pic.append(img);
   if (img.src === href) {
-    a.parentElement.replaceChild(img, a);
+    a.parentElement.replaceChild(pic, a);
   } else {
     a.textContent = '';
-    a.append(img);
+    a.append(pic);
   }
 }
 
@@ -148,6 +134,13 @@ function decorateBlocks(el) {
   });
 }
 
+function decorateArea(el = document) {
+  decoratePictures(el);
+  const linkBlocks = decorateLinks(el);
+  const blocks = decorateBlocks(el);
+  return [...linkBlocks, ...blocks];
+}
+
 function decorateNavs() {
   const navs = document.querySelectorAll('header, footer');
   return [...navs].map((nav) => {
@@ -156,12 +149,22 @@ function decorateNavs() {
   });
 }
 
-function decorateArea(el = document) {
-  decoratePictures(el);
-  const linkBlocks = decorateLinks(el);
-  const blocks = decorateBlocks(el);
-  return [...linkBlocks, ...blocks];
+async function loadLCP(blocks) {
+  const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
+  if (lcpBlock) {
+    const lcpIdx = blocks.indexOf(lcpBlock);
+    blocks.splice(lcpIdx, 1);
+    await loadBlock(lcpBlock, true);
+  }
 }
+
+async function loadLazy(blocks) {
+  loadStyle('https://use.typekit.net/hah7vzn.css');
+  const loaded = blocks.map((block) => loadBlock(block));
+  await Promise.all(loaded);
+}
+
+function loadDelayed() {}
 
 async function loadPage() {
   const blocks = decorateArea();

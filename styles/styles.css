@@ -119,5 +119,5 @@ main > div > [class] {
 }
 
 main > div > [data-status='loaded'] {
-  display: block;
+  display: unset;
 }
