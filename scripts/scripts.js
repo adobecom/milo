@@ -154,7 +154,10 @@ export function decorateArea(el = document) {
 }
 
 function decorateNavs(el = document) {
-  const navs = el.querySelectorAll('header, footer');
+  const selectors = [];
+  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
+  if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
+  const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
     nav.className = nav.nodeName.toLowerCase();
     return nav;
