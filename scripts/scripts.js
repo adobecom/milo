@@ -12,7 +12,7 @@
 
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['section'];
+const LCP_BLOCKS = ['section', 'hero'];
 const LINK_BLOCKS = [
   { youtube: 'a[href^="https://www.youtube.com"]' },
   { gist: 'a[href^="https://gist.github.com"]' },
@@ -149,7 +149,7 @@ function decorateNavs() {
   });
 }
 
-async function loadLCP(blocks) {
+export async function loadLCP(blocks) {
   const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
   if (lcpBlock) {
     const lcpIdx = blocks.indexOf(lcpBlock);

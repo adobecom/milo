@@ -7,8 +7,8 @@ import sinon from 'sinon';
 
 const scripts = {};
 
-document.body.innerHTML = await readFile({ path: '../mocks/body.html' });
 document.head.innerHTML = await readFile({ path: '../mocks/head.html' });
+document.body.innerHTML = await readFile({ path: '../mocks/body.html' });
 
 describe('Decorating', () => {
   before(async () => {
@@ -66,5 +66,11 @@ describe('Loading', () => {
   it('Doesnt load a bad block', async () => {
     await scripts.loadBlock(document.querySelector('#not-block'));
     expect(console.log.called).to.be.true;
+  });
+
+  it('Removes LCP block out of block list', async () => {
+    const blocks = [...document.querySelectorAll('[class]')];
+    await scripts.loadLCP(blocks);
+    expect(blocks.length).to.equal(4);
   });
 });
