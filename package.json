@@ -1,25 +1,25 @@
 {
-  "name": "@adobe/helix-pages-starter",
+  "name": "@adobecom/milo",
   "private": true,
   "version": "1.0.0",
-  "description": "Starter project for Adobe Helix Pages",
+  "description": "Website foundation technology.",
   "scripts": {
     "test": "wtr \"./test/**/*.test.js\" --node-resolve --port=2000 --coverage",
     "test:watch": "npm test -- --watch",
+    "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
-    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'",
-    "lint": "npm run lint:js && npm run lint:css"
+    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adobe/helix-pages-starter.git"
+    "url": "git+https://github.com/adobecom/milo.git"
   },
   "author": "Adobe",
   "license": "Apache License 2.0",
   "bugs": {
-    "url": "https://github.com/adobe/helix-pages-starter/issues"
+    "url": "https://github.com/adobecom/milo/issues"
   },
-  "homepage": "https://github.com/adobe/helix-pages-starter#readme",
+  "homepage": "https://github.com/adobecom/milo#readme",
   "devDependencies": {
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",

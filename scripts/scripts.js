@@ -14,8 +14,9 @@ const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['section', 'hero'];
 const LINK_BLOCKS = [
-  { youtube: 'a[href^="https://www.youtube.com"]' },
-  { gist: 'a[href^="https://gist.github.com"]' },
+  { youtube: 'https://www.youtube.com' },
+  { gist: 'https://gist.github.com' },
+  { caas: '/tools/caas' },
 ];
 
 /*
@@ -23,6 +24,12 @@ const LINK_BLOCKS = [
  * Edit below at your own risk
  * ------------------------------------------------------------
  */
+
+export function getMetadata(name) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
 
 export function loadStyle(href, callback) {
   let link = document.head.querySelector(`link[href="${href}"]`);
@@ -91,9 +98,12 @@ function decorateSVG(a) {
 }
 
 function decorateLinkBlock(a) {
+  const { hostname } = window.location;
+  const url = new URL(a.href);
+  const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return LINK_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    if (a.href.includes(key)) {
+    if (href.startsWith(candidate[key])) {
       a.className = key;
       return true;
     }
@@ -173,4 +183,4 @@ async function loadPage() {
   await loadLazy([...navs, ...blocks]);
   loadDelayed();
 }
-await loadPage();
+loadPage();

@@ -74,3 +74,10 @@ describe('Loading', () => {
     expect(blocks.length).to.equal(4);
   });
 });
+
+describe('Utilities', () => {
+  it('Extracts metadata', () => {
+    expect(scripts.getMetadata('og:title')).to.equal('Milo');
+    expect(scripts.getMetadata('description')).to.equal('Website foundation technology.');
+  });
+});
