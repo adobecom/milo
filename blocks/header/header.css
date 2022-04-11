@@ -1,15 +1,15 @@
-nav {
+header nav {
   width: 83.4%;
   margin: 0 auto;
   display: flex;
   align-content: stretch;
 }
 
-nav button {
+header nav button {
   display: none;
 }
 
-nav ul {
+header nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -17,25 +17,25 @@ nav ul {
   gap: 20px;
 }
 
-nav ul li {
+header nav ul li {
   display: flex;
   align-content: stretch;
 }
 
-nav ul li > a {
+header nav ul li > a {
   display: flex;
   justify-content: center;
   flex-direction: column;
 }
 
 @media (min-width: 600px) {
-  nav button {
+  header nav button {
     display: none;
   }
 }
 
 @media (min-width: 1440px) {
-  nav {
+  header nav {
     width: 1200px;
   }
 }

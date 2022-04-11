@@ -118,6 +118,76 @@
   grid-column: 11 / -1;
 }
 
+.section .fg nav {
+  grid-column: 6;
+  grid-row: 3;
+}
+
+.section .fg nav button {
+  display: none;
+}
+
+.section .fg nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 60px;
+  font-family: adobe-clean-serif, serif;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.section .fg nav li a {
+  display: block;
+  line-height: 60px;
+  position: relative;
+  z-index: 5;
+  color: #000;
+}
+
+.section .fg nav li a::before {
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -10px;
+  bottom: 0;
+  left: -10px;
+  filter: saturate(150%);
+}
+
+.section .fg nav li:nth-child(1) a::before {
+  background-color: rgb(0 99 143 / 80%);
+  clip-path: polygon(0 0, 100% 10%, 90% 100%, 5% 85%);
+}
+
+.section .fg nav li:nth-child(2) {
+  transform: rotate(-4deg);
+}
+
+.section .fg nav li:nth-child(2) a::before {
+  background-color: rgb(213 99 143 / 80%);
+  clip-path: polygon(10% 10%, 90% 0%, 95% 100%, 5% 85%);
+}
+
+.section .fg nav li:nth-child(3) {
+  transform: rotate(4deg);
+}
+
+.section .fg nav li:nth-child(3) a::before {
+  background-color: rgb(64 149 124 / 80%);
+  clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 100%);
+}
+
+.section .fg nav li:nth-child(4) {
+  transform: rotate(-4deg);
+}
+
+.section .fg nav li:nth-child(4) a::before {
+  background-color: rgb(255 8 61 / 80%);
+  clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
+}
+
 @media (min-width: 600px) {
   .section.hero .fg > div {
     display: flex;

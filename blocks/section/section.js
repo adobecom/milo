@@ -1,5 +1,6 @@
-function decorateHero(el) {
-  
+async function decorateHero(el, fg) {
+  const { default: nav } = await import('../header/header.js');
+  await nav(fg);
 }
 
 function decorateEngage(el) {
@@ -22,24 +23,23 @@ export default function init(el) {
   });
   const pics = children[0].querySelectorAll(':scope > div picture');
   pics.forEach((pic, idx) => {
-    console.log(pic);
     const bgItem = document.createElement('div');
     bgItem.className = `bg-item item-${idx + 1}`;
     bgItem.append(pic);
     children[0].append(bgItem);
   });
   children[0].querySelector(':scope > div').remove();
-  // switch (variant) {
-  //   case 'section home hero':
-  //     decorateHero(el, contents[0]);
-  //     break;
-  //   case 'section engage':
-  //     decorateEngage(el);
-  //     break;
-  //   case 'section about':
-  //     decorateAbout(el);
-  //     break;
-  //   default:
-  //     decorateGeneric(el);
-  // }
+  switch (variant) {
+    case 'section home hero':
+      decorateHero(el, children[1]);
+      break;
+    case 'section engage':
+      decorateEngage(el);
+      break;
+    case 'section about':
+      decorateAbout(el);
+      break;
+    default:
+      decorateGeneric(el);
+  }
 }
