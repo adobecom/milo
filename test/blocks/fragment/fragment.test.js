@@ -27,12 +27,12 @@ describe('Fragments', () => {
   it('Doesnt load a fragment', async () => {
     const a = document.querySelector('a.bad');
     await getFragment(a);
-    expect(console.log.firstCall.args[0]).to.equal('Could not get fragment');
+    expect(console.log.args[0][0]).to.equal('Could not get fragment');
   });
 
   it('Doesnt create a malformed fragment', async () => {
     const a = document.querySelector('a.malformed');
     await getFragment(a);
-    expect(console.log.firstCall.args[0]).to.equal('Could not make fragment');
+    expect(console.log.args[0][0]).to.equal('Could not make fragment');
   });
 });
