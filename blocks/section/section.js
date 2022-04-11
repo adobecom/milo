@@ -1,5 +1,5 @@
 function decorateHero(el) {
-
+  
 }
 
 function decorateEngage(el) {
@@ -15,31 +15,31 @@ function decorateGeneric(el) {
 }
 
 export default function init(el) {
-  const contents = el.querySelectorAll(':scope > div');
-  contents[0].className = 'bg';
-  contents[1].className = 'fg';
-
-  const pics = contents[0].querySelectorAll(':scope > div > p > picture');
+  const variant = el.className;
+  const children = el.querySelectorAll(':scope > div');
+  children.forEach((child, idx) => {
+    child.className = idx === 0 ? 'bg' : 'fg';
+  });
+  const pics = children[0].querySelectorAll(':scope > div picture');
   pics.forEach((pic, idx) => {
+    console.log(pic);
     const bgItem = document.createElement('div');
     bgItem.className = `bg-item item-${idx + 1}`;
     bgItem.append(pic);
-    contents[0].append(bgItem);
+    children[0].append(bgItem);
   });
-  contents[0].querySelector(':scope > div').remove();
-
-  const variant = el.className;
-  switch (variant) {
-    case 'section home hero':
-      decorateHero(el);
-      break;
-    case 'section engage':
-      decorateEngage(el);
-      break;
-    case 'section about':
-      decorateAbout(el);
-      break;
-    default:
-      decorateGeneric(el);
-  }
+  children[0].querySelector(':scope > div').remove();
+  // switch (variant) {
+  //   case 'section home hero':
+  //     decorateHero(el, contents[0]);
+  //     break;
+  //   case 'section engage':
+  //     decorateEngage(el);
+  //     break;
+  //   case 'section about':
+  //     decorateAbout(el);
+  //     break;
+  //   default:
+  //     decorateGeneric(el);
+  // }
 }
