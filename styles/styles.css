@@ -105,13 +105,13 @@ main img {
   max-width: 100%;
 }
 
+a.link-block {
+  display: none;
+}
+
 .contained {
   width: 83.4%;
   margin: 0 auto;
-}
-
-@media (min-width: 600px) {
-
 }
 
 @media (min-width: 900px) {

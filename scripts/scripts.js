@@ -17,6 +17,7 @@ const LINK_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
+  { fragment: '/fragments' },
 ];
 
 /*
@@ -104,7 +105,7 @@ function decorateLinkBlock(a) {
   return LINK_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
     if (href.startsWith(candidate[key])) {
-      a.className = key;
+      a.className = `${key} link-block`;
       return true;
     }
     return false;
@@ -132,6 +133,7 @@ function decoratePictures(el) {
   });
 }
 
+// Marquee (Large, Light) >>> marquee--large--light- >>> marquee large light
 function decorateBlocks(el) {
   const blocks = el.querySelectorAll('div[class]');
   return [...blocks].map((block) => {
@@ -144,15 +146,15 @@ function decorateBlocks(el) {
   });
 }
 
-function decorateArea(el = document) {
+export function decorateArea(el = document) {
   decoratePictures(el);
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
   return [...linkBlocks, ...blocks];
 }
 
-function decorateNavs() {
-  const navs = document.querySelectorAll('header, footer');
+function decorateNavs(el = document) {
+  const navs = el.querySelectorAll('header, footer');
   return [...navs].map((nav) => {
     nav.className = nav.nodeName.toLowerCase();
     return nav;
@@ -168,7 +170,7 @@ export async function loadLCP(blocks) {
   }
 }
 
-async function loadLazy(blocks) {
+export async function loadLazy(blocks) {
   loadStyle('/fonts/fonts.css');
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
