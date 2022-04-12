@@ -1,0 +1,37 @@
+<html>
+<head>
+  <title>Translation: from tracker to GLaaS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="translation.css">
+</head>
+<body>
+  <header>
+    <h1>Tracker</h1>
+  </header>
+  <main>
+    <p>Tracker file: <span id="trackerURL"></span></p>
+    <div id="reload" class="hidden">
+      Reload the tracker
+      <button type="button">Reload</button>
+    </div>
+    <div id="send" class="hidden">
+      Send tracker to GLaaS for translation
+      <button type="button">Send to GLaaS</button>
+    </div>
+    <div id="refresh" class="hidden">
+      Re-sync the tracker with Sharepoint and GLaaS
+      <button type="button">Refresh</button>
+    </div>
+    <div class="tracker"></div>
+    <div id="loading" class="hlx-sk-overlay hidden">
+      <div id="status" class="modal level-4 wait">Application is loading...</div>
+    </div>
+  </main>
+  <script type="module">
+    import { init } from './ui.js';
+
+    init();
+  </script>
+</body>
+</html>
