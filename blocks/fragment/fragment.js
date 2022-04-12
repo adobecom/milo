@@ -10,14 +10,17 @@ export default async function init(a) {
 
       const fragment = doc.querySelector('div');
       fragment.className = 'fragment';
+
       const blocks = decorateArea(fragment);
       await loadLazy(blocks);
 
       a.parentElement.replaceChild(fragment, a);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log('Could not make fragment');
     }
   } else {
+    // eslint-disable-next-line no-console
     console.log('Could not get fragment');
   }
 }

@@ -131,7 +131,7 @@
 
 .section .fg nav::before {
   content: '';
-  background: url(/img/home/arrow-down.svg);
+  background: url('/img/home/arrow-down.svg');
   width: 134px;
   height: 172px;
   display: block;
