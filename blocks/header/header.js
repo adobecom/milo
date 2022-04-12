@@ -1,4 +1,4 @@
-import { getMetadata } from '../../scripts/scripts.js';
+import { getMetadata, makeRelative } from '../../scripts/scripts.js';
 
 /**
  * decorates the header, mainly the nav
@@ -11,6 +11,11 @@ export default async function init(block) {
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+
+    const anchors = doc.querySelectorAll('a');
+    anchors.forEach((a) => {
+      a.href = makeRelative(a.href);
+    });
 
     const nav = document.createElement('nav');
     nav.setAttribute('role', 'navigation');

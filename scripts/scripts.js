@@ -17,6 +17,7 @@ const LINK_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
+  { faas: '/tools/faas' },
   { fragment: '/fragments' },
 ];
 
@@ -74,10 +75,12 @@ export async function loadBlock(block) {
   return block;
 }
 
-function makeRelative(href) {
+export function makeRelative(href) {
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(href);
   const relative = hosts.some((host) => url.hostname.includes(host));
+  const modal = getMetadata(url.hash.replace('#', '-'));
+  console.log(modal);
   if (relative) return `${url.pathname}${url.search}${url.hash}`;
   return href;
 }
