@@ -18,35 +18,32 @@
   display: grid;
 }
 
-.section.hero .bg,
-.section.hero .fg {
-  color: #000;
+.section.hero .bg {
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(7, 1fr);
 }
 
-.section.hero .bg {
-  position: relative;
-  z-index: 1;
-}
-
 .section.hero .fg {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: start;
   position: absolute;
   inset: 0;
+  grid-column: 1;
+  grid-row: 1;
+  color: #000;
   z-index: 2;
-}
-
-.section.hero .fg > div {
-  grid-column: 2;
-  grid-row: 4;
-  align-self: end;
 }
 
 .section.hero h1 {
   position: relative;
   font-size: 120px;
-  margin: 0 92px 0 54px;
+  margin: 0;
 }
 
 .section.hero h1::before {
@@ -72,9 +69,10 @@
 }
 
 .section.hero h1 + p {
+  max-width: 220px;
   font-family: adobe-clean-serif, serif;
   font-size: 36px;
-  margin: 92px 0 0;
+  margin: 0;
   font-weight: 500;
 }
 
@@ -119,11 +117,16 @@
   grid-column: 11 / -1;
 }
 
+.section.hero .fg > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .section .fg nav {
-  grid-column: 6 / 8;
-  grid-row: 4;
   position: relative;
   justify-self: center;
+  margin-top: 72px;
 }
 
 .section .fg nav::before {
@@ -207,8 +210,35 @@
   clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
 }
 
-@media (min-width: 600px) {
+@media (min-width: 900px) {
+  .section.hero .bg,
+  .section.hero .fg {
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+  }
+
+  .section.hero .fg {
+    display: grid;
+  }
+
   .section.hero .fg > div {
-    display: flex;
+    grid-column: 2;
+    grid-row: 4;
+    align-self: center;
+    flex-wrap: nowrap;
+  }
+
+  .section.hero h1 {
+    margin: 0 92px 0 54px;
+  }
+
+  .section.hero h1 + p {
+    margin: 92px 0 0;
+  }
+
+  .section .fg nav {
+    margin-top: unset;
+    grid-column: 6 / 8;
+    grid-row: 4;
   }
 }
