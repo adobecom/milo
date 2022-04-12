@@ -30,6 +30,17 @@
           },
         },
       },
+      {
+        id: 'translate',
+        condition: (s) => s.isEditor(),
+        button: {
+          text: 'Translate',
+          action: (_, s) => {
+            const { config } = s;
+            window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
+          },
+        },
+      },
     ],
   });
 })();
