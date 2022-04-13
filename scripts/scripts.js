@@ -79,10 +79,7 @@ export function makeRelative(href) {
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(href);
   const relative = hosts.some((host) => url.hostname.includes(host));
-  const modal = getMetadata(url.hash.replace('#', '-'));
-  console.log(modal);
-  if (relative) return `${url.pathname}${url.search}${url.hash}`;
-  return href;
+  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 function decorateSVG(a) {
@@ -107,6 +104,13 @@ function decorateLinkBlock(a) {
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return LINK_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
+    // Fragment Modals
+    if (key === 'fragment' && url.hash !== '') {
+      a.dataset.modalPath = url.pathname;
+      a.dataset.modalHash = url.hash;
+      a.href = url.hash;
+      return false;
+    }
     if (href.startsWith(candidate[key])) {
       a.className = `${key} link-block`;
       return true;
@@ -119,11 +123,11 @@ function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
-    decorateSVG(a);
     const linkBlock = decorateLinkBlock(a);
     if (linkBlock) {
       rdx.push(a);
     }
+    decorateSVG(a);
     return rdx;
   }, []);
 }
@@ -189,6 +193,8 @@ async function loadPage() {
   const navs = decorateNavs();
   await loadLCP(blocks);
   await loadLazy([...navs, ...blocks]);
+  const { default: getModals } = await import('./modals.js');
+  getModals();
   loadDelayed();
 }
 loadPage();

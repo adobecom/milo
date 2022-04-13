@@ -114,6 +114,24 @@ a.link-block {
   margin: 0 auto;
 }
 
+.modal-wrapper {
+  position: fixed;
+  inset: 0;
+  background: rgb(50 50 50 / 80%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-wrapper .fragment {
+  max-width: 400px;
+  background: #FFF;
+}
+
+.modal-wrapper .fragment img {
+  max-width: 100%;
+}
+
 @media (min-width: 900px) {
   :root {
     --heading-font-size-xxl: 60px;
