@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-use-before-define */
-/*  global window, document */
+/*  global */
 
-import { getPathForLocale, getWorkflowForLocale, getConfig } from './config.js';
+import getConfig from './config.js';
 import { asyncForEach, createTag } from './utils.js';
 
 import {
@@ -72,7 +72,7 @@ async function preview(task, locale) {
 
   const trackerConfig = await initTracker();
   const u = new URL(trackerConfig.url);
-  const dest = `${u.pathname.slice(0, -5)}_preview/${await getPathForLocale(locale)}${task.filePath}`.toLowerCase();
+  const dest = `${u.pathname.slice(0, -5)}_preview/${await (await getConfig()).getPathForLocale(locale)}${task.filePath}`.toLowerCase();
 
   loadingON('Saving file to Sharepoint');
   await saveFile(file, dest);
@@ -108,7 +108,7 @@ async function drawTracker() {
 
   await asyncForEach(tracker.locales, async (loc) => {
     $th = createTag('th', { class: 'header' });
-    const wf = await getWorkflowForLocale(loc);
+    const wf = await (await getConfig()).getWorkflowForLocale(loc);
     $th.innerHTML = `${loc} (${wf.name})`;
 
     $tr.appendChild($th);

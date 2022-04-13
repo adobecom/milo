@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global fetch */
+/* global */
 import { asyncForEach } from './utils.js';
-import { getConfig } from './config.js';
+import getConfig from './config.js';
 
 async function getFile(dirHandle, path) {
   let parentDirHandle = dirHandle;

@@ -10,9 +10,9 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-underscore-dangle */
-/* global window, document, fetch, btoa */
+/* global */
 import { asyncForEach } from './utils.js';
-import { getLocales, getPathForLocale, getConfig } from './config.js';
+import getConfig from './config.js';
 
 let config;
 
@@ -25,7 +25,7 @@ async function init() {
   const repo = location.searchParams.get('repo');
   const ref = location.searchParams.get('ref');
   if (sp && owner && repo && ref) {
-    const admin = (await getConfig()).admin;
+    const { admin } = await getConfig();
 
     const url = `${admin.api.status.baseURI}/${owner}/${repo}/${ref}/?editUrl=${encodeURIComponent(sp)}`;
     const resp = await fetch(url);
@@ -43,8 +43,8 @@ async function init() {
           sp,
           owner,
           repo,
-          ref
-        }
+          ref,
+        };
 
         if (json.preview.status === 404) {
           // file has never been previewed
@@ -65,7 +65,7 @@ async function purge() {
   if (!config) {
     throw new Error('Init the tracker first');
   }
-  const admin = (await getConfig()).admin;
+  const { admin } = await getConfig();
   const url = `${admin.api.preview.baseURI}/${config.owner}/${config.repo}/${config.ref}${config.path}`;
 
   return fetch(url, { method: 'POST' });
@@ -90,17 +90,18 @@ async function compute() {
     const draftRootPath = config.path.substring(0, config.path.lastIndexOf('.'));
     await asyncForEach(json.data, async (t) => {
       if (t.URL) {
-        const locales = await getLocales();
+        const { locales } = (await getConfig());
         await asyncForEach(locales, async (lObj) => {
           const l = lObj.locale;
           if (t[l] && `${t[l]}`.toLowerCase() === 'y') {
             const u = t.URL;
             let path = new URL(u).pathname;
-            if (path.slice(-5) === '.html') {
+            if (path === '/') {
+              path = '/index';
+            } else if (path.slice(-5) === '.html') {
               path = path.slice(0, -5);
             }
-            const pathForLocale = await getPathForLocale(l);
-            
+            const pathForLocale = await (await getConfig()).getPathForLocale(l);
             const task = {
               URL: u,
               locale: l,

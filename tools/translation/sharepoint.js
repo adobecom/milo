@@ -11,7 +11,7 @@
  */
 /* global fetch, Headers */
 import { asyncForEach } from './utils.js';
-import { getConfig } from './config.js';
+import getConfig from './config.js';
 import { PublicClientApplication } from './lib/msal-browser-2.14.2.js';
 
 let accessToken;
