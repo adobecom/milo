@@ -6,28 +6,35 @@ function getPath() {
   if (a) {
     return a.dataset.modalPath;
   }
-  return makeRelative(getMetadata(`${window.location.hash.replace('#', '-')}`));
+  const metaModal = getMetadata(`${window.location.hash.replace('#', '-')}`);
+  if (metaModal) {
+    return makeRelative(metaModal);
+  }
+  return null;
 }
 
 async function getModal() {
   const path = getPath();
+  if (path) {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'modal-dialog';
 
-  const backdrop = document.createElement('div');
-  backdrop.className = 'modal-backdrop';
+    const linkBlock = document.createElement('a');
+    linkBlock.href = path;
 
-  const linkBlock = document.createElement('a');
-  linkBlock.href = path;
+    await getFragment(linkBlock, dialog);
 
-  await getFragment(linkBlock, backdrop);
-
-  backdrop.append(linkBlock);
-  document.body.append(backdrop);
+    dialog.append(linkBlock);
+    document.body.append(dialog);
+    dialog.showModal();
+  }
 }
 
 export default function modals() {
   if (window.location.hash) {
     getModal();
-  } else {
-    window.addEventListener('hashchange', getModal);
   }
+  window.addEventListener('hashchange', () => {
+    getModal();
+  });
 }

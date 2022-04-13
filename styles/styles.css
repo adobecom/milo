@@ -101,7 +101,7 @@ code, pre, samp {
   font-size: var(--body-font-size-s);
 }
 
-main img {
+img {
   max-width: 100%;
 }
 
@@ -114,23 +114,16 @@ a.link-block {
   margin: 0 auto;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
+dialog {
+  border: none;
+}
+
+dialog::backdrop {
   background: rgb(50 50 50 / 80%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
 }
 
-.modal-backdrop .fragment {
+dialog .fragment {
   max-width: 400px;
-  background: #FFF;
-}
-
-.modal-backdrop .fragment img {
-  max-width: 100%;
 }
 
 @media (min-width: 900px) {
