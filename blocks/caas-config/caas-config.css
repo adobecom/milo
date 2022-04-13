@@ -1,0 +1,210 @@
+:root {
+    --panel-width: 800px;
+  }
+
+.footer-wrapper { display: none; }
+
+main {
+    margin-top: 64px;
+    margin-bottom: 16px;
+    position: fixed;
+}
+
+.caas-config[data-status='loaded'] {
+    color: rgb(76, 105, 180);
+    display: grid;
+    grid-template-columns: var(--panel-width) auto;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "config preview";
+}
+
+.caas-preview {
+    grid-area: preview;
+    width: calc(100vw - var(--panel-width));
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+}
+
+.configurator {
+    width: var(--panel-width);
+    grid-area: config;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+}
+
+.accordion {
+    margin: 0;
+}
+.accordion .title {
+    padding: 10px 10px 10px 20px;
+    cursor: pointer;
+    transform: translate3d(0, 0, 0);
+    color: white;
+    position: relative;
+    font-size: 20px;
+    background: #1569a8;
+    margin-bottom: -1px;
+    border-bottom: 1px solid #0e4671;
+    text-align: left;
+}
+.accordion .title::after {
+    content: '+';
+    font-size: 18px;
+    color: white;
+    transition: transform 0.2s ease-in-out;
+    position: absolute;
+    right: 30px;
+}
+.accordion .title.is-expanded {
+    transition: background 0.2s;
+}
+.accordion .title.is-expanded::after {
+    content: '-';
+    transform: rotate(-360deg);
+}
+.accordion .content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.2s;
+    margin: 0;
+    padding: 0 30px;
+    border: solid 1px #eeeeee;
+    border-top: 0;
+    background: #e8f4fc;
+}
+.accordion .content p {
+    padding: 30px 0;
+    margin: 0;
+    opacity: 0;
+    transition: 0.5s;
+}
+.accordion .content.is-expanded {
+    max-height: 900px;
+    overflow: hidden;
+}
+
+.multi-select {
+    width: 200px;
+}
+
+.tagselect {
+    position: relative;
+    display: inline-block;
+    user-select: none;
+    color: #666;
+    width: 100%;
+}
+
+.tagselect-input {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    min-height: 30px;
+    width: 100%;
+    padding: 0 0 0 3px;
+    border: 1px solid #dcdee2;
+    border-radius: 4px;
+    background-color: #fff;
+    outline: 0;
+    box-sizing: border-box;
+    transition: background-color .2s;
+}
+
+.tagselect-values {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    flex: 1 1 100%;
+    width: calc(100% - 30px);
+}
+
+
+.tagselect-add {
+    display: flex;
+    flex: 0 1 3px;
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: 3px;
+    margin: 9px 12px 0 5px;
+}
+
+.tagselect-plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #666;
+    position: relative;
+    height: 10px;
+    width: 2px;
+    transition: transform .2s;
+}
+
+.tagselect-plus.is-open {
+    transform: rotate(45deg);
+}
+
+.tagselect-plus:after {
+    background: #666;
+    content: "";
+    position: absolute;
+    height: 2px;
+    width: 10px;
+    left: -4px;
+    top: 4px;
+}
+
+.tagselect-dropdown {
+    position: fixed;
+    width: auto;
+    margin: -1px 0 0;
+    box-sizing: border-box;
+    border: 1px solid #dcdee2;
+    z-index: 1010;
+    background-color: #fff;
+    transform-origin: center top;
+    transition: transform .2s,opacity .2s;
+    opacity: 0;
+    transform: scaleY(0);
+}
+
+.tagselect-dropdown.is-open {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+.tagselect-dropdown-options li {
+    list-style-type: none;
+}
+
+.tagselect-dropdown-item:not(.is-disabled):hover {
+    color: #fff;
+    background-color: #5897fb;
+}
+
+.tagselect-dropdown-item.is-disabled {
+    cursor: not-allowed;
+    color: #dedede;
+    background-color: #fff
+}
+
+.tagselect-tag {
+    display: flex;
+    user-select: none;
+    align-items: center;
+    font-size: 12px;
+    padding: 3px 5px;
+    margin: 3px 5px 3px 0;
+    color: #fff;
+    background-color: #5897fb;
+    border-radius: 4px;
+    animation-name: scaleIn;
+    animation-duration: .2s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+}
+
+.tagselect-tag-delete {
+    margin: 0 0 0 5px;
+    cursor: pointer;
+}
