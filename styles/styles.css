@@ -114,7 +114,7 @@ a.link-block {
   margin: 0 auto;
 }
 
-.modal-wrapper {
+.modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgb(50 50 50 / 80%);
@@ -123,12 +123,12 @@ a.link-block {
   align-items: center;
 }
 
-.modal-wrapper .fragment {
+.modal-backdrop .fragment {
   max-width: 400px;
   background: #FFF;
 }
 
-.modal-wrapper .fragment img {
+.modal-backdrop .fragment img {
   max-width: 100%;
 }
 

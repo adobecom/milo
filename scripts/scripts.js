@@ -104,14 +104,15 @@ function decorateLinkBlock(a) {
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return LINK_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    // Fragment Modals
-    if (key === 'fragment' && url.hash !== '') {
-      a.dataset.modalPath = url.pathname;
-      a.dataset.modalHash = url.hash;
-      a.href = url.hash;
-      return false;
-    }
-    if (href.startsWith(candidate[key])) {
+    const match = href.startsWith(candidate[key]);
+    if (match) {
+      // Modals
+      if (key === 'fragment' && url.hash !== '') {
+        a.dataset.modalPath = url.pathname;
+        a.dataset.modalHash = url.hash;
+        a.href = url.hash;
+        return false;
+      }
       a.className = `${key} link-block`;
       return true;
     }
@@ -123,11 +124,11 @@ function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
+    decorateSVG(a);
     const linkBlock = decorateLinkBlock(a);
     if (linkBlock) {
       rdx.push(a);
     }
-    decorateSVG(a);
     return rdx;
   }, []);
 }

@@ -1,6 +1,6 @@
 import { decorateArea, loadLazy } from '../../scripts/scripts.js';
 
-export default async function init(a) {
+export default async function init(a, parent) {
   const resp = await fetch(`${a.href}.plain.html`);
   if (resp.ok) {
     try {
@@ -14,7 +14,12 @@ export default async function init(a) {
       const blocks = decorateArea(fragment);
       await loadLazy(blocks);
 
-      a.parentElement.replaceChild(fragment, a);
+      if (parent) {
+        a.remove();
+        parent.append(fragment);
+      } else if (a.parentElement) {
+        a.parentElement.replaceChild(fragment, a);
+      }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log('Could not make fragment');
