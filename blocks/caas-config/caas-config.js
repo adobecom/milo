@@ -11,6 +11,7 @@ import { Accordion } from '../../libs/ui/controls/controls.js';
 import getConfig from './configObj.js';
 import { loadScript, setQueryStringWithoutPageReload } from './utils.js';
 import { defaultState, b64_to_utf8, utf8_to_b64, getUrlConfig } from './shared-utils.js';
+import TagSelect from './TagSelector.js';
 
 const EVENT_CAAS_SCRIPT_LOADED = 'caas-loaded';
 
@@ -73,6 +74,15 @@ const options = {
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
+  sort: {
+    'featured': 'Featured',
+    'dateDesc': 'Date: (Newest to Oldest)',
+    'dateAsc': 'Date: (Oldest to Newest)',
+    'eventSort': 'Events: (Live, Upcoming, OnDemand)',
+    'titleAsc': 'Title: (A - Z)',
+    'titleDesc': 'Title: (Z - A)',
+    'random': 'Random',
+  },
   source: {
     doccloud: 'DocCloud',
     experienceleague: 'Experience League',
@@ -132,57 +142,111 @@ const Input = ({ label, type = 'text', prop }) => {
     </div>`;
 };
 
-const BasicsPanel = () => html`
-        <${Select} label="Source" prop="source" options=${options.source} />
+const DropdownSelect = ({ label, options, prop }) => {
+    const context = useContext(ConfiguratorContext);
+    const onChange = (selections) => {
+        context.dispatch({
+            type: 'MULTI_SELECT_CHANGE',
+            prop,
+            value: selections,
+        });
+    };
+
+    return html`
+        <label for=${prop}>${label}</label>
+        <${TagSelect} id=${prop} options=${options} selectedOptions=${context.state[prop]} label=${label} onSelectedChange=${onChange}/>
+    `;
+}
+
+const BasicsPanel = () => {
+    return html`
+        <${DropdownSelect} options=${options.source} prop="source" label="Source"/>
         <${Select} label="Card Style" prop="cardStyle" options=${options.cardStyle} />
         <${Select} label="Layout" prop="container" options=${options.container} />
-        <${Select} label="Pagination Type" prop="paginationType" options=${options.paginationType} />
+        <${Select}
+            label="Pagination Type"
+            prop="paginationType"
+            options=${options.paginationType}
+        />
         <${Select} label="Layout Type" prop="layoutType" options=${options.layoutType} />
-        <${Input} label="Results Per Page" prop="resultsPerPage" type="number"/>
-        <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number"/>
+        <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
+        <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
     `;
-
-const UiPanel = () => {
-  const { state } = useContext(ConfiguratorContext);
-  return html`
-    <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
-    <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
-    <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
-    <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${options.gutter} />
-    <${Select} label="Theme" prop="theme" options=${options.theme} />
-    <${Select} label="Collection Button Style" prop="collectionBtnStyle" options=${options.collectionBtnStyle} />
-    <${Select} label="Load More Button Style" prop="loadMoreBtnStyle" options=${options.loadMoreBtnStyle} />
-  `;
 };
 
-const FilterPanel = () => {
-  const { state } = useContext(ConfiguratorContext);
-  const filterOptions = html`<${Input} label="Show Search" prop="showSearch" type="checkbox" />`;
+const UiPanel = () => {
+    return html`
+        <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+        <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
+        <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+        <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${options.gutter} />
+        <${Select} label="Theme" prop="theme" options=${options.theme} />
+        <${Select}
+            label="Collection Button Style"
+            prop="collectionBtnStyle"
+            options=${options.collectionBtnStyle}
+        />
+        <${Select}
+            label="Load More Button Style"
+            prop="loadMoreBtnStyle"
+            options=${options.loadMoreBtnStyle}
+        />
+    `;
+};
 
-  return html`
+const SortPanel = () => {
+    const { state } = useContext(ConfiguratorContext);
+
+    const RandomSampling = html`
+        <${Input} label="Reservoir Sample" prop="sortReservoirSample" type="number" />
+        <${Input} label="Reservoir Pool" prop="sortReservoirPool" type="number" />
+    `;
+
+    return html`
+        <${Select} label="Default Sort Order" prop="sortDefault" options=${options.sort} />
+        <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
+        <${Input} label="Customize Random Sample" prop="sortEnableRandomSampling" type="checkbox" />
+        ${state.sortEnableRandomSampling && RandomSampling}
+
+     `;
+}
+
+const FilterPanel = () => {
+    const { state } = useContext(ConfiguratorContext);
+    const FilterOptions = html`<${Input} label="Show Search" prop="showSearch" type="checkbox" />`;
+
+    return html`
         <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-        ${state.showFilters && filterOptions}
+        ${state.showFilters && FilterOptions}
     `;
 };
 
 const AdvancedPanel = () => {
-  const { state } = useContext(ConfiguratorContext);
-
-  return html`
-        <${Select} label="Database" prop="draftDb" options=${options.draftDb} />
-    `;
+    return html` <${Select} label="Database" prop="draftDb" options=${options.draftDb} /> `;
 };
 
 const PaginationPanel = () => {
-  const { state } = useContext(ConfiguratorContext);
-  const paginationOptions = html`
-        <${Select} label="Load More Button Style" prop="loadMoreBtnStyle" options=${options.loadMoreBtnStyle} />
-        <${Select} label="Pagination Type" prop="paginationType" options=${options.paginationType} />
-        <${Select} label="Animation Style" prop="paginationAnimationStyle" options=${options.paginationAnimationStyle} />
+    const { state } = useContext(ConfiguratorContext);
+    const paginationOptions = html`
+        <${Select}
+            label="Load More Button Style"
+            prop="loadMoreBtnStyle"
+            options=${options.loadMoreBtnStyle}
+        />
+        <${Select}
+            label="Pagination Type"
+            prop="paginationType"
+            options=${options.paginationType}
+        />
+        <${Select}
+            label="Animation Style"
+            prop="paginationAnimationStyle"
+            options=${options.paginationAnimationStyle}
+        />
         <${Input} label="Use Theme 3" prop="paginationUseTheme3" type="checkbox" />
     `;
 
-  return html`
+    return html`
         <${Input} label="Enable Pagination" prop="paginationEnabled" type="checkbox" />
         <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
         ${state.paginationEnabled && paginationOptions}
@@ -190,7 +254,6 @@ const PaginationPanel = () => {
 };
 
 const updateCollection = (state) => {
-  console.log('updateCollection', state);
   const caasEl = document.getElementById('caas');
   if (!caasEl) return;
 
@@ -209,6 +272,7 @@ const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
+    case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
       break;
     default:
@@ -228,6 +292,7 @@ const Configurator = () => {
 
   useEffect(() => {
     window.addEventListener(EVENT_CAAS_SCRIPT_LOADED, () => {
+      setUrlState(state);
       updateCollection(state);
     });
   }, []);
@@ -242,6 +307,10 @@ const Configurator = () => {
       content: html`<${UiPanel} />`,
     },
     {
+        title: 'Sort',
+        content: html`<${SortPanel} />`,
+    },
+    {
       title: 'Filters',
       content: html`<${FilterPanel} />`,
     },
@@ -254,9 +323,6 @@ const Configurator = () => {
       content: html`<${AdvancedPanel} />`,
     },
   ];
-
-  setUrlState(state);
-  updateCollection(state);
 
   return html`
         <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>

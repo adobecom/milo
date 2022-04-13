@@ -64,7 +64,7 @@ export async function loadBlock(block) {
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`);
+        console.log(`Failed loading ${blockName}: ${err}`);
       }
       resolve();
     })();
