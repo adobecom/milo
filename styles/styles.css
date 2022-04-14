@@ -96,6 +96,10 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+a.fragment {
+  display: none;
+}
+
 code, pre, samp {
   font-family: var(--fixed-font-family);
   font-size: var(--body-font-size-s);
