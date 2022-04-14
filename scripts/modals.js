@@ -1,40 +1,70 @@
 import getFragment from '../blocks/fragment/fragment.js';
 import { getMetadata, makeRelative } from './scripts.js';
 
-function getPath() {
+function getDetails() {
+  const details = { id: window.location.hash.replace('#', '') };
   const a = document.querySelector(`a[data-modal-hash="${window.location.hash}"]`);
   if (a) {
-    return a.dataset.modalPath;
+    details.path = a.dataset.modalPath;
+    return details;
   }
-  const metaModal = getMetadata(`${window.location.hash.replace('#', '-')}`);
-  if (metaModal) {
-    return makeRelative(metaModal);
+  const metaPath = getMetadata(`-${details.id}`);
+  if (metaPath) {
+    details.path = makeRelative(metaPath);
+    return details;
   }
   return null;
 }
 
+function closeModals() {
+  const modals = document.querySelectorAll('dialog[open]');
+  modals.forEach((modal) => {
+    modal.close();
+  });
+}
+
 async function getModal() {
-  const path = getPath();
-  if (path) {
-    const dialog = document.createElement('dialog');
-    dialog.className = 'modal-dialog';
+  const details = getDetails();
+  if (details) {
+    let dialog = document.querySelector(`#${details.id}`);
+    if (dialog) {
+      dialog.showModal();
+    } else {
+      dialog = document.createElement('dialog');
+      dialog.className = 'dialog-modal';
+      dialog.id = details.id;
 
-    const linkBlock = document.createElement('a');
-    linkBlock.href = path;
+      const close = document.createElement('button');
+      close.textContent = 'X';
+      close.className = 'dialog-close';
 
-    await getFragment(linkBlock, dialog);
+      close.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.hash = '#';
+        dialog.close();
+      });
 
-    dialog.append(linkBlock);
-    document.body.append(dialog);
-    dialog.showModal();
+      const linkBlock = document.createElement('a');
+      linkBlock.href = details.path;
+
+      await getFragment(linkBlock, dialog);
+
+      dialog.append(linkBlock, close);
+      document.body.append(dialog);
+      dialog.showModal();
+    }
   }
 }
 
-export default function modals() {
+export default function init() {
   if (window.location.hash) {
     getModal();
   }
   window.addEventListener('hashchange', () => {
-    getModal();
+    if (!window.location.hash) {
+      closeModals();
+    } else {
+      getModal();
+    }
   });
 }
