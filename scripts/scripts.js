@@ -17,7 +17,6 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
-  { faas: '/tools/faas' },
   { fragment: '/fragments' },
 ];
 
