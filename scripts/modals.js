@@ -43,14 +43,13 @@ async function getModal() {
         window.location.hash = '#';
         dialog.close();
       });
-      dialog.append(close);
 
       const linkBlock = document.createElement('a');
       linkBlock.href = details.path;
 
       await getFragment(linkBlock, dialog);
 
-      dialog.append(linkBlock);
+      dialog.append(linkBlock, close);
       document.body.append(dialog);
       dialog.showModal();
     }

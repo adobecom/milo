@@ -13,7 +13,7 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['section', 'hero'];
-const LINK_BLOCKS = [
+const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
@@ -102,7 +102,7 @@ function decorateLinkBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return LINK_BLOCKS.find((candidate) => {
+  return AUTO_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.startsWith(candidate[key]);
     if (match) {
