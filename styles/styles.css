@@ -116,10 +116,25 @@ a.link-block {
 
 dialog {
   border: none;
+  border-radius: 6px;
+  padding: 0;
 }
 
 dialog::backdrop {
   background: rgb(50 50 50 / 80%);
+}
+
+button.dialog-close {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 0;
+  font-size: 18px;
+  top: 4px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
 }
 
 dialog .fragment {
