@@ -97,7 +97,7 @@ function decorateSVG(a) {
   }
 }
 
-function decorateLinkBlock(a) {
+function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -124,8 +124,8 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
-    const linkBlock = decorateLinkBlock(a);
-    if (linkBlock) {
+    const autoBLock = decorateAutoBlock(a);
+    if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
