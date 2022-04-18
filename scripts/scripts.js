@@ -16,7 +16,7 @@ const LCP_BLOCKS = ['section', 'hero'];
 const LINK_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
-  { caas: '/tools/caas' },
+  { caas: 'http://cmiqueo.corp.adobe.com/' },
 ];
 
 /*
@@ -48,6 +48,15 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export function loadScript(url, callback, type) {
+  const script = document.createElement('script');
+  script.onload = callback;
+  script.setAttribute('src', url);
+  if (type) { script.setAttribute('type', type); }
+  document.head.append(script);
+  return script;    
+}
+
 export async function loadBlock(block) {
   const { status } = block.dataset;
   if (status === 'loaded') return block;
@@ -64,6 +73,7 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${blockName}`);
+        console.log(err);
       }
       resolve();
     })();
