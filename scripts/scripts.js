@@ -189,6 +189,24 @@ export async function loadLazy(blocks) {
 function loadDelayed() {}
 
 async function loadPage() {
+
+  // Simple test of JSON-LD.
+  const JSON_LD = {
+    '@context': 'http://schema.org',
+    '@type': 'HowTo',
+    name: 'How to make a pizza',
+    description: 'How to make a pizza',
+    url: 'https://www.example.com/how-to-make-a-pizza',
+    image: 'https://www.example.com/images/pizza.jpg',
+  }
+
+  const jsonld = document.createElement('script');
+  jsonld.type = 'application/ld+json';
+  jsonld.text = JSON.stringify(JSON_LD);
+  document.head.appendChild(jsonld);
+
+
+
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP(blocks);
