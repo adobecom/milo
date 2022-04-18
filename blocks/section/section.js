@@ -1,6 +1,7 @@
 async function decorateHero(el, fg) {
   const { default: nav } = await import('../header/header.js');
-  await nav(fg);
+  const navblock = await nav(fg);
+  navblock.querySelector('li:first-child').remove();
 }
 
 function decorateEngage(el) {
