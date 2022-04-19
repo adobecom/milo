@@ -12,7 +12,7 @@ const getConfig = (state) => {
       },
       resultsPerPage: state.resultsPerPage,
       endpoint:
-                `https://www.adobe.com/chimera-api/collection?contentSource=&originSelection=${state.source}&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=¤tEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=${state.draftDb}&size=2000`,
+                `https://www.stage.adobe.com/chimera-api/collection?contentSource=&originSelection=${state.source}&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=¤tEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=${state.draftDb}&size=2000`,
       fallbackEndpoint: '',
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
