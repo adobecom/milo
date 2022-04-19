@@ -6,8 +6,8 @@ export function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
 
-export function getUrlConfig() {
-    const urlParams = new URLSearchParams(window.location.search);
+export function getUrlConfig(searchStr = window.location.search) {
+    const urlParams = new URLSearchParams(searchStr);
     const encodedConfig = urlParams.get('config');
     return encodedConfig !== null
         ? JSON.parse(b64_to_utf8(decodeURIComponent(encodedConfig)))
@@ -32,7 +32,12 @@ export const defaultState = {
     setCardBorders: false,
     showFilters: false,
     showSearch: false,
-    source: 'hawks',
+    sortDefault: 'dateDesc',
+    sortEnablePopup: false,
+    sortEnableRandomSampling: false,
+    sortReservoirSample: 3,
+    sortReservoirPool: 1000,
+    source: ['hawks'],
     theme: 'lightest',
     totalCardsToShow: 10,
     useLightText: false,
