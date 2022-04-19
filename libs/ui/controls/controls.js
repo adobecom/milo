@@ -1,20 +1,18 @@
 import { loadStyle } from '../../../scripts/scripts.js';
 import { html, useState } from '../../deps/htm-preact.js';
 
-const AccordionItem = ({
-  title, content, expand, onClick,
-}) => {
+const AccordionItem = ({ title, content, expand, onClick }) => {
   const isExpanded = expand ? 'is-expanded' : '';
   const buttonText = isExpanded ? 'Colapse' : 'Expand';
   return html`
-    <div class=accordion-item>
-        <dt class="title ${isExpanded}" onClick=${onClick}>
-          <span>${title}</span>
-          <button aria-label=${buttonText}></button>
-        </dt>
-        <dd class="content ${isExpanded}">
-          <div class=content-container>${content}</div>
-        </dd>
+    <div class="accordion-item">
+      <dt class="title ${isExpanded}" onClick=${onClick}>
+        <span>${title}</span>
+        <button aria-label=${buttonText}></button>
+      </dt>
+      <dd class="content ${isExpanded}">
+        <div class="content-container">${content}</div>
+      </dd>
     </div>
   `;
 };
@@ -38,21 +36,25 @@ export function Accordion({ key = null, items = [] }) {
     setIsToggled(t);
   };
 
-  const accordionItems = items.map((item, index) => html`
-    <${AccordionItem}
-        title="${item.title}"
-        content="${item.content}"
+  const accordionItems = items.map(
+    (item, index) => html`
+      <${AccordionItem}
+        title=${item.title}
+        content=${item.content}
         onClick=${() => toggle(index)}
         expand=${isToggled[index]}
-    />
-  `);
+      />
+    `
+  );
 
   return html` <dl className="accordion">${accordionItems}</dl> `;
 }
 
-export function Input({ label, onChange, id, type = 'text', value = {} }) {
-  return html` <div class=field>
-        <label for=${id}>${label}</label>
-        <input type=${type} id=${id} name=${id} ...${value} onChange=${onChange} />
-    </div>`;
+export function Input({ label = '', onChange, id, type = 'text', value: val = {} }) {
+  const value = typeof val === 'string' ? { value: val } : val;
+
+  return html` <div class="field">
+    ${label && html`<label for=${id}>${label}</label>`}
+    <input type=${type} id=${id} name=${id} ...${value} onChange=${onChange} />
+  </div>`;
 }

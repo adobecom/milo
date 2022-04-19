@@ -1,14 +1,10 @@
 import {
-    createContext,
     html,
-    render,
-    useContext,
     useEffect,
-    useReducer,
     useState,
-} from './htm-preact.js';
+} from '../../libs/deps/htm-preact.js';;
 
-const TagSelectModal = () => {};
+// const TagSelectModal = () => {};
 
 const TagSelectDropdown = ({
     displaySearch = true,
