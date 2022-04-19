@@ -1,0 +1,58 @@
+.tool-header {
+  display: grid;
+  grid-template-columns: 380px auto 1fr;
+  gap: 24px;
+  padding-top: 36px;
+}
+
+.tool-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+}
+
+.tool-title {
+  position: relative;
+  border: 1px solid;
+  z-index: -2;
+  margin-bottom: 16px;
+  grid-column: 2;
+}
+
+.tool-title h1::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  z-index: -1;
+  left: -1px;
+  right: -1px;
+  top: 18px;
+  bottom: 18px;
+}
+
+.tool-title h1::before {
+  content: '';
+  position: absolute;
+  background: #fff;
+  z-index: -1;
+  top: -1px;
+  bottom: -1px;
+  right: 18px;
+  left: 18px;
+}
+
+.config-panel {
+  border-top: 8px solid black;
+}
+
+.content-panel {
+  border-top: 2px solid black;
+}
+
+.tool-header h1 {
+  margin: 0;
+  position: relative;
+  font-weight: 700;
+  font-size: 32px;
+  padding: 36px 36px 12px 12px;
+}

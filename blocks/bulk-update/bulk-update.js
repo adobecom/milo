@@ -1,5 +1,5 @@
 import { html, render } from '../../libs/deps/htm-preact.js';
-import Accordion from '../../libs/ui/Accordion.js';
+import accordion from '../../libs/ui/accordion/accordion.js';
 
 const items = [
   {
@@ -17,6 +17,7 @@ const items = [
 ];
 
 export default async function init(el) {
+  const key = el.classList[0];
   const title = el.querySelector('h1, h2, h3, h4, h5, h6, p').textContent;
 
   const app = html`
@@ -25,7 +26,7 @@ export default async function init(el) {
     </div>
     <div class=tool-content>
       <div class=config-panel>
-        <${Accordion} items=${items} />
+        <${accordion} key=${key} items=${items} />
       </div>
       <div class=content-panel>
       </div>

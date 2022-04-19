@@ -5,15 +5,12 @@ import {
   useContext,
   useEffect,
   useReducer,
-  useState,
-} from './htm-preact.js';
+} from '../../libs/deps/htm-preact.js';
 import { loadStyle } from '../../scripts/scripts.js';
-import Accordion from './Accordion.js';
+import { Accordion } from '../../libs/ui/controls/controls.js';
 import getConfig from './configObj.js';
 import { loadScript, setQueryStringWithoutPageReload } from './utils.js';
-import {
-  defaultState, b64_to_utf8, utf8_to_b64, getUrlConfig,
-} from './shared-utils.js';
+import { defaultState, b64_to_utf8, utf8_to_b64, getUrlConfig } from './shared-utils.js';
 
 const EVENT_CAAS_SCRIPT_LOADED = 'caas-loaded';
 
@@ -24,6 +21,8 @@ loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js'
   window.dispatchEvent(new Event(EVENT_CAAS_SCRIPT_LOADED));
   // consonantCardCollection = new ConsonantCardCollection(config, document.getElementById('caas'));
 });
+
+const ConfiguratorContext = createContext();
 
 const options = {
   cardStyle: {
@@ -103,7 +102,7 @@ const Select = ({ label, options, prop }) => {
   };
 
   return html`
-        <div>
+        <div class=field>
             <label for=${prop}>${label}</label>
             <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
                 ${Object.entries(options).map(
@@ -127,7 +126,7 @@ const Input = ({ label, type = 'text', prop }) => {
 
   const value = { [type === 'checkbox' ? 'checked' : 'value']: context.state[prop] };
 
-  return html` <div>
+  return html` <div class=field>
         <label for=${prop}>${label}</label>
         <input type=${type} id=${prop} name=${prop} ...${value} onChange=${onInputChange} />
     </div>`;
@@ -146,14 +145,14 @@ const BasicsPanel = () => html`
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   return html`
-        <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
-        <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
-        <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
-        <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${options.gutter} />
-        <${Select} label="Theme" prop="theme" options=${options.theme} />
-        <${Select} label="Collection Button Style" prop="collectionBtnStyle" options=${options.collectionBtnStyle} />
-        <${Select} label="Load More Button Style" prop="loadMoreBtnStyle" options=${options.loadMoreBtnStyle} />
-    `;
+    <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+    <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
+    <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${options.gutter} />
+    <${Select} label="Theme" prop="theme" options=${options.theme} />
+    <${Select} label="Collection Button Style" prop="collectionBtnStyle" options=${options.collectionBtnStyle} />
+    <${Select} label="Load More Button Style" prop="loadMoreBtnStyle" options=${options.loadMoreBtnStyle} />
+  `;
 };
 
 const FilterPanel = () => {
@@ -218,8 +217,6 @@ const reducer = (state, action) => {
   }
 };
 
-const ConfiguratorContext = createContext();
-
 const setUrlState = (state) => {
   const urlParams = new URLSearchParams();
   urlParams.set('config', utf8_to_b64(JSON.stringify(state)));
@@ -269,15 +266,22 @@ const Configurator = () => {
 };
 
 export default async function init(el) {
-  console.log('CAAS CONFIGURATOR', el);
+  loadStyle('/libs/ui/page/page.css');
+  const title = el.querySelector('h1, h2, h3, h4, h5, h6, p').textContent;
 
   const app = html`
-        <div class="configurator">
-            <!--<h2>Caas Configurator</h2>-->
-            <${Configurator} />
-        </div>
-        <div id="caas" class="caas-preview"></div>
-    `;
+    <div class=tool-header>
+      <div class=tool-title><h1>${title}</h1></div>
+    </div>
+    <div class=tool-content>
+      <div class=config-panel>
+        <${Configurator} />
+      </div>
+      <div class=content-panel>
+      <div id="caas" class="caas-preview"></div>
+      </div>
+    </div>
+  `;
 
   render(app, el);
 }

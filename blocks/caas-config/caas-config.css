@@ -1,4 +1,4 @@
-:root {
+/* :root {
     --panel-width: 800px;
 }
 
@@ -31,55 +31,4 @@ main {
     grid-area: config;
     max-height: calc(100vh - 64px);
     overflow-y: auto;
-}
-
-.accordion {
-    margin: 0;
-}
-.accordion .title {
-    padding: 10px 10px 10px 20px;
-    cursor: pointer;
-    transform: translate3d(0, 0, 0);
-    color: white;
-    position: relative;
-    font-size: 20px;
-    background: #1569a8;
-    margin-bottom: -1px;
-    border-bottom: 1px solid #0e4671;
-    text-align: left;
-}
-.accordion .title::after {
-    content: '+';
-    font-size: 18px;
-    color: white;
-    transition: transform 0.2s ease-in-out;
-    position: absolute;
-    right: 30px;
-}
-.accordion .title.is-expanded {
-    transition: background 0.2s;
-}
-.accordion .title.is-expanded::after {
-    content: '-';
-    transform: rotate(-360deg);
-}
-.accordion .content {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.2s;
-    margin: 0;
-    padding: 0 30px;
-    border: solid 1px #eeeeee;
-    border-top: 0;
-    background: #e8f4fc;
-}
-.accordion .content p {
-    padding: 30px 0;
-    margin: 0;
-    opacity: 0;
-    transition: 0.5s;
-}
-.accordion .content.is-expanded {
-    max-height: 900px;
-    overflow: hidden;
-}
+} */
