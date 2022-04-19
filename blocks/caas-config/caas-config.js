@@ -272,6 +272,7 @@ export default async function init(el) {
   const app = html`
     <div class=tool-header>
       <div class=tool-title><h1>${title}</h1></div>
+      <button class=copy>Copy</button>
     </div>
     <div class=tool-content>
       <div class=config-panel>

@@ -1,14 +1,9 @@
 .tool-header {
   display: grid;
-  grid-template-columns: 380px auto 1fr;
+  grid-template-columns: 380px auto 1fr auto;
+  align-items: end;
   gap: 24px;
   padding-top: 36px;
-}
-
-.tool-content {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 24px;
 }
 
 .tool-title {
@@ -39,6 +34,17 @@
   bottom: -1px;
   right: 18px;
   left: 18px;
+}
+
+.tool-header button.copy {
+  grid-column: 4;
+  margin: 0 16px 16px;
+}
+
+.tool-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
 }
 
 .config-panel {
