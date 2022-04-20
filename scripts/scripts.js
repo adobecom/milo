@@ -55,12 +55,12 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`../blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/blocks/${blockName}/${blockName}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`../blocks/${blockName}/${blockName}.js`);
+        const { default: init } = await import(`/blocks/${blockName}/${blockName}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
