@@ -1,9 +1,28 @@
+:root {
+  --notch-size: 12px;
+}
+
+
 .tool-header {
   display: grid;
   grid-template-columns: 380px auto 1fr auto;
   align-items: end;
   gap: 24px;
   padding-top: 36px;
+  position: relative;
+}
+
+.tool-header::after {
+  content: '';
+  position: absolute;
+  right: -16px;
+  bottom: -60px;
+  width: 200px;
+  height: 200px;
+  background-image: url(../../../img/ui/copy-bg.svg);
+  z-index: -1;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .tool-title {
@@ -39,6 +58,27 @@
 .tool-header button.copy {
   grid-column: 4;
   margin: 0 16px 16px;
+  border: none;
+  height: 36px;
+  font-family: adobe-clean, sans-serif;
+  color: #FFF;
+  background: #FF1593;
+  background-image: url(../../../img/ui/icon-copy.svg);
+  background-repeat: no-repeat;
+  background-size: 18px;
+  background-position: 12px center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px 0 36px;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
 }
 
 .tool-content {

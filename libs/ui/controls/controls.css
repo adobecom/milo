@@ -1,6 +1,4 @@
 .accordion {
-  --notch-size: 12px;
-
   margin: 0 0 0 6px;
 }
 
@@ -71,7 +69,7 @@ dd.content .content-container {
 dt.title.is-expanded span,
 dt.title.is-expanded button {
   color: #FFF;
-  background: #b9118c;
+  background: #6F9B00;
   font-weight: 700;
 }
 
