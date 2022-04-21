@@ -1,4 +1,6 @@
 const getConfig = (state) => {
+  const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
+
   const config = {
     collection: {
       mode: state.theme,
@@ -7,12 +9,9 @@ const getConfig = (state) => {
         gutter: state.gutter,
         container: state.container,
       },
-      button: {
-        style: state.collectionBtnStyle,
-      },
+      button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
-      endpoint:
-                `https://www.adobe.com/chimera-api/collection?contentSource=&originSelection=${state.source}&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=¤tEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=${state.draftDb}&size=2000`,
+      endpoint: `https://www.adobe.com/chimera-api/collection?contentSource=&originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(',')}&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=¤tEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=${state.draftDb}&size=2000`,
       fallbackEndpoint: '',
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -23,7 +22,7 @@ const getConfig = (state) => {
         title: '',
         onErrorTitle: 'Sorry there was a system error.',
         onErrorDescription:
-                    'Please try reloading the page or try coming back to the page another time.',
+          'Please try reloading the page or try coming back to the page another time.',
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: 'false',
@@ -32,21 +31,15 @@ const getConfig = (state) => {
           description: 'Sign Up',
           url: '#registration',
         },
-        upcoming: {
-          description: 'Upcoming',
-        },
-        live: {
-          description: 'Live',
-        },
-        onDemand: {
-          description: 'On Demand',
-        },
+        upcoming: { description: 'Upcoming' },
+        live: { description: 'Live' },
+        onDemand: { description: 'On Demand' },
       },
       useLightText: state.useLightText,
       disableBanners: state.disableBanners,
       reservoir: {
-        sample: '3',
-        pool: '1000',
+        sample: state.sortReservoirSample,
+        pool: state.sortReservoirPool,
       },
     },
     filterPanel: {
@@ -731,9 +724,12 @@ const getConfig = (state) => {
       },
     },
     sort: {
-      enabled: 'true',
-      defaultSort: 'dateDesc',
-      options: [{ label: 'Feeee', sort: 'featured' }, { label: 'Old', sort: 'dateAsc' }, { label: 'New', sort: 'dateDesc' }],
+      enabled: state.sortEnablePopup,
+      defaultSort: state.sortDefault,
+      options: [
+        { label: 'AAA', sort: 'dateAsc' },
+        { label: 'BBB', sort: 'dateAsc' },
+      ],
     },
     pagination: {
       animationStyle: state.paginationAnimationStyle,
@@ -765,9 +761,7 @@ const getConfig = (state) => {
         unselectBookmarksIcon: '',
       },
       i18n: {
-        leftFilterPanel: {
-          filterTitle: 'My favorites',
-        },
+        leftFilterPanel: { filterTitle: 'My favorites' },
         card: {
           saveText: 'Save Card',
           unsaveText: 'Unsave Card',
@@ -784,12 +778,8 @@ const getConfig = (state) => {
           searchTitle: 'Search',
           searchPlaceholderText: 'Search Here',
         },
-        topFilterPanel: {
-          searchPlaceholderText: 'Search Here',
-        },
-        filterInfo: {
-          searchPlaceholderText: 'Search Here',
-        },
+        topFilterPanel: { searchPlaceholderText: 'Search Here' },
+        filterInfo: { searchPlaceholderText: 'Search Here' },
       },
     },
     language: 'en',
@@ -798,9 +788,7 @@ const getConfig = (state) => {
       trackImpressions: '',
       collectionIdentifier: '',
     },
-    target: {
-      enabled: '',
-    },
+    target: { enabled: '' },
   };
   return config;
 };

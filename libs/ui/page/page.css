@@ -55,9 +55,11 @@
   left: 18px;
 }
 
-.tool-header button.copy {
+.tool-header button.copy-config {
   grid-column: 4;
   margin: 0 16px 16px;
+  outline: transparent solid 0px;
+  transition:outline 300ms;
   border: none;
   height: 36px;
   font-family: adobe-clean, sans-serif;
@@ -79,6 +81,16 @@
       100% 100%,
       0% 100%,
       0% 100%);
+}
+
+.tool-header button.copy-config.is-error {
+  transition:outline 0s;
+  outline: red solid 3px;
+}
+
+.tool-header button.copy-config.is-success {
+  transition:outline 0s;
+  outline: green solid 3px;
 }
 
 .tool-content {
