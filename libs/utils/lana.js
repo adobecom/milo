@@ -11,8 +11,8 @@
  */
 
 /**
- * LOG ALWAYS NEVER ASSUME
- * @param {*} msg the message you want to log
+ * LOG ALWAYS; NEVER ASSUME
+ * @param {String} msg the message you want to log
  */
 export default function log(msg) {
   // eslint-disable-next-line no-console
