@@ -63,7 +63,7 @@ function setError(msg, error) {
 
 function setTrackerURL(trackerConfig) {
   const u = new URL(trackerConfig.url);
-  document.getElementById('trackerURL').innerHTML = `<a href="${trackerConfig.sp}">${trackerConfig.name}</a>`;
+  document.getElementById('trackerURL').innerHTML = `<a href="${trackerConfig.sp}">${trackerConfig.name.replace(/\.[^/.]+$/, '').replaceAll('_', ' ')}</a>`;
 }
 
 async function preview(task, locale) {
