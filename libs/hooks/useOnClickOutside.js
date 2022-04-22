@@ -21,4 +21,4 @@ const useOnClickOutside = (ref, handler) => {
   );
 };
 
-export { useOnClickOutside };
+export default useOnClickOutside;

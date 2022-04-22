@@ -60,25 +60,28 @@
 .tagselect-plus:after {
   background: #666;
   content: '';
-  position: absolute;
   height: 2px;
-  width: 10px;
   left: -4px;
+  position: absolute;
   top: 4px;
+  width: 10px;
 }
 
 .tagselect-dropdown {
-  position: fixed;
-  width: auto;
-  margin-top: 50px;
-  box-sizing: border-box;
-  border: 1px solid #dcdee2;
-  z-index: 1010;
   background-color: #aaa6a8;
-  transform-origin: center top;
-  transition: transform 0.2s, opacity 0.2s;
+  border: 1px solid #dcdee2;
+  box-sizing: border-box;
+  margin-top: 50px;
+  max-height: 200px;
   opacity: 0;
+  overflow-y: auto;
+  padding: 5px;
+  position: absolute;
+  transform-origin: center top;
   transform: scaleY(0);
+  transition: transform 0.2s, opacity 0.2s;
+  width: auto;
+  z-index: 1010;
 }
 
 .tagselect-dropdown.is-open {
@@ -92,6 +95,7 @@
 
 .tagselect-dropdown-options ul {
   padding: 0;
+  margin: 0;
 }
 
 .tagselect-dropdown-item {

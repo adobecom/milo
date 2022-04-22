@@ -9,39 +9,34 @@ import {
 } from '../../libs/deps/htm-preact.js';
 import { loadStyle } from '../../scripts/scripts.js';
 import { Accordion } from '../../libs/ui/controls/controls.js';
-import getConfig from './configObj.js';
-import { loadScript } from './utils.js';
-import { defaultState, getHashConfig, utf8ToB64 } from './shared-utils.js';
+import { defaultState, getConfig } from './configObj.js';
+import { getHashConfig, utf8ToB64, loadScript } from '../../libs/utils.js';
 import TagSelect from './TagSelector.js';
 
 const CAAS_TAG_URL = 'https://14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/tags';
 const LS_KEY = 'caasConfiguratorState';
-const EVENT_CAAS_SCRIPT_LOADED = 'caas-loaded';
 
 loadStyle('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.css');
-loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.umd.js');
-loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.dom.umd.js');
-loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js', () => {
-  window.dispatchEvent(new Event(EVENT_CAAS_SCRIPT_LOADED));
-  window.milo = window.milo || {};
-  window.milo.caas = window.milo.caas || {};
-  window.milo.caas.loaded = true;
-  // consonantCardCollection = new ConsonantCardCollection(config, document.getElementById('caas'));
-});
+
+const scriptsLoaded = Promise.all([
+  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.umd.js'),
+  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.dom.umd.js'),
+  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js'),
+]);
+
+let tagsData = {};
 
 const loadCaasTags = async () => {
   const resp = await fetch(CAAS_TAG_URL);
   if (resp.ok) {
     const json = await resp.json();
     const { tags } = json.namespaces.caas;
-    window.milo = window.milo || {};
-    window.milo.caas = window.milo.caas || {};
-    window.milo.caas.tagsData = tags;
+    tagsData = tags;
   }
 };
 const loadCaasTagsPromise = loadCaasTags();
 
-const getCaasTags = () => window.milo.caas.tagsData;
+const getCaasTags = () => tagsData;
 
 const ConfiguratorContext = createContext();
 
@@ -187,11 +182,6 @@ const BasicsPanel = () => html`
   <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
-  <${Select}
-    label="Pagination Type"
-    prop="paginationType"
-    options=${defaultOptions.paginationType}
-  />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
   <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
@@ -215,21 +205,37 @@ const UiPanel = () => html`
   />
 `;
 
-const TagsPanel = () => {
+const getTopLevelTags = (tagId) => {
   const tagsData = getCaasTags();
-  const contentTypeTags = Object.entries(tagsData['content-type'].tags).reduce(
+  return Object.entries(tagsData[tagId].tags).reduce(
     (contentOptions, [, tagObj]) => {
       contentOptions[tagObj.tagID] = tagObj.title;
       return contentOptions;
     },
     {},
   );
+};
+
+const TagsPanel = () => {
+  const contentTypeTags = getTopLevelTags('content-type');
+  const countryTags = getTopLevelTags('country');
+  const languageTags = getTopLevelTags('language');
 
   return html`
     <${DropdownSelect}
       options=${contentTypeTags}
       prop="contentTypeTags"
       label="Content Type Tags"
+    />
+    <${Select}
+      options=${countryTags}
+      prop="country"
+      label="Country"
+    />
+    <${Select}
+      options=${languageTags}
+      prop="language"
+      label="Language"
     />
   `;
 };
@@ -382,17 +388,13 @@ const Configurator = ({ rootEl }) => {
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
 
   useEffect(() => {
-    if (window.milo?.caas?.loaded) {
-      setIsCaasLoaded(true);
-    } else {
-      window.addEventListener(
-        EVENT_CAAS_SCRIPT_LOADED,
-        () => {
-          setIsCaasLoaded(true);
-        },
-        { once: true },
-      );
-    }
+    scriptsLoaded
+      .then(() => {
+        setIsCaasLoaded(true);
+      })
+      .catch((error) => {
+        console.log('Error loading script: ', error);
+      });
   }, []);
 
   useEffect(() => {
@@ -436,21 +438,22 @@ const Configurator = ({ rootEl }) => {
   const title = rootEl.querySelector('h1, h2, h3, h4, h5, h6, p');
 
   return html`
-        <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
-        <div class="tool-header">
-      <div class="tool-title"><h1>${title ? title.textContent : 'Title'}</h1></div>
-      <${CopyBtn} />
-    </div>
-    <div class="tool-content">
-      <div class="config-panel">
-      <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+    <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
+      <div class="tool-header">
+        <div class="tool-title">
+          <h1>${title ? title.textContent : 'CaaS Configurator'}</h1>
+        </div>
+        <${CopyBtn} />
       </div>
-      <div class="content-panel">
-        <div id="caas" class="caas-preview"></div>
+      <div class="tool-content">
+        <div class="config-panel">
+          <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+        </div>
+        <div class="content-panel">
+          <div id="caas" class="caas-preview"></div>
+        </div>
       </div>
-    </div>
-        </ConfiguratorContext.Provider>
-        `;
+    </ConfiguratorContext.Provider>`;
 };
 
 export default async function init(el) {

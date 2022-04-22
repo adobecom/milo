@@ -1,10 +1,10 @@
 import { html, useEffect, useRef, useState } from '../../libs/deps/htm-preact.js';
+import useOnClickOutside from '../../libs/hooks/useOnClickOutside.js';
 
 // const TagSelectModal = () => {};
 
 const TagSelectDropdown = ({
   displaySearch = true,
-  isOpen = false,
   options = {},
   selectedOptions = [],
   onClose,
@@ -16,12 +16,9 @@ const TagSelectDropdown = ({
   const searchField = useRef(null);
 
   useEffect(() => {
-    if (isOpen) {
-      document.addEventListener('click', onDocumentClick, { once: true });
-      searchField.current.focus();
-    }
+    searchField.current.focus();
     setSearchText('');
-  }, [isOpen]);
+  }, []);
 
   const onKeyUp = (e) => {
     if (e.key === 'Escape') {
@@ -66,19 +63,20 @@ const TagSelectDropdown = ({
     }
   };
 
-  const onDocumentClick = (e) => {
-    if (isOpen && onClose && e.target.closest('.tagselect') === null) {
-      onClose();
-    } else {
-      document.addEventListener('click', onDocumentClick, { once: true });
-    }
-  };
+  const getItems = () => Object.entries(options)
+    .sort(([, a], [, b]) => {
+      const labelA = a.toLowerCase();
+      const labelB = b.toLowerCase();
+      if (labelA < labelB) return -1;
+      if (labelA > labelB) return 1;
+      return 0;
+    })
+    .map(([value, label], index) => {
+      const isDisabled = selectedOptions.indexOf(value) !== -1;
+      const searchFiltered = searchText
+        && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
 
-  const getItems = () => Object.entries(options).map(([value, label], index) => {
-    const isDisabled = selectedOptions.indexOf(value) !== -1;
-    const searchFiltered = searchText && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
-
-    return html`<li key=${value}>
+      return html`<li key=${value}>
         <div
           class="tagselect-dropdown-item ${index === hoverIndex
           && 'hover'} ${(isDisabled || searchFiltered) && 'hide'}"
@@ -88,10 +86,10 @@ const TagSelectDropdown = ({
           ${label}
         </div>
       </li>`;
-  });
+    });
 
   return html`
-    <div class="tagselect-dropdown ${isOpen && 'is-open'}">
+    <div class="tagselect-dropdown is-open">
       ${displaySearch && Search()}
       <div class="tagselect-dropdown-options">
         <ul>
@@ -112,10 +110,13 @@ const TagSelect = ({
   onSelectedChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const tagSelectRef = useRef(null);
 
-  const toggleOpen = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleOpen = () => setIsOpen(!isOpen);
+
+  const close = () => isOpen && setIsOpen(false);
+
+  useOnClickOutside(tagSelectRef, close);
 
   const onTagDelete = (ev, val) => {
     ev.preventDefault();
@@ -155,12 +156,14 @@ const TagSelect = ({
     onSelectedChange([...selectedOptions]);
   };
 
+  const onModalSelect = () => {};
+
   const onClose = () => {
     setIsOpen(false);
   };
 
   return html`
-    <div class="tagselect">
+    <div class="tagselect" ref=${tagSelectRef}>
       <label>${label}</label>
       <div class="tagselect-input" onClick=${toggleOpen}>
         <div class="tagselect-values">${selectedItems}</div>
@@ -168,9 +171,8 @@ const TagSelect = ({
           <span class=${`tagselect-plus ${isOpen && 'is-open'}`}></span>
         </div>
       </div>
-      ${!modal
+      ${!modal && isOpen
       && html`<${TagSelectDropdown}
-        isOpen=${isOpen}
         options=${options}
         selectedOptions=${selectedOptions}
         onClose=${onClose}
