@@ -82,10 +82,11 @@ async function preview(task, locale) {
 }
 
 async function view(task, locale) {
-  const trackerConfig = await initTracker();
+  /* const trackerConfig = await initTracker();
   const u = new URL(trackerConfig.url);
   const dest = task.draftLocalePath;
-  window.open(`${u.origin}${dest}`);
+  window.open(`${u.origin}${dest}`); */
+  window.open(`${task.sp.webUrl}`);
 }
 
 async function drawTracker() {
@@ -335,7 +336,7 @@ async function init() {
     return;
   }
   loadingON('Config loaded');
-  loadingON('Initialiating the project');
+  loadingON('Initializing the project');
   let trackerConfig;
   try {
     trackerConfig = await initTracker();
