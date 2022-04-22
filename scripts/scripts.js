@@ -16,7 +16,7 @@ const LCP_BLOCKS = ['section', 'hero'];
 const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
-  { caas: '/tools/caas-config' },
+  { caas: '/tools/caas' },
   { fragment: '/fragments' },
 ];
 
