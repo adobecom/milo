@@ -14,15 +14,47 @@ body {
   display: none;
 }
 
+h1.container {
+  margin: 36px auto;
+  font-size: 48px;
+}
+
+.project-overview {
+  background: #e6cedc;
+}
+
+.project-overview .container {
+  gap: 6px;
+  padding: 36px 12px;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+}
+
+h2.project-name {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+div#reload {
+  grid-row: 2;
+}
+
+div#send {
+  grid-row: 2;
+}
+
 .subhead {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin: 12px 0;
   min-height: 36px;
 }
 
+#send,
 #refresh {
   grid-column: 2;
 }
@@ -52,8 +84,7 @@ tr.header {
   text-transform: uppercase;
 }
 
-header,
-main {
+.container {
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -76,12 +107,6 @@ td button:first-child {
   margin-right: 6px;
 }
 
-tr:last-child button {
-  background: #FF1593;
-  color: #FFF;
-  font-weight: 700;
-}
-
 button,
 a.button {
   outline: transparent solid 0;
@@ -100,4 +125,11 @@ a.button {
       100% 100%,
       0% 100%,
       0% 100%);
+}
+
+#send button,
+tr:last-child button {
+  background: #FF1593;
+  color: #FFF;
+  font-weight: 700;
 }

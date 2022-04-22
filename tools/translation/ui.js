@@ -327,7 +327,7 @@ function setListeners() {
 
 async function init() {
   setListeners();
-  loadingON('Initializing the application');
+  loadingON('Initializing the app');
   try {
     await getConfig();
   } catch(err) {
@@ -335,22 +335,22 @@ async function init() {
     return;
   }
   loadingON('Config loaded');
-  loadingON('Initialiating the tracker');
+  loadingON('Initialiating the project');
   let trackerConfig;
   try {
     trackerConfig = await initTracker();
   } catch (err) {
-    setError('Could not find a valid tracker URL', err);
+    setError('Could not find a valid project', err);
     return;
   }
-  loadingON(`Fetching the tracker ${trackerConfig.url}`);
+  loadingON(`Fetching project details ${trackerConfig.url}`);
   setTrackerURL(trackerConfig);
   tracker = await computeTracker();
   loadingON('Tracker loaded.');
   await drawTracker();
   loadingON('Connecting now to Sharepoint...');
   await connectToSP(async () => {
-    loadingON('Connected to Sharepoint! Updating the tracker status with status from Sharepoint...');
+    loadingON('Connected to Sharepoint! Updating the project status with status from Sharepoint...');
     await updateTrackerWithSPStatus(tracker, async () => {
       loadingON('Status updated! Updating UI.');
       await drawTracker();
@@ -359,7 +359,7 @@ async function init() {
   });
   loadingON('Connecting now to GLaaS...');
   await connectToGLaaS(async () => {
-    loadingON('Connected to GLaaS! Updating the tracker status with status from GLaaS...');
+    loadingON('Connected to GLaaS! Updating the project status with status from GLaaS...');
     await updateTrackerWithGLaaSStatus(tracker, async () => {
       loadingON('Status updated! Updating UI.');
       await drawTracker();
