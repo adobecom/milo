@@ -75,8 +75,9 @@ export async function loadBlock(block) {
 }
 
 export function makeRelative(href) {
+  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(href);
+  const url = new URL(fixedHref);
   const relative = hosts.some((host) => url.hostname.includes(host));
   return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
