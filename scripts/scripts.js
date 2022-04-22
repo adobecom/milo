@@ -49,6 +49,15 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export function loadScript(url, callback, type) {
+  const script = document.createElement('script');
+  script.onload = callback;
+  script.setAttribute('src', url);
+  if (type) { script.setAttribute('type', type); }
+  document.head.append(script);
+  return script;
+}
+
 export async function loadBlock(block) {
   const { status } = block.dataset;
   if (status === 'loaded') return block;
@@ -64,7 +73,7 @@ export async function loadBlock(block) {
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`);
+        console.log(`Failed loading ${blockName}`, err);
       }
       resolve();
     })();
@@ -98,7 +107,7 @@ function decorateSVG(a) {
   }
 }
 
-function decorateLinkBlock(a) {
+function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -125,8 +134,8 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
-    const linkBlock = decorateLinkBlock(a);
-    if (linkBlock) {
+    const autoBLock = decorateAutoBlock(a);
+    if (autoBLock) {
       rdx.push(a);
     }
     return rdx;

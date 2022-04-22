@@ -21,7 +21,7 @@ header nav ul li {
   align-content: stretch;
 }
 
-header nav ul li > a {
+header nav ul li > a:any-link {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -29,6 +29,8 @@ header nav ul li > a {
   font-size: 16px;
   line-height: 64px;
   padding: 0 10px;
+  font-weight: 700;
+  color: #ff1693;
 }
 
 header nav ul li > a:hover {
