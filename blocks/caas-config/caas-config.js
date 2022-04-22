@@ -10,20 +10,14 @@ import {
 } from '../../libs/deps/htm-preact.js';
 import { loadStyle } from '../../scripts/scripts.js';
 import { Accordion } from '../../libs/ui/controls/controls.js';
-import { defaultState, getConfig } from './configObj.js';
-import { getHashConfig, utf8ToB64, loadScript } from '../../libs/utils.js';
+import { defaultState, initCaas, loadCaasFiles } from '../caas/utils.js';
+import { getHashConfig, utf8ToB64 } from '../../libs/utils.js';
 import TagSelect from './TagSelector.js';
 
 const CAAS_TAG_URL = 'https://14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/tags';
 const LS_KEY = 'caasConfiguratorState';
 
-loadStyle('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.css');
-
-const scriptsLoaded = Promise.all([
-  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.umd.js'),
-  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.dom.umd.js'),
-  loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js'),
-]);
+const caasFilesLoaded = loadCaasFiles();
 
 let tagsData = {};
 
@@ -297,21 +291,6 @@ const PaginationPanel = () => {
   `;
 };
 
-const updateCollection = (state) => {
-  const caasEl = document.getElementById('caas');
-  if (!caasEl) return;
-
-  const appEl = caasEl.parentElement;
-  caasEl.remove();
-
-  const newEl = document.createElement('div');
-  newEl.id = 'caas';
-  newEl.className = 'caas-preview';
-  appEl.append(newEl);
-
-  new ConsonantCardCollection(getConfig(state), newEl);
-};
-
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
@@ -396,7 +375,7 @@ const Configurator = ({ rootEl }) => {
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
 
   useEffect(() => {
-    scriptsLoaded
+    caasFilesLoaded
       .then(() => {
         setIsCaasLoaded(true);
       })
@@ -407,7 +386,7 @@ const Configurator = ({ rootEl }) => {
 
   useEffect(() => {
     if (isCaasLoaded) {
-      updateCollection(state);
+      initCaas(state);
       saveStateToLocalStorage(state);
     }
   }, [isCaasLoaded, state]);

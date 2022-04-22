@@ -16,7 +16,7 @@ const LCP_BLOCKS = ['section', 'hero'];
 const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
-  { caas: 'http://cmiqueo.corp.adobe.com/' },
+  { caas: '/tools/caas-config' },
   { fragment: '/fragments' },
 ];
 
@@ -55,7 +55,7 @@ export function loadScript(url, callback, type) {
   script.setAttribute('src', url);
   if (type) { script.setAttribute('type', type); }
   document.head.append(script);
-  return script;    
+  return script;
 }
 
 export async function loadBlock(block) {
