@@ -1,3 +1,4 @@
+/* global ClipboardItem */
 import {
   createContext,
   html,
@@ -368,7 +369,14 @@ const CopyBtn = () => {
       setStatus(setIsError);
       return;
     }
-    navigator.clipboard.writeText(getUrl())
+
+    const link = document.createElement('a');
+    link.href = getUrl();
+    link.textContent = 'Content as a Service';
+
+    const blob = new Blob([link.outerHTML], { type: 'text/html' });
+    const data = [new ClipboardItem({ [blob.type]: blob })];
+    navigator.clipboard.write(data)
       .then(() => {
         setStatus(setIsSuccess);
       }, () => {
@@ -377,7 +385,7 @@ const CopyBtn = () => {
   };
 
   return html`
-  <textarea>${configUrl}</textarea>
+  <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
   <button
     class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}"
     onClick=${copyConfig}>Copy</button>`;

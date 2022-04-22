@@ -2,6 +2,9 @@
   --notch-size: 12px;
 }
 
+.hide {
+  display: none;
+}
 
 .tool-header {
   display: grid;
@@ -105,6 +108,7 @@
 
 .content-panel {
   border-top: 2px solid black;
+  padding-top: 12px;
 }
 
 .tool-header h1 {
