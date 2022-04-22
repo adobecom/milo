@@ -12,7 +12,7 @@
 
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['section', 'hero'];
+const LCP_BLOCKS = ['section', 'hero', 'how-to', 'faq'];
 const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
@@ -189,24 +189,6 @@ export async function loadLazy(blocks) {
 function loadDelayed() {}
 
 async function loadPage() {
-
-  // Simple test of JSON-LD.
-  const JSON_LD = {
-    '@context': 'http://schema.org',
-    '@type': 'HowTo',
-    name: 'How to make a pizza',
-    description: 'How to make a pizza',
-    url: 'https://www.example.com/how-to-make-a-pizza',
-    image: 'https://www.example.com/images/pizza.jpg',
-  }
-
-  const jsonld = document.createElement('script');
-  jsonld.type = 'application/ld+json';
-  jsonld.text = JSON.stringify(JSON_LD);
-  document.head.appendChild(jsonld);
-
-
-
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP(blocks);
