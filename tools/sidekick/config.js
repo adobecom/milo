@@ -12,24 +12,24 @@
 
 // This file contains the project-specific configuration for the sidekick.
 (() => {
-    window.hlx.initSidekick({
-      project: 'Milo',
-      outerHost: 'main--milo--adobecom.hlx.live',
-      previewHost: 'main--milo--adobecom.hlx.page',
-      hlx3: true,
-      plugins: [
-        // TOOLS ---------------------------------------------------------------------
-        {
-          id: 'tools',
-          condition: (s) => s.isEditor(),
-          button: {
-            text: 'Tools',
-            action: (_, s) => {
-              const { config } = s;
-              window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
-            },
+  window.hlx.initSidekick({
+    project: 'Milo',
+    outerHost: 'main--milo--adobecom.hlx.live',
+    previewHost: 'main--milo--adobecom.hlx.page',
+    hlx3: true,
+    plugins: [
+      // TOOLS ---------------------------------------------------------------------
+      {
+        id: 'tools',
+        condition: (s) => s.isEditor(),
+        button: {
+          text: 'Tools',
+          action: (_, s) => {
+            const { config } = s;
+            window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
           },
         },
-      ],
-    });
-  })();
+      },
+    ],
+  });
+})();

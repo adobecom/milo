@@ -1,0 +1,114 @@
+.accordion {
+  --notch-size: 12px;
+  margin: 0 0 0 6px;
+}
+
+.accordion-item {
+  margin: 6px 0;
+}
+
+dt.title {
+  height: 36px;
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 6px;
+}
+
+dt.title span,
+dt.title button {
+  background: #282828;
+  color: #B7B7B7;
+  line-height: 36px;
+}
+
+dt.title span {
+  font-size: 16px;
+  padding: 0 10px;
+}
+
+dt.title button {
+  border: none;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
+  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg id='a' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cdefs%3E%3Cstyle%3E.b%7Bfill:none%3Bstroke:%23787878%3Bstroke-miterlimit:10%3Bstroke-width:3px%3B%7D%3C/style%3E%3C/defs%3E%3Cline class='b' x1='9' y1='15' x2='9' y2='3'/%3E%3Cline class='b' x1='3' y1='9' x2='15' y2='9'/%3E%3C/svg%3E");
+  background-size: 20px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+
+dd.content {
+  margin: 0;
+  max-height: 0;
+  background: #1D1D1D;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out;
+  font-size: 16px;
+  color: #EFEFEF;
+  box-sizing: border-box;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      100% 0%,
+      100% 0%,
+      100% calc(100% - var(--notch-size)),
+      calc(100% - var(--notch-size)) 100%,
+      0% 100%,
+      0% 100%);
+}
+
+dd.content .content-container {
+  padding: 24px;
+}
+
+dt.title.is-expanded span,
+dt.title.is-expanded button {
+  color: #FFF;
+  background: #6F9B00;
+  font-weight: 700;
+}
+
+dt.title.is-expanded button {
+  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg id='a' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cdefs%3E%3Cstyle%3E.b%7Bfill:none%3Bstroke:%23fff%3Bstroke-miterlimit:10%3Bstroke-width:3px%3B%7D%3C/style%3E%3C/defs%3E%3Cline class='b' x1='2' y1='9' x2='16' y2='9'/%3E%3C/svg%3E");
+  background-size: 20px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+}
+
+dd.content.is-expanded {
+  margin-top: 6px;
+  transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out;
+  max-height: 800px;
+}
+
+dd.content .field {
+  margin: 0 0 18px;
+  display: grid;
+  max-width: 260px;
+}
+
+dd.content .field label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+dd.content .field select,
+dd.content .field input {
+  border: none;
+  background: #3C3C3C;
+  color: #EFEFEF;
+  display: block;
+  padding: 8px 6px;
+  font-family: adobe-clean, sans-serif;
+  font-size: 16px;
+}
+
+dd.content .field input {
+  padding: 8px 10px;
+}

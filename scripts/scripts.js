@@ -13,10 +13,11 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['section', 'hero'];
-const LINK_BLOCKS = [
+const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: 'http://cmiqueo.corp.adobe.com/' },
+  { fragment: '/fragments' },
 ];
 
 /*
@@ -63,17 +64,16 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`../blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/blocks/${blockName}/${blockName}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`../blocks/${blockName}/${blockName}.js`);
+        const { default: init } = await import(`/blocks/${blockName}/${blockName}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`);
-        console.log(err);
+        console.log(`Failed loading ${blockName}`, err);
       }
       resolve();
     })();
@@ -83,12 +83,11 @@ export async function loadBlock(block) {
   return block;
 }
 
-function makeRelative(href) {
+export function makeRelative(href) {
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(href);
   const relative = hosts.some((host) => url.hostname.includes(host));
-  if (relative) return `${url.pathname}${url.search}${url.hash}`;
-  return href;
+  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 function decorateSVG(a) {
@@ -107,14 +106,22 @@ function decorateSVG(a) {
   }
 }
 
-function decorateLinkBlock(a) {
+function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return LINK_BLOCKS.find((candidate) => {
+  return AUTO_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    if (href.startsWith(candidate[key])) {
-      a.className = key;
+    const match = href.startsWith(candidate[key]);
+    if (match) {
+      // Modals
+      if (key === 'fragment' && url.hash !== '') {
+        a.dataset.modalPath = url.pathname;
+        a.dataset.modalHash = url.hash;
+        a.href = url.hash;
+        return false;
+      }
+      a.className = `${key} link-block`;
       return true;
     }
     return false;
@@ -126,8 +133,8 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
-    const linkBlock = decorateLinkBlock(a);
-    if (linkBlock) {
+    const autoBLock = decorateAutoBlock(a);
+    if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
@@ -142,6 +149,7 @@ function decoratePictures(el) {
   });
 }
 
+// Marquee (Large, Light) >>> marquee--large--light- >>> marquee large light
 function decorateBlocks(el) {
   const blocks = el.querySelectorAll('div[class]');
   return [...blocks].map((block) => {
@@ -154,15 +162,18 @@ function decorateBlocks(el) {
   });
 }
 
-function decorateArea(el = document) {
+export function decorateArea(el = document) {
   decoratePictures(el);
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
   return [...linkBlocks, ...blocks];
 }
 
-function decorateNavs() {
-  const navs = document.querySelectorAll('header, footer');
+function decorateNavs(el = document) {
+  const selectors = [];
+  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
+  if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
+  const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
     nav.className = nav.nodeName.toLowerCase();
     return nav;
@@ -178,7 +189,7 @@ export async function loadLCP(blocks) {
   }
 }
 
-async function loadLazy(blocks) {
+export async function loadLazy(blocks) {
   loadStyle('/fonts/fonts.css');
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
@@ -191,6 +202,8 @@ async function loadPage() {
   const navs = decorateNavs();
   await loadLCP(blocks);
   await loadLazy([...navs, ...blocks]);
+  const { default: getModals } = await import('./modals.js');
+  getModals();
   loadDelayed();
 }
 loadPage();

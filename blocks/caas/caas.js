@@ -20,8 +20,6 @@ function loadCaasApp() {
 }
 
 function goCaas(randomId, caasConfig) {
-    console.log(randomId);
-    console.log(document.getElementById(randomId));
     const consonantlinkCollection = new ConsonantCardCollection(caasConfig, document.getElementById(randomId));
 }
 
@@ -849,7 +847,6 @@ export default function init(a) {
     
     // Initiate CaaS on window load.
     window.addEventListener('load', (event) => {
-        console.log('page is fully loaded');
         goCaas(randomId, caasConfig);
     });
 }

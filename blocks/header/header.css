@@ -14,7 +14,6 @@ header nav ul {
   padding: 0;
   margin: 0;
   display: flex;
-  gap: 20px;
 }
 
 header nav ul li {
@@ -22,10 +21,21 @@ header nav ul li {
   align-content: stretch;
 }
 
-header nav ul li > a {
+header nav ul li > a:any-link {
   display: flex;
   justify-content: center;
   flex-direction: column;
+  text-transform: uppercase;
+  font-size: 16px;
+  line-height: 64px;
+  padding: 0 10px;
+  font-weight: 700;
+  color: #ff1693;
+}
+
+header nav ul li > a:hover {
+  text-decoration: none;
+  background: rgb(200 200 200 / 20%);
 }
 
 @media (min-width: 600px) {

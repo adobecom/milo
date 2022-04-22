@@ -7,8 +7,8 @@ import sinon from 'sinon';
 
 const scripts = {};
 
-document.head.innerHTML = await readFile({ path: '../mocks/head.html' });
-document.body.innerHTML = await readFile({ path: '../mocks/body.html' });
+document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Decorating', () => {
   before(async () => {
@@ -45,7 +45,7 @@ describe('Decorating', () => {
 
   it('Decorates auto blocks', async () => {
     const autoBlock = document.querySelector('a[class]');
-    expect(autoBlock.className).to.equal('youtube');
+    expect(autoBlock.className).to.equal('youtube link-block');
   });
 });
 

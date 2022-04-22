@@ -1,20 +1,30 @@
+import { getMetadata, makeRelative } from '../../scripts/scripts.js';
+
 /**
  * decorates the header, mainly the nav
  * @param {Element} block The header block element
  */
-export default async function init(header) {
-  const navPath = '/nav';
+export default async function init(block) {
+  const navPath = getMetadata('nav url') || '/nav';
   const resp = await fetch(`${navPath}.plain.html`);
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  if (resp.ok) {
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
 
-  const nav = document.createElement('nav');
-  nav.setAttribute('role', 'navigation');
+    const anchors = doc.querySelectorAll('a');
+    anchors.forEach((a) => {
+      a.href = makeRelative(a.href);
+    });
 
-  const toggle = document.createElement('button');
+    const nav = document.createElement('nav');
+    nav.setAttribute('role', 'navigation');
 
-  nav.append(toggle, ...doc.querySelectorAll('div > *'));
-
-  header.append(nav);
+    const toggle = document.createElement('button');
+    nav.append(toggle, ...doc.querySelectorAll('div > *'));
+    block.append(nav);
+    return block;
+  } else {
+    console.log('Could not load nav');
+  }
 }
