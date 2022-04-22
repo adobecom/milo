@@ -1,0 +1,103 @@
+:root {
+  --notch-size: 12px;
+}
+
+body {
+  background-color: var(--hlx-sk-bg);
+  color: var(--hlx-sk-color);
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.subhead {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  min-height: 36px;
+}
+
+#refresh {
+  grid-column: 2;
+}
+
+#refresh button {
+  background: #6F9B00;
+  color: #FFF;
+  font-weight: 700;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th,
+table td {
+  padding: 12px;
+}
+
+table th {
+  text-align: left;
+}
+
+tr.header {
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+header,
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+tr>th:first-child {
+  padding-left: 0;
+}
+
+tr:nth-child(odd) {
+  background: #EFEFEF;
+}
+
+td button {
+  background: #d6d6d6;
+  color: #676767;
+  font-weight: 500;
+}
+
+td button:first-child {
+  margin-right: 6px;
+}
+
+tr:last-child button {
+  background: #FF1593;
+  color: #FFF;
+  font-weight: 700;
+}
+
+button,
+a.button {
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-size: 16px;
+  padding: 0 18px;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
+}

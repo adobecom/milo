@@ -23,6 +23,7 @@ export default async function init(block) {
     const toggle = document.createElement('button');
     nav.append(toggle, ...doc.querySelectorAll('div > *'));
     block.append(nav);
+    return block;
   } else {
     console.log('Could not load nav');
   }

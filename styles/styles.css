@@ -96,12 +96,16 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+a.fragment {
+  display: none;
+}
+
 code, pre, samp {
   font-family: var(--fixed-font-family);
   font-size: var(--body-font-size-s);
 }
 
-main img {
+img {
   max-width: 100%;
 }
 
@@ -112,6 +116,33 @@ a.link-block {
 .contained {
   width: 83.4%;
   margin: 0 auto;
+}
+
+dialog {
+  border: none;
+  border-radius: 6px;
+  padding: 0;
+}
+
+dialog::backdrop {
+  background: rgb(50 50 50 / 80%);
+}
+
+button.dialog-close {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 0;
+  font-size: 18px;
+  top: 4px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+}
+
+dialog .fragment {
+  max-width: 400px;
 }
 
 @media (min-width: 900px) {

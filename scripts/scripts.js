@@ -13,11 +13,10 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['section', 'hero'];
-const LINK_BLOCKS = [
+const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
-  { faas: '/tools/faas' },
   { fragment: '/fragments' },
 ];
 
@@ -56,12 +55,12 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`../blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/blocks/${blockName}/${blockName}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`../blocks/${blockName}/${blockName}.js`);
+        const { default: init } = await import(`/blocks/${blockName}/${blockName}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -79,10 +78,7 @@ export function makeRelative(href) {
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(href);
   const relative = hosts.some((host) => url.hostname.includes(host));
-  const modal = getMetadata(url.hash.replace('#', '-'));
-  console.log(modal);
-  if (relative) return `${url.pathname}${url.search}${url.hash}`;
-  return href;
+  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 function decorateSVG(a) {
@@ -105,9 +101,17 @@ function decorateLinkBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return LINK_BLOCKS.find((candidate) => {
+  return AUTO_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    if (href.startsWith(candidate[key])) {
+    const match = href.startsWith(candidate[key]);
+    if (match) {
+      // Modals
+      if (key === 'fragment' && url.hash !== '') {
+        a.dataset.modalPath = url.pathname;
+        a.dataset.modalHash = url.hash;
+        a.href = url.hash;
+        return false;
+      }
       a.className = `${key} link-block`;
       return true;
     }
@@ -189,6 +193,8 @@ async function loadPage() {
   const navs = decorateNavs();
   await loadLCP(blocks);
   await loadLazy([...navs, ...blocks]);
+  const { default: getModals } = await import('./modals.js');
+  getModals();
   loadDelayed();
 }
 loadPage();
