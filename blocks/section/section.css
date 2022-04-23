@@ -127,6 +127,19 @@
   grid-column: 11 / -1;
 }
 
+.section.hero .bg-item.item-6 {
+  grid-column: 7;grid-row: 7;
+  position: relative;
+}
+
+.section.hero .bg-item.item-6 img {
+  position: absolute;
+  width: 242px;
+  object-fit: unset;
+  height: auto;
+  max-width: unset;
+}
+
 .section.hero .fg>div {
   display: flex;
   flex-wrap: wrap;
