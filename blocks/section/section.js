@@ -5,7 +5,17 @@ async function decorateHero(el, fg) {
 }
 
 function decorateEngage(el) {
+  const involve = el.querySelector(':scope > .fg > div');
+  involve.className = 'get-involved';
 
+  const madeIn = el.querySelector(':scope > .fg > div:last-child');
+  madeIn.className = 'made-in';
+
+  const extra = el.querySelector('.extra');
+  const pic = extra.querySelector('picture');
+  pic.className = 'engage-gradient';
+  el.querySelector(':scope > .fg').append(pic);
+  extra.remove();
 }
 
 function decorateAbout(el) {
@@ -20,7 +30,15 @@ export default function init(el) {
   const variant = el.className;
   const children = el.querySelectorAll(':scope > div');
   children.forEach((child, idx) => {
-    child.className = idx === 0 ? 'bg' : 'fg';
+    if (idx === 0) {
+      child.className = 'bg';
+    }
+    if (idx === 1) {
+      child.className = 'fg';
+    }
+    if (idx > 1) {
+      child.className = 'extra';
+    }
   });
   const pics = children[0].querySelectorAll(':scope > div picture');
   pics.forEach((pic, idx) => {

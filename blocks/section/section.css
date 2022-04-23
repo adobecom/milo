@@ -10,12 +10,22 @@
 .section.engage {
   background: #2C2C2C;
   color: #FFF;
+  grid-template-rows: 100%;
 }
 
-.section.engage .bg, .section.engage .fg {
+.section.engage .bg {
   grid-row: 1;
   grid-column: 1;
   display: grid;
+}
+
+.section.engage .fg {
+  grid-row: 1;
+  grid-column: 1;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: .18fr auto auto auto auto .2fr;
+  grid-template-rows: .2fr 1fr 1fr .4fr;
 }
 
 .section.hero .bg {
@@ -68,7 +78,7 @@
   right: -68px;
 }
 
-.section.hero h1 + p {
+.section.hero h1+p {
   max-width: 220px;
   font-family: adobe-clean-serif, serif;
   font-size: 36px;
@@ -117,7 +127,7 @@
   grid-column: 11 / -1;
 }
 
-.section.hero .fg > div {
+.section.hero .fg>div {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -210,7 +220,102 @@
   clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
 }
 
+.get-involved {
+  grid-column: 2 / 4;
+  grid-row: 3;
+  position: relative;
+  background: url(/img/home/left-arrow-white.svg) no-repeat;
+  background-size: 172px;
+  background-position: 94% 30%;
+}
+
+.made-in {
+  grid-column: 5;
+  grid-row: 2;
+  position: relative;
+}
+
+.made-in img {
+  position: absolute;
+  width: 242px;
+  left: -242px;
+  top: -202px;
+}
+
+.made-in p:first-child {
+  margin: 0;
+}
+
+.made-in h2 {
+  font-size: 24px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.get-involved img {
+  width: 154px;
+  height: 308px;
+  position: absolute;
+  left: -20px;
+  top: -250px;
+  opacity: 0.5;
+}
+
+.get-involved a:any-link {
+  font-size: 68px;
+  color: #fff;
+  font-weight: 300;
+  text-transform: uppercase;
+}
+
+.section.engage .get-involved p,
+.section.engage .get-involved h2 {
+  margin: 0 0 32px;
+}
+
+.section.engage .get-involved h2 {
+  font-family: adobe-clean-serif, serif;
+  font-weight: 400;
+  font-style: italic;
+  margin-bottom: -36px;
+  font-size: 36px;
+}
+
+.section.engage .made-in h2+p {
+  width: 260px;
+  font-size: 72px;
+  margin: 0;
+}
+
+picture.engage-gradient {
+  grid-row: 4;
+  grid-column: 3 / -1;
+  position: relative;
+}
+
+picture.engage-gradient::after {
+  background: url(/img/home/x-marks.svg);
+  background-repeat: no-repeat;
+  content: '';
+  z-index: 1;
+  width: 222px;
+  height: 155px;
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: -100px;
+}
+
+picture.engage-gradient img {
+  opacity: 0.8;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
 @media (min-width: 900px) {
+
   .section.hero .bg,
   .section.hero .fg {
     grid-template-columns: repeat(12, 1fr);
@@ -221,7 +326,7 @@
     display: grid;
   }
 
-  .section.hero .fg > div {
+  .section.hero .fg>div {
     grid-column: 2;
     grid-row: 4;
     align-self: center;
@@ -232,7 +337,7 @@
     margin: 0 92px 0 54px;
   }
 
-  .section.hero h1 + p {
+  .section.hero h1+p {
     margin: 92px 0 0;
   }
 
