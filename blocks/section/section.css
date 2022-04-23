@@ -128,13 +128,14 @@
 }
 
 .section.hero .bg-item.item-6 {
-  grid-column: 7;grid-row: 7;
+  grid-column: 7 / 9;
+  grid-row: 7;
   position: relative;
 }
 
 .section.hero .bg-item.item-6 img {
   position: absolute;
-  width: 242px;
+  width: 100%;
   object-fit: unset;
   height: auto;
   max-width: unset;
