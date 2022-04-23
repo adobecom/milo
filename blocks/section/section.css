@@ -11,6 +11,7 @@
   background: #2C2C2C;
   color: #FFF;
   grid-template-rows: 100%;
+  word-break: break-all;
 }
 
 .section.engage .bg {
@@ -23,7 +24,6 @@
   grid-row: 1;
   grid-column: 1;
   z-index: 1;
-  display: grid;
   grid-template-columns: .18fr auto auto auto auto .2fr;
   grid-template-rows: .2fr 1fr 1fr .4fr;
 }
@@ -150,18 +150,6 @@
 .section .fg nav {
   position: relative;
   justify-self: center;
-  margin-top: 72px;
-}
-
-.section .fg nav::before {
-  content: '';
-  background: url('/img/home/arrow-down.svg');
-  width: 134px;
-  height: 172px;
-  display: block;
-  position: absolute;
-  top: -160px;
-  left: -50px;
 }
 
 .section .fg nav button {
@@ -329,7 +317,6 @@ picture.engage-gradient img {
 }
 
 @media (min-width: 900px) {
-
   .section.hero .bg,
   .section.hero .fg {
     grid-template-columns: repeat(12, 1fr);
@@ -340,7 +327,7 @@ picture.engage-gradient img {
     display: grid;
   }
 
-  .section.hero .fg>div {
+  .section.hero .fg > div {
     grid-column: 2;
     grid-row: 4;
     align-self: center;
@@ -359,5 +346,21 @@ picture.engage-gradient img {
     margin-top: unset;
     grid-column: 6 / 8;
     grid-row: 4;
+    margin-top: 72px;
+  }
+
+  .section .fg nav::before {
+    content: '';
+    background: url('/img/home/arrow-down.svg');
+    width: 134px;
+    height: 172px;
+    display: block;
+    position: absolute;
+    top: -160px;
+    left: -50px;
+  }
+
+  .section.engage .fg {
+    display: grid;
   }
 }
