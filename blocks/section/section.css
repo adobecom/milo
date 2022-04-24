@@ -11,7 +11,7 @@
   background: #2C2C2C;
   color: #FFF;
   grid-template-rows: 100%;
-  word-break: break-all;
+  word-break: break-word;
 }
 
 .section.engage .bg {
