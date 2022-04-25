@@ -36,7 +36,7 @@
   --text-color: #2c2c2c;
 
   /* fonts */
-  --body-font-family: 'adobe-clean', 'Trebuchet MS', sans-serif;
+  --body-font-family: adobe-clean, 'Trebuchet MS', sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
