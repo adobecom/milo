@@ -125,8 +125,8 @@ const Select = ({ label, options, prop }) => {
       <label for=${prop}>${label}</label>
       <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
         ${Object.entries(options).map(
-    ([val, label]) => html`<option value="${val}">${label}</option>`,
-  )}
+          ([val, label]) => html`<option value="${val}">${label}</option>`
+        )}
       </select>
     </div>
   `;
@@ -145,13 +145,13 @@ const Input = ({ label, type = 'text', prop }) => {
 
   const value = { [type === 'checkbox' ? 'checked' : 'value']: context.state[prop] };
 
-  return html` <div class="field">
+  return html` <div class="field ${type === 'checkbox' ? 'checkbox' : ''}">
     <label for=${prop}>${label}</label>
     <input type=${type} id=${prop} name=${prop} ...${value} onChange=${onInputChange} />
   </div>`;
 };
 
-const DropdownSelect = ({ label, options, prop }) => {
+const DropdownSelect = ({ label, isModal = false, options, optionMap, prop }) => {
   const context = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     context.dispatch({
@@ -165,8 +165,10 @@ const DropdownSelect = ({ label, options, prop }) => {
     <${TagSelect}
       id=${prop}
       options=${options}
+      optionMap=${optionMap || options}
       selectedOptions=${context.state[prop]}
       label=${label}
+      isModal=${isModal}
       onSelectedChange=${onChange}
     />
   `;
@@ -185,6 +187,7 @@ const UiPanel = () => html`
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
   <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+  <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
   <${Select}
@@ -199,21 +202,41 @@ const UiPanel = () => html`
   />
 `;
 
-const getTopLevelTags = (tagId) => {
-  const tagsData = getCaasTags();
-  return Object.entries(tagsData[tagId].tags).reduce(
-    (contentOptions, [, tagObj]) => {
-      contentOptions[tagObj.tagID] = tagObj.title;
-      return contentOptions;
-    },
-    {},
-  );
+const getTagList = (root) =>
+  Object.entries(root).reduce((options, [, tag]) => {
+    options[tag.tagID] = tag.title;
+    return options;
+  }, {});
+
+const getTagTree = (root, optionMap = {}, parents = []) => {
+  const options = Object.entries(root).reduce((options, [, tag]) => {
+    options[tag.tagID] = {};
+
+    if (Object.keys(tag.tags).length) {
+      options[tag.tagID].children = getTagTree(tag.tags, optionMap, [
+        ...parents,
+        tag.tagID,
+      ]).options;
+
+      if (parents.length) {
+        options[tag.tagID].parents = parents;
+      }
+    }
+
+    options[tag.tagID].title = tag.title;
+    options[tag.tagID].breadcrumb = tag.path;
+    optionMap[tag.tagID] = { title: tag.title, path: tag.path };
+
+    return options;
+  }, {});
+  return { options, optionMap };
 };
 
 const TagsPanel = () => {
-  const contentTypeTags = getTopLevelTags('content-type');
-  const countryTags = getTopLevelTags('country');
-  const languageTags = getTopLevelTags('language');
+  const contentTypeTags = getTagList(tagsData['content-type'].tags);
+  const countryTags = getTagList(tagsData.country.tags);
+  const languageTags = getTagList(tagsData.language.tags);
+  const { options: allTags, optionMap: allTagsMap } = getTagTree(tagsData);
 
   return html`
     <${DropdownSelect}
@@ -221,16 +244,22 @@ const TagsPanel = () => {
       prop="contentTypeTags"
       label="Content Type Tags"
     />
-    <${Select}
-      options=${countryTags}
-      prop="country"
-      label="Country"
+    <${DropdownSelect}
+      options=${allTags}
+      optionMap=${allTagsMap}
+      prop="includeTags"
+      label="Tags to Include"
+      isModal
     />
-    <${Select}
-      options=${languageTags}
-      prop="language"
-      label="Language"
+    <${DropdownSelect}
+      options=${allTags}
+      optionMap=${allTagsMap}
+      prop="excludeTags"
+      label="Tags to Exclude"
+      isModal
     />
+    <${Select} options=${countryTags} prop="country" label="Country" />
+    <${Select} options=${languageTags} prop="language" label="Language" />
   `;
 };
 
@@ -260,8 +289,6 @@ const FilterPanel = () => {
   `;
 };
 
-const AdvancedPanel = () => html` <${Select} label="Database" prop="draftDb" options=${defaultOptions.draftDb} /> `;
-
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   const paginationOptions = html`
@@ -290,12 +317,31 @@ const PaginationPanel = () => {
   `;
 };
 
+const TargetPanel = () =>
+  html`<${Input} label="Target Activity" prop="targetActivity" type="text" />`;
+
+const AdvancedPanel = () => {
+  const { dispatch } = useContext(ConfiguratorContext);
+  const onClick = () => {
+    dispatch({
+      type: 'RESET_STATE',
+    });
+  };
+  return html`
+    <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Select} label="Database" prop="draftDb" options=${defaultOptions.draftDb} />
+    <${Input} label="CaaS Endpoint" prop="endpoint" type="text" />
+  `;
+};
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
+    case 'RESET_STATE':
+      return { ...defaultState };
     default:
       console.log('DEFAULT');
       return state;
@@ -354,19 +400,25 @@ const CopyBtn = () => {
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
-    navigator.clipboard.write(data)
-      .then(() => {
+    navigator.clipboard.write(data).then(
+      () => {
         setStatus(setIsSuccess);
-      }, () => {
+      },
+      () => {
         setStatus(setIsError);
-      });
+      }
+    );
   };
 
-  return html`
-  <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
-  <button
-    class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}"
-    onClick=${copyConfig}>Copy</button>`;
+  return html` <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
+    <button
+      class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
+        ? 'is-success'
+        : ''}"
+      onClick=${copyConfig}
+    >
+      Copy
+    </button>`;
 };
 
 const Configurator = ({ rootEl }) => {
@@ -416,6 +468,10 @@ const Configurator = ({ rootEl }) => {
       content: html`<${PaginationPanel} />`,
     },
     {
+      title: 'Target',
+      content: html`<${TargetPanel} />`,
+    },
+    {
       title: 'Advanced',
       content: html`<${AdvancedPanel} />`,
     },
@@ -446,9 +502,7 @@ export default async function init(el) {
   await loadCaasTagsPromise;
   loadStyle('/libs/ui/page/page.css');
 
-  const app = html`
-    <${Configurator} rootEl=${el}/>
-  `;
+  const app = html` <${Configurator} rootEl=${el} /> `;
 
   render(app, el);
 }
