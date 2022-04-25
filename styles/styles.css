@@ -70,7 +70,7 @@ body.appear {
   display: unset;
 }
 
-header.header {
+header {
   min-height: 64px;
   display: flex;
   align-content: stretch;
