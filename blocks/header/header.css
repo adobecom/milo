@@ -3,6 +3,7 @@ header nav {
   margin: 0 auto;
   display: flex;
   align-content: stretch;
+  font-weight: 700;
 }
 
 header nav button {
@@ -29,7 +30,6 @@ header nav ul li > a:any-link {
   font-size: 16px;
   line-height: 64px;
   padding: 0 10px;
-  font-weight: 700;
   color: #ff1693;
 }
 

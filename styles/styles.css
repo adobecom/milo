@@ -10,20 +10,20 @@
  * governing permissions and limitations under the License.
  */
 
-@font-face {
+ @font-face {
   font-family: 'Trebuchet MS';
-  size-adjust: 95%;
-  src: local('Trebuchet MS'),
-       local('TrebuchetMS');
-       font-weight: 700;
+  font-weight: 700;
+  size-adjust: 97%;
+  src: local('Trebuchet MS Bold'),
+       local('TrebuchetMSBold');
 }
 
 @font-face {
   font-family: 'Trebuchet MS';
-  size-adjust: 93%;
+  font-weight: 400;
+  size-adjust: 87%;
   src: local('Trebuchet MS'),
        local('TrebuchetMS');
-       font-weight: 400;
 }
 
  :root {
@@ -74,6 +74,7 @@ header {
   min-height: 64px;
   display: flex;
   align-content: stretch;
+  font-weight: 700;
 }
 
 h1 {
