@@ -51,6 +51,9 @@
   --heading-font-size-m: 24px;
   --heading-font-size-s: 20px;
   --heading-font-size-xs: 18px;
+
+  /* grid sizes */
+  --container-size: 83.4%;
 }
 
 html {
@@ -115,7 +118,7 @@ a.link-block {
 }
 
 .contained {
-  width: 83.4%;
+  max-width: var(--container-size);
   margin: 0 auto;
 }
 
@@ -158,15 +161,20 @@ dialog .fragment {
 }
 
 @media (min-width: 1440px) {
-  .contained {
-    width: 1200px;
-    margin: 0 auto;
+  :root {
+    --container-size: 1200px;
   }
 }
 
 /* progressive section appearance */
 main > div > [class] {
   display: none;
+}
+
+main > .section > .content {
+  display: block;
+  max-width: var(--container-size);
+  margin: 0 auto;
 }
 
 main > div > [data-status='loaded'] {

@@ -19,9 +19,9 @@ describe('Decorating', () => {
   });
 
   it('Decorates blocks', async () => {
-    const blocks = document.querySelectorAll('[class]');
+    const blocks = document.querySelectorAll('body > main > .section > [class]');
     expect(blocks.length).to.equal(5);
-    expect(blocks[1].classList.length).to.equal(3);
+    expect(blocks[0].classList.length).to.equal(3);
   });
 
   it('Decorates pictures', async () => {
@@ -47,6 +47,11 @@ describe('Decorating', () => {
     const autoBlock = document.querySelector('a[class]');
     expect(autoBlock.className).to.equal('youtube link-block');
   });
+
+  it('Decorates modal link', async () => {
+    const modalLink = document.querySelector('a[data-modal-path]');
+    expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
+  });
 });
 
 describe('Loading', () => {
@@ -69,7 +74,7 @@ describe('Loading', () => {
   });
 
   it('Removes LCP block out of block list', async () => {
-    const blocks = [...document.querySelectorAll('[class]')];
+    const blocks = [...document.querySelectorAll('body > main > .section > [class]')];
     await scripts.loadLCP(blocks);
     expect(blocks.length).to.equal(4);
   });

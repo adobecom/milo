@@ -49,15 +49,6 @@ export function loadStyle(href, callback) {
   return link;
 }
 
-export function loadScript(url, callback, type) {
-  const script = document.createElement('script');
-  script.onload = callback;
-  script.setAttribute('src', url);
-  if (type) { script.setAttribute('type', type); }
-  document.head.append(script);
-  return script;
-}
-
 export async function loadBlock(block) {
   const { status } = block.dataset;
   if (status === 'loaded') return block;
@@ -163,10 +154,50 @@ function decorateBlocks(el) {
   });
 }
 
+function decorateContent(el) {
+  const children = [el];
+  let child = el;
+  while (child) {
+    child = child.nextElementSibling;
+    if (child && !child.className) {
+      children.push(child);
+    } else {
+      break;
+    }
+  }
+  const block = document.createElement('div');
+  block.className = 'content';
+  block.append(...children);
+  return block;
+}
+
+function decorateDefaults(el) {
+  const firstChild = ':scope > *:not([class]):first-child';
+  const afterBlock = ':scope > div[class] + *:not([class])';
+  const children = el.querySelectorAll(`${firstChild}, ${afterBlock}`);
+  children.forEach((child) => {
+    const prev = child.previousElementSibling;
+    const content = decorateContent(child);
+    if (prev) {
+      prev.insertAdjacentElement('afterend', content);
+    } else {
+      el.insertAdjacentElement('afterbegin', content);
+    }
+  });
+}
+
+function decorateSections(el) {
+  el.querySelectorAll('body > main > div').forEach((section) => {
+    section.className = 'section';
+    decorateDefaults(section);
+  });
+}
+
 export function decorateArea(el = document) {
   decoratePictures(el);
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
+  decorateSections(el);
   return [...linkBlocks, ...blocks];
 }
 
