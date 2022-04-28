@@ -23,7 +23,6 @@ function hasSchema(host) {
   window.hlx.initSidekick({
     project: 'Milo',
     host: 'milo.adobe.com',
-    outerHost: 'main--milo--adobecom.hlx.live',
     previewHost: 'main--milo--adobecom.hlx.page',
     byocdn: true,
     hlx3: true,
