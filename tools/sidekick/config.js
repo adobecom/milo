@@ -10,12 +10,22 @@
  * governing permissions and limitations under the License.
  */
 
+function hasSchema(host) {
+  if (window.location.hostname === host) {
+    const schema = document.querySelector('script[type="application/ld+json"]');
+    return schema !== null;
+  }
+  return false;
+}
+
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
     project: 'Milo',
+    host: 'milo.adobe.com',
     outerHost: 'main--milo--adobecom.hlx.live',
     previewHost: 'main--milo--adobecom.hlx.page',
+    byocdn: true,
     hlx3: true,
     plugins: [
       // TOOLS ---------------------------------------------------------------------
@@ -38,6 +48,16 @@
           action: (_, sk) => {
             const { config } = sk;
             window.open(`${config.pluginHost ? config.pluginHost : `http://${config.innerHost}`}/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${config.owner}&repo=${config.repo}&ref=${config.ref}`, 'hlx-sidekick-spark-translation');
+          },
+        },
+      },
+      {
+        id: 'seo',
+        condition: (s) => hasSchema(s.config.host),
+        button: {
+          text: 'Check Schema',
+          action: () => {
+            window.open(`https://search.google.com/test/rich-results?url=${encodeURIComponent(window.location.href)}`, 'check-schema');
           },
         },
       },
