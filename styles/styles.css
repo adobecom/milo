@@ -61,6 +61,7 @@ html {
 body {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
+  word-break: break-word;
   background-color: var(--background-color);
   color: var(--text-color);
   margin: 0;
