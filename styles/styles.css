@@ -10,20 +10,20 @@
  * governing permissions and limitations under the License.
  */
 
-@font-face {
+ @font-face {
   font-family: 'Trebuchet MS';
+  font-weight: 700;
   size-adjust: 95%;
-  src: local('Trebuchet MS'),
-       local('TrebuchetMS');
-       font-weight: 700;
+  src: local('Trebuchet MS Bold'),
+       local('TrebuchetMSBold');
 }
 
 @font-face {
   font-family: 'Trebuchet MS';
+  font-weight: 400;
   size-adjust: 93%;
   src: local('Trebuchet MS'),
        local('TrebuchetMS');
-       font-weight: 400;
 }
 
  :root {
@@ -36,7 +36,7 @@
   --text-color: #2c2c2c;
 
   /* fonts */
-  --body-font-family: 'adobe-clean', 'Trebuchet MS', sans-serif;
+  --body-font-family: adobe-clean, 'Trebuchet MS', sans-serif;
   --heading-font-family: var(var(--body-font-family));
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
@@ -70,10 +70,11 @@ body.appear {
   display: unset;
 }
 
-header.header {
+header {
   min-height: 64px;
   display: flex;
   align-content: stretch;
+  font-weight: 700;
 }
 
 h1 {

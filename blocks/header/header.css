@@ -3,6 +3,7 @@ header nav {
   margin: 0 auto;
   display: flex;
   align-content: stretch;
+  font-weight: 700;
 }
 
 header nav button {
@@ -21,7 +22,7 @@ header nav ul li {
   align-content: stretch;
 }
 
-header nav ul li > a {
+header nav ul li > a:any-link {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -29,6 +30,7 @@ header nav ul li > a {
   font-size: 16px;
   line-height: 64px;
   padding: 0 10px;
+  color: #ff1693;
 }
 
 header nav ul li > a:hover {

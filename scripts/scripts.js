@@ -49,22 +49,31 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export function loadScript(url, callback, type) {
+  const script = document.createElement('script');
+  script.onload = callback;
+  script.setAttribute('src', url);
+  if (type) { script.setAttribute('type', type); }
+  document.head.append(script);
+  return script;
+}
+
 export async function loadBlock(block) {
   const { status } = block.dataset;
   if (status === 'loaded') return block;
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`../blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/blocks/${blockName}/${blockName}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`../blocks/${blockName}/${blockName}.js`);
+        const { default: init } = await import(`/blocks/${blockName}/${blockName}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`);
+        console.log(`Failed loading ${blockName}`, err);
       }
       resolve();
     })();
@@ -75,8 +84,9 @@ export async function loadBlock(block) {
 }
 
 export function makeRelative(href) {
+  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(href);
+  const url = new URL(fixedHref);
   const relative = hosts.some((host) => url.hostname.includes(host));
   return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
@@ -97,7 +107,7 @@ function decorateSVG(a) {
   }
 }
 
-function decorateLinkBlock(a) {
+function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -124,8 +134,8 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
-    const linkBlock = decorateLinkBlock(a);
-    if (linkBlock) {
+    const autoBLock = decorateAutoBlock(a);
+    if (autoBLock) {
       rdx.push(a);
     }
     return rdx;

@@ -1,3 +1,151 @@
-.caas .demo {
-  text-transform: capitalize;
+.tagselect {
+  position: relative;
+  user-select: none;
+  width: 100%;
+
+  margin: 0 0 18px;
+  display: grid;
+  max-width: 260px;
+}
+
+.tagselect label {
+  margin-bottom: 4px;
+}
+
+.tagselect-input {
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+  min-height: 30px;
+  width: 100%;
+  padding: 0 0 0 3px;
+  background-color: #3c3c3c;
+  outline: 0;
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+
+.tagselect-values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  flex: 1 1 100%;
+  width: calc(100% - 30px);
+}
+
+.tagselect-add {
+  display: flex;
+  flex: 0 1 3px;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: 3px;
+  margin: 9px 12px 0 5px;
+}
+
+.tagselect-plus {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #666;
+  position: relative;
+  height: 10px;
+  width: 2px;
+  transition: transform 0.2s;
+}
+
+.tagselect-plus.is-open {
+  transform: rotate(45deg);
+}
+
+.tagselect-plus:after {
+  background: #666;
+  content: '';
+  height: 2px;
+  left: -4px;
+  position: absolute;
+  top: 4px;
+  width: 10px;
+}
+
+.tagselect-dropdown {
+  background-color: #aaa6a8;
+  border: 1px solid #dcdee2;
+  box-sizing: border-box;
+  margin-top: 50px;
+  max-height: 200px;
+  opacity: 0;
+  overflow-y: auto;
+  padding: 5px;
+  position: absolute;
+  transform-origin: center top;
+  transform: scaleY(0);
+  transition: transform 0.2s, opacity 0.2s;
+  width: auto;
+  z-index: 1010;
+}
+
+.tagselect-dropdown.is-open {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.tagselect-dropdown-options li {
+  list-style-type: none;
+}
+
+.tagselect-dropdown-options ul {
+  padding: 0;
+  margin: 0;
+}
+
+.tagselect-dropdown-item {
+  color: #000;
+}
+
+.tagselect-dropdown-item.hide {
+    display: none;
+}
+
+/* .tagselect-dropdown-item.hover {
+    color: #fff;
+  background-color: #1459d0;
+} */
+
+.tagselect-dropdown-item:not(.is-disabled):hover {
+  color: #fff;
+  background-color: #1459d0;
+}
+
+.tagselect-dropdown-item.is-disabled {
+  cursor: not-allowed;
+  color: #dedede;
+}
+
+.tagselect-tag {
+  display: flex;
+  user-select: none;
+  align-items: center;
+  font-size: 12px;
+  padding: 3px 5px;
+  margin: 3px 5px 3px 0;
+  color: #fff;
+  background-color: #222222;
+  border-radius: 4px;
+  animation-name: scaleIn;
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.tagselect-tag-delete {
+  margin: 0 0 0 5px;
+  cursor: pointer;
+}
+
+.tagselect-tag-closeX {
+    fill: rgb(222, 53, 11);
+}
+
+.tagselect-tag-delete:hover {
+  background-color: rgb(255, 189, 173);
 }

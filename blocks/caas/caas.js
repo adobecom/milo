@@ -1,12 +1,15 @@
-export default function init(a) {
+import { initCaas, loadCaasFiles } from './utils.js';
+import { parseEncodedConfig } from '../../libs/utils.js';
+
+export default async function init(a) {
+  await loadCaasFiles();
+
+  // Create empty div to hold CaaS output.
   const block = document.createElement('div');
   block.className = a.className;
-  const url = new URL(a.href);
-  url.searchParams.forEach((value, key) => {
-    const p = document.createElement('p');
-    p.className = 'demo';
-    p.innerHTML = `<strong>${key}:</strong> ${value}`;
-    block.append(p);
-  });
-  a.parentElement.replaceChild(block, a);
+  block.id = 'caas';
+  a.insertAdjacentElement('afterend', block);
+
+  const encodedConfig = a.href.split('#')[1];
+  initCaas(parseEncodedConfig(encodedConfig), block);
 }

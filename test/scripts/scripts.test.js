@@ -80,4 +80,10 @@ describe('Utilities', () => {
     expect(scripts.getMetadata('og:title')).to.equal('Milo');
     expect(scripts.getMetadata('description')).to.equal('Website foundation technology.');
   });
+
+  it('Makes relative URLs', () => {
+    const emdashHref = 'https://main—milo—adobecom.hlx.page/img/bg-dots.svg';
+    const relativeUrl = scripts.makeRelative(emdashHref);
+    expect(relativeUrl).to.equal('/img/bg-dots.svg');
+  });
 });

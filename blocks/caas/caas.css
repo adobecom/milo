@@ -1,3 +1,3 @@
-.caas .demo {
-  text-transform: capitalize;
+a[href*="http://cmiqueo.corp.adobe.com"] {
+  display: none;
 }

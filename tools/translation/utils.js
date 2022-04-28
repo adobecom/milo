@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Adobe. All rights reserved.
+ * Copyright 2021 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
  * of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -9,12 +9,26 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/*  global document */
 
-/**
- * LOG ALWAYS NEVER ASSUME
- * @param {*} msg the message you want to log
- */
-export default function log(msg) {
-  // eslint-disable-next-line no-console
-  console.log(msg);
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await callback(array[index], index, array);
+  }
 }
+
+function createTag(name, attrs) {
+  const el = document.createElement(name);
+  if (typeof attrs === 'object') {
+    for (const [key, value] of Object.entries(attrs)) {
+      el.setAttribute(key, value);
+    }
+  }
+  return el;
+}
+
+export {
+  asyncForEach,
+  createTag,
+};
