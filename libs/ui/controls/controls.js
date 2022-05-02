@@ -1,4 +1,4 @@
-import { loadStyle } from '../../../scripts/scripts.js';
+import { loadStyle } from '../../utils/utils.js';
 import { html, useState } from '../../deps/htm-preact.js';
 
 const AccordionItem = ({ title, content, expand, onClick }) => {

@@ -1,5 +1,5 @@
-import { html, useEffect, useRef, useState } from '../../libs/deps/htm-preact.js';
-import useOnClickOutside from '../../libs/hooks/useOnClickOutside.js';
+import { html, useEffect, useRef, useState } from '../../deps/htm-preact.js';
+import useOnClickOutside from '../../hooks/useOnClickOutside.js';
 
 // const TagSelectModal = () => {};
 

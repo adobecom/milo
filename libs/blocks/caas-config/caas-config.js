@@ -7,11 +7,10 @@ import {
   useEffect,
   useReducer,
   useState,
-} from '../../libs/deps/htm-preact.js';
-import { loadStyle } from '../../scripts/scripts.js';
-import { Accordion } from '../../libs/ui/controls/controls.js';
+} from '../../deps/htm-preact.js';
+import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
+import { Accordion } from '../../ui/controls/controls.js';
 import { defaultState, initCaas, loadCaasFiles } from '../caas/utils.js';
-import { getHashConfig, utf8ToB64 } from '../../libs/utils.js';
 import TagSelect from './TagSelector.js';
 
 const CAAS_TAG_URL = 'https://14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/tags';

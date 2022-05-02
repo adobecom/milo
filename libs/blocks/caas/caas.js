@@ -1,5 +1,5 @@
 import { initCaas, loadCaasFiles } from './utils.js';
-import { parseEncodedConfig } from '../../libs/utils.js';
+import { parseEncodedConfig } from '../../utils/utils.js';
 
 export default async function init(a) {
   await loadCaasFiles();

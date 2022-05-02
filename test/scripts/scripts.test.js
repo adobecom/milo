@@ -6,21 +6,27 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 const scripts = {};
+const utils = {};
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Decorating', () => {
   before(async () => {
-    const mod = await import('../../scripts/scripts.js');
+    const mod = await import('../../libs/scripts/scripts.js');
     Object.keys(mod).forEach((func) => {
       scripts[func] = mod[func];
+    });
+
+    const utilsMod = await import('../../libs/utils/utils.js');
+    Object.keys(utilsMod).forEach((func) => {
+      utils[func] = utilsMod[func];
     });
   });
 
   it('Decorates blocks', async () => {
     const blocks = document.querySelectorAll('body > main > .section > [class]');
-    expect(blocks.length).to.equal(5);
+    expect(blocks.length).to.equal(4);
     expect(blocks[0].classList.length).to.equal(3);
   });
 
@@ -64,31 +70,31 @@ describe('Loading', () => {
   });
 
   it('Doesnt load a block twice', async () => {
-    const hero = await scripts.loadBlock(document.querySelector('.hero'));
+    const hero = await utils.loadBlock(document.querySelector('.hero'));
     expect(hero.dataset.status).to.equal('loaded');
   });
 
   it('Doesnt load a bad block', async () => {
-    await scripts.loadBlock(document.querySelector('#not-block'));
+    await utils.loadBlock(document.querySelector('#not-block'));
     expect(console.log.called).to.be.true;
   });
 
   it('Removes LCP block out of block list', async () => {
     const blocks = [...document.querySelectorAll('body > main > .section > [class]')];
     await scripts.loadLCP(blocks);
-    expect(blocks.length).to.equal(4);
+    expect(blocks.length).to.equal(3);
   });
 });
 
 describe('Utilities', () => {
   it('Extracts metadata', () => {
-    expect(scripts.getMetadata('og:title')).to.equal('Milo');
-    expect(scripts.getMetadata('description')).to.equal('Website foundation technology.');
+    expect(utils.getMetadata('og:title')).to.equal('Milo');
+    expect(utils.getMetadata('description')).to.equal('Website foundation technology.');
   });
 
   it('Makes relative URLs', () => {
     const emdashHref = 'https://main—milo—adobecom.hlx.page/img/bg-dots.svg';
-    const relativeUrl = scripts.makeRelative(emdashHref);
+    const relativeUrl = utils.makeRelative(emdashHref);
     expect(relativeUrl).to.equal('/img/bg-dots.svg');
   });
 });

@@ -81,6 +81,10 @@ header {
   font-weight: 700;
 }
 
+header nav {
+  display: none;
+}
+
 h1 {
   font-size: var(--heading-font-size-xxl);
   font-weight: 400;
@@ -114,12 +118,17 @@ img {
   max-width: 100%;
 }
 
+/* Not blocks */
+div > div > div img[src^="./media_"] {
+  width: 100%;
+}
+
 a.link-block {
   display: none;
 }
 
 .contained {
-  max-width: var(--container-size);
+  width: 83.4%;
   margin: 0 auto;
 }
 
@@ -168,16 +177,18 @@ dialog .fragment {
 }
 
 /* progressive section appearance */
-main > div > [class] {
+main > div,
+main [data-status='decorated'],
+main [data-status='loading'] {
   display: none;
+}
+
+main > .section {
+  display: block;
 }
 
 main > .section > .content {
   display: block;
   max-width: var(--container-size);
   margin: 0 auto;
-}
-
-main > div > [data-status='loaded'] {
-  display: unset;
 }
