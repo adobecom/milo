@@ -1,4 +1,4 @@
-import { decorateArea, loadLazy } from '../../scripts/scripts.js';
+import { decorateArea, loadLazy } from '../../utils/utils.js';
 
 export default async function init(a, parent) {
   const resp = await fetch(`${a.href}.plain.html`);

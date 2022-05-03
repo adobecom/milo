@@ -1,4 +1,4 @@
-import { getMetadata, makeRelative } from '../../scripts/scripts.js';
+import { getMetadata, makeRelative } from '../../utils/utils.js';
 
 /**
  * decorates the header, mainly the nav
@@ -24,7 +24,5 @@ export default async function init(block) {
     nav.append(toggle, ...doc.querySelectorAll('div > *'));
     block.append(nav);
     return block;
-  } else {
-    console.log('Could not load nav');
   }
 }

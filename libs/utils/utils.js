@@ -1,18 +1,5 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['section', 'hero'];
 const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
@@ -20,16 +7,18 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments' },
 ];
 
-/*
- * ------------------------------------------------------------
- * Edit below at your own risk
- * ------------------------------------------------------------
- */
-
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
+}
+
+export function makeRelative(href) {
+  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
+  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
+  const url = new URL(fixedHref);
+  const relative = hosts.some((host) => url.hostname.includes(host));
+  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 export function loadStyle(href, callback) {
@@ -55,12 +44,12 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/libs/blocks/${blockName}/${blockName}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`/blocks/${blockName}/${blockName}.js`);
+        const { default: init } = await import(`/libs/blocks/${blockName}/${blockName}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -72,14 +61,6 @@ export async function loadBlock(block) {
   await Promise.all([styleLoaded, scriptLoaded]);
   block.dataset.status = 'loaded';
   return block;
-}
-
-export function makeRelative(href) {
-  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host));
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 function decorateSVG(a) {
@@ -149,6 +130,7 @@ function decorateBlocks(el) {
     if (variants.length > 1) {
       variants.push(variants.pop().slice(0, -1));
     }
+    block.dataset.status = 'decorated';
     block.className = variants.join(' ');
     return block;
   });
@@ -159,7 +141,7 @@ function decorateContent(el) {
   let child = el;
   while (child) {
     child = child.nextElementSibling;
-    if (child && !child.className) {
+    if (child && child.nodeName !== 'DIV') {
       children.push(child);
     } else {
       break;
@@ -173,7 +155,7 @@ function decorateContent(el) {
 
 function decorateDefaults(el) {
   const firstChild = ':scope > *:not([class]):first-child';
-  const afterBlock = ':scope > div[class] + *:not([class])';
+  const afterBlock = ':scope > div + *:not(div)';
   const children = el.querySelectorAll(`${firstChild}, ${afterBlock}`);
   children.forEach((child) => {
     const prev = child.previousElementSibling;
@@ -188,54 +170,61 @@ function decorateDefaults(el) {
 
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
-    section.className = 'section';
     decorateDefaults(section);
+    section.className = 'section';
   });
 }
 
 export function decorateArea(el = document) {
-  decoratePictures(el);
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
+  decoratePictures(el);
   decorateSections(el);
   return [...linkBlocks, ...blocks];
 }
 
-function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
-  if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
-  const navs = el.querySelectorAll(selectors.toString());
-  return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
-    return nav;
-  });
-}
-
-export async function loadLCP(blocks) {
-  const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loadBlock(lcpBlock, true);
-  }
-}
-
 export async function loadLazy(blocks) {
-  loadStyle('/fonts/fonts.css');
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
 
-function loadDelayed() {}
+export const loadScript = (url, type) => new Promise((resolve, reject) => {
+  let script = document.querySelector(`head > script[src="${url}"]`);
+  if (!script) {
+    const { head } = document;
+    script = document.createElement('script');
+    script.setAttribute('src', url);
+    if (type) {
+      script.setAttribute('type', type);
+    }
+    script.onload = () => { resolve(script); };
+    script.onerror = () => { reject(new Error('error loading script')); };
+    head.append(script);
+  }
+});
 
-async function loadPage() {
-  const blocks = decorateArea();
-  const navs = decorateNavs();
-  await loadLCP(blocks);
-  await loadLazy([...navs, ...blocks]);
-  const { default: getModals } = await import('./modals.js');
-  getModals();
-  loadDelayed();
+export function utf8ToB64(str) {
+  return window.btoa(unescape(encodeURIComponent(str)));
 }
-loadPage();
+
+export function b64ToUtf8(str) {
+  return decodeURIComponent(escape(window.atob(str)));
+}
+
+export function parseEncodedConfig(encodedConfig) {
+  try {
+    return JSON.parse(b64ToUtf8(decodeURIComponent(encodedConfig)));
+  } catch (e) {
+    console.log(e);
+  }
+  return null;
+}
+
+export function getHashConfig() {
+  const { hash } = window.location;
+  if (!hash) return null;
+  window.location.hash = '';
+
+  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
+  return parseEncodedConfig(encodedConfig);
+}

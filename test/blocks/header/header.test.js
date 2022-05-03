@@ -5,7 +5,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: getNav } = await import('../../../blocks/header/header.js');
+const { default: getNav } = await import('../../../libs/blocks/header/header.js');
 
 describe('Header', () => {
   it('Doesnt load a 404 nav', async () => {

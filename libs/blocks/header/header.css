@@ -1,5 +1,5 @@
-header nav {
-  width: 83.4%;
+header.header nav {
+  width: calc(var(--container-size) + 20px);
   margin: 0 auto;
   display: flex;
   align-content: stretch;
@@ -35,17 +35,19 @@ header nav ul li > a:any-link {
 
 header nav ul li > a:hover {
   text-decoration: none;
-  background: rgb(200 200 200 / 20%);
+  background-color: #ff1693;
+  clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
+  color: #FFF;
 }
 
-@media (min-width: 600px) {
-  header nav button {
-    display: none;
-  }
+header nav ul li:nth-child(2) a:hover {
+  clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 100%);
 }
 
-@media (min-width: 1440px) {
-  header nav {
-    width: 1200px;
-  }
+header nav ul li:nth-child(3) a:hover {
+  clip-path: polygon(10% 10%, 90% 0%, 95% 100%, 5% 85%);
+}
+
+header nav ul li:nth-child(4) a:hover {
+  clip-path: polygon(0 0, 100% 10%, 90% 100%, 5% 85%);
 }
