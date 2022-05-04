@@ -9,9 +9,12 @@ import {
 } from '../../deps/htm-preact.js';
 import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
 import { Accordion } from '../../ui/controls/controls.js';
-// import { defaultState, initCaas, loadCaasFiles } from '../faas/utils.js';
+import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
 
 let faasEl;
+const LS_KEY = 'faasConfiguratorState';
+const faasFilesLoaded = loadFaasFiles();
+const ConfiguratorContext = createContext('milo');
 const sortObjects = (obj) => {
   return Object.entries(obj).sort((a, b) => {
     const x = a[1].toLowerCase();
@@ -19,8 +22,9 @@ const sortObjects = (obj) => {
     return x < y ? -1 : x > y ? 1 : 0;
   });
 };
-const ConfiguratorContext = createContext('milo');
-const faasHostUrl = 'https://dev.apps.enterprise.adobe.com';
+const saveStateToLocalStorage = (state) => {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+};
 const getObjFromAPI = async (apiPath) => {
   const resp = await fetch(`${faasHostUrl}${apiPath}`);
   if (resp.ok) {
@@ -136,7 +140,6 @@ const templateSelected = () => {
     return results;
   }
   getObjFromAPI('/faas/api/locale').then((data) => {
-    console.log(data);
     const langOptions = {};
     data.forEach((l) => {
       langOptions[l.code] = l.name;
@@ -172,7 +175,7 @@ const templateOptions = {};
 const RequiredPanel = ({
   renderFields
 }) => html`
-    <${Select} label="Form Template" prop="formTemplateId" options=${templateOptions} sort="true" onChange=${templateSelected} />
+    <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
     ${renderFields}
     <${Input} label="Destination URL" prop="d" />
     <${Input} label="Internal Campagin ID" prop="36" placeholder="70114000002XYvIAAW" />
@@ -190,9 +193,6 @@ const PrepopulationPanel = () => html`
     <${Input} label="Clearbit (DX use Only)" prop="pc5" type="checkbox" />
 `;
 const getInitialState = () => {
-  const hashConfig = getHashConfig();
-  if (hashConfig) return hashConfig;
-
   const lsState = localStorage.getItem(LS_KEY);
   if (lsState) {
     try {
@@ -203,12 +203,28 @@ const getInitialState = () => {
   }
   return null;
 };
-const Configurator = ({
-  rootEl,
-  renderFields
-}) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+const Configurator = ({ rootEl, renderFields }) => {
+  const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
+  const [isFaasLoaded, setIsFaasLoaded] = useState(false);
   const title = rootEl.querySelector('h1, h2, h3, h4, h5, h6, p');
+
+  useEffect(() => {
+    faasFilesLoaded
+      .then(() => {
+        setIsFaasLoaded(true);
+      })
+      .catch((error) => {
+        console.log('Error loading script: ', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (isFaasLoaded) {
+      initFaas(state, document.getElementsByClassName('faas-preview')[0]);
+      saveStateToLocalStorage(state);
+    }
+  }, [isFaasLoaded, state]);
+
   const panels = [{
       title: 'Required',
       content: html`<${RequiredPanel} renderFields=${renderFields} />`,

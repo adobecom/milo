@@ -1,45 +1,13 @@
 import { parseEncodedConfig } from '../../libs/utils.js';
-
-export function loadScript(url, callback, type) {
-  let script = document.querySelector(`head > script[src="${url}"]`);
-  if (!script) {
-    const { head } = document;
-    script = document.createElement('script');
-    script.setAttribute('src', url);
-    if (type) {
-      script.setAttribute('type', type);
-    }
-    script.onload = () => { if (callback) callback(); };
-    script.onerror = () => { if (callback) callback(); };
-    head.append(script);
-  }
-  return script;
-}
-
-const loadFaaS = (a) => {
-  const block = document.createElement('div');
-  block.className = a.className;
-  const url = new URL(a.href);
-  const faasconf = parseEncodedConfig(url.searchParams.get('config'));
-  
-  //Todo: modify faasconf here //
-  
-  loadScript('https://code.jquery.com/jquery-3.6.0.min.js', () => {
-    loadScript('https://dev.apps.enterprise.adobe.com/faas/service/jquery.faas-current.js', () => {
-      window.faasLoaded = true;
-      // eslint-disable-next-line no-undef
-      $(block).faas(faasconf);
-    });
-  });
-  a.parentElement.replaceChild(block, a);
-}
+import { initFaas, loadFaasFiles } from './utils.js';
 
 const intersectHandler = (entries) => {
   const entry = entries[0];
   if (entry.isIntersecting) {
     if (entry.intersectionRatio >= 0.25) {
-      const el = entry.target;
-      loadFaaS(el);
+      const a = entry.target;
+      const url = new URL(a.href);
+      initFaas(parseEncodedConfig(url.searchParams.get('config')), a);
     }
   } else {
     // if ((entry.intersectionRatio === 0.0) && (adBox.dataset.totalViewTime >= 60000)) {

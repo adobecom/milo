@@ -1,5 +1,6 @@
 const blocks = [
   'caas',
+  'faas',
   'faq',
   'fragment',
   'how-to',
