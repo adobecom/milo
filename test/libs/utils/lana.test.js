@@ -81,8 +81,8 @@ describe('LANA', () => {
   });
 
   it('Will truncate the message', () => {
-    const longMsg = 'm'.repeat(5100);
-    const expectedMsg = 'm'.repeat(5000) + '%3Ctrunc%3E';
+    const longMsg = 'm'.repeat(2100);
+    const expectedMsg = 'm'.repeat(2000) + '%3Ctrunc%3E';
     window.lana.log(longMsg);
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');

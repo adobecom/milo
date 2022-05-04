@@ -1,4 +1,4 @@
-var MSG_LIMIT = 5000;
+var MSG_LIMIT = 2000;
 
 var defaultOptions = {
   clientId: '',
@@ -15,18 +15,18 @@ function setClientdId(id) {
   window.lana.options.clientId = id;
 }
 
-function getOptions(options) {
+function getOptions(op) {
   var o = window.lana.options;
   return {
-    clientId: options.clientId !== undefined ? options.clientId : o.clientId,
-    debug: options.debug !== undefined ? options.debug : o.debug,
-    endpoint: options.endpoint !== undefined ? options.endpoint : o.endpoint,
-    endpointStage: options.endpointStage !== undefined ? options.endpointStage : o.endpointStage,
-    errorType: options.errorType !== undefined ? options.errorType : o.errorType,
+    clientId: op.clientId !== undefined ? op.clientId : o.clientId,
+    debug: op.debug !== undefined ? op.debug : o.debug,
+    endpoint: op.endpoint !== undefined ? op.endpoint : o.endpoint,
+    endpointStage: op.endpointStage !== undefined ? op.endpointStage : o.endpointStage,
+    errorType: op.errorType !== undefined ? op.errorType : o.errorType,
     implicitSampleRate:
-      options.implicitSampleRate !== undefined ? options.implicitSampleRate : o.implicitSampleRate,
-    sampleRate: options.sampleRate !== undefined ? options.sampleRate : o.sampleRate,
-    useProd: options.useProd !== undefined ? options.useProd : o.useProd,
+      op.implicitSampleRate !== undefined ? op.implicitSampleRate : o.implicitSampleRate,
+    sampleRate: op.sampleRate !== undefined ? op.sampleRate : o.sampleRate,
+    useProd: op.useProd !== undefined ? op.useProd : o.useProd,
   };
 }
 
