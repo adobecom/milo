@@ -11,6 +11,7 @@
  */
 
 import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
+import '../utils/lana.js';
 
 const LCP_BLOCKS = ['section', 'hero'];
 

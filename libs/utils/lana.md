@@ -1,0 +1,65 @@
+# LANA: Log Always Never Assume
+
+## Usage
+
+Milo scripts will set the `window.lana` global object that is used for all LANA interactions.
+
+Errors can be logged using `window.lana.log`.
+
+Any uncaught errors (or Promise Rejections) will automatically be logged to LANA.
+
+### Syntax
+
+`window.lana.log(message, options)`
+
+### Parameters
+
+* `message` - string: The message to be logged.
+
+* `options` - object:
+    * `clientId` - string: Defaults to `''`
+        * The client ID to identify the which product team the error belongs to.
+    * `debug` - boolean: Defaults to `false`
+        * When `true`, will `console.warn` all errors from `lana.log`
+    * `endpoint` - string: AdobeIO API endpoint for LANA to send messages to.
+    * `errorType` - string: Defaults to `e`
+        * `e` for EXPLICIT errors (developer chose to log this error)
+        * `i` for IMPLICIT errors (uncaught errors are logged automatically)
+    * `sampleRate` - int: Defaults to `1`
+        * An int from `1` to `100`, equivalent to the frequency % of how often the error should be logged to the server.
+        * `1` meaning log 1% of the errors to the server
+        * `100` meaning every error will be logged
+
+## Helper Functions
+
+`window.lana.setClientId(clientId)`: sets the client ID for the current page.
+
+It is recommended that the client ID is set for every page so that implicit errors are logged with that client ID.
+
+`window.lana.setDefaultOptions(options)`: Updates the default options.  Any params not defined in the options object will keep the existing default options.
+
+## Example
+
+Explicit error logged and sent to LANA half the time:
+
+```javascript
+try {
+    somethingThatThrows();
+} catch (e) {
+    window.lana.log('Failed attempting something.  Error: ' + e.message, {
+        clientId: 'dxdc',
+        sampleRate: 50,
+    })
+}
+```
+
+## Notes
+* Implicit Error logging
+    * There are 2 global event listeners added by LANA to catch errors:
+        * `window.addEventListener('error', ...);`
+        * `window.addEventListener('unhandledrejection', ...);`
+
+
+### Links
+
+1. [WCMS Ops LANA Wiki](https://wiki.corp.adobe.com/display/WCMSOps/LANA+-+Log+Always+Never+Assume)

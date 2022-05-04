@@ -1,20 +1,67 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
+var defaultOptions = {
+  clientId: '',
+  debug: false,
+  endpoint: '',
+  errorType: 'e',
+  sampleRate: 1,
+};
 
-/**
- * LOG ALWAYS; NEVER ASSUME
- * @param {String} msg the message you want to log
- */
-export default function log(msg) {
-  // eslint-disable-next-line no-console
-  console.log(msg);
+function setClientdId(id) {
+  defaultOptions.clientId = id;
 }
+
+function setDefaultOptions(options) {
+  defaultOptions = {
+    sampleRate: options.sampleRate || defaultOptions.sampleRate,
+    endpoint: options.endpoint || defaultOptions.endpoint,
+    errorType: options.errorType || defaultOptions.errorType,
+    debug: options.debug || defaultOptions.debug,
+    clientId: options.clientId || defaultOptions.clientId,
+  };
+}
+
+function sendUnhandledError(e) {
+  log(e.reason || e.error || e.message, {
+    errorType: 'i',
+  });
+}
+
+function log(message, options) {
+  if (!options) options = {};
+
+  var debug = options.debug || defaultOptions.debug;
+  var sampleRate = options.sampleRate || defaultOptions.sampleRate;
+  message = message && message.stack ? message.stack : message;
+
+  if (debug) {
+    console.warn('LANA:', message);
+  }
+
+  if (sampleRate <= Math.random() * 100) return;
+
+  var clientId = options.clientId || defaultOptions.clientId;
+  var endpoint = options.endpoint || defaultOptions.endpoint;
+  var errorType = options.errorType || defaultOptions.errorType;
+
+  var queryParams = [
+    'm=' + encodeURIComponent(message),
+    'c=' + encodeURI(clientId),
+    's=' + sampleRate,
+    't=' + encodeURI(errorType),
+  ];
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', endpoint + '?' + queryParams.join('&'));
+  xhr.send();
+}
+
+function init() {
+  window.lana = {
+    log: log,
+    setClientdId: setClientdId,
+    setDefaultOptions: setDefaultOptions,
+  };
+  window.addEventListener('error', sendUnhandledError);
+  window.addEventListener('unhandledrejection', sendUnhandledError);
+}
+init();
