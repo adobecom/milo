@@ -9,17 +9,63 @@ export const loadFaasFiles = () => {
   ]);
 };
 
-export const initFaas = (faasconf, targetEl) => {
+export const initFaas = (state, targetEl) => {
   const faasEl = targetEl;
-  if (!faasEl || !faasconf) return;
+  if (!faasEl || !state) return;
 
   const appEl = faasEl.parentElement;
   const newEl = document.createElement('div');
   newEl.className = targetEl.className;
   newEl.classList.add('faas-preview', 'block', 'faas');
-  console.log(faasconf);
-  $(newEl).faas(faasconf);
+  $(newEl).faas(makeFaasConfig(state));
   appEl.replaceChild(newEl, faasEl);
+};
+
+export const makeFaasConfig = (state) => {
+  if (!state) {
+    return defaultState;
+  }
+  
+  console.log('state', state);
+  const config = {
+    id: state.id,
+    l: state.l,
+    d: state.d,
+    as: state.as,
+    ar: state.ar,
+    pc: {
+      1: state.pc1 ? 'js' : '',
+      2: state.pc2 ? 'faas_submission' : '',
+      3: state.pc3 ? 'sfdc' : '',
+      4: state.pc4 ? 'demandbase' : '',
+      5: state.pc5 ? 'clearbit' : '',
+    },
+    q: {},
+    p: {
+      js: {
+        36: state[36],
+        39: state[39],
+        77: 1,
+        78: 1,
+        79: 1,
+        90: 'FAAS',
+        92: state[92],
+        93: state[93],
+        94: state[94],
+      },
+    },
+    e:{
+      afterYiiLoadedCallback: () => {
+        console.log('form loaded.');
+      },
+      afterSubmitCallback: (formData) => {
+        console.log('submitted.', formData);
+      }
+    },
+  }
+  console.log('config', config);
+  
+  return config;
 };
 
 export const defaultState = {
@@ -49,12 +95,5 @@ export const defaultState = {
       94: "",
     },
   },
-  e: {
-    afterYiiLoadedCallback: () => {
-      console.log('form loaded.');
-    },
-    afterSubmitCallback: (formData) => {
-      console.log('submitted.', formData);
-    },
-  },
+  e: {},
 };
