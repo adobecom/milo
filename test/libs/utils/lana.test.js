@@ -5,15 +5,29 @@ import sinon from 'sinon';
 import '../../../libs/utils/lana.js';
 
 const defaultTestOptions = {
-  clientId: '',
+  clientId: 'testClientId',
   debug: false,
   endpoint: 'https://lana.adobeio.com/',
   errorType: 'e',
   sampleRate: 100,
+  implicitSampleRate: 100,
 };
 
 let xhr;
 let xhrRequests;
+
+it('verify default options', () => {
+  expect(window.lana.options).to.be.eql({
+    clientId: '',
+    debug: false,
+    endpoint: 'https://www.adobe.com/lana/ll',
+    endpointStage: 'https://www.stage.adobe.com/lana/ll',
+    errorType: 'e',
+    sampleRate: 1,
+    implicitSampleRate: 1,
+    useProd: true,
+  });
+});
 
 describe('LANA', () => {
   beforeEach(() => {
@@ -58,11 +72,22 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://lana.adobeio.com/?m=Promise%20Rejection&c=myClientId&s=100&t=i'
+        'https://lana.adobeio.com/?m=Promise%20Rejection&c=testClientId&s=100&t=i'
       );
       done();
     };
     window.addEventListener('unhandledrejection', testCallback);
     Promise.reject('Promise Rejection');
+  });
+
+  it('Will truncate the message', () => {
+    const longMsg = 'm'.repeat(5100);
+    const expectedMsg = 'm'.repeat(5000) + '%3Ctrunc%3E';
+    window.lana.log(longMsg);
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://lana.adobeio.com/?m=' + expectedMsg + '&c=testClientId&s=100&t=e'
+    );
   });
 });

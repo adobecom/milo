@@ -21,15 +21,20 @@ Any uncaught errors (or Promise Rejections) will automatically be logged to LANA
         * The client ID to identify the which product team the error belongs to.
     * `debug` - boolean: Defaults to `false`
         * When `true`, will `console.warn` all errors from `lana.log`
-    * `endpoint` - string: AdobeIO API endpoint for LANA to send messages to.
+    * `endpoint` - string: Prod AdobeIO API endpoint for LANA to send messages to.
+    * `endpointStage` - string: Stage AdobeIO API endpoint for LANA to send messages to.
     * `errorType` - string: Defaults to `e`
         * `e` for EXPLICIT errors (developer chose to log this error)
         * `i` for IMPLICIT errors (uncaught errors are logged automatically)
-    * `sampleRate` - int: Defaults to `1`
-        * An int from `1` to `100`, equivalent to the frequency % of how often the error should be logged to the server.
+    * `sampleRate` - number: Defaults to `1`
+        * An number from `0` to `100`, equivalent to the frequency % of how often the error should be logged to the server.
         * `1` meaning log 1% of the errors to the server
         * `100` meaning every error will be logged
-
+        * `0.01` meaning 0.01% of the errors will be logged
+    * `implicitSampleRate` - number: Defaults to 1
+        * same as `sampleRate`
+    * `useProd` - bool: Defaults to `true`
+        * Toggle between prod and stage endpoints
 ## Helper Functions
 
 `window.lana.setClientId(clientId)`: sets the client ID for the current page.
@@ -37,6 +42,8 @@ Any uncaught errors (or Promise Rejections) will automatically be logged to LANA
 It is recommended that the client ID is set for every page so that implicit errors are logged with that client ID.
 
 `window.lana.setDefaultOptions(options)`: Updates the default options.  Any params not defined in the options object will keep the existing default options.
+
+Note that the current option state is stored in `window.lana.options` and can also be directly changed there.
 
 ## Example
 

@@ -1,23 +1,37 @@
+var MSG_LIMIT = 5000;
+
 var defaultOptions = {
   clientId: '',
   debug: false,
-  endpoint: '',
+  endpoint: 'https://www.adobe.com/lana/ll',
+  endpointStage: 'https://www.stage.adobe.com/lana/ll',
   errorType: 'e',
   sampleRate: 1,
+  implicitSampleRate: 1,
+  useProd: true,
 };
 
 function setClientdId(id) {
-  defaultOptions.clientId = id;
+  window.lana.options.clientId = id;
+}
+
+function getOptions(options) {
+  var o = window.lana.options;
+  return {
+    clientId: options.clientId !== undefined ? options.clientId : o.clientId,
+    debug: options.debug !== undefined ? options.debug : o.debug,
+    endpoint: options.endpoint !== undefined ? options.endpoint : o.endpoint,
+    endpointStage: options.endpointStage !== undefined ? options.endpointStage : o.endpointStage,
+    errorType: options.errorType !== undefined ? options.errorType : o.errorType,
+    implicitSampleRate:
+      options.implicitSampleRate !== undefined ? options.implicitSampleRate : o.implicitSampleRate,
+    sampleRate: options.sampleRate !== undefined ? options.sampleRate : o.sampleRate,
+    useProd: options.useProd !== undefined ? options.useProd : o.useProd,
+  };
 }
 
 function setDefaultOptions(options) {
-  defaultOptions = {
-    sampleRate: options.sampleRate || defaultOptions.sampleRate,
-    endpoint: options.endpoint || defaultOptions.endpoint,
-    errorType: options.errorType || defaultOptions.errorType,
-    debug: options.debug || defaultOptions.debug,
-    clientId: options.clientId || defaultOptions.clientId,
-  };
+  window.lana.options = getOptions(options);
 }
 
 function sendUnhandledError(e) {
@@ -29,25 +43,27 @@ function sendUnhandledError(e) {
 function log(message, options) {
   if (!options) options = {};
 
-  var debug = options.debug || defaultOptions.debug;
-  var sampleRate = options.sampleRate || defaultOptions.sampleRate;
-  message = message && message.stack ? message.stack : message;
+  var o = getOptions(options);
 
-  if (debug) {
+  var sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
+  var endpoint = o.useProd ? o.endpoint : o.endpointStage;
+
+  message = message && message.stack ? message.stack : message;
+  if (message.length > MSG_LIMIT) {
+    message = message.slice(0, MSG_LIMIT) + '<trunc>';
+  }
+
+  if (o.debug) {
     console.warn('LANA:', message);
   }
 
   if (sampleRate <= Math.random() * 100) return;
 
-  var clientId = options.clientId || defaultOptions.clientId;
-  var endpoint = options.endpoint || defaultOptions.endpoint;
-  var errorType = options.errorType || defaultOptions.errorType;
-
   var queryParams = [
     'm=' + encodeURIComponent(message),
-    'c=' + encodeURI(clientId),
+    'c=' + encodeURI(o.clientId),
     's=' + sampleRate,
-    't=' + encodeURI(errorType),
+    't=' + encodeURI(o.errorType),
   ];
 
   var xhr = new XMLHttpRequest();
@@ -56,11 +72,14 @@ function log(message, options) {
 }
 
 function init() {
+  var options = window.lana && window.lana.options;
   window.lana = {
     log: log,
     setClientdId: setClientdId,
     setDefaultOptions: setDefaultOptions,
+    options: options || defaultOptions,
   };
+
   window.addEventListener('error', sendUnhandledError);
   window.addEventListener('unhandledrejection', sendUnhandledError);
 }
