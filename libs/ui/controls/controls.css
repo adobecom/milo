@@ -1,5 +1,6 @@
 .accordion {
   --notch-size: 12px;
+  --field-max-width: 260px;
   margin: 0 0 0 6px;
 }
 
@@ -90,7 +91,7 @@ dd.content.is-expanded {
 dd.content .field {
   margin: 0 0 18px;
   display: grid;
-  max-width: 260px;
+  max-width: var(--field-max-width);
 }
 
 dd.content .field label {
@@ -107,6 +108,7 @@ dd.content .field input {
   padding: 8px 6px;
   font-family: adobe-clean, sans-serif;
   font-size: 16px;
+  max-width: var(--field-max-width);
 }
 
 dd.content .field input {
