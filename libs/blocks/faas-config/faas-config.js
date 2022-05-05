@@ -14,7 +14,7 @@ import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/util
 let faasEl;
 const LS_KEY = 'faasConfiguratorState';
 const faasFilesLoaded = loadFaasFiles();
-const ConfiguratorContext = createContext('milo');
+const ConfiguratorContext = createContext('faas');
 const sortObjects = (obj) => {
   return Object.entries(obj).sort((a, b) => {
     const x = a[1].toLowerCase();
@@ -31,7 +31,6 @@ const getObjFromAPI = async (apiPath) => {
     return await resp.json();
   }
 };
-const initialState = 0;
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
@@ -61,10 +60,9 @@ const createCopy = (blob, message) => {
     }
   );
 };
+
 const CopyBtn = () => {
-  const {
-    state
-  } = useContext(ConfiguratorContext);
+  const { state } = useContext(ConfiguratorContext);
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
 
@@ -77,14 +75,46 @@ const CopyBtn = () => {
       setFn(!status);
     }, 2000);
   };
-}
-const Select = ({
-  label,
-  options,
-  prop,
-  onChange,
-  sort
-}) => {
+
+  const getUrl = () => {
+    const url = window.location.href.split('#')[0];
+    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+  };
+
+  const copyConfig = () => {
+    setConfigUrl(getUrl());
+    if (!navigator?.clipboard) {
+      setStatus(setIsError);
+      return;
+    }
+
+    const formTemplate = document.getElementById('id').options[document.getElementById('id').selectedIndex].text;
+    const link = document.createElement('a');
+    link.href = getUrl();
+    link.textContent = `Form as a Service - ${formTemplate}`;
+
+    const blob = new Blob([link.outerHTML], { type: 'text/html' });
+    const data = [new ClipboardItem({ [blob.type]: blob })];
+    navigator.clipboard.write(data)
+      .then(() => {
+        setStatus(setIsSuccess);
+      }, () => {
+        setStatus(setIsError);
+      });
+  };
+
+  return html`
+  <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
+  <button
+    class="copy-config"
+    onClick=${copyConfig}>Copy</button>
+  <div class="copy-message ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}">
+    <SuccessMessage>Copied to clipboard!</SuccessMessage>
+    <ErrorMessage>Failed to copy.</ErrorMessage>
+  </div>`;
+};
+
+const Select = ({label, options, prop, onChange, sort}) => {
   const context = useContext(ConfiguratorContext);
   const onSelectChange = (e) => {
     context.dispatch({
@@ -100,7 +130,7 @@ const Select = ({
   return html`
       <div class="field">
         <label for=${prop}>${label}</label>
-        <select id=${prop} onChange=${onSelectChange}>
+        <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
           ${optionsArray.map(
       ([val, label]) => html`<option value="${val}">${label}</option>`,
     )}
@@ -108,14 +138,8 @@ const Select = ({
       </div>
     `;
 };
-const Input = ({
-  label,
-  type = 'text',
-  prop,
-  placeholder
-}) => {
+const Input = ({label, type = 'text', prop, placeholder}) => {
   const context = useContext(ConfiguratorContext);
-
   const onInputChange = (e) => {
     context.dispatch({
       type: 'INPUT_CHANGE',
@@ -123,76 +147,36 @@ const Input = ({
       value: type === 'checkbox' ? e.target.checked : e.target.value,
     });
   };
-
+  const value = { [type === 'checkbox' ? 'checked' : 'value']: context.state[prop] };
   return html` <div class="field">
       <label for=${prop}>${label}</label>
-      <input type=${type} id=${prop} name=${prop} placeholder=${placeholder} onChange=${onInputChange} />
+      <input type=${type} id=${prop} name=${prop} ...${value} placeholder=${placeholder} onChange=${onInputChange} />
     </div>`;
 };
-const templateSelected = () => {
-  const formId = document.getElementById('formTemplateId') ? document.getElementById('formTemplateId').value : '2';
-  const renderFields = [];
-  const buildOptionsFromApi = (obj) => {
-    const results = {}
-    obj.forEach((o) => {
-      results[o.id] = o.displayText.phrase;
-    });
-    return results;
-  }
-  getObjFromAPI('/faas/api/locale').then((data) => {
-    const langOptions = {};
-    data.forEach((l) => {
-      langOptions[l.code] = l.name;
-    });
-    renderFields.push(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
-  });
-  getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
-
-      data.formQuestions.forEach((d) => {
-        // console.log(d.question);
-        if (d.question.id === '92' || // Form Type
-          d.question.id === '93' || // Form Subtype
-          d.question.id === '94') { // Primary Product Interest
-          renderFields.push(html`<${Select} label="${d.question.name}" prop="${d.question.id}" options=${buildOptionsFromApi(d.question.collection.collectionValues)} sort="true" />`);
-        }
-        if (d.question.id === '149') { // b2bpartners
-          renderFields.push(html`<${Input} label="Name(s) of B2B Partner(s)" prop="${d.question.id}" placeholder="Simple string, or comma separated list e.g. Microsoft, SAP" />`);
-        }
-        if (d.question.id === '172') { // Last Asset
-          renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
-        }
-      });
-      const app = html`
-            <${Configurator} rootEl=${faasEl} renderFields=${renderFields} />
-        `;
-      render(app, faasEl);
-    })
-    .catch((err) => {
-      console.log('Could not load additonal Form Template options from FaaS.', err);
-    });
-}
 const templateOptions = {};
-const RequiredPanel = ({
-  renderFields
-}) => html`
-    <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
-    ${renderFields}
-    <${Input} label="Destination URL" prop="d" />
-    <${Input} label="Internal Campagin ID" prop="36" placeholder="70114000002XYvIAAW" />
+const RequiredPanel = ({renderFields}) => html`
+  <${Input} label="Form Title" prop="title" />
+  <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
+  ${renderFields}
+  <${Input} label="Destination URL" prop="d" />
+  <${Input} label="Internal Campagin ID" prop="36" placeholder="70114000002XYvIAAW" />
 `;
 const OptionalPanel = () => html`
-    <${Input} label="Onsite Campagin ID" prop="39" />
-    <${Input} label="Auto Submit" prop="as" type="checkbox" />
-    <${Input} label="Auto Response" prop="ar" type="checkbox" />
+  <${Input} label="Onsite Campagin ID" prop="39" />
+  <${Input} label="Auto Submit" prop="as" type="checkbox" />
+  <${Input} label="Auto Response" prop="ar" type="checkbox" />
 `;
 const PrepopulationPanel = () => html`
-    <${Input} label="Custom JavaScript" prop="pc1" type="checkbox" />
-    <${Input} label="Faas Submissions" prop="pc2" type="checkbox" />
-    <${Input} label="SFDC" prop="pc3" type="checkbox" />
-    <${Input} label="Demandbase" prop="pc4" type="checkbox" />
-    <${Input} label="Clearbit (DX use Only)" prop="pc5" type="checkbox" />
+  <${Input} label="Custom JavaScript" prop="pc1" type="checkbox" />
+  <${Input} label="Faas Submissions" prop="pc2" type="checkbox" />
+  <${Input} label="SFDC" prop="pc3" type="checkbox" />
+  <${Input} label="Demandbase" prop="pc4" type="checkbox" />
+  <${Input} label="Clearbit (DX use Only)" prop="pc5" type="checkbox" />
 `;
 const getInitialState = () => {
+  const hashConfig = getHashConfig();
+  if (hashConfig) return hashConfig;
+  
   const lsState = localStorage.getItem(LS_KEY);
   if (lsState) {
     try {
@@ -256,6 +240,48 @@ const Configurator = ({ rootEl, renderFields }) => {
       </div>
     </ConfiguratorContext.Provider>`;
 };
+const templateSelected = () => {
+  const formId = document.getElementById('id') ? document.getElementById('id').value : '40';
+  const renderFields = [];
+  const buildOptionsFromApi = (obj) => {
+    const results = {}
+    obj.forEach((o) => {
+      results[o.id] = o.displayText.phrase;
+    });
+    return results;
+  }
+  getObjFromAPI('/faas/api/locale').then((data) => {
+    const langOptions = {};
+    data.forEach((l) => {
+      langOptions[l.code] = l.name;
+    });
+    renderFields.push(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
+  });
+  getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
+
+      data.formQuestions.forEach((d) => {
+        // console.log(d.question);
+        if (d.question.id === '92' || // Form Type
+          d.question.id === '93' || // Form Subtype
+          d.question.id === '94') { // Primary Product Interest
+          renderFields.push(html`<${Select} label="${d.question.name}" prop="${d.question.id}" options=${buildOptionsFromApi(d.question.collection.collectionValues)} sort="true" />`);
+        }
+        if (d.question.id === '149') { // b2bpartners
+          renderFields.push(html`<${Input} label="Name(s) of B2B Partner(s)" prop="${d.question.id}" placeholder="Simple string, or comma separated list e.g. Microsoft, SAP" />`);
+        }
+        if (d.question.id === '172') { // Last Asset
+          renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
+        }
+      });
+      const app = html`
+            <${Configurator} rootEl=${faasEl} renderFields=${renderFields} />
+        `;
+      render(app, faasEl);
+    })
+    .catch((err) => {
+      console.log('Could not load additonal Form Template options from FaaS.', err);
+    });
+}
 export default async function init(el) {
   faasEl = el;
   loadStyle('/libs/ui/page/page.css');

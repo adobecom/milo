@@ -1,8 +1,9 @@
-import { loadScript } from '../../utils/utils.js';
+import { loadStyle, loadScript } from '../../utils/utils.js';
 
 export const faasHostUrl = 'https://dev.apps.enterprise.adobe.com';
 
 export const loadFaasFiles = () => {
+  loadStyle('/libs/blocks/faas/faas.css');
   return Promise.all([
     loadScript('https://code.jquery.com/jquery-3.6.0.min.js'),
     loadScript(`${faasHostUrl}/faas/service/jquery.faas-current.js`),
@@ -10,15 +11,24 @@ export const loadFaasFiles = () => {
 };
 
 export const initFaas = (state, targetEl) => {
-  const faasEl = targetEl;
-  if (!faasEl || !state) return;
+  if (!targetEl || !state) return;
 
-  const appEl = faasEl.parentElement;
-  const newEl = document.createElement('div');
-  newEl.className = targetEl.className;
-  newEl.classList.add('faas-preview', 'block', 'faas');
-  $(newEl).faas(makeFaasConfig(state));
-  appEl.replaceChild(newEl, faasEl);
+  const appEl = targetEl.parentElement;
+  const formWrapperEl = document.createElement('div');
+  const formEl = document.createElement('div');
+  const formTitleWrapperEl = document.createElement('div');
+  const formTitleEl = document.createElement('h2');
+  formEl.classList = 'faas-form'
+  formTitleWrapperEl.classList.add('faas-title');
+  formTitleEl.textContent = state.title || '';
+  
+  formWrapperEl.className = targetEl.className;
+  formWrapperEl.classList.add('block', 'faas', state.style || 'default');
+  $(formEl).faas(makeFaasConfig(state));
+  
+  formTitleWrapperEl.append(formTitleEl);
+  formWrapperEl.append(formTitleWrapperEl, formEl);
+  appEl.replaceChild(formWrapperEl, targetEl);
 };
 
 export const makeFaasConfig = (state) => {
