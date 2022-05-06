@@ -89,7 +89,7 @@ input[type="checkbox"] + label {
   background-size: 1em 1em;
   height: 58px;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]) + div,
+.faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
 .faas-form select + div,
 .faas-form textarea + div {
   width: 100%;
@@ -140,7 +140,7 @@ input[type="checkbox"] + label {
 
 /* column2 theme */
 .faas.column2 {
-  padding: 33px 48px;
+  padding: 48px 33px;
 }
 .faas.column2 .faas-form {
   display: flex;
@@ -149,18 +149,56 @@ input[type="checkbox"] + label {
 .faas.column2 .faas-form .row:not(.submit) {
   box-sizing: border-box;
   width: 50%;
-  padding: 12px 15px;
+  padding: 12px 15px 20px;
+  position: relative;
 }
 .faas.column2 input[type="checkbox"] + label {
   min-width: 90%;
   width: 90%;
 }
-.faas.column2 .faas-form .row.legal {
-  width: 100%;
+.faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+.faas.column2 .faas-form select + div,
+.faas.column2 .faas-form textarea + div {
+  position: absolute;
+  bottom: 0;
+}
+.faas.column2 .faas-form label {
+  margin-bottom: 8px;
 }
 .faas.column2 .faas-form label,
 .faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]),
 .faas.column2 .faas-form select,
 .faas.column2 .faas-form textarea {
   min-width: 100%;
+}
+.faas.column2 .faas-form .row.legal {
+  width: 100%;
+}
+/* for mobile */
+@media (max-width:799.99px) {
+  .faas h2 {
+    font-size: 20px;
+  }
+  .faas-form label,
+  .faas-form input:not([type=checkbox]):not([type=submit]),
+  .faas-form select,
+  .faas-form textarea {
+    width: 100%;
+    min-width: initial;
+  }
+  .faas-form .row > label {
+    margin-bottom: 10px;
+  }
+  .faas.column2 {
+    padding: 48px;
+  }
+  .faas.column2 .faas-form .row:not(.submit) {
+    width: 100%;
+    padding: 12px 0;
+  }
+  .faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+  .faas.column2 .faas-form select + div,
+  .faas.column2 .faas-form textarea + div {
+    position: static;
+  }
 }
