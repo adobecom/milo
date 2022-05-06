@@ -1,10 +1,13 @@
 /* Common styles for faas form */
 /* Dexter's */
 .faas {
+  box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
   padding: 48px;
   box-shadow: 0px 3px 10px 0px rgb(0 0 0 / 10%);
+  background-color: #FBFBFB;
+  color: #2C2C2C;
 }
 .faas .note {
   display: none;
@@ -12,4 +15,152 @@
 .faas h2 {
   max-width: 460px;
   font-size: 24px;
+  margin: 0 auto 1.25em;
+  text-align: center;
+}
+.faas-form .row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+.faas-form label,
+.faas-form input:not([type=checkbox]):not([type=submit]),
+.faas-form select,
+.faas-form textarea {
+  box-sizing: border-box;
+  width: 50%;
+  min-width: 352px;
+}
+.faas-form label {
+  font-size: 16px;
+  font-weight: 600;
+}
+input[type="checkbox"] + label {
+  width: 95%;
+  font-weight: normal;
+}
+.faas-form input:not([type=checkbox]):not([type=submit]),
+.faas-form select,
+.faas-form textarea {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: 0;
+  padding: 0.5rem 1rem;
+  font-size: 18px;
+  line-height: 38px;
+  border: none;
+  box-shadow: inset 0.067rem 0.067rem 0 0 #8e8e8e, inset -0.06231rem -0.06231rem 0 0 #8e8e8e;
+}
+.faas-form .error input:not([type=checkbox]):not([type=submit]), 
+.faas-form .error select {
+  box-shadow: inset 0.067rem 0.067rem 0 0 #d9534f, inset -0.06231rem -0.06231rem 0 0 #d9534f;
+}
+.faas-form .error input:not([type=checkbox]):not([type=submit]) {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+);
+  background-position: 96%;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  padding-right: 2rem;
+}
+.faas-form .error select {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+),url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+);
+  background-position: 94%,100% 50%;
+  background-repeat: no-repeat;
+  background-size: 18px,1em 1em;
+  padding-right: 2.5rem;
+}
+.faas-form input:not([type=checkbox]):not([type=submit]):hover,
+.faas-form select:hover,
+.faas-form textarea:hover {
+  box-shadow: inset 0.067rem 0.067rem 0 0 #4b4b4b, inset -0.06231rem -0.06231rem 0 0 #4b4b4b;
+}
+.faas-form input:not([type=checkbox]):not([type=submit]):active,.faas-form input:not([type=checkbox]):not([type=submit]):focus,.faas-form input:not([type=checkbox]):not([type=submit]):focus-visible,
+.faas-form select:active,.faas-form select:focus,.faas-form select:focus-visible,
+.faas-form textarea:active, .faas-form textarea:focus,.faas-form textarea:focus-visible {
+  box-shadow: inset 0.067rem 0.067rem 0 0 rgb(0 157 245 / 60%), inset -0.06231rem -0.06231rem 0 0 rgb(0 157 245 / 60%), inset 0.067rem 0.067rem 0 0 rgb(0 157 245 / 60%), inset -0.06231rem -0.06231rem 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
+}
+.faas-form select {
+  background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+) no-repeat 128% 54%;
+  background-color: inherit;
+  background-position: 100% 50%;
+  background-size: 1em 1em;
+  height: 58px;
+}
+.faas-form input:not([type=checkbox]):not([type=submit]) + div,
+.faas-form select + div,
+.faas-form textarea + div {
+  width: 100%;
+  font-size: 16px;
+}
+.faas-form .row.error {
+  color: #d9534f;
+}
+.faas-form .legal {
+  border-top: 1px solid #b9b9b9;
+  margin-top: 24px;
+  font-size: 16px;
+}
+.faas-form .submit input {
+  -webkit-appearance: button;
+  background-color: #2680eb;
+  border: 0;
+  border-radius: 24px;
+  color: #fff;
+  font-weight: 700;
+  margin: 0;
+  padding: 7.5px 13.1px;
+  font-size: 15px;
+  width: initial;
+  box-shadow: none;
+  transition: background-color 125ms ease-out;
+  margin: 0 auto;
+  cursor: pointer;
+}
+.faas-form .submit input:hover {
+  background-color: #1473e6;
+}
+.faas-form .errorSummary {
+  font-size: 16px;
+  display: none !important;
+}
+
+/* dark theme */
+.faas.dark {
+  color: #fff;
+  background-color: #262626;
+}
+.faas.dark input:not([type=submit]),
+.faas.dark select,
+.faas.dark textarea {
+  background-color: #d9d9d9;
+}
+
+/* column2 theme */
+.faas.column2 {
+  padding: 33px 48px;
+}
+.faas.column2 .faas-form {
+  display: flex;
+  flex-wrap: wrap;
+}
+.faas.column2 .faas-form .row:not(.submit) {
+  box-sizing: border-box;
+  width: 50%;
+  padding: 12px 15px;
+}
+.faas.column2 input[type="checkbox"] + label {
+  min-width: 90%;
+  width: 90%;
+}
+.faas.column2 .faas-form .row.legal {
+  width: 100%;
+}
+.faas.column2 .faas-form label,
+.faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]),
+.faas.column2 .faas-form select,
+.faas.column2 .faas-form textarea {
+  min-width: 100%;
 }
