@@ -163,8 +163,10 @@ const RequiredPanel = ({renderFields}) => html`
 `;
 const OptionalPanel = () => html`
   <${Input} label="Onsite Campagin ID" prop="39" />
+  <${Input} label="Hide Prepopulated Fields" prop="hidePrepopulated" type="checkbox" />
   <${Input} label="Auto Submit" prop="as" type="checkbox" />
   <${Input} label="Auto Response" prop="ar" type="checkbox" />
+  <${Input} label="Form is a Gate" prop="isGate" type="checkbox" />
 `;
 const PrepopulationPanel = () => html`
   <${Input} label="Custom JavaScript" prop="pc1" type="checkbox" />
@@ -204,7 +206,7 @@ const Configurator = ({ rootEl, renderFields }) => {
 
   useEffect(() => {
     if (isFaasLoaded) {
-      initFaas(state, document.getElementsByClassName('faas-preview')[0]);
+      initFaas(state, document.getElementsByClassName('faas')[0]);
       saveStateToLocalStorage(state);
     }
   }, [isFaasLoaded, state]);
@@ -235,7 +237,7 @@ const Configurator = ({ rootEl, renderFields }) => {
           <${Accordion} lskey=faasconfig items=${panels} alwaysOpen=${false} />
         </div>
         <div class="content-panel">
-          <div id="faas" class="faas-preview"></div>
+          <div class="block faas"></div>
         </div>
       </div>
     </ConfiguratorContext.Provider>`;
