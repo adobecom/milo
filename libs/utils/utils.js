@@ -154,7 +154,7 @@ function decorateContent(el) {
 }
 
 function decorateDefaults(el) {
-  const firstChild = ':scope > *:not([class]):first-child';
+  const firstChild = ':scope > *:not(div):first-child';
   const afterBlock = ':scope > div + *:not(div)';
   const children = el.querySelectorAll(`${firstChild}, ${afterBlock}`);
   children.forEach((child) => {
