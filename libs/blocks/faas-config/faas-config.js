@@ -155,13 +155,13 @@ const Input = ({label, type = 'text', prop, placeholder}) => {
 };
 const templateOptions = {};
 const RequiredPanel = ({renderFields}) => html`
-  <${Input} label="Form Title" prop="title" />
   <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
   ${renderFields}
   <${Input} label="Destination URL" prop="d" />
   <${Input} label="Internal Campagin ID" prop="36" placeholder="70114000002XYvIAAW" />
 `;
 const OptionalPanel = () => html`
+  <${Input} label="Form Title" prop="title" />
   <${Input} label="Onsite Campagin ID" prop="39" />
   <${Input} label="Hide Prepopulated Fields" prop="hidePrepopulated" type="checkbox" />
   <${Input} label="Auto Submit" prop="as" type="checkbox" />
@@ -174,6 +174,11 @@ const PrepopulationPanel = () => html`
   <${Input} label="SFDC" prop="pc3" type="checkbox" />
   <${Input} label="Demandbase" prop="pc4" type="checkbox" />
   <${Input} label="Clearbit (DX use Only)" prop="pc5" type="checkbox" />
+`;
+const StylePanel = () => html`
+  <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{white:'White',dark:'Dark',}}" />
+  <${Select} label="Layout" prop="style_layout" options="${{column1:'1 Column',column2:'2 Columns',}}" />
+  <${Select} label="Custom Theme" prop="style_customTheme" options="${{none:'None',}}" />
 `;
 const getInitialState = () => {
   const hashConfig = getHashConfig();
@@ -222,6 +227,10 @@ const Configurator = ({ rootEl, renderFields }) => {
     {
       title: 'Prepopulation',
       content: html`<${PrepopulationPanel} />`,
+    },
+    {
+      title: 'Style',
+      content: html`<${StylePanel} />`,
     },
   ];
   return html`

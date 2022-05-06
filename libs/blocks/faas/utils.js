@@ -19,22 +19,26 @@ export const initFaas = (state, targetEl) => {
   const appEl = targetEl.parentElement; 
   
   const formWrapperEl = document.createElement('div');
-  formWrapperEl.className = `block faas ${state.style||''} ${state['isGate']?'gated':''} `;
+  formWrapperEl.className = `block faas
+  ${state['style_backgroundTheme']||'white'}
+  ${state['style_layout']||'column1'}
+  ${state['isGate']?'gated':''}`;
 
   const formTitleWrapperEl = document.createElement('div');
   formTitleWrapperEl.classList.add('faas-title');
   
-  const formTitleEl = document.createElement('h2');
-  formTitleEl.textContent = state.title || '';
+  if(state.title) {
+    const formTitleEl = document.createElement('h2');
+    formTitleEl.textContent = state.title;
+    formTitleWrapperEl.append(formTitleEl);
+  }
   
   const formEl = document.createElement('div');
   formEl.className = 'faas-form'
 
   $(formEl).faas(makeFaasConfig(state));
   
-  formTitleWrapperEl.append(formTitleEl);
   formWrapperEl.append(formTitleWrapperEl, formEl);
-  
   appEl.replaceChild(formWrapperEl, targetEl);
 };
 
