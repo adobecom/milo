@@ -89,14 +89,14 @@ input[type="checkbox"] + label {
   background-size: 1em 1em;
   height: 58px;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
-.faas-form select + div,
-.faas-form textarea + div {
-  width: 100%;
-  font-size: 16px;
-}
 .faas-form .row.error {
   color: #d9534f;
+}
+.faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+.faas.column2 .faas-form select + div,
+.faas.column2 .faas-form textarea + div {
+  width: 100%;
+  font-size: 16px;
 }
 .faas-form .legal {
   border-top: 1px solid #b9b9b9;
@@ -174,6 +174,114 @@ input[type="checkbox"] + label {
 .faas.column2 .faas-form .row.legal {
   width: 100%;
 }
+.faas.column2 .errorMessage {
+  font-size: 16px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgb(0 0 0 / 25%);
+  display: none!important;
+  margin-top: 2px;
+  max-width: 14em;
+  padding: 0.2em 0.4em;
+  position: absolute;
+  top: -14px;
+  width: 100%;
+  z-index: 2;
+}
+.faas.column2 .errorMessage::before,
+.faas.column2 .errorMessage::after {
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  content: "";
+  left: 10px;
+  position: absolute;
+  z-index: 2;
+}
+.faas.column2 .errorMessage::before {
+  border-bottom-color: #e0e0e0;
+  top: -6px;
+}
+.faas.column2 .errorMessage::after {
+  border-bottom-color: #fff;
+  top: -5px;
+}
+.faas.column2 .row.error input:not([type=checkbox]):not([type=submit]):not([type=hidden]):focus + div .errorMessage,
+.faas.column2 .row.error select:focus + div .errorMessage,
+.faas.column2 .row.error textarea:focus + div .errorMessage {
+  display: block !important;
+}
+
+/* next */
+.faas.next {
+  padding: 0;
+}
+.faas.next .faas-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+}
+.faas.next .faas-form .row {
+  width: 50%;
+  position: relative;
+}
+.faas.next .faas-form .row.submit {
+  justify-content: flex-start;
+  position: relative;
+}
+.faas.next .faas-form .row.submit input {
+  margin: 20px 0 0 20px;
+  padding-right: 30px;
+  background: none;
+  position: relative;
+  z-index: 1;
+  transition: color 125ms ease-out;
+  color: inherit;
+}
+.faas.next .faas-form .row.submit input + div {
+  position: relative;
+  top: 7px;
+  left: -15px;
+}
+.faas.next .faas-form .row.submit input + div::after {
+  content: '';
+  display: inline-block;
+  border: solid;
+  border-color: #333;
+  border-width: 0 2px 2px 0;
+  padding: 3px;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  transition: border-color 125ms ease-out;
+}
+.faas.next.dark .faas-form .row.submit input + div::after {
+  border-color: #fff;
+}
+.faas.next .faas-form label {
+  margin-bottom: 8px;
+  min-width: 100%;
+}
+.faas.next .faas-form .row.submit input:hover,
+.faas.next .faas-form .row.submit input:hover + div::after {
+  color: #1373e5;
+  border-color: #1373e5;
+}
+.faas.next .faas-form .row.submit input:focus-visible {
+  outline: 0;
+}
+.faas.next .faas-form input[type=email] {
+  max-width: 231px;
+  min-width: 100%;
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  line-height: 1.375;
+}
+.faas.next .faas-form input[type=email] + div {
+  position: absolute;
+  bottom: -10px;
+}
+
 /* for mobile */
 @media (max-width:799.99px) {
   .faas h2 {
