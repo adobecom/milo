@@ -1,38 +1,10 @@
-import { parseEncodedConfig } from '../../libs/utils.js';
-import { initFaas } from './utils.js';
-
-const intersectHandler = (entries) => {
-  const entry = entries[0];
-  if (entry.isIntersecting) {
-    if (entry.intersectionRatio >= 0.25) {
-      const a = entry.target;
-      const encodedConfig = a.href.split('#')[1];
-      initFaas(parseEncodedConfig(encodedConfig), a);
-    }
-  } else {
-    // if ((entry.intersectionRatio === 0.0) && (adBox.dataset.totalViewTime >= 60000)) {
-    // Error handler placeholder
-    // }
-  }
-};
+import { parseEncodedConfig } from '/libs/utils/utils.js';
+import { initFaas, loadFaasFiles } from './utils.js';
 
 export default function init(el) {
-  const runObserver = () => {
-    const options = {
-      root: null,
-      rootMargin: '0px',
-      threshold: [0.0, 0.25],
-    };
-
-    const observer = new IntersectionObserver(intersectHandler, options);
-    observer.observe(el);
-  };
-
-  if (document.readyState === 'complete') {
-    runObserver();
-  } else {
-    window.addEventListener('load', () => {
-      runObserver();
-    });
-  }
+  loadFaasFiles().then(()=>{
+    const a = el  ;
+    const encodedConfig = a.href.split('#')[1];
+    initFaas(parseEncodedConfig(encodedConfig), a);
+  });
 }
