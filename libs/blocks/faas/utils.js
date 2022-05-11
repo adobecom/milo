@@ -20,9 +20,9 @@ export const initFaas = (state, targetEl) => {
   
   const formWrapperEl = document.createElement('div');
   formWrapperEl.className = `block faas
-  ${state['style_backgroundTheme']||'white'}
-  ${state['style_layout']||'column1'}
-  ${state['isGate']?'gated':''}`;
+    ${state['style_backgroundTheme']||'white'}
+    ${state['style_layout']||'column1'}
+    ${state['isGate']?'gated':''}`;
 
   const formTitleWrapperEl = document.createElement('div');
   formTitleWrapperEl.classList.add('faas-title');

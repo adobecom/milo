@@ -271,14 +271,21 @@ const templateSelected = () => {
   getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
 
       data.formQuestions.forEach((d) => {
-        // console.log(d.question);
         if (d.question.id === '92' || // Form Type
           d.question.id === '93' || // Form Subtype
           d.question.id === '94') { // Primary Product Interest
-          renderFields.push(html`<${Select} label="${d.question.name}" prop="${d.question.id}" options=${buildOptionsFromApi(d.question.collection.collectionValues)} sort="true" />`);
+          renderFields.push(html`
+          <${Select}
+            label="${d.question.name}"
+            prop="${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
         }
         if (d.question.id === '149') { // b2bpartners
-          renderFields.push(html`<${Input} label="Name(s) of B2B Partner(s)" prop="${d.question.id}" placeholder="Simple string, or comma separated list e.g. Microsoft, SAP" />`);
+          renderFields.push(html`
+          <${Input} label="Name(s) of B2B Partner(s)"
+          prop="${d.question.id}"
+          placeholder="Simple string, or comma separated list e.g. Microsoft, SAP" />`);
         }
         if (d.question.id === '172') { // Last Asset
           renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
