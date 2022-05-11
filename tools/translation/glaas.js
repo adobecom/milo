@@ -9,26 +9,35 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/*  global fetch, FormData, window, localStorage */
 
 import getConfig from './config.js';
-import { asyncForEach } from './utils.js';
+import { asyncForEach, getPathFromUrl } from './utils.js';
 import { getFiles } from './sharepoint.js';
+import { PROJECTS_ROOT_PATH } from './project.js';
 
-function computeHandoffName(url, name, locale) {
-  const u = new URL(url);
-  const { pathname } = u;
-  const i = pathname.lastIndexOf('/');
-  const root = pathname.substring(0, i);
-  const tn = `${root}/${name}/${locale}`;
-  return tn.replace(/\//gm, '.');
+const LOCALSTORAGE_ITEM = 'glaas-auth-token';
+
+function computeGLaaSProjectName(url, name, locale) {
+  let pathname = getPathFromUrl(url);
+  pathname = pathname.replace(PROJECTS_ROOT_PATH, '');
+  const fileName = name.replace('.xlsx', '');
+  const root = pathname.substring(0, pathname.lastIndexOf('/'));
+  const tn = `${root}/${fileName}/${locale}`;
+  return tn.replace(/\//gm, '_');
+}
+
+function getAuthorizationHeaders(gLaaS) {
+  const headers = new Headers();
+  headers.append('X-GLaaS-ClientId', gLaaS.clientId);
+  headers.append('X-GLaaS-AuthToken', gLaaS.accessToken);
+  return headers;
 }
 
 async function validateSession(token) {
   const { glaas } = await getConfig();
   const authToken = token || glaas.accessToken;
   // client must validate token
-  const res = await fetch(`${glaas.url}${glaas.api.session.check.uri}`, {
+  const response = await fetch(`${glaas.url}${glaas.api.session.check.uri}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,141 +46,165 @@ async function validateSession(token) {
       'X-GLaaS-AuthToken': authToken,
     },
   });
-  if (!res.ok) {
-    throw new Error('Could not validate the GLaas session');
+  if (!response.ok) {
+    throw new Error('Could not validate the GLaaS session');
   }
 }
 
-async function connect(callback) {
-  const LOCALSTORAGE_ITEM = 'glaas-auth-token';
-  let token = localStorage.getItem(LOCALSTORAGE_ITEM);
+function getTokenFromLocalStorage() {
+  return localStorage.getItem(LOCALSTORAGE_ITEM);
+}
+
+async function validateSessionWithToken() {
+  const token = getTokenFromLocalStorage();
   if (token) {
     try {
       await validateSession(token);
     } catch (error) {
-      token = null;
       localStorage.removeItem(LOCALSTORAGE_ITEM);
+      return null;
     }
   }
+  return token;
+}
+
+function setGLaaSAccessToken(newToken, glaas) {
+  glaas.accessToken = newToken;
+  localStorage.setItem(LOCALSTORAGE_ITEM, newToken);
+}
+
+async function setGLaaSAccessTokenAndValidate(newToken, glaas, callback) {
+  setGLaaSAccessToken(newToken, glaas);
+  await validateSessionWithToken();
+  if (callback) await callback();
+}
+
+function triggerUserAuthenticationFlow(glaas, callback) {
+  window.setGLaaSAccessToken = async (newToken) => {
+    await setGLaaSAccessTokenAndValidate(newToken, glaas, callback);
+  };
+  const url = `${glaas.url}${glaas.authorizeURI}?response_type=token&state=home&client_id=${glaas.clientId}&redirect_uri=${glaas.redirectURI}`;
+  window.open(url, 'Connect to GLaaS', 'width=500,height=800');
+}
+
+async function connect(callback) {
+  const token = await validateSessionWithToken();
   const { glaas } = await getConfig();
   if (!token) {
-    window.setGLaaSAccessToken = async (newToken) => {
-      glaas.accessToken = newToken;
-      localStorage.setItem(LOCALSTORAGE_ITEM, newToken);
-      await validateSession();
-      // eslint-disable-next-line no-console
-      console.log('You are now authenticated to GLaaS');
-      if (callback) await callback();
-    };
-
-    const url = `${glaas.url}${glaas.authorizeURI}?response_type=token&state=home&client_id=${glaas.clientId}&redirect_uri=${glaas.redirectURI}`;
-    window.open(url, 'Connect to GLaaS', 'width=500,height=800');
+    triggerUserAuthenticationFlow(glaas, callback);
   } else {
-    glaas.accessToken = token;
-    localStorage.setItem(LOCALSTORAGE_ITEM, token);
+    setGLaaSAccessToken(token, glaas);
     if (callback) await callback();
   }
 }
 
-async function createHandoff(tracker, locale) {
-  const handoffName = computeHandoffName(tracker.url, tracker.name, locale);
-
-  // TODO check if all files are available first
-  const files = await getFiles(tracker, locale);
-
-  const { glaas } = await getConfig();
-
+function createGLaaSTask(glaas, locale, gLaaSProjectName) {
+  const localeAPI = glaas.localeApi(locale);
   const payload = {
-    ...(await glaas.localeApi(locale)).tasks.create.payload,
-    name: handoffName,
+    ...localeAPI.tasks.create.payload,
+    name: gLaaSProjectName,
     targetLocales: [locale],
   };
-
-  let response = await fetch(`${glaas.url}${(await glaas.localeApi(locale)).tasks.create.uri}`, {
+  const headers = getAuthorizationHeaders(glaas);
+  headers.append('Content-Type', 'application/json');
+  headers.append('Accept', 'application/json');
+  return fetch(`${glaas.url}${localeAPI.tasks.create.uri}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'X-GLaaS-ClientId': glaas.clientId,
-      'X-GLaaS-AuthToken': glaas.accessToken,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
-  if (!response.ok) {
-    throw new Error('Cannot create the task');
-  }
+}
 
+async function addAssetsToCreatedTask(glaas, locale, files, gLaaSProjectName) {
   const formData = new FormData();
   files.forEach((file, index) => {
     formData.append(`file${index > 0 ? index : ''}`, file, file.path.replace(/\//gm, '_'));
   });
 
-  response = await fetch(`${glaas.url}${(await glaas.localeApi(locale)).tasks.assets.baseURI}/${handoffName}/assets?targetLanguages=${locale}`, {
+  return fetch(`${glaas.url}${(glaas.localeApi(locale)).tasks.assets.baseURI}/${gLaaSProjectName}/assets?targetLanguages=${locale}`, {
     method: 'POST',
-    headers: {
-      'X-GLaaS-ClientId': glaas.clientId,
-      'X-GLaaS-AuthToken': glaas.accessToken,
-    },
+    headers: getAuthorizationHeaders(glaas),
     body: formData,
   });
-  if (!response.ok) {
-    throw new Error('Cannot set the assets');
-  }
+}
 
+function markTaskAsCreated(glaas, locale, gLaaSProjectName) {
   const data = new URLSearchParams();
   data.append('newStatus', 'CREATED');
-  response = await fetch(`${glaas.url}${(await glaas.localeApi(locale)).tasks.updateStatus.baseURI}/${handoffName}/${locale}/updateStatus`, {
+  const headers = getAuthorizationHeaders(glaas);
+  headers.append('Content-Type', 'application/x-www-form-urlencoded');
+  headers.append('Accept', 'application/json');
+  return fetch(`${glaas.url}${(glaas.localeApi(locale)).tasks.updateStatus.baseURI}/${gLaaSProjectName}/${locale}/updateStatus`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-      'X-GLaaS-ClientId': glaas.clientId,
-      'X-GLaaS-AuthToken': glaas.accessToken,
-    },
+    headers,
     body: data,
   });
-  if (!response.ok) {
-    throw new Error('Cannot update the status');
+}
+
+async function sendToGLaaS(project, locale) {
+  const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, locale);
+  const files = await getFiles(project, locale);
+  if (!files || files.length === 0) {
+    throw new Error('No valid files found to send for translation');
+  }
+  const { glaas } = await getConfig();
+  const createdGLaaSTask = await createGLaaSTask(glaas, locale, gLaaSProjectName);
+  if (!createdGLaaSTask.ok) {
+    throw new Error('Cannot create the GLaaS task');
+  }
+  const addedAssets = await addAssetsToCreatedTask(glaas, locale, files, gLaaSProjectName);
+  if (!addedAssets.ok) {
+    throw new Error('Cannot add assets to created GLaaS Task');
+  }
+  const taskStatus = await markTaskAsCreated(glaas, locale, gLaaSProjectName);
+  if (!taskStatus.ok) {
+    throw new Error('Cannot update GLaaS task as newly created.');
   }
 }
 
-async function updateTracker(tracker, callback) {
-  if (!tracker) {
+function getGLaaSTaskStatus(glaas, locale, gLaaSProjectName) {
+  const headers = getAuthorizationHeaders(glaas);
+  headers.append('Content-Type', 'application/json');
+  headers.append('Accept', 'application/json');
+  return fetch(`${glaas.url}${((glaas.localeApi(locale))).tasks.get.baseURI}/${gLaaSProjectName}`, {
+    method: 'GET',
+    headers,
+  });
+}
+
+function getPathFromAssetName(assetName) {
+  return assetName.replace(/_/gm, '/');
+}
+
+function updateProjectWithTaskStatus(project, locale, gLaaSProjectName, gLaaSTaskStatus) {
+  const taskStatus = gLaaSTaskStatus.status;
+  const defaultStatus = taskStatus === 'CREATED' ? 'IN PROGRESS' : taskStatus;
+  gLaaSTaskStatus.assets.forEach((asset) => {
+    const path = getPathFromAssetName(asset.name);
+    const task = project[locale].find((t) => t.filePath === path);
+    if (!task) {
+      return;
+    }
+    task.glaas = task.glaas || {};
+    task.glaas.status = asset.status !== 'DRAFT' ? asset.status : defaultStatus;
+    task.glaas.assetPath = `${gLaaSProjectName}/assets/${locale}/${asset.name}`;
+  });
+}
+
+async function updateProject(project, callback) {
+  if (!project) {
     return;
   }
-
-  await asyncForEach(tracker.locales, async (locale) => {
-    const handoffName = computeHandoffName(tracker.url, tracker.name, locale);
-
-    const { glaas } = await getConfig();
-
-    const response = await fetch(`${glaas.url}${((await glaas.localeApi(locale))).tasks.get.baseURI}/${handoffName}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-GLaaS-ClientId': glaas.clientId,
-        'X-GLaaS-AuthToken': glaas.accessToken,
-      },
-    });
-
-    const json = await response.json();
-    if (json && json[0] && json[0].assets) {
-      const taskStatus = json[0].status;
-      json[0].assets.forEach((a) => {
-        // recompute path
-        const path = a.name.replace(/_/gm, '/');
-        const task = tracker[locale].find((t) => t.filePath === path);
-        if (task) {
-          task.glaas = task.glaas || {};
-          // eslint-disable-next-line no-nested-ternary
-          task.glaas.status = a.status !== 'DRAFT' ? a.status : (taskStatus === 'CREATED' ? 'IN PROGRESS' : taskStatus);
-          task.glaas.assetPath = `${handoffName}/assets/${locale}/${a.name}`;
-        }
-      });
+  const { glaas } = await getConfig();
+  await asyncForEach(project.locales, async (locale) => {
+    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, locale);
+    const status = await getGLaaSTaskStatus(glaas, locale, gLaaSProjectName);
+    const statusJson = await status.json();
+    if (statusJson && statusJson[0] && statusJson[0].assets) {
+      updateProjectWithTaskStatus(project, locale, gLaaSProjectName, statusJson[0]);
     } else {
       // eslint-disable-next-line no-console
-      console.error(`Could not find assets in ${handoffName}...`);
+      console.error(`Could not find assets in ${gLaaSProjectName}...`);
     }
   });
 
@@ -180,14 +213,10 @@ async function updateTracker(tracker, callback) {
 
 async function getFile(task, locale) {
   const { glaas } = await getConfig();
-
-  // eslint-disable-next-line no-underscore-dangle
-  const response = await fetch(`${glaas.url}${(await glaas.localeApi(locale)).tasks.assets.baseURI}/${task.glaas.assetPath}`, {
-    headers: {
-      'X-GLaaS-ClientId': glaas.clientId,
-      'X-GLaaS-AuthToken': glaas.accessToken,
-    },
-  });
+  const response = await fetch(
+    `${glaas.url}${(await glaas.localeApi(locale)).tasks.assets.baseURI}/${task.glaas.assetPath}`,
+    { headers: getAuthorizationHeaders(glaas) },
+  );
 
   if (response.ok) {
     // Stream response into the file.
@@ -196,11 +225,4 @@ async function getFile(task, locale) {
   throw new Error(`Cannot download the file from GLaaS: ${task.glaas.assetPath}`);
 }
 
-export {
-  validateSession,
-  createHandoff,
-  updateTracker,
-  computeHandoffName,
-  connect,
-  getFile,
-};
+export { sendToGLaaS, updateProject, connect, getFile };

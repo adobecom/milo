@@ -37,7 +37,7 @@ h1.container {
   display: block;
 }
 
-#trackerURL a:any-link {
+#project-url a:any-link {
   color: rgb(0 0 0);
   text-decoration: none;
 }
