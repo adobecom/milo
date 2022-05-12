@@ -12,7 +12,7 @@
 
 import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
 
-const LCP_BLOCKS = ['section', 'hero'];
+const LCP_BLOCKS = ['home'];
 
 /*
  * ------------------------------------------------------------
