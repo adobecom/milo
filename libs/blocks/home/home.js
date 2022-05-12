@@ -49,13 +49,13 @@ export default function init(el) {
   });
   children[0].querySelector(':scope > div').remove();
   switch (variant) {
-    case 'section home hero':
+    case 'home hero':
       decorateHero(el, children[1]);
       break;
-    case 'section engage':
+    case 'home engage':
       decorateEngage(el);
       break;
-    case 'section about':
+    case 'home about':
       decorateAbout(el);
       break;
     default:

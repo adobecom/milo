@@ -1,31 +1,30 @@
-/* forcefully disable the header */
 header {
   display: none;
 }
 
-.section {
+.home {
   position: relative;
   height: 100vh;
 }
 
-.section[data-status='loaded'] {
+.home[data-status='loaded'] {
   display: grid;
 }
 
-.section.engage {
+.home.engage {
   background: #2C2C2C;
   color: #FFF;
   grid-template-rows: 100%;
   word-break: break-word;
 }
 
-.section.engage .bg {
+.home.engage .bg {
   grid-row: 1;
   grid-column: 1;
   display: grid;
 }
 
-.section.engage .fg {
+.home.engage .fg {
   grid-row: 1;
   grid-column: 1;
   z-index: 1;
@@ -33,7 +32,7 @@ header {
   grid-template-rows: .2fr 1fr 1fr .4fr;
 }
 
-.section.hero .bg {
+.home.hero .bg {
   grid-column: 1;
   grid-row: 1;
   z-index: 1;
@@ -42,7 +41,7 @@ header {
   grid-template-rows: repeat(7, 1fr);
 }
 
-.section.hero .fg {
+.home.hero .fg {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -55,13 +54,14 @@ header {
   z-index: 2;
 }
 
-.section.hero h1 {
+.home.hero h1 {
   position: relative;
   font-size: 120px;
+  font-weight: 400;
   margin: 0;
 }
 
-.section.hero h1::before {
+.home.hero h1::before {
   content: '';
   background: url('/img/open-curly.svg');
   width: 54px;
@@ -72,7 +72,7 @@ header {
   left: -54px;
 }
 
-.section.hero h1::after {
+.home.hero h1::after {
   content: '';
   background: url('/img/curly-close.svg');
   width: 80px;
@@ -83,7 +83,7 @@ header {
   right: -68px;
 }
 
-.section.hero h1+p {
+.home.hero h1+p {
   max-width: 220px;
   font-family: adobe-clean-serif, serif;
   font-size: 36px;
@@ -92,53 +92,49 @@ header {
 }
 
 
-.section .bg-item {
+.home.hero .bg-item,
+.home.engage .bg-item {
   grid-row: 1 / -1;
   position: relative;
 }
 
-.section .bg-item picture {
+.home.hero .bg-item picture,
+.home.engage .bg-item picture {
   position: absolute;
   inset: 0;
 }
 
-.section .bg-item picture img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.section.hero .bg-item.item-1 {
+.home.hero .item-1 {
   grid-column: 1 / 7;
   z-index: 4;
 }
 
-.section.hero .bg-item.item-2 {
+.home.hero .item-2 {
   grid-column: 5 / 10;
   z-index: 4;
 }
 
-.section.hero .bg-item.item-3 {
+.home.hero .item-3 {
   grid-column: -1 / 9;
   z-index: 5;
 }
 
-.section.hero .bg-item.item-4 {
+.home.hero .item-4 {
   grid-column: 7 / 11;
   grid-row: 2 / -1;
 }
 
-.section.hero .bg-item.item-5 {
+.home.hero .item-5 {
   grid-column: 11 / -1;
 }
 
-.section.hero .bg-item.item-6 {
+.home.hero .item-6 {
   grid-column: 7 / 9;
   grid-row: 7;
   position: relative;
 }
 
-.section.hero .bg-item.item-6 img {
+.home.hero .item-6 img {
   position: absolute;
   width: 100%;
   object-fit: unset;
@@ -146,22 +142,36 @@ header {
   max-width: unset;
 }
 
-.section.hero .fg>div {
+.home.hero .bg-item picture img,
+.home.engage .bg-item picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home.engage .made-in picture img {
+  position: absolute;
+  width: 242px;
+  left: -242px;
+  top: -202px;
+}
+
+.home.hero .fg > div {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.section .fg nav {
+.home.hero .fg nav {
   position: relative;
   justify-self: center;
 }
 
-.section .fg nav button {
+.home.hero .fg nav button {
   display: none;
 }
 
-.section .fg nav ul {
+.home.hero .fg nav ul {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -172,7 +182,7 @@ header {
   text-align: center;
 }
 
-.section .fg nav li a {
+.home.hero .fg nav li a {
   display: block;
   position: relative;
   z-index: 5;
@@ -180,11 +190,11 @@ header {
   transition: .2s transform;
 }
 
-.section .fg nav li a:hover {
+.home.hero .fg nav li a:hover {
   transform: scale(1.1);
 }
 
-.section .fg nav li a::before {
+.home.hero .fg nav li a::before {
   z-index: -1;
   content: '';
   position: absolute;
@@ -195,71 +205,75 @@ header {
   filter: saturate(150%);
 }
 
-.section .fg nav li:nth-child(1) a::before {
+.home.hero .fg nav li:nth-child(1) a::before {
   background-color: rgb(0 99 143 / 80%);
   clip-path: polygon(0 0, 100% 10%, 90% 100%, 5% 85%);
 }
 
-.section .fg nav li:nth-child(2) {
+.home.hero .fg nav li:nth-child(2) {
   transform: rotate(-4deg);
 }
 
-.section .fg nav li:nth-child(2) a::before {
+.home.hero .fg nav li:nth-child(2) a::before {
   background-color: rgb(213 99 143 / 80%);
   clip-path: polygon(10% 10%, 90% 0%, 95% 100%, 5% 85%);
 }
 
-.section .fg nav li:nth-child(3) {
+.home.hero .fg nav li:nth-child(3) {
   transform: rotate(4deg);
 }
 
-.section .fg nav li:nth-child(3) a::before {
+.home.hero .fg nav li:nth-child(3) a::before {
   background-color: rgb(64 149 124 / 80%);
   clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 100%);
 }
 
-.section .fg nav li:nth-child(4) {
+.home.hero .fg nav li:nth-child(4) {
   transform: rotate(-4deg);
 }
 
-.section .fg nav li:nth-child(4) a::before {
+.home.hero .fg nav li:nth-child(4) a::before {
   background-color: rgb(255 8 61 / 80%);
   clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
 }
 
-.get-involved {
+.home.engage .get-involved {
   grid-column: 2 / 4;
   grid-row: 3;
   position: relative;
-  background: url(/img/home/left-arrow-white.svg) no-repeat;
+  background: url('/img/home/left-arrow-white.svg') no-repeat;
   background-size: 172px;
   background-position: 94% 30%;
 }
 
-.made-in {
+.home.engage .get-involved p,
+.home.engage .get-involved h2 {
+  margin: 0 0 32px;
+}
+
+.home.engage .made-in {
   grid-column: 5;
   grid-row: 2;
   position: relative;
 }
 
-.made-in img {
-  position: absolute;
-  width: 242px;
-  left: -242px;
-  top: -202px;
-}
-
-.made-in p:first-child {
+.home.engage .made-in h2 + p {
+  width: 260px;
+  font-size: 72px;
   margin: 0;
 }
 
-.made-in h2 {
+.home.engage .made-in p:first-child {
+  margin: 0;
+}
+
+.home.engage .made-in h2 {
   font-size: 24px;
   text-transform: uppercase;
   margin: 0;
 }
 
-.get-involved img {
+.home.engage .get-involved picture img {
   width: 154px;
   height: 308px;
   position: absolute;
@@ -268,30 +282,19 @@ header {
   opacity: 0.5;
 }
 
-.get-involved a:any-link {
+.home.engage div.get-involved p a {
   font-size: 68px;
   color: #fff;
   font-weight: 300;
   text-transform: uppercase;
 }
 
-.section.engage .get-involved p,
-.section.engage .get-involved h2 {
-  margin: 0 0 32px;
-}
-
-.section.engage .get-involved h2 {
+.home.engage .get-involved h2 {
   font-family: adobe-clean-serif, serif;
   font-weight: 400;
   font-style: italic;
   margin-bottom: -36px;
   font-size: 36px;
-}
-
-.section.engage .made-in h2+p {
-  width: 260px;
-  font-size: 72px;
-  margin: 0;
 }
 
 picture.engage-gradient {
@@ -300,8 +303,8 @@ picture.engage-gradient {
   position: relative;
 }
 
-picture.engage-gradient::after {
-  background: url(/img/home/x-marks.svg);
+.home.engage picture.engage-gradient::after {
+  background: url('/img/home/x-marks.svg');
   background-repeat: no-repeat;
   content: '';
   z-index: 1;
@@ -313,7 +316,7 @@ picture.engage-gradient::after {
   top: -100px;
 }
 
-picture.engage-gradient img {
+.home.engage picture.engage-gradient img {
   opacity: 0.8;
   position: absolute;
   width: 100%;
@@ -322,39 +325,38 @@ picture.engage-gradient img {
 }
 
 @media (min-width: 900px) {
-  .section.hero .bg,
-  .section.hero .fg {
+  .home.hero .bg,
+  .home.hero .fg {
     grid-template-columns: repeat(12, 1fr);
     grid-template-rows: repeat(7, 1fr);
   }
 
-  .section.hero .fg {
+  .home.hero .fg {
     display: grid;
   }
 
-  .section.hero .fg > div {
+  .home.hero .fg > div {
     grid-column: 2;
     grid-row: 4;
     align-self: center;
     flex-wrap: nowrap;
   }
 
-  .section.hero h1 {
+  .home.hero h1 {
     margin: 0 92px 0 54px;
   }
 
-  .section.hero h1+p {
+  .home.hero h1+p {
     margin: 92px 0 0;
   }
 
-  .section .fg nav {
-    margin-top: unset;
+  .home .fg nav {
     grid-column: 6 / 8;
     grid-row: 4;
     margin-top: 72px;
   }
 
-  .section .fg nav::before {
+  .home .fg nav::before {
     content: '';
     background: url('/img/home/arrow-down.svg');
     width: 134px;
@@ -365,7 +367,7 @@ picture.engage-gradient img {
     left: -50px;
   }
 
-  .section.engage .fg {
+  .home.engage .fg {
     display: grid;
   }
 }
