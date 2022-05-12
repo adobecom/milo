@@ -9,26 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/*  global document */
 
-async function asyncForEach(array, callback) {
+export async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index += 1) {
     // eslint-disable-next-line no-await-in-loop
     await callback(array[index], index, array);
   }
 }
 
-function createTag(name, attrs) {
+export function createTag(name, attrs) {
   const el = document.createElement(name);
   if (typeof attrs === 'object') {
-    for (const [key, value] of Object.entries(attrs)) {
-      el.setAttribute(key, value);
-    }
+    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
   }
   return el;
 }
 
-export {
-  asyncForEach,
-  createTag,
-};
+export function getPathFromUrl(url) {
+  return new URL(url).pathname;
+}

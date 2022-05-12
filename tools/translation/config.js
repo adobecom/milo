@@ -11,7 +11,6 @@
  */
 /* global */
 const LOC_CONFIG = '/drafts/localization/configs/config.json';
-const GLAAS_API_PREFIX = '/api/l10n/v1.1/tasks';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 
@@ -49,12 +48,12 @@ function getWorkflowsConfig(config) {
   return workflows;
 }
 
-async function getWorkflowForLocale(config, locale, decoratedLocales) {
+function getWorkflowForLocale(workflowsConfig, locale, decoratedLocales) {
   const localeConfig = decoratedLocales[locale];
   const workflow = localeConfig?.workflow ? localeConfig.workflow : DEFAULT_WORKFLOW;
   return {
     name: workflow,
-    ...getWorkflowsConfig(config)[workflow],
+    ...workflowsConfig[workflow],
   };
 }
 
@@ -70,17 +69,11 @@ async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig
     authorizeURI: '/api/common/sweb/oauth/authorize',
     redirectURI: getGLaaSRedirectURI(),
     accessToken: null,
-    api: {
-      session: {
-        check: {
-          uri: '/api/common/v1.0/checkSession',
-        },
-      },
-    },
-    localeApi: async (locale) => {
-      const workflow = await getWorkflowForLocale(config, locale, decoratedLocales);
+    api: { session: { check: { uri: '/api/common/v1.0/checkSession' } } },
+    localeApi: (locale) => {
+      const workflow = getWorkflowForLocale(workflowsConfig, locale, decoratedLocales);
       const { product, project, workflowName } = workflow;
-      const baseURI = `${GLAAS_API_PREFIX}/${product}/${project}`;
+      const baseURI = `/api/l10n/v1.1/tasks/${product}/${project}`;
       return {
         tasks: {
           create: {
@@ -90,18 +83,10 @@ async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig
               contentSource: 'Adhoc',
             },
           },
-          get: {
-            baseURI: `${baseURI}`,
-          },
-          getAll: {
-            uri: `${baseURI}`,
-          },
-          updateStatus: {
-            baseURI: `${baseURI}`,
-          },
-          assets: {
-            baseURI: `${baseURI}`,
-          },
+          get: { baseURI: `${baseURI}` },
+          getAll: { uri: `${baseURI}` },
+          updateStatus: { baseURI: `${baseURI}` },
+          assets: { baseURI: `${baseURI}` },
         },
       };
     },
@@ -110,6 +95,7 @@ async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig
 
 function getSharepointConfig(config) {
   const sharepointConfig = config.sp.data[0];
+  // ${sharepointConfig.site} - MS Graph API Url with site pointers.
   const baseURI = `${sharepointConfig.site}/drive/root:${sharepointConfig.rootFolders}`;
   return {
     ...sharepointConfig,
@@ -119,18 +105,12 @@ function getSharepointConfig(config) {
         authority: sharepointConfig.authority,
       },
     },
-    login: {
-      redirectUri: '/tools/translation/spauth',
-    },
+    login: { redirectUri: '/tools/translation/spauth' },
     api: {
       url: GRAPH_API,
       file: {
-        get: {
-          baseURI,
-        },
-        download: {
-          baseURI: `${sharepointConfig.site}/drive/items`,
-        },
+        get: { baseURI },
+        download: { baseURI: `${sharepointConfig.site}/drive/items` },
         upload: {
           baseURI,
           method: 'PUT',
@@ -138,23 +118,17 @@ function getSharepointConfig(config) {
         createUploadSession: {
           baseURI,
           method: 'POST',
-          payload: {
-            '@microsoft.graph.conflictBehavior': 'replace',
-          },
+          payload: { '@microsoft.graph.conflictBehavior': 'replace' },
         },
       },
       directory: {
         create: {
           baseURI,
           method: 'PATCH',
-          payload: {
-            folder: {},
-          },
+          payload: { folder: {} },
         },
       },
-      batch: {
-        uri: `${GRAPH_API}/$batch`,
-      },
+      batch: { uri: `${GRAPH_API}/$batch` },
     },
   };
 }
@@ -163,12 +137,8 @@ function getHelixAdminConfig() {
   const adminServerURL = 'https://admin.hlx3.page';
   return {
     api: {
-      status: {
-        baseURI: `${adminServerURL}/status`,
-      },
-      preview: {
-        baseURI: `${adminServerURL}/preview`,
-      },
+      status: { baseURI: `${adminServerURL}/status` },
+      preview: { baseURI: `${adminServerURL}/preview` },
     },
   };
 }

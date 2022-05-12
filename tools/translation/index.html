@@ -1,6 +1,6 @@
 <html lang="en">
 <head>
-  <title>Translation: from tracker to GLaaS</title>
+  <title>Localization</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
   <link rel="stylesheet" href="translation.css">
@@ -14,7 +14,7 @@
       <div class="container">
         <h2 class="project-name">
           <span class="detail">Project</span>
-          <span id="trackerURL"></span>
+          <span id="project-url"></span>
         </h2>
         <div id="reload" class="hidden">
           <button type="button">Reload project</button>
@@ -35,12 +35,11 @@
       </div>
     </div>
     <div class="container">
-      <div class="tracker"></div>
+      <div class="project-detail"></div>
     </div>
   </main>
   <script type="module">
-    import { init } from './ui.js';
-
+    import init from './ui.js';
     init();
   </script>
 </body>

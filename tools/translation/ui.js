@@ -10,34 +10,18 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-use-before-define */
-/*  global */
 
 import getConfig from './config.js';
-import { asyncForEach, createTag } from './utils.js';
+import { asyncForEach, createTag, getPathFromUrl } from './utils.js';
+import { saveFile, connect as connectToSP, updateProjectWithSpStatus as updateSPStatus } from './sharepoint.js';
+import { init as initProject } from './project.js';
+import { connect as connectToGLaaS, sendToGLaaS, getFile as getFileFromGLaaS, updateProject as updateGLaaSStatus } from './glaas.js';
 
-import {
-  saveFile,
-  connect as connectToSP,
-  updateTracker as updateTrackerWithSPStatus,
-} from './sharepoint.js';
-
-import {
-  compute as computeTracker,
-  init as initTracker,
-  purge as purgeTracker,
-} from './tracker.js';
-
-import {
-  connect as connectToGLaaS,
-  createHandoff,
-  getFile as getFileFromGLaaS,
-  updateTracker as updateTrackerWithGLaaSStatus,
-} from './glaas.js';
-
-let tracker;
+let projectDetail;
 const status = document.getElementById('status');
 const loading = document.getElementById('loading');
 const STATUS_LEVELS = ['level-0', 'level-4'];
+const MAX_RETRIES = 5;
 
 function setStatus(msg, level = 'level-4') {
   status.classList.remove(STATUS_LEVELS.filter((l) => l !== level));
@@ -61,141 +45,156 @@ function setError(msg, error) {
   console.error(msg, error);
 }
 
-function setTrackerURL(trackerConfig) {
-  const u = new URL(trackerConfig.url);
-  document.getElementById('trackerURL').innerHTML = `<a href="${trackerConfig.sp}">${trackerConfig.name.replace(/\.[^/.]+$/, '').replaceAll('_', ' ')}</a>`;
+function setProjectUrl(project) {
+  const projectName = project.name.replace(/\.[^/.]+$/, '').replaceAll('_', ' ');
+  document.getElementById('project-url').innerHTML = `<a href="${project.sp}">${projectName}</a>`;
 }
 
-async function preview(task, locale) {
-  loadingON('Downloading file from GLaaS');
-  const file = await getFileFromGLaaS(task, locale);
-
-  const trackerConfig = await initTracker();
-  const u = new URL(trackerConfig.url);
-  const dest = `${u.pathname.slice(0, -5)}_preview/${await (await getConfig()).getPathForLocale(locale)}${task.filePath}`.toLowerCase();
-
-  loadingON('Saving file to Sharepoint');
-  await saveFile(file, dest);
-
-  loadingOFF();
-  window.open(`${u.origin}${dest.slice(0, -5)}`);
-}
-
-async function view(task, locale) {
-  /* const trackerConfig = await initTracker();
-  const u = new URL(trackerConfig.url);
-  const dest = task.draftLocalePath;
-  window.open(`${u.origin}${dest}`); */
+async function view(task) {
   window.open(`${task.sp.webUrl}`);
 }
 
-async function drawTracker() {
-  if (!tracker) {
+function getProjectDetailContainer() {
+  const container = document.getElementsByClassName('project-detail')[0];
+  container.innerHTML = '';
+  return container;
+}
+
+function createRow(classValue = 'default') {
+  return createTag('tr', { class: `${classValue}` });
+}
+
+function createColumn(innerHtml, classValue = 'default') {
+  const $th = createTag('th', { class: `${classValue}` });
+  if (innerHtml) {
+    $th.innerHTML = innerHtml;
+  }
+  return $th;
+}
+
+function createHeaderColumn(innerHtml) {
+  return createColumn(innerHtml, 'header');
+}
+
+async function appendLocales($tr, config, locales) {
+  await asyncForEach(locales, async (locale) => {
+    const gLaaSWorkflow = await config.getWorkflowForLocale(locale);
+    const localeAndGLaaSWF = `${locale} (${gLaaSWorkflow.name})`;
+    $tr.appendChild(createHeaderColumn(localeAndGLaaSWF));
+  });
+}
+
+async function createTableWithHeaders(config) {
+  const $table = createTag('table');
+  const $tr = createRow('header');
+  $tr.appendChild(createHeaderColumn('URL'));
+  $tr.appendChild(createHeaderColumn('Source file'));
+  await appendLocales($tr, config, projectDetail.locales);
+  $table.appendChild($tr);
+  return $table;
+}
+
+function getAnchorHtml(url) {
+  return `<a href="${url}" target="_new">${getPathFromUrl(url)}</a>`;
+}
+
+function getSharepointStatus(url) {
+  let sharepointStatus = 'Connect to Sharepoint';
+  const doc = projectDetail.docs[url];
+  let hasSourceFile = false;
+  if (doc && doc.sp) {
+    if (doc.sp.status === 200) {
+      sharepointStatus = `${doc.filePath}`;
+      hasSourceFile = true;
+    } else {
+      sharepointStatus = 'Source file not found!';
+    }
+  }
+  return { hasSourceFile, msg: sharepointStatus };
+}
+
+function isSentToGLaaS(task) {
+  return task?.glaas?.status;
+}
+
+function fileAlreadySavedInSharepoint(task) {
+  return task.sp.status === 200;
+}
+
+function createButton(innerHtml) {
+  const $button = createTag('button', { type: 'button' });
+  $button.innerHTML = innerHtml;
+  return $button;
+}
+
+function getPersistButtons(task, locale) {
+  const fileInSharepoint = fileAlreadySavedInSharepoint(task);
+  const $saveButton = createButton(fileInSharepoint ? 'Overwrite' : 'Save');
+  $saveButton.addEventListener('click', async () => { await save(task, locale); });
+  if (fileInSharepoint) {
+    const $viewButton = createButton('View');
+    $viewButton.addEventListener('click', () => { view(task); });
+    return [$saveButton, $viewButton];
+  }
+  return [$saveButton];
+}
+
+function getGLaaSStatus(config, locale, url, hasSourceFile) {
+  const gLaaSStatus = { innerHtml: 'N/A', taskFoundInGLaaS: false, canSaveAll: false };
+  const localeTask = projectDetail[locale].find((task) => task.URL === url);
+  if (!localeTask) {
+    return gLaaSStatus;
+  }
+  gLaaSStatus.innerHtml = 'Connect to GLaaS first';
+  const gLaaSConfig = config.glaas;
+  const taskInGLaaS = isSentToGLaaS(localeTask);
+  if (taskInGLaaS) {
+    gLaaSStatus.innerHtml = taskInGLaaS;
+    gLaaSStatus.taskFoundInGLaaS = true;
+    if (taskInGLaaS === 'COMPLETED' && localeTask.sp) {
+      gLaaSStatus.canSaveAll = true;
+      gLaaSStatus.persistButtons = getPersistButtons(localeTask, locale);
+    }
+  } else if (gLaaSConfig.accessToken) {
+    if (localeTask.sp) {
+      gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
+    }
+  }
+  return gLaaSStatus;
+}
+
+async function displayProjectDetail() {
+  if (!projectDetail) {
     return;
   }
+  const config = await getConfig();
+  const container = getProjectDetailContainer();
+  const $table = await createTableWithHeaders(config);
 
-  const container = document.getElementsByClassName('tracker')[0];
-  container.innerHTML = '';
-
-  const $table = createTag('table');
-  let $tr = createTag('tr', { class: 'header' });
-  let $th = createTag('th', { class: 'header' });
-  $th.innerHTML = 'URL';
-  $tr.appendChild($th);
-
-  $th = createTag('th', { class: 'header' });
-  $th.innerHTML = 'Source file';
-  $tr.appendChild($th);
-
-  await asyncForEach(tracker.locales, async (loc) => {
-    $th = createTag('th', { class: 'header' });
-    const wf = await (await getConfig()).getWorkflowForLocale(loc);
-    $th.innerHTML = `${loc} (${wf.name})`;
-
-    $tr.appendChild($th);
-  });
-  $table.appendChild($tr);
-
-  let connectedToGLaaS = false;
+  const connectedToGLaaS = config.glaas.accessToken;
   let taskFoundInGLaaS = false;
   let canSaveAll = false;
 
-  await asyncForEach(tracker.urls, async (url) => {
-    $tr = createTag('tr', { class: 'row' });
-    $th = createTag('th', { class: 'row' });
-    const u = new URL(url);
-    $th.innerHTML = `<a href="${url}" target="_new">${u.pathname}</a>`;
-    $tr.appendChild($th);
-
-    $th = createTag('th');
-    $th.innerHTML = 'Connect to Sharepoint';
-    const doc = tracker.docs[url];
-    let hasSourceFile = false;
-    if (doc && doc.sp) {
-      if (doc.sp.status === 200) {
-        $th.innerHTML = `${doc.filePath}`;
-        hasSourceFile = true;
-      } else {
-        $th.innerHTML = 'Source file not found!';
-      }
-    }
-    $tr.appendChild($th);
-
-    await asyncForEach(tracker.locales, async (locale) => {
+  await asyncForEach(projectDetail.urls, async (url) => {
+    const $tr = createRow();
+    const pageUrl = getAnchorHtml(url);
+    $tr.appendChild(createColumn(pageUrl));
+    const sharepointStatus = getSharepointStatus(url);
+    $tr.appendChild(createColumn(sharepointStatus.msg));
+    await asyncForEach(projectDetail.locales, async (locale) => {
       const $td = createTag('td');
-      $td.innerHTML = 'N/A';
-      const task = tracker[locale].find((t) => t.URL === url);
-      if (task) {
-        const glaas = (await getConfig()).glaas;
-        if (task.glaas && task.glaas.status) {
-          connectedToGLaaS = true;
-          taskFoundInGLaaS = true;
-          if (task.glaas.status === 'COMPLETED') {
-            $td.innerHTML = '';
-            if (task.sp) {
-              canSaveAll = true;
-              const $saveToLocalSP = createTag('button', { type: 'button' });
-              let $view;
-              if (task.sp.status !== 200) {
-                $saveToLocalSP.innerHTML = 'Save';
-              } else {
-                $saveToLocalSP.innerHTML = 'Overwrite';
-
-                $view = createTag('button', { type: 'button' });
-                $view.innerHTML = 'View';
-                $view.addEventListener('click', () => {
-                  view(task, locale);
-                });
-              }
-              $saveToLocalSP.addEventListener('click', () => {
-                save(task, true, locale);
-              });
-              $td.appendChild($saveToLocalSP);
-              if ($view) {
-                $td.appendChild($view);
-              }
-            }
-          } else {
-            $td.innerHTML = task.glaas.status;
-          }
-        } else if (glaas.accessToken) {
-          connectedToGLaaS = true;
-          if (task.sp) {
-            if (hasSourceFile) {
-              $td.innerHTML = 'Ready for translation';
-            } else {
-              $td.innerHTML = 'No source';
-            }
-          }
-        } else {
-          $td.innerHTML = 'Connect to GLaaS';
-        }
-
-        // if (task.sp && task.sp.status === 200) {
-        //   $td.innerHTML += ' | File exists in Sharepoint, be careful';
-        // }
+      const gLaaSStatus = getGLaaSStatus(config, locale, url, sharepointStatus.hasSourceFile);
+      if (gLaaSStatus.persistButtons) {
+        gLaaSStatus.persistButtons.forEach((button) => $td.appendChild(button));
+      } else {
+        $td.innerHTML = gLaaSStatus.innerHtml;
       }
-
+      if (gLaaSStatus.taskFoundInGLaaS) {
+        taskFoundInGLaaS = gLaaSStatus.taskFoundInGLaaS;
+      }
+      if (gLaaSStatus.canSaveAll) {
+        canSaveAll = gLaaSStatus.canSaveAll;
+      }
       $tr.appendChild($td);
     });
 
@@ -203,25 +202,19 @@ async function drawTracker() {
   });
 
   if (canSaveAll) {
-    $tr = createTag('tr', { class: 'row' });
-    $th = createTag('th');
-    $tr.appendChild($th);
+    const finalRow = createRow();
+    finalRow.appendChild(createColumn());
+    finalRow.appendChild(createColumn());
 
-    $th = createTag('th');
-    $tr.appendChild($th);
-
-    tracker.locales.forEach((locale) => {
+    projectDetail.locales.forEach((locale) => {
       const $td = createTag('td');
-      const $saveAllSP = createTag('button', { type: 'button' });
-      $saveAllSP.innerHTML = 'Save all';
-      $saveAllSP.addEventListener('click', () => {
-        saveAll(locale);
-      });
-      $td.appendChild($saveAllSP);
-      $tr.appendChild($td);
+      const $saveAllButton = createButton('Save all');
+      $saveAllButton.addEventListener('click', () => { saveAll(locale); });
+      $td.appendChild($saveAllButton);
+      finalRow.appendChild($td);
     });
 
-    $table.appendChild($tr);
+    $table.appendChild(finalRow);
   }
 
   container.appendChild($table);
@@ -243,49 +236,53 @@ async function drawTracker() {
   }
 }
 
-async function sendTracker() {
-  await asyncForEach(tracker.locales, async (locale) => {
+async function sendForTranslation() {
+  await asyncForEach(projectDetail.locales, async (locale) => {
     loadingON(`Creating ${locale} handoff in GLaaS`);
-    await createHandoff(tracker, locale);
+    await sendToGLaaS(projectDetail, locale);
   });
-  loadingON('Handoffs created in GLaaS. Updating the tracker status with status from GLaaS...');
-  await updateTrackerWithGLaaSStatus(tracker);
+  loadingON('Handoffs created in GLaaS. Updating the project with status from GLaaS...');
+  await updateGLaaSStatus(projectDetail);
   loadingON('Status updated! Updating UI.');
-  await drawTracker();
+  await displayProjectDetail();
   loadingOFF();
 }
 
-async function reloadTracker() {
-  const trackerConfig = await initTracker();
-  loadingON(`Purging tracker file`);
-  await purgeTracker();
-  let res;
-  do {
-    loadingON('Waiting for tracker to be available');
-    res = await fetch(trackerConfig.url);
-  } while(!res.ok);
+async function fetchProjectFile(url, retryAttempt) {
+  const response = await fetch(url);
+  if (!response.ok && retryAttempt <= MAX_RETRIES) {
+    await fetchProjectFile(url, retryAttempt + 1);
+  }
+  return response;
+}
 
-  loadingON('Reloading the application');
-  // full UI reload
+async function reloadProjectFile() {
+  const projectFile = await initProject();
+  loadingON('Purging project file');
+  await projectFile.purge();
+  loadingON('Waiting for project file to be available');
+  await fetchProjectFile(projectFile.url, 1);
+  loadingON('Reloading the App');
   window.location.reload();
-
 }
 
 async function refresh() {
-  loadingON('Updating the tracker status with status from Sharepoint...');
-  await updateTrackerWithSPStatus(tracker);
-  loadingON('Updating the tracker status with status from GLaaS...');
-  await updateTrackerWithGLaaSStatus(tracker);
+  loadingON('Update Sharepoint Status...');
+  await updateSPStatus(projectDetail);
+  loadingON('Updating GLaaS Status...');
+  await updateGLaaSStatus(projectDetail);
   loadingON('Status updated! Updating UI.');
-  await drawTracker();
+  await displayProjectDetail();
   loadingOFF();
 }
 
-async function save(task, doRefresh=true, locale) {
-  const dest = `${task.draftLocaleFilePath}`.toLowerCase();
+function fileExistsInSharepoint(task) {
+  return task.sp && task.sp.status === 200;
+}
 
-  if (task.sp && task.sp.status === 200) {
-    // file exists in Sharepoint, confirm overwrite
+async function save(task, locale, doRefresh = true) {
+  const dest = `${task.draftLocaleFilePath}`.toLowerCase();
+  if (fileExistsInSharepoint(task)) {
     // eslint-disable-next-line no-alert
     const confirm = window.confirm(`File ${dest} exists already. Are you sure you want to overwrite the current production version ?`);
     if (!confirm) return;
@@ -293,26 +290,22 @@ async function save(task, doRefresh=true, locale) {
   loadingON(`Downloading ${dest} file from GLaaS`);
   try {
     const file = await getFileFromGLaaS(task, locale);
-
     loadingON(`Saving ${dest} file to Sharepoint`);
     await saveFile(file, dest);
-
     loadingON(`File ${dest} is now in Sharepoint`);
-
     if (doRefresh) {
       loadingOFF();
       await refresh();
     }
   } catch (err) {
     setError('Could not save the file.', err);
-    return;
   }
 }
 
 async function saveAll(locale) {
-  await asyncForEach(tracker[locale], async (task) => {
+  await asyncForEach(projectDetail[locale], async (task) => {
     if (task.glaas) {
-      await save(task, false, locale);
+      await save(task, locale, false);
     }
   });
   loadingOFF();
@@ -320,58 +313,60 @@ async function saveAll(locale) {
 }
 
 function setListeners() {
-  document.querySelector('#send button').addEventListener('click', sendTracker);
+  document.querySelector('#send button').addEventListener('click', sendForTranslation);
   document.querySelector('#refresh button').addEventListener('click', refresh);
-  document.querySelector('#reload button').addEventListener('click', reloadTracker);
+  document.querySelector('#reload button').addEventListener('click', reloadProjectFile);
   document.querySelector('#loading').addEventListener('click', loadingOFF);
+}
+
+async function getSafely(method, errMsg) {
+  let info;
+  try {
+    info = await method();
+  } catch (err) {
+    setError(errMsg, err);
+  }
+  return info;
 }
 
 async function init() {
   setListeners();
-  loadingON('Initializing the app');
-  try {
-    await getConfig();
-  } catch(err) {
-    setError('Something is wrong with the application config', err);
+  loadingON('Fetching Localization Config...');
+  const config = await getSafely(getConfig, 'Something is wrong with the Localization Configuration');
+  if (!config) {
     return;
   }
-  loadingON('Config loaded');
-  loadingON('Initializing the project');
-  let trackerConfig;
-  try {
-    trackerConfig = await initTracker();
-  } catch (err) {
-    setError('Could not find a valid project', err);
+  loadingON('Localization Config loaded');
+  loadingON('Fetching Project Config...');
+  const project = await getSafely(initProject, 'Could not read the project file');
+  if (!project) {
     return;
   }
-  loadingON(`Fetching project details ${trackerConfig.url}`);
-  setTrackerURL(trackerConfig);
-  tracker = await computeTracker();
-  loadingON('Tracker loaded.');
-  await drawTracker();
+  loadingON(`Fetching project details for ${project.url}`);
+  setProjectUrl(project);
+  projectDetail = await project.detail();
+  loadingON('Project Details loaded');
+  await displayProjectDetail();
   loadingON('Connecting now to Sharepoint...');
   await connectToSP(async () => {
-    loadingON('Connected to Sharepoint! Updating the project status with status from Sharepoint...');
-    await updateTrackerWithSPStatus(tracker, async () => {
+    loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
+    await updateSPStatus(projectDetail, async () => {
       loadingON('Status updated! Updating UI.');
-      await drawTracker();
+      await displayProjectDetail();
       loadingOFF();
     });
   });
   loadingON('Connecting now to GLaaS...');
   await connectToGLaaS(async () => {
-    loadingON('Connected to GLaaS! Updating the project status with status from GLaaS...');
-    await updateTrackerWithGLaaSStatus(tracker, async () => {
+    loadingON('Connected to GLaaS! Updating the GLaaS Status...');
+    await updateGLaaSStatus(projectDetail, async () => {
       loadingON('Status updated! Updating UI.');
-      await drawTracker();
+      await displayProjectDetail();
       loadingOFF();
     });
   });
-  loadingON('Application loaded.');
+  loadingON('App loaded.');
   loadingOFF();
 }
 
-export {
-  // eslint-disable-next-line import/prefer-default-export
-  init,
-};
+export default init;
