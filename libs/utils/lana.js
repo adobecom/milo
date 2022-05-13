@@ -2,7 +2,6 @@ const MSG_LIMIT = 2000;
 
 const defaultOptions = {
   clientId: '',
-  debug: false,
   endpoint: 'https://www.adobe.com/lana/ll',
   endpointStage: 'https://www.stage.adobe.com/lana/ll',
   errorType: 'e',
@@ -11,16 +10,18 @@ const defaultOptions = {
   useProd: true,
 };
 
+const w = window;
+
 function setClientdId(id) {
-  window.lana.options.clientId = id;
+  w.lana.options.clientId = id;
 }
 
 function setDefaultOptions(options) {
-  window.lana.options = getOptions(options);
+  w.lana.options = getOptions(options);
 }
 
 function getOptions(op) {
-  const o = window.lana.options;
+  const o = w.lana.options;
   const getOpt = (key) => (op[key] !== undefined ? op[key] : o[key]);
 
   return Object.keys(defaultOptions).reduce((options, key) => {
@@ -42,12 +43,11 @@ function log(msg, options = {}) {
   }
 
   const o = getOptions(options);
-  if (o.debug) {
-    console.warn('LANA:', msg);
-  }
+  if (!o.clientId) console.warn('LANA ClientID is not set.');
 
   const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
-  if (sampleRate <= Math.random() * 100) return;
+
+  if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
   const endpoint = o.useProd ? o.endpoint : o.endpointStage;
   const queryParams = [
@@ -57,21 +57,44 @@ function log(msg, options = {}) {
     't=' + encodeURI(o.errorType),
   ];
 
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', endpoint + '?' + queryParams.join('&'));
-  xhr.send();
+  if (w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
+
+  if (!w.lana.localhost || w.lana.debug) {
+    const xhr = new XMLHttpRequest();
+    if (w.lana.debug) {
+      queryParams.push('d');
+      xhr.addEventListener('load', function () {
+        console.log('LANA response:', xhr.responseText);
+      });
+    }
+    xhr.open('GET', endpoint + '?' + queryParams.join('&'));
+    xhr.send();
+    return xhr;
+  }
+}
+
+function hasDebugParam() {
+  return w.location.search.toLowerCase().indexOf('lanadebug') !== -1;
+}
+
+function isLocalhost() {
+  return w.location.host.toLowerCase().indexOf('localhost') !== -1;
 }
 
 function init() {
-  const options = window.lana && window.lana.options;
-  window.lana = {
+  const options = w.lana && w.lana.options;
+  w.lana = {
+    debug: false,
     log: log,
     setClientdId: setClientdId,
     setDefaultOptions: setDefaultOptions,
     options: options || defaultOptions,
   };
 
-  window.addEventListener('error', sendUnhandledError);
-  window.addEventListener('unhandledrejection', sendUnhandledError);
+  if (hasDebugParam()) w.lana.debug = true;
+  if (isLocalhost()) w.lana.localhost = true;
+
+  w.addEventListener('error', sendUnhandledError);
+  w.addEventListener('unhandledrejection', sendUnhandledError);
 }
 init();
