@@ -6,8 +6,8 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { parseEncodedConfig } = await import('/libs/utils/utils.js');
-const { loadFaasFiles, initFaas, makeFaasConfig } = await import('/libs/blocks/faas/utils.js');
+const { parseEncodedConfig } = await import('../../../libs/utils/utils.js');
+const { loadFaasFiles, initFaas, makeFaasConfig } = await import('../../../libs/blocks/faas/utils.js');
 
 describe('Faas', () => {
   beforeEach(() => {
@@ -17,15 +17,15 @@ describe('Faas', () => {
   afterEach(() => {
     console.log.restore();
   });
-  
+
   const a = document.querySelector('a');
   const encodedConfig = a.href.split('#')[1];
   const state = parseEncodedConfig(encodedConfig);
-  
-  it('Parse Enconded Config', () => {  
+
+  it('Parse Enconded Config', () => {
     expect(typeof state).to.equal('object');
   });
-  
+
   it('Load FaaS Files', async () => {
     await loadFaasFiles();
     expect(typeof $).to.equal('function');
