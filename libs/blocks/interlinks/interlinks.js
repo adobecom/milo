@@ -24,7 +24,7 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
 
 /**
  * Loops through a list of keywords and looks for matches in the article text.
- * The first occurrence of each keyword will be replaced with a link.
+ * The first occurrence of each keyword will be replaced with a link and tracking added.
  */
 export default async function interlink() {
   const articleBody = document.querySelector('main');
@@ -81,10 +81,13 @@ export default async function interlink() {
               // split text node and insert link with matched text
                 .forEach(({ item, start, end }) => {
                   const text = textNode.nodeValue;
+                  const el = p.parentNode;
+                  el.setAttribute('daa-lh', el.getAttribute('data-block-name'));
                   const a = document.createElement('a');
                   a.title = item.Keyword;
                   a.href = item.URL;
                   a.setAttribute('data-origin', 'interlink');
+                  a.setAttribute('daa-ll', a.title);
                   a.appendChild(document.createTextNode(text.substring(start, end)));
                   p.insertBefore(a, textNode.nextSibling);
                   p.insertBefore(document.createTextNode(text.substring(end)), a.nextSibling);
