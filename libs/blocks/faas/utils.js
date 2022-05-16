@@ -1,6 +1,6 @@
 import {
   loadStyle,
-  loadScript
+  loadScript,
 } from '../../utils/utils.js';
 
 export const faasHostUrl = 'https://dev.apps.enterprise.adobe.com';
@@ -16,8 +16,8 @@ export const loadFaasFiles = () => {
 export const initFaas = (state, targetEl) => {
   if (!targetEl || !state) return;
 
-  const appEl = targetEl.parentElement; 
-  
+  const appEl = targetEl.parentElement;
+
   const formWrapperEl = document.createElement('div');
   formWrapperEl.className = `block faas
     ${state['style_backgroundTheme']||'white'}
@@ -26,18 +26,18 @@ export const initFaas = (state, targetEl) => {
 
   const formTitleWrapperEl = document.createElement('div');
   formTitleWrapperEl.classList.add('faas-title');
-  
-  if(state.title) {
+
+  if (state.title) {
     const formTitleEl = document.createElement('h2');
     formTitleEl.textContent = state.title;
     formTitleWrapperEl.append(formTitleEl);
   }
-  
+
   const formEl = document.createElement('div');
   formEl.className = 'faas-form'
 
   $(formEl).faas(makeFaasConfig(state));
-  
+
   formWrapperEl.append(formTitleWrapperEl, formEl);
   appEl.replaceChild(formWrapperEl, targetEl);
 };
