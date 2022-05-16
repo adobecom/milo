@@ -12,7 +12,8 @@
 
 /* globals */
 // eslint-disable-next-line import/no-cycle
-import { loadScript, sampleRUM } from './scripts.js';
+import { sampleRUM } from './scripts.js';
+import { loadScript } from '../utils/utils.js'
 
 // Core Web Vitals RUM collection
 sampleRUM('cwv');
