@@ -18,7 +18,7 @@ export const loadFaasFiles = () => {
 export const defaultState = {
   id: 40,
   l: 'en_us',
-  d: 'https://business.adobe.com/request-consultation/thankyou.html',
+  d: '',
   as: true,
   ar: false,
   pc: {
@@ -31,7 +31,7 @@ export const defaultState = {
   q: {},
   p: {
     js: {
-      36: '70130000000kYe0AAE',
+      36: '',
       39: '',
       77: 1,
       78: 1,

@@ -102,7 +102,6 @@ const CopyBtn = () => {
       return;
     }
     if (!configFormValidation()) {
-      console.log('got here');
       setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
       return;
@@ -176,7 +175,8 @@ const Input = ({ label, type = 'text', prop, placeholder }) => {
 
 const templateSelected = () => {
   const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
-  const formId = formTypeSelectValue || getInitialState().id || '40';
+  const initialState = getInitialState();
+  const formId = formTypeSelectValue || initialState ? initialState.id : '40';
   const renderFields = [];
   const buildOptionsFromApi = (obj) => {
     const results = {};
