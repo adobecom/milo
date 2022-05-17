@@ -6,7 +6,6 @@ import '../../../libs/utils/lana.js';
 
 const defaultTestOptions = {
   clientId: 'testClientId',
-  debug: false,
   endpoint: 'https://lana.adobeio.com/',
   errorType: 'e',
   sampleRate: 100,
@@ -19,7 +18,6 @@ let xhrRequests;
 it('verify default options', () => {
   expect(window.lana.options).to.be.eql({
     clientId: '',
-    debug: false,
     endpoint: 'https://www.adobe.com/lana/ll',
     endpointStage: 'https://www.stage.adobe.com/lana/ll',
     errorType: 'e',
@@ -38,10 +36,14 @@ describe('LANA', () => {
     };
 
     window.lana.setDefaultOptions(defaultTestOptions);
+    window.lana.debug = false;
+    window.lana.localhost = false;
+    sinon.spy(console, 'log');
     sinon.spy(console, 'warn');
   });
 
   afterEach(() => {
+    console.log.restore();
     console.warn.restore();
     xhr.restore();
   });
@@ -58,12 +60,6 @@ describe('LANA', () => {
     expect(xhrRequests[0].url).to.equal(
       'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=myClientId&s=100&t=e'
     );
-  });
-
-  it('Logs a message to console when debug is true', () => {
-    window.lana.log('Test log message', { debug: true, sampleRate: 100 });
-    expect(console.warn.args[0][0]).to.equal('LANA:');
-    expect(console.warn.args[0][1]).to.equal('Test log message');
   });
 
   it('Catches unhandled error', (done) => {
@@ -89,5 +85,60 @@ describe('LANA', () => {
     expect(xhrRequests[0].url).to.equal(
       'https://lana.adobeio.com/?m=' + expectedMsg + '&c=testClientId&s=100&t=e'
     );
+  });
+
+  it('Consoles data when debug mode is enabled', (done) => {
+    window.lana.debug = true;
+    window.lana.log('Test debug log message', { clientId: 'debugClientId' });
+    const serverResponse =
+      'client=debugClientId,type=e,sample=1,user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36,referer=undefined,ip=23.56.175.228,message=Test debug log message';
+    xhrRequests[0].respond(200, { 'Content-Type': 'text/html' }, serverResponse);
+
+    setTimeout(() => {
+      expect(console.log.args[0]).to.eql([
+        'LANA Msg: ',
+        'Test debug log message',
+        '\nOpts:',
+        {
+          clientId: 'debugClientId',
+          endpoint: 'https://lana.adobeio.com/',
+          endpointStage: 'https://www.stage.adobe.com/lana/ll',
+          errorType: 'e',
+          implicitSampleRate: 100,
+          sampleRate: 100,
+          useProd: true,
+        },
+      ]);
+      expect(console.log.args[1]).to.eql(['LANA response:', serverResponse]);
+      done();
+    }, 50);
+  });
+
+  it('Consoles data when localhost mode is enabled', () => {
+    window.lana.localhost = true;
+    window.lana.log('Test localhost log message');
+    expect(console.log.args[0]).to.eql([
+      'LANA Msg: ',
+      'Test localhost log message',
+      '\nOpts:',
+      {
+        clientId: 'testClientId',
+        endpoint: 'https://lana.adobeio.com/',
+        endpointStage: 'https://www.stage.adobe.com/lana/ll',
+        errorType: 'e',
+        implicitSampleRate: 100,
+        sampleRate: 100,
+        useProd: true,
+      },
+    ]);
+
+    // when in localhost mode, nothing is sent to the server
+    expect(xhrRequests.length).to.equal(0);
+  });
+
+  it('warns that clientId is not set', () => {
+    window.lana.options.clientId = '';
+    window.lana.log('Test log message');
+    expect(console.warn.args[0][0]).to.eql('LANA ClientID is not set.');
   });
 });
