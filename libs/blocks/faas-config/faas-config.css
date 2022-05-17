@@ -23,7 +23,7 @@ button {
   opacity: 0;
   padding: 5px 15px;
   transition: opacity .3s ease-in-out;
-  width: 100px;
+  width: 150px;
   text-align: center;
 }
 

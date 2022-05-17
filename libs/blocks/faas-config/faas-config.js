@@ -62,6 +62,7 @@ const CopyBtn = () => {
   const { state } = useContext(ConfiguratorContext);
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
+  const [errorMessage, setErrorMessage] = useState('Failed to Copy.');
 
   // debug
   const [configUrl, setConfigUrl] = useState('');
@@ -73,6 +74,22 @@ const CopyBtn = () => {
     }, 2000);
   };
 
+  const configFormValidation = () => {
+    let inputValuesFilled = true;
+    const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
+    const RequiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
+    inputs.forEach((input) => {
+      if (!input.value) {
+        inputValuesFilled = false;
+        if (RequiredPanelExpandButton) {
+          RequiredPanelExpandButton.click();
+        }
+        input.focus();
+      }
+    });
+    return inputValuesFilled;
+  };
+
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
     return `${url}#${utf8ToB64(JSON.stringify(state))}`;
@@ -81,6 +98,12 @@ const CopyBtn = () => {
   const copyConfig = () => {
     setConfigUrl(getUrl());
     if (!navigator?.clipboard) {
+      setStatus(setIsError);
+      return;
+    }
+    if (!configFormValidation()) {
+      console.log('got here');
+      setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
       return;
     }
@@ -96,6 +119,7 @@ const CopyBtn = () => {
     navigator.clipboard.write(data)
       .then(() => {
         setStatus(setIsSuccess);
+        setErrorMessage('Failed to copy.');
       }, () => {
         setStatus(setIsError);
       });
@@ -108,7 +132,7 @@ const CopyBtn = () => {
     onClick=${copyConfig}>Copy</button>
   <div class="copy-message ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}">
     <div class="success-message">Copied to clipboard!</div>
-    <div class="error-message">Failed to copy.</div>
+    <div class="error-message">${errorMessage}</div>
   </div>`;
 };
 
@@ -179,7 +203,7 @@ const templateSelected = () => {
         renderFields.push(html`
         <${Select}
           label="${d.question.name}"
-          prop="${d.question.id}"
+          prop="pjs${d.question.id}"
           options=${buildOptionsFromApi(d.question.collection.collectionValues)}
           sort="true" />`);
       }
@@ -200,7 +224,7 @@ const templateSelected = () => {
       }
     });
     if (!isMultipleCampaign) {
-      renderFields.push(html`<${Input} label="Internal Campagin ID" prop="36" placeholder="ex) 70114000002XYvIAAW" />`);
+      renderFields.push(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
     }
     // eslint-disable-next-line no-use-before-define
     const app = html`<${Configurator} rootEl=${faasEl} renderFields=${renderFields} />`;
@@ -218,7 +242,7 @@ const RequiredPanel = ({ renderFields }) => html`
 `;
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />
-  <${Input} label="Onsite Campagin ID" prop="39" />
+  <${Input} label="Onsite Campagin ID" prop="pjs39" />
   <${Input} label="Hide Prepopulated Fields" prop="hidePrepopulated" type="checkbox" />
   <${Input} label="Auto Submit" prop="as" type="checkbox" />
   <${Input} label="Auto Response" prop="ar" type="checkbox" />

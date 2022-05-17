@@ -65,15 +65,15 @@ export const makeFaasConfig = (state) => {
     q: {},
     p: {
       js: {
-        36: state[36],
-        39: state[39],
+        36: state.pjs36,
+        39: state.pjs39,
         77: 1,
         78: 1,
         79: 1,
         90: 'FAAS',
-        92: state[92],
-        93: state[93],
-        94: state[94],
+        92: state.pjs92,
+        93: state.pjs93,
+        94: state.pjs94,
       },
     },
     e: {
