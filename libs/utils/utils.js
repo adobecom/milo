@@ -1,6 +1,7 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const AUTO_BLOCKS = [
+  { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },

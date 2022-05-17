@@ -1,11 +1,16 @@
+.columns {
+  display: grid;
+  gap: var(--spacing-m);
+  grid-auto-columns: 1fr;
+}
+
 .columns.contained {
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
 
-.columns {
-  display: grid;
-  gap: var(--spacing-m);
+.columns.contained.middle {
+  align-items: center;
 }
 
 .columns .row-1.item { grid-row: 1; }
