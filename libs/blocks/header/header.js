@@ -25,4 +25,5 @@ export default async function init(block) {
     block.append(nav);
     return block;
   }
+  return false;
 }

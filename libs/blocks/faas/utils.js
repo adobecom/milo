@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 import {
   loadStyle,
   loadScript,
@@ -13,33 +15,34 @@ export const loadFaasFiles = () => {
   ]);
 };
 
-export const initFaas = (state, targetEl) => {
-  if (!targetEl || !state) return;
-
-  const appEl = targetEl.parentElement;
-
-  const formWrapperEl = document.createElement('div');
-  formWrapperEl.className = `block faas
-    ${state.style_backgroundTheme || 'white'}
-    ${state.style_layout || 'column1'}
-    ${state.isGate ? 'gated' : ''}`;
-
-  const formTitleWrapperEl = document.createElement('div');
-  formTitleWrapperEl.classList.add('faas-title');
-
-  if (state.title) {
-    const formTitleEl = document.createElement('h2');
-    formTitleEl.textContent = state.title;
-    formTitleWrapperEl.append(formTitleEl);
-  }
-
-  const formEl = document.createElement('div');
-  formEl.className = 'faas-form';
-
-  $(formEl).faas(makeFaasConfig(state));
-
-  formWrapperEl.append(formTitleWrapperEl, formEl);
-  appEl.replaceChild(formWrapperEl, targetEl);
+export const defaultState = {
+  id: 40,
+  l: 'en_us',
+  d: 'https://business.adobe.com/request-consultation/thankyou.html',
+  as: true,
+  ar: false,
+  pc: {
+    1: 'js',
+    2: 'faas_submission',
+    3: 'sfdc',
+    4: 'demandbase',
+    5: '',
+  },
+  q: {},
+  p: {
+    js: {
+      36: '70130000000kYe0AAE',
+      39: '',
+      77: 1,
+      78: 1,
+      79: 1,
+      90: 'FAAS',
+      92: '2846',
+      93: '2848',
+      94: '',
+    },
+  },
+  e: {},
 };
 
 export const makeFaasConfig = (state) => {
@@ -168,7 +171,7 @@ export const makeFaasConfig = (state) => {
           });
         }
 
-        function setMutationObserver(elms = [], mutation) {
+        function setMutationObserver(mutation, elms = []) {
           $.each(elms, (i, elm) => {
             mutation.observe(elm, { childList: true });
           });
@@ -218,7 +221,7 @@ export const makeFaasConfig = (state) => {
           }
         });
 
-        setMutationObserver(errorMessages, childListMutation(editMessages));
+        setMutationObserver(childListMutation(editMessages), errorMessages);
       },
       afterSubmitCallback: (formData) => {
         // Gate Stuff
@@ -282,6 +285,7 @@ export const makeFaasConfig = (state) => {
     const q103Values = state.q103cv.split(',');
     const q103Labels = state.q103cl.split(',');
     const q103Obj = { 103: { c: [] } };
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < q103Values.length; i++) {
       q103Obj[103].c.push({ v: q103Values[i], l: q103Labels[i] });
     }
@@ -290,32 +294,31 @@ export const makeFaasConfig = (state) => {
   return config;
 };
 
-export const defaultState = {
-  id: 40,
-  l: 'en_us',
-  d: 'https://business.adobe.com/request-consultation/thankyou.html',
-  as: true,
-  ar: false,
-  pc: {
-    1: 'js',
-    2: 'faas_submission',
-    3: 'sfdc',
-    4: 'demandbase',
-    5: '',
-  },
-  q: {},
-  p: {
-    js: {
-      36: '70130000000kYe0AAE',
-      39: '',
-      77: 1,
-      78: 1,
-      79: 1,
-      90: 'FAAS',
-      92: '2846',
-      93: '2848',
-      94: '',
-    },
-  },
-  e: {},
+export const initFaas = (state, targetEl) => {
+  if (!targetEl || !state) return;
+
+  const appEl = targetEl.parentElement;
+
+  const formWrapperEl = document.createElement('div');
+  formWrapperEl.className = `block faas
+    ${state.style_backgroundTheme || 'white'}
+    ${state.style_layout || 'column1'}
+    ${state.isGate ? 'gated' : ''}`;
+
+  const formTitleWrapperEl = document.createElement('div');
+  formTitleWrapperEl.classList.add('faas-title');
+
+  if (state.title) {
+    const formTitleEl = document.createElement('h2');
+    formTitleEl.textContent = state.title;
+    formTitleWrapperEl.append(formTitleEl);
+  }
+
+  const formEl = document.createElement('div');
+  formEl.className = 'faas-form';
+
+  $(formEl).faas(makeFaasConfig(state));
+
+  formWrapperEl.append(formTitleWrapperEl, formEl);
+  appEl.replaceChild(formWrapperEl, targetEl);
 };

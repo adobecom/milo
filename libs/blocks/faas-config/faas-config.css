@@ -4,16 +4,19 @@ dd.content .field input[name="q103cv"]::placeholder,
 dd.content .field input[name="149"]::placeholder {
   font-size: 14px;
 }
+
 button {
   cursor: pointer;
 }
+
 .copy-message {
   position: absolute;
   right: 0;
   font-size: 12px;
   color: white;
 }
-SuccessMessage, ErrorMessage {
+
+.success-message, .error-message {
   position: absolute;
   right: 15px;
   bottom: -10px;
@@ -23,15 +26,19 @@ SuccessMessage, ErrorMessage {
   width: 100px;
   text-align: center;
 }
-SuccessMessage {
+
+.success-message {
   background-color: #278b27;
 }
-ErrorMessage {
+
+.error-message {
   background-color: #ff3636;
 }
-.copy-message.is-success SuccessMessage {
+
+.copy-message.is-success .success-message {
   opacity: 1;
 }
-.copy-message.is-error ErrorMessage {
+
+.copy-message.is-error .error-message {
   opacity: 1;
 }

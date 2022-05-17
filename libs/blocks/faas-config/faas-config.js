@@ -41,8 +41,10 @@ const saveStateToLocalStorage = (state) => {
 const getObjFromAPI = async (apiPath) => {
   const resp = await fetch(`${faasHostUrl}${apiPath}`);
   if (resp.ok) {
-    return await resp.json();
+    const json = await resp.json();
+    return json;
   }
+  return false;
 };
 const reducer = (state, action) => {
   switch (action.type) {
@@ -54,20 +56,6 @@ const reducer = (state, action) => {
       console.log('DEFAULT');
       return state;
   }
-};
-const createCopy = (blob, message) => {
-  const data = [new ClipboardItem({ [blob.type]: blob })];
-  navigator.clipboard.write(data).then(
-    () => {
-      message.className = 'success-message';
-      message.innerText = 'FaaS Config is successfully copied to clipboard';
-    },
-    (err) => {
-      message.className = 'error-message';
-      message.innerText = 'Failed to copy.';
-      console.log('failed to copy:', err);
-    },
-  );
 };
 
 const CopyBtn = () => {
@@ -103,6 +91,7 @@ const CopyBtn = () => {
     link.textContent = `Form as a Service - ${formTemplate}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
+    // eslint-disable-next-line no-undef
     const data = [new ClipboardItem({ [blob.type]: blob })];
     navigator.clipboard.write(data)
       .then(() => {
@@ -118,8 +107,8 @@ const CopyBtn = () => {
     class="copy-config"
     onClick=${copyConfig}>Copy</button>
   <div class="copy-message ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}">
-    <SuccessMessage>Copied to clipboard!</SuccessMessage>
-    <ErrorMessage>Failed to copy.</ErrorMessage>
+    <div class="success-message">Copied to clipboard!</div>
+    <div class="error-message">Failed to copy.</div>
   </div>`;
 };
 
