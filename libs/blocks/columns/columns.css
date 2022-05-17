@@ -1,0 +1,42 @@
+.columns.contained {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.columns {
+  display: grid;
+  gap: var(--spacing-m);
+}
+
+.columns .row-1.item { grid-row: 1; }
+.columns .row-2.item { grid-row: 2; }
+.columns .row-3.item { grid-row: 3; }
+.columns .row-4.item { grid-row: 4; }
+.columns .row-5.item { grid-row: 5; }
+.columns .row-6.item { grid-row: 6; }
+.columns .row-7.item { grid-row: 7; }
+.columns .row-8.item { grid-row: 8; }
+.columns .row-9.item { grid-row: 9; }
+.columns .row-10.item { grid-row: 10; }
+.columns .row-11.item { grid-row: 11; }
+.columns .row-12.item { grid-row: 12; }
+
+.columns.xxl-spacing .row {
+  gap: var(--spacing-xxl);
+}
+
+.columns.xl-spacing .row {
+  gap: var(--spacing-xl);
+}
+
+.columns.l-spacing .row {
+  gap: var(--spacing-l);
+}
+
+.columns.s-spacing .row {
+  gap: var(--spacing-s);
+}
+
+.columns.xs-spacing .row {
+  gap: var(--spacing-xs);
+}
