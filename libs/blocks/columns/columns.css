@@ -21,22 +21,22 @@
 .columns .row-11.item { grid-row: 11; }
 .columns .row-12.item { grid-row: 12; }
 
-.columns.xxl-spacing .row {
+.columns.xxl-spacing {
   gap: var(--spacing-xxl);
 }
 
-.columns.xl-spacing .row {
+.columns.xl-spacing {
   gap: var(--spacing-xl);
 }
 
-.columns.l-spacing .row {
+.columns.l-spacing {
   gap: var(--spacing-l);
 }
 
-.columns.s-spacing .row {
+.columns.s-spacing {
   gap: var(--spacing-s);
 }
 
-.columns.xs-spacing .row {
+.columns.xs-spacing {
   gap: var(--spacing-xs);
 }
