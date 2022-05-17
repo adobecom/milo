@@ -27,7 +27,7 @@
   padding: 12px 0;
 }
 .faas-form label,
-.faas-form input:not([type=checkbox]):not([type=submit]),
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas-form select,
 .faas-form textarea {
   box-sizing: border-box;
@@ -42,7 +42,7 @@ input[type="checkbox"] + label {
   width: 95%;
   font-weight: normal;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]),
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas-form select,
 .faas-form textarea {
   -webkit-appearance: none;
@@ -54,11 +54,11 @@ input[type="checkbox"] + label {
   border: none;
   box-shadow: inset 0.067rem 0.067rem 0 0 #8e8e8e, inset -0.06231rem -0.06231rem 0 0 #8e8e8e;
 }
-.faas-form .error input:not([type=checkbox]):not([type=submit]), 
+.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]), 
 .faas-form .error select {
   box-shadow: inset 0.067rem 0.067rem 0 0 #d9534f, inset -0.06231rem -0.06231rem 0 0 #d9534f;
 }
-.faas-form .error input:not([type=checkbox]):not([type=submit]) {
+.faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]) {
   background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+);
   background-position: 96%;
   background-repeat: no-repeat;
@@ -72,12 +72,12 @@ input[type="checkbox"] + label {
   background-size: 18px,1em 1em;
   padding-right: 2.5rem;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]):hover,
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):hover,
 .faas-form select:hover,
 .faas-form textarea:hover {
   box-shadow: inset 0.067rem 0.067rem 0 0 #4b4b4b, inset -0.06231rem -0.06231rem 0 0 #4b4b4b;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]):active,.faas-form input:not([type=checkbox]):not([type=submit]):focus,.faas-form input:not([type=checkbox]):not([type=submit]):focus-visible,
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):active,.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus,.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus-visible,
 .faas-form select:active,.faas-form select:focus,.faas-form select:focus-visible,
 .faas-form textarea:active, .faas-form textarea:focus,.faas-form textarea:focus-visible {
   box-shadow: inset 0.067rem 0.067rem 0 0 rgb(0 157 245 / 60%), inset -0.06231rem -0.06231rem 0 0 rgb(0 157 245 / 60%), inset 0.067rem 0.067rem 0 0 rgb(0 157 245 / 60%), inset -0.06231rem -0.06231rem 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
@@ -92,7 +92,7 @@ input[type="checkbox"] + label {
 .faas-form .row.error {
   color: #d9534f;
 }
-.faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) + div,
 .faas.column2 .faas-form select + div,
 .faas.column2 .faas-form textarea + div {
   width: 100%;
@@ -156,7 +156,7 @@ input[type="checkbox"] + label {
   min-width: 90%;
   width: 90%;
 }
-.faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+.faas.column2 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) + div,
 .faas.column2 .faas-form select + div,
 .faas.column2 .faas-form textarea + div {
   position: absolute;
@@ -166,7 +166,7 @@ input[type="checkbox"] + label {
   margin-bottom: 8px;
 }
 .faas.column2 .faas-form label,
-.faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]),
+.faas.column2 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas.column2 .faas-form select,
 .faas.column2 .faas-form textarea {
   min-width: 100%;
@@ -207,7 +207,7 @@ input[type="checkbox"] + label {
   border-bottom-color: #fff;
   top: -5px;
 }
-.faas.column2 .row.error input:not([type=checkbox]):not([type=submit]):not([type=hidden]):focus + div .errorMessage,
+.faas.column2 .row.error input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]):focus + div .errorMessage,
 .faas.column2 .row.error select:focus + div .errorMessage,
 .faas.column2 .row.error textarea:focus + div .errorMessage {
   display: block !important;
@@ -288,7 +288,7 @@ input[type="checkbox"] + label {
     font-size: 20px;
   }
   .faas-form label,
-  .faas-form input:not([type=checkbox]):not([type=submit]),
+  .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
   .faas-form select,
   .faas-form textarea {
     width: 100%;
@@ -304,7 +304,7 @@ input[type="checkbox"] + label {
     width: 100%;
     padding: 12px 0;
   }
-  .faas.column2 .faas-form input:not([type=checkbox]):not([type=submit]):not([type=hidden]) + div,
+  .faas.column2 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) + div,
   .faas.column2 .faas-form select + div,
   .faas.column2 .faas-form textarea + div {
     position: static;

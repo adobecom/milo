@@ -20,9 +20,9 @@ export const initFaas = (state, targetEl) => {
 
   const formWrapperEl = document.createElement('div');
   formWrapperEl.className = `block faas
-    ${state['style_backgroundTheme']||'white'}
-    ${state['style_layout']||'column1'}
-    ${state['isGate']?'gated':''}`;
+    ${state.style_backgroundTheme || 'white'}
+    ${state.style_layout || 'column1'}
+    ${state.isGate ? 'gated' : ''}`;
 
   const formTitleWrapperEl = document.createElement('div');
   formTitleWrapperEl.classList.add('faas-title');
@@ -34,7 +34,7 @@ export const initFaas = (state, targetEl) => {
   }
 
   const formEl = document.createElement('div');
-  formEl.className = 'faas-form'
+  formEl.className = 'faas-form';
 
   $(formEl).faas(makeFaasConfig(state));
 
@@ -75,6 +75,7 @@ export const makeFaasConfig = (state) => {
     },
     e: {
       afterYiiLoadedCallback: () => {
+        const wr = document.querySelector('.faas-form');
         function editMessages(mutations) {
           const firstmut = mutations[0].addedNodes;
           const text = firstmut[firstmut.length - 1].nodeValue;
@@ -86,7 +87,7 @@ export const makeFaasConfig = (state) => {
             i += 1;
           } while (sibs[i]);
         }
-        const multicampaignradiostyle = false; //temp
+        const { multicampaignradiostyle } = state; // temp
         function changeSelectionElement() {
           if (multicampaignradiostyle) {
             const inputs = wr.querySelectorAll('.checkboxlist input');
@@ -169,9 +170,7 @@ export const makeFaasConfig = (state) => {
 
         function setMutationObserver(elms = [], mutation) {
           $.each(elms, (i, elm) => {
-            mutation.observe(elm, {
-              childList: true
-            });
+            mutation.observe(elm, { childList: true });
           });
         }
 
@@ -187,7 +186,7 @@ export const makeFaasConfig = (state) => {
           note.remove();
         }
 
-        if (state['hidePrepopulated']) {
+        if (state.hidePrepopulated) {
           const prepop = $('.prepopulated', wr);
           hideDisplay(prepop);
         }
@@ -227,7 +226,7 @@ export const makeFaasConfig = (state) => {
         const closeModalElement = modal ? modal.querySelector('.dexter-CloseButton') : undefined;
         const isSameDestination = typeof sameDestination === 'string';
 
-        if (disableAutoResponseChk && state['isGate']) {
+        if (disableAutoResponseChk && state.isGate) {
           blocker.parentElement.removeChild(blocker);
         }
 
@@ -238,9 +237,8 @@ export const makeFaasConfig = (state) => {
         // IO Stuff
         const baseUrl = 'https://sc5.omniture.com/p/suite/1.3/json/index.html?a=Basketball.ProvisionUser';
         const email = formData.data[`faas_form_${id}_hash`];
-        const ioUrl =
-          /qa\d+|dev\d+|local|127\.0\.0\.1|:\d{2,4}/g.test(window.location.href) ?
-          'https://www.qa02.adobe.com/shortform/' : 'https://www.adobe.com/shortform';
+        const ioUrl = /qa\d+|dev\d+|local|127\.0\.0\.1|:\d{2,4}/g.test(window.location.href)
+          ? 'https://www.qa02.adobe.com/shortform/' : 'https://www.adobe.com/shortform';
 
         if (analyticsEmailEnabled) {
           $.ajax({
@@ -267,6 +265,27 @@ export const makeFaasConfig = (state) => {
         }
       },
     },
+  };
+
+  // b2bpartners
+  if (state[149]) {
+    // eslint-disable-next-line prefer-destructuring
+    config.p.js[149] = state[149];
+  }
+  // last asset
+  if (state[172]) {
+    // eslint-disable-next-line prefer-destructuring
+    config.p.js[172] = state[172];
+  }
+  // Multiple Campaign Ids
+  if (state.q103cv) {
+    const q103Values = state.q103cv.split(',');
+    const q103Labels = state.q103cl.split(',');
+    const q103Obj = { 103: { c: [] } };
+    for (let i = 0; i < q103Values.length; i++) {
+      q103Obj[103].c.push({ v: q103Values[i], l: q103Labels[i] });
+    }
+    Object.assign(config.q, q103Obj);
   }
   return config;
 };
@@ -287,15 +306,15 @@ export const defaultState = {
   q: {},
   p: {
     js: {
-      36: "70130000000kYe0AAE",
-      39: "",
+      36: '70130000000kYe0AAE',
+      39: '',
       77: 1,
       78: 1,
       79: 1,
       90: 'FAAS',
-      92: "2846",
-      93: "2848",
-      94: "",
+      92: '2846',
+      93: '2848',
+      94: '',
     },
   },
   e: {},

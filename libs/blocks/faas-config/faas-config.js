@@ -15,12 +15,25 @@ let faasEl;
 const LS_KEY = 'faasConfiguratorState';
 const faasFilesLoaded = loadFaasFiles();
 const ConfiguratorContext = createContext('faas');
-const sortObjects = (obj) => {
-  return Object.entries(obj).sort((a, b) => {
-    const x = a[1].toLowerCase();
-    const y = b[1].toLowerCase();
-    return x < y ? -1 : x > y ? 1 : 0;
-  });
+const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
+  const x = a[1].toLowerCase();
+  const y = b[1].toLowerCase();
+  // eslint-disable-next-line no-nested-ternary
+  return x < y ? -1 : x > y ? 1 : 0;
+});
+const getInitialState = () => {
+  const hashConfig = getHashConfig();
+  if (hashConfig) return hashConfig;
+
+  const lsState = localStorage.getItem(LS_KEY);
+  if (lsState) {
+    try {
+      return JSON.parse(lsState);
+    } catch (e) {
+      // ignore
+    }
+  }
+  return null;
 };
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
@@ -36,18 +49,14 @@ const reducer = (state, action) => {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
-      return {
-        ...state, [action.prop]: action.value
-      };
+      return { ...state, [action.prop]: action.value };
     default:
       console.log('DEFAULT');
       return state;
   }
 };
 const createCopy = (blob, message) => {
-  const data = [new ClipboardItem({
-    [blob.type]: blob
-  })];
+  const data = [new ClipboardItem({ [blob.type]: blob })];
   navigator.clipboard.write(data).then(
     () => {
       message.className = 'success-message';
@@ -57,7 +66,7 @@ const createCopy = (blob, message) => {
       message.className = 'error-message';
       message.innerText = 'Failed to copy.';
       console.log('failed to copy:', err);
-    }
+    },
   );
 };
 
@@ -114,7 +123,7 @@ const CopyBtn = () => {
   </div>`;
 };
 
-const Select = ({label, options, prop, onChange, sort}) => {
+const Select = ({ label, options, prop, onChange, sort }) => {
   const context = useContext(ConfiguratorContext);
   const onSelectChange = (e) => {
     context.dispatch({
@@ -131,14 +140,12 @@ const Select = ({label, options, prop, onChange, sort}) => {
       <div class="field">
         <label for=${prop}>${label}</label>
         <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
-          ${optionsArray.map(
-      ([val, label]) => html`<option value="${val}">${label}</option>`,
-    )}
+          ${optionsArray.map(([v, l]) => html`<option value="${v}">${l}</option>`)}
         </select>
       </div>
     `;
 };
-const Input = ({label, type = 'text', prop, placeholder}) => {
+const Input = ({ label, type = 'text', prop, placeholder }) => {
   const context = useContext(ConfiguratorContext);
   const onInputChange = (e) => {
     context.dispatch({
@@ -153,12 +160,68 @@ const Input = ({label, type = 'text', prop, placeholder}) => {
       <input type=${type} id=${prop} name=${prop} ...${value} placeholder=${placeholder} onChange=${onInputChange} />
     </div>`;
 };
+
+const templateSelected = () => {
+  const stateID = getInitialState().id;
+  const formId = stateID || '40';
+  const renderFields = [];
+  const buildOptionsFromApi = (obj) => {
+    const results = {};
+    obj.forEach((o) => {
+      results[o.id] = o.displayText.phrase;
+    });
+    return results;
+  };
+
+  getObjFromAPI('/faas/api/locale').then((data) => {
+    const langOptions = {};
+    data.forEach((l) => {
+      langOptions[l.code] = l.name;
+    });
+    renderFields.push(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
+  });
+
+  getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
+    data.formQuestions.forEach((d) => {
+      if (d.question.id === '92' // Form Type
+        || d.question.id === '93' // Form Subtype
+        || d.question.id === '94') { // Primary Product Interest
+        renderFields.push(html`
+        <${Select}
+          label="${d.question.name}"
+          prop="${d.question.id}"
+          options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+          sort="true" />`);
+      }
+      if (d.question.id === '149') { // b2bpartners
+        renderFields.push(html`
+        <${Input} label="Name(s) of B2B Partner(s)"
+        prop="${d.question.id}"
+        placeholder="Comma separated list e.g. Microsoft, SAP" />`);
+      }
+      if (d.question.id === '172') { // Last Asset
+        renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
+      }
+      if (d.question.id === '103') { // Multiple Campaign Ids
+        renderFields.push(html`<${Input} label="Labels for Campaign Ids" prop="q103cl" placeholder="Comma separated list e.g. Label 1, Label 2" />`);
+        renderFields.push(html`<${Input} label="Multiple Campaign Ids" prop="q103cv" placeholder="Comma separated list e.g. ID1, ID2" />`);
+        renderFields.push(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
+      }
+    });
+    // eslint-disable-next-line no-use-before-define
+    const app = html`<${Configurator} rootEl=${faasEl} renderFields=${renderFields} />`;
+    render(app, faasEl);
+  }).catch((err) => {
+    console.log('Could not load additonal Form Template options from FaaS.', err);
+  });
+};
+
 const templateOptions = {};
-const RequiredPanel = ({renderFields}) => html`
+const RequiredPanel = ({ renderFields }) => html`
   <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
   ${renderFields}
   <${Input} label="Destination URL" prop="d" />
-  <${Input} label="Internal Campagin ID" prop="36" placeholder="70114000002XYvIAAW" />
+  <${Input} label="Internal Campagin ID" prop="36" placeholder="ex) 70114000002XYvIAAW" />
 `;
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />
@@ -176,24 +239,10 @@ const PrepopulationPanel = () => html`
   <${Input} label="Clearbit (DX use Only)" prop="pc5" type="checkbox" />
 `;
 const StylePanel = () => html`
-  <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{white:'White',dark:'Dark',}}" />
-  <${Select} label="Layout" prop="style_layout" options="${{column1:'1 Column',column2:'2 Columns',}}" />
-  <${Select} label="Custom Theme" prop="style_customTheme" options="${{none:'None',}}" />
+  <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{ white: 'White', dark: 'Dark' }}" />
+  <${Select} label="Layout" prop="style_layout" options="${{ column1: '1 Column', column2: '2 Columns' }}" />
+  <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
-const getInitialState = () => {
-  const hashConfig = getHashConfig();
-  if (hashConfig) return hashConfig;
-  
-  const lsState = localStorage.getItem(LS_KEY);
-  if (lsState) {
-    try {
-      return JSON.parse(lsState);
-    } catch (e) {
-      // ignore
-    }
-  }
-  return null;
-};
 const Configurator = ({ rootEl, renderFields }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isFaasLoaded, setIsFaasLoaded] = useState(false);
@@ -217,22 +266,21 @@ const Configurator = ({ rootEl, renderFields }) => {
   }, [isFaasLoaded, state]);
 
   const panels = [{
-      title: 'Required',
-      content: html`<${RequiredPanel} renderFields=${renderFields} />`,
-    },
-    {
-      title: 'Optional',
-      content: html`<${OptionalPanel} />`,
-    },
-    {
-      title: 'Prepopulation',
-      content: html`<${PrepopulationPanel} />`,
-    },
-    {
-      title: 'Style',
-      content: html`<${StylePanel} />`,
-    },
-  ];
+    title: 'Required',
+    content: html`<${RequiredPanel} renderFields=${renderFields} />`,
+  },
+  {
+    title: 'Optional',
+    content: html`<${OptionalPanel} />`,
+  },
+  {
+    title: 'Prepopulation',
+    content: html`<${PrepopulationPanel} />`,
+  },
+  {
+    title: 'Style',
+    content: html`<${StylePanel} />`,
+  }];
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
       <div class="tool-header">
@@ -251,55 +299,7 @@ const Configurator = ({ rootEl, renderFields }) => {
       </div>
     </ConfiguratorContext.Provider>`;
 };
-const templateSelected = () => {
-  const formId = document.getElementById('id') ? document.getElementById('id').value : '40';
-  const renderFields = [];
-  const buildOptionsFromApi = (obj) => {
-    const results = {}
-    obj.forEach((o) => {
-      results[o.id] = o.displayText.phrase;
-    });
-    return results;
-  }
-  getObjFromAPI('/faas/api/locale').then((data) => {
-    const langOptions = {};
-    data.forEach((l) => {
-      langOptions[l.code] = l.name;
-    });
-    renderFields.push(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
-  });
-  getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
 
-      data.formQuestions.forEach((d) => {
-        if (d.question.id === '92' || // Form Type
-          d.question.id === '93' || // Form Subtype
-          d.question.id === '94') { // Primary Product Interest
-          renderFields.push(html`
-          <${Select}
-            label="${d.question.name}"
-            prop="${d.question.id}"
-            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
-            sort="true" />`);
-        }
-        if (d.question.id === '149') { // b2bpartners
-          renderFields.push(html`
-          <${Input} label="Name(s) of B2B Partner(s)"
-          prop="${d.question.id}"
-          placeholder="Simple string, or comma separated list e.g. Microsoft, SAP" />`);
-        }
-        if (d.question.id === '172') { // Last Asset
-          renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
-        }
-      });
-      const app = html`
-            <${Configurator} rootEl=${faasEl} renderFields=${renderFields} />
-        `;
-      render(app, faasEl);
-    })
-    .catch((err) => {
-      console.log('Could not load additonal Form Template options from FaaS.', err);
-    });
-}
 export default async function init(el) {
   faasEl = el;
   loadStyle('/libs/ui/page/page.css');
