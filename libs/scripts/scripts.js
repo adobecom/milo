@@ -45,13 +45,14 @@ export async function loadLCP(blocks) {
 }
 
 /**
- * loads everything that happens a lot later, without impacting
- * the user experience.
+ * Load all the naughty things
  */
 function loadDelayed() {
-  // eslint-disable-next-line import/no-cycle
-  window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
+  window.setTimeout(async () => {
+    const main = document.body.querySelector('main');
+    const { default: interlinks } = await import('../blocks/interlinks/interlinks.js');
+    interlinks(main);
+  }, 0);
 }
 
 async function loadPage() {

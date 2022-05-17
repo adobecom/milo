@@ -10,46 +10,32 @@
  * governing permissions and limitations under the License.
  */
 
-/* globals */
-// eslint-disable-next-line import/no-cycle
-import { sampleRUM } from './scripts.js';
-import { loadScript } from '../utils/utils.js'
+// /**
+//  * Adds link tracking to all links under a certain block based off a class delimiter.
+//  * Block class identification is provided in the instrumentation file.
+//  */
+// async function setupLinkTracking() {
+//   const resp = await fetch('/blog/instrumentation.json');
+//   const json = await resp.json();
+//   const linkTracking = json['link-tracking'].data;
+//   linkTracking.forEach((entry) => {
+//     // eslint-disable-next-line no-underscore-dangle
+//     document.querySelectorAll(entry.selector).forEach((el) => {
+//       el.setAttribute('daa-lh', el.getAttribute('data-block-name'));
+//       el.querySelectorAll('a').forEach((a) => {
+//         if (a.href) {
+//           let value = '';
+//           const img = a.querySelector('img');
+//           if (img) {
+//             value = img.getAttribute('alt');
+//           } else {
+//             value = a.textContent.substr(0, 64);
+//           }
+//           a.setAttribute('daa-ll', value);
+//         }
+//       });
+//     });
+//   });
+// }
 
-// Core Web Vitals RUM collection
-sampleRUM('cwv');
-
-// add more delayed functionality here
-
-if (document.querySelector('.article-header') && !document.querySelector('[data-origin]')) {
-  loadScript('/blocks/interlinks/interlinks.js', 'module');
-}
-
-/**
- * Adds link tracking to all links under a certain block based off a class delimiter.
- * Block class identification is provided in the instrumentation file.
- */
-async function setupLinkTracking() {
-  const resp = await fetch('/blog/instrumentation.json');
-  const json = await resp.json();
-  const linkTracking = json['link-tracking'].data;
-  linkTracking.forEach((entry) => {
-    // eslint-disable-next-line no-underscore-dangle
-    document.querySelectorAll(entry.selector).forEach((el) => {
-      el.setAttribute('daa-lh', el.getAttribute('data-block-name'));
-      el.querySelectorAll('a').forEach((a) => {
-        if (a.href) {
-          let value = '';
-          const img = a.querySelector('img');
-          if (img) {
-            value = img.getAttribute('alt');
-          } else {
-            value = a.textContent.substr(0, 64);
-          }
-          a.setAttribute('daa-ll', value);
-        }
-      });
-    });
-  });
-}
-
-setupLinkTracking();
+// setupLinkTracking();

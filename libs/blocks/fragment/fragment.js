@@ -21,8 +21,7 @@ export default async function init(a, parent) {
         a.parentElement.replaceChild(fragment, a);
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log('Could not make fragment');
+      window.lana.log('Could not make fragment');
     }
   } else {
     // eslint-disable-next-line no-console
