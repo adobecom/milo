@@ -151,8 +151,8 @@ const Input = ({ label, type = 'text', prop, placeholder }) => {
 };
 
 const templateSelected = () => {
-  const stateID = getInitialState().id;
-  const formId = stateID || '40';
+  const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
+  const formId = formTypeSelectValue || getInitialState().id || '40';
   const renderFields = [];
   const buildOptionsFromApi = (obj) => {
     const results = {};
@@ -171,6 +171,7 @@ const templateSelected = () => {
   });
 
   getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
+    let isMultipleCampaign = false;
     data.formQuestions.forEach((d) => {
       if (d.question.id === '92' // Form Type
         || d.question.id === '93' // Form Subtype
@@ -192,11 +193,15 @@ const templateSelected = () => {
         renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
       }
       if (d.question.id === '103') { // Multiple Campaign Ids
+        isMultipleCampaign = true;
         renderFields.push(html`<${Input} label="Labels for Campaign Ids" prop="q103cl" placeholder="Comma separated list e.g. Label 1, Label 2" />`);
         renderFields.push(html`<${Input} label="Multiple Campaign Ids" prop="q103cv" placeholder="Comma separated list e.g. ID1, ID2" />`);
         renderFields.push(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
       }
     });
+    if (!isMultipleCampaign) {
+      renderFields.push(html`<${Input} label="Internal Campagin ID" prop="36" placeholder="ex) 70114000002XYvIAAW" />`);
+    }
     // eslint-disable-next-line no-use-before-define
     const app = html`<${Configurator} rootEl=${faasEl} renderFields=${renderFields} />`;
     render(app, faasEl);
@@ -210,7 +215,6 @@ const RequiredPanel = ({ renderFields }) => html`
   <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
   ${renderFields}
   <${Input} label="Destination URL" prop="d" />
-  <${Input} label="Internal Campagin ID" prop="36" placeholder="ex) 70114000002XYvIAAW" />
 `;
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />
