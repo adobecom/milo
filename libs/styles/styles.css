@@ -226,6 +226,7 @@ dialog {
   border: none;
   border-radius: 6px;
   padding: 0;
+  width: 100%;
 }
 
 dialog::backdrop {
@@ -245,8 +246,18 @@ dialog button.dialog-close {
   cursor: pointer;
 }
 
-dialog .fragment {
-  max-width: 400px;
+@media (min-width: 600px) {
+  dialog {
+    width: 60vw;
+  }
+
+  dialog .fragment > *:first-child {
+    margin-top: 0;
+  }
+
+  dialog .fragment > *:last-child {
+    margin-bottom: 0;
+  }
 }
 
 @media (min-width: 1200px) {
