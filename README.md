@@ -14,7 +14,7 @@ Milo is a shared set of features and services to power Helix-based websites on a
 ### Forks
 Forks will have a separate content bus and will 404. To use the main content bus run the following:
 ```bash
-hlx up --pageUrl=https://main--milo--adobecom.hlx.page
+hlx up --pages-url=https://main--milo--adobecom.hlx.page
 ```
 
 ## Testing

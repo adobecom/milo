@@ -1,5 +1,5 @@
 header.header nav {
-  width: calc(var(--container-size) + 20px);
+  width: calc(var(--grid-container-width) + 20px);
   margin: 0 auto;
   display: flex;
   align-content: stretch;

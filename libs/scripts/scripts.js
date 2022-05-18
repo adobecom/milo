@@ -12,7 +12,7 @@
 
 import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
 
-const LCP_BLOCKS = ['section', 'hero'];
+const LCP_BLOCKS = ['home'];
 
 /*
  * ------------------------------------------------------------
@@ -22,8 +22,12 @@ const LCP_BLOCKS = ['section', 'hero'];
 
 function decorateNavs(el = document) {
   const selectors = [];
-  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
-  if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
+  if (getMetadata('nav') !== 'off') {
+    selectors.push('header');
+  }
+  if (getMetadata('footer') !== 'off') {
+    selectors.push('footer');
+  }
   const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
     nav.className = nav.nodeName.toLowerCase();
