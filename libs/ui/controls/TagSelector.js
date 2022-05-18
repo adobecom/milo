@@ -1,23 +1,24 @@
-import { html, useEffect, useRef, useState } from '../../libs/deps/htm-preact.js';
-import createPortal from '../../libs/deps/portal.js';
-import useOnClickOutside from '../../libs/hooks/useOnClickOutside.js';
-import useLockBodyScroll from '../../libs/hooks/useLockBodyScroll.js';
-import useDebounce from '../../libs/hooks/useDebounce.js';
+import { html, useEffect, useRef, useState } from '../../deps/htm-preact.js';
+import { loadStyle } from '../../utils/utils.js';
+import createPortal from '../../deps/portal.js'; // '../../deps/portal.js';
+import useOnClickOutside from '../../hooks/useOnClickOutside.js';
+import useLockBodyScroll from '../../hooks/useLockBodyScroll.js';
+import useDebounce from '../../hooks/useDebounce.js';
+
+loadStyle('/libs/ui/controls/tagSelector.css');
 
 const TagSelectDropdown = ({
   close,
   displaySearch = true,
   onSelect,
   options = {},
-  selectedOptions = [],
+  value = [],
   tagSelectRef,
 }) => {
   const [searchText, setSearchText] = useState('');
   const [hoverIndex, setHoverIndex] = useState(0);
   const [optionLength] = useState(Object.keys(options).length);
   const searchField = useRef(null);
-
-  console.log('OPT:', options);
 
   useEffect(() => {
     searchField.current.focus();
@@ -42,10 +43,6 @@ const TagSelectDropdown = ({
     setSearchText(e.target.value);
   };
 
-  const onSearchChange = (e) => {
-    console.log(e);
-  };
-
   const Search = ({ placeholder = 'Search...' } = {}) => html`
     <div class="tagselect-dropdown-search">
       <input
@@ -54,16 +51,12 @@ const TagSelectDropdown = ({
         placeholder=${placeholder}
         value=${searchText}
         onKeyUp=${onKeyUp}
-        onSearchChange=${onSearchChange}
       />
     </div>
   `;
 
   const onItemClick = (e) => {
-    console.log(e.target.dataset.value);
-    if (onSelect) {
-      onSelect(e.target.dataset.value);
-    }
+    if (onSelect) onSelect(e.target.dataset.value);
   };
 
   const getItems = () =>
@@ -75,22 +68,24 @@ const TagSelectDropdown = ({
         if (labelA > labelB) return 1;
         return 0;
       })
-      .map(([value, label], index) => {
-        const isDisabled = selectedOptions.includes(value);
+      .map(([labelVal, label], index) => {
+        const isDisabled = value.includes(labelVal);
         const searchFiltered =
           searchText && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
 
-        return html`<li key=${value}>
-          <div
-            class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled ||
-              searchFiltered) &&
-            'hide'}"
-            data-value=${value}
-            onClick=${!isDisabled && onItemClick}
-          >
-            ${label}
-          </div>
-        </li>`;
+        return html`
+          <li key=${labelVal}>
+            <div
+              class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled ||
+                searchFiltered) &&
+              'hide'}"
+              data-value=${labelVal}
+              onClick=${!isDisabled && onItemClick}
+            >
+              ${label}
+            </div>
+          </li>
+        `;
       });
 
   return html`
@@ -105,13 +100,7 @@ const TagSelectDropdown = ({
   `;
 };
 
-const TagSelectModal = ({
-  close,
-  onToggle,
-  options = {},
-  optionMap = {},
-  selectedOptions = [],
-}) => {
+const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value = [] }) => {
   const [columns, setColumns] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -183,19 +172,21 @@ const TagSelectModal = ({
 
   const getCols = (root) => {
     const items = Object.entries(root).map(([id, option]) => {
-      const isChecked = selectedOptions.includes(id);
-      return html`<div
-        class="tagselect-item"
-        key=${id}
-        data-key=${id}
-        data-parents=${option.parents}
-        onClick=${option.children ? onExpand : onCheck}
-      >
-        <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" /><label
-          class="title"
-          >${option.title.replace('&amp;', '&')}</label
-        ><span class=${option.children ? 'has-children' : ''}></span>
-      </div>`;
+      const isChecked = value.includes(id);
+      return html`
+        <div
+          class="tagselect-item"
+          key=${id}
+          data-key=${id}
+          data-parents=${option.parents}
+          onClick=${option.children ? onExpand : onCheck}
+        >
+          <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" /><label
+            class="label"
+            >${option.label.replace('&amp;', '&')}</label
+          ><span class=${option.children ? 'has-children' : ''}></span>
+        </div>
+      `;
     });
     return html`<div class="col">${items}</div>`;
   };
@@ -203,36 +194,39 @@ const TagSelectModal = ({
   const getSearchResults = () => {
     const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
     return Object.entries(optionMap)
-      .filter(([, { title }]) => {
-        return title.toLowerCase().includes(lowerSearchTerm);
+      .filter(([, { label }]) => {
+        return label.toLowerCase().includes(lowerSearchTerm);
       })
-      .map(([id, { title, path }]) => {
-        const isChecked = selectedOptions.includes(id);
+      .map(([id, { label, path }]) => {
+        const isChecked = value.includes(id);
 
         return html`
           <div class="search-item" onClick=${onCheck}>
             <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
-            <label
-              ><span class="title">${title}</span
-              ><span class="path">${path.replace('/content/cq:tags/caas/', '')}</span></label
-            >
+            <label>
+              <span class="label">${label}</span>
+              <span class="path">${path.replace('/content/cq:tags/caas/', '')}</span>
+            </label>
           </div>
         `;
       });
   };
-  return html` <div class="tagselect-modal-overlay">
-    <div class="tagselect-modal" ref=${modalRef}>
-      <input
-        class="tagselect-modal-search"
-        placeholder="Search..."
-        onInput=${(e) => setSearchTerm(e.target.value)}
-        type="search"
-      />
-      <button class="tagselect-modal-close" onClick=${close}></button>
-      ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
-      ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+
+  return html`
+    <div class="tagselect-modal-overlay">
+      <div class="tagselect-modal" ref=${modalRef}>
+        <input
+          class="tagselect-modal-search"
+          placeholder="Search..."
+          onInput=${(e) => setSearchTerm(e.target.value)}
+          type="search"
+        />
+        <button class="tagselect-modal-close" onClick=${close}></button>
+        ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
+        ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+      </div>
     </div>
-  </div>`;
+  `;
 };
 
 const initModalDiv = () => {
@@ -247,8 +241,8 @@ const TagSelect = ({
   optionMap = {},
   isModal = false,
   label = '',
-  selectedOptions = [],
-  onSelectedChange,
+  value = [],
+  onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [modalDiv, setModalDiv] = useState();
@@ -257,6 +251,9 @@ const TagSelect = ({
   useEffect(() => {
     if (isModal) {
       setModalDiv(initModalDiv());
+    }
+    if (!Array.isArray(value)) {
+      onChange([]);
     }
   }, []);
 
@@ -274,7 +271,7 @@ const TagSelect = ({
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  const selectedItems = [...selectedOptions].map((option) => {
+  const selectedItems = [...value].map((option) => {
     if (!optionMap[option]) return null;
     const label = optionMap[option].path
       ? optionMap[option].path.replace('/content/cq:tags/caas/', '')
@@ -300,11 +297,18 @@ const TagSelect = ({
     `;
   });
 
+  const addOption = (val) => {
+    if (!value.includes(val)) {
+      value.push(val);
+    }
+    onChange([...value]);
+  };
+
   const removeOption = (val) => {
-    const optionIndex = selectedOptions.indexOf(val);
+    const optionIndex = value.indexOf(val);
     if (optionIndex === -1) return;
-    selectedOptions.splice(optionIndex, 1);
-    onSelectedChange([...selectedOptions]);
+    value.splice(optionIndex, 1);
+    onChange([...value]);
   };
 
   const onTagDelete = (ev, val) => {
@@ -313,15 +317,8 @@ const TagSelect = ({
     removeOption(val);
   };
 
-  const addOption = (val) => {
-    if (!selectedOptions.includes(val)) {
-      selectedOptions.push(val);
-    }
-    onSelectedChange([...selectedOptions]);
-  };
-
   const onToggle = (val) => {
-    if (selectedOptions.includes(val)) {
+    if (value.includes(val)) {
       removeOption(val);
     } else {
       addOption(val);
@@ -341,7 +338,7 @@ const TagSelect = ({
       isOpen &&
       html`<${TagSelectDropdown}
         options=${options}
-        selectedOptions=${selectedOptions}
+        value=${value}
         close=${toggleOpen}
         onSelect=${addOption}
         tagSelectRef=${tagSelectRef}
@@ -353,7 +350,7 @@ const TagSelect = ({
           isOpen=${isOpen}
           options=${options}
           optionMap=${optionMap}
-          selectedOptions=${selectedOptions}
+          value=${value}
           close=${toggleOpen}
           onToggle=${onToggle}
         />`,

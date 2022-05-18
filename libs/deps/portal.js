@@ -1,4 +1,5 @@
 // From https://github.com/preactjs/preact/blob/master/compat/src/portals.js
+/* c8 ignore start */
 import { h, render } from './htm-preact.js';
 function ContextProvider(e) {
   return (this.getChildContext = () => e.context), e.children;

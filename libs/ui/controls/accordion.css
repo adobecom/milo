@@ -84,7 +84,7 @@ dt.title.is-expanded button {
 dd.content.is-expanded {
   margin-top: 6px;
   transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out;
-  max-height: 800px;
+  max-height: 1800px;
 }
 
 dd.content .field {
@@ -107,6 +107,7 @@ dd.content .field input {
   padding: 8px 6px;
   font-family: adobe-clean, sans-serif;
   font-size: 16px;
+  max-width: 325px
 }
 
 dd.content .field input {
