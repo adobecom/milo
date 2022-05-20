@@ -71,7 +71,7 @@ describe('Loading', () => {
 
   it('Doesnt load a block twice', async () => {
     const hero = await utils.loadBlock(document.querySelector('.hero'));
-    expect(hero.dataset.status).to.equal('loaded');
+    expect(hero.dataset.status).to.be.undefined;
   });
 
   it('Doesnt load a bad block', async () => {
