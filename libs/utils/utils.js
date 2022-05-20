@@ -41,7 +41,7 @@ export function loadStyle(href, callback) {
 
 export async function loadBlock(block) {
   const { status } = block.dataset;
-  if (status === 'loaded') return block;
+  if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
@@ -60,7 +60,7 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  block.dataset.status = 'loaded';
+  delete block.dataset.status;
   return block;
 }
 
@@ -172,7 +172,9 @@ function decorateDefaults(el) {
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
     decorateDefaults(section);
-    section.className = 'section';
+    if (!section.querySelector(':scope > .section-metadata')) {
+      section.className = 'section';
+    }
   });
 }
 
