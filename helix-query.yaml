@@ -2,19 +2,66 @@ version: 1
 # See https://www.hlx.live/docs/setup-indexing.
 
 indices:
-  site:
-    wiki:
+  wiki:
+    include:
       - '/wiki/**'
-    target: query-index.xlsx
+    target: /wiki/query-index.xlsx
     properties:
       title:
         select: head > meta[property="og:title"]
         value: |
           attribute(el, 'content')
-      date:
-        select: head > meta[name="publication-date"]
+      image:
+        select: head > meta[property="og:image"]
         value: |
-          dateValue(attribute(el, 'content'), 'MM-DD-YYYY')
+          match(attribute(el, 'content'), 'https:\/\/[^/]+(\/.*)')
+      description:
+        select: head > meta[name="description"]
+        value: |
+          attribute(el, 'content')
+  docs:
+    include:
+      - '/docs/**'
+    target: /docs/query-index.xlsx
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: |
+          attribute(el, 'content')
+      image:
+        select: head > meta[property="og:image"]
+        value: |
+          match(attribute(el, 'content'), 'https:\/\/[^/]+(\/.*)')
+      description:
+        select: head > meta[name="description"]
+        value: |
+          attribute(el, 'content')
+  tools:
+    include:
+      - '/tools/**'
+    target: /tools/query-index.xlsx
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: |
+          attribute(el, 'content')
+      image:
+        select: head > meta[property="og:image"]
+        value: |
+          match(attribute(el, 'content'), 'https:\/\/[^/]+(\/.*)')
+      description:
+        select: head > meta[name="description"]
+        value: |
+          attribute(el, 'content')
+  blog:
+    include:
+      - '/blog/**'
+    target: /blog/query-index.xlsx
+    properties:
+      title:
+        select: head > meta[property="og:title"]
+        value: |
+          attribute(el, 'content')
       image:
         select: head > meta[property="og:image"]
         value: |

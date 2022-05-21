@@ -3,12 +3,9 @@ header {
 }
 
 .home {
+  display: grid;
   position: relative;
   height: 100vh;
-}
-
-.home[data-status='loaded'] {
-  display: grid;
 }
 
 .home.engage {
