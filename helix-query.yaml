@@ -3,16 +3,10 @@ version: 1
 
 indices:
   site:
-    include:
-      - '/mysite/**'
-    exclude:
-      - '**/Document.*'
-    # target: SharePoint URL of your query index, e.g. <shared-folder-url>/query-index.xlsx
+    wiki:
+      - '/wiki/**'
+    target: query-index.xlsx
     properties:
-      author:
-        select: head > meta[name="author"]
-        value: |
-          attribute(el, 'content')
       title:
         select: head > meta[property="og:title"]
         value: |
@@ -29,19 +23,3 @@ indices:
         select: head > meta[name="description"]
         value: |
           attribute(el, 'content')
-      category:
-        select: head > meta[name="category"]
-        value: |
-          attribute(el, 'content')
-      topics:
-        select: head > meta[name="topics"]
-        value: |
-          attribute(el, 'content')
-      description:
-        select: head > meta[name="description"]
-        value: |
-          attribute(el, 'content')
-      lastModified:
-        select: none
-        value: |
-          parseTimestamp(headers['last-modified'], 'ddd, DD MMM YYYY hh:mm:ss GMT')
