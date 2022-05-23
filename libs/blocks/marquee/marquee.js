@@ -10,25 +10,38 @@
  * governing permissions and limitations under the License.
  */
 
+import { loadStyle } from '../../utils/utils.js';
+
 /*
  * Marquee - v1.0.0
  */
 
 function decorateButtons(el, isLarge) {
   const buttons = el.querySelectorAll('em a, strong a');
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
   if (buttons.length > 0) {
     const actionArea = buttons[0].closest('p');
     actionArea.classList.add('action-area');
     actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
+    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
+    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-dark.css');
+    loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
+    loadStyle('/libs/deps/@spectrum-css/button/dist/index-vars.css');
   }
+
+  buttons.forEach((link) => {
+    const parent = link.parentElement;
+    const type = parent.nodeName === 'STRONG' ? 'accent' : 'primary';
+    const fill = type === 'accent' ? 'fill' : 'outline';
+    const size = isLarge ? 'XL' : 'M';
+    const contents = link.textContent;
+    link.innerHTML = `<span class="spectrum-Button-label">${contents}</span>`;
+    link.className = `spectrum-Button spectrum-Button--${fill} spectrum-Button--${type} spectrum-Button--size${size}`;
+    link.addEventListener('focus', () => { link.classList.add('focus-ring'); });
+    link.addEventListener('focusout', () => { link.classList.remove('focus-ring'); });
+    parent.insertAdjacentElement('afterend', link);
+    parent.remove();
+  });
 }
 
 function decorateText(el, isLarge) {

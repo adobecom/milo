@@ -1,0 +1,149 @@
+/*
+Copyright 2019 Adobe. All rights reserved.
+This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+*/
+
+@import "../vars/css/scales/spectrum-large.css";
+@import "../vars/css/scales/spectrum-medium.css";
+@import "../commons/basebutton.css";
+@import "../vars/css/components/spectrum-button.css";
+
+@import "./skin.css";
+
+.spectrum-Button--sizeS {
+  @remapvars {
+    find: /--spectrum-button(.*)-s-/;
+    filter: color;
+    replace: --spectrum-button$1-;
+  }
+  /* adjust padding above and below button label to compensate for line height rendering differences in css */
+  --spectrum-button-primary-fill-textonly-text-padding-top: calc(var(--spectrum-button-s-primary-fill-textonly-text-padding-top) -1px);
+}
+
+.spectrum-Button--sizeM {
+  @remapvars {
+    find: /--spectrum-button(.*)-m-/;
+    filter: color;
+    replace: --spectrum-button$1-;
+  }
+  /* adjust padding above and below button label to compensate for line height rendering differences in css */
+  --spectrum-button-primary-fill-textonly-text-padding-bottom: calc(var(--spectrum-button-m-primary-fill-textonly-text-padding-bottom) -1px);
+}
+
+.spectrum-Button--sizeL {
+  @remapvars {
+    find: /--spectrum-button(.*)-l-/;
+    filter: color;
+    replace: --spectrum-button$1-;
+  }
+}
+
+.spectrum-Button--sizeXL {
+  @remapvars {
+    find: /--spectrum-button(.*)-xl-/;
+    filter: color;
+    replace: --spectrum-button$1-;
+  }
+  /* adjust padding above and below button label to compensate for line height rendering differences in css */
+  --spectrum-button-primary-fill-textonly-text-padding-bottom: calc(var(--spectrum-button-xl-primary-fill-textonly-text-padding-bottom) -1px);
+}
+
+.spectrum-Button {
+  /* Adjustments for inset/outset padding in DNA */
+  --spectrum-button-primary-fill-padding-left-adjusted: calc(var(--spectrum-button-primary-fill-texticon-padding-left) - var(--spectrum-button-primary-fill-texticon-border-size));
+  --spectrum-button-primary-fill-padding-right-adjusted: calc(var(--spectrum-button-primary-fill-texticon-padding-right) - var(--spectrum-button-primary-fill-texticon-border-size));
+  --spectrum-button-primary-fill-textonly-padding-left-adjusted: calc(var(--spectrum-button-primary-fill-textonly-padding-left) - var(--spectrum-button-primary-fill-texticon-border-size));
+  --spectrum-button-primary-fill-textonly-padding-right-adjusted: calc(var(--spectrum-button-primary-fill-textonly-padding-right) - var(--spectrum-button-primary-fill-texticon-border-size));
+}
+
+.spectrum-Button {
+  @inherit: %spectrum-BaseButton;
+  @inherit: %spectrum-ButtonWithFocusRing;
+
+  border-width: var(--spectrum-button-primary-fill-texticon-border-size);
+  border-style: solid;
+  border-radius: var(--spectrum-button-primary-fill-texticon-border-radius);
+
+  min-block-size: var(--spectrum-button-primary-fill-textonly-height);
+  block-size: auto;
+  min-inline-size: var(--spectrum-button-primary-fill-textonly-min-width);
+
+  padding-block-start: 0;
+  padding-block-end: 0;
+
+  /* Start with text-only padding */
+  padding-inline: var(--spectrum-button-primary-fill-textonly-padding-left-adjusted) var(--spectrum-button-primary-fill-textonly-padding-right-adjusted);
+
+  font-size: var(--spectrum-button-primary-fill-texticon-text-size);
+  font-weight: var(--spectrum-button-primary-fill-texticon-text-font-weight);
+
+  &:hover,
+  &:active {
+    box-shadow: none;
+  }
+
+  /* let staticColor variants inherit their color */
+  color: inherit;
+
+  .spectrum-Icon {
+    @inherit: %spectrum-ButtonIcon;
+
+    /* Scoot over, assuming we have both icon and text */
+    margin-inline-start: calc(-1 * (var(--spectrum-button-primary-fill-textonly-padding-left-adjusted) - var(--spectrum-button-primary-fill-padding-left-adjusted)));
+  }
+
+  .spectrum-Icon + .spectrum-Button-label {
+    /* Have gap on on the left */
+    padding-inline-start: var(--spectrum-button-primary-fill-texticon-icon-gap);
+
+    /*
+      Have no padding on the right (it's built into the element)
+      This will fail if --spectrum-button-primary-fill-textonly-padding-right !== --spectrum-button-padding-right
+    */
+    padding-inline-end: 0;
+  }
+
+  --spectrum-button-focus-ring-color: var(--spectrum-button-m-primary-fill-texticon-focus-ring-color-key-focus);
+
+  /* correct focus-ring radius for t-shirt sizing */
+  &:after {
+    border-radius: calc(var(--spectrum-button-primary-fill-texticon-border-radius) + var(--spectrum-alias-focus-ring-gap));
+  }
+}
+
+a.spectrum-Button {
+  @inherit: %spectrum-AnchorButton;
+}
+
+.spectrum-Button-label {
+  @inherit: %spectrum-ButtonLabel;
+
+  line-height: var(--spectrum-button-primary-fill-texticon-text-line-height);
+  padding-block-start: calc(var(--spectrum-button-primary-fill-textonly-text-padding-top) - var(--spectrum-button-primary-fill-textonly-border-size));
+  padding-block-end: calc(var(--spectrum-button-primary-fill-textonly-text-padding-bottom) - var(--spectrum-button-primary-fill-textonly-border-size));
+}
+
+.spectrum-Button {
+  &:focus-ring,
+  &.is-focused {
+    &:after {
+      box-shadow: 0 0 0 var(--spectrum-button-primary-fill-texticon-focus-ring-size) var(--spectrum-button-focus-ring-color);
+    }
+  }
+}
+
+.spectrum-Button--staticWhite {
+  --spectrum-button-focus-ring-color: var(--spectrum-button-m-primary-fill-white-texticon-focus-ring-color-key-focus);
+}
+
+.spectrum-Button--staticBlack {
+  --spectrum-button-focus-ring-color: var(--spectrum-button-m-primary-fill-black-texticon-focus-ring-color-key-focus);
+}
+

@@ -1,0 +1,61 @@
+{
+  "_from": "@spectrum-css/vars",
+  "_id": "@spectrum-css/vars@8.0.0",
+  "_inBundle": false,
+  "_integrity": "sha512-cClQgNyH1VdNu6zdiZ5M7kbQDZS4/wPAclk5IPO5+nMhSzqTesUL/zfiaPB95MTCKFyVJrFpOeJ37HmUifWJ3A==",
+  "_location": "/@spectrum-css/vars",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@spectrum-css/vars",
+    "name": "@spectrum-css/vars",
+    "escapedName": "@spectrum-css%2fvars",
+    "scope": "@spectrum-css",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/",
+    "/@spectrum-css/page"
+  ],
+  "_resolved": "https://registry.npmjs.org/@spectrum-css/vars/-/vars-8.0.0.tgz",
+  "_shasum": "b88a3b1165b63de50ab01f20ccafb42115d67443",
+  "_spec": "@spectrum-css/vars",
+  "_where": "/Users/cmillar/Sites/source/milo",
+  "bugs": {
+    "url": "https://github.com/adobe/spectrum-css/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "The Spectrum CSS vars package",
+  "devDependencies": {
+    "del": "^5.0.0",
+    "gulp": "^4.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-replace": "^1.0.0",
+    "gulplog": "^1.0.0",
+    "postcss": "^7.0.36",
+    "replace-ext": "^1.0.0",
+    "through2": "^3.0.1"
+  },
+  "gitHead": "007946483dc559c61d403565ec811a1ea27cd20e",
+  "homepage": "https://opensource.adobe.com/spectrum-css/",
+  "license": "Apache-2.0",
+  "main": "dist/spectrum-metadata.json",
+  "name": "@spectrum-css/vars",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adobe/spectrum-css.git",
+    "directory": "components/vars"
+  },
+  "scripts": {
+    "update": "gulp update"
+  },
+  "version": "8.0.0"
+}

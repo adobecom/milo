@@ -1,0 +1,59 @@
+{
+  "_from": "@spectrum-css/button",
+  "_id": "@spectrum-css/button@6.0.11",
+  "_inBundle": false,
+  "_integrity": "sha512-R3chsUyW36EkMQmbcIqVuJCmrCJAIL46nMqV3XliAx8+WCWs0N4Hz06kXb78Swnpn2cbGeftKjQxvRFjXFp8RQ==",
+  "_location": "/@spectrum-css/button",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "@spectrum-css/button",
+    "name": "@spectrum-css/button",
+    "escapedName": "@spectrum-css%2fbutton",
+    "scope": "@spectrum-css",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@spectrum-css/button/-/button-6.0.11.tgz",
+  "_shasum": "17c46275dce7cc4c503f17e310867062d7a6d74a",
+  "_spec": "@spectrum-css/button",
+  "_where": "/Users/cmillar/Sites/source/milo",
+  "bugs": {
+    "url": "https://github.com/adobe/spectrum-css/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "The Spectrum CSS button component",
+  "devDependencies": {
+    "@spectrum-css/component-builder": "^3.1.1",
+    "@spectrum-css/icon": "^3.0.21",
+    "@spectrum-css/vars": "^8.0.0",
+    "gulp": "^4.0.0"
+  },
+  "gitHead": "89c4f233abcaf74c69fd166a77a1cc1c0f03e947",
+  "homepage": "https://opensource.adobe.com/spectrum-css/",
+  "license": "Apache-2.0",
+  "main": "dist/index-vars.css",
+  "name": "@spectrum-css/button",
+  "peerDependencies": {
+    "@spectrum-css/vars": "^8.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adobe/spectrum-css.git",
+    "directory": "components/button"
+  },
+  "scripts": {
+    "build": "gulp"
+  },
+  "version": "6.0.11"
+}
