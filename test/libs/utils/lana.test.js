@@ -53,7 +53,7 @@ describe('LANA', () => {
   });
 
   it('Set the default clientId', () => {
-    window.lana.setClientdId('myClientId');
+    window.lana.setClientId('myClientId');
     window.lana.log('I set the client id');
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
