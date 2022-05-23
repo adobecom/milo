@@ -8,8 +8,12 @@ module.exports = {
     sourceType: 'module',
     requireConfigFile: false,
   },
+  ignorePatterns: [
+    '**/deps/**/*.js',
+    '/test/**',
+    '/tools/translation/**',
+  ],
   rules: {
-    // allow reassigning param
     'no-param-reassign': [2, { props: false }],
     'linebreak-style': ['error', 'unix'],
     'import/extensions': ['error', { js: 'always' }],
