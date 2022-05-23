@@ -12,7 +12,7 @@ const defaultOptions = {
 
 const w = window;
 
-function setClientdId(id) {
+function setClientId(id) {
   w.lana.options.clientId = id;
 }
 
@@ -86,7 +86,7 @@ function init() {
   w.lana = {
     debug: false,
     log: log,
-    setClientdId: setClientdId,
+    setClientId: setClientId,
     setDefaultOptions: setDefaultOptions,
     options: options || defaultOptions,
   };
