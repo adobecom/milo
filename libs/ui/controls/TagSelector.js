@@ -263,6 +263,8 @@ const TagSelect = ({
     if (hasNestedData) {
       setOptionMap(createOptionMap(options));
       setModalDiv(getModalDiv());
+    } else {
+      setOptionMap(options);
     }
 
     if (!Array.isArray(value)) {

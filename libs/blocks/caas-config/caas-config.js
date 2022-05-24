@@ -564,6 +564,7 @@ const CopyBtn = () => {
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
+  const [strings, setStrings] = useState();
 
   useEffect(() => {
     caasFilesLoaded
@@ -576,12 +577,16 @@ const Configurator = ({ rootEl }) => {
   }, []);
 
   useEffect(async () => {
-    if (isCaasLoaded) {
-      const caasStrs = await loadStrings(state.placeholderUrl);
-      initCaas(state, caasStrs);
+    const strs = await loadStrings(state.placeholderUrl);
+    setStrings(strs);
+  }, [state.placeholderUrl]);
+
+  useEffect(async () => {
+    if (isCaasLoaded && strings !== undefined) {
+      initCaas(state, strings);
       saveStateToLocalStorage(state);
     }
-  }, [isCaasLoaded, state]);
+  }, [isCaasLoaded, state, strings]);
 
   const panels = [
     {
