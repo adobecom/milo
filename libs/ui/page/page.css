@@ -86,6 +86,10 @@
       0% 100%);
 }
 
+.tool-header button.copy-config:hover {
+  background-color: #ff1563;
+}
+
 .tool-header button.copy-config.is-error {
   transition:outline 0s;
   outline: red solid 3px;

@@ -1,6 +1,8 @@
 import { loadStyle } from '../../utils/utils.js';
 import { html, useState } from '../../deps/htm-preact.js';
 
+loadStyle('/libs/ui/controls/accordion.css');
+
 const AccordionItem = ({ title, content, expand, onClick }) => {
   const isExpanded = expand ? 'is-expanded' : '';
   const buttonText = isExpanded ? 'Colapse' : 'Expand';
@@ -25,8 +27,7 @@ const getInitialState = (lskey, items) => {
   return new Array(items.length).fill(true, 0, 1);
 };
 
-export function Accordion({ lskey = null, items = [], alwaysOpen = false }) {
-  loadStyle('/libs/ui/controls/controls.css');
+export default function Accordion({ lskey = null, items = [], alwaysOpen = false }) {
   const [isToggled, setIsToggled] = useState(getInitialState(lskey, items));
 
   const toggle = (index) => {
@@ -53,17 +54,8 @@ export function Accordion({ lskey = null, items = [], alwaysOpen = false }) {
         onClick=${() => toggle(index)}
         expand=${isToggled[index]}
       />
-    `,
+    `
   );
 
   return html` <dl className="accordion">${accordionItems}</dl> `;
-}
-
-export function Input({ label = '', onChange, id, type = 'text', value: val = {} }) {
-  const value = typeof val === 'string' ? { value: val } : val;
-
-  return html` <div class="field">
-    ${label && html`<label for=${id}>${label}</label>`}
-    <input type=${type} id=${id} name=${id} ...${value} onChange=${onChange} />
-  </div>`;
 }

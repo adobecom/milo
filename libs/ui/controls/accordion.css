@@ -84,7 +84,7 @@ dt.title.is-expanded button {
 dd.content.is-expanded {
   margin-top: 6px;
   transition: max-height 0.4s ease-in-out, margin-top 0.4s ease-in-out;
-  max-height: 800px;
+  max-height: 1800px;
 }
 
 dd.content .field {
@@ -107,8 +107,47 @@ dd.content .field input {
   padding: 8px 6px;
   font-family: adobe-clean, sans-serif;
   font-size: 16px;
+  max-width: 325px
 }
 
 dd.content .field input {
   padding: 8px 10px;
+}
+
+dd.content .field.checkbox {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+dd.content .field.checkbox label {
+  margin-left: 5px;
+}
+
+dd.content button {
+  grid-column: 4;
+  margin-bottom: 20px;
+  outline: transparent solid 0px;
+  transition:outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: adobe-clean, sans-serif;
+  color: #FFF;
+  background: #999999;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 15px 0 10px;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
+}
+
+dd.content button:hover {
+  background: #777777;
 }

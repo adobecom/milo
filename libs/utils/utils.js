@@ -191,20 +191,25 @@ export async function loadLazy(blocks) {
   await Promise.all(loaded);
 }
 
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
-  let script = document.querySelector(`head > script[src="${url}"]`);
-  if (!script) {
-    const { head } = document;
-    script = document.createElement('script');
-    script.setAttribute('src', url);
-    if (type) {
-      script.setAttribute('type', type);
+export const loadScript = (url, type) =>
+  new Promise((resolve, reject) => {
+    let script = document.querySelector(`head > script[src="${url}"]`);
+    if (!script) {
+      const { head } = document;
+      script = document.createElement('script');
+      script.setAttribute('src', url);
+      if (type) {
+        script.setAttribute('type', type);
+      }
+      script.onload = () => {
+        resolve(script);
+      };
+      script.onerror = () => {
+        reject(new Error('error loading script'));
+      };
+      head.append(script);
     }
-    script.onload = () => { resolve(script); };
-    script.onerror = () => { reject(new Error('error loading script')); };
-    head.append(script);
-  }
-});
+  });
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
@@ -231,3 +236,6 @@ export function getHashConfig() {
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
 }
+
+export const isValidUuid = (id) =>
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
