@@ -59,26 +59,25 @@ const TagSelectDropdown = ({
     if (onSelect) onSelect(e.target.dataset.value);
   };
 
-  const getItems = () =>
-    Object.entries(options)
-      .sort(([, a], [, b]) => {
-        const labelA = a.toLowerCase();
-        const labelB = b.toLowerCase();
-        if (labelA < labelB) return -1;
-        if (labelA > labelB) return 1;
-        return 0;
-      })
-      .map(([labelVal, label], index) => {
-        const isDisabled = value.includes(labelVal);
-        const searchFiltered =
-          searchText && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
+  const getItems = () => Object.entries(options)
+    .sort(([, a], [, b]) => {
+      const labelA = a.toLowerCase();
+      const labelB = b.toLowerCase();
+      if (labelA < labelB) return -1;
+      if (labelA > labelB) return 1;
+      return 0;
+    })
+    .map(([labelVal, label], index) => {
+      const isDisabled = value.includes(labelVal);
+      const searchFiltered = searchText
+        && label.toLowerCase().indexOf(searchText.toLowerCase()) === -1;
 
-        return html`
+      return html`
           <li key=${labelVal}>
             <div
-              class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled ||
-                searchFiltered) &&
-              'hide'}"
+              class="tagselect-dropdown-item ${index === hoverIndex && 'hover'} ${(isDisabled
+                || searchFiltered)
+              && 'hide'}"
               data-value=${labelVal}
               onClick=${!isDisabled && onItemClick}
             >
@@ -86,7 +85,7 @@ const TagSelectDropdown = ({
             </div>
           </li>
         `;
-      });
+    });
 
   return html`
     <div class="tagselect-dropdown is-open">
@@ -148,37 +147,29 @@ const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value =
     itemEl.parentElement.childNodes.forEach((node) => node.classList.remove('expanded'));
     itemEl.classList.add('expanded');
 
-    const { key, parents: parentStr } = itemEl.dataset;
-
-    const newColumns = () => {
-      if (!parentStr) {
-        return [getCols(options), getCols(options[key].children)];
-      } else {
-        const parents = parentStr.split(',');
-        parents.push(key);
-
-        let currentOption = options; // option root
-        const firstColumn = [getCols(options)];
-        return parents.reduce((cols, p) => {
-          currentOption = currentOption[p].children;
-          cols.push(getCols(currentOption));
-          return cols;
-        }, firstColumn);
+    const cols = [];
+    const addColumn = (option) => {
+      cols.unshift(getCols(option));
+      if (option.parent) {
+        addColumn(option.parent);
       }
     };
 
-    setColumns(newColumns);
+    const { key: selectedKey } = itemEl.dataset;
+    addColumn(optionMap[selectedKey]);
+    cols.unshift(getCols(options)); // add the root
+
+    setColumns(cols);
   };
 
   const getCols = (root) => {
-    const items = Object.entries(root).map(([id, option]) => {
+    const items = Object.entries(root.children || root).map(([id, option]) => {
       const isChecked = value.includes(id);
       return html`
         <div
           class="tagselect-item"
           key=${id}
           data-key=${id}
-          data-parents=${option.parents}
           onClick=${option.children ? onExpand : onCheck}
         >
           <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" /><label
@@ -194,9 +185,7 @@ const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value =
   const getSearchResults = () => {
     const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
     return Object.entries(optionMap)
-      .filter(([, { label }]) => {
-        return label.toLowerCase().includes(lowerSearchTerm);
-      })
+      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
       .map(([id, { label, path }]) => {
         const isChecked = value.includes(id);
 
@@ -205,7 +194,7 @@ const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value =
             <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
             <label>
               <span class="label">${label}</span>
-              <span class="path">${path.replace('/content/cq:tags/caas/', '')}</span>
+              <span class="path">${path}</span>
             </label>
           </div>
         `;
@@ -229,29 +218,53 @@ const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value =
   `;
 };
 
-const initModalDiv = () => {
-  const div = document.createElement('div');
-  div.className = 'tagselect-modals';
-  document.body.appendChild(div);
+const createOptionMap = (root) => {
+  const newOptionMap = {};
+  const parseNode = (nodes, parent) => {
+    Object.entries(nodes).forEach(([key, val]) => {
+      newOptionMap[key] = val;
+      if (parent) {
+        newOptionMap[key].parent = parent;
+      }
+      if (val.children) {
+        parseNode(val.children, val);
+      }
+    });
+  };
+  parseNode(root);
+  return newOptionMap;
+};
+
+const getModalDiv = () => {
+  let div = document.querySelector('#tagselect-modal');
+  if (!div) {
+    div = document.createElement('div');
+    div.id = 'tagselect-modal';
+    document.body.appendChild(div);
+  }
   return div;
 };
 
 const TagSelect = ({
-  options = {},
-  optionMap = {},
-  isModal = false,
   label = '',
-  value = [],
   onChange,
+  options = {},
+  value = [],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isModal, setIsModal] = useState(false);
   const [modalDiv, setModalDiv] = useState();
+  const [optionMap, setOptionMap] = useState({});
   const tagSelectRef = useRef(null);
 
   useEffect(() => {
-    if (isModal) {
-      setModalDiv(initModalDiv());
+    const hasNestedData = Object.values(options).some((val) => typeof val !== 'string');
+    setIsModal(hasNestedData);
+    if (hasNestedData) {
+      setOptionMap(createOptionMap(options));
+      setModalDiv(getModalDiv());
     }
+
     if (!Array.isArray(value)) {
       onChange([]);
     }
@@ -273,12 +286,12 @@ const TagSelect = ({
 
   const selectedItems = [...value].map((option) => {
     if (!optionMap[option]) return null;
-    const label = optionMap[option].path
-      ? optionMap[option].path.replace('/content/cq:tags/caas/', '')
+    const path = optionMap[option].path
+      ? optionMap[option].path
       : optionMap[option];
     return html`
       <div class="tagselect-tag">
-        <span class="tagselect-tag-text">${label.replace('&amp;', '&')}</span>
+        <span class="tagselect-tag-text">${path.replace('&amp;', '&')}</span>
         <div class="tagselect-tag-delete" role="button" onClick=${(e) => onTagDelete(e, option)}>
           <svg
             height="14"
@@ -334,28 +347,28 @@ const TagSelect = ({
           <span class=${`tagselect-plus ${isOpen && 'is-open'}`}></span>
         </div>
       </div>
-      ${!isModal &&
-      isOpen &&
-      html`<${TagSelectDropdown}
-        options=${options}
-        value=${value}
-        close=${toggleOpen}
-        onSelect=${addOption}
-        tagSelectRef=${tagSelectRef}
-      />`}
-      ${isModal &&
-      isOpen &&
-      createPortal(
-        html`<${TagSelectModal}
-          isOpen=${isOpen}
+      ${!isModal
+        && isOpen
+        && html`<${TagSelectDropdown}
           options=${options}
-          optionMap=${optionMap}
           value=${value}
           close=${toggleOpen}
-          onToggle=${onToggle}
-        />`,
-        modalDiv
-      )}
+          onSelect=${addOption}
+          tagSelectRef=${tagSelectRef}
+        />`}
+      ${isModal
+        && isOpen
+        && createPortal(
+          html`<${TagSelectModal}
+            isOpen=${isOpen}
+            options=${options}
+            optionMap=${optionMap}
+            value=${value}
+            close=${toggleOpen}
+            onToggle=${onToggle}
+          />`,
+          modalDiv,
+        )}
     </div>
   `;
 };

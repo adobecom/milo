@@ -103,7 +103,6 @@ const defaultOptions = {
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
-  // "contentArea.title","contentArea.description","contentArea.detailText","overlays.label.description","overlays.banner.description"],
   search: {
     'contentArea.title': 'Card Titles',
     'contentArea.description': 'Card Descriptions',
@@ -181,7 +180,7 @@ const Input = ({ label, type = 'text', prop }) => {
   `;
 };
 
-const DropdownSelect = ({ label, isModal = false, options, optionMap, prop }) => {
+const DropdownSelect = ({ label, isModal = false, options, prop }) => {
   const context = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     context.dispatch({
@@ -195,7 +194,6 @@ const DropdownSelect = ({ label, isModal = false, options, optionMap, prop }) =>
     <${TagSelect}
       id=${prop}
       options=${options}
-      optionMap=${optionMap || options}
       value=${context.state[prop]}
       label=${label}
       isModal=${isModal}
@@ -245,34 +243,26 @@ const getTagList = (root) =>
     return options;
   }, {});
 
-const getTagTree = (root, optionMap = {}, parents = []) => {
-  const options = Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = {};
+const getTagTree = (root) => {
+  const options = Object.entries(root).reduce((opts, [, tag]) => {
+    opts[tag.tagID] = {};
 
     if (Object.keys(tag.tags).length) {
-      options[tag.tagID].children = getTagTree(tag.tags, optionMap, [
-        ...parents,
-        tag.tagID,
-      ]).options;
-
-      if (parents.length) {
-        options[tag.tagID].parents = parents;
-      }
+      opts[tag.tagID].children = getTagTree(tag.tags);
     }
 
-    options[tag.tagID].label = tag.title;
-    options[tag.tagID].breadcrumb = tag.path;
-    optionMap[tag.tagID] = { label: tag.title, path: tag.path };
+    opts[tag.tagID].label = tag.title;
+    opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
 
-    return options;
+    return opts;
   }, {});
-  return { options, optionMap };
+  return options;
 };
 
 const TagsPanel = () => {
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
-  const { options: allTags, optionMap: allTagsMap } = getTagTree(tagsData);
+  const allTags = getTagTree(tagsData);
   const context = useContext(ConfiguratorContext);
 
   const onAndLogicTagChange = (values) => {
@@ -298,14 +288,12 @@ const TagsPanel = () => {
     />
     <${DropdownSelect}
       options=${allTags}
-      optionMap=${allTagsMap}
       prop="includeTags"
       label="Tags to Include"
       isModal
     />
     <${DropdownSelect}
       options=${allTags}
-      optionMap=${allTagsMap}
       prop="excludeTags"
       label="Tags to Exclude"
       isModal
@@ -324,7 +312,6 @@ const TagsPanel = () => {
       <${TagSelect}
         id="andTags"
         options=${allTags}
-        optionMap=${allTagsMap}
         label="Tags with overall AND logic"
         isModal
       />
@@ -338,7 +325,6 @@ const TagsPanel = () => {
       <${TagSelect}
         id="orTags"
         options=${allTags}
-        optionMap=${allTagsMap}
         label="Tags with overall OR logic"
         isModal
     /><//>
@@ -383,8 +369,7 @@ const CardsPanel = () => {
   `;
 };
 
-const BookmarksPanel = () => {
-  return html`
+const BookmarksPanel = () => html`
     <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
     <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
     <${Input}
@@ -395,7 +380,6 @@ const BookmarksPanel = () => {
     <${Input} label="Icon Link for in 'My Bookmarks'" prop="bookmarkIconSelect" />
     <${Input} label="Icon Link for not in 'My Bookmarks'" prop="bookmarkIconUnselect" />
   `;
-};
 
 const SortPanel = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -424,8 +408,7 @@ const FilterPanel = () => {
   `;
 };
 
-const SearchPanel = () => {
-  return html`
+const SearchPanel = () => html`
     <${Input} label="Show Search" prop="showSearch" type="checkbox" />
     <${DropdownSelect}
       options=${defaultOptions.search}
@@ -433,7 +416,6 @@ const SearchPanel = () => {
       label="Choose What To Search Through"
     />
   `;
-};
 
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);

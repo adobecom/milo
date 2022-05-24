@@ -4,42 +4,37 @@ import { loadStyle } from '../../utils/utils.js';
 
 loadStyle('/libs/ui/controls/multifield.css');
 
-const FieldSet = ({ fields, onDelete }) => {
-  return html`<div class="multifield-set">
-    <div class="multifield-fields">${fields}</div>
-    <button class="multifield-delete" onClick=${onDelete}></button>
-  </div>`;
-};
+const FieldSet = ({ fields, onDelete }) => html`
+    <div class="multifield-set">
+      <div class="multifield-fields">${fields}</div>
+      <button class="multifield-delete" onClick=${onDelete}></button>
+    </div>
+  `;
 
-const getFieldNameProps = (fields) => fields.map((field) => field.props.name || field.props.id);
+const getFieldNameOrId = (fields) => fields.map((field) => field.props.name || field.props.id);
 
-const getEmptyDataObj = (keys) =>
-  keys.reduce((d, key) => {
-    d[key] = '';
-    return d;
-  }, {});
+const getEmptyDataObj = (keys) => keys.reduce((obj, key) => {
+  obj[key] = '';
+  return obj;
+}, {});
 
-const populateFieldValues = (fields, value) => {
-  return fields.map((field) => {
-    field.props.value = value[field.props.name || field.props.id];
-    return cloneElement(field);
-  });
-};
+const populateFieldValues = (fields, value) => fields.map((field) => {
+  field.props.value = value[field.props.name || field.props.id];
+  return cloneElement(field);
+});
 
 // MultiField assumes that Fields have `name || id`, `onChange`, and `value` props.
 const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
   const [fieldSets, setFieldSets] = useState([]);
-  const [keys] = useState(getFieldNameProps(Array.isArray(children) ? children : [children]));
+  const [keys] = useState(getFieldNameOrId(Array.isArray(children) ? children : [children]));
 
   useEffect(() => {
     const newFieldSets = [];
-    if (values.length) {
-      values.forEach((value) => {
-        const newFields = Array.isArray(children) ? [...children] : [children];
+    values.forEach((value) => {
+      const newFields = Array.isArray(children) ? [...children] : [children];
 
-        newFieldSets.push(populateFieldValues(newFields, value));
-      });
-    }
+      newFieldSets.push(populateFieldValues(newFields, value));
+    });
 
     setFieldSets(addMultifieldChangeListener(newFieldSets));
   }, [values]);
@@ -50,16 +45,15 @@ const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
     onChange(newVals);
   };
 
-  const addMultifieldChangeListener = (fieldSets) =>
-    fieldSets.map((fieldSet, fieldSetIndex) =>
-      fieldSet.map((field) => {
-        field.props.onChange = onMultifieldChange(
-          field.props.name || field.props.id,
-          fieldSetIndex
-        );
-        return cloneElement(field);
-      })
-    );
+  const addMultifieldChangeListener = (sets) => sets.map(
+    (fieldSet, fieldSetIndex) => fieldSet.map((field) => {
+      field.props.onChange = onMultifieldChange(
+        field.props.name || field.props.id,
+        fieldSetIndex,
+      );
+      return cloneElement(field);
+    }),
+  );
 
   const addFields = () => {
     onChange([...values, getEmptyDataObj(keys)]);
@@ -79,9 +73,8 @@ const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
         ${subTitle && html`<h5>${subTitle}</h5>`}
       </div>
       ${fieldSets.map(
-        (fields, idx) =>
-          html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} />`
-      )}
+    (fields, idx) => html`<${FieldSet} key=${idx} fields=${fields} onDelete=${deleteFields(idx)} />`,
+  )}
     </div>
   `;
 };
