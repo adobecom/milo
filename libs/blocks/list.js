@@ -7,6 +7,7 @@ const blocks = [
   'how-to',
   'modal',
   'marquee',
+  'sabya',
 ];
 
 export default blocks;
