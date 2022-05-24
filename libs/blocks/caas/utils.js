@@ -2,8 +2,9 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 export const loadStrings = async (url) => {
   // TODO: Loc based loading
+  if (!url) return {};
   const resp = await fetch(url);
-  if (!resp.ok) return;
+  if (!resp.ok) return {};
   const json = await resp.json();
   const convertToObj = (data) =>
     data.reduce((obj, { key, val }) => {
