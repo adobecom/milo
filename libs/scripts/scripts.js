@@ -45,7 +45,7 @@ export async function loadLCP(blocks) {
 }
 
 /**
- * Load all the naughty things
+ * Load all the delayed things. This code is temporary for testing purposes and will be removed after code review and QA.
  */
 function loadDelayed() {
   window.setTimeout(async () => {

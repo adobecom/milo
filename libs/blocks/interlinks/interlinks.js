@@ -19,10 +19,12 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
 /**
  * Loops through a list of keywords and looks for matches in the article text.
  * The first occurrence of each keyword will be replaced with a link and tracking added.
+ * The name, location of the keywords file doesn't matter but the file passed in must have a column titled "Keyword".
+ * @param {string} keywordsFilePath The location of the keywords file to be used for interlinks.
  */
-export default async function interlink(keywordsFile) {
+export default async function interlink(keywordsFilePath) {
   const articleBody = document.querySelector('main');
-  const resp = await fetch(keywordsFile);
+  const resp = await fetch(keywordsFilePath);
   if (!(articleBody && resp.ok)) return;
   const json = await resp.json();
   const articleText = articleBody.textContent.toLowerCase();
