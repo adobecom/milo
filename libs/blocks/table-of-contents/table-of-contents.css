@@ -1,4 +1,9 @@
 .table-of-contents {
   padding: var(--spacing-xl) 0;
-  background-color: #EFEFEF;
+  background-color: #6c6c6c;
+  color: white;
+}
+
+.table-of-contents h1 {
+  margin: 0 0 24px;
 }
