@@ -49,9 +49,8 @@ export async function loadLCP(blocks) {
  */
 function loadDelayed() {
   window.setTimeout(async () => {
-    const main = document.body.querySelector('main');
     const { default: interlinks } = await import('../blocks/interlinks/interlinks.js');
-    interlinks(main);
+    interlinks('/keywords.json');
   }, 0);
 }
 
