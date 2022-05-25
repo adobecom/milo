@@ -78,7 +78,7 @@ export default async function interlink(keywordsFilePath) {
               .forEach(({ item, start, end }) => {
                 const text = textNode.nodeValue;
                 if(!p.getAttribute('daa-lh'))
-                  p.setAttribute('daa-lh', 'interlinks_pFirst_' + item.Keyword);
+                  p.setAttribute('daa-lh', 'interlinks_p_' + item.Keyword);
                 const a = document.createElement('a');
                 a.title = item.Keyword;
                 a.href = item.URL;
