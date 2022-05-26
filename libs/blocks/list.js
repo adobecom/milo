@@ -1,6 +1,7 @@
 const blocks = [
   'adobetv',
   'caas',
+  'faas',
   'columns',
   'faq',
   'fragment',

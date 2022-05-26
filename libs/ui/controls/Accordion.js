@@ -7,7 +7,7 @@ const AccordionItem = ({ title, content, expand, onClick }) => {
   const isExpanded = expand ? 'is-expanded' : '';
   const buttonText = isExpanded ? 'Colapse' : 'Expand';
   return html`
-    <div class="accordion-item">
+    <div id="ai_${title.replace(' ', '_')}" class="accordion-item">
       <dt class="title ${isExpanded}" onClick=${onClick}>
         <span>${title}</span>
         <button aria-label=${buttonText}></button>
