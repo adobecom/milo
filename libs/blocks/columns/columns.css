@@ -9,7 +9,7 @@
   margin: 0 auto;
 }
 
-.columns.contained.middle {
+.columns.middle > .row {
   align-items: center;
 }
 

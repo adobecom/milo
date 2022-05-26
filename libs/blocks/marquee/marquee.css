@@ -111,11 +111,15 @@
   margin: 0;
   gap: var(--spacing-s);
   flex-wrap: wrap;
+  min-height: 32px;
 }
 
 .marquee .action-area a {
   width: 100%;
-  text-align: center;
+}
+
+.marquee .action-area a:hover {
+  text-decoration: unset;
 }
 
 .marquee.large .supplemental-text {

@@ -47,7 +47,7 @@ export async function loadLCP(blocks) {
 function loadDelayed() {}
 
 async function loadPage() {
-  document.documentElement.classList.add('spectrum', 'spectrum--medium', 'spectrum--dark');
+  document.documentElement.classList.add('spectrum', 'spectrum--medium', 'spectrum--light');
   document.documentElement.setAttribute('dir', 'ltr');
   const blocks = decorateArea();
   const navs = decorateNavs();

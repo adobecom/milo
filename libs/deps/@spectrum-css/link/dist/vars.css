@@ -1,0 +1,15 @@
+
+.spectrum-Link {
+  --spectrum-link-s-primary-text-size: var(--spectrum-global-dimension-font-size-75);
+  --spectrum-link-m-primary-text-size: var(--spectrum-global-dimension-font-size-100);
+  --spectrum-link-l-primary-text-size: var(--spectrum-global-dimension-font-size-200);
+  --spectrum-link-xl-primary-text-size: var(--spectrum-global-dimension-font-size-300);
+  --spectrum-link-m-primary-text-color: var(--spectrum-alias-link-primary-text-color-default);
+  --spectrum-link-m-primary-text-color-hover: var(--spectrum-alias-link-primary-text-color-hover);
+  --spectrum-link-m-primary-text-color-down: var(--spectrum-alias-link-primary-text-color-down);
+  --spectrum-link-m-primary-text-color-key-focus: var(--spectrum-alias-link-primary-text-color-key-focus);
+  --spectrum-link-m-primary-overbackground-text-color: var(--spectrum-alias-text-color-overbackground);
+  --spectrum-link-m-primary-overbackground-text-color-hover: var(--spectrum-alias-text-color-overbackground);
+  --spectrum-link-m-primary-overbackground-text-color-down: var(--spectrum-alias-text-color-overbackground);
+  --spectrum-link-m-primary-overbackground-text-color-key-focus: var(--spectrum-alias-text-color-overbackground);
+}

@@ -10,38 +10,19 @@
  * governing permissions and limitations under the License.
  */
 
-import { loadStyle } from '../../utils/utils.js';
-
 /*
- * Marquee - v1.0.0
+ * Marquee - v5.1
  */
 
-function decorateButtons(el, isLarge) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
-    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
-    loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-dark.css');
-    loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
-    loadStyle('/libs/deps/@spectrum-css/button/dist/index-vars.css');
-  }
+import { decorateButtons } from '../../utils/spectrum.js';
 
-  buttons.forEach((link) => {
-    const parent = link.parentElement;
-    const type = parent.nodeName === 'STRONG' ? 'accent' : 'primary';
-    const fill = type === 'accent' ? 'fill' : 'outline';
-    const size = isLarge ? 'XL' : 'M';
-    const contents = link.textContent;
-    link.innerHTML = `<span class="spectrum-Button-label">${contents}</span>`;
-    link.className = `spectrum-Button spectrum-Button--${fill} spectrum-Button--${type} spectrum-Button--size${size}`;
-    link.addEventListener('focus', () => { link.classList.add('focus-ring'); });
-    link.addEventListener('focusout', () => { link.classList.remove('focus-ring'); });
-    parent.insertAdjacentElement('afterend', link);
-    parent.remove();
-  });
+function decorateActionArea(text, isLarge, color) {
+  const buttonSize = isLarge ? 'XL' : 'L';
+  const buttons = decorateButtons(text, color, buttonSize);
+  if (buttons.length === 0) return;
+  const area = buttons[0].closest('p, div');
+  area.classList.add('action-area', `action-area--size${buttonSize}`);
+  area.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 function decorateText(el, isLarge) {
@@ -54,7 +35,21 @@ function decorateText(el, isLarge) {
   }
 }
 
+function getSize(classList) {
+  if (classList.contains('large')) {
+    return 'large';
+  } if (classList.contains('small')) {
+    return 'small';
+  }
+  return 'medium';
+}
+
 export default function init(el) {
+  const size = getSize(el.classList);
+  el.setAttribute('daa-im', 'true');
+  el.setAttribute('daa-lh', `${el.classList[0]}|${size}`);
+  const color = el.classList.contains('light') ? 'spectrum--light' : 'spectrum--dark';
+  el.classList.add(color);
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {
@@ -65,7 +60,7 @@ export default function init(el) {
   text.classList.add('text');
   const image = foreground.querySelector(':scope > div:not([class])');
   image?.classList.add('image');
-  const isLarge = el.closest('.marquee').classList.contains('large');
-  decorateButtons(text, isLarge);
+  const isLarge = size === 'large';
   decorateText(text, isLarge);
+  decorateActionArea(text, isLarge, color);
 }
