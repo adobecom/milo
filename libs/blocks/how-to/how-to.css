@@ -5,7 +5,7 @@ ol, h1 {
   max-width: 700px;
   margin: 0 auto;
 }
-h1 {
+.how-to h1 {
   margin-bottom: 32px;
   font-size: 28px;
   line-height: 35px;
