@@ -21,6 +21,7 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   // eslint-disable-next-line no-nested-ternary
   return x < y ? -1 : x > y ? 1 : 0;
 });
+
 const getInitialState = () => {
   const hashConfig = getHashConfig();
   if (hashConfig) return hashConfig;
@@ -77,12 +78,12 @@ const CopyBtn = () => {
   const configFormValidation = () => {
     let inputValuesFilled = true;
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
-    const RequiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
+    const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
       if (!input.value) {
         inputValuesFilled = false;
-        if (RequiredPanelExpandButton) {
-          RequiredPanelExpandButton.click();
+        if (requiredPanelExpandButton) {
+          requiredPanelExpandButton.click();
         }
         input.focus();
       }
