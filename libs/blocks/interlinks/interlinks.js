@@ -21,10 +21,11 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
  * The first occurrence of each keyword will be replaced with a link and tracking added.
  * The name, location of the keywords file doesn't matter but the file passed in must have a column titled "Keyword".
  * @param {string} keywordsFilePath The location of the keywords file to be used for interlinks.
+ * @param {number} keywordsLimit The maximum amount of keywords to fetch from the keywords file starting from the top record.  Default is 1000.
  */
-export default async function interlink(keywordsFilePath) {
+export default async function interlink(keywordsFilePath, keywordsLimit = 1000) {
   const articleBody = document.querySelector('main');
-  const resp = await fetch(keywordsFilePath);
+  const resp = await fetch(keywordsFilePath + '?limit=' + keywordsLimit);
   if (!(articleBody && resp.ok)) return;
   const json = await resp.json();
   const articleText = articleBody.textContent.toLowerCase();
