@@ -47,8 +47,8 @@ function getSize(classList) {
 
 export default function init(el) {
   const size = getSize(el.classList);
-  el.setAttribute('daa-im', 'true');
-  el.setAttribute('daa-lh', `${el.classList[0]}|${size}`);
+  // el.setAttribute('daa-im', 'true');
+  // el.setAttribute('daa-lh', `${el.classList[0]}|${size}`);
   const color = el.classList.contains('light') ? 'spectrum--light' : 'spectrum--dark';
   el.classList.add(color);
   const children = el.querySelectorAll(':scope > div');
