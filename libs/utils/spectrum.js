@@ -21,7 +21,7 @@ export function getLink(a, color, size) {
 }
 
 export function getButton(a, color, size) {
-  loadStyles(size, color, 'button');
+  // loadStyles(size, color, 'button');
   const parent = a.parentElement;
   const variant = parent.nodeName === 'STRONG' ? 'accent' : 'primary';
   let style = 'fill';
