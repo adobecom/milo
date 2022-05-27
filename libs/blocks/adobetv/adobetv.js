@@ -6,3 +6,23 @@ export default function init(a) {
   a.insertAdjacentHTML('afterend', embed);
   a.remove();
 }
+
+export function videoController(arg, el) {
+  // get adobetv iframe.
+  let adobetvIframe;
+  if (el) {
+    adobetvIframe = el.querySelector('.adobetv') || el.parentElement.querySelector('.adobetv');
+  } else {
+    adobetvIframe = document.querySelector('.adobetv');
+  }
+
+  // do nothing if either of variable is not available.
+  if (!arg || !adobetvIframe) return;
+
+  // run the video control action.
+  const { origin } = new URL(adobetvIframe.src);
+  adobetvIframe.contentWindow.postMessage({
+    type: 'mpcAction',
+    action: arg,
+  }, origin);
+}

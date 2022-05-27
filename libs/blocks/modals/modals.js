@@ -1,5 +1,6 @@
 import getFragment from '../fragment/fragment.js';
 import { getMetadata, makeRelative } from '../../utils/utils.js';
+import { videoController } from '../adobetv/adobetv.js';
 
 function getDetails() {
   const details = { id: window.location.hash.replace('#', '') };
@@ -54,6 +55,12 @@ async function getModal() {
     document.body.append(dialog);
     dialog.showModal();
   }
+
+  dialog.addEventListener('close', (e) => {
+    window.location.hash = '#';
+    videoController('pause', e.target);
+  });
+
   return dialog;
 }
 
