@@ -114,11 +114,11 @@
   min-height: 32px;
 }
 
-p.action-area.action-area--sizeL {
+.marquee p.action-area.action-area--sizeL {
   min-height: 40px;
 }
 
-p.action-area.action-area--sizeXL {
+.marquee p.action-area.action-area--sizeXL {
   min-height: 50px;
 }
 

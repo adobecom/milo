@@ -44,7 +44,15 @@ export async function loadLCP(blocks) {
   }
 }
 
-function loadDelayed() {}
+function loadDelayed() {
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-dark.css');
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-light.css');
+  loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
+  loadStyle('/libs/deps/@spectrum-css/button/dist/index-vars.css');
+  loadStyle('/libs/deps/@spectrum-css/link/dist/index-vars.css');
+}
 
 async function loadPage() {
   document.documentElement.classList.add('spectrum', 'spectrum--medium', 'spectrum--light');
