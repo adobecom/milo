@@ -7,6 +7,12 @@ export default function init(a) {
   a.remove();
 }
 
+/**
+ * Take arg for video control for adobetv.
+ * currently supporting only 'play' and 'pause' command accodring to https://publish.tv.adobe.com/docs
+ * @param {*} arg argument for video control action.
+ * @param {*} el element that contains the iframe that has 'adobetv' as class.
+ */
 export function videoController(arg, el) {
   // get adobetv iframe.
   let adobetvIframe;
