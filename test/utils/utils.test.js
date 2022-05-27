@@ -42,6 +42,21 @@ describe('Utils', () => {
     }
   });
 
+  it('Does not setup nofollow links', async () => {
+    const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+    expect(gaLink.getAttribute('rel')).to.be.null;
+  });
+
+  it('Sets up nofollow links', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'nofollow-links';
+    meta.content = 'on';
+    document.head.append(meta);
+    await utils.loadLazy([]);
+    const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+    expect(gaLink).to.exist;
+  });
+
   it('Converts UTF-8 to Base 64', () => {
     const b64 = utils.utf8ToB64('hello world');
     expect(b64).to.equal('aGVsbG8gd29ybGQ=');

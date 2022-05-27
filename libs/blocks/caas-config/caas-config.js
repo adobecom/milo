@@ -8,17 +8,20 @@ import {
   useReducer,
   useState,
 } from '../../deps/htm-preact.js';
-import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
-import { Accordion } from '../../ui/controls/controls.js';
-import { defaultState, initCaas, loadCaasFiles } from '../caas/utils.js';
-import TagSelect from './TagSelector.js';
+import { getHashConfig, isValidUuid, loadStyle, utf8ToB64 } from '../../utils/utils.js';
+import Accordion from '../../ui/controls/Accordion.js';
+import { defaultState, initCaas, loadCaasFiles, loadStrings } from '../caas/utils.js';
+import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
+import TagSelect from '../../ui/controls/TagSelector.js';
+import MultiField from '../../ui/controls/MultiField.js';
+import '../../utils/lana.js';
 
 const CAAS_TAG_URL = 'https://14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/tags';
 const LS_KEY = 'caasConfiguratorState';
 
-const caasFilesLoaded = loadCaasFiles();
-
 let tagsData = {};
+
+const caasFilesLoaded = loadCaasFiles();
 
 const loadCaasTags = async () => {
   const resp = await fetch(CAAS_TAG_URL);
@@ -58,11 +61,28 @@ const defaultOptions = {
     false: 'Live',
     true: 'Draft',
   },
+  endpoints: {
+    'www.adobe.com/chimera-api/collection': 'www.adobe.com/chimera-api/collection',
+    'business.adobe.com/chimera-api/collection': 'business.adobe.com/chimera-api/collection',
+    'www.stage.adobe.com/chimera-api/collection': 'www.stage.adobe.com/chimera-api/collection',
+    'business.stage.adobe.com/chimera-api/collection':
+      'business.stage.adobe.com/chimera-api/collection',
+    '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1':
+      '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1',
+    '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1':
+      '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1',
+    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1':
+      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1',
+  },
   gutter: {
     '1x': '8px (1x)',
     '2x': '16px (2x)',
     '3x': '24px (3x)',
     '4x': '32px (4x)',
+  },
+  intraTagLogicOptions: {
+    AND: 'AND',
+    OR: 'OR',
   },
   layoutType: {
     '2up': '2up',
@@ -82,6 +102,13 @@ const defaultOptions = {
     none: 'None',
     paginator: 'Paginator',
     loadMore: 'Load More',
+  },
+  search: {
+    'contentArea.title': 'Card Titles',
+    'contentArea.description': 'Card Descriptions',
+    'contentArea.detailText': 'Card Details',
+    'overlays.label.description': 'Card Labels',
+    'overlays.banner.description': 'Banner Descriptions',
   },
   sort: {
     featured: 'Featured',
@@ -112,30 +139,29 @@ const defaultOptions = {
 const Select = ({ label, options, prop }) => {
   const context = useContext(ConfiguratorContext);
 
-  const onSelectChange = (e) => {
+  const onSelectChange = (val) => {
     context.dispatch({
       type: 'SELECT_CHANGE',
       prop,
-      value: e.target.value,
+      value: val,
     });
   };
 
   return html`
-    <div class="field">
-      <label for=${prop}>${label}</label>
-      <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
-        ${Object.entries(options).map(
-    ([val, label]) => html`<option value="${val}">${label}</option>`,
-  )}
-      </select>
-    </div>
+    <${FormSelect}
+      label=${label}
+      name=${prop}
+      onChange=${onSelectChange}
+      options=${options}
+      value=${context.state[prop]}
+    />
   `;
 };
 
 const Input = ({ label, type = 'text', prop }) => {
   const context = useContext(ConfiguratorContext);
 
-  const onInputChange = (e) => {
+  const onInputChange = (val, e) => {
     context.dispatch({
       type: 'INPUT_CHANGE',
       prop,
@@ -143,15 +169,18 @@ const Input = ({ label, type = 'text', prop }) => {
     });
   };
 
-  const value = { [type === 'checkbox' ? 'checked' : 'value']: context.state[prop] };
-
-  return html` <div class="field">
-    <label for=${prop}>${label}</label>
-    <input type=${type} id=${prop} name=${prop} ...${value} onChange=${onInputChange} />
-  </div>`;
+  return html`
+    <${FormInput}
+      label=${label}
+      name=${prop}
+      type=${type}
+      onChange=${onInputChange}
+      value=${context.state[prop]}
+    />
+  `;
 };
 
-const DropdownSelect = ({ label, options, prop }) => {
+const DropdownSelect = ({ label, isModal = false, options, prop }) => {
   const context = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     context.dispatch({
@@ -165,26 +194,35 @@ const DropdownSelect = ({ label, options, prop }) => {
     <${TagSelect}
       id=${prop}
       options=${options}
-      selectedOptions=${context.state[prop]}
+      value=${context.state[prop]}
       label=${label}
-      onSelectedChange=${onChange}
+      isModal=${isModal}
+      onChange=${onChange}
     />
   `;
 };
 
-const BasicsPanel = () => html`
-  <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-  <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
-  <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
-  <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
-  <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
-`;
+const BasicsPanel = () => {
+  const countryTags = getTagList(tagsData.country.tags);
+  const languageTags = getTagList(tagsData.language.tags);
+  return html`
+    <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
+    <${Select} options=${countryTags} prop="country" label="Country" />
+    <${Select} options=${languageTags} prop="language" label="Language" />
+    <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
+    <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
+  `;
+};
 
 const UiPanel = () => html`
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
   <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+  <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
+  <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+  <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
+  <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
+  <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
   <${Select}
@@ -199,40 +237,149 @@ const UiPanel = () => html`
   />
 `;
 
-const getTopLevelTags = (tagId) => {
-  const tagsData = getCaasTags();
-  return Object.entries(tagsData[tagId].tags).reduce(
-    (contentOptions, [, tagObj]) => {
-      contentOptions[tagObj.tagID] = tagObj.title;
-      return contentOptions;
-    },
-    {},
-  );
+const getTagList = (root) =>
+  Object.entries(root).reduce((options, [, tag]) => {
+    options[tag.tagID] = tag.title;
+    return options;
+  }, {});
+
+const getTagTree = (root) => {
+  const options = Object.entries(root).reduce((opts, [, tag]) => {
+    opts[tag.tagID] = {};
+
+    if (Object.keys(tag.tags).length) {
+      opts[tag.tagID].children = getTagTree(tag.tags);
+    }
+
+    opts[tag.tagID].label = tag.title;
+    opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
+
+    return opts;
+  }, {});
+  return options;
 };
 
 const TagsPanel = () => {
-  const contentTypeTags = getTopLevelTags('content-type');
-  const countryTags = getTopLevelTags('country');
-  const languageTags = getTopLevelTags('language');
+  const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
+  const allTags = getTagTree(tagsData);
+  const context = useContext(ConfiguratorContext);
+
+  const onAndLogicTagChange = (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop: 'andLogicTags',
+      value: values,
+    });
+  };
+
+  const onOrLogicTagChange = (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop: 'orLogicTags',
+      value: values,
+    });
+  };
   return html`
     <${DropdownSelect}
       options=${contentTypeTags}
       prop="contentTypeTags"
       label="Content Type Tags"
     />
-    <${Select}
-      options=${countryTags}
-      prop="country"
-      label="Country"
+    <${DropdownSelect}
+      options=${allTags}
+      prop="includeTags"
+      label="Tags to Include"
+      isModal
     />
-    <${Select}
-      options=${languageTags}
-      prop="language"
-      label="Language"
+    <${DropdownSelect}
+      options=${allTags}
+      prop="excludeTags"
+      label="Tags to Exclude"
+      isModal
     />
+    <${MultiField}
+      onChange=${onAndLogicTagChange}
+      values=${context.state.andLogicTags}
+      title="AND logic Tags"
+      subTitle=""
+    >
+      <${FormSelect}
+        label="Intra Tag Logic"
+        name="intraTagLogic"
+        options=${defaultOptions.intraTagLogicOptions}
+      />
+      <${TagSelect}
+        id="andTags"
+        options=${allTags}
+        label="Tags with overall AND logic"
+        isModal
+      />
+    <//>
+    <${MultiField}
+      onChange=${onOrLogicTagChange}
+      values=${context.state.orLogicTags}
+      title="OR logic Tags"
+      subTitle=""
+    >
+      <${TagSelect}
+        id="orTags"
+        options=${allTags}
+        label="Tags with overall OR logic"
+        isModal
+    /><//>
   `;
 };
+
+const CardsPanel = () => {
+  const context = useContext(ConfiguratorContext);
+  const onFeaturedChange = (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop: 'featuredCards',
+      value: values,
+    });
+  };
+
+  const onExcludedChange = (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop: 'excludedCards',
+      value: values,
+    });
+  };
+
+  return html`
+    <${MultiField}
+      onChange=${onFeaturedChange}
+      values=${context.state.featuredCards}
+      title="Featured Cards"
+      subTitle="Enter the UUID for cards to be featured"
+    >
+      <${FormInput} name="contentId" onValidate=${isValidUuid} />
+    <//>
+    <${MultiField}
+      onChange=${onExcludedChange}
+      values=${context.state.excludedCards}
+      title="Excluded Cards"
+      subTitle="Enter the UUID for cards to be excluded"
+    >
+      <${FormInput} name="excludeCards" label="Content ID" onValidate=${isValidUuid} />
+    <//>
+  `;
+};
+
+const BookmarksPanel = () => html`
+    <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
+    <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
+    <${Input}
+      label="Show the Bookmarks Filter In The Card Collection"
+      prop="showBookmarksFilter"
+      type="checkbox"
+    />
+    <${Input} label="Icon Link for in 'My Bookmarks'" prop="bookmarkIconSelect" />
+    <${Input} label="Icon Link for not in 'My Bookmarks'" prop="bookmarkIconUnselect" />
+  `;
 
 const SortPanel = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -252,7 +399,8 @@ const SortPanel = () => {
 
 const FilterPanel = () => {
   const { state } = useContext(ConfiguratorContext);
-  const FilterOptions = html`<${Input} label="Show Search" prop="showSearch" type="checkbox" />`;
+  // TODO: Filters
+  const FilterOptions = '';
 
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
@@ -260,7 +408,14 @@ const FilterPanel = () => {
   `;
 };
 
-const AdvancedPanel = () => html` <${Select} label="Database" prop="draftDb" options=${defaultOptions.draftDb} /> `;
+const SearchPanel = () => html`
+    <${Input} label="Show Search" prop="showSearch" type="checkbox" />
+    <${DropdownSelect}
+      options=${defaultOptions.search}
+      prop="searchFields"
+      label="Choose What To Search Through"
+    />
+  `;
 
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -290,12 +445,43 @@ const PaginationPanel = () => {
   `;
 };
 
+const TargetPanel = () =>
+  html`
+    <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
+    <${Input} label="Target Activity" prop="targetActivity" type="text" />
+  `;
+
+const AnalyticsPanel = () =>
+  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+    <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
+
+const AdvancedPanel = () => {
+  const { dispatch } = useContext(ConfiguratorContext);
+  const onClick = () => {
+    dispatch({
+      type: 'RESET_STATE',
+    });
+  };
+  return html`
+    <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
+    <${Select}
+      label="Fallback Endpoint"
+      prop="fallbackEndpoint"
+      options=${{ '': '', ...defaultOptions.endpoints }}
+    />
+    <${Input} label="Placeholders Folder" prop="placeholderUrl" type="text" />
+  `;
+};
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
+    case 'RESET_STATE':
+      return { ...defaultState };
     default:
       console.log('DEFAULT');
       return state;
@@ -354,24 +540,31 @@ const CopyBtn = () => {
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
-    navigator.clipboard.write(data)
-      .then(() => {
+    navigator.clipboard.write(data).then(
+      () => {
         setStatus(setIsSuccess);
-      }, () => {
+      },
+      () => {
         setStatus(setIsError);
-      });
+      }
+    );
   };
 
-  return html`
-  <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
-  <button
-    class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true ? 'is-success' : ''}"
-    onClick=${copyConfig}>Copy</button>`;
+  return html` <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
+    <button
+      class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
+        ? 'is-success'
+        : ''}"
+      onClick=${copyConfig}
+    >
+      Copy
+    </button>`;
 };
 
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
+  const [strings, setStrings] = useState();
 
   useEffect(() => {
     caasFilesLoaded
@@ -383,12 +576,17 @@ const Configurator = ({ rootEl }) => {
       });
   }, []);
 
-  useEffect(() => {
-    if (isCaasLoaded) {
-      initCaas(state);
+  useEffect(async () => {
+    const strs = await loadStrings(state.placeholderUrl);
+    setStrings(strs);
+  }, [state.placeholderUrl]);
+
+  useEffect(async () => {
+    if (isCaasLoaded && strings !== undefined) {
+      initCaas(state, strings);
       saveStateToLocalStorage(state);
     }
-  }, [isCaasLoaded, state]);
+  }, [isCaasLoaded, state, strings]);
 
   const panels = [
     {
@@ -404,16 +602,36 @@ const Configurator = ({ rootEl }) => {
       content: html`<${TagsPanel} />`,
     },
     {
+      title: 'Cards',
+      content: html`<${CardsPanel} />`,
+    },
+    {
       title: 'Sort',
       content: html`<${SortPanel} />`,
     },
     {
-      title: 'Filters',
-      content: html`<${FilterPanel} />`,
+      title: 'Bookmarks',
+      content: html`<${BookmarksPanel} />`,
+    },
+    // {
+    //   title: 'Filters',
+    //   content: html`<${FilterPanel} />`,
+    // },
+    {
+      title: 'Search',
+      content: html`<${SearchPanel} />`,
     },
     {
       title: 'Pagination',
       content: html`<${PaginationPanel} />`,
+    },
+    {
+      title: 'Target',
+      content: html`<${TargetPanel} />`,
+    },
+    {
+      title: 'Analytics',
+      content: html`<${AnalyticsPanel} />`,
     },
     {
       title: 'Advanced',
@@ -446,9 +664,7 @@ export default async function init(el) {
   await loadCaasTagsPromise;
   loadStyle('/libs/ui/page/page.css');
 
-  const app = html`
-    <${Configurator} rootEl=${el}/>
-  `;
+  const app = html` <${Configurator} rootEl=${el} /> `;
 
   render(app, el);
 }

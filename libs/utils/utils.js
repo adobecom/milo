@@ -1,9 +1,11 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const AUTO_BLOCKS = [
+  { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
+  { faas: '/tools/faas' },
   { fragment: '/fragments' },
 ];
 
@@ -40,7 +42,7 @@ export function loadStyle(href, callback) {
 
 export async function loadBlock(block) {
   const { status } = block.dataset;
-  if (status === 'loaded') return block;
+  if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const blockName = block.classList[0];
   const styleLoaded = new Promise((resolve) => {
@@ -59,7 +61,7 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  block.dataset.status = 'loaded';
+  delete block.dataset.status;
   return block;
 }
 
@@ -171,7 +173,9 @@ function decorateDefaults(el) {
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
     decorateDefaults(section);
-    section.className = 'section';
+    if (!section.querySelector(':scope > .section-metadata')) {
+      section.className = 'section';
+    }
   });
 }
 
@@ -183,7 +187,11 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadLazy(blocks) {
+export async function loadLazy(blocks, el = document) {
+  if (getMetadata('nofollow-links') === 'on') {
+    const { default: nofollow } = await import('../blocks/nofollow/nofollow.js');
+    nofollow('/seo/nofollow.json', el);
+  }
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
@@ -197,8 +205,12 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     if (type) {
       script.setAttribute('type', type);
     }
-    script.onload = () => { resolve(script); };
-    script.onerror = () => { reject(new Error('error loading script')); };
+    script.onload = () => {
+      resolve(script);
+    };
+    script.onerror = () => {
+      reject(new Error('error loading script'));
+    };
     head.append(script);
   }
 });
@@ -228,3 +240,5 @@ export function getHashConfig() {
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
 }
+
+export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);

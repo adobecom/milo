@@ -1,0 +1,55 @@
+.section.darkest {
+  background-color: rgb(0 0 0);
+  color: rgb(255 255 255);
+}
+
+.section.dark {
+  background-color: rgb(29 29 29);
+  color: rgb(235 235 235);
+}
+
+.section.light {
+  background-color: rgb(255 255 255);
+  color: rgb(34 34 34);
+}
+
+.section.has-background {
+  background-color: unset;
+}
+
+.section.xxl-spacing {
+  padding: var(--spacing-xxl) 0;
+}
+
+.section.xl-spacing {
+  padding: var(--spacing-xl) 0;
+}
+
+.section.l-spacing {
+  padding: var(--spacing-l) 0;
+}
+
+.section.m-spacing {
+  padding: var(--spacing-m) 0;
+}
+
+.section.s-spacing {
+  padding: var(--spacing-s) 0;
+}
+
+.section.xs-spacing {
+  padding: var(--spacing-xs) 0;
+}
+
+.section picture.section-background {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.section .section-background img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}

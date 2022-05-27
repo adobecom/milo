@@ -1,5 +1,9 @@
+import { parseEncodedConfig } from '../../utils/utils.js';
+import { initFaas, loadFaasFiles } from './utils.js';
+
 export default function init(a) {
-  // const p = document.createElement('p');
-  // p.textContent = 'this is faas';
-  // a.parentElement.replaceChild(p, a);
+  loadFaasFiles().then(() => {
+    const encodedConfig = a.href.split('#')[1];
+    initFaas(parseEncodedConfig(encodedConfig), a);
+  });
 }

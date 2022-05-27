@@ -1,0 +1,34 @@
+.columns > .row {
+  display: grid;
+  gap: var(--spacing-m);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.columns.contained {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.columns.contained.middle {
+  align-items: center;
+}
+
+.columns.xxl-spacing {
+  gap: var(--spacing-xxl);
+}
+
+.columns.xl-spacing {
+  gap: var(--spacing-xl);
+}
+
+.columns.l-spacing {
+  gap: var(--spacing-l);
+}
+
+.columns.s-spacing {
+  gap: var(--spacing-s);
+}
+
+.columns.xs-spacing {
+  gap: var(--spacing-xs);
+}

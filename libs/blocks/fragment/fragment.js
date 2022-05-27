@@ -12,7 +12,7 @@ export default async function init(a, parent) {
       fragment.className = 'fragment';
 
       const blocks = decorateArea(fragment);
-      await loadLazy(blocks);
+      await loadLazy(blocks, fragment);
 
       if (parent) {
         a.remove();

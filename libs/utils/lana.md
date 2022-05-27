@@ -19,8 +19,6 @@ Any uncaught errors (or Promise Rejections) will automatically be logged to LANA
 * `options` - object:
     * `clientId` - string: Defaults to `''`
         * The client ID to identify the which product team the error belongs to.
-    * `debug` - boolean: Defaults to `false`
-        * When `true`, will `console.warn` all errors from `lana.log`
     * `endpoint` - string: Prod AdobeIO API endpoint for LANA to send messages to.
     * `endpointStage` - string: Stage AdobeIO API endpoint for LANA to send messages to.
     * `errorType` - string: Defaults to `e`
@@ -44,6 +42,17 @@ It is recommended that the client ID is set for every page so that implicit erro
 `window.lana.setDefaultOptions(options)`: Updates the default options.  Any params not defined in the options object will keep the existing default options.
 
 Note that the current option state is stored in `window.lana.options` and can also be directly changed there.
+
+## Debugging
+
+Debugging mode can be enabled by setting a `lanaDebug` query param.  This sends lana messages with debug enabled and will console.log the responses.
+Alternatively, the `window.lana.debug` property can be set (the query param also sets this property).
+
+## localhost
+
+When on a url that contains "localhost", logged messages will not be sent to the server and will be displayed in the console.  However if debug is enabled, then messages will be sent.
+
+The `window.lana.localhost` property is set when "localhost" is detected in the url or can be manually set.
 
 ## Example
 
