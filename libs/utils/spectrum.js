@@ -11,14 +11,14 @@ function addEvents(el) {
 }
 
 export function getLink(a, color, size) {
-  // loadStyles(size, color, 'link');
+  loadStyles(size, color, 'link');
   a.className = `spectrum-Link spectrum-Link--size${size.toUpperCase()}`;
   addEvents(a);
   return a;
 }
 
 export function getButton(a, color, size) {
-  // loadStyles(size, color, 'button');
+  loadStyles(size, color, 'button');
   const parent = a.parentElement;
   const variant = parent.nodeName === 'STRONG' ? 'accent' : 'primary';
   let style = 'fill';
@@ -57,7 +57,6 @@ export function decorateButtons(el, color, size = 'M') {
   loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
   loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
   loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
-
   const anchors = el.querySelectorAll('a');
   if (anchors.length === 0) return [];
   return [...anchors].map((a) => getAction(a, color, size));
