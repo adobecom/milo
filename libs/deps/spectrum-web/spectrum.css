@@ -1,0 +1,12 @@
+/* spectrum-Button spectrum-Button--fill spectrum-Button--accent spectrum-Button--sizeM */
+:root {
+  --button-lh: 32px;
+}
+
+.large {
+  --button-lh: 40px;
+}
+
+.spectrum-button {
+  line-height: var(--button-lh);
+}
