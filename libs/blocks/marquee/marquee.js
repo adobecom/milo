@@ -18,8 +18,8 @@ import { decorateButtons } from '../../utils/spectrum.js';
 
 function decorateActionArea(text, isLarge, color) {
   const buttonSize = isLarge ? 'XL' : 'L';
-  // const buttons = decorateButtons(text, color, buttonSize);
-  const buttons = [...text.querySelectorAll('a')];
+  const buttons = decorateButtons(text, color, buttonSize);
+  // const buttons = [...text.querySelectorAll('a')];
   if (buttons.length === 0) return;
   const area = buttons[0].closest('p, div');
   area.classList.add('action-area', `action-area--size${buttonSize}`);

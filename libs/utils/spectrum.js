@@ -14,7 +14,7 @@ function addEvents(el) {
 }
 
 export function getLink(a, color, size) {
-  loadStyles(size, color, 'link');
+  // loadStyles(size, color, 'link');
   a.className = `spectrum-Link spectrum-Link--size${size.toUpperCase()}`;
   addEvents(a);
   return a;
