@@ -1,10 +1,7 @@
 import { loadStyle } from './utils.js';
 
 function loadStyles(size, color, component) {
-  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
-  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
   loadStyle(`/libs/deps/@spectrum-css/vars/dist/spectrum-${color}.css`);
-  loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
   loadStyle(`/libs/deps/@spectrum-css/${component}/dist/index-vars.css`);
 }
 
@@ -57,6 +54,10 @@ export function getAction(a, color, size) {
 }
 
 export function decorateButtons(el, color, size = 'M') {
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-global.css');
+  loadStyle('/libs/deps/@spectrum-css/vars/dist/spectrum-medium.css');
+  loadStyle('/libs/deps/@spectrum-css/page/dist/index-vars.css');
+
   const anchors = el.querySelectorAll('a');
   if (anchors.length === 0) return [];
   return [...anchors].map((a) => getAction(a, color, size));
