@@ -187,30 +187,33 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadLazy(blocks) {
+export async function loadLazy(blocks, el = document) {
+  if (getMetadata('nofollow-links') === 'on') {
+    const { default: nofollow } = await import('../blocks/nofollow/nofollow.js');
+    nofollow('/seo/nofollow.json', el);
+  }
   const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
 
-export const loadScript = (url, type) =>
-  new Promise((resolve, reject) => {
-    let script = document.querySelector(`head > script[src="${url}"]`);
-    if (!script) {
-      const { head } = document;
-      script = document.createElement('script');
-      script.setAttribute('src', url);
-      if (type) {
-        script.setAttribute('type', type);
-      }
-      script.onload = () => {
-        resolve(script);
-      };
-      script.onerror = () => {
-        reject(new Error('error loading script'));
-      };
-      head.append(script);
+export const loadScript = (url, type) => new Promise((resolve, reject) => {
+  let script = document.querySelector(`head > script[src="${url}"]`);
+  if (!script) {
+    const { head } = document;
+    script = document.createElement('script');
+    script.setAttribute('src', url);
+    if (type) {
+      script.setAttribute('type', type);
     }
-  });
+    script.onload = () => {
+      resolve(script);
+    };
+    script.onerror = () => {
+      reject(new Error('error loading script'));
+    };
+    head.append(script);
+  }
+});
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
@@ -238,5 +241,4 @@ export function getHashConfig() {
   return parseEncodedConfig(encodedConfig);
 }
 
-export const isValidUuid = (id) =>
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
