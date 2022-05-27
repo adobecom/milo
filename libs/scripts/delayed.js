@@ -13,7 +13,7 @@
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
-export default async function delayed() {
+async function delayed() {
   const { default: interlinks } = await import('../blocks/interlinks/interlinks.js');
   interlinks('/keywords.json');
 }
