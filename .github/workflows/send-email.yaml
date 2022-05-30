@@ -1,0 +1,40 @@
+# Run this action only for pull requests from this repository
+name: Send Mail
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  send:
+    steps:
+    - name: Sending mail
+      env:
+        API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      run: |
+        curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+        -H 'Authorization: Bearer $API_KEY' \
+        -H 'Content-Type: application/json' \
+        -d '{
+          "from": {
+            "email": "bot@em306.milo.pink",
+            "name": "Milo Bot",
+          },
+          "personalizations": [
+            {
+              "to": [
+                {
+                  "email": "cmillar@adobe.com",
+                }
+              ],
+              "dynamic_template_data": {
+                "date": "05/27/2022",
+                "name": "MWPW-110883 - Nofollow Links",
+                "content": "<ul><li>Ability to get list of nofollow domains</li><li>Doesnt find relative links</li><li>Supports fragments</li></ul><p dir=\"auto\">Resolves: <a href=\"https://jira.corp.adobe.com/browse/MWPW-110883\" rel=\"nofollow\">MWPW-110883</a></p>"
+              }
+            }
+          ],
+          "template_id": "d-7d6f89b63fe347aba968aaea3a8ef49d"
+        }'
