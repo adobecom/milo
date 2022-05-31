@@ -7,9 +7,11 @@ import {
   useReducer,
   useState,
 } from '../../deps/htm-preact.js';
+import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
 import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
+import MultiField from '../../ui/controls/MultiField.js';
+import { Input as FormInput } from '../../ui/controls/formControls.js';
 
 let faasEl;
 const LS_KEY = 'faasConfiguratorState';
@@ -177,7 +179,7 @@ const Input = ({ label, type = 'text', prop, placeholder }) => {
 const templateSelected = () => {
   const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
   const initialState = getInitialState();
-  const formId = formTypeSelectValue || initialState ? initialState.id : '40';
+  const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
   const renderFields = [];
   const buildOptionsFromApi = (obj) => {
     const results = {};
@@ -218,10 +220,8 @@ const templateSelected = () => {
         renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
       }
       if (d.question.id === '103') { // Multiple Campaign Ids
+        renderFields.push(103);
         isMultipleCampaign = true;
-        renderFields.push(html`<${Input} label="Labels for Campaign Ids" prop="q103cl" placeholder="Comma separated list e.g. Label 1, Label 2" />`);
-        renderFields.push(html`<${Input} label="Multiple Campaign Ids" prop="q103cv" placeholder="Comma separated list e.g. ID1, ID2" />`);
-        renderFields.push(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
       }
     });
     if (!isMultipleCampaign) {
@@ -236,11 +236,35 @@ const templateSelected = () => {
 };
 
 const templateOptions = {};
-const RequiredPanel = ({ renderFields }) => html`
+const RequiredPanel = ({ renderFields }) => {
+  if (renderFields.includes(103)) {
+    renderFields.splice(renderFields.indexOf(103), 1);
+    const context = useContext(ConfiguratorContext);
+    const onCampaignIDChange = (values) => {
+      context.dispatch({
+        type: 'SELECT_CHANGE',
+        prop: 'q103',
+        value: values,
+      });
+    };
+    const internalCampIDs = html`
+      <${MultiField}
+      onChange=${onCampaignIDChange}
+      values=${context.state.q103}
+      title="Multiple Campaign Ids"
+      >
+        <${FormInput} name="v" label="Campagin ID" />
+        <${FormInput} name="l" label="Description" />
+      <//>`;
+    renderFields.push(internalCampIDs);
+    renderFields.push(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
+  }
+  return html`
   <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
   ${renderFields}
   <${Input} label="Destination URL" prop="d" />
 `;
+};
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />
   <${Input} label="Onsite Campagin ID" prop="pjs39" />

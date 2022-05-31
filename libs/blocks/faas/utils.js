@@ -281,15 +281,8 @@ export const makeFaasConfig = (state) => {
     config.p.js[172] = state[172];
   }
   // Multiple Campaign Ids
-  if (state.q103cv) {
-    const q103Values = state.q103cv.split(',');
-    const q103Labels = state.q103cl.split(',');
-    const q103Obj = { 103: { c: [] } };
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < q103Values.length; i++) {
-      q103Obj[103].c.push({ v: q103Values[i], l: q103Labels[i] });
-    }
-    Object.assign(config.q, q103Obj);
+  if (state.q103) {
+    Object.assign(config.q, { 103: { c: state.q103 } });
   }
   return config;
 };
