@@ -56,4 +56,14 @@ describe('Modals', () => {
       expect(modal).to.exist;
     });
   });
+
+  it('Remove a modal on close', async () => {
+    window.location.hash = '';
+    const prom = init(true);
+    window.location.hash = '#milo';
+    prom.then((modal) => {
+      modal.close();
+      expect(modal).to.be.null;
+    });
+  });
 });
