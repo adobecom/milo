@@ -17,6 +17,7 @@ let faasEl;
 const LS_KEY = 'faasConfiguratorState';
 const faasFilesLoaded = loadFaasFiles();
 const ConfiguratorContext = createContext('faas');
+const langOptions = {};
 const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   const x = a[1].toLowerCase();
   const y = b[1].toLowerCase();
@@ -176,11 +177,19 @@ const Input = ({ label, type = 'text', prop, placeholder }) => {
     </div>`;
 };
 
-const templateSelected = () => {
-  const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
-  const initialState = getInitialState();
-  const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
-  const renderFields = [];
+const RequiredPanel = () => {
+  const [templateOptions, setTemplateOptions] = useState({});
+  const context = useContext(ConfiguratorContext);
+  const [fieldLanguage, setFieldLanguage] = useState('');
+  const [field92, setField92] = useState('');
+  const [field93, setField93] = useState('');
+  const [field94, setField94] = useState('');
+  const [field149, setField149] = useState('');
+  const [field172, setField172] = useState('');
+  const [field103, setField103] = useState('');
+  const [fieldMultiCampStyle, setFieldMultiCampStyle] = useState('');
+  const [fieldpjs36, setFieldpjs36] = useState('');
+
   const buildOptionsFromApi = (obj) => {
     const results = {};
     obj.forEach((o) => {
@@ -189,80 +198,115 @@ const templateSelected = () => {
     return results;
   };
 
-  getObjFromAPI('/faas/api/locale').then((data) => {
-    const langOptions = {};
-    data.forEach((l) => {
-      langOptions[l.code] = l.name;
+  const onCampaignIDChange = (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop: 'q103',
+      value: values,
     });
-    renderFields.push(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
-  });
+  };
 
-  getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
-    let isMultipleCampaign = false;
-    data.formQuestions.forEach((d) => {
-      if (d.question.id === '92' // Form Type
-        || d.question.id === '93' // Form Subtype
-        || d.question.id === '94') { // Primary Product Interest
-        renderFields.push(html`
-        <${Select}
-          label="${d.question.name}"
-          prop="pjs${d.question.id}"
-          options=${buildOptionsFromApi(d.question.collection.collectionValues)}
-          sort="true" />`);
-      }
-      if (d.question.id === '149') { // b2bpartners
-        renderFields.push(html`
-        <${Input} label="Name(s) of B2B Partner(s)"
-        prop="${d.question.id}"
-        placeholder="Comma separated list e.g. Microsoft, SAP" />`);
-      }
-      if (d.question.id === '172') { // Last Asset
-        renderFields.push(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
-      }
-      if (d.question.id === '103') { // Multiple Campaign Ids
-        renderFields.push(103);
-        isMultipleCampaign = true;
-      }
-    });
-    if (!isMultipleCampaign) {
-      renderFields.push(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
-    }
-    // eslint-disable-next-line no-use-before-define
-    const app = html`<${Configurator} rootEl=${faasEl} renderFields=${renderFields} />`;
-    render(app, faasEl);
-  }).catch((err) => {
-    console.log('Could not load additonal Form Template options from FaaS.', err);
-  });
-};
-
-const templateOptions = {};
-const RequiredPanel = ({ renderFields }) => {
-  if (renderFields.includes(103)) {
-    renderFields.splice(renderFields.indexOf(103), 1);
-    const context = useContext(ConfiguratorContext);
-    const onCampaignIDChange = (values) => {
-      context.dispatch({
-        type: 'SELECT_CHANGE',
-        prop: 'q103',
-        value: values,
+  if (!Object.keys(langOptions).length) {
+    useEffect(() => {
+      getObjFromAPI('/faas/api/locale').then((data) => {
+        data.forEach((l) => {
+          langOptions[l.code] = l.name;
+        });
+        setFieldLanguage(html`<${Select} label="Form Language" prop="l" options=${langOptions} />`);
       });
-    };
-    const internalCampIDs = html`
-      <${MultiField}
-      onChange=${onCampaignIDChange}
-      values=${context.state.q103}
-      title="Multiple Campaign Ids"
-      >
-        <${FormInput} name="v" label="Campagin ID" />
-        <${FormInput} name="l" label="Description" />
-      <//>`;
-    renderFields.push(internalCampIDs);
-    renderFields.push(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
+    });
   }
+
+  useEffect(() => {
+    const options = {};
+    getObjFromAPI('/faas/api/form?active=1&tags=adobe.com,RFI').then((data) => {
+      data.forEach((d) => {
+        options[d.id] = d.name;
+      });
+      setTemplateOptions(options);
+    });
+    const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
+    const initialState = getInitialState();
+    const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
+    getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
+      let isMultipleCampaign = false;
+      data.formQuestions.forEach((d) => {
+        // Form Type
+        if (d.question.id === '92') {
+          setField92(html`
+          <${Select}
+            label="${d.question.name}"
+            prop="pjs${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
+        }
+        // Form Subtype
+        if (d.question.id === '93') {
+          setField93(html`
+          <${Select}
+            label="${d.question.name}"
+            prop="pjs${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
+        }
+        // Primary Product Interest
+        if (d.question.id === '94') {
+          setField94(html`
+          <${Select}
+            label="${d.question.name}"
+            prop="pjs${d.question.id}"
+            options=${buildOptionsFromApi(d.question.collection.collectionValues)}
+            sort="true" />`);
+        }
+        // b2bpartners
+        if (d.question.id === '149') {
+          setField149(html`
+          <${Input} label="Name(s) of B2B Partner(s)"
+          prop="${d.question.id}"
+          placeholder="Comma separated list e.g. Microsoft, SAP" />`);
+        }
+        // Last Asset
+        if (d.question.id === '172') {
+          setField172(html`<${Input} label="Last Asset" prop="${d.question.id}" placeholder="Simple string of last Asset" />`);
+        }
+        // Multiple Campaign Ids
+        if (d.question.id === '103') {
+          isMultipleCampaign = true;
+          const internalCampIDs = html`
+            <${MultiField}
+            onChange=${onCampaignIDChange}
+            values=${context.state.q103}
+            title="Multiple Campaign Ids"
+            >
+              <${FormInput} name="v" label="Campagin ID" />
+              <${FormInput} name="l" label="Description" />
+            <//>`;
+          setField103(internalCampIDs);
+          setFieldMultiCampStyle(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
+        }
+      });
+      if (!isMultipleCampaign) {
+        setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
+      }
+      // eslint-disable-next-line no-use-before-define
+    }).catch((err) => {
+      console.log('Could not load additonal Form Template options from FaaS.', err);
+    });
+  }, []);
+
+  const templateSelected = '';
   return html`
   <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
-  ${renderFields}
+  ${fieldLanguage}
+  ${field92}
+  ${field93}
+  ${field94}
+  ${field149}
+  ${field172}
   <${Input} label="Destination URL" prop="d" />
+  ${field103}
+  ${fieldMultiCampStyle}
+  ${fieldpjs36}
 `;
 };
 const OptionalPanel = () => html`
@@ -285,9 +329,10 @@ const StylePanel = () => html`
   <${Select} label="Layout" prop="style_layout" options="${{ column1: '1 Column', column2: '2 Columns' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
-const Configurator = ({ rootEl, renderFields }) => {
+const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isFaasLoaded, setIsFaasLoaded] = useState(false);
+  const [requiredPanel, setRequiredPanel] = useState(false);
   const title = rootEl.querySelector('h1, h2, h3, h4, h5, h6, p');
 
   useEffect(() => {
@@ -307,9 +352,13 @@ const Configurator = ({ rootEl, renderFields }) => {
     }
   }, [isFaasLoaded, state]);
 
+  useEffect(() => {
+    setRequiredPanel(html`<${RequiredPanel}/>`);
+  }, [isFaasLoaded, state]);
+
   const panels = [{
     title: 'Required',
-    content: html`<${RequiredPanel} renderFields=${renderFields} />`,
+    content: requiredPanel,
   },
   {
     title: 'Optional',
@@ -345,10 +394,6 @@ const Configurator = ({ rootEl, renderFields }) => {
 export default async function init(el) {
   faasEl = el;
   loadStyle('/libs/ui/page/page.css');
-  getObjFromAPI('/faas/api/form?active=1&tags=adobe.com,RFI').then((data) => {
-    data.forEach((d) => {
-      templateOptions[d.id] = d.name;
-    });
-    templateSelected();
-  });
+  const app = html`<${Configurator} rootEl=${el} />`;
+  render(app, el);
 }
