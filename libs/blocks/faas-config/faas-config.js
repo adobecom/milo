@@ -103,11 +103,13 @@ const CopyBtn = () => {
     setConfigUrl(getUrl());
     if (!navigator?.clipboard) {
       setStatus(setIsError);
+      document.querySelector('.config-url').classList.add('hide');
       return;
     }
     if (!configFormValidation()) {
       setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
+      document.querySelector('.config-url').classList.add('hide');
       return;
     }
 
@@ -123,13 +125,15 @@ const CopyBtn = () => {
       .then(() => {
         setStatus(setIsSuccess);
         setErrorMessage('Failed to copy.');
+        document.querySelector('.config-url').classList.remove('hide');
       }, () => {
         setStatus(setIsError);
+        document.querySelector('.config-url').classList.add('hide');
       });
   };
 
   return html`
-  <textarea class=${!navigator?.clipboard ? '' : 'hide'}>${configUrl}</textarea>
+  <textarea class='config-url hide'>${configUrl}</textarea>
   <button
     class="copy-config"
     onClick=${copyConfig}>Copy</button>
