@@ -204,6 +204,16 @@ const RequiredPanel = () => {
       prop: 'q103',
       value: values,
     });
+    setField103(html`
+      <${MultiField}
+      onChange=${onCampaignIDChange}
+      values=${values}
+      title="Multiple Campaign Ids"
+      >
+        <${FormInput} name="v" label="Campagin ID" />
+        <${FormInput} name="l" label="Description" />
+      <//>
+    `);
   };
 
   if (!Object.keys(langOptions).length) {
@@ -296,18 +306,18 @@ const RequiredPanel = () => {
 
   const templateSelected = '';
   return html`
-  <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
-  ${fieldLanguage}
-  ${field92}
-  ${field93}
-  ${field94}
-  ${field149}
-  ${field172}
-  <${Input} label="Destination URL" prop="d" />
-  ${field103}
-  ${fieldMultiCampStyle}
-  ${fieldpjs36}
-`;
+    <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
+    ${fieldLanguage}
+    ${field92}
+    ${field93}
+    ${field94}
+    ${field149}
+    ${field172}
+    <${Input} label="Destination URL" prop="d" />
+    ${field103}
+    ${fieldMultiCampStyle}
+    ${fieldpjs36}
+  `;
 };
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />

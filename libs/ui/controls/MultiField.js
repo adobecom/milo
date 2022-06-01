@@ -28,17 +28,6 @@ const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
   const [fieldSets, setFieldSets] = useState([]);
   const [keys] = useState(getFieldNameOrId(Array.isArray(children) ? children : [children]));
 
-  useEffect(() => {
-    const newFieldSets = [];
-    values.forEach((value) => {
-      const newFields = Array.isArray(children) ? [...children] : [children];
-
-      newFieldSets.push(populateFieldValues(newFields, value));
-    });
-
-    setFieldSets(addMultifieldChangeListener(newFieldSets));
-  }, [values]);
-
   const onMultifieldChange = (name, idx) => (value, e) => {
     const newVals = [...values];
     newVals[idx][name] = value;
@@ -64,6 +53,17 @@ const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
     newVals.splice(fieldSetIdx, 1);
     onChange(newVals);
   };
+
+  useEffect(() => {
+    const newFieldSets = [];
+    values.forEach((value) => {
+      const newFields = Array.isArray(children) ? [...children] : [children];
+
+      newFieldSets.push(populateFieldValues(newFields, value));
+    });
+
+    setFieldSets(addMultifieldChangeListener(newFieldSets));
+  }, [values]);
 
   return html`
     <div class="multifield">
