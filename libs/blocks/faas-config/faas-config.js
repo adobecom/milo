@@ -227,17 +227,21 @@ const RequiredPanel = () => {
     });
   }
 
-  useEffect(() => {
-    const options = {};
-    getObjFromAPI('/faas/api/form?active=1&tags=adobe.com,RFI').then((data) => {
-      data.forEach((d) => {
-        options[d.id] = d.name;
-      });
-      setTemplateOptions(options);
-    });
+  const onFormTemplateChange = () => {
+    setFieldLanguage('');
+    setField92('');
+    setField93('');
+    setField94('');
+    setField149('');
+    setField172('');
+    setField103('');
+    setFieldMultiCampStyle('');
+    setFieldpjs36('');
+
     const formTypeSelectValue = document.getElementById('id') ? document.getElementById('id').value : null;
     const initialState = getInitialState();
     const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
+
     getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
       let isMultipleCampaign = false;
       data.formQuestions.forEach((d) => {
@@ -302,11 +306,23 @@ const RequiredPanel = () => {
     }).catch((err) => {
       console.log('Could not load additonal Form Template options from FaaS.', err);
     });
-  }, []);
+  };
 
-  const templateSelected = '';
+  useEffect(() => {
+    if (!Object.keys(templateOptions).length) {
+      const options = {};
+      getObjFromAPI('/faas/api/form?active=1&tags=adobe.com,RFI').then((data) => {
+        data.forEach((d) => {
+          options[d.id] = d.name;
+        });
+        setTemplateOptions(options);
+      });
+      onFormTemplateChange();
+    }
+  });
+
   return html`
-    <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${templateSelected} />
+    <${Select} label="Form Template" prop="id" options=${templateOptions} sort="true" onChange=${onFormTemplateChange} />
     ${fieldLanguage}
     ${field92}
     ${field93}
