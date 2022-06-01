@@ -5,7 +5,7 @@ import {
   loadScript,
 } from '../../utils/utils.js';
 
-export const faasHostUrl = 'https://qa.apps.enterprise.adobe.com';
+export const faasHostUrl = 'https://apps.enterprise.adobe.com';
 
 export const loadFaasFiles = () => {
   loadStyle('/libs/blocks/faas/faas.css');
