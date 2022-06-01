@@ -1,0 +1,23 @@
+name: Milo Bot Release Email
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Use email bot
+        uses: adobecom/milo-email-bot@main
+        env:
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          FROM_EMAIL: 'bot@em2344.milo.pink'
+          FROM_NAME: 'Milo Bot'
+          SG_KEY: ${{ secrets.SG_KEY }}
+          SG_TEMPLATE: 'd-44d50e7138c341959fa1ecf5374fb8e1'
