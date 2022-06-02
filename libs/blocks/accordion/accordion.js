@@ -45,7 +45,6 @@ function decorateHowTo(el) {
   });
   // add accordion to original element
   el.appendChild(accordionContainer);
-
   // build accordion out of faqEntries with buttons and add them to the DOM
   faqEntries.forEach((faqEntry) => {
     faqEntry.classList.add('accordion-item');
@@ -81,10 +80,12 @@ function decorateHowTo(el) {
   const h1 = document.createElement('h1');
   h1.innerHTML = h1Content;
   el.insertBefore(h1, el.firstChild);
-  el.querySelector('.accordion > div').remove();
+  el.querySelector('.accordion > div > div').remove();
 }
 
 export default function init(el) {
   loadJsonLd(el);
-  decorateHowTo(el);
+  if (el.classList.contains('seo')) {
+    decorateHowTo(el);
+  }
 }

@@ -1,10 +1,11 @@
-.faq {
+.accordion {
   padding-top: 80px;
   margin: 0 24px;
 }
-.faq h1 {
+.accordion h1 {
   margin-bottom: 32px;
   font-size: 28px;
+  text-align: center;
   line-height: 35px;
   padding: 0 24px;
 }
@@ -66,19 +67,19 @@
   transform: rotate(0deg);
 }
 
-.faq button {
+.accordion button {
   padding-left: 10px;
 }
 
-.faq button[aria-expanded="true"], button:focus {
+.accordion button[aria-expanded="true"], button:focus {
   border-left: 2px solid #e34850;
   box-sizing: border-box;
   padding-left: 8px;
 }
-.faq button:focus, .faq button:focus + .panel-show {
+.accordion button:focus, .accordion button:focus + .panel-show {
   background-color: rgba(206, 206, 206, 0.2);
 }
-.faq button[aria-expanded="true"] + .accordion-panel {
+.accordion button[aria-expanded="true"] + .accordion-panel {
   box-sizing: border-box;
   padding-right: 24px;
   border-left: 2px solid #e34850;
