@@ -44,6 +44,8 @@ export async function loadLCP(blocks) {
   }
 }
 
+function loadDelayed() {}
+
 async function loadPage() {
   const blocks = decorateArea();
   const navs = decorateNavs();
