@@ -6,7 +6,7 @@ export default async function init(a) {
 
   const encodedConfig = a.href.split('#')[1];
   const state = parseEncodedConfig(encodedConfig);
-  const caasStrs = await loadStrings(state.placeholderUrl);
+  const caasStrs = state.placeholderUrl ? await loadStrings(state.placeholderUrl) : {};
 
   const block = document.createElement('div');
   block.className = a.className;
