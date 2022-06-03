@@ -3,7 +3,11 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
+import sinon, { stub } from 'sinon';
+
+window.lana = {
+  log: stub(),
+};
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
@@ -41,6 +45,6 @@ describe('Fragments', () => {
   it('Doesnt create a malformed fragment', async () => {
     const a = document.querySelector('a.malformed');
     await getFragment(a);
-    expect(console.log.args[0][0]).to.equal('Could not make fragment');
+    expect(window.lana.log.args[0][0]).to.equal('Could not make fragment');
   });
 });

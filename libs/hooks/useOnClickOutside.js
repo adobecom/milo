@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { useEffect } from '../deps/htm-preact.js';
 
 const useOnClickOutside = (ref, handler) => {

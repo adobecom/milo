@@ -48,12 +48,12 @@ const wrapInParens = (s) => `(${s})`;
 
 const buildComplexQuery = (andLogicTags, orLogicTags) => {
   let andQuery = andLogicTags
-    .filter((tag) => tag.intraTagLogic !== '')
+    .filter((tag) => tag.intraTagLogic !== '' && tag.andTags.length)
     .map((tag) => wrapInParens(tag.andTags.map((val) => `"${val}"`).join(`+${tag.intraTagLogic}+`)))
     .join('+AND+');
 
   let orQuery = orLogicTags
-    .filter((tag) => tag.orTags.length > 0)
+    .filter((tag) => tag.orTags.length)
     .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+OR+')))
     .join('+OR+');
 
@@ -63,15 +63,15 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
   return `${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`;
 };
 
-export const getConfig = (state, strs = []) => {
+export const getConfig = (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').at(-1) : 'en';
   const country = state.country ? state.country.split('/').at(-1) : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludeCards && state.excludeCards.reduce(getContentIdStr, '');
   const targetActivity =
-    state.targetEnabled && state.targetActivity ? `/${state.targetActivity}.json` : '';
-  const flatFile = state.targetActivity ? '&flatFile=false' : '';
+    state.targetEnabled && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  const flatFile = targetActivity ? '&flatFile=false' : '';
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
 
@@ -265,10 +265,12 @@ export const defaultState = {
   draftDb: false,
   environment: '',
   endpoint: 'www.adobe.com/chimera-api/collection',
+  excludeTags: [],
   excludedCards: [],
   fallbackEndpoint: '',
   featuredCards: [],
   gutter: '4x',
+  includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
   loadMoreBtnStyle: 'primary',
@@ -279,6 +281,7 @@ export const defaultState = {
   paginationQuantityShown: false,
   paginationUseTheme3: false,
   paginationType: 'none',
+  placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
   setCardBorders: false,
@@ -293,6 +296,7 @@ export const defaultState = {
   sortReservoirSample: 3,
   sortReservoirPool: 1000,
   source: ['hawks'],
+  tagsUrl: 'www.adobe.com/chimera-api/tags',
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
