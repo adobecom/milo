@@ -19,9 +19,9 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
 /**
  * Loops through a list of keywords and looks for matches in the article text.
  * The first occurrence of each keyword will be replaced with a link and tracking added.
- * The name, location of the keywords file doesn't matter but the file passed in must have a column titled "Keyword".
+ * The keywords file must have a column titled "Keyword".
  * @param {string} path The location of the keywords file to be used for interlinks.
- * @param {number} limit The maximum amount of keywords to fetch from the keywords file starting from the top record.  Default is 1000.
+ * @param {number} limit The maximum amount of keywords to fetch from the file.  Default is 1000.
  */
 export default async function interlink(path, limit = 1000) {
   const articleBody = document.querySelector('main');
@@ -78,8 +78,9 @@ export default async function interlink(path, limit = 1000) {
             // split text node, insert link with matched text, and add link tracking
               .forEach(({ item, start, end }) => {
                 const text = textNode.nodeValue;
-                if(!p.getAttribute('daa-lh'))
-                  p.setAttribute('daa-lh', 'interlinks_p_' + item.Keyword);
+                if (!p.getAttribute('daa-lh')) {
+                  p.setAttribute('daa-lh', 'interlinks_p_'.concat(item.Keyword));
+                }
                 const a = document.createElement('a');
                 a.title = item.Keyword;
                 a.href = item.URL;
