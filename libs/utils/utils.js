@@ -208,7 +208,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.onload = () => {
       resolve(script);
     };
-    script.onerror = () => {
+    script.onerror = (e) => {
       reject(new Error('error loading script'));
     };
     head.append(script);

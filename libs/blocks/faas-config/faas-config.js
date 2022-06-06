@@ -13,7 +13,6 @@ import Accordion from '../../ui/controls/Accordion.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import { Input as FormInput } from '../../ui/controls/formControls.js';
 
-let faasEl;
 const LS_KEY = 'faasConfiguratorState';
 const faasFilesLoaded = loadFaasFiles();
 const ConfiguratorContext = createContext('faas');
@@ -422,7 +421,6 @@ const Configurator = ({ rootEl }) => {
 };
 
 export default async function init(el) {
-  faasEl = el;
   loadStyle('/libs/ui/page/page.css');
   const app = html`<${Configurator} rootEl=${el} />`;
   render(app, el);

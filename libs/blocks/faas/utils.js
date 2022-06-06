@@ -49,6 +49,7 @@ export const makeFaasConfig = (state) => {
   if (!state) {
     return defaultState;
   }
+  /* c8 ignore start */
   const config = {
     id: state.id,
     l: state.l,
@@ -284,6 +285,8 @@ export const makeFaasConfig = (state) => {
   if (state.q103) {
     Object.assign(config.q, { 103: { c: state.q103 } });
   }
+  /* c8 ignore stop */
+
   return config;
 };
 
