@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../../libs/utils/utils.js": "./mocks/utils.js"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <p>Caas Demo</p>
+        <p>
+          <a
+            id="caaslink"
+            href="http://milo.adobe.com/tools/caas-config#eyJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOmZhbHNlLCJhbmFseXRpY3NDb2xsZWN0aW9uTmFtZSI6IiIsImFuZExvZ2ljVGFncyI6W10sImJvb2ttYXJrSWNvblNlbGVjdCI6IiIsImJvb2ttYXJrSWNvblVuc2VsZWN0IjoiIiwiY2FyZFN0eWxlIjoiMToyIiwiY29sbGVjdGlvbkJ0blN0eWxlIjoiY2FsbC10by1hY3Rpb24iLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY29udGVudFR5cGVUYWdzIjpbXSwiZGlzYWJsZUJhbm5lcnMiOmZhbHNlLCJkcmFmdERiIjpmYWxzZSwiZW52aXJvbm1lbnQiOiIiLCJlbmRwb2ludCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsImV4Y2x1ZGVkQ2FyZHMiOltdLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjR1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5Iiwib25seVNob3dCb29rbWFya2VkQ2FyZHMiOmZhbHNlLCJvckxvZ2ljVGFncyI6W10sInBhZ2luYXRpb25BbmltYXRpb25TdHlsZSI6InBhZ2VkIiwicGFnaW5hdGlvbkVuYWJsZWQiOmZhbHNlLCJwYWdpbmF0aW9uUXVhbnRpdHlTaG93biI6ZmFsc2UsInBhZ2luYXRpb25Vc2VUaGVtZTMiOmZhbHNlLCJwYWdpbmF0aW9uVHlwZSI6Im5vbmUiLCJyZXN1bHRzUGVyUGFnZSI6NSwic2VhcmNoRmllbGRzIjpbXSwic2V0Q2FyZEJvcmRlcnMiOnRydWUsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGVmYXVsdCI6ImRhdGVEZXNjIiwic29ydEVuYWJsZVBvcHVwIjpmYWxzZSwic29ydEVuYWJsZVJhbmRvbVNhbXBsaW5nIjpmYWxzZSwic29ydFJlc2Vydm9pclNhbXBsZSI6Mywic29ydFJlc2Vydm9pclBvb2wiOjEwMDAsInNvdXJjZSI6W10sInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiNCIsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsInVzZXJJbmZvIjpbXX0="
+            >My CaaS Collection</a
+          >
+        </p>
+      </div>
+    </main>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import init from '../../../../libs/blocks/caas/caas.js';
+    import { loadScript, loadStyle } from '../../../../libs/utils/utils.js';
+
+    let config;
+    let caasEl;
+
+    class ConsonantCardCollection {
+      constructor(cfg, el) {
+        config = cfg;
+        caasEl = el;
+      }
+    }
+
+    window.ConsonantCardCollection = ConsonantCardCollection;
+
+    runTests(() => {
+      it('inits the CaaS collection', async () => {
+        const a = document.getElementById('caaslink');
+        await init(a);
+        expect(loadScript.callCount).to.equal(3);
+        expect(loadStyle.callCount).to.equal(1);
+        expect(caasEl).to.equal(document.getElementById('caas'));
+      });
+    });
+  </script>
+</html>

@@ -241,4 +241,7 @@ export function getHashConfig() {
   return parseEncodedConfig(encodedConfig);
 }
 
-export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+export const isValidUuid = (id) =>
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+
+export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));

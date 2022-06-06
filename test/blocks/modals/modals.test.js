@@ -27,6 +27,8 @@ describe('Modals', () => {
   });
 
   it('Closes a modal on button click', async () => {
+    window.location.hash = '#milo';
+    const modal = await init(true);
     const close = document.querySelector('dialog button');
     close.click();
     expect(window.location.hash).to.be.empty;

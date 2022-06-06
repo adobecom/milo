@@ -5,10 +5,11 @@ A component that emulates the AEM multifield.  Any fields wrapped within the mul
 ## Parameters
 
 * `title`: Title for the entire multifield component
-* `subTitle`: Heading placed under the title.
+* `subTitle`: (Optional) Heading placed under the title.
 * `values`: Array of values for the child fields.
 * `onChange`: Function to handle user changes
 * `children`: Passed in via jsx
+* `className`: (Optional) class name to be added to the multifield wrapper divs.  Useful for targeting css changes or adding js handlers.
 
 ## Usage
 
@@ -23,6 +24,7 @@ Any fields to be wrapped within the multifield component *must* contain the foll
     values=${multifieldValues}
     title="Sample Multifield Component"
     subTitle=""
+    className="sample"
     >
     <${Input}
         label="Dog Name"
