@@ -84,10 +84,6 @@ describe('Loading', () => {
     await scripts.loadLCP(blocks);
     expect(blocks.length).to.equal(3);
   });
-
-  it('loadDelayed() test', () => {
-    scripts.loadDelayed();
-  });
 });
 
 describe('Utilities', () => {
