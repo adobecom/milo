@@ -4,10 +4,11 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { waitForElement } from '../../../helpers/selectors.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { parseEncodedConfig } = await import('../../../libs/utils/utils.js');
-const { loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../libs/blocks/faas/utils.js');
+const { parseEncodedConfig } = await import('../../../../libs/utils/utils.js');
+const { loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../../libs/blocks/faas/utils.js');
 
 describe('Faas', () => {
   beforeEach(() => {
@@ -47,14 +48,14 @@ describe('Faas', () => {
   it('FaaS Initiation', async () => {
     state.style_backgroundTheme = '';
     state.style_layout = '';
-    state.isGate = true;
+    state.isGate = false;
     await initFaas(state, a);
-    const faas = document.querySelector('.faas-form');
+    const faas = await waitForElement('.faas-form-wrapper');
     expect(faas).to.exist;
     const formWrapperEl = document.querySelector('.block.faas');
-    expect(formWrapperEl.classList.contains('white').to.equal(true));
-    expect(formWrapperEl.classList.contains('column1').to.equal(true));
-    expect(formWrapperEl.classList.contains('gated').to.equal(true));
+    expect(formWrapperEl.classList.contains('white')).to.equal(true);
+    expect(formWrapperEl.classList.contains('column1')).to.equal(true);
+    expect(formWrapperEl.classList.contains('gated')).to.equal(false);
   });
 
   it('FaaS Title', () => {

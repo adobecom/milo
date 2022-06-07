@@ -311,7 +311,7 @@ export const initFaas = (state, targetEl) => {
   }
 
   const formEl = document.createElement('div');
-  formEl.className = 'faas-form';
+  formEl.className = 'faas-form-wrapper';
 
   $(formEl).faas(makeFaasConfig(state));
 
