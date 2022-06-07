@@ -6,6 +6,7 @@ export default {
       '**/mocks/**',
       '**/node_modules/**',
       '**/test/**',
+      '**/deps/**',
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
     ],

@@ -3,15 +3,20 @@
 import {
   loadStyle,
   loadScript,
+  getEnvironment,
 } from '../../utils/utils.js';
 
-export const faasHostUrl = 'https://qa.apps.enterprise.adobe.com';
-
+const env = getEnvironment();
+const faasHostSubDomain = 'qa.';
+export const faasHostUrl = `https://${faasHostSubDomain}apps.enterprise.adobe.com`;
+let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
+if (env === 'local') {
+  faasCurrentJS = '/libs/deps/jquery.faas-current.js';
+}
 export const loadFaasFiles = () => {
   loadStyle('/libs/blocks/faas/faas.css');
   return Promise.all([
-    loadScript('https://code.jquery.com/jquery-3.6.0.min.js'),
-    loadScript(`${faasHostUrl}/faas/service/jquery.faas-current.js`),
+    loadScript('/libs/deps/jquery-3.6.0.min.js').then(() => loadScript(faasCurrentJS)),
   ]);
 };
 

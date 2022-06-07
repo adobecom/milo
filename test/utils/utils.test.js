@@ -77,4 +77,8 @@ describe('Utils', () => {
     utils.parseEncodedConfig('error');
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
   });
+
+  it('Text getEnvironment()', () => {
+    expect(utils.getEnvironment()).to.equal('local');
+  });
 });

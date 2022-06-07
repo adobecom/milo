@@ -9,6 +9,15 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments' },
 ];
 
+export function getEnvironment() {
+  const { hostname } = window.location;
+  if (hostname.includes('localhost')) return 'local';
+  /* c8 ignore start */
+  if (hostname.includes('hlx.page')) return 'draft';
+  return 'prod';
+  /* c8 ignore stop */
+}
+
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
