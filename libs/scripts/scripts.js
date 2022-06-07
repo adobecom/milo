@@ -47,7 +47,7 @@ export async function loadLCP(blocks) {
 /**
  * Loads everything that happens a lot later, without impacting the user experience.
  */
-function loadDelayed() {
+export function loadDelayed() {
   // eslint-disable-next-line import/no-cycle
   window.setTimeout(() => import('./delayed.js'), 3000);
   // load anything that can be postponed to the latest here
