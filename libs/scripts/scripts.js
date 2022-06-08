@@ -12,7 +12,7 @@
 
 import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
 
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
+const LCP_BLOCKS = ['hero', 'home', 'marquee', 'media', 'section-metadata', 'z-pattern'];
 
 /*
  * ------------------------------------------------------------
@@ -44,6 +44,34 @@ export async function loadLCP(blocks) {
   }
 }
 
+export async function fetchLib(type) {
+  const namespace = `${type}Library`;
+  if (!type || window[namespace]) return;
+  const resp = await fetch(`${window.location.origin}/docs/${type}-library.json`);
+  if (resp.ok) {
+    try {
+      const json = await resp.json();
+      window[namespace] = {};
+      json.data.forEach((item) => {
+        const itemValues = {};
+        for (const [key, value] of Object.entries(item)) {
+          if(key !== 'key') {
+            itemValues[key] = value;
+          }
+        }
+        window[namespace][item.key] = itemValues;
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(`Could not make ${type} library`);
+    }
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(`Could not get ${type} library`);
+  }
+}
+
+
 /**
  * Loads everything that happens a lot later, without impacting the user experience.
  */
@@ -56,11 +84,16 @@ function loadDelayed() {
 async function loadPage() {
   const blocks = decorateArea();
   const navs = decorateNavs();
+  await fetchLib('icon');
   await loadLCP(blocks);
   loadStyle('/fonts/fonts.css');
   await loadLazy([...navs, ...blocks]);
   const { default: getModals } = await import('../blocks/modals/modals.js');
   getModals();
+
+  // const { default: getIcons } = await import(`../blocks/icons/icons.js`);
+  // await getIcons();
+
   loadDelayed();
 }
 loadPage();

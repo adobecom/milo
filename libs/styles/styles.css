@@ -74,13 +74,19 @@
   --spacing-xs: 16px;
   --spacing-s: 24px;
   --spacing-m: 32px;
-  --spacing-l: 48px;
-  --spacing-xl: 56px;
-  --spacing-xxl: 80px;
+  --spacing-l: 40px;
+  --spacing-xl: 48px;
+  --spacing-xxl: 56px;
+  --spacing-xxxl: 80px;
 
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
+
+  /* block container */
+  --block-container-width-s: 800px;
+  --block-container-width-m: 1000px;
+  --block-container-width-l: 1200px;
 }
 
 body {
@@ -155,6 +161,46 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+/* Color scheme */
+.dark {
+  color: #fff;
+  background-color: #2c2c2c;
+}
+
+/* Consonant Typography */
+.heading-XL,
+.heading-L,
+.heading-M,
+.heading-S,
+.heading-XS {
+  line-height: var(--type-heading-all-lh);
+  margin: 0;
+}
+.heading-XL { font-size: var(--type-heading-xl-size); }
+.heading-L { font-size: var(--type-heading-l-size); }
+.heading-M { font-size: var(--type-heading-m-size); }
+.heading-S { font-size: var(--type-heading-s-size); }
+.heading-XS { font-size: var(--type-heading-xs-size); }
+
+.body-M,
+.body-S {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-all-lh);
+  margin: 0;
+}
+.body-S { font-size: var(--type-body-s-size); }
+
+.detail-L,
+.detail-M,
+.detail-S {
+  font-size: var(--type-detail-l-size);
+  line-height: var(--type-detail-all-lh);
+  font-weight: var(--type-detail-all-weight);
+  text-transform: uppercase;
+  margin: 0;
+}
+.detail-M { font-size: var(--type-detail-m-size); }
+
 /* Buttons */
 .dark a {
   color: #FFF;
@@ -204,6 +250,26 @@ a:hover {
 
 .con-button.blue:hover {
   text-decoration: none;
+}
+
+.con-button.outline {
+  border: 2px solid rgb(0 0 0);
+  color: #000;
+}
+
+.con-button.outline:hover {
+  background-color: #000;
+  color: #fff;
+  text-decoration: none;
+}
+.dark .con-button.outline {
+  border: 2px solid rgb(255 255 255);
+  color: #fff;
+}
+
+.dark .con-button.outline:hover {
+  background-color: #fff;
+  color: #000;
 }
 
 img {
@@ -262,6 +328,10 @@ dialog button.dialog-close {
 
 @media (min-width: 1200px) {
   :root {
+    --spacing-xl: 56px;
+    --spacing-xxl: 80px;
+    --spacing-xxxl: 104px;
+
     --type-heading-xxl-size: 44px;
     --type-heading-xl-size: 36px;
     --type-heading-l-size: 28px;
