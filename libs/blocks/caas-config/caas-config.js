@@ -341,7 +341,7 @@ const CardsPanel = () => {
       title="Excluded Cards"
       subTitle="Enter the UUID for cards to be excluded"
     >
-      <${FormInput} name="excludeCards" label="Content ID" onValidate=${isValidUuid} />
+      <${FormInput} name="excludedCards" label="Content ID" onValidate=${isValidUuid} />
     <//>
   `;
 };

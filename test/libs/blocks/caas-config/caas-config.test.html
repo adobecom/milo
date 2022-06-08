@@ -88,7 +88,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000';
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -103,7 +103,7 @@
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn,caas:events/max/track/video&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
         expect(config).to.eql(expectedConfig);
       });
 
@@ -114,7 +114,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=ca&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000'
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
         await delay(50)
         expect(config).to.eql(expectedConfig);
       });
@@ -131,7 +131,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000&flatFile=false';
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000&flatFile=false';
         expectedConfig.target.enabled = true;
         expect(config).to.eql(expectedConfig);
       });
@@ -155,7 +155,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -171,7 +171,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=featured-card-id&environment=&draft=false&size=2000';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=featured-card-id&environment=&draft=false&size=2000';
 
         expect(config).to.eql(expectedConfig);
       });

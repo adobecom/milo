@@ -5,7 +5,7 @@ const defaultConfig = {
     button: { style: 'primary' },
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=caas%3Aevents&language=en&country=us&complexQuery=&excludeIds=undefined&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=&environment=&draft=false&size=2000',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000',
     fallbackEndpoint: '',
     totalCardsToShow: 10,
     cardStyle: 'half-height',
