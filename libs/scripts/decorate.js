@@ -117,7 +117,7 @@ export function decorateText(el, size) {
   decorateTextDaa(el, heading);
 }
 
-export function hex_color_is_dark(color) {
+export function isHexColorDark(color) {
   if (color[0] !== '#') return false;
   const hex = color.replace('#', '');
   const c_r = parseInt(hex.substr(0, 2), 16);
@@ -131,17 +131,9 @@ export function decorateBlockBg(block, node) {
   node.classList.add('background');
   if (!node.querySelector(':scope img')) {
     block.style.background = node.textContent;
-    if (hex_color_is_dark(node.textContent)) block.classList.add('dark');
+    if (isHexColorDark(node.textContent)) block.classList.add('dark');
     node.remove();
   }
-}
-
-export function decorateHeadline(header, size) {
-  const headingRow = header.parentElement;
-  headingRow.classList.add('heading-row');
-  headingRow.parentElement.classList.add('container');
-  const headerClass = (size === 'large') ? 'heading-XL' : 'heading-L';
-  header.classList.add(headerClass, 'headline');
 }
 
 export function getBlockSize(el) {

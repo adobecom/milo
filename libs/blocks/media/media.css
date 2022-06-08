@@ -92,6 +92,7 @@
   align-items: center;
   color: var(--link-color);
   display: inline-flex;
+  font-size: var(--type-body-s-size);
   font-weight: 700;
   line-height: var(--type-body-l-size);
   margin: 0;

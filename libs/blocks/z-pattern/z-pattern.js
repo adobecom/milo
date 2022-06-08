@@ -14,8 +14,16 @@
  * Z-Pattern - v5.1
  */
 
-import { decorateBlockBg, decorateBlockDaa, decorateHeadline, getBlockSize } from '../../scripts/decorate.js';
+import { decorateBlockBg, decorateBlockDaa, getBlockSize } from '../../scripts/decorate.js';
 import media from '../media/media.js';
+
+export function decorateHeadline(header, size) {
+  const headingRow = header.parentElement;
+  headingRow.classList.add('heading-row');
+  headingRow.parentElement.classList.add('container');
+  const headerClass = (size === 'large') ? 'heading-XL' : 'heading-L';
+  header.classList.add(headerClass, 'headline');
+}
 
 function getOddRowsCount(rows) {
   let zRowsOddCount = 0;
