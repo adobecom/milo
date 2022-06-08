@@ -60,7 +60,7 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
   orQuery = orQuery.length ? wrapInParens(orQuery) : '';
 
-  return `${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`;
+  return encodeURIComponent(`${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`);
 };
 
 export const getConfig = (state, strs = {}) => {
@@ -68,10 +68,12 @@ export const getConfig = (state, strs = {}) => {
   const language = state.language ? state.language.split('/').at(-1) : 'en';
   const country = state.country ? state.country.split('/').at(-1) : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
-  const excludedCards = state.excludeCards && state.excludeCards.reduce(getContentIdStr, '');
+  const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity =
     state.targetEnabled && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
+  const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
+  const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
 
@@ -104,7 +106,7 @@ export const getConfig = (state, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ','
-      )}&collectionTags=&excludeContentWithTags=caas%3Aevents&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=55214dea-5481-3515-a4b9-dbf51c378e62&featuredCards=${featuredCards}&environment=&draft=${
+      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=2000${flatFile}`,
       fallbackEndpoint: '',
