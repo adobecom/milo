@@ -66,6 +66,8 @@ const CopyBtn = () => {
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [errorMessage, setErrorMessage] = useState('Failed to Copy.');
+  const [showConfigUrl, setShowConfigUrl] = useState(false);
+
 
   // debug
   const [configUrl, setConfigUrl] = useState('');
@@ -102,13 +104,13 @@ const CopyBtn = () => {
     setConfigUrl(getUrl());
     if (!navigator?.clipboard) {
       setStatus(setIsError);
-      document.querySelector('.config-url').classList.add('hide');
+      setShowConfigUrl(false);
       return;
     }
     if (!configFormValidation()) {
       setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
-      document.querySelector('.config-url').classList.add('hide');
+      setShowConfigUrl(false);
       return;
     }
 
@@ -124,15 +126,15 @@ const CopyBtn = () => {
       .then(() => {
         setStatus(setIsSuccess);
         setErrorMessage('Failed to copy.');
-        document.querySelector('.config-url').classList.remove('hide');
+        setShowConfigUrl(true);
       }, () => {
         setStatus(setIsError);
-        document.querySelector('.config-url').classList.add('hide');
+        setShowConfigUrl(false);
       });
   };
 
   return html`
-  <textarea class='config-url hide'>${configUrl}</textarea>
+  <textarea class=${`config-url ${showConfigUrl ? '' : 'hide'}`}>${configUrl}</textarea>
   <button
     class="copy-config"
     onClick=${copyConfig}>Copy</button>
@@ -361,7 +363,6 @@ const StylePanel = () => html`
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isFaasLoaded, setIsFaasLoaded] = useState(false);
-  const [requiredPanel, setRequiredPanel] = useState(false);
   const title = rootEl.querySelector('h1, h2, h3, h4, h5, h6, p');
 
   useEffect(() => {
@@ -381,13 +382,9 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isFaasLoaded, state]);
 
-  useEffect(() => {
-    setRequiredPanel(html`<${RequiredPanel}/>`);
-  }, [isFaasLoaded, state]);
-
   const panels = [{
     title: 'Required',
-    content: requiredPanel,
+    content: html`<${RequiredPanel}/>`,
   },
   {
     title: 'Optional',

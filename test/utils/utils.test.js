@@ -78,7 +78,7 @@ describe('Utils', () => {
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
   });
 
-  it('Text getEnvironment()', () => {
-    expect(utils.getEnvironment()).to.equal('local');
+  it('Text getEnv()', () => {
+    expect(utils.getEnv()).to.equal('local');
   });
 });

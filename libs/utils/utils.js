@@ -9,11 +9,11 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments' },
 ];
 
-export function getEnvironment() {
+export function getEnv() {
   const { hostname } = window.location;
   if (hostname.includes('localhost')) return 'local';
   /* c8 ignore start */
-  if (hostname.includes('hlx.page')) return 'draft';
+  if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
   return 'prod';
   /* c8 ignore stop */
 }

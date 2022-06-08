@@ -3,11 +3,11 @@
 import {
   loadStyle,
   loadScript,
-  getEnvironment,
+  getEnv,
 } from '../../utils/utils.js';
 
-const env = getEnvironment();
-const faasHostSubDomain = 'qa.';
+const env = getEnv();
+const faasHostSubDomain = env === 'prod' ? '' : 'qa.';
 export const faasHostUrl = `https://${faasHostSubDomain}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 if (env === 'local') {
@@ -228,9 +228,6 @@ export const makeFaasConfig = (state) => {
         });
 
         setMutationObserver(childListMutation(editMessages), errorMessages);
-      },
-      afterSubmitCallback: (formData) => {
-        window.location = config.d;
       },
     },
   };

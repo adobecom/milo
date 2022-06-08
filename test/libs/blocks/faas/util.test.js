@@ -34,8 +34,12 @@ describe('Faas', () => {
 
   it('Make FaaS config', () => {
     const config = makeFaasConfig(state);
+    expect(config.id).to.equal('42');
+    expect(config.l).to.equal('en_us');
+    expect(config.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
+    expect(config.as).to.equal(true);
+    expect(config.ar).to.equal(false);
     expect(config.e.afterYiiLoadedCallback).to.exist;
-    expect(config.e.afterSubmitCallback).to.exist;
     expect(makeFaasConfig()).to.equal(defaultState);
   });
 
