@@ -230,48 +230,7 @@ export const makeFaasConfig = (state) => {
         setMutationObserver(childListMutation(editMessages), errorMessages);
       },
       afterSubmitCallback: (formData) => {
-        // Gate Stuff
-        const disableAutoResponseChk = typeof disableAutoResponse === 'string';
-        const closeModalElement = modal ? modal.querySelector('.dexter-CloseButton') : undefined;
-        const isSameDestination = typeof sameDestination === 'string';
-
-        if (disableAutoResponseChk && state.isGate) {
-          blocker.parentElement.removeChild(blocker);
-        }
-
-        if (disableAutoResponseChk && isSameDestination && isinmodal && closeModalElement) {
-          closeModalElement.click();
-        }
-
-        // IO Stuff
-        const baseUrl = 'https://sc5.omniture.com/p/suite/1.3/json/index.html?a=Basketball.ProvisionUser';
-        const email = formData.data[`faas_form_${id}_hash`];
-        const ioUrl = /qa\d+|dev\d+|local|127\.0\.0\.1|:\d{2,4}/g.test(window.location.href)
-          ? 'https://www.qa02.adobe.com/shortform/' : 'https://www.adobe.com/shortform';
-
-        if (analyticsEmailEnabled) {
-          $.ajax({
-            method: 'GET',
-            url: `${baseUrl}&email=${email}&analytics_company=HackTheBracket`,
-          }).done((omniData) => {
-            const serviceData = {
-              emailProgram: 'analytics',
-              emailType: analyticsEmailType,
-              page: `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
-              emailRecipient: email,
-              loginUrl: omniData.login_page_url,
-              company: omniData.company,
-              username: omniData.username,
-              password: omniData.password,
-            };
-
-            $.ajax({
-              data: serviceData,
-              method: 'POST',
-              url: ioUrl,
-            });
-          });
-        }
+        window.location = config.d;
       },
     },
   };
