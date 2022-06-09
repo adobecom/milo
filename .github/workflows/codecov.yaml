@@ -1,9 +1,7 @@
 name: Update codecov
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - main
+  schedule:
+    - cron: "*/5 * * * *"
 
 jobs:
   codecov:
