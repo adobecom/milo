@@ -38,6 +38,8 @@ export default function init(el, daa = true) {
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
+    const img = image.querySelector(':scope img');
+    if (header && img && img.alt === '') img.alt = header.textContent;
     container.append(row);
   });
   el.append(container);
