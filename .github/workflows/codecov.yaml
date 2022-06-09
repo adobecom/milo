@@ -1,0 +1,14 @@
+name: Update codecov
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  codecov:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+    - uses: actions/checkout@main
+    - uses: codecov/codecov-action@v2
