@@ -2,10 +2,9 @@
   position: relative;
   user-select: none;
   width: 100%;
-
   margin: 0 0 18px;
   display: grid;
-  max-width: 260px;
+  max-width: var(--field-max-size, 260px);
 }
 
 .tagselect label {

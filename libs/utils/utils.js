@@ -9,6 +9,15 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments' },
 ];
 
+export function getEnv() {
+  const { hostname } = window.location;
+  if (hostname.includes('localhost')) return 'local';
+  /* c8 ignore start */
+  if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
+  return 'prod';
+  /* c8 ignore stop */
+}
+
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
@@ -241,7 +250,6 @@ export function getHashConfig() {
   return parseEncodedConfig(encodedConfig);
 }
 
-export const isValidUuid = (id) =>
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));

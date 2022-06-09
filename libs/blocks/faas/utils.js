@@ -3,15 +3,20 @@
 import {
   loadStyle,
   loadScript,
+  getEnv,
 } from '../../utils/utils.js';
 
-export const faasHostUrl = 'https://dev.apps.enterprise.adobe.com';
-
+const env = getEnv();
+const faasHostSubDomain = env === 'prod' ? '' : 'qa.';
+export const faasHostUrl = `https://${faasHostSubDomain}apps.enterprise.adobe.com`;
+let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
+if (env === 'local') {
+  faasCurrentJS = '/libs/deps/jquery.faas-current.js';
+}
 export const loadFaasFiles = () => {
   loadStyle('/libs/blocks/faas/faas.css');
   return Promise.all([
-    loadScript('https://code.jquery.com/jquery-3.6.0.min.js'),
-    loadScript(`${faasHostUrl}/faas/service/jquery.faas-current.js`),
+    loadScript('/libs/deps/jquery-3.6.0.min.js').then(() => loadScript(faasCurrentJS)),
   ]);
 };
 
@@ -49,6 +54,7 @@ export const makeFaasConfig = (state) => {
   if (!state) {
     return defaultState;
   }
+  /* c8 ignore start */
   const config = {
     id: state.id,
     l: state.l,
@@ -223,50 +229,6 @@ export const makeFaasConfig = (state) => {
 
         setMutationObserver(childListMutation(editMessages), errorMessages);
       },
-      afterSubmitCallback: (formData) => {
-        // Gate Stuff
-        const disableAutoResponseChk = typeof disableAutoResponse === 'string';
-        const closeModalElement = modal ? modal.querySelector('.dexter-CloseButton') : undefined;
-        const isSameDestination = typeof sameDestination === 'string';
-
-        if (disableAutoResponseChk && state.isGate) {
-          blocker.parentElement.removeChild(blocker);
-        }
-
-        if (disableAutoResponseChk && isSameDestination && isinmodal && closeModalElement) {
-          closeModalElement.click();
-        }
-
-        // IO Stuff
-        const baseUrl = 'https://sc5.omniture.com/p/suite/1.3/json/index.html?a=Basketball.ProvisionUser';
-        const email = formData.data[`faas_form_${id}_hash`];
-        const ioUrl = /qa\d+|dev\d+|local|127\.0\.0\.1|:\d{2,4}/g.test(window.location.href)
-          ? 'https://www.qa02.adobe.com/shortform/' : 'https://www.adobe.com/shortform';
-
-        if (analyticsEmailEnabled) {
-          $.ajax({
-            method: 'GET',
-            url: `${baseUrl}&email=${email}&analytics_company=HackTheBracket`,
-          }).done((omniData) => {
-            const serviceData = {
-              emailProgram: 'analytics',
-              emailType: analyticsEmailType,
-              page: `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
-              emailRecipient: email,
-              loginUrl: omniData.login_page_url,
-              company: omniData.company,
-              username: omniData.username,
-              password: omniData.password,
-            };
-
-            $.ajax({
-              data: serviceData,
-              method: 'POST',
-              url: ioUrl,
-            });
-          });
-        }
-      },
     },
   };
 
@@ -281,16 +243,11 @@ export const makeFaasConfig = (state) => {
     config.p.js[172] = state[172];
   }
   // Multiple Campaign Ids
-  if (state.q103cv) {
-    const q103Values = state.q103cv.split(',');
-    const q103Labels = state.q103cl.split(',');
-    const q103Obj = { 103: { c: [] } };
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < q103Values.length; i++) {
-      q103Obj[103].c.push({ v: q103Values[i], l: q103Labels[i] });
-    }
-    Object.assign(config.q, q103Obj);
+  if (state.q103) {
+    Object.assign(config.q, { 103: { c: state.q103 } });
   }
+  /* c8 ignore stop */
+
   return config;
 };
 
@@ -315,7 +272,7 @@ export const initFaas = (state, targetEl) => {
   }
 
   const formEl = document.createElement('div');
-  formEl.className = 'faas-form';
+  formEl.className = 'faas-form-wrapper';
 
   $(formEl).faas(makeFaasConfig(state));
 
