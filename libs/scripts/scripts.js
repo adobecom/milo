@@ -14,12 +14,6 @@ import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../ut
 
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 
-/*
- * ------------------------------------------------------------
- * Edit below at your own risk
- * ------------------------------------------------------------
- */
-
 function decorateNavs(el = document) {
   const selectors = [];
   if (getMetadata('nav') !== 'off') {
@@ -45,12 +39,10 @@ export async function loadLCP(blocks) {
 }
 
 /**
- * Loads everything that happens a lot later, without impacting the user experience.
+ * Load everything that impacts performance later.
  */
 export function loadDelayed() {
-  // eslint-disable-next-line import/no-cycle
   window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
 }
 
 async function loadPage() {
@@ -59,8 +51,8 @@ async function loadPage() {
   await loadLCP(blocks);
   loadStyle('/fonts/fonts.css');
   await loadLazy([...navs, ...blocks]);
-  const { default: getModals } = await import('../blocks/modals/modals.js');
-  getModals();
+  const { default: loadModals } = await import('../blocks/modals/modals.js');
+  loadModals();
   loadDelayed();
 }
 loadPage();
