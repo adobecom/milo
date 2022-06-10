@@ -91,6 +91,7 @@ function init() {
     options: options || defaultOptions,
   };
 
+  /* c8 ignore next */
   if (hasDebugParam()) w.lana.debug = true;
   if (isLocalhost()) w.lana.localhost = true;
 

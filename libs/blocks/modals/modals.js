@@ -54,6 +54,12 @@ async function getModal() {
     document.body.append(dialog);
     dialog.showModal();
   }
+
+  dialog.addEventListener('close', (e) => {
+    window.location.hash = '#';
+    e.target.remove();
+  });
+
   return dialog;
 }
 

@@ -279,6 +279,7 @@ dialog button.dialog-close {
 
 /* progressive section appearance */
 main > div,
+main .section[data-status='decorated'],
 main [data-status='decorated'],
 main [data-status='loading'] {
   display: none;

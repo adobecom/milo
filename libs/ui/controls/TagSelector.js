@@ -236,10 +236,10 @@ const createOptionMap = (root) => {
 };
 
 const getModalDiv = () => {
-  let div = document.querySelector('#tagselect-modal');
+  let div = document.querySelector('#tagselect-modal-container');
   if (!div) {
     div = document.createElement('div');
-    div.id = 'tagselect-modal';
+    div.id = 'tagselect-modal-container';
     document.body.appendChild(div);
   }
   return div;

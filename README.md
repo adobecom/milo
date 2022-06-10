@@ -17,6 +17,12 @@ Forks will have a separate content bus and will 404. To use the main content bus
 hlx up --pages-url=https://main--milo--adobecom.hlx.page
 ```
 
+### Libs
+If you want to work with a consuming site, you will need to work on a different port.
+```
+npm run libs  
+```
+
 ## Testing
 ```sh
 npm i
