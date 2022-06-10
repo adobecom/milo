@@ -7,32 +7,31 @@ import { expect } from '@esm-bundle/chai';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: loadJsonLd } = await import('../../../libs/blocks/accordion/accordion.js');
 
-describe('FAQ', () => {
+describe('Accordion', () => {
   it('Renders with accordion class', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const faq = document.querySelector('.accordion');
-    await loadJsonLd(faq);
     const accordion = document.querySelector('.accordion');
+    await loadJsonLd(accordion);
     expect(accordion).to.exist;
   });
   it('Puts JSON-LD data in Script tag', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const faq = document.querySelector('.accordion');
-    await loadJsonLd(faq);
+    const accordion = document.querySelector('.accordion');
+    await loadJsonLd(accordion);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.exist;
   });
   it('Loads description in the JSON-LD with no null value', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const faq = document.querySelector('.accordion');
-    await loadJsonLd(faq);
+    const accordion = document.querySelector('.accordion');
+    await loadJsonLd(accordion);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.exist;
   });
   it('Shows JSON-LD that has required fields present and not null', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const faq = document.querySelector('.accordion');
-    await loadJsonLd(faq);
+    const accordion = document.querySelector('.accordion');
+    await loadJsonLd(accordion);
     const script = document.querySelector('script[type="application/ld+json"]');
     const json = JSON.parse(script.innerHTML);
 

@@ -1,8 +1,10 @@
 .accordion {
   padding-top: 80px;
   margin: 0 24px;
+  max-width: 1000px;
+  padding-bottom: 40px;
 }
-.accordion h1 {
+.accordion h2 {
   margin-bottom: 32px;
   font-size: 28px;
   text-align: center;
@@ -10,13 +12,12 @@
   padding: 0 24px;
 }
 @media (min-width: 1200px) {
+  .accordion {
+    padding-top: 80px;
+    margin: 0 auto;
+  }
+}
 
-}
-.accordion {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding-bottom: 40px;
-}
 .accordion-panel {
   display: none;
 }
@@ -71,12 +72,16 @@
   padding-left: 10px;
 }
 
+button > div + div { 
+  padding-left: 10px;
+}
+
 .accordion button[aria-expanded="true"], button:focus {
   border-left: 2px solid #e34850;
   box-sizing: border-box;
   padding-left: 8px;
 }
-.accordion button:focus, .accordion button:focus + .panel-show {
+.accordion button:focus, .accordion button:focus + .accordion-panel {
   background-color: rgba(206, 206, 206, 0.2);
 }
 .accordion button[aria-expanded="true"] + .accordion-panel {
@@ -88,6 +93,6 @@
   color: #FFFFFF;
 }
 .dark button:focus, .darkest button:focus,
-.dark button:focus + .panel-show, .darkest button:focus + .panel-show {
+.dark button:focus + .accordion-panel, .darkest button:focus + .accordion-panel {
   background-color: rgba(255, 255, 255, 0.1);
 }
