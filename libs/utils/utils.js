@@ -71,6 +71,11 @@ export async function loadBlock(block) {
   });
   await Promise.all([styleLoaded, scriptLoaded]);
   delete block.dataset.status;
+  const section = block.closest('.section[data-status]');
+  if (section) {
+    const decoratedBlock = section.querySelector(':scope > [data-status]');
+    if (!decoratedBlock) { delete section.dataset.status; }
+  }
   return block;
 }
 
@@ -182,9 +187,10 @@ function decorateDefaults(el) {
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
     decorateDefaults(section);
-    if (!section.querySelector(':scope > .section-metadata')) {
-      section.className = 'section';
-    }
+    section.className = 'section';
+    // Only mark as decorated if blocks are still loading inside
+    const decoratedBlock = section.querySelector(':scope > [data-status]');
+    if (decoratedBlock) { section.dataset.status = 'decorated'; }
   });
 }
 
