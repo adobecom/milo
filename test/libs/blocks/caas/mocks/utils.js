@@ -12,6 +12,14 @@ export const loadScript = stub();
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 
+export function updateObj(obj, defaultObj) {
+  const ds = cloneObj(defaultObj);
+  Object.keys(ds).forEach((key) => {
+    if (obj[key] === undefined) obj[key] = ds[key];
+  });
+  return obj;
+}
+
 export const parseEncodedConfig = stub().returns({
   analyticsTrackImpression: false,
   analyticsCollectionName: '',

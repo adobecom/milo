@@ -230,3 +230,4 @@ describe('getConfig', () => {
     });
   });
 });
+
