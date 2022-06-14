@@ -7,6 +7,7 @@ const defaultTestOptions = {
   endpoint: 'https://lana.adobeio.com/',
   errorType: 'e',
   sampleRate: 100,
+  tags: '',
   implicitSampleRate: 100,
 };
 

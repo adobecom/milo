@@ -29,6 +29,8 @@ Any uncaught errors (or Promise Rejections) will automatically be logged to LANA
         * `1` meaning log 1% of the errors to the server
         * `100` meaning every error will be logged
         * `0.01` meaning 0.01% of the errors will be logged
+    * `tags` - string: Defaults to `''`
+        * Any tags (comma separated) to be added to the message
     * `implicitSampleRate` - number: Defaults to 1
         * same as `sampleRate`
     * `useProd` - bool: Defaults to `true`
