@@ -22,6 +22,7 @@ it('verify default options', () => {
     endpointStage: 'https://www.stage.adobe.com/lana/ll',
     errorType: 'e',
     sampleRate: 1,
+    tags: '',
     implicitSampleRate: 1,
     useProd: true,
   });
@@ -106,6 +107,7 @@ describe('LANA', () => {
           errorType: 'e',
           implicitSampleRate: 100,
           sampleRate: 100,
+          tags: '',
           useProd: true,
         },
       ]);
@@ -128,6 +130,7 @@ describe('LANA', () => {
         errorType: 'e',
         implicitSampleRate: 100,
         sampleRate: 100,
+        tags: '',
         useProd: true,
       },
     ]);
@@ -140,5 +143,14 @@ describe('LANA', () => {
     window.lana.options.clientId = '';
     window.lana.log('Test log message');
     expect(console.warn.args[0][0]).to.eql('LANA ClientID is not set.');
+  });
+
+  it('sets tags if defined in options', () => {
+    window.lana.log('I set the client id', { tags: 'commerce,pricestore' });
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore'
+    );
   });
 });

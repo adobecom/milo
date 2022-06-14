@@ -6,6 +6,7 @@ const defaultOptions = {
   endpointStage: 'https://www.stage.adobe.com/lana/ll',
   errorType: 'e',
   sampleRate: 1,
+  tags: '',
   implicitSampleRate: 1,
   useProd: true,
 };
@@ -56,6 +57,10 @@ function log(msg, options = {}) {
     's=' + sampleRate,
     't=' + encodeURI(o.errorType),
   ];
+
+  if (o.tags) {
+    queryParams.push('tags=' + encodeURI(o.tags));
+  }
 
   if (w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
 
