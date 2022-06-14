@@ -5,7 +5,8 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const hashConfig = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
+const hashConfig =
+  '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
 
 const utils = {};
 
@@ -80,5 +81,11 @@ describe('Utils', () => {
 
   it('Text getEnv()', () => {
     expect(utils.getEnv()).to.equal('local');
+  });
+
+  it('updateObj should add any missing keys to the obj', () => {
+    const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
+    expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
+    expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
   });
 });

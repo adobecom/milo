@@ -8,7 +8,7 @@ import {
   useReducer,
   useState,
 } from '../../deps/htm-preact.js';
-import { cloneObj, getHashConfig, isValidUuid, loadStyle, utf8ToB64 } from '../../utils/utils.js';
+import { updateObj, cloneObj, getHashConfig, isValidUuid, loadStyle, utf8ToB64 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import { defaultState, initCaas, loadCaasFiles, loadStrings } from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
@@ -465,18 +465,21 @@ const reducer = (state, action) => {
 };
 
 const getInitialState = () => {
-  /* c8 ignore next 2 */
-  const hashConfig = getHashConfig();
-  if (hashConfig) return hashConfig;
-
-  const lsState = localStorage.getItem(LS_KEY);
-  if (lsState) {
-    try {
-      return JSON.parse(lsState);
-    /* c8 ignore next */
-    } catch (e) {}
+  let state = getHashConfig();
+  // /* c8 ignore next 2 */
+  if (!state) {
+    const lsState = localStorage.getItem(LS_KEY);
+    if (lsState) {
+      try {
+        state = JSON.parse(lsState);
+        /* c8 ignore next */
+      } catch (e) {}
+    }
   }
-  return null;
+
+  if (!state) state = {};
+
+  return updateObj(state, defaultState);
 };
 
 const saveStateToLocalStorage = (state) => {
