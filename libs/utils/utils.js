@@ -9,6 +9,15 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments' },
 ];
 
+export function getEnv() {
+  const { hostname } = window.location;
+  if (hostname.includes('localhost')) return 'local';
+  /* c8 ignore start */
+  if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
+  return 'prod';
+  /* c8 ignore stop */
+}
+
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
@@ -62,6 +71,11 @@ export async function loadBlock(block) {
   });
   await Promise.all([styleLoaded, scriptLoaded]);
   delete block.dataset.status;
+  const section = block.closest('.section[data-status]');
+  if (section) {
+    const decoratedBlock = section.querySelector(':scope > [data-status]');
+    if (!decoratedBlock) { delete section.dataset.status; }
+  }
   return block;
 }
 
@@ -173,9 +187,10 @@ function decorateDefaults(el) {
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
     decorateDefaults(section);
-    if (!section.querySelector(':scope > .section-metadata')) {
-      section.className = 'section';
-    }
+    section.className = 'section';
+    // Only mark as decorated if blocks are still loading inside
+    const decoratedBlock = section.querySelector(':scope > [data-status]');
+    if (decoratedBlock) { section.dataset.status = 'decorated'; }
   });
 }
 
@@ -242,3 +257,13 @@ export function getHashConfig() {
 }
 
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+
+export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+
+export function updateObj(obj, defaultObj) {
+  const ds = cloneObj(defaultObj);
+  Object.keys(ds).forEach((key) => {
+    if (obj[key] === undefined) obj[key] = ds[key];
+  });
+  return obj;
+}

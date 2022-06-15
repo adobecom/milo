@@ -24,7 +24,7 @@ const getInitialState = (lskey, items) => {
   if (lsState !== null) {
     return JSON.parse(lsState);
   }
-  return new Array(items.length).fill(true, 0, 1);
+  return [true];
 };
 
 export default function Accordion({ lskey = null, items = [], alwaysOpen = false }) {

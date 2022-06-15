@@ -27,6 +27,8 @@ describe('Modals', () => {
   });
 
   it('Closes a modal on button click', async () => {
+    window.location.hash = '#milo';
+    const modal = await init(true);
     const close = document.querySelector('dialog button');
     close.click();
     expect(window.location.hash).to.be.empty;
@@ -54,16 +56,6 @@ describe('Modals', () => {
     window.location.hash = '#milo';
     prom.then((modal) => {
       expect(modal).to.exist;
-    });
-  });
-
-  it('Remove a modal on close', async () => {
-    window.location.hash = '';
-    const prom = init(true);
-    window.location.hash = '#milo';
-    prom.then((modal) => {
-      modal.close();
-      expect(modal).to.be.null;
     });
   });
 });

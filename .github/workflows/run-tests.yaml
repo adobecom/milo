@@ -1,5 +1,8 @@
 name: Run tests
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
@@ -32,3 +35,6 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage/lcov.info
