@@ -53,3 +53,12 @@
   height: 100%;
   width: 100%;
 }
+
+.section.heading-center h1,
+.section.heading-center h2,
+.section.heading-center h3,
+.section.heading-center h4,
+.section.heading-center h5,
+.section.heading-center h6 {
+  text-align: center;
+}

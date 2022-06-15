@@ -15,6 +15,23 @@ export function getMetadata(name) {
   return meta && meta.content;
 }
 
+export default function createTag(tag, attributes, html) {
+  const el = document.createElement(tag);
+  if (html) {
+    if (html instanceof HTMLElement) {
+      el.append(html);
+    } else {
+      el.insertAdjacentHTML('beforeend', html);
+    }
+  }
+  if (attributes) {
+    Object.keys(attributes).forEach((key) => {
+      el.setAttribute(key, attributes[key]);
+    });
+  }
+  return el;
+}
+
 export function makeRelative(href) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
@@ -65,9 +82,9 @@ export async function loadBlock(block) {
   return block;
 }
 
-function decorateSVG(a) {
+export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent.substr(textContent.lastIndexOf('.') + 1);
+  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
   const img = document.createElement('img');
   img.src = makeRelative(textContent);

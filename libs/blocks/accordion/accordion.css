@@ -1,98 +1,98 @@
 .accordion {
-  padding-top: 80px;
+  padding-top: 50px;
   margin: 0 24px;
-  max-width: 1000px;
   padding-bottom: 40px;
 }
-.accordion h2 {
-  margin-bottom: 32px;
-  font-size: 28px;
-  text-align: center;
-  line-height: 35px;
-  padding: 0 24px;
-}
-@media (min-width: 1200px) {
-  .accordion {
-    padding-top: 80px;
-    margin: 0 auto;
-  }
+
+.dark button, .darkest button {
+  color: #FFFFFF;
 }
 
-.accordion-panel {
+div.accordion {
   display: none;
 }
-.panel-show .accordion-panel {
-  display: block;
+
+dl.accordion {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
 }
-.accordion-item {
-  border-bottom: 1px solid #DDDDDD;
+
+.accordion dt {
+  border-top: 1px solid #E1E1E1;
+  border-left: 2px solid transparent;
 }
-.accordion-item:first-of-type {
-  border-top: 1px solid #DDDDDD;
+.accordion dt:last-of-type {
+  border-bottom: 1px solid #E1E1E1;
 }
-.accordion button {
-  padding: 24px 0;
+.accordion dd {
+  margin: 0;
+  border-left: 2px solid transparent;
+  padding: 0 var(--spacing-s) var(--spacing-s) calc(var(--spacing-s) * 2);
+}
+
+.accordion dt button {
   background: none;
-  display: flex;
+  border: none;
+  font-family: var(--body-font-family);
+  font-weight: 700;
+  font-size: var(--type-heading-m-size);
+  line-height: 25px;
+  padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
   width: 100%;
   text-align: left;
-  border: none;
-  outline: none;  
-  font: normal normal bold 20px/25px Adobe Clean;
+}
+.accordion button {
+  display: flex;
+  align-items: center;
 }
 .accordion button:hover {
   cursor: pointer;
 }
-.accordion-panel {
-  font: normal normal normal 18px/27px Adobe Clean;
-  padding-bottom: 24px;
-  padding-left: 40px;
-}
-
-.accordion-title svg {
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
-  -o-transform: rotate(-90deg);
-  transform: rotate(-90deg);
-  float: left;
+.accordion dt button::before {
+  display: flex;
   position: relative;
-  top: 3px;
-  margin-right: 12px;
+  width: 20px; 
+  height: 20px;
+  background: url('/img/ui/chevron.svg') no-repeat;
+  background-size: contain;
+  background-position: center;
+  transform: rotate(-90deg);
+  content: '';
+  padding-right: var(--spacing-s);
 }
-.panel-show .accordion-title svg {
-  -webkit-transform: rotate(0deg);
-  -moz-transform: rotate(0deg);
-  -ms-transform: rotate(0deg);
-  -o-transform: rotate(0deg);
+.accordion dt.is-open button::before {
   transform: rotate(0deg);
 }
-
-.accordion button {
-  padding-left: 10px;
-}
-
-button > div + div { 
-  padding-left: 10px;
-}
-
-.accordion button[aria-expanded="true"], button:focus {
-  border-left: 2px solid #e34850;
-  box-sizing: border-box;
-  padding-left: 8px;
-}
-.accordion button:focus, .accordion button:focus + .accordion-panel {
-  background-color: rgba(206, 206, 206, 0.2);
-}
-.accordion button[aria-expanded="true"] + .accordion-panel {
-  box-sizing: border-box;
-  padding-right: 24px;
+.accordion dt.is-open,
+.accordion dd.is-open,
+.accordion dt.has-focus,
+.accordion dd.has-focus {
   border-left: 2px solid #e34850;
 }
-.dark button, .darkest button {
-  color: #FFFFFF;
+
+.accordion dt.has-focus,
+.accordion dd.has-focus {
+  background-color: rgb(206 206 206 / 20%);
 }
-.dark button:focus, .darkest button:focus,
-.dark button:focus + .accordion-panel, .darkest button:focus + .accordion-panel {
-  background-color: rgba(255, 255, 255, 0.1);
+
+.accordion button:focus {
+  outline: none;
+}
+
+.accordion dd p:first-child {
+  margin-top: 0;
+}
+
+.accordion dt.is-open:last-of-type {
+  border-bottom: none;
+}
+
+.accordion dt.is-open button {
+  padding-bottom: 6px;
+}
+
+@media screen and (min-width: 900px) {
+  dl.accordion {
+    max-width: calc(var(--grid-column-width) * 10);
+  }
 }
