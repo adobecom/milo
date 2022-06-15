@@ -24,20 +24,9 @@ const populateFieldValues = (fields, value) => fields.map((field) => {
 });
 
 // MultiField assumes that Fields have `name || id`, `onChange`, and `value` props.
-const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
+const MultiField = ({ children, className = '', values = [], onChange, subTitle, title }) => {
   const [fieldSets, setFieldSets] = useState([]);
   const [keys] = useState(getFieldNameOrId(Array.isArray(children) ? children : [children]));
-
-  useEffect(() => {
-    const newFieldSets = [];
-    values.forEach((value) => {
-      const newFields = Array.isArray(children) ? [...children] : [children];
-
-      newFieldSets.push(populateFieldValues(newFields, value));
-    });
-
-    setFieldSets(addMultifieldChangeListener(newFieldSets));
-  }, [values]);
 
   const onMultifieldChange = (name, idx) => (value, e) => {
     const newVals = [...values];
@@ -65,11 +54,22 @@ const MultiField = ({ children, values = [], onChange, subTitle, title }) => {
     onChange(newVals);
   };
 
+  useEffect(() => {
+    const newFieldSets = [];
+    values.forEach((value) => {
+      const newFields = Array.isArray(children) ? [...children] : [children];
+
+      newFieldSets.push(populateFieldValues(newFields, value));
+    });
+
+    setFieldSets(addMultifieldChangeListener(newFieldSets));
+  }, [values]);
+
   return html`
-    <div class="multifield">
-      <div class="multifield-header">
+    <div class=${`multifield ${className}`}>
+      <div class=${`multifield-header ${className}`}>
         <h3>${title}</h3>
-        <button class="multifield-add" onClick=${addFields}>Add</button>
+        <button class=${`multifield-add ${className}`} onClick=${addFields}>Add</button>
         ${subTitle && html`<h5>${subTitle}</h5>`}
       </div>
       ${fieldSets.map(

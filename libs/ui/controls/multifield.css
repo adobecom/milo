@@ -19,6 +19,7 @@
 }
 
 .multifield > .multifield-header > .multifield-add {
+  font-size: 14px;
   grid-area: add;
   margin: 0;
 }

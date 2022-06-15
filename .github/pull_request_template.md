@@ -1,7 +1,9 @@
-Please always provide the [GitHub issue(s)](../issues) your PR is for, as well as test URLs where your change can be observed (before and after):
+* Add your
+* Specicic
+* Features or fixes
 
-Resolves: <gh-issue-id>
+Resolves: [MWPW-NUMBER](MWPW-URL)
 
-Test URLs:
+**Test URLs:**
 - Before: https://main--milo--adobecom.hlx.page/
 - After: https://<branch>--milo--adobecom.hlx.page/
