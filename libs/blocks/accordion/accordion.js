@@ -68,7 +68,7 @@ function getUniqueId(el) {
 export default function init(el) {
   const id = getUniqueId(el);
   const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
-  const seo = el.classList.contains('seo');
+  const isSeo = el.classList.contains('seo');
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map((heading, idx) => createItem(accordion, id, heading, idx + 1));
