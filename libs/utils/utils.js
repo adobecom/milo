@@ -34,8 +34,8 @@ export default function createTag(tag, attributes, html) {
     }
   }
   if (attributes) {
-    Object.keys(attributes).forEach((key) => {
-      el.setAttribute(key, attributes[key]);
+    Object.entries(attributes).forEach(([key, val]) => {
+      el.setAttribute(key, val);
     });
   }
   return el;
