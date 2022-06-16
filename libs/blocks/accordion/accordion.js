@@ -44,7 +44,7 @@ function createItem(accordion, id, heading, num) {
     'aria-controls': panelId,
   }, heading.textContent);
 
-  const panel = heading.nextElementSibling.firstChild;
+  const panel = heading.nextElementSibling.firstElementChild;
   const para = panel.querySelector('p');
   const text = para ? para.textContent : panel.textContent;
 
