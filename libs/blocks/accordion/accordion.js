@@ -73,7 +73,7 @@ export default function init(el) {
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map((heading, idx) => createItem(accordion, id, heading, idx + 1));
 
-  if (seo) { setSEO(items); }
+  if (isSeo) { setSEO(items); }
   el.innerHTML = '';
   el.className = 'accordion-container';
   el.append(accordion);
