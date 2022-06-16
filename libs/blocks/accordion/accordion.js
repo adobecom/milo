@@ -13,7 +13,7 @@ function handleClick(el, dt, dd) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
     el.setAttribute('aria-expanded', 'false');
-    dd.setAttribute('hidden', true);
+    dd.setAttribute('hidden', '');
   } else {
     el.setAttribute('aria-expanded', 'true');
     dd.removeAttribute('hidden');
