@@ -60,6 +60,9 @@
 .stats .stat .heading-XL:nth-child(1) {
   margin-top: 0;
 }
+.stats .solution .heading-XS {
+  padding-bottom: var(--spacing-s);
+}
 
 /*horizontal*/
 .stats.horizontal .stat {
