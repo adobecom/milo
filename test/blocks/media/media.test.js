@@ -3,12 +3,9 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import init from '../../../blocks/media/media.js';
-import { cleanVariations } from '../../../scripts/scripts.js';
 
-const mock = await readFile({ path: './media.mock.html' });
-document.body.innerHTML = mock;
-cleanVariations(document.body);
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const { default: init } = await import('../../../libs/blocks/media/media.js');
 describe('media', () => {
   const medias = document.querySelectorAll('.media');
   medias.forEach((media) => {
