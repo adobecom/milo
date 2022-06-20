@@ -7,7 +7,7 @@ import {
 } from '../../utils/utils.js';
 
 const env = getEnv();
-const faasHostSubDomain = env === 'prod' ? '' : 'qa.';
+const faasHostSubDomain = env === 'prod' ? 'staging.' : 'qa.';
 export const faasHostUrl = `https://${faasHostSubDomain}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 if (env === 'local') {
@@ -25,7 +25,7 @@ export const defaultState = {
   l: 'en_us',
   d: '',
   as: true,
-  ar: false,
+  ar: true,
   pc: {
     1: 'js',
     2: 'faas_submission',
