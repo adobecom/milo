@@ -14,7 +14,7 @@
  * Z-Pattern - v5.1
  */
 
-import { decorateBlockBg, decorateBlockDaa, getBlockSize } from '../../scripts/decorate.js';
+import { decorateBlockBg, decorateBlockDaa, getBlockSize } from '../../utils/utils.js';
 import media from '../media/media.js';
 
 export function decorateHeadline(header, size) {
@@ -81,8 +81,7 @@ export default function init(el) {
     row.classList.add(size);
     row.appendChild(mediaRow);
   });
-  const zRowsOddCount = getOddRowsCount(zRows);
-  if (zRowsOddCount === 0) {
+  if (getOddRowsCount(zRows) === 0) {
     zRows.forEach((row, i) => {
       if (i % 2) row.classList.add('media--reversed');
     });

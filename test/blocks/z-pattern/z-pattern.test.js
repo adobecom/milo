@@ -3,12 +3,9 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import init from '../../../blocks/z-pattern/z-pattern.js';
-import { cleanVariations } from '../../../scripts/scripts.js';
 
-const mock = await readFile({ path: './z-pattern.mock.html' });
-document.body.innerHTML = mock;
-cleanVariations(document.body);
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const { default: init } = await import('../../../libs/blocks/z-pattern/z-pattern.js');
 
 describe('z-patterns', () => {
   const zPatterns = document.querySelectorAll('.z-pattern');
