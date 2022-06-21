@@ -40,20 +40,22 @@ export async function loadLCP(blocks) {
 
 export async function fetchLib(type) {
   const namespace = `${type}Library`;
-  if (!type || window[namespace]) return;
+  window.milo = window.milo || {};
+  if (!type || window.milo[namespace]) return;
   const resp = await fetch(`${window.location.origin}/docs/${type}-library.json`);
   if (resp.ok) {
     try {
       const json = await resp.json();
-      window[namespace] = {};
+      window.milo[namespace] = {};
       json.data.forEach((item) => {
         const itemValues = {};
+        // eslint-disable-next-line no-restricted-syntax
         for (const [key, value] of Object.entries(item)) {
-          if(key !== 'key') {
+          if (key !== 'key') {
             itemValues[key] = value;
           }
         }
-        window[namespace][item.key] = itemValues;
+        window.milo[namespace][item.key] = itemValues;
       });
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -64,7 +66,6 @@ export async function fetchLib(type) {
     console.log(`Could not get ${type} library`);
   }
 }
-
 
 /**
  * Load everything that impacts performance later.
