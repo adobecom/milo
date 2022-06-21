@@ -38,11 +38,12 @@ export async function loadLCP(blocks) {
   }
 }
 
-export async function fetchLib(type) {
+export async function fetchLib(type, url = '') {
   const namespace = `${type}Library`;
   window.milo = window.milo || {};
   if (!type || window.milo[namespace]) return;
-  const resp = await fetch(`${window.location.origin}/docs/${type}-library.json`);
+  const endpoint = (url !== '') ? `${url}/docs/${type}-library.json` : `${window.location.origin}/docs/${type}-library.json`;
+  const resp = await fetch(endpoint);
   if (resp.ok) {
     try {
       const json = await resp.json();

@@ -199,7 +199,7 @@ export function decorateIcons(el, displayText = true) {
       icons[0].closest('p').classList.add('persona-area');
       areaIndex = 1;
     }
-    icons[areaIndex].closest('p').classList.add('icon-area');
+    icons[areaIndex]?.closest('p').classList.add('icon-area');
   }
 }
 
