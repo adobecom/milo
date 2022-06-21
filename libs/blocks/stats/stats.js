@@ -14,19 +14,21 @@
 * Stats - v0.1
 */
 
-import { decorateBlockDaa, decorateBlockBg } from "../../scripts/decorate.js";
+import { decorateBlockDaa, decorateBlockBg } from '../../utils/utils.js';
 
 function decorateRow(row) {
-    if (row) {
-      const headers = row.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      if (headers) headers.forEach((header) => {
+  if (row) {
+    const headers = row.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    if (headers) {
+      headers.forEach((header) => {
         if (row.classList.contains('stat')) {
           header.classList.add('heading-XL');
         } else {
           header.classList.add('heading-XS');
         }
-      })
+      });
     }
+  }
 }
 
 export default function init(el) {
@@ -38,7 +40,7 @@ export default function init(el) {
     const container = document.createElement('div');
     container.classList.add('foreground', 'container', `count-${rows.length}`);
     rows.forEach((row, i) => {
-      const rowType = ((rows.length - 1) === i) ? 'solution' : 'stat'
+      const rowType = ((rows.length - 1) === i) ? 'solution' : 'stat';
       row.classList.add(rowType);
       decorateRow(row);
       container.append(row);
