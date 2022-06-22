@@ -6,11 +6,24 @@ import {
   getEnv,
 } from '../../utils/utils.js';
 
-const env = getEnv();
-const faasHostSubDomain = env === 'prod' ? 'staging.' : 'qa.';
-export const faasHostUrl = `https://${faasHostSubDomain}apps.enterprise.adobe.com`;
+export const getFaasHostSubDomain = (environment) => {
+  const env = environment ?? getEnv();
+  let faasHostSubDomain;
+  if (env === 'prod') {
+    faasHostSubDomain = 'staging.'; // TODO: this should be updated as '' when QA is done from FAAS team.
+  } else if (env === 'stage') {
+    faasHostSubDomain = 'staging.';
+  } else if (env === 'dev') {
+    faasHostSubDomain = 'dev.';
+  } else {
+    faasHostSubDomain = 'qa.';
+  }
+  return faasHostSubDomain;
+};
+
+export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-if (env === 'local') {
+if (getEnv() === 'local') {
   faasCurrentJS = '/libs/deps/jquery.faas-current.js';
 }
 export const loadFaasFiles = () => {

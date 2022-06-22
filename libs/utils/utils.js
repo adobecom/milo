@@ -10,10 +10,17 @@ const AUTO_BLOCKS = [
 ];
 
 export function getEnv() {
-  const { hostname } = window.location;
+  const { hostname, href } = window.location;
+  const location = new URL(href);
+  const env = location.searchParams.get('env');
+  if (env) {
+    return env;
+  }
   if (hostname.includes('localhost')) return 'local';
+
   /* c8 ignore start */
   if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
+
   return 'prod';
   /* c8 ignore stop */
 }
