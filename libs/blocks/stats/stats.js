@@ -14,7 +14,7 @@
 * Stats - v0.1
 */
 
-import { decorateBlockDaa, decorateBlockBg } from '../../utils/utils.js';
+// import { decorateBlockDaa } from '../../utils/utils.js';
 
 function decorateRow(row) {
   if (row) {
@@ -32,19 +32,36 @@ function decorateRow(row) {
 }
 
 export default function init(el) {
-  decorateBlockDaa(el);
+  // decorateBlockDaa(el);
   const firstRow = el.querySelector(':scope > div');
-  if (firstRow) decorateBlockBg(el, firstRow);
-  const rows = el.querySelectorAll(':scope > div');
+  if (firstRow) firstRow.classList.add('intro');
+  if (!firstRow.textContent) firstRow.remove();
+  const rows = el.querySelectorAll(':scope > div:not([class])');
   if (rows.length) {
-    const container = document.createElement('div');
-    container.classList.add('foreground', 'container', `count-${rows.length}`);
+    const stats = document.createElement('div');
+    stats.classList.add('stats-wrapper');
+    const solutions = document.createElement('div');
+    solutions.classList.add('solutions-wrapper');
+    let statCount = 0;
+    let solutionCount = 0;
     rows.forEach((row, i) => {
       const rowType = ((rows.length - 1) === i) ? 'solution' : 'stat';
       row.classList.add(rowType);
       decorateRow(row);
-      container.append(row);
+      if (rowType === 'stat') {
+        stats.append(row);
+        statCount += 1;
+      } else {
+        solutions.append(row);
+        solutionCount += 1;
+      }
     });
-    el.insertAdjacentElement('afterbegin', container);
+    const container = document.createElement('div');
+    container.classList.add('container');
+    stats.classList.add(`count-${statCount}`);
+    solutions.classList.add(`count-${solutionCount}`);
+    container.appendChild(stats);
+    container.appendChild(solutions);
+    el.insertAdjacentElement('beforeend', container);
   }
 }

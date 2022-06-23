@@ -62,3 +62,19 @@
 .section.heading-center h6 {
   text-align: center;
 }
+
+/* Desktop */
+@media screen and (min-width: 1200px) {
+  .section.left-column > .section-columns {
+    display: flex;
+    gap: var(--spacing-xl);
+  }
+
+  .section.left-column > .section-columns > .col-1 {
+    width: 30%;
+  }
+
+  .section.left-column > .section-columns > .col-2 {
+    width: 70%;
+  }
+}
