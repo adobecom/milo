@@ -12,20 +12,22 @@ function handleBackground(div, section) {
   }
 }
 
-function handleSectionColumn(value, section) {
-  const container = document.createElement('div');
-  container.classList.add('container', 'section-columns');
-  const col1 = section.querySelector(':scope > div:nth-child(1)');
-  col1.classList.add('col-1');
-  container.insertAdjacentElement('afterbegin', col1);
-  section.insertAdjacentElement('afterbegin', container);
+function handleSectionAside(value, section) {
+  const firstBlock = section.querySelector(':scope > div:nth-child(1)');
   const allBlocks = section.querySelectorAll(':scope > div:nth-child(n+2)');
-  if (allBlocks) {
+  if (firstBlock && allBlocks.length) {
+    const container = document.createElement('div');
+    const col1 = document.createElement('div');
     const col2 = document.createElement('div');
+    container.classList.add('container', 'aside-columns');
+    col1.classList.add('col-1');
     col2.classList.add('col-2');
+    col1.insertAdjacentElement('afterbegin', firstBlock);
     allBlocks.forEach((block) => {
       col2.insertAdjacentElement('beforeend', block);
     });
+    container.insertAdjacentElement('afterbegin', col1);
+    section.insertAdjacentElement('afterbegin', container);
     container.insertAdjacentElement('beforeend', col2);
   }
 }
@@ -35,10 +37,10 @@ function handleStyle(div, section) {
   const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   if (section) {
     section.classList.add(...styles);
-    const colClasses = ['left-column', 'right-column'];
+    const colClasses = ['left-aside', 'right-aside'];
     styles.forEach((style) => {
       if (colClasses.indexOf(style) > -1) {
-        handleSectionColumn(style, section);
+        handleSectionAside(style, section);
       }
     });
   }

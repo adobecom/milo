@@ -32,10 +32,17 @@ function decorateRow(row) {
 }
 
 export default function init(el) {
+  // todo: do these need analytics.js
   // decorateBlockDaa(el);
   const firstRow = el.querySelector(':scope > div');
-  if (firstRow) firstRow.classList.add('intro');
-  if (!firstRow.textContent) firstRow.remove();
+  const pics = firstRow.getElementsByTagName('picture');
+  if (firstRow) {
+    if (pics.length === 0 && !firstRow.textContent) {
+      firstRow.remove();
+    } else {
+      firstRow.classList.add('intro');
+    }
+  }
   const rows = el.querySelectorAll(':scope > div:not([class])');
   if (rows.length) {
     const stats = document.createElement('div');
