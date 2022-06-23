@@ -1,19 +1,13 @@
 const blocks = [
   'adobetv',
-  'accordion',
   'caas',
-  'caas-config',
-  'columns',
   'faas',
-  'faas-config',
-  'footer',
+  'columns',
+  'faq',
   'fragment',
   'how-to',
-  'interlinks',
-  'modals',
+  'modal',
   'marquee',
-  'nofollow',
-  'section-metadata',
 ];
 
 export default blocks;
