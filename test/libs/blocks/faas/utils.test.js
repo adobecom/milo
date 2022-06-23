@@ -8,7 +8,7 @@ import { waitForElement } from '../../../helpers/selectors.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { parseEncodedConfig } = await import('../../../../libs/utils/utils.js');
-const { loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../../libs/blocks/faas/utils.js');
+const { getFaasHostSubDomain, loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../../libs/blocks/faas/utils.js');
 
 describe('Faas', () => {
   beforeEach(() => {
@@ -65,5 +65,12 @@ describe('Faas', () => {
   it('FaaS Title', () => {
     const title = document.querySelector('.faas-title');
     expect(title).to.exist;
+  });
+
+  it('Test environment', () => {
+    expect(getFaasHostSubDomain('prod')).to.equal('staging.');
+    expect(getFaasHostSubDomain('stage')).to.equal('staging.');
+    expect(getFaasHostSubDomain('dev')).to.equal('dev.');
+    expect(getFaasHostSubDomain()).to.equal('qa.');
   });
 });
