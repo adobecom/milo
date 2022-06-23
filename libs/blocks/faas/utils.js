@@ -8,17 +8,14 @@ import {
 
 export const getFaasHostSubDomain = (environment) => {
   const env = environment ?? getEnv();
-  let faasHostSubDomain;
-  if (env === 'prod') {
-    faasHostSubDomain = 'staging.'; // TODO: this should be updated as '' when QA is done from FAAS team.
-  } else if (env === 'stage') {
-    faasHostSubDomain = 'staging.';
-  } else if (env === 'dev') {
-    faasHostSubDomain = 'dev.';
-  } else {
-    faasHostSubDomain = 'qa.';
+  // TODO: prod should be updated as '' when QA is done from FAAS team.
+  if (env === 'prod' || env === 'stage') {
+    return 'staging.';
   }
-  return faasHostSubDomain;
+  if (env === 'dev') {
+    return 'dev.';
+  }
+  return 'qa.';
 };
 
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
