@@ -12,7 +12,7 @@
 
 import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
 
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'media', 'section-metadata', 'z-pattern'];
+const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 
 function decorateNavs(el = document) {
   const selectors = [];
@@ -38,36 +38,6 @@ export async function loadLCP(blocks) {
   }
 }
 
-export async function fetchLib(type, url = '') {
-  const namespace = `${type}Library`;
-  window.milo = window.milo || {};
-  if (!type || window.milo[namespace]) return;
-  const endpoint = (url !== '') ? `${url}/docs/${type}-library.json` : `${window.location.origin}/docs/${type}-library.json`;
-  const resp = await fetch(endpoint);
-  if (resp.ok) {
-    try {
-      const json = await resp.json();
-      window.milo[namespace] = {};
-      json.data.forEach((item) => {
-        const itemValues = {};
-        // eslint-disable-next-line no-restricted-syntax
-        for (const [key, value] of Object.entries(item)) {
-          if (key !== 'key') {
-            itemValues[key] = value;
-          }
-        }
-        window.milo[namespace][item.key] = itemValues;
-      });
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(`Could not make ${type} library`);
-    }
-  } else {
-    // eslint-disable-next-line no-console
-    console.log(`Could not get ${type} library`);
-  }
-}
-
 /**
  * Load everything that impacts performance later.
  */
@@ -78,7 +48,6 @@ export function loadDelayed() {
 async function loadPage() {
   const blocks = decorateArea();
   const navs = decorateNavs();
-  await fetchLib('icon');
   await loadLCP(blocks);
   loadStyle('/fonts/fonts.css');
   await loadLazy([...navs, ...blocks]);

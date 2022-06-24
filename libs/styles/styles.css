@@ -161,12 +161,6 @@ a:hover {
   color: var(--link-hover-color);
 }
 
-/* Color scheme */
-.dark {
-  color: #fff;
-  background-color: #2c2c2c;
-}
-
 /* Consonant Typography */
 .heading-XL,
 .heading-L,

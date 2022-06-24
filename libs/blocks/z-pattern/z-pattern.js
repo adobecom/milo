@@ -14,7 +14,8 @@
  * Z-Pattern - v5.1
  */
 
-import { decorateBlockBg, decorateBlockDaa, getBlockSize } from '../../utils/utils.js';
+import { decorateBlockBg, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockAnalytics } from '../../utils/analytics.js';
 import media from '../media/media.js';
 
 export function decorateHeadline(header, size) {
@@ -46,7 +47,7 @@ function getChildSingleRowCount(children) {
 }
 
 export default function init(el) {
-  decorateBlockDaa(el);
+  decorateBlockAnalytics(el);
   const children = el.querySelectorAll(':scope > div');
   const size = getBlockSize(el);
   const singleRowCount = getChildSingleRowCount(children);

@@ -3,6 +3,11 @@
   position: relative;
 }
 
+.media.dark {
+  color: #fff;
+  background-color: #2c2c2c;
+}
+
 .media .background {
   position: absolute;
   width: 100%;
@@ -139,7 +144,6 @@
 }
 
 @media screen and (min-width: 600px) {
-
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
