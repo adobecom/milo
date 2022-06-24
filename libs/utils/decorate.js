@@ -8,6 +8,8 @@ import { getIconLibrary } from '../ui/library/icon.js';
 
 const iconLibrary = await getIconLibrary();
 
+console.log(iconLibrary);
+
 export function decorateButtons(el, isLarge) {
   const buttons = el.querySelectorAll('em a, strong a');
   buttons.forEach((button) => {
@@ -34,7 +36,7 @@ export async function decorateIcons(el, displayText = true) {
       const size = str.includes('persona') ? 80 : 40;
       if (icon) {
         const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
-        const label = `${svg} ${displayText ? icon.label : ''}`;
+        const label = `${svg} ${(displayText && icon.label !== undefined) ? icon.label : ''}`;
         const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
         const inner = `<span class="icon ${str}">${label}</span>`;
         el.innerHTML = el.innerHTML.replace(`{{${str}}}`, icon.link ? anchor : inner);
