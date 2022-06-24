@@ -147,16 +147,16 @@
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
-    max-width: var(--block-container-width-m);
+    max-width: 1000px;
   }
 
   .media.small > .foreground .media-row {
-    max-width: var(--block-container-width-s);
+    max-width: 800px;
   }
 
   .media.large > .foreground .media-row {
     gap: var(--spacing-m);
-    max-width: var(--block-container-width-l);
+    max-width: 1200px;
   }
 
   .media.media-reverse-mobile .foreground .media-row {

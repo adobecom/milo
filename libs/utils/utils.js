@@ -6,14 +6,21 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments' },
+  { fragment: '/fragments/' },
 ];
 
 export function getEnv() {
-  const { hostname } = window.location;
-  if (hostname.includes('localhost')) return 'local';
+  const { hostname, href } = window.location;
+  const location = new URL(href);
+  const env = location.searchParams.get('env');
+
   /* c8 ignore start */
+  if (env) {
+    return env;
+  }
+  if (hostname.includes('localhost')) return 'local';
   if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
+
   return 'prod';
   /* c8 ignore stop */
 }
@@ -45,7 +52,8 @@ export function makeRelative(href) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host));
+  const relative = hosts.some((host) => url.hostname.includes(host))
+    || url.hostname === window.location.hostname;
   return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
@@ -118,7 +126,7 @@ function decorateAutoBlock(a) {
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return AUTO_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.startsWith(candidate[key]);
+    const match = href.includes(candidate[key]);
     if (match) {
       // Modals
       if (key === 'fragment' && url.hash !== '') {

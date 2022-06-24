@@ -8,8 +8,6 @@ import { getIconLibrary } from '../ui/library/icon.js';
 
 const iconLibrary = await getIconLibrary();
 
-console.log(iconLibrary);
-
 export function decorateButtons(el, isLarge) {
   const buttons = el.querySelectorAll('em a, strong a');
   buttons.forEach((button) => {
