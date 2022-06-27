@@ -4,9 +4,6 @@
 //
 
 import { decorateLinkAnalytics } from './analytics.js';
-import { getIconLibrary } from '../ui/library/icon.js';
-
-const iconLibrary = await getIconLibrary();
 
 export function decorateButtons(el, isLarge) {
   const buttons = el.querySelectorAll('em a, strong a');
@@ -25,35 +22,41 @@ export function decorateButtons(el, isLarge) {
   }
 }
 
-export async function decorateIcons(el, displayText = true) {
+export function initIcons(el) {
   const regex = /[^{{]+(?=}})/g; // {{value}}
-  const placeholders = el.textContent.match(regex);
-  placeholders?.forEach((str) => {
-    if (iconLibrary) {
-      const icon = iconLibrary[str];
-      const size = str.includes('persona') ? 80 : 40;
-      if (icon) {
-        const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
-        const label = `${svg} ${(displayText && icon.label !== undefined) ? icon.label : ''}`;
-        const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
-        const inner = `<span class="icon ${str}">${label}</span>`;
-        el.innerHTML = el.innerHTML.replace(`{{${str}}}`, icon.link ? anchor : inner);
-      } else {
-        el.innerHTML = el.innerHTML.replace(`{{${str}}}`, '');
-      }
-    } else {
-      el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
-    }
+  const finds = el.textContent.match(regex);
+  finds?.forEach((str) => {
+    el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
   });
   const icons = el.querySelectorAll('.icon');
-  if (icons.length > 0) {
-    let areaIndex = 0;
-    if (icons[0].classList.contains('icon-persona')) {
-      icons[0].closest('p').classList.add('persona-area');
-      areaIndex = 1;
-    }
-    icons[areaIndex]?.closest('p').classList.add('icon-area');
+  if (icons.length) {
+    icons?.forEach((icon) => {
+      icon.parentElement.classList.add('icon-area');
+      if (icon.classList.contains('icon-persona')) icon.parentElement.classList.add('persona-area');
+    });
   }
+}
+
+export async function decorateIcons(iconLibrary) {
+  const el = document.querySelector('main');
+  const icons = el.querySelectorAll('.icon');
+  icons?.forEach((i) => {
+    const str = i.textContent;
+    const icon = iconLibrary[str];
+    const size = str.includes('persona') ? 80 : 40;
+    if (iconLibrary && icon) {
+      i.classList.add(icon.key)
+      // console.log('icons?', i);
+      const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
+      const label = `${svg} ${(icon.label !== undefined) ? icon.label : ''}`;
+      const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
+      if (icon.link !== undefined) {
+        i.outerHTML = anchor;
+      } else {
+        i.innerHTML = i.innerHTML.replace(str, label);
+      }
+    }
+  });
 }
 
 export function decorateText(el, size) {
@@ -80,7 +83,7 @@ export function decorateText(el, size) {
       heading.previousElementSibling.classList.add('detail-L');
     }
   }
-  decorateIcons(el);
+  initIcons(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, heading);
 }
@@ -112,4 +115,24 @@ export function getBlockSize(el) {
     }
     return rdx;
   }, sizes[1]);
+}
+
+export async function getIconLibrary() {
+  let library = {};
+  const path = '/docs/icon-library.json';
+  const url = (window.document.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
+  const resp = await fetch(url);
+  if (!resp.ok) return;
+  const json = await resp.json();
+  json.data.forEach((item) => {
+    const itemValues = {};
+    Object.entries(item).forEach((value) => {
+      const itemValue = value[1];
+      if (itemValue) {
+        itemValues[value[0]] = itemValue;
+      }
+    });
+    library[item.key] = itemValues;
+  });
+  await decorateIcons(library);
 }

@@ -21,6 +21,7 @@
 // ---
 // see link... [https://wiki.corp.adobe.com/login.action?os_destination=%2Fpages%2Fviewpage.action%3FspaceKey%3D%7Ecwest%26title%3DPRD%253A%2BHome%2BPage%2BLink%2BTracking&permissionViolation=true]
 
+// expects block el
 export function decorateBlockAnalytics(el) {
   const lh = [];
   const exclude = ['--', 'block'];
@@ -30,7 +31,7 @@ export function decorateBlockAnalytics(el) {
   el.setAttribute('daa-im', 'true');
   el.setAttribute('daa-lh', lh.join('|'));
 }
-
+// expects block text el
 export function decorateLinkAnalytics(el, heading) {
   el.setAttribute('daa-lh', heading.textContent);
   const links = el.querySelectorAll('a, button');
