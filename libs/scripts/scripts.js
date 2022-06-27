@@ -51,10 +51,10 @@ async function loadPage() {
   await loadLCP(blocks);
   loadStyle('/fonts/fonts.css');
   await loadLazy([...navs, ...blocks]);
-  const { getIconLibrary } = await import('../utils/decorate.js');
-  await getIconLibrary();
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
+  const { getIconLibrary } = await import('../utils/decorate.js');
+  await getIconLibrary();
   loadDelayed();
 }
 loadPage();
