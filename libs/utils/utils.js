@@ -6,14 +6,21 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
-  { fragment: '/fragments' },
+  { fragment: '/fragments/' },
 ];
 
 export function getEnv() {
-  const { hostname } = window.location;
-  if (hostname.includes('localhost')) return 'local';
+  const { hostname, href } = window.location;
+  const location = new URL(href);
+  const env = location.searchParams.get('env');
+
   /* c8 ignore start */
+  if (env) {
+    return env;
+  }
+  if (hostname.includes('localhost')) return 'local';
   if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
+
   return 'prod';
   /* c8 ignore stop */
 }
@@ -45,7 +52,8 @@ export function makeRelative(href) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host));
+  const relative = hosts.some((host) => url.hostname.includes(host))
+    || url.hostname === window.location.hostname;
   return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
@@ -118,7 +126,7 @@ function decorateAutoBlock(a) {
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return AUTO_BLOCKS.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.startsWith(candidate[key]);
+    const match = href.includes(candidate[key]);
     if (match) {
       // Modals
       if (key === 'fragment' && url.hash !== '') {
@@ -153,143 +161,6 @@ function decoratePictures(el) {
     const styleEl = picture.parentElement;
     styleEl.parentElement.replaceChild(picture, styleEl);
   });
-}
-
-export function decorateButtons(el, isLarge) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
-}
-
-export function decorateIcons(el, displayText = true) {
-  const regex = /[^{{]+(?=}})/g; // {{value}}
-  const placeholders = el.textContent.match(regex);
-  placeholders?.forEach((str) => {
-    if (window.milo && window.milo.iconLibrary) {
-      const icon = window.milo.iconLibrary[str];
-      const size = str.includes('persona') ? 80 : 40;
-      if (icon) {
-        const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
-        const label = `${svg} ${displayText ? icon.label : ''}`;
-        const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
-        const inner = `<span class="icon ${str}">${label}</span>`;
-        el.innerHTML = el.innerHTML.replace(`{{${str}}}`, icon.link ? anchor : inner);
-      } else {
-        el.innerHTML = el.innerHTML.replace(`{{${str}}}`, '');
-      }
-    } else {
-      el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
-    }
-  });
-  const icons = el.querySelectorAll('.icon');
-  if (icons.length > 0) {
-    let areaIndex = 0;
-    if (icons[0].classList.contains('icon-persona')) {
-      icons[0].closest('p').classList.add('persona-area');
-      areaIndex = 1;
-    }
-    icons[areaIndex]?.closest('p').classList.add('icon-area');
-  }
-}
-
-export function decorateBlockDaa(el) {
-  const lh = [];
-  const exclude = ['--', 'block'];
-  el.classList.forEach((c) => {
-    if (!c.includes(exclude[0]) && c !== exclude[1]) lh.push(c);
-  });
-  el.setAttribute('daa-im', 'true');
-  el.setAttribute('daa-lh', lh.join('|'));
-}
-
-export function decorateTextDaa(el, heading) {
-  el.setAttribute('daa-lh', heading.textContent);
-  const links = el.querySelectorAll('a, button');
-  if (links) {
-    links.forEach((link, i) => {
-      const linkType = () => {
-        if (link.classList.contains('con-button')) {
-          return 'cta';
-        }
-        if (link.classList.contains('icon')) {
-          return 'icon cta';
-        }
-        return 'link';
-      };
-      const str = `${linkType(link)}|${link.innerText} ${i + 1}`;
-      link.setAttribute('daa-ll', str);
-    });
-  }
-}
-
-export function decorateText(el, size) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
-  if (!size || size === 'small') {
-    heading.classList.add('heading-XS');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
-    }
-  }
-  if (size === 'medium') {
-    heading.classList.add('heading-M');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
-    }
-  }
-  if (size === 'large') {
-    heading.classList.add('heading-XL');
-    heading.nextElementSibling.classList.add('body-M');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-L');
-    }
-  }
-  decorateIcons(el);
-  decorateButtons(el);
-  decorateTextDaa(el, heading);
-}
-
-export function isHexColorDark(color) {
-  if (color[0] !== '#') return false;
-  const hex = color.replace('#', '');
-  const cR = parseInt(hex.substr(0, 2), 16);
-  const cG = parseInt(hex.substr(2, 2), 16);
-  const cB = parseInt(hex.substr(4, 2), 16);
-  const brightness = ((cR * 299) + (cG * 587) + (cB * 114)) / 1000;
-  return brightness < 155;
-}
-
-export function decorateBlockBg(block, node) {
-  node.classList.add('background');
-  if (!node.querySelector(':scope img')) {
-    block.style.background = node.textContent;
-    if (isHexColorDark(node.textContent)) block.classList.add('dark');
-    node.remove();
-  }
-}
-
-export function getBlockSize(el) {
-  const sizes = ['small', 'medium', 'large'];
-  let defaultSize = sizes[1];
-  sizes.forEach((size) => {
-    if (el.classList.contains(size)) {
-      defaultSize = size;
-    }
-  });
-  return defaultSize;
 }
 
 // Marquee (Large, Light) >>> marquee--large--light- >>> marquee large light

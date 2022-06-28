@@ -10,6 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
+@import url('variables.css');
+@import url('typography.css');
+
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -24,69 +27,6 @@
   size-adjust: 93%;
   src: local('Trebuchet MS'),
        local('TrebuchetMS');
-}
-
- :root {
-  /* Colors */
-  --link-color: #035fe6;
-  --link-hover-color: #136ff6;
-  --background-color: #fff;
-  --overlay-background-color: #ffffff20;
-  --highlight-background-color: #ffffff40;
-  --text-color: #2c2c2c;
-
-  /*** Typography ***/
-
-  /* Fonts */
-  --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
-
-  /* Headings (Consonant) */
-  --type-heading-all-weight: 700;
-  --type-heading-all-lh: 1.25;
-  --type-heading-xxl-size: 36px;
-  --type-heading-xl-size: 28px;
-  --type-heading-l-size: 24px;
-  --type-heading-m-size: 20px;
-  --type-heading-s-size: 18px;
-  --type-heading-xs-size: 16px;
-
-  /* Body (Consonant) */
-  --type-body-all-lh: 1.5;
-  --type-body-xxl-size: 28px;
-  --type-body-xl-size: 22px;
-  --type-body-l-size: 20px;
-  --type-body-m-size: 18px;
-  --type-body-s-size: 16px;
-  --type-body-xs-size: 14px;
-  --type-body-xxs-size: 12px;
-
-  /* Detail */
-  --type-detail-all-weight: 700;
-  --type-detail-all-transform: uppercase;
-  --type-detail-all-lh: 1.25;
-  --type-detail-xl-size: 20px;
-  --type-detail-l-size: 16px;
-  --type-detail-m-size: 12px;
-
-  /* Spacing */
-  --spacing-xxs: 8px;
-  --spacing-xs: 16px;
-  --spacing-s: 24px;
-  --spacing-m: 32px;
-  --spacing-l: 40px;
-  --spacing-xl: 48px;
-  --spacing-xxl: 56px;
-  --spacing-xxxl: 80px;
-
-  /* grid sizes */
-  --grid-container-width: 83.4%;
-  --grid-column-width: calc(var(--grid-container-width) / 12);
-
-  /* block container */
-  --block-container-width-s: 800px;
-  --block-container-width-m: 1000px;
-  --block-container-width-l: 1200px;
 }
 
 body {
@@ -161,47 +101,6 @@ a:hover {
   color: var(--link-hover-color);
 }
 
-/* Color scheme */
-.dark {
-  color: #fff;
-  background-color: #2c2c2c;
-}
-
-/* Consonant Typography */
-.heading-XL,
-.heading-L,
-.heading-M,
-.heading-S,
-.heading-XS {
-  line-height: var(--type-heading-all-lh);
-  margin: 0;
-}
-.heading-XXL { font-size: var(--type-heading-xxl-size); }
-.heading-XL { font-size: var(--type-heading-xl-size); }
-.heading-L { font-size: var(--type-heading-l-size); }
-.heading-M { font-size: var(--type-heading-m-size); }
-.heading-S { font-size: var(--type-heading-s-size); }
-.heading-XS { font-size: var(--type-heading-xs-size); }
-
-.body-M,
-.body-S {
-  font-size: var(--type-body-m-size);
-  line-height: var(--type-body-all-lh);
-  margin: 0;
-}
-.body-S { font-size: var(--type-body-s-size); }
-
-.detail-L,
-.detail-M,
-.detail-S {
-  font-size: var(--type-detail-l-size);
-  line-height: var(--type-detail-all-lh);
-  font-weight: var(--type-detail-all-weight);
-  text-transform: uppercase;
-  margin: 0;
-}
-.detail-M { font-size: var(--type-detail-m-size); }
-
 /* Buttons */
 .dark a {
   color: #FFF;
@@ -211,67 +110,6 @@ a:hover {
   color: #2C2C2C;
 }
 
-.con-button {
-  color: #FFF;
-  border: 2px solid;
-  background-color: transparent;
-  border-radius: 16px;
-  display: inline-block;
-  line-height: 28px;
-  padding: 0 14px;
-  text-decoration: none;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 700;
-}
-
-.con-button.button-l {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.con-button.button-xl {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.light .con-button {
-  color: #000;
-}
-
-.con-button.blue {
-  color: #FFF;
-  background: rgb(20 115 230);
-  border: 2px solid rgb(20 115 230);
-}
-
-.con-button.blue:hover {
-  text-decoration: none;
-}
-
-.con-button.outline {
-  border: 2px solid rgb(0 0 0);
-  color: #000;
-}
-
-.con-button.outline:hover {
-  background-color: #000;
-  color: #fff;
-  text-decoration: none;
-}
-.dark .con-button.outline {
-  border: 2px solid rgb(255 255 255);
-  color: #fff;
-}
-
-.dark .con-button.outline:hover {
-  background-color: #fff;
-  color: #000;
-}
 
 img {
   max-width: 100%;
@@ -324,27 +162,6 @@ dialog button.dialog-close {
 
   dialog .fragment > *:last-child {
     margin-bottom: 0;
-  }
-}
-
-@media (min-width: 1200px) {
-  :root {
-    --spacing-xl: 56px;
-    --spacing-xxl: 80px;
-    --spacing-xxxl: 104px;
-
-    --type-heading-xxl-size: 44px;
-    --type-heading-xl-size: 36px;
-    --type-heading-l-size: 28px;
-    --type-heading-m-size: 24px;
-    --type-heading-s-size: 20px;
-    --type-heading-xs-size: 18px;
-  }
-}
-
-@media (min-width: 1440px) {
-  :root {
-    --grid-container-width: 1200px;
   }
 }
 

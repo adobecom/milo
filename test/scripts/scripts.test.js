@@ -88,14 +88,6 @@ describe('Loading', () => {
   it('loadDelayed() test', () => {
     scripts.loadDelayed();
   });
-
-  it('fetchLibs(`icon`) and decorate icons test', async () => {
-    await scripts.fetchLib('icon', 'https://main--milo--adobecom.hlx.page');
-    const iconArea = document.querySelector('#icon-text');
-    utils.decorateIcons(iconArea);
-    const icons = iconArea.querySelectorAll('.icon');
-    expect(icons.length).to.exist;
-  });
 });
 
 describe('Utilities', () => {
