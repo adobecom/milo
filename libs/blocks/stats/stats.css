@@ -2,7 +2,23 @@
 .stats {
   position: relative;
   width: 100%;
+  padding: var(--spacing-s) 0;
+}
+
+.stats.m-spacing {
   padding: var(--spacing-m) 0;
+}
+
+.stats.l-spacing {
+  padding: var(--spacing-l) 0;
+}
+
+.stats.xl-spacing {
+  padding: var(--spacing-xl) 0;
+}
+
+.stats.no-spacing {
+  padding: 0;
 }
 
 .stats p {
@@ -59,27 +75,27 @@
   padding: 0;
 }
 
-/* [template] .aside-columns */
-.aside-columns .stats .stats-wrapper {
+/* [template] .aside-container */
+.aside-container .stats .stats-wrapper {
   display: block;
 }
 
-.aside-columns.container .stats .container {
+.aside-container.container .stats .container {
   width: 100%;
 }
 
-.aside-columns .stats .stat {
+.aside-container .stats .stat {
   margin: 0;
   text-align: unset;
   background-color: #ffffff;
   padding: 0 var(--spacing-s) var(--spacing-s);
 }
 
-.aside-columns .stats .stat:first-of-type {
+.aside-container .stats .stat:first-of-type {
   padding-top: var(--spacing-s);
 }
 
-.aside-columns .stats .solution {
+.aside-container .stats .solution {
   background-color: unset;
   margin: var(--spacing-m) 0 0;
   padding: 0;
@@ -103,30 +119,30 @@
     padding-bottom: 0;
   }
 
-  /* [template] .aside-columns */
-  .aside-columns .stats .container {
+  /* [template] .aside-container */
+  .aside-container .stats .container {
     display: flex;
     width: auto;
     flex-direction: row;
   }
 
-  .aside-columns .stats .stat {
+  .aside-container .stats .stat {
     padding: 0 var(--spacing-s) var(--spacing-s);
   }
 
-  .aside-columns .stats .stat:first-of-type {
+  .aside-container .stats .stat:first-of-type {
     padding-top: var(--spacing-s);
   }
 
-  .aside-columns .stats .stats-wrapper .stat {
+  .aside-container .stats .stats-wrapper .stat {
     flex-basis: 50%;
   }
 
-  .aside-columns .stats .stats-wrapper {
+  .aside-container .stats .stats-wrapper {
     flex-basis: 33%;
   }
 
-  .aside-columns .stats .solutions-wrapper {
+  .aside-container .stats .solutions-wrapper {
     flex-basis: 66%;
   }
 }
@@ -149,10 +165,10 @@
     flex-basis: 33%;
   }
 
-  /* [template] .aside-columns */
-  .aside-columns .stats .container,
-  .aside-columns .stats .stats-wrapper,
-  .aside-columns .stats .solutions-wrapper {
+  /* [template] .aside-container */
+  .aside-container .stats .container,
+  .aside-container .stats .stats-wrapper,
+  .aside-container .stats .solutions-wrapper {
     display: block;
   }
 

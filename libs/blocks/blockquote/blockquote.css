@@ -1,0 +1,14 @@
+.blockquote {
+  padding: 2rem;
+  background-color: var(--overlay-background-color);
+  font-size: var(--type-heading-xl-size);
+}
+
+.blockquote blockquote {
+  max-width: 768px;
+  margin: auto;
+}
+
+.blockquote blockquote p {
+  margin: 0;
+}

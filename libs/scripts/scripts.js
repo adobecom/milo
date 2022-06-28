@@ -55,6 +55,8 @@ async function loadPage() {
   loadModals();
   const { getIconLibrary } = await import('../utils/decorate.js');
   await getIconLibrary();
+  const { default: sectionAside } = await import('../blocks/section-aside/section-aside.js');
+  await sectionAside();
   loadDelayed();
 }
 loadPage();

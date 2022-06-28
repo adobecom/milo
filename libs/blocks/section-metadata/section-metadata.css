@@ -63,25 +63,26 @@
   text-align: center;
 }
 
+.aside-container {
+  display: block;
+}
+
 /* Desktop */
 @media screen and (min-width: 1200px) {
-  .section.left-aside > .aside-columns,
-  .section.right-aside > .aside-columns {
+  .aside-container .aside-wrapper {
     display: flex;
     gap: var(--spacing-xl);
   }
 
-  .section.right-aside > .aside-columns {
+  .aside-container.right-aside .aside-wrapper {
     flex-direction: row-reverse;
   }
 
-  .section.left-aside > .aside-columns > .col-1,
-  .section.right-aside > .aside-columns > .col-1{
+  .aside-wrapper .aside-col-1{
     width: 30%;
   }
 
-  .section.left-aside > .aside-columns > .col-2,
-  .section.right-aside > .aside-columns > .col-2 {
+  .aside-wrapper .aside-col-2 {
     width: 70%;
   }
 
