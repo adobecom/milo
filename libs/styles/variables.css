@@ -73,3 +73,9 @@
     --type-heading-xs-size: 18px;
   }
 }
+
+@media (min-width: 1440px) {
+  :root {
+    --grid-container-width: 1200px;
+  }
+}
