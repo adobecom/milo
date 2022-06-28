@@ -14,7 +14,22 @@
  * Marquee - v1.0.0
  */
 
-import { decorateButtons } from '../../utils/utils.js';
+function decorateButtons(el, isLarge) {
+  const buttons = el.querySelectorAll('em a, strong a');
+  buttons.forEach((button) => {
+    const parent = button.parentElement;
+    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+    const buttonSize = isLarge ? 'button-XL' : 'button-M';
+    button.classList.add('con-button', buttonType, buttonSize);
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
+  });
+  if (buttons.length > 0) {
+    const actionArea = buttons[0].closest('p');
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
+}
 
 function decorateText(el, isLarge) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
