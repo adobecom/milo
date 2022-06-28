@@ -11,6 +11,7 @@
  */
 
 @import url('variables.css');
+@import url('typography.css');
 
 @font-face {
   font-family: 'Trebuchet MS';
@@ -100,40 +101,6 @@ a:hover {
   color: var(--link-hover-color);
 }
 
-/* Consonant Typography */
-.heading-XL,
-.heading-L,
-.heading-M,
-.heading-S,
-.heading-XS {
-  line-height: var(--type-heading-all-lh);
-  margin: 0;
-}
-.heading-XL { font-size: var(--type-heading-xl-size); }
-.heading-L { font-size: var(--type-heading-l-size); }
-.heading-M { font-size: var(--type-heading-m-size); }
-.heading-S { font-size: var(--type-heading-s-size); }
-.heading-XS { font-size: var(--type-heading-xs-size); }
-
-.body-M,
-.body-S {
-  font-size: var(--type-body-m-size);
-  line-height: var(--type-body-all-lh);
-  margin: 0;
-}
-.body-S { font-size: var(--type-body-s-size); }
-
-.detail-L,
-.detail-M,
-.detail-S {
-  font-size: var(--type-detail-l-size);
-  line-height: var(--type-detail-all-lh);
-  font-weight: var(--type-detail-all-weight);
-  text-transform: uppercase;
-  margin: 0;
-}
-.detail-M { font-size: var(--type-detail-m-size); }
-
 /* Buttons */
 .dark a {
   color: #FFF;
@@ -143,67 +110,6 @@ a:hover {
   color: #2C2C2C;
 }
 
-.con-button {
-  color: #FFF;
-  border: 2px solid;
-  background-color: transparent;
-  border-radius: 16px;
-  display: inline-block;
-  line-height: 28px;
-  padding: 0 14px;
-  text-decoration: none;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 700;
-}
-
-.con-button.button-l {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.con-button.button-xl {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.light .con-button {
-  color: #000;
-}
-
-.con-button.blue {
-  color: #FFF;
-  background: rgb(20 115 230);
-  border: 2px solid rgb(20 115 230);
-}
-
-.con-button.blue:hover {
-  text-decoration: none;
-}
-
-.con-button.outline {
-  border: 2px solid rgb(0 0 0);
-  color: #000;
-}
-
-.con-button.outline:hover {
-  background-color: #000;
-  color: #fff;
-  text-decoration: none;
-}
-.dark .con-button.outline {
-  border: 2px solid rgb(255 255 255);
-  color: #fff;
-}
-
-.dark .con-button.outline:hover {
-  background-color: #fff;
-  color: #000;
-}
 
 img {
   max-width: 100%;
