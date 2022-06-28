@@ -229,7 +229,7 @@ export function decorateArea(el = document) {
 
 export async function loadLazy(blocks, el = document) {
   if (getMetadata('nofollow-links') === 'on') {
-    const { default: nofollow } = await import('../blocks/nofollow/nofollow.js');
+    const { default: nofollow } = await import('./nofollow.js');
     nofollow('/seo/nofollow.json', el);
   }
   const loaded = blocks.map((block) => loadBlock(block));
