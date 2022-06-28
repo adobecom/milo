@@ -14,7 +14,7 @@
  * Marquee - v1.0.0
  */
 
-import { decorateButtons } from '../../utils/utils.js';
+import { decorateButtons } from '../../utils/decorate.js';
 
 function decorateText(el, isLarge) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
