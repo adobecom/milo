@@ -1,6 +1,7 @@
 .columns > .row {
   display: grid;
   gap: var(--spacing-m);
+  margin-bottom: var(--spacing-xs);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
@@ -31,4 +32,35 @@
 
 .columns.xs-spacing {
   gap: var(--spacing-xs);
+}
+
+/* Table */
+.columns.table {
+  font-size: 14px;
+}
+
+.columns.table > .row {
+  margin-bottom: 0;
+  padding: var(--spacing-xs) 0;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  border-bottom: 1px solid #D5D5D5;
+  align-items: center;
+}
+
+.columns.table > .row:hover {
+  background-color: #0000000f;
+}
+
+.columns.table > .row:first-child {
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* For desktop only */
+@media (min-width:600px) {
+  .columns.table > .row {
+    padding: var(--spacing-xs);
+  }
 }
