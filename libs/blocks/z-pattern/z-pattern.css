@@ -4,31 +4,43 @@
 .z-pattern {
   padding: var(--spacing-xxl) 0;
 }
+
+.z-pattern.dark {
+  color: #fff;
+  background-color: #2c2c2c;
+}
+
 .z-pattern .heading-row {
     text-align: center;
     margin: 0 auto;
 }
+
 .z-pattern .heading-row .headline {
   margin: 0 0 var(--spacing-xs);
 }
+
 .z-pattern .heading-row p {
   margin: 0 0 var(--spacing-xs);
 }
+
 .z-pattern .media > .foreground .media-row {
   padding: var(--spacing-l) 0;
 }
+
 .z-pattern .media:last-of-type > .foreground .media-row {
   padding-bottom: 0;
 }
 
 @media screen and (min-width: 600px) {
   .z-pattern .heading-row {
-    max-width: var(--block-container-width-s);
+    max-width: 1000px;
   }
-  .z-pattern.medium .heading-row {
-    max-width: var(--block-container-width-m);
+
+  .z-pattern.small .heading-row {
+    max-width: 800px;
   }
+
   .z-pattern.large .heading-row {
-    max-width: var(--block-container-width-l);
+    max-width: 1200px;
   }
 }

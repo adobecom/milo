@@ -14,10 +14,11 @@
  * Media - v5.1
  */
 
-import { decorateBlockBg, decorateBlockDaa, decorateText, getBlockSize } from '../../utils/utils.js';
+import { decorateBlockBg, decorateText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockAnalytics } from '../../utils/analytics.js';
 
-export default function init(el, daa = true) {
-  if (daa) decorateBlockDaa(el);
+export default function init(el) {
+  decorateBlockAnalytics(el);
   const children = el.querySelectorAll(':scope > div');
   if (children.length && children[0].childElementCount === 1) {
     decorateBlockBg(el, children[0]);

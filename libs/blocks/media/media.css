@@ -3,6 +3,11 @@
   position: relative;
 }
 
+.media.dark {
+  color: #fff;
+  background-color: #2c2c2c;
+}
+
 .media .background {
   position: absolute;
   width: 100%;
@@ -79,6 +84,7 @@
   display: flex;
   margin: 0;
   gap: var(--spacing-xs);
+  align-items: flex-start;
 }
 
 .text .icon-area {
@@ -139,20 +145,19 @@
 }
 
 @media screen and (min-width: 600px) {
-
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
-    max-width: var(--block-container-width-m);
+    max-width: 1000px;
   }
 
   .media.small > .foreground .media-row {
-    max-width: var(--block-container-width-s);
+    max-width: 800px;
   }
 
   .media.large > .foreground .media-row {
     gap: var(--spacing-m);
-    max-width: var(--block-container-width-l);
+    max-width: 1200px;
   }
 
   .media.media-reverse-mobile .foreground .media-row {

@@ -23,7 +23,7 @@
 }
 
 .columns.l-spacing {
-  gap: var(--spacing-xl);
+  gap: var(--spacing-l);
 }
 
 .columns.s-spacing {
