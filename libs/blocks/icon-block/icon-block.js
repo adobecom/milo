@@ -14,43 +14,49 @@
 * Icon Block - v5.1
 */
 
-import { decorateButtons, decorateIcons, decorateTextDaa, decorateBlockDaa, decorateBlockBg } from '../../utils/utils.js';
+import { decorateBlockBg, decorateButtons, initIcons } from '../../utils/decorate.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../utils/analytics.js';
 
 function decorateLayout(el) {
-  const children = el.querySelectorAll(':scope > div');
-  if (children.length > 1 && children[0].childNodes.length) {
-    decorateBlockBg(el, children[0]);
-  }
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container');
-  el.appendChild(foreground);
-  return foreground;
+    const children = el.querySelectorAll(':scope > div');
+    if (children.length > 1 && children[0].childNodes.length) {
+        decorateBlockBg(el, children[0]);
+    }
+    const foreground = document.createElement('div');
+    foreground.classList.add('foreground', 'container');
+    el.appendChild(foreground);
+    return foreground;
 }
 
 function decorateContent(row, isVertical) {
-  if (row) {
-    const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
-    text?.classList.add('text');
-    const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const heading = headings?.[headings.length - 1];
-    heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
-    heading?.nextElementSibling?.classList.add('body-M');
-    heading?.previousElementSibling?.classList.add('icon-area');
-    row.querySelector(':scope > div:not([class])')?.classList.add('image');
-    decorateTextDaa(row, heading);
-    decorateButtons(row);
-  }
+    if (row) {
+        const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
+        if (text) {
+            text?.classList.add('text');
+            const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            const heading = headings?.[headings.length - 1];
+            heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
+            heading?.nextElementSibling?.classList.add('body-M');
+            heading?.previousElementSibling?.classList.add('icon-area');
+            decorateLinkAnalytics(text, heading);
+            decorateButtons(row);
+        } else {
+            row.classList.add('text');
+            const image = row.querySelector(':scope img');
+            image?.parentElement?.parentElement?.classList?.add('icon-area');
+        }
+    }
 }
 
 export default function init(el) {
-  decorateBlockDaa(el);
-  decorateIcons(el, false);
-  const foreground = decorateLayout(el);
-  const rows = el.querySelectorAll(':scope > div:not([class])');
-  const isVertical = el.classList.contains('vertical');
-  [...rows].forEach((row) => {
-    decorateContent(row, isVertical);
-    foreground.insertAdjacentElement('beforeEnd', row.children[0]);
-    row.remove();
-  });
+    decorateBlockAnalytics(el);
+    initIcons(el);
+    const foreground = decorateLayout(el);
+    const rows = el.querySelectorAll(':scope > div:not([class])');
+    const isVertical = el.classList.contains('vertical');
+    [...rows].forEach(row => {
+        decorateContent(row, isVertical);
+        foreground.insertAdjacentElement('beforeEnd', row.children[0]);
+        row.remove();
+    });
 }

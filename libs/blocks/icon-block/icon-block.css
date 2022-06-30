@@ -1,16 +1,12 @@
 /* icon-block Block */
 
 .icon-block {
-    /*display: none;*/
+    display: flex;
     width: 100%;
     position: relative;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-}
-
-.icon-block[data-block-status="loaded"] {
-    display: flex;
 }
 
 .icon-block p {
@@ -28,7 +24,7 @@
     bottom: 0;
 }
 
-.icon-block .background > div {
+.icon-block .background>div {
     height: 100%;
 }
 
@@ -57,19 +53,18 @@
     margin-bottom: var(--spacing-xxxl);
 }
 
-.icon-block .foreground.container .text .icon-area {
+.icon-block .foreground.container .icon-area {
     margin: 0 auto var(--spacing-xs) auto;
     height: 80px;
     max-width: 234px;
     overflow: hidden;
 }
 
-.icon-block .foreground .image {
-  max-width: 250px;
-  margin: 0 auto;
+.icon-block .foreground.container .icon-area .icon {
+    color: transparent;
 }
 
-.icon-block .foreground.container .text .icon-area img {
+.icon-block .foreground.container .icon-area img {
     height: 80px;
     width: auto;
 }
@@ -116,7 +111,7 @@
     margin-bottom: var(--spacing-xxl);
 }
 
-.icon-block.vertical .foreground.container .text .icon-area {
+.icon-block.vertical .foreground.container .icon-area {
     margin: 0;
     margin-bottom: var(--spacing-xxs);
 }
@@ -129,7 +124,7 @@
 
 /* Tablet */
 @media screen and (min-width: 600px) {
-    .icon-block .foreground.container .text .icon-area {
+    .icon-block .foreground.container .icon-area {
         max-width: 234px;
     }
 
@@ -168,7 +163,7 @@
         max-width: 800px;
     }
 
-    .icon-block .foreground.container .text .icon-area {
+    .icon-block .foreground.container .icon-area {
         max-width: 400px;
     }
 
@@ -205,15 +200,15 @@
         padding-right: 0;
     }
 
-    .icon-block.vertical.two-up .foreground.container .text .icon-area {
+    .icon-block.vertical.two-up .foreground.container .icon-area {
         max-width: 400px;
     }
 
-    .icon-block.vertical.three-up .foreground.container .text .icon-area {
+    .icon-block.vertical.three-up .foreground.container .icon-area {
         max-width: 300px;
     }
 
-    .icon-block.vertical.four-up .foreground.container .text .icon-area {
+    .icon-block.vertical.four-up .foreground.container .icon-area {
         max-width: 276px;
     }
 }
