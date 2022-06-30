@@ -32,7 +32,7 @@ export function initIcons(el) {
   if (icons.length) {
     icons?.forEach((icon) => {
       icon.parentElement.classList.add('icon-area');
-      if (icon.classList.contains('icon-persona')) icon.parentElement.classList.add('persona-area');
+      if (icon.classList.contains('persona')) icon.parentElement.classList.add('persona-area');
     });
   }
 }
@@ -45,8 +45,9 @@ export async function decorateIcons(iconLibrary) {
     const icon = iconLibrary[str];
     const size = str.includes('persona') ? 80 : 40;
     if (iconLibrary && icon) {
+      const styles = icon.key.replaceAll('-', ', ').split(', ');
+      if (styles) i.classList.add(icon.key, ...styles);
       i.classList.add(icon.key)
-      // console.log('icons?', i);
       const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
       const label = `${svg} ${(icon.label !== undefined) ? icon.label : ''}`;
       const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
@@ -117,13 +118,13 @@ export function getBlockSize(el) {
   }, sizes[1]);
 }
 
-export async function getIconLibrary(path = '/docs/icon-library.json') {
+export async function getIconLibrary(path = '/docs/tokens.json') {
   let library = {};
   const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
   const resp = await fetch(url);
   if (!resp.ok) return;
   const json = await resp.json();
-  json.data.forEach((item) => {
+  json['icons']?.data.forEach((item) => {
     const itemValues = {};
     Object.entries(item).forEach((value) => {
       const itemValue = value[1];
