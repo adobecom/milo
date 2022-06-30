@@ -68,7 +68,7 @@ describe('Faas', () => {
   });
 
   it('Test environment', () => {
-    expect(getFaasHostSubDomain('prod')).to.equal('staging.');
+    expect(getFaasHostSubDomain('prod')).to.equal('');
     expect(getFaasHostSubDomain('stage')).to.equal('staging.');
     expect(getFaasHostSubDomain('dev')).to.equal('dev.');
     expect(getFaasHostSubDomain()).to.equal('qa.');
