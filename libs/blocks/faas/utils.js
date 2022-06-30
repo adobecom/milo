@@ -9,7 +9,10 @@ import {
 export const getFaasHostSubDomain = (environment) => {
   const env = environment ?? getEnv();
   // TODO: prod should be updated as '' when QA is done from FAAS team.
-  if (env === 'prod' || env === 'stage') {
+  if (env === 'prod') {
+    return '';
+  }
+  if (env === 'stage') {
     return 'staging.';
   }
   if (env === 'dev') {
