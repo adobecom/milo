@@ -219,6 +219,46 @@ function decorateSections(el) {
   });
 }
 
+/**
+ * Sanitizes a name for use as class name.
+ * @param {string} name The unsanitized name
+ * @returns {string} The class name
+ */
+export function toClassName(name) {
+  return name && typeof name === 'string'
+    ? name.toLowerCase().replace(/[^0-9a-z]/gi, '-')
+    : '';
+}
+
+/**
+ * Set template (page structure) and theme (page styles).
+ */
+export async function decorateTemplateAndTheme() {
+  const template = getMetadata('template');
+  const name = toClassName(template);
+  if (template) document.body.classList.add(name);
+  const theme = getMetadata('theme');
+  if (theme) document.body.classList.add(toClassName(theme));
+  if (template) {
+    document.body.classList.add(name);
+    const styleLoaded = new Promise((resolve) => {
+      loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
+    });
+    const scriptLoaded = new Promise((resolve) => {
+      (async () => {
+        try {
+          await import(`/libs/templates/${name}/${name}.js`);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.log(`failed to load module for ${name}`, err);
+        }
+        resolve();
+      })();
+    });
+    await Promise.all([styleLoaded, scriptLoaded]);
+  }
+}
+
 export function decorateArea(el = document) {
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);

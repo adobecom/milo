@@ -75,27 +75,27 @@
   padding: 0;
 }
 
-/* [template] .aside-container */
-.aside-container .stats .stats-wrapper {
+/* [template] .template-sidebar */
+.template-sidebar .stats .stats-wrapper {
   display: block;
 }
 
-.aside-container.container .stats .container {
+.template-sidebar.container .stats .container {
   width: 100%;
 }
 
-.aside-container .stats .stat {
+.template-sidebar .stats .stat {
   margin: 0;
   text-align: unset;
   background-color: #ffffff;
   padding: 0 var(--spacing-s) var(--spacing-s);
 }
 
-.aside-container .stats .stat:first-of-type {
+.template-sidebar .stats .stat:first-of-type {
   padding-top: var(--spacing-s);
 }
 
-.aside-container .stats .solution {
+.template-sidebar .stats .solution {
   background-color: unset;
   margin: var(--spacing-m) 0 0;
   padding: 0;
@@ -119,30 +119,30 @@
     padding-bottom: 0;
   }
 
-  /* [template] .aside-container */
-  .aside-container .stats .container {
+  /* [template] .template-sidebar */
+  .template-sidebar .stats .container {
     display: flex;
     width: auto;
     flex-direction: row;
   }
 
-  .aside-container .stats .stat {
+  .template-sidebar .stats .stat {
     padding: 0 var(--spacing-s) var(--spacing-s);
   }
 
-  .aside-container .stats .stat:first-of-type {
+  .template-sidebar .stats .stat:first-of-type {
     padding-top: var(--spacing-s);
   }
 
-  .aside-container .stats .stats-wrapper .stat {
+  .template-sidebar .stats .stats-wrapper .stat {
     flex-basis: 50%;
   }
 
-  .aside-container .stats .stats-wrapper {
+  .template-sidebar .stats .stats-wrapper {
     flex-basis: 33%;
   }
 
-  .aside-container .stats .solutions-wrapper {
+  .template-sidebar .stats .solutions-wrapper {
     flex-basis: 66%;
   }
 }
@@ -165,10 +165,10 @@
     flex-basis: 33%;
   }
 
-  /* [template] .aside-container */
-  .aside-container .stats .container,
-  .aside-container .stats .stats-wrapper,
-  .aside-container .stats .solutions-wrapper {
+  /* [template] .template-sidebar */
+  .template-sidebar .stats .container,
+  .template-sidebar .stats .stats-wrapper,
+  .template-sidebar .stats .solutions-wrapper {
     display: block;
   }
 

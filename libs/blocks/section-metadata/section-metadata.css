@@ -62,28 +62,3 @@
 .section.heading-center h6 {
   text-align: center;
 }
-
-.aside-container {
-  display: block;
-}
-
-/* Desktop */
-@media screen and (min-width: 1200px) {
-  .aside-container .aside-wrapper {
-    display: flex;
-    gap: var(--spacing-xl);
-  }
-
-  .aside-container.right-aside .aside-wrapper {
-    flex-direction: row-reverse;
-  }
-
-  .aside-wrapper .aside-col-1{
-    width: 30%;
-  }
-
-  .aside-wrapper .aside-col-2 {
-    width: 70%;
-  }
-
-}

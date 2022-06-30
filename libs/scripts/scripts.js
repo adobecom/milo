@@ -10,7 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
+import {
+  getMetadata,
+  decorateArea,
+  decorateTemplateAndTheme,
+  loadBlock,
+  loadLazy,
+  loadStyle
+} from '../utils/utils.js';
 
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 
@@ -50,13 +57,12 @@ async function loadPage() {
   const navs = decorateNavs();
   await loadLCP(blocks);
   loadStyle('/fonts/fonts.css');
+  await decorateTemplateAndTheme();
   await loadLazy([...navs, ...blocks]);
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   const { getIconLibrary } = await import('../utils/decorate.js');
   await getIconLibrary();
-  const { default: sectionAside } = await import('../blocks/section-aside/section-aside.js');
-  await sectionAside();
   loadDelayed();
 }
 loadPage();

@@ -1,0 +1,29 @@
+/*
+ Template: Template Sidebar
+ Themes:   Sidebar Left (default), Sidebar Right
+*/
+
+.section-sidebar {
+  display: block;
+}
+
+/* Desktop */
+@media screen and (min-width: 1200px) {
+  .sidebar-wrapper {
+    display: flex;
+    gap: var(--spacing-xl);
+  }
+
+  .sidebar-wrapper .sidebar-col-1 {
+    width: 30%;
+  }
+
+  .sidebar-wrapper .sidebar-col-2 {
+    width: 70%;
+  }
+
+  /* style: sidebar-right */
+  .sidebar-right .section-sidebar .sidebar-wrapper {
+    flex-direction: row-reverse;
+  }
+}

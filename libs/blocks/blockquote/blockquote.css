@@ -1,6 +1,6 @@
 .blockquote {
   padding: 2rem;
-  background-color: var(--overlay-background-color);
+  /*background-color: var(--overlay-background-color);*/
   font-size: var(--type-heading-xl-size);
 }
 
