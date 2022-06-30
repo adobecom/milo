@@ -119,7 +119,8 @@ export function getBlockSize(el) {
 
 export async function getIconLibrary(path = '/docs/icon-library.json') {
   let library = {};
-  const resp = await fetch(path);
+  const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
+  const resp = await fetch(url);
   if (!resp.ok) return;
   const json = await resp.json();
   json.data.forEach((item) => {
@@ -134,3 +135,12 @@ export async function getIconLibrary(path = '/docs/icon-library.json') {
   });
   await decorateIcons(library);
 }
+
+export async function loadTokens(blocks) {
+  const ICON_BLOCKS = ['media', 'z-pattern'];
+  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
+  if (iconBlock) {
+    await getIconLibrary();
+  }
+}
+
