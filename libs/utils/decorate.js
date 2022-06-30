@@ -32,6 +32,9 @@ export function initIcons(el) {
   if (icons.length) {
     icons?.forEach((icon) => {
       icon.parentElement.classList.add('icon-area');
+      if (icon.textContent.includes('persona')) {
+        icon.parentElement.classList.add('persona-area');
+      }
     });
   }
 }
@@ -55,9 +58,6 @@ export async function decorateIcons(iconLibrary) {
       } else {
         i.innerHTML = i.innerHTML.replace(str, label);
       }
-    }
-    if (i.classList.contains('persona')) {
-      i.parentElement.classList.add('persona-area');
     }
   });
 }
