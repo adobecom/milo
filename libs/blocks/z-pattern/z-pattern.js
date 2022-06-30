@@ -26,14 +26,15 @@ export function decorateHeadline(header, size) {
   header.classList.add(headerClass, 'headline');
 }
 
-function getOddRowsCount(rows) {
-  let zRowsOddCount = 0;
+function getReversedRowCount(rows) {
+  let count = 0;
   rows.forEach((row) => {
     const firstCol = row.querySelector(':scope > div > div:first-of-type');
-    const rowIsOdd = firstCol.querySelector('h1, h2, h3, h4, h5, h6');
-    if (rowIsOdd) zRowsOddCount += 1;
+    const header = firstCol.querySelector('h1, h2, h3, h4, h5, h6');
+    // if first col has a header, its order is reversed
+    if (header) count += 1;
   });
-  return zRowsOddCount;
+  return count;
 }
 
 function getChildSingleRowCount(children) {
@@ -82,7 +83,7 @@ export default function init(el) {
     row.classList.add(size);
     row.appendChild(mediaRow);
   });
-  if (getOddRowsCount(zRows) === 0) {
+  if (getReversedRowCount(zRows) === 0) {
     zRows.forEach((row, i) => {
       if (i % 2) row.classList.add('media--reversed');
     });

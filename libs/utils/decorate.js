@@ -59,7 +59,7 @@ export async function decorateIcons(iconLibrary) {
   });
 }
 
-export function decorateText(el, size) {
+export function decorateBlockText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
   if (!size || size === 'small') {
@@ -117,11 +117,9 @@ export function getBlockSize(el) {
   }, sizes[1]);
 }
 
-export async function getIconLibrary() {
+export async function getIconLibrary(path = '/docs/icon-library.json') {
   let library = {};
-  const path = '/docs/icon-library.json';
-  const url = (window.document.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
-  const resp = await fetch(url);
+  const resp = await fetch(path);
   if (!resp.ok) return;
   const json = await resp.json();
   json.data.forEach((item) => {
