@@ -54,7 +54,7 @@ async function loadPage() {
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   const { loadTokens } = await import('../utils/decorate.js');
-  await loadTokens(blocks);
+  loadTokens(blocks);
   loadDelayed();
 }
 loadPage();
