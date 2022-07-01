@@ -1,7 +1,7 @@
 /*
 
-Template: Section Sidebar
-Theme:   Sidebar Left (default), Sidebar Right
+Template: Sidebar
+Theme: Sidebar Left (default), Sidebar Right
 
 Decorates a page to display the 1st & 2nd sections in a column layout.
 
@@ -20,8 +20,6 @@ it will use the 2nd and 3rd sections on the page.
 </section-sidebar>
 
  */
-
-import { getMetadata, toClassName } from "../../utils/utils.js";
 
 function handleSectionSidebar(section) {
   const sidebar = section.previousSibling;

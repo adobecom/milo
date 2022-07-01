@@ -1,14 +1,60 @@
 .blockquote {
-  padding: 2rem;
-  /*background-color: var(--overlay-background-color);*/
-  font-size: var(--type-heading-xl-size);
+  padding: var(--spacing-m);
+  text-align: center;
+}
+
+.blockquote figure,
+.blockquote p {
+  margin: 0
+}
+
+.blockquote .image {
+  margin-bottom: var(--spacing-xs);
+}
+
+.blockquote .image > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blockquote .image picture{
+  display: inline-flex;
+}
+
+.blockquote .image img {
+  max-height: 125px;
+  width: auto;
 }
 
 .blockquote blockquote {
-  max-width: 768px;
-  margin: auto;
+  max-width: 600px;
+  margin: 0 auto var(--spacing-xs);
 }
 
-.blockquote blockquote p {
+.blockquote blockquote .quote {
+  font-weight: bold;
+}
+
+/* Inline */
+.blockquote.inline figure {
+  text-align: left;
+  display: flex;
+  gap: var(--spacing-s);
+}
+
+.blockquote.inline figure .image {
+  display: flex;
+  align-content: center;
+  flex-basis: 40%;
   margin: 0;
+  justify-content: center;
+}
+
+.blockquote.inline figure .image img {
+  max-height: 175px;
+}
+
+.blockquote.inline figure .quote-wrapper {
+  flex-basis: 60%;
 }

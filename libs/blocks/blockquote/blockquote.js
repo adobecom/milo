@@ -1,29 +1,59 @@
 /**
- * loads and decorates the footer
- * @param {Element} block The header block element
+ * loads and decorates a blockquote
+ * @param {Element} blockquote block element
+ *  ex...
+ *   <figure>
+ *    <blockquote cite="https://www.huxley.net/bnw/four.html">
+ *      <p>Words can be like X-rays, if you use them properly—they’ll go through anything. You read and you’re pierced.</p>
+ *    </blockquote>
+ *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
+ *   </figure>
  */
 
-export default async function decorate(block) {
+import { decorateBlockBg } from '../../utils/decorate.js';
 
-  // <figure>
-  //   <blockquote cite="https://www.huxley.net/bnw/four.html">
-  //     <p>Words can be like X-rays, if you use them properly—they’ll go through anything. You read and you’re pierced.</p>
-  //   </blockquote>
-  //   <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
-  // </figure>
+export default async function init(el) {
+  const rows = el.querySelectorAll(':scope > div');
+  decorateBlockBg(el, rows[0]);
+  const lastRow = rows[rows.length - 1];
+  const imageRow = rows[1];
+  imageRow.classList.add('image');
+
+  const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+  const quoteCopy = copyNodes[0];
+  quoteCopy.classList.add('quote', 'heading-M');
+  const figcaptionCopy = copyNodes[1];
+  figcaptionCopy.classList.add('figcaption', 'body-S');
+  const citeCopy = copyNodes[2];
+  citeCopy.classList.add('cite', 'body-XS');
+  lastRow.remove();
 
   const figure = document.createElement('figure');
   const blockquote = document.createElement('blockquote');
   const figcaption = document.createElement('figcaption');
-  figure.insertAdjacentElement('afterbegin', figcaption);
-  figure.insertAdjacentElement('afterbegin', blockquote);
-  block.insertAdjacentElement('beforeend', figure);
-  const blockContent = block.querySelector(':scope > div');
-  const quoteRows = blockContent.querySelectorAll(':scope > div');
-  // const rowItems = quoteRows.querySelectorAll("h1, h2, h3, h4, h5, h6, p, div, span");
-  // console.log({rowItems});
+  const cite = document.createElement('cite');
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('quote-wrapper');
 
-  blockquote.insertAdjacentElement('afterbegin', blockContent);
+  figure.insertAdjacentElement('afterbegin', wrapper);
+  figure.insertAdjacentElement('afterbegin', blockquote);
+  el.insertAdjacentElement('afterbegin', figure);
+
+  figcaption.insertAdjacentElement('afterbegin', figcaptionCopy);
+  cite.insertAdjacentElement('afterbegin', citeCopy)
+  figcaption.insertAdjacentElement('beforeend', cite);
+  blockquote.insertAdjacentElement('afterend', figcaption);
+  blockquote.insertAdjacentElement('afterbegin', quoteCopy);
+  blockquote.insertAdjacentElement('beforebegin', imageRow);
+  wrapper.insertAdjacentElement('beforeend', figcaption);
+  wrapper.insertAdjacentElement('afterbegin', blockquote);
+
+  // el.insertAdjacentElement('beforeend', figure);
+  // const rows = blockContent.querySelectorAll('div');
+  // const rowItems = quoteRows.querySelectorAll("h1, h2, h3, h4, h5, h6, p, div, span");
+  // console.log(blockContent);
+
+  // blockquote.insertAdjacentElement('afterbegin', el);
   // block.remove();
   // block.replaceWith(blockquote)
 
