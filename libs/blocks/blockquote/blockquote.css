@@ -41,11 +41,11 @@
   font-size: var(--type-heading-m-size);
 }
 
-.blockquote blockquote .figcaption {
+.blockquote figcaption .figcaption {
   font-size: var(--type-body-s-size);
 }
 
-.blockquote blockquote .cite {
+.blockquote figcaption .cite {
   font-size: var(--type-body-xs-size);
 }
 
