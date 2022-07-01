@@ -21,12 +21,14 @@ export default async function init(el) {
 
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
-  quoteCopy.classList.add('quote', 'heading-M');
+  quoteCopy?.classList.add('quote', 'heading-M');
   const figcaptionCopy = copyNodes[1];
-  figcaptionCopy.classList.add('figcaption', 'body-S');
+  figcaptionCopy?.classList.add('figcaption', 'body-S');
   const citeCopy = copyNodes[2];
-  citeCopy.classList.add('cite', 'body-XS');
-  lastRow.remove();
+  citeCopy?.classList.add('cite', 'body-XS');
+  // lastRow.remove();
+
+  console.log(copyNodes);
 
   const figure = document.createElement('figure');
   const blockquote = document.createElement('blockquote');
