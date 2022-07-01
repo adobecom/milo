@@ -57,6 +57,12 @@ async function getModal() {
 
   dialog.addEventListener('close', (e) => {
     window.location.hash = '#';
+
+    // Do not remove element if it is FaaS
+    if (e.target.querySelector('.faas')) {
+      return;
+    }
+
     e.target.remove();
   });
 
