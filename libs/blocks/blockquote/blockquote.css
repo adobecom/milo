@@ -1,0 +1,91 @@
+.blockquote {
+  text-align: center;
+  margin: var(--spacing-l) 0;
+}
+
+.blockquote figure {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: var(--spacing-l);
+}
+
+.blockquote p {
+  margin: 0
+}
+
+.blockquote .image {
+  margin-bottom: var(--spacing-xs);
+}
+
+.blockquote .image > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blockquote .image picture{
+  display: inline-flex;
+}
+
+.blockquote .image img {
+  max-height: 80px;
+  width: auto;
+}
+
+.blockquote blockquote {
+  /*max-width: 600px;*/
+  margin: 0 auto var(--spacing-s);
+}
+
+.blockquote blockquote .quote {
+  font-size: var(--type-heading-m-size);
+}
+
+.blockquote blockquote .figcaption {
+  font-size: var(--type-body-s-size);
+}
+
+.blockquote blockquote .cite {
+  font-size: var(--type-body-xs-size);
+}
+
+.blockquote blockquote .quote,
+.blockquote figcaption .figcaption {
+  font-weight: bold;
+}
+
+/* Inline */
+.blockquote.inline figure {
+  text-align: left;
+}
+
+.blockquote.inline figure .image img {
+  max-height: 200px;
+}
+
+/* borders */
+.blockquote.borders figure {
+  border-top: 1px solid #cacaca;
+  border-bottom: 1px solid #cacaca;
+}
+
+
+/* Tablet */
+@media screen and (min-width: 600px) {
+  .blockquote.inline figure {
+    display: flex;
+    gap: var(--spacing-s);
+  }
+
+  .blockquote.inline figure .image {
+    display: flex;
+    align-content: center;
+    flex-basis: 40%;
+    margin: 0;
+    justify-content: center;
+  }
+
+  .blockquote.inline figure .quote-wrapper {
+    flex-basis: 60%;
+  }
+}
