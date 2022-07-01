@@ -1,6 +1,7 @@
 /**
  * loads and decorates a blockquote
- * @param {Element} blockquote block element
+ * @param {Element} block element
+ * @param {Element} node element
  *  ex...
  *   <figure>
  *    <blockquote cite="https://www.huxley.net/bnw/four.html">
@@ -10,7 +11,13 @@
  *   </figure>
  */
 
-import { decorateBlockBg } from '../../utils/decorate.js';
+function decorateBlockBg(block, node) {
+  node.classList.add('background');
+  if (!node.querySelector(':scope img')) {
+    block.style.background = node.textContent;
+    node.remove();
+  }
+}
 
 export default async function init(el) {
   const rows = el.querySelectorAll(':scope > div');
