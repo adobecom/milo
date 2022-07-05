@@ -62,7 +62,7 @@ function Review({
         if (staticRating) {
             setRating(staticRating);
             setIsInteractive(false);
-            if (hideTitleOnReload) setDisplayTitle(false);
+            if (hideTitleOnReload !== 'false') setDisplayTitle(false);
         }
     }, [staticRating]);
 

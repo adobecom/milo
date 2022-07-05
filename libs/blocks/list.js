@@ -8,8 +8,8 @@ const blocks = [
   'how-to',
   'modal',
   'marquee',
-  'review',
   'sabya',
+  'review'
 ];
 
 export default blocks;
