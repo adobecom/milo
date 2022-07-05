@@ -9,7 +9,6 @@ import HelixReview from './components/helixReview/HelixReview.js';
 const COMMENT_THRESHOLD = 3;
 
 const App = ({ rootEl, strings }) => {
-    console.log(strings);
     return html`
         <${HelixReview}
             clickTimeout="5000"
@@ -54,79 +53,36 @@ const sanitizedKeyDiv = (text) => {
     return text.toLowerCase().replace(/ /g, "").trim();
 }
 
-const constructString = (key, value) => {
-    switch (key) {
-        case 'reviewurl':
-            strings.postUrl = value;
-            return;
-        case 'title':
-            strings.reviewTitle = value;
-            return;
-        case 'hidetitle':
-            strings.hideTitleOnReload = value;
-            return;
-        case 'ratingverb':
-            strings.review = value.split(',')[0];
-            strings.reviewPlural = value.split(',')[1].trim();
-            return;
-        case 'ratingnoun':
-            strings.star = value.split(',')[0];
-            strings.starPlural = value.split(',')[1].trim();
-            return;
-        case 'commentplaceholder':
-            strings.placeholder = value;
-            return;
-        case 'tooltips':
-            strings.tooltips = value.split(',');
-            return;
-        case 'thankyoutext':
-            strings.thankYou = value;
-            return;
-        case 'submittext':
-            strings.sendCta = value;
-            return;
-        case 'tooltipdelay':
-            strings.tooltipDelay = value;
-            return;
-        case 'commentfieldlabel':
-            strings.commentLabel = value;
-            return;
-        default:
-            strings[key] = value;
-            return;
-    }
-}
 
 const getStrings = (metaData) => {
-    console.log(metaData);
     const {
         commentfieldlabel,
         commentplaceholder,
         ratingLegend,
-        ratingNounSingular,
-        ratingNounPlural,
-        ratingVerbSingular,
-        ratingVerbPlural,
+        ratingverb,
+        ratingnoun,
         submittext,
         thankyoutext,
         title,
         tooltips,
         hidetitle,
+        reviewurl,
     } = metaData;
 
     return {
         commentLabel: commentfieldlabel,
         sendCta: submittext,
-        star: ratingNounSingular,
-        starPlural: ratingNounPlural,
+        star: ratingnoun.split(',')[0],
+        starPlural: ratingnoun.split(',')[0],
         starsLegend: ratingLegend,
         placeholder: commentplaceholder,
-        review: ratingVerbSingular,
-        reviewPlural: ratingVerbPlural,
+        review: ratingverb.split(',')[0],
+        reviewPlural: ratingverb.split(',')[1],
         reviewTitle: title,
         thankYou: thankyoutext,
         hideTitleOnReload: hidetitle,
         tooltips: tooltips && tooltips.split(',').map(t => t.trim()),
+        postUrl: reviewurl
     };
 }
 
@@ -153,7 +109,6 @@ export default async function init(el) {
   loadStyle('/libs/ui/page/page.css');
   const metaData = getMetaData(el);
   const strings = getStrings(metaData);
-  console.log('strings', strings);
   hideMetaDataElements(el);
 
   const app = html` <${App} rootEl=${el} strings="${strings}" /> `;
