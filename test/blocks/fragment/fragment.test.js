@@ -47,4 +47,11 @@ describe('Fragments', () => {
     await getFragment(a);
     expect(window.lana.log.args[0][0]).to.equal('Could not make fragment');
   });
+
+  it('Doesnt infinitely load circular references', async () => {
+    const a = document.querySelector('a.frag-a');
+    await getFragment(a);
+    expect(document.querySelector('h4')).to.exist;
+    expect(console.log.args[0][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
+  });
 });
