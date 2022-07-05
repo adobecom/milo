@@ -63,6 +63,10 @@ const HelixReview = ({
         .then((res) => {
           if (res.ok) {
             res.json().then((reviewRes) => {
+              if (!reviewRes.data[0]) {
+                setDisplayReviewComp(true);
+                return;
+              }
               const { average, total } = reviewRes.data[0];
 
               setAvgRating(average);
