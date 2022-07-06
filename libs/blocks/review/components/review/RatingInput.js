@@ -1,8 +1,4 @@
-import {
-  html,
-} from '../../../../deps/htm-preact.js';
-
-import isIE11 from '../../utils/isIE11.js';
+import { html } from '../../../../deps/htm-preact.js';
 
 const KEY_ENTER = 13;
 const KEY_SPACE = 32;
@@ -29,7 +25,9 @@ const RatingInput = ({
     }
   };
 
-  const label = index === 1 ? `1 ${starString}` : `${index} ${starStringPlural}`;
+  // eslint-disable-next-line operator-linebreak
+  const label =
+    index === 1 ? `1 ${starString}` : `${index} ${starStringPlural}`;
 
   let ratingsInputClassNames = '';
 
@@ -46,13 +44,12 @@ const RatingInput = ({
   }
 
   if (hasKeyboardFocus) {
-    ratingsInputClassNames += ' has-keyboard-focus'
+    ratingsInputClassNames += ' has-keyboard-focus';
   }
-  
+
   return html`
     <input
       data-tooltip=${tooltip}
-      title=${isIE11 ? tooltip : null}
       name="rating"
       aria-label=${label}
       type="radio"
@@ -60,7 +57,7 @@ const RatingInput = ({
       onClick=${handleClick}
       onKeyPress=${handleKeyPress}
       value=${index}
-      />
+    />
   `;
 };
 
