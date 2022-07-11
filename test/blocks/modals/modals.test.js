@@ -37,7 +37,7 @@ describe('Modals', () => {
   it('Opens an inherited modal', async () => {
     const meta = document.createElement('meta');
     meta.name = '-otis';
-    meta.content = 'https://milo.adobe.com/test/scripts/modals/mocks/otis';
+    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/otis';
     document.head.append(meta);
     window.location.hash = '#otis';
     const modal = await init(true);
@@ -57,5 +57,23 @@ describe('Modals', () => {
     prom.then((modal) => {
       expect(modal).to.exist;
     });
+  });
+
+  it('Modal element removal on Close', async () => {
+    document.querySelectorAll('dialog').forEach((d) => d.remove());
+    window.location.hash = '#milo';
+    const modal = await init(true);
+    const close = document.querySelector('dialog button');
+    close.click();
+    expect(modal).to.exist;
+  });
+
+  it('FaaS modal on Close', async () => {
+    document.querySelectorAll('dialog').forEach((d) => d.remove());
+    window.location.hash = '#faas';
+    const modal = await init(true);
+    const close = document.querySelector('dialog button');
+    close.click();
+    expect(modal).to.exist;
   });
 });
