@@ -1,40 +1,22 @@
 :root {
-	--size-responsive-phone-only: 599px;
-	--size-responsive-tablet-portrait-up: 600px;
-	--size-responsive-tablet-portrait-max: 899px;
-	--size-responsive-tablet-landscape-up: 900px;
-	--size-responsive-tablet-landscape-max: 1199px;
-	--size-responsive-desktop: 1200px;
-	--size-responsive-max: 1440px;
-
 	--ratingBgImage: url('./img/star-outline.svg');
 	--ratingActiveBgImage: url('./img/star-filled.svg');
 
 	--focusOutlineColor: #4e8af4;
 	--focusOutline: 2px solid var(--focusOutlineColor);
 
-	--commentBgColor: white;
+	--commentBgColor: #ffffff;
 	--sendEnabledColor: #505050;
 	--sendDisabledColor: #bcbcbc;
 	--sendHoverColor: hsl(0, 0%, 0%);
 	--tooltipBackground: #747474;
-	--tooltipText: white;
+	--tooltipText: #ffffff;
 	--tooltipTransitionTime: 0.3s;
 	--tooltipZIndex: 50;
 
 	--ratingCommentsHeight: 58px;
 	--ctaCommentHeight: 22px;
 	--commentFieldsHeight: var(--ratingCommentsHeight) + var(--ctaCommentHeight);
-}
-
-.appearanceNoneMixin {
-	 -webkit-appearance: none;
-	 appearance: none;
-}
-
-.visuallyHiddenButAccessible {
-	 position: absolute;
-	 clip: rect(0 0 0 0);
 }
 
 .hlx-ReviewWrapper {
@@ -208,34 +190,6 @@
 	text-align: center;
 }
 
-@media only screen and (min-width: 1200px) {
- 	.hlx-ReviewWrapper {
-		flex-direction: row;
-	}
-	
-	.hlx-ReviewWrapper .hlx-reviewTitle {
-		margin-bottom: 0;
-		margin-top: 0;
-		max-width: 500px;
-		text-align: left;
-	}
-	
-	.hlx-ReviewWrapper .hlx-Review {
-		flex-direction: row;
-		margin-left: 20px;
-		margin-right: 20px;
-	}
-	
-	.hlx-ReviewWrapper .hlx-ReviewStats {
-		margin-top: initial;
-	}
-	
-	.hlx-ReviewWrapper .hlx-Review-commentFields {
-		margin-top: 0;
-		margin-left: 19px;
-	}
-}
-
 .tooltip {
 	 position: relative;
 }
@@ -280,6 +234,34 @@
 	opacity: 1;
 	visibility: visible;
 	z-index: var(--tooltipZIndex);
+}
+
+@media only screen and (min-width: 1200px) {
+ 	.hlx-ReviewWrapper {
+		flex-direction: row;
+	}
+	
+	.hlx-ReviewWrapper .hlx-reviewTitle {
+		margin-bottom: 0;
+		margin-top: 0;
+		max-width: 500px;
+		text-align: left;
+	}
+	
+	.hlx-ReviewWrapper .hlx-Review {
+		flex-direction: row;
+		margin-left: 20px;
+		margin-right: 20px;
+	}
+	
+	.hlx-ReviewWrapper .hlx-ReviewStats {
+		margin-top: initial;
+	}
+	
+	.hlx-ReviewWrapper .hlx-Review-commentFields {
+		margin-top: 0;
+		margin-left: 19px;
+	}
 }
 
 @keyframes fadeIn {
