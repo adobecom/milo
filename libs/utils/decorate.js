@@ -29,14 +29,12 @@ export function initIcons(el) {
     el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
   });
   const icons = el.querySelectorAll('.icon');
-  if (icons.length) {
-    icons?.forEach((icon) => {
-      icon.parentElement.classList.add('icon-area');
-      if (icon.textContent.includes('persona')) {
-        icon.parentElement.classList.add('persona-area');
-      }
-    });
-  }
+  icons?.forEach((icon) => {
+    icon.parentElement.classList.add('icon-area');
+    if (icon.textContent.includes('persona')) {
+      icon.parentElement.classList.add('persona-area');
+    }
+  });
 }
 
 export async function decorateIcons(iconLibrary) {
@@ -120,7 +118,7 @@ export function getBlockSize(el) {
   }, sizes[1]);
 }
 
-export async function getIconLibrary(path = '/docs/tokens.json') {
+export async function getIconLibrary(path = '/docs/library/tokens.json') {
   let library = {};
   const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
   const resp = await fetch(url);
@@ -146,4 +144,3 @@ export async function loadTokens(blocks) {
     await getIconLibrary();
   }
 }
-
