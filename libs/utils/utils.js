@@ -1,5 +1,3 @@
-import {getIconLibrary} from "./decorate";
-
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const AUTO_BLOCKS = [
@@ -110,6 +108,7 @@ export async function loadBlock(block) {
 export async function loadTokens(blocks) {
   const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
   if (iconBlock) {
+    const { getIconLibrary } = await import('decorate.js');
     await getIconLibrary();
   }
 }
