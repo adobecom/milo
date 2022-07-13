@@ -33,6 +33,8 @@ describe('Utils', () => {
     const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
     expect(script).to.exist;
     expect(script.type).to.equal('module');
+    await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(script).to.exist;
   });
 
   it('Rejects a bad script', async () => {
