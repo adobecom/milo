@@ -16,7 +16,7 @@
 
 import { decorateBlockBg, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../utils/analytics.js';
-import media from '../media/media.js';
+import initMedia from '../media/media.js';
 
 export function decorateHeadline(header, size) {
   const headingRow = header.parentElement;
@@ -38,13 +38,10 @@ function getReversedRowCount(rows) {
 }
 
 function getChildSingleRowCount(children) {
-  let length = 0;
-  for (let i = 0; i < children.length; i += 1) {
-    if (children[i].children.length === 1) {
-      length += 1;
-    }
-  }
-  return length;
+  return [...children].reduce((length, child) => {
+    if (child.children.length === 1) length += 1;
+    return length;
+  }, 0);
 }
 
 export default function init(el) {
@@ -90,6 +87,6 @@ export default function init(el) {
   }
   const mediaItems = el.querySelectorAll(':scope > .media');
   mediaItems.forEach((i) => {
-    media(i, false);
+    initMedia(i, false);
   });
 }

@@ -1,12 +1,10 @@
-//
-// Shared decorate utils for Consonant blocks
-// Block usage ref: [media, z-pattern]
-//
 
 import { decorateLinkAnalytics } from './analytics.js';
 
 export function decorateButtons(el, isLarge) {
   const buttons = el.querySelectorAll('em a, strong a');
+  if (buttons.length === 0) return;
+
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
@@ -15,11 +13,10 @@ export function decorateButtons(el, isLarge) {
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
+
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function initIcons(el) {
@@ -29,7 +26,7 @@ export function initIcons(el) {
     el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
   });
   const icons = el.querySelectorAll('.icon');
-  icons?.forEach((icon) => {
+  icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
     if (icon.textContent.includes('persona')) {
       icon.parentElement.classList.add('persona-area');
@@ -135,12 +132,4 @@ export async function getIconLibrary(path = '/docs/library/tokens.json') {
     library[item.key] = itemValues;
   });
   await decorateIcons(library);
-}
-
-export async function loadTokens(blocks) {
-  const ICON_BLOCKS = ['media', 'z-pattern'];
-  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
-  if (iconBlock) {
-    await getIconLibrary();
-  }
 }

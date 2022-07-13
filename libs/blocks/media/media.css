@@ -100,13 +100,16 @@
   color: var(--link-hover-color);
 }
 
-.text .icon img{
+.text .icon img {
   padding-right: var(--spacing-xxs);
 }
 
-.dark .text .icon,
-.dark .text .icon:hover{
-  color: white;
+.dark .text .icon {
+  color: var(--link-color-dark);
+}
+
+.dark .text .icon:hover {
+  color: var(--link-hover-color-dark);
 }
 
 .media .image img {

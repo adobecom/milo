@@ -1,3 +1,5 @@
+import {getIconLibrary} from "./decorate";
+
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const AUTO_BLOCKS = [
@@ -8,6 +10,7 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ICON_BLOCKS = ['media', 'z-pattern'];
 
 export function getEnv() {
   const { hostname, href } = window.location;
@@ -102,6 +105,13 @@ export async function loadBlock(block) {
     if (!decoratedBlock) { delete section.dataset.status; }
   }
   return block;
+}
+
+export async function loadTokens(blocks) {
+  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
+  if (iconBlock) {
+    await getIconLibrary();
+  }
 }
 
 export function decorateSVG(a) {
