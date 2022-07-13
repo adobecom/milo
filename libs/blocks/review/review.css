@@ -1,10 +1,8 @@
 :root {
 	--ratingBgImage: url('./img/star-outline.svg');
 	--ratingActiveBgImage: url('./img/star-filled.svg');
-
 	--focusOutlineColor: #4e8af4;
 	--focusOutline: 2px solid var(--focusOutlineColor);
-
 	--commentBgColor: #ffffff;
 	--sendEnabledColor: #505050;
 	--sendDisabledColor: #bcbcbc;
@@ -13,7 +11,6 @@
 	--tooltipText: #ffffff;
 	--tooltipTransitionTime: 0.3s;
 	--tooltipZIndex: 50;
-
 	--ratingCommentsHeight: 58px;
 	--ctaCommentHeight: 22px;
 	--commentFieldsHeight: var(--ratingCommentsHeight) + var(--ctaCommentHeight);
