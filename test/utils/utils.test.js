@@ -88,4 +88,29 @@ describe('Utils', () => {
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
   });
+
+  it('isNullish returns true for empty string', () => {
+    expect(utils.isNullish('')).to.be.true;
+  });
+
+  it('isNullish returns true for falsy values', () => {
+    expect(utils.isNullish(undefined)).to.be.true;
+    expect(utils.isNullish(null)).to.be.true;
+    expect(utils.isNullish(0 / 0)).to.be.true;
+  });
+
+  it('isNullish returns false for truthy values', () => {
+    expect(utils.isNullish('hello world')).to.be.false;
+    expect(utils.isNullish({})).to.be.false;
+    expect(utils.isNullish([])).to.be.false;
+    expect(utils.isNullish(true)).to.be.false;
+  });
+
+  it('isEmptyObject returns true for empty objects', () => {
+    expect(utils.isEmptyObject({})).to.be.true;
+  });
+
+  it('isEmptyObject returns false for non-empty objects', () => {
+    expect(utils.isEmptyObject({ key: 'value' })).to.be.false;
+  });
 });
