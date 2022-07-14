@@ -10,14 +10,6 @@ import init from '../../../../libs/blocks/faas/faas.js';
 document.body.innerHTML = await readFile({ path: './mocks/modal.html' });
 
 describe('Faas', () => {
-  beforeEach(() => {
-    sinon.spy(console, 'log');
-  });
-
-  afterEach(() => {
-    console.log.restore();
-  });
-
   const a = document.querySelector('a');
 
   it('FaaS Modal Initiation', async () => {
