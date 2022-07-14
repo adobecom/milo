@@ -23,11 +23,41 @@ function hasSchema(host) {
   window.hlx.initSidekick({
     project: 'Milo',
     host: 'milo.adobe.com',
-    previewHost: 'main--milo--adobecom.hlx.page',
     byocdn: true,
     hlx3: true,
+    libraries: [
+      {
+        text: 'Blocks',
+        path: '/docs/library/blocks.json',
+      },
+      {
+        text: 'Templates',
+        path: '/docs/library/templates.json',
+      },
+      {
+        text: 'Placeholders',
+        path: '/docs/library/placeholders.json',
+      },
+      {
+        text: 'Tokens',
+        path: '/docs/library/tokens.json',
+      },
+    ],
     plugins: [
       // TOOLS ---------------------------------------------------------------------
+      {
+        id: 'library',
+        condition: () => true,
+        button: {
+          text: 'Library',
+          action: (_, s) => {
+            const { config } = s;
+            const script = document.createElement('script');
+            script.src = `https://${config.innerHost}/libs/ui/library/library.js`;
+            document.head.appendChild(script);
+          },
+        },
+      },
       {
         id: 'tools',
         condition: (s) => s.isEditor(),
@@ -35,7 +65,7 @@ function hasSchema(host) {
           text: 'Tools',
           action: (_, s) => {
             const { config } = s;
-            window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
+            window.open(`https://${config.innerHost}/tools/`, 'milo-tools');
           },
         },
       },
