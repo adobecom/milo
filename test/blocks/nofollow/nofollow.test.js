@@ -3,7 +3,7 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import nofollow from '../../../libs/blocks/nofollow/nofollow.js';
+import nofollow from '../../../libs/features/nofollow.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
