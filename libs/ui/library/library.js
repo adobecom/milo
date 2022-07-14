@@ -1,10 +1,7 @@
 /* global ClipboardItem */
 
-function getRepoDomain() {
-  const { ref, repo, owner } = window.hlx.sidekickConfig;
-  return `https://${ref}--${repo}--${owner}.hlx.page`;
-}
-const repoDomain = getRepoDomain();
+let domain;
+let libraries;
 
 function createCopy(blob) {
   const data = [new ClipboardItem({ [blob.type]: blob })];
@@ -56,11 +53,11 @@ function getTable(block) {
 }
 
 async function loadBlockList(path, list) {
-  const resp = await fetch(`${repoDomain}${path}`);
+  const resp = await fetch(`${domain}${path}`);
   if (!resp.ok) return;
   const json = await resp.json();
   json.data.forEach(async (blockGroup) => {
-    const pageResp = await fetch(`${repoDomain}${blockGroup.value}.plain.html`);
+    const pageResp = await fetch(`${domain}${blockGroup.value}.plain.html`);
     if (!pageResp.ok) return;
     const html = await pageResp.text();
     const parser = new DOMParser();
@@ -110,12 +107,14 @@ async function loadList(type, list) {
       stub(list);
       break;
     default:
-      console.log('no list');
+      await import('../../utils/lana.js');
+      window.lana.log(`Library type not supported: ${type}`, { clientId: 'milo', sampleRate: 100 });
   }
 }
 
-(function loadContentFinder() {
-  loadStyle(`${repoDomain}/libs/ui/library/library.css`);
+function loadContentFinder() {
+  if (!libraries) return;
+  loadStyle(`${domain}/libs/ui/library/library.css`);
   const finder = document.createElement('div');
   finder.className = 'con-finder';
 
@@ -140,9 +139,6 @@ async function loadList(type, list) {
   const contentList = document.createElement('ul');
   container.append(contentList);
 
-  if (!window.hlx?.sidekickConfig?.libraries) return;
-  const { libraries } = window.hlx.sidekickConfig;
-
   Object.keys(libraries).forEach((type) => {
     const item = document.createElement('li');
     item.className = 'content-type';
@@ -161,4 +157,10 @@ async function loadList(type, list) {
     });
   });
   document.body.append(finder);
-}());
+}
+
+document.addEventListener('hlx:library-loaded', (e) => {
+  domain = e.detail.domain;
+  libraries = e.detail.libraries;
+  loadContentFinder();
+});
