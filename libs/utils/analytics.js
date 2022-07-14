@@ -14,15 +14,7 @@ export function decorateLinkAnalytics(el, heading) {
   el.setAttribute('daa-lh', heading.textContent);
   const links = el.querySelectorAll('a, button');
   links?.forEach((link, i) => {
-    const linkType = () => {
-      if (link.classList.contains('con-button')) {
-        return 'cta';
-      }
-      if (link.classList.contains('icon')) {
-        return 'icon cta';
-      }
-      return 'link';
-    };
+    const linkType = (link.classList.contains('con-button')) ? 'cta' : 'link';
     const str = `${linkType}|${link.innerText} ${i + 1}`;
     link.setAttribute('daa-ll', str);
   });
