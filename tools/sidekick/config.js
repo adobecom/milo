@@ -53,6 +53,13 @@ function hasSchema(host) {
           action: (_, s) => {
             const { config } = s;
             const script = document.createElement('script');
+            script.onload = () => {
+              const skEvent = new CustomEvent(
+                'hlx:library-loaded',
+                { detail: { domain: `https://${config.innerHost}`, libraries: config.libraries } },
+              );
+              document.dispatchEvent(skEvent);
+            };
             script.src = `https://${config.innerHost}/libs/ui/library/library.js`;
             document.head.appendChild(script);
           },
