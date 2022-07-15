@@ -80,7 +80,7 @@ const init = (el) => {
   children[1]?.classList.add('chart_subTitle');
   children[3]?.classList.add('chart_footnote');
 
-  // ToDo: Replace hardcoded size MWPW-112994
+  // ToDo: Replace hardcoded chart size MWPW-112994
   const size = LARGE;
   const chartRow = children[2];
 
