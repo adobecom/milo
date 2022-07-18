@@ -1,0 +1,37 @@
+<html lang="en">
+<head>
+  <title>Localization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="./lib/diff.js"></script>
+</head>
+<body>
+  <header>
+    <h1 class="container">Localization</h1>
+  </header>
+  <main>
+    <div class="project-overview">
+      <div class="container">
+        <div id="diff" class="hidden">
+          <button type="button">Generate Diff</button>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <h2 class="container">Character Difference</h2>
+      <code id="md-diff-chars"></code>
+      <h2 class="container">Line Difference</h2>
+      <code id="md-diff-lines"></code>
+      <h2 class="container">Default Patch</h2>
+      <code id="md-diff"></code>
+      <h2 class="container">Structured Patch</h2>
+      <pre id="md-diff-json"></pre>
+      <h2 class="container">Applied Patch</h2>
+      <pre id="md-generated-patch"></pre>
+    </div>
+  </main>
+  <script type="module">
+    import init from './generatePatch.js';
+    init();
+  </script>
+</body>
+</html>
