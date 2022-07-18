@@ -148,6 +148,7 @@ const init = async (el) => {
 
   const dataset = processDataset(data.data);
   const unit = data?.data[0]?.Unit;
+  // ToDo: Replace colors MWPW-112994
   const colors = ['red', 'blue', 'green'];
 
   if (chartType !== 'oversizedNumber') {

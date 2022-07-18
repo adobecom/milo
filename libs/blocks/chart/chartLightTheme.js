@@ -17,15 +17,12 @@ export default (deviceSize) => {
   const MEDIUM = 'medium';
   const SMALL = 'small';
   const axisColor = '#767676';
-  let size;
-  let name;
+  let size = LARGE;
+  let name = 'consonantLightLarge';
 
   if (deviceSize && (deviceSize === SMALL || deviceSize === MEDIUM)) {
     size = SMALL;
     name = 'consonantLightSmall';
-  } else {
-    size = LARGE;
-    name = 'consonantLightLarge';
   }
 
   const isLarge = size === LARGE;
