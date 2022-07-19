@@ -1,8 +1,8 @@
 import { makeRelative, loadScript } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
-// const SMALL = 'small';
-// const MEDIUM = 'medium';
+const SMALL = 'small';
+const MEDIUM = 'medium';
 const LARGE = 'large';
 const chartTypes = [
   'bar',
@@ -66,19 +66,32 @@ const barTooltipFormatter = ({
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip_icon"></i>`
 );
 
-const barSeriesOptions = (seriesData, colors, unit) => (
-  seriesData.map((value, index) => ({
+const barSeriesOptions = (seriesData, colors, size, unit) => {
+  const isLarge = size === LARGE;
+
+  return seriesData.map((value, index) => ({
     type: 'bar',
     label: {
       show: true,
       formatter: `{@[${index + 1}]}${unit}`,
+      position: 'right',
+      textBorderColor: '#000',
+      distance: 8,
+      fontSize: isLarge ? 16 : 14,
     },
     showBackground: true,
-    backgroundStyle: { color: colors[index] },
-  }))
-);
+    backgroundStyle: {
+      color: colors[index],
+      borderRadius: 3,
+      opacity: 0.35,
+    },
+    itemStyle: { borderRadius: 3 },
+    barCategoryGap: 0,
+    barGap: '33.3%',
+  }));
+};
 
-export const getChartOptions = (chartType, dataset, colors, unit = '') => {
+export const getChartOptions = (chartType, dataset, colors, size, unit = '') => {
   const source = dataset?.source;
   const seriesData = (source && source[1]) ? source[1].slice() : [];
 
@@ -111,7 +124,7 @@ export const getChartOptions = (chartType, dataset, colors, unit = '') => {
       axisLabel: { show: chartType !== 'bar' },
       axisTick: { show: chartType !== 'bar' },
     },
-    series: barSeriesOptions(seriesData, colors, unit),
+    series: barSeriesOptions(seriesData, colors, size, unit),
   };
 };
 
@@ -157,7 +170,7 @@ const init = async (el) => {
         const themeName = getTheme(size);
         const barChart = window.echarts?.init(chart, themeName, { renderer: 'svg' });
 
-        barChart?.setOption(getChartOptions(chartType, dataset, colors, unit));
+        barChart?.setOption(getChartOptions(chartType, dataset, colors, size, unit));
       })
       .catch((error) => console.log('Error loading script:', error));
   }

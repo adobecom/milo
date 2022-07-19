@@ -3,29 +3,34 @@
  *
  * Theme for light background 10/6/2021
  * Add to echarts:
- * const chart = echarts.init(element, name)
+ * const chart = echarts.init(element, themeName)
  *
  * https://echarts.apache.org/en/theme-builder.html
  */
 
 import { isEmptyObject } from '../../utils/utils.js';
 
+export const lightSmall = 'lightSmall';
+export const lightLarge = 'lightLarge';
+
 export default (deviceSize) => {
   if (isEmptyObject(window.echarts)) return null;
 
-  const LARGE = 'large';
-  const MEDIUM = 'medium';
   const SMALL = 'small';
-  const axisColor = '#767676';
+  const MEDIUM = 'medium';
+  const LARGE = 'large';
   let size = LARGE;
-  let name = 'consonantLightLarge';
+  let themeName = 'lightLarge';
 
   if (deviceSize && (deviceSize === SMALL || deviceSize === MEDIUM)) {
     size = SMALL;
-    name = 'consonantLightSmall';
+    themeName = 'lightSmall';
   }
 
+  if (window.dataViz?.[themeName]) return themeName;
+
   const isLarge = size === LARGE;
+  const axisColor = '#767676';
   const options = {
     textStyle: {
       fontFamily: 'adobe-clean',
@@ -98,23 +103,7 @@ export default (deviceSize) => {
         lineStyle: { color: axisColor },
       },
     },
-    bar: {
-      label: {
-        show: true,
-        position: 'right',
-        textBorderColor: '#000',
-        distance: 8,
-        fontSize: isLarge ? 16 : 14,
-      },
-      itemStyle: { borderRadius: 3 },
-      showBackground: true,
-      backgroundStyle: {
-        borderRadius: 3,
-        opacity: 0.35,
-      },
-      barCategoryGap: 0,
-      barGap: '33.3%',
-    },
+    // ToDo: Move line/area options into chart.js MWPW-113006
     line: {
       symbol: 'none',
       markLine: {
@@ -138,7 +127,12 @@ export default (deviceSize) => {
     aria: { enabled: true },
   };
 
-  window.echarts.registerTheme(name, options);
+  window.echarts.registerTheme(themeName, options);
+  if (window.dataViz) {
+    window.dataViz[themeName] = true;
+  } else {
+    window.dataViz = { [themeName]: true };
+  }
 
-  return name;
+  return themeName;
 };
