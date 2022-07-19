@@ -1,19 +1,16 @@
 
 import { decorateLinkAnalytics } from './analytics.js';
 
-export function decorateButtons(el, isLarge) {
+export function decorateButtons(el) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
-
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
+    button.classList.add('con-button', buttonType);
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-
   const actionArea = buttons[0].closest('p');
   actionArea.classList.add('action-area');
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
@@ -87,8 +84,8 @@ export function decorateBlockText(el, size) {
 }
 
 export function isHexColorDark(color) {
-  if (color[0] !== '#') return false;
-  const hex = color.replace('#', '');
+  if (!color.trim().startsWith('#')) return false;
+  const hex = color.trim().replace('#', '');
   const cR = parseInt(hex.substr(0, 2), 16);
   const cG = parseInt(hex.substr(2, 2), 16);
   const cB = parseInt(hex.substr(4, 2), 16);
@@ -117,8 +114,11 @@ export function getBlockSize(el) {
 
 export async function getIconLibrary(path = '/docs/library/tokens.json') {
   let library = {};
-  const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
+  const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}`
+    /* c8 ignore next */
+    : path;
   const resp = await fetch(url);
+  /* c8 ignore next */
   if (!resp.ok) return;
   const json = await resp.json();
   json['icons']?.data.forEach((item) => {
