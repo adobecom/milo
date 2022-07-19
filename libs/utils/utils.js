@@ -247,7 +247,9 @@ export async function loadLazy(blocks, el = document) {
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
-  if (!script) {
+  if (script) {
+    resolve(script);
+  } else {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
