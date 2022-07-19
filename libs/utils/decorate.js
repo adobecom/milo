@@ -102,7 +102,7 @@ export function getBlockSize(el) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[1];
 }
 
-export async function getIconLibrary(path = '/docs/library/tokens.json') {
+export async function getTokenLibrary(path = '/docs/library/tokens.json') {
   let library = {};
   const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}`
     /* c8 ignore next */
@@ -111,15 +111,15 @@ export async function getIconLibrary(path = '/docs/library/tokens.json') {
   /* c8 ignore next */
   if (!resp.ok) return;
   const json = await resp.json();
-  json['icons']?.data.forEach((item) => {
-    const itemValues = {};
-    Object.entries(item).forEach((value) => {
-      const itemValue = value[1];
-      if (itemValue) {
-        itemValues[value[0]] = itemValue;
+  json['icons']?.data.forEach((icon) => {
+    const iconValues = {};
+    Object.entries(icon).forEach((value) => {
+      const iconValue = value[1];
+      if (iconValue) {
+        iconValues[value[0]] = iconValue;
       }
     });
-    library[item.key] = itemValues;
+    library[icon.key] = iconValues;
   });
-  await decorateIcons(library);
+  return library;
 }
