@@ -265,7 +265,7 @@ export const makeFaasConfig = (state) => {
 };
 
 export const initFaas = (state, targetEl) => {
-  if (!targetEl || !state) return;
+  if (!targetEl || !state) return null;
 
   const appEl = targetEl.parentElement;
 
@@ -291,4 +291,6 @@ export const initFaas = (state, targetEl) => {
 
   formWrapperEl.append(formTitleWrapperEl, formEl);
   appEl.replaceChild(formWrapperEl, targetEl);
+
+  return appEl;
 };

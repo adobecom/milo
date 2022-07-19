@@ -57,6 +57,7 @@ async function getModal() {
 
   dialog.addEventListener('close', (e) => {
     window.location.hash = '#';
+
     e.target.remove();
   });
 
