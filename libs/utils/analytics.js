@@ -13,7 +13,7 @@ export function decorateBlockAnalytics(blockEl) {
 export function decorateLinkAnalytics(el, heading) {
   el.setAttribute('daa-lh', heading.textContent);
   const links = el.querySelectorAll('a, button');
-  links?.forEach((link, i) => {
+  links.forEach((link, i) => {
     const linkType = (link.classList.contains('con-button')) ? 'cta' : 'link';
     const str = `${linkType}|${link.innerText} ${i + 1}`;
     link.setAttribute('daa-ll', str);
