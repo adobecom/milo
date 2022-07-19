@@ -99,12 +99,7 @@ export function decorateBlockBg(block, node) {
 
 export function getBlockSize(el) {
   const sizes = ['small', 'medium', 'large'];
-  return sizes.reduce((rdx, size) => {
-    if (el.classList.contains(size)) {
-      return size;
-    }
-    return rdx;
-  }, sizes[1]);
+  return sizes.find((size) => el.classList.contains(size)) || sizes[1];
 }
 
 export async function getIconLibrary(path = '/docs/library/tokens.json') {
