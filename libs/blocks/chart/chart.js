@@ -12,13 +12,11 @@ function processDataset(data) {
   const dataset = {};
 
   // Remove group and unit from headers
-  const headers = Object.keys(data[0]).filter(header =>
-    header.toLowerCase() !== 'unit' && header.toLowerCase() !== 'group'
-  );
+  const headers = Object.keys(data[0]).filter((header) => header.toLowerCase() !== 'unit' && header.toLowerCase() !== 'group');
   dataset.source = [headers];
 
   // Use headers to set source
-  data.forEach(element => {
+  data.forEach((element) => {
     const values = headers.map((column) => element[column]);
     dataset.source.push(values);
   });
@@ -39,11 +37,11 @@ async function fetchData(link) {
   const path = makeRelative(link.href);
   const data = {};
   const resp = await fetch(path.toLowerCase());
-  if (!resp.ok) return;
+  if (!resp.ok) return data;
   const json = await resp.json();
 
   // Check the type of data
-  if (json[':type'] == 'multi-sheet') {
+  if (json[':type'] === 'multi-sheet') {
     const dataSheet = json[':names'][0];
     const seriesSheet = json[':names'][1];
     data.data = json[dataSheet]?.data;
@@ -169,6 +167,17 @@ export const getChartOptions = (chartType, dataset, colors, size, unit = '') => 
   };
 };
 
+const handleIntersect = (chart, chartOptions) => (entries, observer) => {
+  if (!Array.isArray(entries)) return;
+
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      chart?.setOption(chartOptions);
+      observer.unobserve(entry.target);
+    }
+  });
+};
+
 const init = async (el) => {
   const children = el?.querySelectorAll(':scope > div');
   children[0]?.classList.add('chart_title');
@@ -193,17 +202,18 @@ const init = async (el) => {
     chartRow.style.height = `${containerSize?.height}px`;
   }
 
-  const chart = chartRow?.querySelector(':scope > div');
+  const chartDiv = chartRow?.querySelector(':scope > div');
 
-  if (chart) {
-    chart.style.width = containerSize?.width;
-    chart.style.height = `${containerSize?.height}px`;
+  if (chartDiv) {
+    chartDiv.style.width = containerSize?.width;
+    chartDiv.style.height = `${containerSize?.height}px`;
   }
 
-  const dataLink = chart?.querySelector('a[href$="json"]');
+  const dataLink = chartDiv?.querySelector('a[href$="json"]');
+
   dataLink?.remove();
 
-  if (!chartType || !chart || !dataLink) return;
+  if (!chartType || !chartDiv || !dataLink) return;
 
   const data = await fetchData(dataLink);
   if (!data) return;
@@ -216,10 +226,22 @@ const init = async (el) => {
   if (chartType !== 'oversizedNumber') {
     loadScript('/libs/deps/echarts.min.js')
       .then(() => {
-        const themeName = getTheme(size);
-        const barChart = window.echarts?.init(chart, themeName, { renderer: 'svg' });
+        const observerOptions = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.5,
+        };
 
-        barChart?.setOption(getChartOptions(chartType, dataset, colors, size, unit));
+        const themeName = getTheme(size);
+        const chart = window.echarts?.init(chartDiv, themeName, { renderer: 'svg' });
+
+        const chartOptions = getChartOptions(chartType, dataset, colors, size, unit);
+        if (!(window.IntersectionObserver)) {
+          chart.setOption(chartOptions);
+        } else {
+          const observer = new IntersectionObserver(handleIntersect(chart, chartOptions), observerOptions);
+          observer.observe(el);
+        }
       })
       .catch((error) => console.log('Error loading script:', error));
   }
