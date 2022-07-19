@@ -56,29 +56,22 @@ export async function decorateIcons(iconLibrary) {
   });
 }
 
-export function decorateBlockText(el, size) {
+export function decorateBlockText(el, size = 'small') {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  if (!size || size === 'small') {
-    heading.classList.add('heading-XS');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling.classList.add(`body-${bodySize}`);
+    if (headingEl.previousElementSibling) {
+      headingEl.previousElementSibling.classList.add(`detail-${detailSize}`);
     }
-  }
+  };
   if (size === 'medium') {
-    heading.classList.add('heading-M');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
-    }
-  }
-  if (size === 'large') {
-    heading.classList.add('heading-XL');
-    heading.nextElementSibling.classList.add('body-M');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-L');
-    }
+    decorate(heading, 'M', 'S', 'M');
+  } else if (size === 'large') {
+    decorate(heading, 'XL', 'M', 'L');
+  } else {
+    decorate(heading, 'XS', 'S', 'M');
   }
   initIcons(el);
   decorateButtons(el);
