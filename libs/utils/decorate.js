@@ -17,9 +17,11 @@ export function decorateButtons(el) {
 }
 
 export function initIcons(el) {
-  const regex = /[^{{]+(?=}})/g; // {{value}}
+  // eslint-disable-next-line no-useless-escape
+  const regex = /\{\{icon-(.*?)\}\}+/g; // {{icon-*}}
   const finds = el.textContent.match(regex);
-  finds?.forEach((str) => {
+  finds?.forEach((find) => {
+    const str = find.replace('{{', '').replace('}}', '');
     el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
   });
   const icons = el.querySelectorAll('.icon');
