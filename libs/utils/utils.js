@@ -109,8 +109,8 @@ export async function loadTokens(blocks) {
   const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
   if (iconBlock) {
     const { getTokenLibrary, decorateIcons } = await import('../utils/decorate.js');
-    const library = await getTokenLibrary();
-    await decorateIcons(library);
+    const tokenLibrary = await getTokenLibrary();
+    await decorateIcons(tokenLibrary);
   }
 }
 

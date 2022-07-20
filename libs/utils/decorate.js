@@ -33,7 +33,23 @@ export function initIcons(el) {
   });
 }
 
-export async function decorateIcons(iconLibrary) {
+export async function formatIconLibraryData(json) {
+  let library = {};
+  json['icons']?.data.forEach((icon) => {
+    const iconValues = {};
+    Object.entries(icon).forEach((value) => {
+      const iconValue = value[1];
+      if (iconValue) {
+        iconValues[value[0]] = iconValue;
+      }
+    });
+    library[icon.key] = iconValues;
+  });
+  return library;
+}
+
+export async function decorateIcons(tokenLibrary) {
+  const iconLibrary = await formatIconLibraryData(tokenLibrary);
   const el = document.querySelector('main');
   const icons = el.querySelectorAll('.icon');
   icons?.forEach((i) => {
@@ -103,23 +119,11 @@ export function getBlockSize(el) {
 }
 
 export async function getTokenLibrary(path = '/docs/library/tokens.json') {
-  let library = {};
   const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}`
     /* c8 ignore next */
     : path;
   const resp = await fetch(url);
   /* c8 ignore next */
   if (!resp.ok) return;
-  const json = await resp.json();
-  json['icons']?.data.forEach((icon) => {
-    const iconValues = {};
-    Object.entries(icon).forEach((value) => {
-      const iconValue = value[1];
-      if (iconValue) {
-        iconValues[value[0]] = iconValue;
-      }
-    });
-    library[icon.key] = iconValues;
-  });
-  return library;
+  return resp.json();
 }
