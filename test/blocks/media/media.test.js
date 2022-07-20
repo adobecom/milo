@@ -32,7 +32,6 @@ describe('media', () => {
     });
     it('has a supporting bg color', () => {
       const isDark = medias[1].classList.contains('dark');
-      // console.log('media isDark', medias[1], isDark)
       expect(isDark).to.exist;
     });
   });

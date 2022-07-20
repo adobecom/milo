@@ -15,9 +15,8 @@ it('Verifies a hex color is dark', () => {
 
 it('Load tokens and has an icon', async () => {
   initIcons(document.body);
-  const blocks = document.querySelectorAll('main > div > div[class]');
-  const blocksArray = Array.prototype.slice.call(blocks);
-  await loadTokens(blocksArray);
+  const blocks = [...document.querySelectorAll('main > div > div[class]')];
+  await loadTokens(blocks);
   const icons = document.querySelectorAll('.icon');
   expect(icons).to.exist;
 });

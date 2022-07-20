@@ -17,8 +17,7 @@ export function decorateButtons(el) {
 }
 
 export function initIcons(el) {
-  // eslint-disable-next-line no-useless-escape
-  const regex = /\{\{icon-(.*?)\}\}+/g; // {{icon-*}}
+  const regex = /{{icon-(.*?)}}+/g; // {{icon-*}}
   const finds = el.textContent.match(regex);
   finds?.forEach((find) => {
     const str = find.replace('{{', '').replace('}}', '');
@@ -35,13 +34,10 @@ export function initIcons(el) {
 
 export async function formatIconLibraryData(json) {
   let library = {};
-  json['icons']?.data.forEach((icon) => {
+  json?.['icons']?.data.forEach((icon) => {
     const iconValues = {};
-    Object.entries(icon).forEach((value) => {
-      const iconValue = value[1];
-      if (iconValue) {
-        iconValues[value[0]] = iconValue;
-      }
+    Object.entries(icon).forEach(([key, value]) => {
+      if (value) iconValues[key] = value;
     });
     library[icon.key] = iconValues;
   });
