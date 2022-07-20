@@ -91,6 +91,15 @@ const barSeriesOptions = (seriesData, colors, size, unit) => {
   }));
 };
 
+/**
+ * Returns object of echart options
+ * @param {string} chartType
+ * @param {object} dataset
+ * @param {array} colors
+ * @param {string} size
+ * @param {string} unit
+ * @returns {}
+ */
 export const getChartOptions = (chartType, dataset, colors, size, unit = '') => {
   const source = dataset?.source;
   const seriesData = (source && source[1]) ? source[1].slice() : [];

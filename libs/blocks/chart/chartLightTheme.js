@@ -27,6 +27,7 @@ export default (deviceSize) => {
     themeName = 'lightSmall';
   }
 
+  // if themeName exists, we have already registered with options
   if (window.dataViz?.[themeName]) return themeName;
 
   const isLarge = size === LARGE;
