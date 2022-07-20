@@ -114,12 +114,8 @@ export function getBlockSize(el) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[1];
 }
 
-export async function getTokenLibrary(path = '/docs/library/tokens.json') {
-  const url = (window.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}`
-    /* c8 ignore next */
-    : path;
+export async function getTokenLibrary(url) {
   const resp = await fetch(url);
-  /* c8 ignore next */
   if (!resp.ok) return;
   return resp.json();
 }

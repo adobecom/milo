@@ -105,11 +105,11 @@ export async function loadBlock(block) {
   return block;
 }
 
-export async function loadTokens(blocks) {
+export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
   const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
   if (iconBlock) {
     const { getTokenLibrary, decorateIcons } = await import('../utils/decorate.js');
-    const tokenLibrary = await getTokenLibrary();
+    const tokenLibrary = await getTokenLibrary(url);
     await decorateIcons(tokenLibrary);
   }
 }
