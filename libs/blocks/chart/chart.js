@@ -91,6 +91,38 @@ const barSeriesOptions = (seriesData, colors, size, unit) => {
   }));
 };
 
+const getContainerSize = (chartSize, chartType) => {
+  const containerSizes = {
+      area: {
+          small: { height: 345, width: '100%' },
+          medium: { height: 310, width: '100%' },
+          large: { height: 512, width: '100%' },
+      },
+      default: {
+          small: { height: 290, width: '100%' },
+          medium: { height: 295, width: '100%' },
+          large: { height: 350, width: '100%' },
+      },
+      donut: {
+          small: { height: 345, width: '100%' },
+          medium: { height: 450, width: '100%' },
+          large: { height: 512, width: '100%' },
+      },
+      oversizedNumber: {
+          small: { minHeight: 290, width: '100%' },
+          medium: { minHeight: 295, width: '100%' },
+          large: { minHeight: 350, width: '100%' },
+      },
+  };
+  let containerSize = containerSizes?.default?.[chartSize] || {};
+
+  if (chartType in containerSizes) {
+    containerSize = containerSizes?.[chartType]?.[chartSize] || {};
+  }
+
+  return containerSize;
+};
+
 /**
  * Returns object of echart options
  * @param {string} chartType
@@ -143,23 +175,31 @@ const init = async (el) => {
   children[1]?.classList.add('chart_subTitle');
   children[3]?.classList.add('chart_footnote');
 
-  // ToDo: Replace hardcoded size MWPW-112994
-  const size = LARGE;
+  const container = document.createElement('section');
+  container.className = 'chart_container';
+  container.append(...children);
+  el.appendChild(container);
+  // Grab chart section metadata
+  const chartStyles = el.parentElement.classList;
+  const size = Array.from(chartStyles)?.find(style => style === SMALL || style === MEDIUM || style === LARGE);
+  el.classList.add(`chart_${size}`);
+  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
+
   const chartRow = children[2];
+  const containerSize = getContainerSize(size, chartType);
 
   if (chartRow) {
-    chartRow.style.width = '600px';
-    chartRow.style.height = '600px';
+    chartRow.style.width = containerSize?.width;
+    chartRow.style.height = `${containerSize?.height}px`;
   }
 
   const chart = chartRow?.querySelector(':scope > div');
 
   if (chart) {
-    chart.style.width = '600px';
-    chart.style.height = '600px';
+    chart.style.width = containerSize?.width;
+    chart.style.height = `${containerSize?.height}px`;
   }
 
-  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
   const dataLink = chart?.querySelector('a[href$="json"]');
   dataLink?.remove();
 
