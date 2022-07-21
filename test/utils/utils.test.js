@@ -37,6 +37,13 @@ describe('Utils', () => {
     expect(script).to.exist;
   });
 
+  it('Loads a script twice', async () => {
+    const scriptOne = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(scriptOne).to.exist;
+    const scriptTwo = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(scriptTwo).to.exist;
+  });
+
   it('Rejects a bad script', async () => {
     try {
       await utils.loadScript('/test/utils/mocks/error.js');
