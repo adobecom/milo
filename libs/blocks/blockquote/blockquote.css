@@ -1,10 +1,10 @@
 .blockquote {
   text-align: center;
-  margin: var(--spacing-l) 0;
+  margin: var(--spacing-l) auto;
+  max-width: var(--grid-container-width);
 }
 
 .blockquote figure {
-  max-width: var(--grid-container-width);
   margin: 0 auto;
   padding: var(--spacing-l);
 }
@@ -64,9 +64,14 @@
 }
 
 /* borders */
+.blockquote.borders  {
+  margin: var(--spacing-s) auto;
+}
+
 .blockquote.borders figure {
   border-top: 1px solid #cacaca;
   border-bottom: 1px solid #cacaca;
+  padding: var(--spacing-xs) 0;
 }
 
 

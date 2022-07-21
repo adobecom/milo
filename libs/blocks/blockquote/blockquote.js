@@ -24,7 +24,11 @@ export default async function init(el) {
   decorateBlockBg(el, rows[0]);
   const lastRow = rows[rows.length - 1];
   const imageRow = rows[1];
-  imageRow.classList.add('image');
+  if (imageRow.innerHTML.isEmpty) {
+    imageRow.remove();
+  } else {
+    imageRow.classList.add('image');
+  }
 
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
