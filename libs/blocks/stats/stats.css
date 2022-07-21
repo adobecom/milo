@@ -2,7 +2,6 @@
 .stats {
   position: relative;
   width: 100%;
-  padding: var(--spacing-s) 0;
 }
 
 .stats.m-spacing {
@@ -26,12 +25,12 @@
     font-size: var(--type-body-s-size);
 }
 
-.stats .intro {
+.stats .stats-intro {
   text-align: center;
-  margin: var(--spacing-xl) auto;
+  margin-bottom: var(--spacing-s);
 }
 
-.stats .intro img {
+.stats .stats-intro img {
   max-width: 100%;
   width: 320px;
 }
@@ -80,7 +79,7 @@
   display: block;
 }
 
-.template-sidebar.container .stats .container {
+.template-sidebar.container .stats .stats-container {
   width: 100%;
 }
 
@@ -103,7 +102,7 @@
 
 /* Tablet */
 @media screen and (min-width: 600px) {
-  .stats .container {
+  .stats .stats-container {
    display: flex;
    flex-direction: column;
    gap: var(--spacing-m);
@@ -120,7 +119,7 @@
   }
 
   /* [template] .template-sidebar */
-  .template-sidebar .stats .container {
+  .template-sidebar .stats .stats-container {
     display: flex;
     width: auto;
     flex-direction: row;
@@ -149,7 +148,7 @@
 
 /* Desktop */
 @media screen and (min-width: 1200px) {
-  .stats .container {
+  .stats .stats-container {
     flex-direction: row;
   }
 
@@ -166,7 +165,7 @@
   }
 
   /* [template] .template-sidebar */
-  .template-sidebar .stats .container,
+  .template-sidebar .stats .stats-container,
   .template-sidebar .stats .stats-wrapper,
   .template-sidebar .stats .solutions-wrapper {
     display: block;

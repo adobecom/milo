@@ -23,8 +23,8 @@ it will use the 2nd and 3rd sections on the page.
 
 function handleSectionSidebar(section) {
   const sidebar = section.previousSibling;
-  sidebar.classList.add('sidebar');
-  section.classList.add('main');
+  sidebar.classList.add('section-1');
+  section.classList.add('section-2');
   if (sidebar) {
     const sidebarContainer = document.createElement('div');
     const sidebarWrapper = document.createElement('div');

@@ -40,7 +40,7 @@ export default function init(el) {
     if (pics.length === 0 && !firstRow.textContent) {
       firstRow.remove();
     } else {
-      firstRow.classList.add('intro');
+      firstRow.classList.add('stats-intro');
     }
   }
   const rows = el.querySelectorAll(':scope > div:not([class])');
@@ -64,7 +64,7 @@ export default function init(el) {
       }
     });
     const container = document.createElement('div');
-    container.classList.add('container');
+    container.classList.add('stats-container');
     stats.classList.add(`count-${statCount}`);
     solutions.classList.add(`count-${solutionCount}`);
     container.appendChild(stats);
