@@ -35,4 +35,14 @@ describe('media', () => {
       expect(isDark).to.exist;
     });
   });
+  describe('simple media ', () => {
+    it('does not have CTA', () => {
+      const buttons = medias[2].querySelectorAll('em a, strong a');
+      expect(buttons.length).to.equal(0);
+    });
+    it('does not have a dark variant', () => {
+      const isDark = medias[2].classList.contains('dark');
+      expect(isDark).to.equal(false);
+    });
+  });
 });

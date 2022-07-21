@@ -16,7 +16,7 @@
 
 import { decorateBlockBg, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../utils/analytics.js';
-import media from '../media/media.js';
+import initMedia from '../media/media.js';
 
 export function decorateHeadline(header, size) {
   const headingRow = header.parentElement;
@@ -26,24 +26,22 @@ export function decorateHeadline(header, size) {
   header.classList.add(headerClass, 'headline');
 }
 
-function getOddRowsCount(rows) {
-  let zRowsOddCount = 0;
+function getReversedRowCount(rows) {
+  let count = 0;
   rows.forEach((row) => {
     const firstCol = row.querySelector(':scope > div > div:first-of-type');
-    const rowIsOdd = firstCol.querySelector('h1, h2, h3, h4, h5, h6');
-    if (rowIsOdd) zRowsOddCount += 1;
+    const header = firstCol.querySelector('h1, h2, h3, h4, h5, h6');
+    // if first col has a header, its order is reversed
+    if (header) count += 1;
   });
-  return zRowsOddCount;
+  return count;
 }
 
 function getChildSingleRowCount(children) {
-  let length = 0;
-  for (let i = 0; i < children.length; i += 1) {
-    if (children[i].children.length === 1) {
-      length += 1;
-    }
-  }
-  return length;
+  return [...children].reduce((length, child) => {
+    if (child.children.length === 1) length += 1;
+    return length;
+  }, 0);
 }
 
 export default function init(el) {
@@ -82,13 +80,13 @@ export default function init(el) {
     row.classList.add(size);
     row.appendChild(mediaRow);
   });
-  if (getOddRowsCount(zRows) === 0) {
+  if (getReversedRowCount(zRows) === 0) {
     zRows.forEach((row, i) => {
       if (i % 2) row.classList.add('media--reversed');
     });
   }
   const mediaItems = el.querySelectorAll(':scope > .media');
   mediaItems.forEach((i) => {
-    media(i, false);
+    initMedia(i, false);
   });
 }

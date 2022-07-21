@@ -1,43 +1,51 @@
-//
-// Shared decorate utils for Consonant blocks
-// Block usage ref: [media, z-pattern]
-//
 
 import { decorateLinkAnalytics } from './analytics.js';
 
-export function decorateButtons(el, isLarge) {
+export function decorateButtons(el) {
   const buttons = el.querySelectorAll('em a, strong a');
+  if (buttons.length === 0) return;
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
+    button.classList.add('con-button', buttonType);
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function initIcons(el) {
-  const regex = /[^{{]+(?=}})/g; // {{value}}
+  const regex = /{{icon-(.*?)}}+/g; // {{icon-*}}
   const finds = el.textContent.match(regex);
-  finds?.forEach((str) => {
+  finds?.forEach((find) => {
+    const str = find.replace('{{', '').replace('}}', '');
     el.innerHTML = el.innerHTML.replace(`{{${str}}}`, `<span class="icon">${str}</span>`);
   });
   const icons = el.querySelectorAll('.icon');
-  if (icons.length) {
-    icons?.forEach((icon) => {
-      icon.parentElement.classList.add('icon-area');
-      if (icon.classList.contains('icon-persona')) icon.parentElement.classList.add('persona-area');
-    });
-  }
+  icons.forEach((icon) => {
+    icon.parentElement.classList.add('icon-area');
+    if (icon.textContent.includes('persona')) {
+      icon.parentElement.classList.add('persona-area');
+    }
+  });
 }
 
-export async function decorateIcons(iconLibrary) {
+export async function formatIconLibraryData(json) {
+  let library = {};
+  json?.['icons']?.data.forEach((icon) => {
+    const iconValues = {};
+    Object.entries(icon).forEach(([key, value]) => {
+      if (value) iconValues[key] = value;
+    });
+    library[icon.key] = iconValues;
+  });
+  return library;
+}
+
+export async function decorateIcons(tokenLibrary) {
+  const iconLibrary = await formatIconLibraryData(tokenLibrary);
   const el = document.querySelector('main');
   const icons = el.querySelectorAll('.icon');
   icons?.forEach((i) => {
@@ -45,8 +53,9 @@ export async function decorateIcons(iconLibrary) {
     const icon = iconLibrary[str];
     const size = str.includes('persona') ? 80 : 40;
     if (iconLibrary && icon) {
+      const styles = icon.key.replaceAll('-', ', ').split(', ');
+      if (styles) i.classList.add(icon.key, ...styles);
       i.classList.add(icon.key)
-      // console.log('icons?', i);
       const svg = `<img height="${size}" width="${size}" alt="${icon.label}" src="${icon.value}">`;
       const label = `${svg} ${(icon.label !== undefined) ? icon.label : ''}`;
       const anchor = `<a class="icon ${str}" href="${icon.link}">${label}</a>`;
@@ -59,29 +68,22 @@ export async function decorateIcons(iconLibrary) {
   });
 }
 
-export function decorateText(el, size) {
+export function decorateBlockText(el, size = 'small') {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  if (!size || size === 'small') {
-    heading.classList.add('heading-XS');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling.classList.add(`body-${bodySize}`);
+    if (headingEl.previousElementSibling) {
+      headingEl.previousElementSibling.classList.add(`detail-${detailSize}`);
     }
-  }
+  };
   if (size === 'medium') {
-    heading.classList.add('heading-M');
-    heading.nextElementSibling.classList.add('body-S');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-M');
-    }
-  }
-  if (size === 'large') {
-    heading.classList.add('heading-XL');
-    heading.nextElementSibling.classList.add('body-M');
-    if (heading.previousElementSibling) {
-      heading.previousElementSibling.classList.add('detail-L');
-    }
+    decorate(heading, 'M', 'S', 'M');
+  } else if (size === 'large') {
+    decorate(heading, 'XL', 'M', 'L');
+  } else {
+    decorate(heading, 'XS', 'S', 'M');
   }
   initIcons(el);
   decorateButtons(el);
@@ -89,8 +91,8 @@ export function decorateText(el, size) {
 }
 
 export function isHexColorDark(color) {
-  if (color[0] !== '#') return false;
-  const hex = color.replace('#', '');
+  if (!color.trim().startsWith('#')) return false;
+  const hex = color.trim().replace('#', '');
   const cR = parseInt(hex.substr(0, 2), 16);
   const cG = parseInt(hex.substr(2, 2), 16);
   const cB = parseInt(hex.substr(4, 2), 16);
@@ -109,30 +111,11 @@ export function decorateBlockBg(block, node) {
 
 export function getBlockSize(el) {
   const sizes = ['small', 'medium', 'large'];
-  return sizes.reduce((rdx, size) => {
-    if (el.classList.contains(size)) {
-      return size;
-    }
-    return rdx;
-  }, sizes[1]);
+  return sizes.find((size) => el.classList.contains(size)) || sizes[1];
 }
 
-export async function getIconLibrary() {
-  let library = {};
-  const path = '/docs/icon-library.json';
-  const url = (window.document.location.port === '2000') ? `https://main--milo--adobecom.hlx.page${path}` : path;
+export async function getTokenLibrary(url) {
   const resp = await fetch(url);
   if (!resp.ok) return;
-  const json = await resp.json();
-  json.data.forEach((item) => {
-    const itemValues = {};
-    Object.entries(item).forEach((value) => {
-      const itemValue = value[1];
-      if (itemValue) {
-        itemValues[value[0]] = itemValue;
-      }
-    });
-    library[item.key] = itemValues;
-  });
-  await decorateIcons(library);
+  return resp.json();
 }

@@ -15,10 +15,7 @@
     margin: 0 auto;
 }
 
-.z-pattern .heading-row .headline {
-  margin: 0 0 var(--spacing-xs);
-}
-
+.z-pattern .heading-row .headline,
 .z-pattern .heading-row p {
   margin: 0 0 var(--spacing-xs);
 }

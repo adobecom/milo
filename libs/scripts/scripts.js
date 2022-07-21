@@ -61,8 +61,8 @@ async function loadPage() {
   await loadLazy([...navs, ...blocks]);
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
-  const { getIconLibrary } = await import('../utils/decorate.js');
-  await getIconLibrary();
+  const { loadTokens } = await import('../utils/utils.js');
+  await loadTokens(blocks);
   loadDelayed();
 }
 loadPage();

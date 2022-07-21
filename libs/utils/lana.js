@@ -47,7 +47,11 @@
     const o = getOptions(options);
     if (!o.clientId) console.warn('LANA ClientID is not set.');
 
-    const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
+    let sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
+
+    // TODO: Samplerate is being hardcoded to 1% due to dxdc mistakenly setting to 100.
+    // Revert this when they've fixed their end.
+    if (o.clientId === 'dxdc') sampleRate = 1;
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 

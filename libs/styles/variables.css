@@ -4,6 +4,8 @@
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
+  --link-color-dark: #5EAAF7;
+  --link-hover-color-dark: #5EAAF7;
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;

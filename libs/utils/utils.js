@@ -8,6 +8,7 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ICON_BLOCKS = ['media', 'z-pattern'];
 
 export function getEnv() {
   const { hostname, href } = window.location;
@@ -102,6 +103,15 @@ export async function loadBlock(block) {
     if (!decoratedBlock) { delete section.dataset.status; }
   }
   return block;
+}
+
+export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
+  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
+  if (iconBlock) {
+    const { getTokenLibrary, decorateIcons } = await import('../utils/decorate.js');
+    const tokenLibrary = await getTokenLibrary(url);
+    await decorateIcons(tokenLibrary);
+  }
 }
 
 export function decorateSVG(a) {
@@ -269,7 +279,7 @@ export function decorateArea(el = document) {
 
 export async function loadLazy(blocks, el = document) {
   if (getMetadata('nofollow-links') === 'on') {
-    const { default: nofollow } = await import('../blocks/nofollow/nofollow.js');
+    const { default: nofollow } = await import('../features/nofollow.js');
     nofollow('/seo/nofollow.json', el);
   }
   const loaded = blocks.map((block) => loadBlock(block));
@@ -278,7 +288,9 @@ export async function loadLazy(blocks, el = document) {
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
-  if (!script) {
+  if (script) {
+    resolve(script);
+  } else {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
