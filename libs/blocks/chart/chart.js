@@ -170,12 +170,9 @@ const getContainerSize = (chartSize, chartType) => {
       large: { minHeight: 350, width: '100%' },
     },
   };
-  let containerSize = containerSizes?.default?.[chartSize] || {};
-
-  if (chartType in containerSizes) {
-    containerSize = containerSizes?.[chartType]?.[chartSize] || {};
-  }
-
+  const containerSize = chartType in containerSizes
+    ? containerSizes?.[chartType]?.[chartSize] || {}
+    : containerSizes?.default?.[chartSize] || {};
   return containerSize;
 };
 

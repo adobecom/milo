@@ -331,18 +331,18 @@ export function isEmptyObject(obj) {
 }
 
 export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) => {
-  let previousCall = null;
+  let previousTime = null;
   return () => {
     const time = new Date().getTime();
     let timeout = null;
 
-    if (!previousCall || time - previousCall >= delay) {
-      previousCall = time;
+    if (!previousTime || time - previousTime >= delay) {
+      previousTime = time;
       throttled.apply(null, [opts, args]);
       timeout = setTimeout(() => {
         throttled.apply(null, [opts, args]);
         timeout = null;
-      }, (delay * 2));
+      }, (delay));
     }
   };
 };
