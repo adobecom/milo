@@ -1,17 +1,19 @@
 import { makeRelative, loadScript, throttle, isNullish } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
-const SMALL = 'small';
-const MEDIUM = 'medium';
-const LARGE = 'large';
+export const SMALL = 'small';
+export const MEDIUM = 'medium';
+export const LARGE = 'large';
+export const DESKTOP_BREAKPOINT = 1200;
+export const TABLET_BREAKPOINT = 600;
 const CONTAINER_STYLES = 'container';
 const CONTAINER_STYLES_CLASSNAME = 'chart_container-shadows';
 const colorPalette = {
-  'red': '#EA3829', 
-  'orange': '#F48411', 
-  'yellow':'#F5D704', 
-  'chartreuse': '#A9D814', 
-  'celery': '#26BB36', 
+  'red': '#EA3829',
+  'orange': '#F48411',
+  'yellow':'#F5D704',
+  'chartreuse': '#A9D814',
+  'celery': '#26BB36',
   'green': '#008F5D',
   'seafoam': '#12B5AE',
   'cyan': '#34C5E8',
@@ -221,15 +223,13 @@ const updateContainerSize = (chartWrapper, chartSize, chartType) => {
   }
 };
 
-const getResponsiveSize = (authoredSize) => {
-  const desktopBreakpoint = 1200;
-  const tabletBreakpoint = 600;
+export const getResponsiveSize = (authoredSize) => {
   const width = window.innerWidth;
-  let size = authoredSize;
+  let size = LARGE;
 
-  if (width < tabletBreakpoint) {
+  if (width < TABLET_BREAKPOINT || authoredSize === SMALL) {
     size = SMALL;
-  } else if (width < desktopBreakpoint) {
+  } else if (width < DESKTOP_BREAKPOINT || authoredSize === MEDIUM) {
     size = MEDIUM;
   }
 
@@ -291,7 +291,7 @@ const init = async (el) => {
   if (!chartType || !chartWrapper || !dataLink) return;
 
   const data = await fetchData(dataLink);
-  
+
   if (!data) return;
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
