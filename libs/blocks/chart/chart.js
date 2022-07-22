@@ -1,4 +1,4 @@
-import { makeRelative, loadScript } from '../../utils/utils.js';
+import { makeRelative, loadScript, throttle } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
 const SMALL = 'small';
@@ -89,48 +89,17 @@ const barSeriesOptions = (seriesData, colors, size, unit) => {
   }));
 };
 
-const getContainerSize = (chartSize, chartType) => {
-  const containerSizes = {
-      area: {
-          small: { height: 345, width: '100%' },
-          medium: { height: 310, width: '100%' },
-          large: { height: 512, width: '100%' },
-      },
-      default: {
-          small: { height: 290, width: '100%' },
-          medium: { height: 295, width: '100%' },
-          large: { height: 350, width: '100%' },
-      },
-      donut: {
-          small: { height: 345, width: '100%' },
-          medium: { height: 450, width: '100%' },
-          large: { height: 512, width: '100%' },
-      },
-      oversizedNumber: {
-          small: { minHeight: 290, width: '100%' },
-          medium: { minHeight: 295, width: '100%' },
-          large: { minHeight: 350, width: '100%' },
-      },
-  };
-  let containerSize = containerSizes?.default?.[chartSize] || {};
-
-  if (chartType in containerSizes) {
-    containerSize = containerSizes?.[chartType]?.[chartSize] || {};
-  }
-
-  return containerSize;
-};
-
 /**
  * Returns object of echart options
  * @param {string} chartType
- * @param {object} dataset
+ * @param {object} data
  * @param {array} colors
  * @param {string} size
- * @param {string} unit
- * @returns {}
+ * @returns {object}
  */
-export const getChartOptions = (chartType, dataset, colors, size, unit = '') => {
+export const getChartOptions = (chartType, data, colors, size) => {
+  const dataset = processDataset(data.data);
+  const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
   const seriesData = (source && source[1]) ? source[1].slice() : [];
 
@@ -178,50 +147,126 @@ const handleIntersect = (chart, chartOptions) => (entries, observer) => {
   });
 };
 
-const init = async (el) => {
-  const children = el?.querySelectorAll(':scope > div');
-  children[0]?.classList.add('chart_title');
-  children[1]?.classList.add('chart_subTitle');
-  children[3]?.classList.add('chart_footnote');
+const getContainerSize = (chartSize, chartType) => {
+  const containerSizes = {
+    area: {
+      small: { height: 345, width: '100%' },
+      medium: { height: 310, width: '100%' },
+      large: { height: 512, width: '100%' },
+    },
+    default: {
+      small: { height: 290, width: '100%' },
+      medium: { height: 295, width: '100%' },
+      large: { height: 350, width: '100%' },
+    },
+    donut: {
+      small: { height: 345, width: '100%' },
+      medium: { height: 450, width: '100%' },
+      large: { height: 512, width: '100%' },
+    },
+    oversizedNumber: {
+      small: { minHeight: 290, width: '100%' },
+      medium: { minHeight: 295, width: '100%' },
+      large: { minHeight: 350, width: '100%' },
+    },
+  };
+  const containerSize = chartType in containerSizes
+    ? containerSizes?.[chartType]?.[chartSize] || {}
+    : containerSizes?.default?.[chartSize] || {};
+  return containerSize;
+};
 
-  const container = document.createElement('section');
-  container.className = 'chart_container';
-  container.append(...children);
-  el.appendChild(container);
-  // Grab chart section metadata
-  const chartStyles = el.parentElement.classList;
-  const size = Array.from(chartStyles)?.find(style => style === SMALL || style === MEDIUM || style === LARGE);
-  el.classList.add(`chart_${size}`);
-  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
-
-  const chartRow = children[2];
-  const containerSize = getContainerSize(size, chartType);
+const updateContainerSize = (chartWrapper, chartSize, chartType) => {
+  const containerSize = getContainerSize(chartSize, chartType);
+  const chartRow = chartWrapper?.parentElement;
 
   if (chartRow) {
     chartRow.style.width = containerSize?.width;
     chartRow.style.height = `${containerSize?.height}px`;
   }
 
-  const chartDiv = chartRow?.querySelector(':scope > div');
+  if (chartWrapper) {
+    chartWrapper.style.width = containerSize?.width;
+    chartWrapper.style.height = `${containerSize?.height}px`;
+  }
+};
 
-  if (chartDiv) {
-    chartDiv.style.width = containerSize?.width;
-    chartDiv.style.height = `${containerSize?.height}px`;
+const getResponsiveSize = (authoredSize) => {
+  const desktopBreakpoint = 1200;
+  const tabletBreakpoint = 600;
+  const width = window.innerWidth;
+  let size = authoredSize;
+
+  if (width < tabletBreakpoint) {
+    size = SMALL;
+  } else if (width < desktopBreakpoint) {
+    size = MEDIUM;
   }
 
-  const dataLink = chartDiv?.querySelector('a[href$="json"]');
+  return size;
+};
+
+const handleResize = (el, authoredSize, chartType, data, colors) => {
+  const currentSize = getResponsiveSize(authoredSize);
+  const previousSize = el?.getAttribute('data-responsive-size');
+  const previousIsLarge = previousSize === LARGE;
+  const currentIsLarge = currentSize === LARGE;
+  const chartWrapper = el?.querySelector('.chart_wrapper');
+  const chartInstance = window.echarts?.getInstanceByDom(chartWrapper);
+
+  if (currentSize !== previousSize) {
+    updateContainerSize(chartWrapper, currentSize, chartType);
+    el.setAttribute('data-responsive-size', currentSize);
+  }
+
+  if (previousIsLarge !== currentIsLarge) {
+    chartInstance?.dispose();
+
+    const themeName = getTheme(currentSize);
+    const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
+    const chartOptions = getChartOptions(chartType, data, colors, currentSize);
+
+    chart.setOption(chartOptions);
+  } else {
+    chartInstance?.resize();
+  }
+};
+
+const init = async (el) => {
+  const children = el?.querySelectorAll(':scope > div');
+  const chartWrapper = children[2]?.querySelector(':scope > div');
+  children[0]?.classList.add('chart_title');
+  children[1]?.classList.add('chart_subTitle');
+  children[3]?.classList.add('chart_footnote');
+  chartWrapper?.classList.add('chart_wrapper');
+
+  const container = document.createElement('section');
+  container.className = 'chart_container';
+  container.append(...children);
+  el.appendChild(container);
+
+  const chartStyles = el.parentElement.classList;
+  const authoredSize = Array.from(chartStyles)?.find((style) => (
+    style === SMALL || style === MEDIUM || style === LARGE
+  ));
+  const size = getResponsiveSize(authoredSize);
+  el.classList.add(`chart_${authoredSize}`);
+  el.setAttribute('data-responsive-size', size);
+
+  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
+  const dataLink = chartWrapper?.querySelector('a[href$="json"]');
 
   dataLink?.remove();
 
-  if (!chartType || !chartDiv || !dataLink) return;
+  if (!chartType || !chartWrapper || !dataLink) return;
 
   const data = await fetchData(dataLink);
   if (!data) return;
 
-  const dataset = processDataset(data.data);
-  const unit = data?.data[0]?.Unit;
   // ToDo: Replace colors MWPW-112994
   const colors = ['red', 'blue', 'green'];
+
+  updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType !== 'oversizedNumber') {
     loadScript('/libs/deps/echarts.min.js')
@@ -231,17 +276,21 @@ const init = async (el) => {
           rootMargin: '0px',
           threshold: 0.5,
         };
-
         const themeName = getTheme(size);
-        const chart = window.echarts?.init(chartDiv, themeName, { renderer: 'svg' });
+        const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
+        const chartOptions = getChartOptions(chartType, data, colors, size);
 
-        const chartOptions = getChartOptions(chartType, dataset, colors, size, unit);
         if (!(window.IntersectionObserver)) {
           chart.setOption(chartOptions);
         } else {
           const observer = new IntersectionObserver(handleIntersect(chart, chartOptions), observerOptions);
           observer.observe(el);
         }
+
+        window.addEventListener('resize', throttle(
+          1000,
+          () => handleResize(el, authoredSize, chartType, data, colors),
+        ));
       })
       .catch((error) => console.log('Error loading script:', error));
   }
