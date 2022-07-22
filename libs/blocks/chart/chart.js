@@ -1,9 +1,26 @@
-import { makeRelative, loadScript, throttle } from '../../utils/utils.js';
+import { makeRelative, loadScript, throttle, isNullish } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
 const SMALL = 'small';
 const MEDIUM = 'medium';
 const LARGE = 'large';
+const CONTAINER_STYLES = 'container';
+const CONTAINER_STYLES_CLASSNAME = 'chart_container-shadows';
+const colorPalette = {
+  'red': '#EA3829', 
+  'orange': '#F48411', 
+  'yellow':'#F5D704', 
+  'chartreuse': '#A9D814', 
+  'celery': '#26BB36', 
+  'green': '#008F5D',
+  'seafoam': '#12B5AE',
+  'cyan': '#34C5E8',
+  'blue': '#3991F3',
+  'indigo': '#686DF4',
+  'purple': '#8A3CE7',
+  'fuchsia': '#E054E2',
+  'magenta': '#DE3C82',
+};
 const chartTypes = [
   'bar',
 ];
@@ -37,7 +54,9 @@ async function fetchData(link) {
   const path = makeRelative(link.href);
   const data = {};
   const resp = await fetch(path.toLowerCase());
+
   if (!resp.ok) return data;
+
   const json = await resp.json();
 
   // Check the type of data
@@ -147,32 +166,43 @@ const handleIntersect = (chart, chartOptions) => (entries, observer) => {
   });
 };
 
+const getColors = (authoredColor) => {
+  const colorList = Object.values(colorPalette);
+
+  if (isNullish(authoredColor) || !colorPalette.hasOwnProperty(authoredColor)) return colorList;
+
+  const colorIndex = colorList.indexOf(colorPalette[authoredColor]);
+
+  return colorList.concat(colorList.splice(0, colorIndex));
+};
+
 const getContainerSize = (chartSize, chartType) => {
-  const containerSizes = {
+  const chartHeights = {
     area: {
-      small: { height: 345, width: '100%' },
-      medium: { height: 310, width: '100%' },
-      large: { height: 512, width: '100%' },
+      small: { height: 345 },
+      medium: { height: 310 },
+      large: { height: 512 },
     },
     default: {
-      small: { height: 290, width: '100%' },
-      medium: { height: 295, width: '100%' },
-      large: { height: 350, width: '100%' },
+      small: { height: 290 },
+      medium: { height: 295 },
+      large: { height: 350 },
     },
     donut: {
-      small: { height: 345, width: '100%' },
-      medium: { height: 450, width: '100%' },
-      large: { height: 512, width: '100%' },
+      small: { height: 345 },
+      medium: { height: 450 },
+      large: { height: 512 },
     },
     oversizedNumber: {
-      small: { minHeight: 290, width: '100%' },
-      medium: { minHeight: 295, width: '100%' },
-      large: { minHeight: 350, width: '100%' },
+      small: { minHeight: 290 },
+      medium: { minHeight: 295 },
+      large: { minHeight: 350 },
     },
   };
-  const containerSize = chartType in containerSizes
-    ? containerSizes?.[chartType]?.[chartSize] || {}
-    : containerSizes?.default?.[chartSize] || {};
+  const containerSize = chartType in chartHeights
+    ? chartHeights?.[chartType]?.[chartSize] || {}
+    : chartHeights?.default?.[chartSize] || {};
+  containerSize.width = '100%';
   return containerSize;
 };
 
@@ -261,10 +291,16 @@ const init = async (el) => {
   if (!chartType || !chartWrapper || !dataLink) return;
 
   const data = await fetchData(dataLink);
+  
   if (!data) return;
 
-  // ToDo: Replace colors MWPW-112994
-  const colors = ['red', 'blue', 'green'];
+  const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+  const colors = getColors(authoredColor);
+  const useContainerStyles = Array.from(chartStyles)?.indexOf(CONTAINER_STYLES);
+
+  if (useContainerStyles !== -1) {
+    container.classList.add(CONTAINER_STYLES_CLASSNAME);
+  }
 
   updateContainerSize(chartWrapper, size, chartType);
 
