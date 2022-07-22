@@ -1,13 +1,4 @@
-/**
- * Custom Echarts Theme - consonantLightLarge and consonantLIGHT_SMALL
- *
- * Theme for light background 10/6/2021
- * Add to echarts:
- * const chart = echarts.init(element, themeName)
- *
- * https://echarts.apache.org/en/theme-builder.html
- */
-
+// Custom Echarts Theme https://echarts.apache.org/en/theme-builder.html
 import { isEmptyObject } from '../../utils/utils.js';
 
 export const LIGHT_SMALL = 'lightSmall';
