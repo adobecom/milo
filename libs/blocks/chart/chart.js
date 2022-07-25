@@ -7,7 +7,7 @@ export const LARGE = 'large';
 export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 const CONTAINER_STYLES = 'container';
-const CONTAINER_STYLES_CLASSNAME = 'chart_container-shadows';
+const CONTAINER_STYLES_CLASSNAME = 'chart-container-shadows';
 const colorPalette = {
   'red': '#EA3829',
   'orange': '#F48411',
@@ -82,7 +82,7 @@ const barTooltipFormatter = ({
   encode: { x = [] },
   name,
 } = {}, unit = '') => (
-  `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip_icon"></i>`
+  `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
 );
 
 const barSeriesOptions = (seriesData, colors, size, unit) => {
@@ -265,13 +265,13 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
 const init = async (el) => {
   const children = el?.querySelectorAll(':scope > div');
   const chartWrapper = children[2]?.querySelector(':scope > div');
-  children[0]?.classList.add('chart_title');
-  children[1]?.classList.add('chart_subTitle');
-  children[3]?.classList.add('chart_footnote');
+  children[0]?.classList.add('title');
+  children[1]?.classList.add('subTitle');
+  children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart_wrapper');
 
   const container = document.createElement('section');
-  container.className = 'chart_container';
+  container.className = 'chart-container';
   container.append(...children);
   el.appendChild(container);
 
@@ -280,7 +280,7 @@ const init = async (el) => {
     style === SMALL || style === MEDIUM || style === LARGE
   ));
   const size = getResponsiveSize(authoredSize);
-  el.classList.add(`chart_${authoredSize}`);
+  el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
   const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
