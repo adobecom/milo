@@ -266,7 +266,7 @@ const init = async (el) => {
   const children = el?.querySelectorAll(':scope > div');
   const chartWrapper = children[2]?.querySelector(':scope > div');
   children[0]?.classList.add('title');
-  children[1]?.classList.add('subTitle');
+  children[1]?.classList.add('subtitle');
   children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart_wrapper');
 
