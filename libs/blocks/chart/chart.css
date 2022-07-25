@@ -1,87 +1,82 @@
-@keyframes oversizedNumber {
-    from { transform: scale(0); }
-    to { transform: scale(1); }
+@keyframes oversized-number {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
 }
 
 /* Not sure if we want these to be placed elsewhere, perhaps variables, bring to milo community */
 .chart {
-    --spectrum-global-color-static-white: rgb(255, 255, 255);
-    --spectrum-global-color-static-black: rgb(0, 0, 0);
-    --chart-padding: 32px 32px 40px 32px;
-    --spectrum-grey-900: rgba(44, 44, 44, 1);
+  --spectrum-global-color-static-white: rgb(255 255 255);
+  --spectrum-global-color-static-black: rgb(0 0 0);
+  --chart-padding: 32px 32px 40px 32px;
+  --spectrum-grey-900: rgb(44 44 44 / 100%);
 }
 
-.chart_title {
-    color: var(--spectrum-grey-900);
-    font-weight: 700;
-    line-height: 1.25;
+.chart .title  * {
+  color: var(--spectrum-grey-900);
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 16px;
+  font-weight: 700;
 }
 
-.chart_subTitle {
-    color: var(--spectrum-grey-900);
-    font-weight: normal;
-    font-size: 18px;
-    line-height: 1.5;
-    margin-bottom: 40px;
-    display: block;
+.chart .subtitle * {
+  color: var(--spectrum-grey-900);
+  font-weight: normal;
+  font-size: 18px;
+  line-height: 1.5;
+  margin-bottom: 40px;
+  display: block;
 }
 
-.chart_footnote {
-    margin-top: 24px;
-    text-align: right;
-    font-size: 14px;
-    color: #767676;
-    display: block;
-}
-
-.chart_container .chart_title,
-.chart_small .chart_container .chart_title,
-.chart_medium .chart_container .chart_title {
-    font-size: 24px;
-    line-height: 30px;
-    margin-bottom: 16px;
+.chart .footnote * {
+  margin-top: 24px;
+  text-align: right;
+  font-size: 14px;
+  color: #767676;
+  display: block;
 }
 
 @media only screen and (min-width: 75rem) {
-    .chart_container [data-chart-type="area"] > div {
-      height: 900px;
-    }
+  .chart-container [data-chart-type="area"] > div {
+    height: 900px;
+  }
 }
 
-.chart_container-shadows {
-    border-radius: 8px;
-    background-color: var(--spectrum-global-color-static-white);
-    box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.1);
-    padding: var(--chart-padding);
+.chart-container-shadows {
+  border-radius: 8px;
+  background-color: var(--spectrum-global-color-static-white);
+  box-shadow: 0 3px 10px 0 rgb(0 0 0 / 10%);
+  padding: var(--chart-padding);
 }
 
-.chart_small .chart_container-shadows,
-.chart_medium .chart_container-shadows {
-    padding: var(--chart-padding);
+.chart.small .chart-container-shadows,
+.chart.medium .chart-container-shadows {
+  padding: var(--chart-padding);
 }
 
-.chart .tooltip_icon {
-    height: 16px;
-    width: 16px;
-    background-color: var(--spectrum-global-color-static-black);
-    position: absolute;
-    bottom: -8px;
-    right: 20px;
-    transform: rotate(45deg);
-    z-index: 0;
+.chart .tooltip-icon {
+  height: 16px;
+  width: 16px;
+  background-color: var(--spectrum-global-color-static-black);
+  position: absolute;
+  bottom: -8px;
+  right: 20px;
+  transform: rotate(45deg);
+  z-index: 0;
 }
 
+/* ToDo: Change classes to kebab case */
 .chart_oversizedContainer {
-    max-width: 430px;
-    margin: auto;
-    animation-name: oversizedNumber;
-    animation-duration: 1s;
+  max-width: 430px;
+  margin: auto;
+  animation-name: oversized-number;
+  animation-duration: 1s;
 }
 
 .chart_oversizedContainer svg {
-    width: 100%;
-    max-width: 100%;
-    max-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .chart_oversizedTitle,
