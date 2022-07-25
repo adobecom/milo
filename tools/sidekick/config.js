@@ -46,40 +46,44 @@ function hasSchema(host) {
     plugins: [
       {
         id: 'register-caas',
-        condition: (s) => s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
+        condition: (s) =>
+          s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
         button: {
           text: 'Register with CaaS',
           action: async (_, sk) => {
-            const { default: publishCaas } = await import('../publish-caas/publish-caas.js');
-            publishCaas(sk.config.host, sk);
+            document.dispatchEvent(
+              new CustomEvent('publish-caas', {
+                detail: { host: sk.config.host },
+              }),
+            );
           },
         },
       },
-      {
-        id: 'publish',
-        condition: (s) => s.isHelix() && s.isContent(),
-        override: false,
-        callback: (s) => {
-          s.loadCSS('/tools/publish-caas/publish-caas.css');
-          s.addEventListener('published', async ({ currentTarget: sk }) => {
-            if (sk.querySelector('#caas-cb').checked) {
-              const { default: publishCaas } = await import('../publish-caas/publish-caas.js');
-              publishCaas(s.config.host);
-            }
-          });
-        },
-        elements: [
-          {
-            tag: 'label',
-            text: 'Register with CaaS',
-            attrs: { for: 'caas-cb' },
-          },
-          {
-            tag: 'input',
-            attrs: { id: 'caas-cb', type: 'checkbox' },
-          },
-        ],
-      },
+      // {
+      //   id: 'publish',
+      //   condition: (s) => s.isHelix() && s.isContent(),
+      //   override: false,
+      //   callback: (s) => {
+      //     s.loadCSS('/tools/publish-caas/publish-caas.css');
+      //     s.addEventListener('published', async ({ currentTarget: sk }) => {
+      //       if (sk.querySelector('#caas-cb').checked) {
+      //         const { default: publishCaas } = await import('../publish-caas/publish-caas.js');
+      //         publishCaas(s.config.host);
+      //       }
+      //     });
+      //   },
+      //   elements: [
+      //     {
+      //       tag: 'label',
+      //       text: 'Register with CaaS',
+      //       attrs: { for: 'caas-cb' },
+      //     },
+      //     {
+      //       tag: 'input',
+      //       attrs: { id: 'caas-cb', type: 'checkbox' },
+      //     },
+      //   ],
+      // },
       // TOOLS ---------------------------------------------------------------------
       {
         id: 'library',

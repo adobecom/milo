@@ -653,10 +653,12 @@ const Configurator = ({ rootEl }) => {
     </ConfiguratorContext.Provider>`;
 };
 
-export default async function init(el) {
+const init = async (el) => {
   loadStyle('/libs/ui/page/page.css');
 
   const app = html` <${Configurator} rootEl=${el} /> `;
 
   render(app, el);
-}
+};
+
+export { init as default, loadCaasTags };
