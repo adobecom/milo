@@ -16,9 +16,9 @@ async function fetchFile(url, retryAttempt) {
 }
 
 async function init() {
-  const first = await fetchFile('http://localhost:3000/drafts/bhagwath/validatemd.md', 1);
-  const second = await fetchFile('http://localhost:3000/drafts/bhagwath/validatemd1.md', 1);
-  const third = await fetchFile('http://localhost:3000/drafts/bhagwath/validatemd2.md', 1);
+  const first = await fetchFile('/drafts/bhagwath/validatemd.md', 1);
+  const second = await fetchFile('/drafts/bhagwath/validatemd1.md', 1);
+  const third = await fetchFile('/drafts/bhagwath/validatemd2.md', 1);
   const firstText = await first.text();
   let secondText = await second.text();
   const thirdText = await third.text();
@@ -72,7 +72,7 @@ async function init() {
   });
   const docx = await mdast2docx(mdast2);
   await connectToSP(async () => {
-    await saveFile(docx, '/drafts/bhagwath/ValidateMD2AutoSavedV2.docx');
+    await saveFile(docx, '/drafts/bhagwath/ValidateMD2AutoSavedV3.docx');
   });
 }
 
