@@ -25,6 +25,7 @@ const colorPalette = {
 };
 const chartTypes = [
   'bar',
+  'column',
 ];
 
 function processDataset(data) {
@@ -85,27 +86,42 @@ const barTooltipFormatter = ({
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
 );
 
-const barSeriesOptions = (seriesData, colors, size, unit) => {
+export const tooltipFormatter = (params, unit) => {
+  let tooltip = params[0].name;
+  params.forEach(({
+    marker,
+    value,
+    encode: { y = [] },
+    seriesName,
+  } = {}) => {
+    tooltip += `<br />${marker} ${value[y[0]]}${unit} ${seriesName}`;
+  });
+  tooltip += '<i class="tooltip-icon"></i>';
+  return tooltip;
+};
+
+const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
   const isLarge = size === LARGE;
+  const isBar = chartType === 'bar';
 
   return seriesData.map((value, index) => ({
     type: 'bar',
     label: {
-      show: true,
+      show: isBar,
       formatter: `{@[${index + 1}]}${unit}`,
       position: 'right',
       textBorderColor: '#000',
       distance: 8,
       fontSize: isLarge ? 16 : 14,
     },
-    showBackground: true,
+    showBackground: isBar,
     backgroundStyle: {
       color: colors[index],
       borderRadius: 3,
       opacity: 0.35,
     },
     itemStyle: { borderRadius: 3 },
-    barCategoryGap: 0,
+    barCategoryGap: isBar ? 0 : '33.3%',
     barGap: '33.3%',
   }));
 };
@@ -135,7 +151,11 @@ export const getChartOptions = (chartType, data, colors, size) => {
     },
     tooltip: {
       show: true,
-      formatter: (params) => barTooltipFormatter(params, unit),
+      formatter: chartType === 'bar'
+        ? (params) => barTooltipFormatter(params, unit)
+        : (params) => tooltipFormatter(params, unit),
+      trigger: chartType === 'column' ? 'axis' : 'item',
+      axisPointer: { type: chartType === 'column' ? 'none' : 'line' },
     },
     xAxis: {
       type: chartType === 'bar' ? 'value' : 'category',
@@ -147,13 +167,20 @@ export const getChartOptions = (chartType, data, colors, size) => {
         const extraSpace = 1;
         return Math.ceil((value.max + (value.max * extraSpace)) / 10) * 10;
       },
+      boundaryGap: chartType === 'column',
     },
     yAxis: {
       type: chartType === 'bar' ? 'category' : 'value',
-      axisLabel: { show: chartType !== 'bar' },
+      axisLabel: {
+        show: chartType !== 'bar',
+        formatter: (params) => `${params}${unit}`,
+        padding: 0,
+      },
       axisTick: { show: chartType !== 'bar' },
     },
-    series: barSeriesOptions(seriesData, colors, size, unit),
+    series: (chartType === 'bar' || 'column')
+      ? barSeriesOptions(chartType, seriesData, colors, size, unit)
+      : null,
   };
 };
 
@@ -178,7 +205,7 @@ const getColors = (authoredColor) => {
   return colorList.concat(colorList.splice(0, colorIndex));
 };
 
-const getContainerSize = (chartSize, chartType) => {
+export const getContainerSize = (chartSize, chartType) => {
   const chartHeights = {
     area: {
       small: { height: 345 },
@@ -283,7 +310,7 @@ const init = async (el) => {
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
-  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type));
+  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type) !== -1);
   const dataLink = chartWrapper?.querySelector('a[href$="json"]');
 
   dataLink?.remove();
