@@ -3,6 +3,32 @@
   to { transform: scale(1); }
 }
 
+.section.chart-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.chart-section > * {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 1200px) {
+  .up-2 .chart_small {
+    width: calc(50% - 8px);
+    max-width: calc(50% - 8px);
+    flex: 1 1 auto;
+  }
+
+  .up-3 .chart_small {
+    width: calc(33% - 8px);
+    max-width: calc(33% - 8px);
+    flex: 1 1 auto;
+  }
+}
+
 /* Not sure if we want these to be placed elsewhere, perhaps variables, bring to milo community */
 .chart {
   --spectrum-global-color-static-white: rgb(255 255 255);

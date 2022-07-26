@@ -8,6 +8,7 @@ export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 const CONTAINER_STYLES = 'container';
 const CONTAINER_STYLES_CLASSNAME = 'chart-container-shadows';
+const SECTION_CLASSNAME = 'chart-section';
 const colorPalette = {
   'red': '#EA3829',
   'orange': '#F48411',
@@ -189,6 +190,7 @@ const handleIntersect = (chart, chartOptions) => (entries, observer) => {
 
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
+      chart?.resize();
       chart?.setOption(chartOptions);
       observer.unobserve(entry.target);
     }
@@ -307,6 +309,7 @@ const init = async (el) => {
     style === SMALL || style === MEDIUM || style === LARGE
   ));
   const size = getResponsiveSize(authoredSize);
+  chartStyles.add(SECTION_CLASSNAME);
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
@@ -323,9 +326,8 @@ const init = async (el) => {
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const colors = getColors(authoredColor);
-  const useContainerStyles = Array.from(chartStyles)?.indexOf(CONTAINER_STYLES);
 
-  if (useContainerStyles !== -1) {
+  if (Array.from(chartStyles)?.includes(CONTAINER_STYLES)) {
     container.classList.add(CONTAINER_STYLES_CLASSNAME);
   }
 
