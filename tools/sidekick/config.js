@@ -21,13 +21,47 @@ function hasSchema(host) {
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
-    project: 'Milo',
-    host: 'milo.adobe.com',
-    previewHost: 'main--milo--adobecom.hlx.page',
-    byocdn: true,
     hlx3: true,
+    libraries: [
+      {
+        text: 'Blocks',
+        path: '/docs/library/blocks.json',
+      },
+      {
+        text: 'Templates',
+        path: '/docs/library/templates.json',
+      },
+      {
+        text: 'Placeholders',
+        path: '/docs/library/placeholders.json',
+      },
+      {
+        text: 'Tokens',
+        path: '/docs/library/tokens.json',
+      },
+    ],
     plugins: [
       // TOOLS ---------------------------------------------------------------------
+      {
+        id: 'library',
+        condition: () => true,
+        button: {
+          text: 'Library',
+          action: (_, s) => {
+            const { config } = s;
+            const script = document.createElement('script');
+            script.onload = () => {
+              const skEvent = new CustomEvent(
+                'hlx:library-loaded',
+                { detail: { domain: `https://${config.innerHost}`, libraries: config.libraries } },
+              );
+              document.dispatchEvent(skEvent);
+            };
+            script.src = `https://${config.innerHost}/libs/ui/library/library.js`;
+            document.head.appendChild(script);
+          },
+        },
+      },
       {
         id: 'tools',
         condition: (s) => s.isEditor(),
@@ -35,7 +69,7 @@ function hasSchema(host) {
           text: 'Tools',
           action: (_, s) => {
             const { config } = s;
-            window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
+            window.open(`https://${config.innerHost}/tools/`, 'milo-tools');
           },
         },
       },

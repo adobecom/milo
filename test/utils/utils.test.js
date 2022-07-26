@@ -33,6 +33,8 @@ describe('Utils', () => {
     const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
     expect(script).to.exist;
     expect(script.type).to.equal('module');
+    await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(script).to.exist;
   });
 
   it('Rejects a bad script', async () => {
@@ -53,7 +55,7 @@ describe('Utils', () => {
     meta.name = 'nofollow-links';
     meta.content = 'on';
     document.head.append(meta);
-    await utils.loadLazy([]);
+    await utils.loadArea({ blocks: [] });
     const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
     expect(gaLink).to.exist;
   });

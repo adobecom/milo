@@ -31,7 +31,6 @@ Common styles for faas form Dexter's
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
   padding: 12px 0;
 }
 
@@ -326,6 +325,48 @@ input[type="checkbox"] + label {
 .faas.next .faas-form input[type=email] + div {
   position: absolute;
   bottom: -10px;
+}
+
+/* for modal */
+.dialog-modal .faas {
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.dialog-modal .faas .faas-form-wrapper {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.dialog-modal .faas h2 {
+  font-size: 20px;
+  text-align: left;
+  margin: 0 auto 1em;
+  padding: 0 15px;
+  max-width: 620px;
+}
+
+.dialog-modal .faas .faas-form .row:not(.submit):not(.checkbox) {
+  padding-bottom: .5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.dialog-modal .faas-form label {
+  font-size: .875em;
+}
+
+.dialog-modal .faas-form select {
+  height: 2.5rem;
+  font-size: 1.125em;
+  padding: 0 1em;
+}
+
+.dialog-modal .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=hidden]) {
+  font-size: 1.125em;
+  padding: 0.622rem 2em 0.622rem 1em;
+  line-height: 1.375em;
 }
 
 /* for mobile */
