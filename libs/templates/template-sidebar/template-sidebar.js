@@ -22,7 +22,7 @@ it will use the 2nd and 3rd sections on the page.
  */
 
 function handleSectionSidebar(section) {
-  const sidebar = section.previousSibling;
+  const sidebar = section.previousElementSibling;
   sidebar.classList.add('section-1');
   section.classList.add('section-2');
   if (sidebar) {
@@ -47,6 +47,7 @@ function handleSectionSidebar(section) {
 export default function init() {
   const sections = document.querySelectorAll('body > main > div.section');
   let startingIndex = sections[0].querySelector('div.marquee') ? 2 : 1;
+  console.log('sections', sections, startingIndex);
   handleSectionSidebar(sections[startingIndex])
 }
 
