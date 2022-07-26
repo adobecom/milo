@@ -21,9 +21,6 @@ function hasSchema(host) {
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
-    project: 'Milo',
-    host: 'milo.adobe.com',
-    byocdn: true,
     hlx3: true,
     libraries: [
       {
