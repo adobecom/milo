@@ -11,58 +11,26 @@
  */
 
 import {
-  getMetadata,
   decorateArea,
+  decorateNavs,
   decorateTemplateAndTheme,
-  loadBlock,
-  loadLazy,
-  loadStyle
+  loadLCP,
+  loadArea,
+  loadDelayed,
+  loadStyle,
 } from '../utils/utils.js';
-
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
-
-function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('nav') !== 'off') {
-    selectors.push('header');
-  }
-  if (getMetadata('footer') !== 'off') {
-    selectors.push('footer');
-  }
-  const navs = el.querySelectorAll(selectors.toString());
-  return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
-    return nav;
-  });
-}
-
-export async function loadLCP(blocks) {
-  const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loadBlock(lcpBlock, true);
-  }
-}
-
-/**
- * Load everything that impacts performance later.
- */
-export function loadDelayed() {
-  window.setTimeout(() => import('./delayed.js'), 3000);
-}
 
 async function loadPage() {
   const blocks = decorateArea();
   const navs = decorateNavs();
-  await loadLCP(blocks);
+  await loadLCP({ blocks });
   loadStyle('/fonts/fonts.css');
   await decorateTemplateAndTheme();
-  await loadLazy([...navs, ...blocks]);
+  await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   const { loadTokens } = await import('../utils/utils.js');
   await loadTokens(blocks);
   loadDelayed();
 }
-loadPage();
+await loadPage();

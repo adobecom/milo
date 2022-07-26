@@ -24,7 +24,9 @@
 
   function getOptions(op) {
     const o = w.lana.options;
-    const getOpt = (key) => (op[key] !== undefined ? op[key] : o[key]);
+    function getOpt(key) {
+      return op[key] !== undefined ? op[key] : o[key];
+    }
 
     return Object.keys(defaultOptions).reduce(function (options, key) {
       options[key] = getOpt(key);
