@@ -86,7 +86,7 @@ const barTooltipFormatter = ({
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
 );
 
-const tooltipFormatter = (params, unit) => {
+export const tooltipFormatter = (params, unit) => {
   let tooltip = params[0].name;
   params.forEach(({
     marker,
@@ -205,7 +205,7 @@ const getColors = (authoredColor) => {
   return colorList.concat(colorList.splice(0, colorIndex));
 };
 
-const getContainerSize = (chartSize, chartType) => {
+export const getContainerSize = (chartSize, chartType) => {
   const chartHeights = {
     area: {
       small: { height: 345 },
