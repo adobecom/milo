@@ -4,7 +4,7 @@
  * @param {Element} node element
  *  ex...
  *   <figure>
- *    <blockquote cite="https://www.huxley.net/bnw/four.html">
+ *    <blockquote>
  *      <p>Words can be like X-rays, if you use them properly—they’ll go through anything. You read and you’re pierced.</p>
  *    </blockquote>
  *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
@@ -24,10 +24,10 @@ export default async function init(el) {
   decorateBlockBg(el, rows[0]);
   const lastRow = rows[rows.length - 1];
   const imageRow = rows[1];
-  if (imageRow.innerHTML.isEmpty) {
+  if (imageRow?.innerHTML.isEmpty) {
     imageRow.remove();
   } else {
-    imageRow.classList.add('image');
+    imageRow?.classList.add('image');
   }
 
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
@@ -50,12 +50,12 @@ export default async function init(el) {
   figure.insertAdjacentElement('afterbegin', blockquote);
   el.insertAdjacentElement('afterbegin', figure);
 
-  figcaption.insertAdjacentElement('afterbegin', figcaptionCopy);
-  cite.insertAdjacentElement('afterbegin', citeCopy)
+  if (figcaptionCopy) figcaption.insertAdjacentElement('afterbegin', figcaptionCopy);
+  if (citeCopy) cite.insertAdjacentElement('afterbegin', citeCopy)
   figcaption.insertAdjacentElement('beforeend', cite);
   blockquote.insertAdjacentElement('afterend', figcaption);
-  blockquote.insertAdjacentElement('afterbegin', quoteCopy);
-  blockquote.insertAdjacentElement('beforebegin', imageRow);
+  if (quoteCopy) blockquote.insertAdjacentElement('afterbegin', quoteCopy);
+  if (imageRow) blockquote.insertAdjacentElement('beforebegin', imageRow);
   wrapper.insertAdjacentElement('beforeend', figcaption);
   wrapper.insertAdjacentElement('afterbegin', blockquote);
 
