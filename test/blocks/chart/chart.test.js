@@ -11,6 +11,7 @@ const {
   TABLET_BREAKPOINT,
   getContainerSize,
   getResponsiveSize,
+  tooltipFormatter,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -43,5 +44,33 @@ describe('chart utils', () => {
     expect(getResponsiveSize(LARGE)).to.equal(SMALL);
     expect(getResponsiveSize(MEDIUM)).to.equal(SMALL);
     expect(getResponsiveSize(SMALL)).to.equal(SMALL);
+  });
+
+  it('tooltipFormatter outputs tooltip in correct format', () => {
+    const params = [
+      {
+        seriesName: 'Chrome with a Really Really Long Name',
+        name: 'Sunday',
+        value: ['Sunday', '140', '180'],
+        encode: {
+          x: [0],
+          y: [1],
+        },
+        marker: '<span>x</span>',
+      },
+      {
+        seriesName: 'Firefox Lorem Ipsum Dolor Sit Amet',
+        name: 'Sunday',
+        value: ['Sunday', '140', '180'],
+        encode: {
+          x: [0],
+          y: [2],
+        },
+        marker: '<span>x</span>',
+      },
+    ];
+    const tooltip = 'Sunday<br /><span>x</span> 140k Chrome with a Really Really Long Name<br /><span>x</span> 180k Firefox Lorem Ipsum Dolor Sit Amet<i class="tooltip-icon"></i>';
+
+    expect(tooltipFormatter(params, 'k')).to.equal(tooltip);
   });
 });
