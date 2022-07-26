@@ -3,7 +3,6 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-// import sinon from 'sinon';
 import { waitForElement } from '../../../helpers/selectors.js';
 import init from '../../../../libs/blocks/review/review.js';
 
@@ -25,9 +24,8 @@ describe('Review Comp', () => {
     });
     const div = document.querySelector('.review');
     await init(div);
+
     const review = await waitForElement('.hlx-ReviewWrapper');
     expect(review).to.exist;
   });
-
-  // it('supports clicking on stars', async () => {});
 });

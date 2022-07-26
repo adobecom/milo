@@ -1,7 +1,7 @@
 import { useEffect, useState, html } from '../../../../deps/htm-preact.js';
 
 import RatingInput from './RatingInput.js';
-import useHover from '../../utils/useHover.js';
+import useHover from '../../../../hooks/useHover.js';
 import { isKeyboardNavigation } from '../../utils/utils.js';
 
 const Ratings = ({

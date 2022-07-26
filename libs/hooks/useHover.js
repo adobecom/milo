@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from '../../../deps/htm-preact.js';
+import { useEffect, useState, useRef } from '../deps/htm-preact.js';
 /**
  * React hook to track if the mouse is hovering over a DOM ref
  * Returns a hover state object with two properties:
