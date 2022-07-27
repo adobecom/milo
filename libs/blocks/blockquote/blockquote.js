@@ -11,27 +11,39 @@
  *   </figure>
  */
 
+function isHexColorDark(color) {
+  if (!color.trim().startsWith('#')) return false;
+  const hex = color.trim().replace('#', '');
+  const cR = parseInt(hex.substr(0, 2), 16);
+  const cG = parseInt(hex.substr(2, 2), 16);
+  const cB = parseInt(hex.substr(4, 2), 16);
+  const brightness = ((cR * 299) + (cG * 587) + (cB * 114)) / 1000;
+  return brightness < 155;
+}
+
 function decorateBlockBg(block, node) {
-  node.classList.add('background');
-  if (!node.querySelector(':scope img')) {
-    block.style.background = node.textContent;
+  if (node.querySelector(':scope img')) {
+    node.classList.add('image');
+  } else {
+    node.classList.add('background');
+    block.style.background = node.textContent.trim();
     node.remove();
   }
+  if (isHexColorDark(node.textContent)) block.classList.add('dark');
+  // if (node.innerHTML.trim() === '') node.remove();
 }
 
 export default async function init(el) {
   const rows = el.querySelectorAll(':scope > div');
-  decorateBlockBg(el, rows[0]);
   const lastRow = rows[rows.length - 1];
-  const imageRow = rows[1];
-  if (imageRow?.innerHTML.isEmpty) {
-    imageRow.remove();
-  } else {
-    imageRow?.classList.add('image');
-  }
-
+  lastRow.classList.add('last-row');
+  const leftovers = el.querySelectorAll(':scope > div:not([class])');
+  leftovers.forEach( row => {
+    decorateBlockBg(el, row);
+  });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
+  const imageRow = el.querySelector(':scope > div.image');
   quoteCopy?.classList.add('quote');
   const figcaptionCopy = copyNodes[1];
   figcaptionCopy?.classList.add('figcaption');

@@ -4,6 +4,10 @@
   max-width: var(--grid-container-width);
 }
 
+.blockquote.dark {
+  color: #ffffff;
+}
+
 .blockquote figure {
   margin: 0 auto;
   padding: var(--spacing-l);
