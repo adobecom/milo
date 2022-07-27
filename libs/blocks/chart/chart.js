@@ -6,23 +6,21 @@ export const MEDIUM = 'medium';
 export const LARGE = 'large';
 export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
-const CONTAINER_STYLES = 'container';
-const CONTAINER_STYLES_CLASSNAME = 'chart-container-shadows';
 const SECTION_CLASSNAME = 'chart-section';
 const colorPalette = {
-  'red': '#EA3829',
-  'orange': '#F48411',
-  'yellow': '#F5D704',
-  'chartreuse': '#A9D814',
-  'celery': '#26BB36',
-  'green': '#008F5D',
-  'seafoam': '#12B5AE',
-  'cyan': '#34C5E8',
-  'blue': '#3991F3',
-  'indigo': '#686DF4',
-  'purple': '#8A3CE7',
-  'fuchsia': '#E054E2',
-  'magenta': '#DE3C82',
+  red: '#EA3829',
+  orange: '#F48411',
+  yellow: '#F5D704',
+  chartreuse: '#A9D814',
+  celery: '#26BB36',
+  green: '#008F5D',
+  seafoam: '#12B5AE',
+  cyan: '#34C5E8',
+  blue: '#3991F3',
+  indigo: '#686DF4',
+  purple: '#8A3CE7',
+  fuchsia: '#E054E2',
+  magenta: '#DE3C82',
 };
 const chartTypes = [
   'bar',
@@ -307,17 +305,18 @@ const init = async (el) => {
   children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart_wrapper');
 
-  const container = document.createElement('section');
-  container.className = 'chart-container';
-  container.append(...children);
-  el.appendChild(container);
+  const chartStyles = el?.classList;
+  const section = el?.parentElement?.matches('.section') ? el.parentElement : null;
+  const sectionChildren = section?.querySelectorAll(':scope > div:not(.section-metadata)');
+  const upNumber = sectionChildren?.length;
+  section?.classList.add(`up-${upNumber}`);
+  section?.classList.add(SECTION_CLASSNAME);
 
-  const chartStyles = el.parentElement.classList;
-  const authoredSize = Array.from(chartStyles)?.find((style) => (
-    style === SMALL || style === MEDIUM || style === LARGE
-  ));
+  let authoredSize = SMALL;
+  if (upNumber === 1) authoredSize = LARGE;
+  if (upNumber === 2) authoredSize = MEDIUM;
+
   const size = getResponsiveSize(authoredSize);
-  chartStyles.add(SECTION_CLASSNAME);
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
@@ -334,10 +333,6 @@ const init = async (el) => {
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const colors = getColors(authoredColor);
-
-  if (Array.from(chartStyles)?.includes(CONTAINER_STYLES)) {
-    container.classList.add(CONTAINER_STYLES_CLASSNAME);
-  }
 
   updateContainerSize(chartWrapper, size, chartType);
 
