@@ -133,19 +133,6 @@
   justify-content: center;
 }
 
-.action-area a {
-  font-size: var(--type-body-xs-size);
-  line-height: 32px;
-}
-
-.action-area .con-button {
-  line-height: 28px;
-}
-
-.action-area .con-button.button-XL {
-  line-height: 36px;
-}
-
 .marquee .image img {
   display: block;
   width: 100%;
@@ -233,11 +220,6 @@
   .marquee.small .text .action-area,
   .marquee.large .text .action-area {
     margin-bottom: 0;
-  }
-
-  .marquee.action-area .con-button.button-XL {
-    line-height: 44px;
-    border-radius: 22px;
   }
 
   .marquee.large .supplemental-text {
