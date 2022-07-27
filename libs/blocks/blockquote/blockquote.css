@@ -4,6 +4,10 @@
   max-width: var(--grid-container-width);
 }
 
+.blockquote.full-width {
+  max-width: initial;
+}
+
 .blockquote.dark {
   color: #ffffff;
 }
@@ -17,21 +21,21 @@
   margin: 0
 }
 
-.blockquote .image {
+.blockquote .quote-image {
   margin-bottom: var(--spacing-xs);
 }
 
-.blockquote .image > div {
+.blockquote .quote-image > div {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.blockquote .image picture{
+.blockquote .quote-image picture{
   display: inline-flex;
 }
 
-.blockquote .image img {
+.blockquote .quote-image img {
   max-height: 80px;
   width: auto;
 }
@@ -63,7 +67,7 @@
   text-align: left;
 }
 
-.blockquote.inline figure .image img {
+.blockquote.inline figure .quote-image img {
   max-height: 200px;
 }
 
@@ -78,6 +82,9 @@
   padding: var(--spacing-xs) 0;
 }
 
+.blockquote.borders.background figure {
+  padding: var(--spacing-xs);
+}
 
 /* Tablet */
 @media screen and (min-width: 600px) {
@@ -86,7 +93,7 @@
     gap: var(--spacing-s);
   }
 
-  .blockquote.inline figure .image {
+  .blockquote.inline figure .quote-image {
     display: flex;
     align-content: center;
     flex-basis: 40%;

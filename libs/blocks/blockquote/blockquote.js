@@ -10,6 +10,7 @@
  *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
  *   </figure>
  */
+import createTag from '../../utils/utils.js';
 
 function isHexColorDark(color) {
   if (!color.trim().startsWith('#')) return false;
@@ -23,52 +24,42 @@ function isHexColorDark(color) {
 
 function decorateBlockBg(block, node) {
   if (node.querySelector(':scope img')) {
-    node.classList.add('image');
+    node.classList.add('quote-image');
   } else {
-    node.classList.add('background');
+    block.classList.add('background');
     block.style.background = node.textContent.trim();
     node.remove();
   }
   if (isHexColorDark(node.textContent)) block.classList.add('dark');
-  // if (node.innerHTML.trim() === '') node.remove();
 }
 
-export default async function init(el) {
-  const rows = el.querySelectorAll(':scope > div');
-  const lastRow = rows[rows.length - 1];
+export default function init(el) {
+  const allRows = el.querySelectorAll(':scope > div');
+  const lastRow = allRows[allRows.length - 1];
   lastRow.classList.add('last-row');
-  const leftovers = el.querySelectorAll(':scope > div:not([class])');
-  leftovers.forEach( row => {
+  const rows = el.querySelectorAll(':scope > div:not([class])');
+  rows.forEach( row => {
     decorateBlockBg(el, row);
   });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
-  const imageRow = el.querySelector(':scope > div.image');
-  quoteCopy?.classList.add('quote');
   const figcaptionCopy = copyNodes[1];
-  figcaptionCopy?.classList.add('figcaption');
   const citeCopy = copyNodes[2];
+  const blockquote = createTag('blockquote', { cite: '' }, quoteCopy);
+  const figcaption = createTag('figcaption', {}, figcaptionCopy);
+  const cite = createTag('cite', {}, citeCopy);
+  const wrapper = createTag('div', { class: 'quote-wrapper' });
+  const figure = createTag('figure', {}, wrapper);
+  quoteCopy?.classList.add('quote');
+  figcaptionCopy?.classList.add('figcaption');
   citeCopy?.classList.add('cite');
   lastRow.remove();
-
-  const figure = document.createElement('figure');
-  const blockquote = document.createElement('blockquote');
-  const figcaption = document.createElement('figcaption');
-  const cite = document.createElement('cite');
-  const wrapper = document.createElement('div');
-  wrapper.classList.add('quote-wrapper');
-
-  figure.insertAdjacentElement('afterbegin', wrapper);
   figure.insertAdjacentElement('afterbegin', blockquote);
   el.insertAdjacentElement('afterbegin', figure);
-
-  if (figcaptionCopy) figcaption.insertAdjacentElement('afterbegin', figcaptionCopy);
-  if (citeCopy) cite.insertAdjacentElement('afterbegin', citeCopy)
   figcaption.insertAdjacentElement('beforeend', cite);
   blockquote.insertAdjacentElement('afterend', figcaption);
-  if (quoteCopy) blockquote.insertAdjacentElement('afterbegin', quoteCopy);
+  const imageRow = el.querySelector(':scope > div.quote-image');
   if (imageRow) blockquote.insertAdjacentElement('beforebegin', imageRow);
   wrapper.insertAdjacentElement('beforeend', figcaption);
   wrapper.insertAdjacentElement('afterbegin', blockquote);
-
 }
