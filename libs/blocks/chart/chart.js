@@ -8,10 +8,11 @@ export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 const CONTAINER_STYLES = 'container';
 const CONTAINER_STYLES_CLASSNAME = 'chart-container-shadows';
+const SECTION_CLASSNAME = 'chart-section';
 const colorPalette = {
   'red': '#EA3829',
   'orange': '#F48411',
-  'yellow':'#F5D704',
+  'yellow': '#F5D704',
   'chartreuse': '#A9D814',
   'celery': '#26BB36',
   'green': '#008F5D',
@@ -184,12 +185,21 @@ export const getChartOptions = (chartType, data, colors, size) => {
   };
 };
 
-const handleIntersect = (chart, chartOptions) => (entries, observer) => {
+const initChart = (chartWrapper, chartType, data, colors, size) => {
+  const themeName = getTheme(size);
+  const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
+  const chartOptions = getChartOptions(chartType, data, colors, size);
+  chart.setOption(chartOptions);
+
+  return chart;
+};
+
+const handleIntersect = (chartWrapper, chartType, data, colors, size) => (entries, observer) => {
   if (!Array.isArray(entries)) return;
 
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      chart?.setOption(chartOptions);
+      initChart(chartWrapper, chartType, data, colors, size);
       observer.unobserve(entry.target);
     }
   });
@@ -307,6 +317,7 @@ const init = async (el) => {
     style === SMALL || style === MEDIUM || style === LARGE
   ));
   const size = getResponsiveSize(authoredSize);
+  chartStyles.add(SECTION_CLASSNAME);
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
@@ -323,9 +334,8 @@ const init = async (el) => {
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const colors = getColors(authoredColor);
-  const useContainerStyles = Array.from(chartStyles)?.indexOf(CONTAINER_STYLES);
 
-  if (useContainerStyles !== -1) {
+  if (Array.from(chartStyles)?.includes(CONTAINER_STYLES)) {
     container.classList.add(CONTAINER_STYLES_CLASSNAME);
   }
 
@@ -339,14 +349,14 @@ const init = async (el) => {
           rootMargin: '0px',
           threshold: 0.5,
         };
-        const themeName = getTheme(size);
-        const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
-        const chartOptions = getChartOptions(chartType, data, colors, size);
 
         if (!(window.IntersectionObserver)) {
-          chart.setOption(chartOptions);
+          initChart(chartWrapper, chartType, data, colors, size);
         } else {
-          const observer = new IntersectionObserver(handleIntersect(chart, chartOptions), observerOptions);
+          const observer = new IntersectionObserver(
+            handleIntersect(chartWrapper, chartType, data, colors, size),
+            observerOptions,
+          );
           observer.observe(el);
         }
 
