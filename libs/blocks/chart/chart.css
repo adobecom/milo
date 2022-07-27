@@ -21,21 +21,15 @@
 }
 
 @media (min-width: 1200px) {
-  .up-2 .small {
+  .up-2 .chart {
     width: calc(50% - 8px);
     max-width: calc(50% - 8px);
     flex: 1 1 auto;
   }
 
-  .up-3 .small {
+  .up-3 .chart {
     width: calc(33% - 8px);
     max-width: calc(33% - 8px);
-    flex: 1 1 auto;
-  }
-
-  .up-3 .medium {
-    width: calc(66% - 8px);
-    max-width: calc(66% - 8px);
     flex: 1 1 auto;
   }
 }
@@ -74,20 +68,21 @@
 }
 
 @media only screen and (min-width: 75rem) {
-  .chart-container [data-chart-type="area"] > div {
+  .chart [data-chart-type="area"] > div {
     height: 900px;
   }
 }
 
-.chart-container-shadows {
+.border {
   border-radius: 8px;
   background-color: var(--spectrum-global-color-static-white);
   box-shadow: 0 3px 10px 0 rgb(0 0 0 / 10%);
   padding: var(--chart-padding);
+  box-sizing: border-box;
 }
 
-.chart.small .chart-container-shadows,
-.chart.medium .chart-container-shadows {
+.chart.small.border,
+.chart.medium.border {
   padding: var(--chart-padding);
 }
 
