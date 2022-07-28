@@ -27,7 +27,7 @@ const chartTypes = [
   'column',
 ];
 
-function processDataset(data) {
+export function processDataset(data) {
   const dataset = {};
 
   // Remove group and unit from headers
@@ -43,10 +43,34 @@ function processDataset(data) {
   return dataset;
 }
 
-function processSeries(data) {
-  const series = [];
-  // TODO: Series data
-  return series;
+const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
+
+export function processSeries(series) {
+  const seriesOptions = series.reduce((acc, mark) => {
+    acc[0][mark.Type] ??= { data: [] };
+    const markData = acc[0][mark.Type].data;
+
+    const split = mark.Value?.split('-');
+    const value = parseValue(split[0]);
+    const markObject = {
+      ...(mark.Name ? { name: mark.Name } : {}),
+      ...(mark.Axis ? { [mark.Axis]: value } : {}),
+    };
+
+    if (mark.Type === 'markArea') {
+      markData[0] ??= [];
+      markData[0].push(markObject);
+      if (split.length > 1) {
+        markData[0].push((mark.Axis ? { [mark.Axis]: parseValue(split[1]) } : {}));
+      }
+    } else {
+      markData.push(markObject);
+    }
+
+    return acc;
+  }, [{}]);
+
+  return seriesOptions;
 }
 
 /**
@@ -63,8 +87,8 @@ async function fetchData(link) {
 
   // Check the type of data
   if (json[':type'] === 'multi-sheet') {
-    const dataSheet = json[':names'][0];
-    const seriesSheet = json[':names'][1];
+    const dataSheet = json[':names'].includes('data') ? 'data' : json[':names'].shift();
+    const seriesSheet = json[':names'].filter((name) => name !== 'data').shift();
     data.data = json[dataSheet]?.data;
     data.series = json[seriesSheet]?.data;
   } else {
@@ -99,11 +123,11 @@ export const tooltipFormatter = (params, unit) => {
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
+const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
-  return seriesData.map((value, index) => ({
+  return firstDataset.map((value, index) => ({
     type: 'bar',
     label: {
       show: isBar,
@@ -135,11 +159,18 @@ const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
  */
 export const getChartOptions = (chartType, data, colors, size) => {
   const dataset = processDataset(data.data);
+  const seriesOptions = processSeries(data.series);
   const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
-  const seriesData = (source && source[1]) ? source[1].slice() : [];
+  const firstDataset = (source && source[1]) ? source[1].slice() : [];
 
-  seriesData.shift();
+  firstDataset.shift();
+
+  if (chartType === 'bar' || chartType === 'column') {
+    const chartSeries = barSeriesOptions(chartType, firstDataset, colors, size, unit);
+    seriesOptions[0] = { ...seriesOptions[0], ...chartSeries.shift() };
+    seriesOptions.push(...chartSeries);
+  }
 
   return {
     dataset,
@@ -177,9 +208,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
       },
       axisTick: { show: chartType !== 'bar' },
     },
-    series: (chartType === 'bar' || 'column')
-      ? barSeriesOptions(chartType, seriesData, colors, size, unit)
-      : null,
+    series: seriesOptions,
   };
 };
 
@@ -289,12 +318,7 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
 
   if (previousIsLarge !== currentIsLarge) {
     chartInstance?.dispose();
-
-    const themeName = getTheme(currentSize);
-    const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
-    const chartOptions = getChartOptions(chartType, data, colors, currentSize);
-
-    chart.setOption(chartOptions);
+    initChart(chartWrapper, chartType, data, colors, currentSize);
   } else {
     chartInstance?.resize();
   }
