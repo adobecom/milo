@@ -55,7 +55,7 @@ describe('Utils', () => {
     meta.name = 'nofollow-links';
     meta.content = 'on';
     document.head.append(meta);
-    await utils.loadArea({ blocks: [] });
+    await utils.loadLazy([]);
     const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
     expect(gaLink).to.exist;
   });

@@ -1,7 +1,11 @@
+
+
 :root {
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
+  --link-color-dark: #5EAAF7;
+  --link-hover-color-dark: #5EAAF7;
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
@@ -12,6 +16,16 @@
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
+
+  /* Spacing */
+  --spacing-xxs: 8px;
+  --spacing-xs: 16px;
+  --spacing-s: 24px;
+  --spacing-m: 32px;
+  --spacing-l: 40px;
+  --spacing-xl: 48px;
+  --spacing-xxl: 56px;
+  --spacing-xxxl: 80px;
 
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
@@ -40,15 +54,7 @@
   --type-detail-xl-size: 20px;
   --type-detail-l-size: 16px;
   --type-detail-m-size: 12px;
-
-  /* Spacing */
-  --spacing-xxs: 8px;
-  --spacing-xs: 16px;
-  --spacing-s: 24px;
-  --spacing-m: 32px;
-  --spacing-l: 48px;
-  --spacing-xl: 56px;
-  --spacing-xxl: 80px;
+  --type-detail-s-size: 10px;
 
   /* grid sizes */
   --grid-container-width: 83.4%;
@@ -57,6 +63,10 @@
 
 @media (min-width: 1200px) {
   :root {
+    --spacing-xl: 56px;
+    --spacing-xxl: 80px;
+    --spacing-xxxl: 104px;
+
     --type-heading-xxl-size: 44px;
     --type-heading-xl-size: 36px;
     --type-heading-l-size: 28px;

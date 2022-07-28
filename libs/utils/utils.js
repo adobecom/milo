@@ -1,6 +1,5 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
@@ -9,6 +8,7 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ICON_BLOCKS = ['media', 'z-pattern'];
 
 export function getEnv() {
   const { hostname, href } = window.location;
@@ -105,12 +105,12 @@ export async function loadBlock(block) {
   return block;
 }
 
-export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS, loader = loadBlock }) {
-  const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loader(lcpBlock, true);
+export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
+  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
+  if (iconBlock) {
+    const { getTokenLibrary, decorateIcons } = await import('../utils/decorate.js');
+    const tokenLibrary = await getTokenLibrary(url);
+    await decorateIcons(tokenLibrary);
   }
 }
 
@@ -173,10 +173,16 @@ function decoratePictures(el) {
   });
 }
 
+// Marquee (Large, Light) >>> marquee--large--light- >>> marquee large light
 function decorateBlocks(el) {
   const blocks = el.querySelectorAll('div[class]');
   return [...blocks].map((block) => {
+    const variants = block.className.split('--');
+    if (variants.length > 1) {
+      variants.push(variants.pop().slice(0, -1));
+    }
     block.dataset.status = 'decorated';
+    block.className = variants.join(' ');
     return block;
   });
 }
@@ -213,17 +219,6 @@ function decorateDefaults(el) {
   });
 }
 
-export function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
-  if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
-  const navs = el.querySelectorAll(selectors.toString());
-  return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
-    return nav;
-  });
-}
-
 function decorateSections(el) {
   el.querySelectorAll('body > main > div').forEach((section) => {
     decorateDefaults(section);
@@ -242,29 +237,13 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadArea({ blocks, area, loader, noFollowPath }) {
-  const el = area || document;
-  const blockLoader = loader || loadBlock;
+export async function loadLazy(blocks, el = document) {
   if (getMetadata('nofollow-links') === 'on') {
-    const path = noFollowPath || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, el);
+    nofollow('/seo/nofollow.json', el);
   }
-  const loaded = blocks.map((block) => blockLoader(block));
+  const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
-}
-
-/**
- * Load everything that impacts performance later.
- */
-export function loadDelayed(delay = 3000) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      import('../scripts/delayed.js').then((mod) => {
-        resolve(mod);
-      });
-    }, delay);
-  });
 }
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {

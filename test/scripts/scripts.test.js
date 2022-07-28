@@ -81,18 +81,12 @@ describe('Loading', () => {
 
   it('Removes LCP block out of block list', async () => {
     const blocks = [...document.querySelectorAll('body > main > .section > [class]')];
-    await utils.loadLCP({ blocks });
+    await scripts.loadLCP(blocks);
     expect(blocks.length).to.equal(3);
   });
 
-  it('loadDelayed() test', async () => {
-    const mod = await utils.loadDelayed(0);
-    expect(mod).to.exist;
-  });
-
-  it('modal test', () => {
-    const modal = document.querySelector('dialog');
-    expect(modal).to.not.exist;
+  it('loadDelayed() test', () => {
+    scripts.loadDelayed();
   });
 });
 

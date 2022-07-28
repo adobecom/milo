@@ -38,7 +38,7 @@
 }
 
 .marquee.small .foreground {
-  padding: var(--spacing-l) 0;
+  padding: var(--spacing-xl) 0;
 }
 
 .marquee.large .foreground {
@@ -133,19 +133,6 @@
   justify-content: center;
 }
 
-.action-area a {
-  font-size: var(--type-body-xs-size);
-  line-height: 32px;
-}
-
-.action-area .con-button {
-  line-height: 28px;
-}
-
-.action-area .con-button.button-XL {
-  line-height: 36px;
-}
-
 .marquee .image img {
   display: block;
   width: 100%;
@@ -202,19 +189,19 @@
   .marquee .text {
     width: calc(var(--grid-column-width) * 5);
   }
-  
+
   .marquee .image {
     width: calc(var(--grid-column-width) * 6);
   }
-  
+
   .marquee .text {
     padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee.small .text {
-    padding: var(--spacing-l) 0;
+    padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee .text,
   .marquee.large .text {
     order: unset;
@@ -233,11 +220,6 @@
   .marquee.small .text .action-area,
   .marquee.large .text .action-area {
     margin-bottom: 0;
-  }
-
-  .marquee.action-area .con-button.button-XL {
-    line-height: 44px;
-    border-radius: 22px;
   }
 
   .marquee.large .supplemental-text {

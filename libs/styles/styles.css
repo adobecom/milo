@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
- @import url('variables.css');
+@import url('variables.css');
+@import url('typography.css');
 
 @font-face {
   font-family: 'Trebuchet MS';
@@ -109,47 +110,6 @@ a:hover {
   color: #2C2C2C;
 }
 
-.con-button {
-  color: #FFF;
-  border: 2px solid;
-  background-color: transparent;
-  border-radius: 16px;
-  display: inline-block;
-  line-height: 28px;
-  padding: 0 14px;
-  text-decoration: none;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 700;
-}
-
-.con-button.button-l {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.con-button.button-xl {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.light .con-button {
-  color: #000;
-}
-
-.con-button.blue {
-  color: #FFF;
-  background: rgb(20 115 230);
-  border: 2px solid rgb(20 115 230);
-}
-
-.con-button.blue:hover {
-  text-decoration: none;
-}
 
 img {
   max-width: 100%;
