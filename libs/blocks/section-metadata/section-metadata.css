@@ -62,3 +62,7 @@
 .section.heading-center h6 {
   text-align: center;
 }
+
+.section.divider {
+  border-bottom: 1px solid #d8d8d8;
+}
