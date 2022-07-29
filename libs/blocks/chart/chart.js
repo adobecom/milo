@@ -100,11 +100,11 @@ export const tooltipFormatter = (params, unit) => {
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
+const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
-  return seriesData.map((value, index) => ({
+  return firstDataset.map((value, index) => ({
     type: 'bar',
     label: {
       show: isBar,
@@ -126,8 +126,8 @@ const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
   }));
 };
 
-const lineSeriesOptions = (seriesData) => (
-  seriesData.map(() => {
+const lineSeriesOptions = (firstDataset) => (
+  firstDataset.map(() => {
     const options = {
       type: 'line',
       symbol: 'none',
@@ -152,9 +152,9 @@ export const getChartOptions = (chartType, data, colors, size) => {
   const dataset = processDataset(data.data);
   const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
-  const seriesData = (source && source[1]) ? source[1].slice() : [];
+  const firstDataset = (source && source[1]) ? source[1].slice() : [];
 
-  seriesData.shift();
+  firstDataset.shift();
 
   return {
     dataset,
@@ -193,8 +193,8 @@ export const getChartOptions = (chartType, data, colors, size) => {
       axisTick: { show: chartType !== 'bar' },
     },
     series: (chartType === 'bar' || chartType === 'column')
-      ? barSeriesOptions(chartType, seriesData, colors, size, unit)
-      : lineSeriesOptions(seriesData),
+      ? barSeriesOptions(chartType, firstDataset, colors, size, unit)
+      : lineSeriesOptions(firstDataset),
   };
 };
 
