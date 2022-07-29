@@ -25,6 +25,7 @@ const colorPalette = {
 const chartTypes = [
   'bar',
   'column',
+  'line',
 ];
 
 function processDataset(data) {
@@ -43,7 +44,7 @@ function processDataset(data) {
   return dataset;
 }
 
-function processSeries(data) {
+function processMarks(data) {
   const series = [];
   // TODO: Series data
   return series;
@@ -103,6 +104,8 @@ const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
+  processMarks()
+
   return seriesData.map((value, index) => ({
     type: 'bar',
     label: {
@@ -124,6 +127,20 @@ const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
     barGap: '33.3%',
   }));
 };
+
+const lineSeriesOptions = (seriesData) => (
+  seriesData.map(() => {
+    const options = {
+      type: 'line',
+      symbol: 'none',
+      lineStyle: { width: 8 },
+    };
+
+    // ToDo: Add marks
+
+    return options;
+  })
+);
 
 /**
  * Returns object of echart options
@@ -153,7 +170,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
       formatter: chartType === 'bar'
         ? (params) => barTooltipFormatter(params, unit)
         : (params) => tooltipFormatter(params, unit),
-      trigger: chartType === 'column' ? 'axis' : 'item',
+      trigger: (chartType === 'column' || chartType === 'line') ? 'axis' : 'item',
       axisPointer: { type: chartType === 'column' ? 'none' : 'line' },
     },
     xAxis: {
@@ -177,9 +194,9 @@ export const getChartOptions = (chartType, data, colors, size) => {
       },
       axisTick: { show: chartType !== 'bar' },
     },
-    series: (chartType === 'bar' || 'column')
+    series: (chartType === 'bar' || chartType === 'column')
       ? barSeriesOptions(chartType, seriesData, colors, size, unit)
-      : null,
+      : lineSeriesOptions(seriesData),
   };
 };
 

@@ -97,7 +97,6 @@ export default (deviceSize) => {
     },
     // ToDo: Move line/area options into chart.js MWPW-113006
     line: {
-      symbol: 'none',
       markLine: {
         label: {
           show: false,
