@@ -1,62 +1,65 @@
 /**
  * loads and decorates a blockquote
- * @param {Element} blockquote block element
+ * @param {Element} block element
+ * @param {Element} node element
  *  ex...
  *   <figure>
- *    <blockquote cite="https://www.huxley.net/bnw/four.html">
+ *    <blockquote>
  *      <p>Words can be like X-rays, if you use them properly—they’ll go through anything. You read and you’re pierced.</p>
  *    </blockquote>
  *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
  *   </figure>
  */
+import createTag from '../../utils/utils.js';
 
-import { decorateBlockBg } from '../../utils/decorate.js';
+function isHexColorDark(color) {
+  if (!color.trim().startsWith('#')) return false;
+  const hex = color.trim().replace('#', '');
+  const cR = parseInt(hex.substr(0, 2), 16);
+  const cG = parseInt(hex.substr(2, 2), 16);
+  const cB = parseInt(hex.substr(4, 2), 16);
+  const brightness = ((cR * 299) + (cG * 587) + (cB * 114)) / 1000;
+  return brightness < 155;
+}
 
-export default async function init(el) {
-  const rows = el.querySelectorAll(':scope > div');
-  decorateBlockBg(el, rows[0]);
-  const lastRow = rows[rows.length - 1];
-  const imageRow = rows[1];
-  imageRow.classList.add('image');
+function decorateBlockBg(block, node) {
+  if (node.querySelector(':scope img')) {
+    node.classList.add('quote-image');
+  } else {
+    block.classList.add('background');
+    block.style.background = node.textContent.trim();
+    node.remove();
+  }
+  if (isHexColorDark(node.textContent)) block.classList.add('dark');
+}
 
+export default function init(el) {
+  const allRows = el.querySelectorAll(':scope > div');
+  const lastRow = allRows[allRows.length - 1];
+  lastRow.classList.add('last-row');
+  const rows = el.querySelectorAll(':scope > div:not([class])');
+  rows.forEach( row => {
+    decorateBlockBg(el, row);
+  });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
-  quoteCopy?.classList.add('quote', 'heading-M');
   const figcaptionCopy = copyNodes[1];
-  figcaptionCopy?.classList.add('figcaption', 'body-S');
   const citeCopy = copyNodes[2];
-  citeCopy?.classList.add('cite', 'body-XS');
-  // lastRow.remove();
-
-  console.log(copyNodes);
-
-  const figure = document.createElement('figure');
-  const blockquote = document.createElement('blockquote');
-  const figcaption = document.createElement('figcaption');
-  const cite = document.createElement('cite');
-  const wrapper = document.createElement('div');
-  wrapper.classList.add('quote-wrapper');
-
-  figure.insertAdjacentElement('afterbegin', wrapper);
+  const blockquote = createTag('blockquote', { cite: '' }, quoteCopy);
+  const figcaption = createTag('figcaption', {}, figcaptionCopy);
+  const cite = createTag('cite', {}, citeCopy);
+  const wrapper = createTag('div', { class: 'quote-wrapper' });
+  const figure = createTag('figure', {}, wrapper);
+  quoteCopy?.classList.add('quote');
+  figcaptionCopy?.classList.add('figcaption');
+  citeCopy?.classList.add('cite');
+  lastRow.remove();
   figure.insertAdjacentElement('afterbegin', blockquote);
   el.insertAdjacentElement('afterbegin', figure);
-
-  figcaption.insertAdjacentElement('afterbegin', figcaptionCopy);
-  cite.insertAdjacentElement('afterbegin', citeCopy)
   figcaption.insertAdjacentElement('beforeend', cite);
   blockquote.insertAdjacentElement('afterend', figcaption);
-  blockquote.insertAdjacentElement('afterbegin', quoteCopy);
-  blockquote.insertAdjacentElement('beforebegin', imageRow);
+  const imageRow = el.querySelector(':scope > div.quote-image');
+  if (imageRow) blockquote.insertAdjacentElement('beforebegin', imageRow);
   wrapper.insertAdjacentElement('beforeend', figcaption);
   wrapper.insertAdjacentElement('afterbegin', blockquote);
-
-  // el.insertAdjacentElement('beforeend', figure);
-  // const rows = blockContent.querySelectorAll('div');
-  // const rowItems = quoteRows.querySelectorAll("h1, h2, h3, h4, h5, h6, p, div, span");
-  // console.log(blockContent);
-
-  // blockquote.insertAdjacentElement('afterbegin', el);
-  // block.remove();
-  // block.replaceWith(blockquote)
-
 }
