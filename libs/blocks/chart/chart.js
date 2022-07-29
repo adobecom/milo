@@ -44,7 +44,7 @@ function processDataset(data) {
   return dataset;
 }
 
-function processMarks(data) {
+function processSeries(data) {
   const series = [];
   // TODO: Series data
   return series;
@@ -103,8 +103,6 @@ export const tooltipFormatter = (params, unit) => {
 const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
-
-  processMarks()
 
   return seriesData.map((value, index) => ({
     type: 'bar',
