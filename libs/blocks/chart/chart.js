@@ -6,8 +6,7 @@ export const MEDIUM = 'medium';
 export const LARGE = 'large';
 export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
-const SECTION_CLASSNAME = 'chart-section';
-const colorPalette = {
+export const colorPalette = {
   red: '#EA3829',
   orange: '#F48411',
   yellow: '#F5D704',
@@ -22,6 +21,7 @@ const colorPalette = {
   fuchsia: '#E054E2',
   magenta: '#DE3C82',
 };
+const SECTION_CLASSNAME = 'chart-section';
 const chartTypes = [
   'bar',
   'column',
@@ -203,10 +203,13 @@ const handleIntersect = (chartWrapper, chartType, data, colors, size) => (entrie
   });
 };
 
-const getColors = (authoredColor) => {
+export const getColors = (authoredColor) => {
   const colorList = Object.values(colorPalette);
 
-  if (isNullish(authoredColor) || !colorPalette.hasOwnProperty(authoredColor)) return colorList;
+  if (
+    isNullish(authoredColor)
+    || !Object.hasOwn(colorPalette, authoredColor)
+  ) return colorList;
 
   const colorIndex = colorList.indexOf(colorPalette[authoredColor]);
 
