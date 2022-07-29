@@ -3,6 +3,7 @@
   <title>Localization</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="./lib/diff.js"></script>
+  <script src="./lib/object_hash.js" type="text/javascript"></script>
 </head>
 <body>
   <header>
@@ -17,20 +18,24 @@
       </div>
     </div>
     <div class="container">
-      <h2 class="container">Character Difference</h2>
-      <code id="md-diff-chars"></code>
-      <h2 class="container">Line Difference</h2>
-      <code id="md-diff-lines"></code>
-      <h2 class="container">Default Patch</h2>
-      <code id="md-diff"></code>
-      <h2 class="container">Structured Patch</h2>
-      <pre id="md-diff-json"></pre>
-      <h2 class="container">Applied Patch</h2>
-      <pre id="md-generated-patch"></pre>
-      <h2 class="container">MD as Syntax Tree</h2>
-      <pre id="md-syntax-tree"></pre>
-      <h2 class="container">MD as Syntax Tree Diff</h2>
-      <pre id="md-syntax-tree-diff"></pre>
+      <h2 class="container">Change List</h2>
+      <code id="changeList"></code>
+      <h2 class="container">MDAST Updated</h2>
+      <code id="mdast3"></code>
+      <h2 class="container">MDAST 1</h2>
+      <code id="mdast1"></code>
+      <h2 class="container">MDAST 2</h2>
+      <code id="mdast2"></code>
+      <h2 class="container">Change List First Pass</h2>
+      <code id="changeListFirstPass"></code>
+      <h2 class="container">Change List Second Pass</h2>
+      <code id="changeListSecondPass"></code>
+      <h2 class="container">Change List Third Pass</h2>
+      <code id="changeListThirdPass"></code>
+      <h2 class="container">Change List Fourth Pass</h2>
+      <code id="changeListFourthPass"></code>
+      <h2 class="container">Change List Fifth Pass</h2>
+      <code id="changeListFifthPass"></code>
     </div>
   </main>
   <script type="module">
