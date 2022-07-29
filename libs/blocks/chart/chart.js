@@ -25,6 +25,7 @@ const SECTION_CLASSNAME = 'chart-section';
 const chartTypes = [
   'bar',
   'column',
+  'line',
 ];
 
 function processDataset(data) {
@@ -99,11 +100,11 @@ export const tooltipFormatter = (params, unit) => {
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
+const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
-  return seriesData.map((value, index) => ({
+  return firstDataset.map((value, index) => ({
     type: 'bar',
     label: {
       show: isBar,
@@ -125,6 +126,20 @@ const barSeriesOptions = (chartType, seriesData, colors, size, unit) => {
   }));
 };
 
+const lineSeriesOptions = (firstDataset) => (
+  firstDataset.map(() => {
+    const options = {
+      type: 'line',
+      symbol: 'none',
+      lineStyle: { width: 8 },
+    };
+
+    // ToDo: Add marks
+
+    return options;
+  })
+);
+
 /**
  * Returns object of echart options
  * @param {string} chartType
@@ -137,9 +152,9 @@ export const getChartOptions = (chartType, data, colors, size) => {
   const dataset = processDataset(data.data);
   const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
-  const seriesData = (source && source[1]) ? source[1].slice() : [];
+  const firstDataset = (source && source[1]) ? source[1].slice() : [];
 
-  seriesData.shift();
+  firstDataset.shift();
 
   return {
     dataset,
@@ -153,7 +168,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
       formatter: chartType === 'bar'
         ? (params) => barTooltipFormatter(params, unit)
         : (params) => tooltipFormatter(params, unit),
-      trigger: chartType === 'column' ? 'axis' : 'item',
+      trigger: (chartType === 'column' || chartType === 'line') ? 'axis' : 'item',
       axisPointer: { type: chartType === 'column' ? 'none' : 'line' },
     },
     xAxis: {
@@ -177,9 +192,9 @@ export const getChartOptions = (chartType, data, colors, size) => {
       },
       axisTick: { show: chartType !== 'bar' },
     },
-    series: (chartType === 'bar' || 'column')
-      ? barSeriesOptions(chartType, seriesData, colors, size, unit)
-      : null,
+    series: (chartType === 'bar' || chartType === 'column')
+      ? barSeriesOptions(chartType, firstDataset, colors, size, unit)
+      : lineSeriesOptions(firstDataset),
   };
 };
 
