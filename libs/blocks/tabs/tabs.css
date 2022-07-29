@@ -1,0 +1,161 @@
+:root {
+  /* Tab Colors */
+  --tabs-active-color: #1473e6;
+  --tabs-border-color: #d8d8d8;
+  --tabs-border-hover-color: #acacac;
+  --tabs-text-color: #7e7e7e;
+  --tabs-active-text-color: #000000;
+  --tabs-bg-color: #f1f1f1;
+  --tabs-active-bg-color: #ffffff;
+  --tabs-list-bg-gradient: linear-gradient(rgba(255,255,255,0), rgba(245,245,245,1));
+}
+/*@media (prefers-color-scheme: dark) {*/
+/*  :root {*/
+/*    !* Dark *!*/
+/*    --tabs-border-color: rgb(56,56,56);*/
+/*    --tabs-text-color: #cdcdcd;*/
+/*    --tabs-active-text-color: #ffffff;*/
+/*    --tabs-bg-color: #1a1a1a;*/
+/*    --tabs-active-bg-color: #111111;*/
+/*    --tabs-list-bg-gradient: linear-gradient(rgba(0,0,0,0), rgba(38,38,38,1));*/
+/*  }*/
+/*}*/
+:root .dark {
+  --tabs-border-color: rgb(56,56,56);
+  --tabs-text-color: #cdcdcd;
+  --tabs-active-text-color: #ffffff;
+  --tabs-bg-color: #1a1a1a;
+  --tabs-active-bg-color: #111111;
+  --tabs-list-bg-gradient: linear-gradient(rgba(0,0,0,0), rgba(38,38,38,1));
+}
+
+.tabs {
+  position: relative;
+  margin: 16px 0 16px 0;
+  color: var(--tabs-active-text-color);
+  background-color: var(--tabs-active-bg-color);
+}
+
+.tabs div[role="tablist"]{
+  position: relative;
+  display: flex;
+  z-index: 2;
+  background-image: var(--tabs-list-bg-gradient);
+  /* ScrollProps */
+  /* If content exceeds height of container, overflow! */
+  overflow: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox 64 */
+}
+.tabs div[role="tablist"]::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.tabs div[role="tablist"] .tabList-container {
+  display: flex;
+  width: var(--grid-container-width);
+}
+
+/* center tabs */
+.tabs.center div[role="tablist"]:after,
+.tabs.center div[role="tablist"]:before {
+  content: "";
+  margin: auto;
+}
+
+.tabs .tab-content {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--tabs-border-color);
+  width: 100%;
+}
+
+
+.tabs div[role="tablist"]:before {
+  content: "";
+  height: 1px;
+  background-color: var(--tabs-border-color);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+div[role="tabpanel"] { }
+
+div[role="tablist"] button {
+  padding: 14px 16px 12px;
+  line-height: 16px;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--tabs-text-color);
+  width: 100%;
+  float: left;
+  border: 1px solid;
+  border-color: var(--tabs-border-color) transparent;
+  margin-top: -1px;
+  background: var(--tabs-bg-color);
+  transition: color 0.1s ease-in-out, border-bottom-color 0.2s ease-in-out;
+  text-decoration: none;
+  white-space: nowrap;
+  z-index: 1;
+}
+div[role="tablist"] button:first-of-type{
+  margin-left: 0;
+  margin-top: 0;
+}
+div[role="tablist"] button:hover{
+  color: var(--tabs-active-text-color);
+}
+div[role="tablist"] button:active{
+  color: var(--tabs-active-color);
+}
+
+div[role="tablist"] button[aria-selected="true"] {
+  background: var(--tabs-active-bg-color);
+  color: var(--tabs-active-text-color);
+}
+/*- Tabs: .quiet -*/
+.tabs.quiet div[role="tablist"] button{
+  border-width: 0 0 2px;
+  border-color: transparent;
+  background: transparent;
+  padding-right: 0;
+  padding-left: 0;
+  margin-left: 16px;
+}
+.tabs.quiet div[role="tablist"] button:first-of-type {
+  margin-left: 0;
+}
+
+.tabs.quiet div[role="tablist"] button:hover{
+  border-bottom-color: var(--tabs-border-hover-color);
+}
+.tabs.quiet div[role="tablist"] button[aria-selected="true"]{
+  border-bottom-color: var(--tabs-active-color);
+}
+
+/*invoke tabs as media (uncomment to enable)*/
+/*@media (min-width: 600px) {*/
+
+div[role="tablist"] button {
+  width: auto;
+  border-radius: 4px 4px 0 0;
+  margin-left: -1px;
+  margin-top: 0;
+  border-color: transparent;
+  background: transparent;
+}
+div[role="tablist"] button[aria-selected="true"] {
+  border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
+}
+
+@media screen and (min-width: 1440px) {
+
+  div[role="tablist"] button {
+    padding: 24px 32px 18px;
+    line-height: 18px;
+    font-size: 18px;
+  }
+}
