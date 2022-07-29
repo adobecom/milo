@@ -9,9 +9,11 @@ const {
   LARGE,
   DESKTOP_BREAKPOINT,
   TABLET_BREAKPOINT,
+  colorPalette,
   getContainerSize,
   getResponsiveSize,
   tooltipFormatter,
+  getColors,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -72,5 +74,32 @@ describe('chart utils', () => {
     const tooltip = 'Sunday<br /><span>x</span> 140k Chrome with a Really Really Long Name<br /><span>x</span> 180k Firefox Lorem Ipsum Dolor Sit Amet<i class="tooltip-icon"></i>';
 
     expect(tooltipFormatter(params, 'k')).to.equal(tooltip);
+  });
+
+  it('getColors returns default color list if no color provided', () => {
+    const authoredColor = undefined;
+
+    expect(getColors(authoredColor)).to.eql(Object.values(colorPalette));
+  });
+
+  it('getColors returns rotated color list if color provided ', () => {
+    const authoredColor = 'cyan';
+    const colors = [
+      '#34C5E8',
+      '#3991F3',
+      '#686DF4',
+      '#8A3CE7',
+      '#E054E2',
+      '#DE3C82',
+      '#EA3829',
+      '#F48411',
+      '#F5D704',
+      '#A9D814',
+      '#26BB36',
+      '#008F5D',
+      '#12B5AE',
+    ];
+
+    expect(getColors(authoredColor)).to.eql(colors);
   });
 });
