@@ -96,7 +96,7 @@ async function getProcessedMdast(mdast) {
 function display(id, value) {
   const container = document.getElementById(id);
   container.innerText = JSON.stringify(value, undefined, 2);
-  if (id !== 'changeList' && id !== 'mdast3') {
+  if (id !== 'changeList' && id !== 'changeList1' /*&& id !== 'mdast3'*/) {
     container.style.display = 'none';
   }
 }
@@ -128,7 +128,7 @@ function splitToTypeAndIndex(typeWithIndex) {
   return typeAndIndex;
 }
 
-function cleanUpEquivalents(typeKeys, typeAndIndexOfDeletedOrInsertedKey, changeList, increment) {
+function cleanUpEquivalents(typeKeys, typeAndIndexOfDeletedOrInsertedKey, changeList, adjustment) {
   let typeFound = false;
   // eslint-disable-next-line no-restricted-syntax
   for (const typeKey of typeKeys) {
@@ -140,12 +140,7 @@ function cleanUpEquivalents(typeKeys, typeAndIndexOfDeletedOrInsertedKey, change
       const mdast2PositionKey = changeList[typeKey];
       if (typeof mdast2PositionKey === 'string') {
         const typeAndIndexOfMdast2PositionKey = splitToTypeAndIndex(mdast2PositionKey);
-        let equiIndex = typeAndIndexOfMdast2PositionKey.index;
-        if (increment) {
-          equiIndex = typeAndIndexOfMdast2PositionKey.index + 1;
-        } else {
-          equiIndex = typeAndIndexOfMdast2PositionKey.index - 1;
-        }
+        const equiIndex = typeAndIndexOfMdast2PositionKey.index + adjustment;
         const pseudoMdast2PositionKeyWrtOp = typeAndIndexOfMdast2PositionKey.type
           + equiIndex;
         if (pseudoMdast2PositionKeyWrtOp === typeAndIndexOfMdast1PositionKey.fullyQualified) {
@@ -165,6 +160,7 @@ function getChangeList(mdast1withHashes, mdast2withHashes) {
   const mdast1PositionKeysByType = mdast1withHashes.positionKeysByType;
   const changeList = {};
   const deletedSet = new Set();
+  const insertedSet = new Set();
   // First Pass - compare values - if not present deleted
   // eslint-disable-next-line no-restricted-syntax
   for (const [key, value] of Object.entries(mdast1withPositionAsKey)) {
@@ -221,9 +217,7 @@ function getChangeList(mdast1withHashes, mdast2withHashes) {
             hash: mdast1withPositionAsKey[originalPos],
             insertHash: value,
           };
-          const typeAndIndexOfInsertedKey = splitToTypeAndIndex(key);
-          const typeKeys = mdast1PositionKeysByType[typeAndIndexOfInsertedKey.type];
-          cleanUpEquivalents(typeKeys, typeAndIndexOfInsertedKey, changeList, false);
+          insertedSet.add(key);
         }
       }
     } else if (insertObject.before) {
@@ -240,6 +234,13 @@ function getChangeList(mdast1withHashes, mdast2withHashes) {
       }
     }
   }
+  // Clean up after inserts
+  // eslint-disable-next-line no-restricted-syntax
+  for (const insertedKey of insertedSet) {
+    const typeAndIndexOfInsertedKey = splitToTypeAndIndex(insertedKey);
+    const typeKeys = mdast1PositionKeysByType[typeAndIndexOfInsertedKey.type];
+    cleanUpEquivalents(typeKeys, typeAndIndexOfInsertedKey, changeList, -1);
+  }
   // Third Pass - if `deleted` still exists reset indices and find pseudo equals
   // and skip them from change list
   // eslint-disable-next-line no-restricted-syntax
@@ -251,7 +252,7 @@ function getChangeList(mdast1withHashes, mdast2withHashes) {
       hash: mdast1withPositionAsKey[deletedKey],
     };
     // eslint-disable-next-line no-restricted-syntax
-    cleanUpEquivalents(typeKeys, typeAndIndexOfDeletedKey, changeList, true);
+    cleanUpEquivalents(typeKeys, typeAndIndexOfDeletedKey, changeList, 1);
   }
   display('changeListThirdPass', changeList);
   // Fourth Pass - remove same position content.
@@ -347,8 +348,8 @@ async function applyChanges(changeList, newLangmaster, currentRegion) {
     }
     currentIndex += 1;
   }
-  display('mdast3', mdastWithChangesApplied);
-  persist(mdastWithChangesApplied);
+  // display('mdast3', mdastWithChangesApplied);
+  // persist(mdastWithChangesApplied);
 }
 
 async function init() {
@@ -361,8 +362,10 @@ async function init() {
   const changeList = getChangeList(mdast1withHashes, mdast2withHashes);
   applyChanges(changeList, mdast3, mdast2);
   display('changeList', changeList);
+  // display('changeList1', getChangeList(mdast1withHashes, await getProcessedMdast(mdast3)));
   display('mdast1', mdast1withHashes);
   display('mdast2', mdast2withHashes);
+  display('mdast3', await getProcessedMdast(mdast3));
 }
 
 export default init;
