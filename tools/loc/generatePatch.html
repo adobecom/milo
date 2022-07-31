@@ -5,37 +5,41 @@
   <script src="./lib/diff.js"></script>
   <script src="./lib/object_hash.js" type="text/javascript"></script>
 </head>
+<style>
+  table, th, td {
+    border:1px solid black;
+  }
+</style>
 <body>
   <header>
     <h1 class="container">Localization</h1>
   </header>
   <main>
-    <div class="project-overview">
-      <div class="container">
-        <div id="diff" class="hidden">
-          <button type="button">Generate Diff</button>
-        </div>
-      </div>
-    </div>
-    <div class="container">
-      <h2 class="container">Langmaster (Base)</h2>
-      <code id="langmasterBase"></code>
-
-      <h2 class="container">Langmaster V1 (Modified over Base)</h2>
-      <code id="langmasterV1"></code>
-
-      <h2 class="container">Region V1 (Modified over Base)</h2>
-      <code id="regionV1"></code>
-
-      <h2 class="container">Langmaster (Base) <-> Langmaster V1</h2>
-      <code id="langmasterV1Diff"></code>
-
-      <h2 class="container">Langmaster (Base) <-> Region V1</h2>
-      <code id="regionV1Diff"></code>
-
-      <h2 class="container">Region V2 - Merged Result of Langmaster V1 and Region V1</h2>
-      <code id="regionV2"></code>
-    </div>
+    <table>
+      <tr>
+        <th>Langmaster (Base)</th>
+        <th>Langmaster V1 (Modified over Base)</th>
+        <th>Region V1 (Modified over Base)</th>
+      </tr>
+      <tr>
+        <td id="langmasterBase"></td>
+        <td id="langmasterV1"></td>
+        <td id="regionV1"></td>
+      </tr>
+    </table>
+    <br/>
+    <table>
+      <tr>
+        <th>Langmaster (Base) <-> Langmaster V1</th>
+        <th>Langmaster (Base) <-> Region V1</th>
+        <th>Region V2 - Merged Result of Langmaster V1 and Region V1</th>
+      </tr>
+      <tr>
+        <td id="langmasterV1Diff"></td>
+        <td id="regionV1Diff"></td>
+        <td id="regionV2"></td>
+      </tr>
+    </table>
   </main>
   <script type="module">
     import init from './generatePatch.js';
