@@ -13,11 +13,11 @@
 import {
   decorateArea,
   decorateNavs,
-  decorateTemplateAndTheme,
   loadLCP,
   loadArea,
   loadDelayed,
   loadStyle,
+  loadTemplate,
 } from '../utils/utils.js';
 
 async function loadPage() {
@@ -25,12 +25,10 @@ async function loadPage() {
   const navs = decorateNavs();
   await loadLCP({ blocks });
   loadStyle('/fonts/fonts.css');
-  await decorateTemplateAndTheme();
   await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
-  const { loadTokens } = await import('../utils/utils.js');
-  await loadTokens(blocks);
+  await loadTemplate();
   loadDelayed();
 }
 await loadPage();
