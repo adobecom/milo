@@ -5,8 +5,8 @@ import {
   saveFile,
 } from '../translation/sharepoint.js';
 
-const types = new Set();
-const hashToContentMap = new Map();
+let types = new Set();
+let hashToContentMap = new Map();
 
 function getParsedHtml(htmlString) {
   return new DOMParser().parseFromString(htmlString, 'text/html');
@@ -55,8 +55,17 @@ function processMdast(nodes) {
   return { hashToIndex, arrayWithTypeAndHash };
 }
 
+// TODO - This will later be replaced with actual reading of the docx version and conversion to md
+async function simulatePreview(mdPath) {
+  fetch(
+    `https://admin.hlx3.page/preview/adobecom/milo/diffpoc${mdPath}`,
+    { method: 'POST' },
+  );
+}
+
 async function getMd(path) {
   const mdPath = `${path}.md`;
+  await simulatePreview(mdPath);
   const mdFile = await fetch(mdPath);
   return mdFile.text();
 }
@@ -83,10 +92,7 @@ async function getProcessedMdast(mdast) {
 function display(id, toBeDisplayed) {
   function replacer(key, value) {
     if (value instanceof Map) {
-      return {
-        dataType: 'Map',
-        value: Array.from(value.entries()), // or with spread: value: [...value]
-      };
+      return { value: Array.from(value.entries()) }; // or with spread: value: [...value]
     }
     return value;
   }
@@ -96,7 +102,7 @@ function display(id, toBeDisplayed) {
 }
 
 // eslint-disable-next-line no-unused-vars
-async function persist(mdast, path = '/drafts/bhagwath/ValidateMD2AutoSavedV3.docx') {
+async function persist(mdast, path) {
   const docx = await mdast2docx(mdast);
   await connectToSP(async () => {
     await saveFile(docx, path);
@@ -162,20 +168,82 @@ function getChanges(left, right) {
   return changesMap;
 }
 
-async function init() {
-  const langmasterBase = await getMdast('/drafts/bhagwath/diffpoc/case4/langmaster-base');
+function reset() {
+  types = new Set();
+  hashToContentMap = new Map();
+}
+
+function updateMergedMdast(mergedMdast, node) {
+  if (node.opInfo.op !== 'deleted') {
+    const hash = node.opInfo.op === 'edited' ? node.opInfo.newHash : node.hash;
+    const content = hashToContentMap.get(hash);
+    mergedMdast.children.push(content);
+  }
+}
+
+function getMergedMdast(left, right) {
+  const mergedMdast = { type: 'root', children: [] };
+  let leftPointer = 0;
+  const leftArray = Array.from(left.entries());
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [rightHash, rightOpInfo] of right) {
+    if (left.has(rightHash)) {
+      // eslint-disable-next-line no-plusplus
+      for (leftPointer; leftPointer < leftArray.length; leftPointer++) {
+        const leftArrayElement = leftArray[leftPointer];
+        const leftHash = leftArrayElement[0];
+        const leftOpInfo = leftArrayElement[1];
+        if (leftHash === rightHash) {
+          const toAdd = rightOpInfo.op === 'nochange' ? { hash: leftHash, opInfo: leftOpInfo }
+            : { hash: rightHash, opInfo: rightOpInfo };
+          updateMergedMdast(mergedMdast, toAdd);
+          leftPointer += 1;
+          break;
+        } else {
+          updateMergedMdast(mergedMdast, { hash: leftHash, opInfo: leftOpInfo });
+        }
+      }
+    } else {
+      updateMergedMdast(mergedMdast, { hash: rightHash, opInfo: rightOpInfo });
+    }
+  }
+  // Check if there are excess elements in left array - if yes update them into the mergedMdast.
+  if (leftPointer < leftArray.length) {
+    // eslint-disable-next-line no-plusplus
+    for (leftPointer; leftPointer < leftArray.length; leftPointer++) {
+      const leftArrayElement = leftArray[leftPointer];
+      updateMergedMdast(mergedMdast, { hash: leftArrayElement[0], opInfo: leftArrayElement[1] });
+    }
+  }
+  return mergedMdast;
+}
+
+async function process(folderPath) {
+  reset();
+  const langmasterBase = await getMdast(`${folderPath}/langmaster-base`);
   const langmasterBaseProcessed = await getProcessedMdast(langmasterBase);
   display('langmasterBase', langmasterBaseProcessed);
-  const langmasterV1 = await getMdast('/drafts/bhagwath/diffpoc/case4/langmaster-v1');
+  const langmasterV1 = await getMdast(`${folderPath}/langmaster-v1`);
   const langmasterV1Processed = await getProcessedMdast(langmasterV1);
   display('langmasterV1', langmasterV1Processed);
   const langmasterBaseToV1Changes = getChanges(langmasterBaseProcessed, langmasterV1Processed);
   display('langmasterV1Diff', langmasterBaseToV1Changes);
-  const regionV1 = await getMdast('/drafts/bhagwath/diffpoc/case4/region-v1');
+  const regionV1 = await getMdast(`${folderPath}/region-v1`);
   const regionV1Processed = await getProcessedMdast(regionV1);
   display('regionV1', regionV1Processed);
   const langmasterBaseToRegionV1Changes = getChanges(langmasterBaseProcessed, regionV1Processed);
   display('regionV1Diff', langmasterBaseToRegionV1Changes);
+  const regionV2Mdast = getMergedMdast(langmasterBaseToV1Changes, langmasterBaseToRegionV1Changes);
+  display('regionV2', regionV2Mdast);
+  await persist(regionV2Mdast, `${folderPath}/Region(V2).docx`);
+}
+
+async function init() {
+  document.getElementById('merge').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const folderPath = document.getElementById('folderPath').value;
+    process(folderPath);
+  });
 }
 
 export default init;
