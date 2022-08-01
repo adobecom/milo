@@ -39,25 +39,36 @@ function getNodeType(node) {
 }
 
 function processMdast(nodes) {
-  const hashToIndex = new Map();
-  const arrayWithTypeAndHash = [];
+  const sections = [];
+  let hashToIndex = new Map();
+  let arrayWithTypeAndHash = [];
   let index = 0;
   // eslint-disable-next-line no-restricted-syntax
   for (const node of nodes) {
     const nodeType = getNodeType(node);
     types.add(nodeType);
-    const hash = objectHash.sha1(node);
-    arrayWithTypeAndHash.push({ type: nodeType, hash });
-    hashToIndex.set(hash, index);
-    hashToContentMap.set(hash, node);
-    index += 1;
+    if (nodeType === 'thematicBreak') {
+      sections.push({ hashToIndex, arrayWithTypeAndHash });
+      index = 0;
+      hashToIndex = new Map();
+      arrayWithTypeAndHash = [];
+    } else {
+      const hash = objectHash.sha1(node);
+      arrayWithTypeAndHash.push({ type: nodeType, hash });
+      hashToIndex.set(hash, index);
+      hashToContentMap.set(hash, node);
+      index += 1;
+    }
   }
-  return { hashToIndex, arrayWithTypeAndHash };
+  if (sections.length === 0) {
+    sections.push({ hashToIndex, arrayWithTypeAndHash });
+  }
+  return sections;
 }
 
 // TODO - This will later be replaced with actual reading of the docx version and conversion to md
 async function simulatePreview(mdPath) {
-  fetch(
+  await fetch(
     `https://admin.hlx3.page/preview/adobecom/milo/diffpoc${mdPath}`,
     { method: 'POST' },
   );
@@ -168,6 +179,21 @@ function getChanges(left, right) {
   return changesMap;
 }
 
+// eslint-disable-next-line no-unused-vars
+function getChangeList(leftSections, rightSections) {
+  const leftLimit = leftSections.length - 1;
+  const rightLimit = rightSections.length - 1;
+  const changeList = [];
+  // eslint-disable-next-line no-plusplus
+  for (let leftPointer = 0; leftPointer <= leftLimit; leftPointer++) {
+    if (leftPointer <= rightLimit) {
+      changeList.push(getChanges(leftSections[leftPointer], rightSections[leftPointer]));
+    } else {
+      changeList.push(getChanges(leftSections[leftPointer], rightSections[leftPointer]));
+    }
+  }
+}
+
 function reset() {
   types = new Set();
   hashToContentMap = new Map();
@@ -221,15 +247,15 @@ function getMergedMdast(left, right) {
 async function process(folderPath) {
   reset();
   const langmasterBase = await getMdast(`${folderPath}/langmaster-base`);
-  const langmasterBaseProcessed = await getProcessedMdast(langmasterBase);
+  const langmasterBaseProcessed = (await getProcessedMdast(langmasterBase))[0];
   display('langmasterBase', langmasterBaseProcessed);
   const langmasterV1 = await getMdast(`${folderPath}/langmaster-v1`);
-  const langmasterV1Processed = await getProcessedMdast(langmasterV1);
+  const langmasterV1Processed = (await getProcessedMdast(langmasterV1))[0];
   display('langmasterV1', langmasterV1Processed);
   const langmasterBaseToV1Changes = getChanges(langmasterBaseProcessed, langmasterV1Processed);
   display('langmasterV1Diff', langmasterBaseToV1Changes);
   const regionV1 = await getMdast(`${folderPath}/region-v1`);
-  const regionV1Processed = await getProcessedMdast(regionV1);
+  const regionV1Processed = (await getProcessedMdast(regionV1))[0];
   display('regionV1', regionV1Processed);
   const langmasterBaseToRegionV1Changes = getChanges(langmasterBaseProcessed, regionV1Processed);
   display('regionV1Diff', langmasterBaseToRegionV1Changes);
