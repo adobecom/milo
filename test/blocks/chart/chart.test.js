@@ -14,6 +14,8 @@ const {
   getResponsiveSize,
   tooltipFormatter,
   getColors,
+  processDataset,
+  processMarkData,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -101,5 +103,108 @@ describe('chart utils', () => {
     ];
 
     expect(getColors(authoredColor)).to.eql(colors);
+  });
+
+  it('chart dataset', () => {
+    const fetchedData = {
+      data: [
+        {
+          Day: 'Mon', Chrome: '100', Firefox: '245', Edge: '335', Group: '', Unit: 'k',
+        },
+        {
+          Day: 'Tues', Chrome: '565', Firefox: '345', Edge: '945', Group: '', Unit: '',
+        },
+        {
+          Day: 'Weds', Chrome: '344', Firefox: '234', Edge: '723', Group: '', Unit: '',
+        },
+        {
+          Day: 'Thurs', Chrome: '156', Firefox: '283', Edge: '305', Group: '', Unit: '',
+        },
+        {
+          Day: 'Fri', Chrome: '84', Firefox: '273', Edge: '126', Group: '', Unit: '',
+        },
+        {
+          Day: 'Sat', Chrome: '189', Firefox: '273', Edge: '103', Group: '', Unit: '',
+        },
+        {
+          Day: 'Sun', Chrome: '103', Firefox: '111', Edge: '157', Group: '', Unit: '',
+        },
+      ],
+    };
+
+    const dataset = {
+      source: [
+        ['Day', 'Chrome', 'Firefox', 'Edge'],
+        ['Mon', '100', '245', '335'],
+        ['Tues', '565', '345', '945'],
+        ['Weds', '344', '234', '723'],
+        ['Thurs', '156', '283', '305'],
+        ['Fri', '84', '273', '126'],
+        ['Sat', '189', '273', '103'],
+        ['Sun', '103', '111', '157'],
+      ],
+    };
+
+    expect(processDataset(fetchedData.data)).to.eql(dataset);
+  });
+
+  it('chart mark series data', () => {
+    const fetchedData = {
+      series: [
+        {
+          Type: 'markArea',
+          Name: 'Weekend Sale',
+          Axis: 'xAxis',
+          Value: 'Fri-Sun',
+        },
+        {
+          Type: 'markLine',
+          Name: 'Promotion',
+          Axis: 'xAxis',
+          Value: 'Mon',
+        },
+        {
+          Type: 'markLine',
+          Name: 'Campaign Launch',
+          Axis: 'xAxis',
+          Value: 'Thurs',
+        },
+        {
+          Type: 'markLine',
+          Name: 'Goal',
+          Axis: 'yAxis',
+          Value: '200',
+        },
+      ],
+    };
+
+    const seriesOptions = {
+      markArea: {
+        data: [
+          [{
+            name: 'Weekend Sale',
+            xAxis: 'Fri',
+          }, { xAxis: 'Sun' }],
+        ],
+      },
+      markLine: {
+        data: [
+          {
+            name: 'Promotion',
+            xAxis: 'Mon',
+          },
+          {
+            name: 'Campaign Launch',
+            xAxis: 'Thurs',
+          },
+          {
+            name: 'Goal',
+            yAxis: 200,
+          },
+        ],
+      },
+    };
+
+    expect(processMarkData(fetchedData.series)).to.eql(seriesOptions);
   });
 });

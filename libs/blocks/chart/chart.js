@@ -28,7 +28,7 @@ const chartTypes = [
   'line',
 ];
 
-function processDataset(data) {
+export function processDataset(data) {
   const dataset = {};
 
   // Remove group and unit from headers
@@ -44,10 +44,35 @@ function processDataset(data) {
   return dataset;
 }
 
-function processSeries(data) {
-  const series = [];
-  // TODO: Series data
-  return series;
+const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
+
+export function processMarkData(series) {
+  const seriesOptions = series.reduce((options, mark) => {
+    options[mark.Type] ??= { data: [] };
+
+    const markData = options[mark.Type].data;
+    const split = mark.Value?.split('-');
+    const value = parseValue(split[0]);
+    const markObject = {
+      ...(mark.Name ? { name: mark.Name } : {}),
+      ...(mark.Axis ? { [mark.Axis]: value } : {}),
+    };
+
+    if (mark.Type === 'markArea') {
+      markData[0] ??= [];
+      markData[0].push(markObject);
+
+      if (split.length > 1) {
+        markData[0].push((mark.Axis ? { [mark.Axis]: parseValue(split[1]) } : {}));
+      }
+    } else {
+      markData.push(markObject);
+    }
+
+    return options;
+  }, {});
+
+  return seriesOptions;
 }
 
 /**
@@ -64,8 +89,8 @@ async function fetchData(link) {
 
   // Check the type of data
   if (json[':type'] === 'multi-sheet') {
-    const dataSheet = json[':names'][0];
-    const seriesSheet = json[':names'][1];
+    const dataSheet = json[':names'].includes('data') ? 'data' : json[':names'].shift();
+    const seriesSheet = json[':names'].filter((name) => name !== 'data').shift();
     data.data = json[dataSheet]?.data;
     data.series = json[seriesSheet]?.data;
   } else {
@@ -126,19 +151,23 @@ const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
   }));
 };
 
-const lineSeriesOptions = (firstDataset) => (
-  firstDataset.map(() => {
-    const options = {
+const lineSeriesOptions = (series, firstDataset) => {
+  const marks = processMarkData(series);
+
+  return firstDataset.map((value, index) => {
+    let options = {
       type: 'line',
       symbol: 'none',
       lineStyle: { width: 8 },
     };
 
-    // ToDo: Add marks
+    if (index === 0 && marks) {
+      options = { ...options, ...marks };
+    }
 
     return options;
-  })
-);
+  });
+};
 
 /**
  * Returns object of echart options
@@ -194,7 +223,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
     },
     series: (chartType === 'bar' || chartType === 'column')
       ? barSeriesOptions(chartType, firstDataset, colors, size, unit)
-      : lineSeriesOptions(firstDataset),
+      : lineSeriesOptions(data.series, firstDataset),
   };
 };
 
@@ -304,12 +333,7 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
 
   if (previousIsLarge !== currentIsLarge) {
     chartInstance?.dispose();
-
-    const themeName = getTheme(currentSize);
-    const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
-    const chartOptions = getChartOptions(chartType, data, colors, currentSize);
-
-    chart.setOption(chartOptions);
+    initChart(chartWrapper, chartType, data, colors, currentSize);
   } else {
     chartInstance?.resize();
   }
