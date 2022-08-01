@@ -72,6 +72,26 @@ export function processMarkData(series) {
     return options;
   }, {});
 
+  if (seriesOptions.markLine) {
+    seriesOptions.markLine.label = {
+      show: false,
+      formatter: '{b}',
+      position: 'insideStartBottom',
+    };
+    seriesOptions.markLine.emphasis = { label: { show: true } };
+  }
+
+  if (seriesOptions.markArea) {
+    seriesOptions.markArea.label = { show: false };
+    seriesOptions.markArea.emphasis = {
+      label: {
+        show: true,
+        position: 'top',
+        distance: 0,
+      },
+    };
+  }
+
   return seriesOptions;
 }
 
