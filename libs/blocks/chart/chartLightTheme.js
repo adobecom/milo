@@ -59,7 +59,7 @@ export default (deviceSize) => {
       ),
     },
     grid: {
-      top: 10,
+      top: 13,
       bottom: isLarge ? 60 : 90,
       left: 0,
       right: 20,
@@ -93,26 +93,6 @@ export default (deviceSize) => {
         alignWithLabel: true,
         length: 8,
         lineStyle: { color: axisColor },
-      },
-    },
-    // ToDo: Move line/area options into chart.js MWPW-113006
-    line: {
-      markLine: {
-        label: {
-          show: false,
-          formatter: '{b}',
-          position: 'insideStartBottom',
-        },
-        emphasis: { label: { show: true } },
-      },
-      markArea: {
-        label: { show: false },
-        emphasis: {
-          label: {
-            show: true,
-            position: 'top',
-          },
-        },
       },
     },
     aria: { enabled: true },

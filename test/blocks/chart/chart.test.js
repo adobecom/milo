@@ -178,33 +178,29 @@ describe('chart utils', () => {
       ],
     };
 
-    const seriesOptions = {
-      markArea: {
-        data: [
-          [{
-            name: 'Weekend Sale',
-            xAxis: 'Fri',
-          }, { xAxis: 'Sun' }],
-        ],
+    const markAreaData = [
+      [{
+        name: 'Weekend Sale',
+        xAxis: 'Fri',
+      }, { xAxis: 'Sun' }],
+    ];
+    const markLineData = [
+      {
+        name: 'Promotion',
+        xAxis: 'Mon',
       },
-      markLine: {
-        data: [
-          {
-            name: 'Promotion',
-            xAxis: 'Mon',
-          },
-          {
-            name: 'Campaign Launch',
-            xAxis: 'Thurs',
-          },
-          {
-            name: 'Goal',
-            yAxis: 200,
-          },
-        ],
+      {
+        name: 'Campaign Launch',
+        xAxis: 'Thurs',
       },
-    };
+      {
+        name: 'Goal',
+        yAxis: 200,
+      },
+    ];
+    const markData = processMarkData(fetchedData.series);
 
-    expect(processMarkData(fetchedData.series)).to.eql(seriesOptions);
+    expect(markData.markArea.data).to.eql(markAreaData);
+    expect(markData.markLine.data).to.eql(markLineData);
   });
 });
