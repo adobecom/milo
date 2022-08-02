@@ -26,6 +26,46 @@ export function getEnv() {
   /* c8 ignore stop */
 }
 
+/**
+* Get the current Helix environment
+* @returns {Object} the env object
+*/
+export function getHelixEnv() {
+  let envName = sessionStorage.getItem('helix-env');
+  if (!envName) envName = 'prod';
+  const envs = {
+    stage: {
+      ims: 'stg1',
+      adobeIO: 'cc-collab-stage.adobe.io',
+      adminconsole: 'stage.adminconsole.adobe.com',
+      account: 'stage.account.adobe.com',
+    },
+    prod: {
+      ims: 'prod',
+      adobeIO: 'cc-collab.adobe.io',
+      adminconsole: 'adminconsole.adobe.com',
+      account: 'account.adobe.com',
+    },
+  };
+  const env = envs[envName];
+
+  const overrideItem = sessionStorage.getItem('helix-env-overrides');
+  if (overrideItem) {
+    const overrides = JSON.parse(overrideItem);
+    const keys = Object.keys(overrides);
+    env.overrides = keys;
+
+    keys.forEach((value) => {
+      env[value] = overrides[value];
+    });
+  }
+
+  if (env) {
+    env.name = envName;
+  }
+  return env;
+}
+
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
@@ -49,13 +89,13 @@ export default function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href) {
+export function makeRelative(href, bypassCORS = false) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(fixedHref);
   const relative = hosts.some((host) => url.hostname.includes(host))
     || url.hostname === window.location.hostname;
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
+  return relative || bypassCORS ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 export function loadStyle(href, callback) {
@@ -324,4 +364,12 @@ export function updateObj(obj, defaultObj) {
     if (obj[key] === undefined) obj[key] = ds[key];
   });
   return obj;
+}
+
+export function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
 }
