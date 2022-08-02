@@ -228,9 +228,9 @@ export const getChartOptions = (chartType, data, colors, size) => {
       show: true,
       formatter: isBar
         ? (params) => barTooltipFormatter(params, unit)
-        : (params) => tooltipFormatter(params, unit), // ToDo: check area
+        : (params) => tooltipFormatter(params, unit),
       trigger: isBar ? 'item' : 'axis',
-      axisPointer: { type: isColumn ? 'none' : 'line' }, // ToDo: check area
+      axisPointer: { type: isColumn ? 'none' : 'line' },
     },
     xAxis: {
       type: isBar ? 'value' : 'category',
