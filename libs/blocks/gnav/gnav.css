@@ -24,6 +24,7 @@ nav.gnav {
   -webkit-font-smoothing: antialiased;
   flex: 0 1 100%;
   box-sizing: border-box;
+  font-weight: normal;
 }
 
 nav.gnav a {
