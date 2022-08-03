@@ -26,6 +26,7 @@ const chartTypes = [
   'bar',
   'column',
   'line',
+  'area',
 ];
 
 export function processDataset(data) {
@@ -189,6 +190,15 @@ const lineSeriesOptions = (series, firstDataset) => {
   });
 };
 
+const areaSeriesOptions = (firstDataset) => (
+  firstDataset.map(() => ({
+    type: 'line',
+    symbol: 'none',
+    areaStyle: { opacity: 1 },
+    stack: 'area',
+  }))
+);
+
 /**
  * Returns object of echart options
  * @param {string} chartType
@@ -202,6 +212,8 @@ export const getChartOptions = (chartType, data, colors, size) => {
   const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
   const firstDataset = (source && source[1]) ? source[1].slice() : [];
+  const isBar = chartType === 'bar';
+  const isColumn = chartType === 'column';
 
   firstDataset.shift();
 
@@ -214,36 +226,39 @@ export const getChartOptions = (chartType, data, colors, size) => {
     },
     tooltip: {
       show: true,
-      formatter: chartType === 'bar'
+      formatter: isBar
         ? (params) => barTooltipFormatter(params, unit)
         : (params) => tooltipFormatter(params, unit),
-      trigger: (chartType === 'column' || chartType === 'line') ? 'axis' : 'item',
-      axisPointer: { type: chartType === 'column' ? 'none' : 'line' },
+      trigger: isBar ? 'item' : 'axis',
+      axisPointer: { type: isColumn ? 'none' : 'line' },
     },
     xAxis: {
-      type: chartType === 'bar' ? 'value' : 'category',
-      axisLabel: { show: chartType !== 'bar' },
-      axisTick: { show: chartType !== 'bar' },
+      type: isBar ? 'value' : 'category',
+      axisLabel: { show: !isBar },
+      axisTick: { show: !isBar },
       max: (value) => {
-        if (chartType !== 'bar') return null;
+        if (!isBar) return null;
         // This adds extra space on xAxis so labels will fit
         const extraSpace = 1;
         return Math.ceil((value.max + (value.max * extraSpace)) / 10) * 10;
       },
-      boundaryGap: chartType === 'column',
+      boundaryGap: isColumn,
     },
     yAxis: {
-      type: chartType === 'bar' ? 'category' : 'value',
+      type: isBar ? 'category' : 'value',
       axisLabel: {
-        show: chartType !== 'bar',
+        show: !isBar,
         formatter: (params) => `${params}${unit}`,
         padding: 0,
       },
-      axisTick: { show: chartType !== 'bar' },
+      axisTick: { show: !isBar },
     },
-    series: (chartType === 'bar' || chartType === 'column')
-      ? barSeriesOptions(chartType, firstDataset, colors, size, unit)
-      : lineSeriesOptions(data.series, firstDataset),
+    series: (() => {
+      if (isBar || isColumn) return barSeriesOptions(chartType, firstDataset, colors, size, unit);
+      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset);
+      if (chartType === 'area') return areaSeriesOptions(firstDataset);
+      return [];
+    })(),
   };
 };
 
