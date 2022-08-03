@@ -179,7 +179,7 @@ const lineSeriesOptions = (series, firstDataset) => {
     let options = {
       type: 'line',
       symbol: 'none',
-      lineStyle: { width: 8 },
+      lineStyle: { width: 3 },
     };
 
     if (index === 0 && marks) {
