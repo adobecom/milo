@@ -29,23 +29,23 @@ const chartTypes = [
   'area',
 ];
 
+const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
+
 export function processDataset(data) {
   const dataset = {};
 
   // Remove group and unit from headers
-  const headers = Object.keys(data[0]).filter((header) => header.toLowerCase() !== 'unit' && header.toLowerCase() !== 'group');
+  const headers = Object.keys(data[0]).filter((header) => !['unit', 'group', 'color'].includes(header.toLowerCase()));
   dataset.source = [headers];
 
   // Use headers to set source
   data.forEach((element) => {
-    const values = headers.map((column) => element[column]);
+    const values = headers.map((column) => parseValue(element[column]));
     dataset.source.push(values);
   });
 
   return dataset;
 }
-
-const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
 
 export function processMarkData(series) {
   const seriesOptions = series.reduce((options, mark) => {
@@ -146,7 +146,7 @@ export const tooltipFormatter = (params, unit) => {
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
+const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, unit) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -160,6 +160,7 @@ const barSeriesOptions = (chartType, firstDataset, colors, size, unit) => {
       distance: 8,
       fontSize: isLarge ? 16 : 14,
     },
+    colorBy: hasOverride ? 'data' : 'series',
     showBackground: isBar,
     backgroundStyle: {
       color: colors[index],
@@ -208,6 +209,7 @@ const areaSeriesOptions = (firstDataset) => (
  * @returns {object}
  */
 export const getChartOptions = (chartType, data, colors, size) => {
+  const hasOverride = Object.keys(data.data[0]).some((header) => header.toLowerCase() === 'color');
   const dataset = processDataset(data.data);
   const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
@@ -254,7 +256,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
       axisTick: { show: !isBar },
     },
     series: (() => {
-      if (isBar || isColumn) return barSeriesOptions(chartType, firstDataset, colors, size, unit);
+      if (isBar || isColumn) return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, unit);
       if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       return [];
@@ -294,6 +296,13 @@ export const getColors = (authoredColor) => {
 
   return colorList.concat(colorList.splice(0, colorIndex));
 };
+
+export const getOverrideColors = (authoredColor, data) => data.map((row) => {
+  const overrideColumn = Object.keys(row).find((key) => key.toLowerCase() === 'color');
+  const overrideColor = row[overrideColumn];
+
+  return colorPalette[overrideColor || authoredColor] || Object.values(colorPalette)[0];
+});
 
 export const getContainerSize = (chartSize, chartType) => {
   const chartHeights = {
@@ -409,7 +418,8 @@ const init = async (el) => {
   if (!data) return;
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
-  const colors = getColors(authoredColor);
+  const hasOverride = Object.keys(data?.data[0])?.some((header) => header.toLowerCase() === 'color');
+  const colors = hasOverride ? getOverrideColors(authoredColor, data.data) : getColors(authoredColor);
 
   updateContainerSize(chartWrapper, size, chartType);
 
