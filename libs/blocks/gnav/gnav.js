@@ -3,6 +3,7 @@ import {
   getHelixEnv,
   getBlockClasses,
   makeRelative,
+  getMetadata,
 } from '../../utils/utils.js';
 import createTag from './gnav-utils.js';
 
@@ -422,22 +423,22 @@ async function fetchGnav(url) {
 }
 
 export default async function init(blockEl) {
-  const url = blockEl.getAttribute('data-gnav-source');
-  if (url) {
-    const html = await fetchGnav(url);
-    if (html) {
-      try {
-        const initEvent = new Event('gnav:init');
-        const parser = new DOMParser();
-        const gnavDoc = parser.parseFromString(html, 'text/html');
-        const gnav = new Gnav(gnavDoc.body, blockEl);
-        gnav.init();
-        blockEl.dispatchEvent(initEvent);
-        return gnav;
-      } catch {
-        console.log('Could not create global navigation.');
-      }
+  // TODO: Make the fixed path more consumer friendly.
+  const url = getMetadata('gnav-source') || '/gnav';
+  const html = await fetchGnav(url);
+  if (html) {
+    try {
+      const initEvent = new Event('gnav:init');
+      const parser = new DOMParser();
+      const gnavDoc = parser.parseFromString(html, 'text/html');
+      const gnav = new Gnav(gnavDoc.body, blockEl);
+      gnav.init();
+      blockEl.dispatchEvent(initEvent);
+      return gnav;
+    } catch {
+      console.log('Could not create global navigation.');
     }
   }
+
   return null;
 }

@@ -62,3 +62,28 @@
 .section.heading-center h6 {
   text-align: center;
 }
+
+.section.story.header {
+  background: #EFEFEF;
+  padding: var(--spacing-xxl) 0;
+}
+
+.section.story {
+  display: grid;
+  grid-template-areas: 'sidebar' 'main';
+}
+
+.section.story > .section.sidebar {
+  grid-area: sidebar;
+}
+
+.section.story > .section.main {
+  grid-area: main;
+}
+
+@media (min-width: 600px) {
+  .section.story {
+    grid-template-columns: 3fr 7fr;
+    grid-template-areas: 'sidebar main';
+  }
+}

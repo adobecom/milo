@@ -259,7 +259,12 @@ export function decorateNavs(el = document) {
   if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
   const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
+    const navType = nav.nodeName.toLowerCase();
+    if (getMetadata('gnav') === 'on') {
+      nav.className = navType === 'header' ? 'gnav' : 'gnav-footer';
+      return nav;
+    }
+    nav.className = navType;
     return nav;
   });
 }
