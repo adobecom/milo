@@ -14,6 +14,7 @@ const {
   getResponsiveSize,
   tooltipFormatter,
   getColors,
+  getOverrideColors,
   processDataset,
   processMarkData,
 } = await import('../../../libs/blocks/chart/chart.js');
@@ -105,6 +106,32 @@ describe('chart utils', () => {
     expect(getColors(authoredColor)).to.eql(colors);
   });
 
+  it('getOverrideColors returns authored color with overrides', () => {
+    const fetchedData = {
+      data: [
+        { Day: 'Mon', Visitors: '150', Group: '', Unit: 'k', Color: '' },
+        { Day: 'Tues', Visitors: '230', Group: '', Unit: '', Color: '' },
+        { Day: 'Weds', Visitors: '224', Group: '', Unit: '', Color: '' },
+        { Day: 'Thurs', Visitors: '218', Group: '', Unit: '', Color: 'red' },
+        { Day: 'Fri', Visitors: '135', Group: '', Unit: '', Color: 'red' },
+        { Day: 'Sat', Visitors: '147', Group: '', Unit: '', Color: 'red' },
+        { Day: 'Sun', Visitors: '260', Group: '', Unit: '', Color: '' },
+      ],
+    };
+    const authoredColor = 'cyan';
+    const colors = [
+      '#34C5E8',
+      '#34C5E8',
+      '#34C5E8',
+      '#EA3829',
+      '#EA3829',
+      '#EA3829',
+      '#34C5E8',
+    ];
+
+    expect(getOverrideColors(authoredColor, fetchedData.data)).to.eql(colors);
+  });
+
   it('chart dataset', () => {
     const fetchedData = {
       data: [
@@ -135,13 +162,13 @@ describe('chart utils', () => {
     const dataset = {
       source: [
         ['Day', 'Chrome', 'Firefox', 'Edge'],
-        ['Mon', '100', '245', '335'],
-        ['Tues', '565', '345', '945'],
-        ['Weds', '344', '234', '723'],
-        ['Thurs', '156', '283', '305'],
-        ['Fri', '84', '273', '126'],
-        ['Sat', '189', '273', '103'],
-        ['Sun', '103', '111', '157'],
+        ['Mon', 100, 245, 335],
+        ['Tues', 565, 345, 945],
+        ['Weds', 344, 234, 723],
+        ['Thurs', 156, 283, 305],
+        ['Fri', 84, 273, 126],
+        ['Sat', 189, 273, 103],
+        ['Sun', 103, 111, 157],
       ],
     };
 
