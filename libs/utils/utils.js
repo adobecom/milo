@@ -10,6 +10,11 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments/' },
 ];
 const ICON_BLOCKS = ['media', 'z-pattern'];
+let loader;
+
+export function setLoader(clientLoader) {
+  loader = clientLoader;
+}
 
 export function getEnv() {
   const { hostname, href } = window.location;
@@ -106,19 +111,20 @@ export async function loadBlock(block) {
   return block;
 }
 
-export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS, loader = loadBlock }) {
+export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
+  const blockLoader = loader || loadBlock;
   const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
   if (lcpBlock) {
     const lcpIdx = blocks.indexOf(lcpBlock);
     blocks.splice(lcpIdx, 1);
-    await loader(lcpBlock, true);
+    await blockLoader(lcpBlock, true);
   }
 }
 
 export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
   const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
   if (iconBlock) {
-    const { getTokenLibrary, decorateIcons } = await import('../utils/decorate.js');
+    const { getTokenLibrary, decorateIcons } = await import('./decorate.js');
     const tokenLibrary = await getTokenLibrary(url);
     await decorateIcons(tokenLibrary);
   }
@@ -292,7 +298,7 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadArea({ blocks, area, loader, noFollowPath }) {
+export async function loadArea({ blocks, area, noFollowPath }) {
   const el = area || document;
   const blockLoader = loader || loadBlock;
   if (getMetadata('nofollow-links') === 'on') {
