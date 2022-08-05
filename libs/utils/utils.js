@@ -255,13 +255,13 @@ function decorateDefaults(el) {
 
 export function decorateNavs(el = document) {
   const selectors = [];
-  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
+  if (getMetadata('header') !== 'off') { selectors.push('header'); }
   if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
   const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
     const navType = nav.nodeName.toLowerCase();
-    if (getMetadata('gnav') === 'on') {
-      nav.className = navType === 'header' ? 'gnav' : 'gnav-footer';
+    if (navType === 'header') {
+      nav.className = getMetadata('header') || 'gnav';
       return nav;
     }
     nav.className = navType;
