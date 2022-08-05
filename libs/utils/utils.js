@@ -392,18 +392,19 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
 /**
  * Load template (page structure and styles).
  */
-export async function loadTemplate() {
+export async function loadTemplate(MILO_LIBS) {
+  const libs = MILO_LIBS || '/libs';
   const template = getMetadata('template');
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
+    loadStyle(`${libs}/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        await import(`/libs/templates/${name}/${name}.js`);
+        await import(`${libs}/templates/${name}/${name}.js`);
       }
       /* c8 ignore start */
       catch (err) {
