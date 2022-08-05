@@ -439,7 +439,7 @@ const init = async (el) => {
   updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType !== 'oversizedNumber') {
-    loadScript('/libs/deps/echarts.min.js')
+    loadScript('/libs/deps/echarts.common.min.js')
       .then(() => {
         const observerOptions = {
           root: null,
