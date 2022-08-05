@@ -33,9 +33,10 @@ const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value,
 
 export function processDataset(data) {
   const dataset = {};
-
-  // Remove group and unit from headers
-  const headers = Object.keys(data[0]).filter((header) => !['unit', 'group', 'color'].includes(header.toLowerCase()));
+  const optionalHeaders = ['unit', 'group', 'color'];
+  const headers = Object.keys(data[0]).filter((header) => (
+    !optionalHeaders.includes(header.toLowerCase())
+  ));
   dataset.source = [headers];
 
   // Use headers to set source
@@ -132,21 +133,24 @@ const barTooltipFormatter = ({
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
 );
 
-export const tooltipFormatter = (params, unit) => {
+export const tooltipFormatter = (params, units) => {
+  const hasUnit2 = typeof units[1] !== 'undefined';
   let tooltip = params[0].name;
   params.forEach(({
     marker,
     value,
     encode: { y = [] },
     seriesName,
+    seriesIndex,
   } = {}) => {
+    const unit = hasUnit2 ? units[seriesIndex] : units[0];
     tooltip += `<br />${marker} ${value[y[0]]}${unit} ${seriesName}`;
   });
   tooltip += '<i class="tooltip-icon"></i>';
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, unit) => {
+const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, units) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -154,7 +158,7 @@ const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, un
     type: 'bar',
     label: {
       show: isBar,
-      formatter: `{@[${index + 1}]}${unit}`,
+      formatter: `{@[${index + 1}]}${units[0]}`,
       position: 'right',
       textBorderColor: '#000',
       distance: 8,
@@ -170,10 +174,11 @@ const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, un
     itemStyle: { borderRadius: 3 },
     barCategoryGap: isBar ? 0 : '33.3%',
     barGap: '33.3%',
+    yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
   }));
 };
 
-const lineSeriesOptions = (series, firstDataset) => {
+const lineSeriesOptions = (series, firstDataset, units) => {
   const marks = processMarkData(series);
 
   return firstDataset.map((value, index) => {
@@ -181,6 +186,7 @@ const lineSeriesOptions = (series, firstDataset) => {
       type: 'line',
       symbol: 'none',
       lineStyle: { width: 3 },
+      yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
     };
 
     if (index === 0 && marks) {
@@ -209,9 +215,11 @@ const areaSeriesOptions = (firstDataset) => (
  * @returns {object}
  */
 export const getChartOptions = (chartType, data, colors, size) => {
-  const hasOverride = Object.keys(data.data[0]).some((header) => header.toLowerCase() === 'color');
+  const headers = data?.data?.[0];
+  const hasOverride = headers ? Object.keys(headers).some((header) => header.toLowerCase() === 'color') : false;
+  const unitKey = headers ? Object.keys(headers).find((header) => header.toLowerCase() === 'unit') : null;
+  const units = headers?.[unitKey]?.split('-') || [];
   const dataset = processDataset(data.data);
-  const unit = data?.data[0]?.Unit || '';
   const source = dataset?.source;
   const firstDataset = (source && source[1]) ? source[1].slice() : [];
   const isBar = chartType === 'bar';
@@ -229,8 +237,8 @@ export const getChartOptions = (chartType, data, colors, size) => {
     tooltip: {
       show: true,
       formatter: isBar
-        ? (params) => barTooltipFormatter(params, unit)
-        : (params) => tooltipFormatter(params, unit),
+        ? (params) => barTooltipFormatter(params, units[0])
+        : (params) => tooltipFormatter(params, units),
       trigger: isBar ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
@@ -246,18 +254,25 @@ export const getChartOptions = (chartType, data, colors, size) => {
       },
       boundaryGap: isColumn,
     },
-    yAxis: {
-      type: isBar ? 'category' : 'value',
-      axisLabel: {
-        show: !isBar,
-        formatter: (params) => `${params}${unit}`,
-        padding: 0,
-      },
-      axisTick: { show: !isBar },
-    },
+    yAxis: (() => (
+      units.map((unit) => (
+        {
+          type: isBar ? 'category' : 'value',
+          axisLabel: {
+            show: !isBar,
+            formatter: (params) => `${params}${unit}`,
+            padding: 0,
+          },
+          axisTick: { show: !isBar },
+          alignTicks: true,
+        }
+      ))
+    ))(),
     series: (() => {
-      if (isBar || isColumn) return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, unit);
-      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset);
+      if (isBar || isColumn) {
+        return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
+      }
+      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       return [];
     })(),
