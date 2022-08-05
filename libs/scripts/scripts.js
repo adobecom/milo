@@ -17,6 +17,7 @@ import {
   loadArea,
   loadDelayed,
   loadStyle,
+  loadTemplate,
 } from '../utils/utils.js';
 
 async function loadPage() {
@@ -27,6 +28,7 @@ async function loadPage() {
   await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
+  await loadTemplate();
   loadDelayed();
 }
 await loadPage();

@@ -9,6 +9,12 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ICON_BLOCKS = ['media', 'z-pattern'];
+let loader;
+
+export function setLoader(clientLoader) {
+  loader = clientLoader;
+}
 
 export function getEnv() {
   const { hostname, href } = window.location;
@@ -145,12 +151,22 @@ export async function loadBlock(block) {
   return block;
 }
 
-export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS, loader = loadBlock }) {
+export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
+  const blockLoader = loader || loadBlock;
   const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
   if (lcpBlock) {
     const lcpIdx = blocks.indexOf(lcpBlock);
     blocks.splice(lcpIdx, 1);
-    await loader(lcpBlock, true);
+    await blockLoader(lcpBlock, true);
+  }
+}
+
+export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
+  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
+  if (iconBlock) {
+    const { getTokenLibrary, decorateIcons } = await import('./decorate.js');
+    const tokenLibrary = await getTokenLibrary(url);
+    await decorateIcons(tokenLibrary);
   }
 }
 
@@ -279,6 +295,46 @@ function decorateSections(el) {
   });
 }
 
+/**
+ * Sanitizes a name for use as class name.
+ * @param {string} name The unsanitized name
+ * @returns {string} The class name
+ */
+export function toClassName(name) {
+  return name && typeof name === 'string'
+    ? name.toLowerCase().replace(/[^0-9a-z]/gi, '-')
+    : '';
+}
+
+/**
+ * Set template (page structure) and theme (page styles).
+ */
+export async function decorateTemplateAndTheme() {
+  const template = getMetadata('template');
+  const name = toClassName(template);
+  if (template) document.body.classList.add(name);
+  const theme = getMetadata('theme');
+  if (theme) document.body.classList.add(toClassName(theme));
+  if (template) {
+    document.body.classList.add(name);
+    const styleLoaded = new Promise((resolve) => {
+      loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
+    });
+    const scriptLoaded = new Promise((resolve) => {
+      (async () => {
+        try {
+          await import(`/libs/templates/${name}/${name}.js`);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.log(`failed to load module for ${name}`, err);
+        }
+        resolve();
+      })();
+    });
+    await Promise.all([styleLoaded, scriptLoaded]);
+  }
+}
+
 export function decorateArea(el = document) {
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
@@ -287,7 +343,7 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadArea({ blocks, area, loader, noFollowPath }) {
+export async function loadArea({ blocks, area, noFollowPath }) {
   const el = area || document;
   const blockLoader = loader || loadBlock;
   if (getMetadata('nofollow-links') === 'on') {
@@ -332,6 +388,34 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     head.append(script);
   }
 });
+
+/**
+ * Load template (page structure and styles).
+ */
+export async function loadTemplate() {
+  const template = getMetadata('template');
+  if (!template) return;
+  const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
+  document.body.classList.add(name);
+  const styleLoaded = new Promise((resolve) => {
+    loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
+  });
+  const scriptLoaded = new Promise((resolve) => {
+    (async () => {
+      try {
+        await import(`/libs/templates/${name}/${name}.js`);
+      }
+      /* c8 ignore start */
+      catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(`failed to load module for ${name}`, err);
+      }
+      /* c8 ignore end */
+      resolve();
+    })();
+  });
+  await Promise.all([styleLoaded, scriptLoaded]);
+}
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));

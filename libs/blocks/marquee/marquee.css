@@ -38,7 +38,7 @@
 }
 
 .marquee.small .foreground {
-  padding: var(--spacing-l) 0;
+  padding: var(--spacing-xl) 0;
 }
 
 .marquee.large .foreground {
@@ -202,19 +202,19 @@
   .marquee .text {
     width: calc(var(--grid-column-width) * 5);
   }
-  
+
   .marquee .image {
     width: calc(var(--grid-column-width) * 6);
   }
-  
+
   .marquee .text {
     padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee.small .text {
-    padding: var(--spacing-l) 0;
+    padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee .text,
   .marquee.large .text {
     order: unset;
