@@ -33,9 +33,9 @@ const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value,
 
 export function processDataset(data) {
   const dataset = {};
-  const extraHeaders = ['unit', 'group', 'color', 'unit2'];
+  const optionalHeaders = ['unit', 'group', 'color'];
   const headers = Object.keys(data[0]).filter((header) => (
-    !extraHeaders.includes(header.toLowerCase())
+    !optionalHeaders.includes(header.toLowerCase())
   ));
   dataset.source = [headers];
 
@@ -215,9 +215,11 @@ const areaSeriesOptions = (firstDataset) => (
  * @returns {object}
  */
 export const getChartOptions = (chartType, data, colors, size) => {
-  const hasOverride = Object.keys(data.data[0]).some((header) => header.toLowerCase() === 'color');
+  const headers = data?.data?.[0];
+  const hasOverride = headers ? Object.keys(headers).some((header) => header.toLowerCase() === 'color') : false;
+  const unitKey = headers ? Object.keys(headers).find((header) => header.toLowerCase() === 'unit') : null;
+  const units = headers?.[unitKey]?.split('-') || [];
   const dataset = processDataset(data.data);
-  const units = data?.data[0]?.Unit?.split('-') || [];
   const source = dataset?.source;
   const firstDataset = (source && source[1]) ? source[1].slice() : [];
   const isBar = chartType === 'bar';
