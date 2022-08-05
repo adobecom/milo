@@ -10,6 +10,7 @@ const blocks = [
   'how-to',
   'modal',
   'marquee',
+  'gnav',
   'blockquote',
   'section-metadata',
 ];
