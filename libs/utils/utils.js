@@ -9,6 +9,23 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ENVS = {
+  local: { name: 'local' },
+  stage: {
+    name: 'stage',
+    ims: 'stg1',
+    adobeIO: 'cc-collab-stage.adobe.io',
+    adminconsole: 'stage.adminconsole.adobe.com',
+    account: 'stage.account.adobe.com',
+  },
+  prod: {
+    name: 'prod',
+    ims: 'prod',
+    adobeIO: 'cc-collab.adobe.io',
+    adminconsole: 'adminconsole.adobe.com',
+    account: 'account.adobe.com',
+  },
+};
 const ICON_BLOCKS = ['media', 'z-pattern'];
 let loader;
 
@@ -17,59 +34,16 @@ export function setLoader(clientLoader) {
 }
 
 export function getEnv() {
-  const { hostname, href } = window.location;
+  const { host, href } = window.location;
   const location = new URL(href);
-  const env = location.searchParams.get('env');
+  const query = location.searchParams.get('env');
 
+  if (query) { return ENVS.query; }
+  if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
-  if (env) {
-    return env;
-  }
-  if (hostname.includes('localhost')) return 'local';
-  if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
-
-  return 'prod';
+  if (host.includes('hlx.page') || host.includes('hlx.live')) return ENVS.stage;
+  return ENVS.prod;
   /* c8 ignore stop */
-}
-
-/**
-* Get the current Helix environment
-* @returns {Object} the env object
-*/
-export function getHelixEnv() {
-  let envName = sessionStorage.getItem('helix-env');
-  if (!envName) envName = 'prod';
-  const envs = {
-    stage: {
-      ims: 'stg1',
-      adobeIO: 'cc-collab-stage.adobe.io',
-      adminconsole: 'stage.adminconsole.adobe.com',
-      account: 'stage.account.adobe.com',
-    },
-    prod: {
-      ims: 'prod',
-      adobeIO: 'cc-collab.adobe.io',
-      adminconsole: 'adminconsole.adobe.com',
-      account: 'account.adobe.com',
-    },
-  };
-  const env = envs[envName];
-
-  const overrideItem = sessionStorage.getItem('helix-env-overrides');
-  if (overrideItem) {
-    const overrides = JSON.parse(overrideItem);
-    const keys = Object.keys(overrides);
-    env.overrides = keys;
-
-    keys.forEach((value) => {
-      env[value] = overrides[value];
-    });
-  }
-
-  if (env) {
-    env.name = envName;
-  }
-  return env;
 }
 
 export function getMetadata(name) {

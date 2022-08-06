@@ -1,4 +1,4 @@
-import { getHelixEnv } from '../../utils/utils.js';
+import { getEnv } from '../../utils/utils.js';
 import createTag from './gnav-utils.js';
 
 function decorateEmail(email) {
@@ -13,7 +13,7 @@ function decorateEmail(email) {
 }
 
 function decorateProfileLink(href, service) {
-  const env = getHelixEnv();
+  const env = getEnv();
   if (env.name === 'prod') return href;
   const url = new URL(href);
   url.hostname = env[service];

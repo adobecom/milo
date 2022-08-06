@@ -1,6 +1,6 @@
 import {
   loadScript,
-  getHelixEnv,
+  getEnv,
   getBlockClasses,
   makeRelative,
   getMetadata,
@@ -16,7 +16,7 @@ class Gnav {
   constructor(body, el) {
     this.el = el;
     this.body = body;
-    this.env = getHelixEnv();
+    this.env = getEnv();
     this.decorateBlocks();
     this.desktop = window.matchMedia('(min-width: 1200px)');
   }
@@ -289,7 +289,7 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
 
     window.adobeid = {
-      client_id: 'bizweb',
+      client_id: 'milo',
       scope: 'AdobeID,openid,gnav',
       locale: 'en_US',
       autoValidateToken: true,
