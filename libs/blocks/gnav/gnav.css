@@ -1,5 +1,9 @@
-header nav.gnav {
-  visibility: unset;
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: var(--color-white);
+  z-index: 3;
 }
 
 .gnav-wrapper {

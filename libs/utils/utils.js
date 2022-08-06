@@ -1,3 +1,5 @@
+import MILO_BLOCKS from '../blocks/list.js';
+
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
@@ -9,6 +11,7 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ICON_BLOCKS = ['media', 'z-pattern'];
 const ENVS = {
   local: { name: 'local' },
   stage: {
@@ -26,11 +29,22 @@ const ENVS = {
     account: 'account.adobe.com',
   },
 };
-const ICON_BLOCKS = ['media', 'z-pattern'];
-let loader;
 
-export function setLoader(clientLoader) {
-  loader = clientLoader;
+let config = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+};
+/**
+ * Allow a consumer to set basic configs
+ *
+ * @param {String} projectConfig
+ */
+export function setConfig(projectConfig) {
+  config = projectConfig;
+}
+
+export function getConfig() {
+  return config;
 }
 
 export function getEnv() {
@@ -52,7 +66,7 @@ export function getMetadata(name) {
   return meta && meta.content;
 }
 
-export default function createTag(tag, attributes, html) {
+export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement) {
@@ -95,22 +109,52 @@ export function loadStyle(href, callback) {
   return link;
 }
 
-export async function loadBlock(block) {
-  const { status } = block.dataset;
-  if (!status === 'loaded') return block;
-  block.dataset.status = 'loading';
-  const blockName = block.classList[0];
+/**
+ * Load template (page structure and styles).
+ */
+export async function loadTemplate() {
+  const template = getMetadata('template');
+  if (!template) return;
+  const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
+  document.body.classList.add(name);
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/libs/blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`/libs/blocks/${blockName}/${blockName}.js`);
+        await import(`/libs/templates/${name}/${name}.js`);
+      }
+      /* c8 ignore start */
+      catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(`failed to load module for ${name}`, err);
+      }
+      /* c8 ignore end */
+      resolve();
+    })();
+  });
+  await Promise.all([styleLoaded, scriptLoaded]);
+}
+
+export async function loadBlock(block) {
+  const { status } = block.dataset;
+  if (!status === 'loaded') return block;
+  block.dataset.status = 'loading';
+  const name = block.classList[0];
+
+  const base = config.miloLibs && MILO_BLOCKS.includes(name) ? config.miloLibs : config.projectRoot;
+  const styleLoaded = new Promise((resolve) => {
+    loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
+  });
+  const scriptLoaded = new Promise((resolve) => {
+    (async () => {
+      try {
+        const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`, err);
+        console.log(`Failed loading ${name}`, err);
       }
       resolve();
     })();
@@ -126,12 +170,11 @@ export async function loadBlock(block) {
 }
 
 export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
-  const blockLoader = loader || loadBlock;
   const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
   if (lcpBlock) {
     const lcpIdx = blocks.indexOf(lcpBlock);
     blocks.splice(lcpIdx, 1);
-    await blockLoader(lcpBlock, true);
+    await loadBlock(lcpBlock, true);
   }
 }
 
@@ -280,35 +323,6 @@ export function toClassName(name) {
     : '';
 }
 
-/**
- * Set template (page structure) and theme (page styles).
- */
-export async function decorateTemplateAndTheme() {
-  const template = getMetadata('template');
-  const name = toClassName(template);
-  if (template) document.body.classList.add(name);
-  const theme = getMetadata('theme');
-  if (theme) document.body.classList.add(toClassName(theme));
-  if (template) {
-    document.body.classList.add(name);
-    const styleLoaded = new Promise((resolve) => {
-      loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
-    });
-    const scriptLoaded = new Promise((resolve) => {
-      (async () => {
-        try {
-          await import(`/libs/templates/${name}/${name}.js`);
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.log(`failed to load module for ${name}`, err);
-        }
-        resolve();
-      })();
-    });
-    await Promise.all([styleLoaded, scriptLoaded]);
-  }
-}
-
 export function decorateArea(el = document) {
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
@@ -319,13 +333,12 @@ export function decorateArea(el = document) {
 
 export async function loadArea({ blocks, area, noFollowPath }) {
   const el = area || document;
-  const blockLoader = loader || loadBlock;
   if (getMetadata('nofollow-links') === 'on') {
     const path = noFollowPath || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, el);
   }
-  const loaded = blocks.map((block) => blockLoader(block));
+  const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
 
@@ -335,9 +348,12 @@ export async function loadArea({ blocks, area, noFollowPath }) {
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      import('../scripts/delayed.js').then((mod) => {
-        resolve(mod);
-      });
+      if (getMetadata('interlinks') === 'on') {
+        import('../features/interlinks.js').then((mod) => {
+          resolve(mod);
+        });
+      }
+      resolve(null);
     }, delay);
   });
 }
@@ -362,34 +378,6 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     head.append(script);
   }
 });
-
-/**
- * Load template (page structure and styles).
- */
-export async function loadTemplate() {
-  const template = getMetadata('template');
-  if (!template) return;
-  const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
-  document.body.classList.add(name);
-  const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
-  });
-  const scriptLoaded = new Promise((resolve) => {
-    (async () => {
-      try {
-        await import(`/libs/templates/${name}/${name}.js`);
-      }
-      /* c8 ignore start */
-      catch (err) {
-        // eslint-disable-next-line no-console
-        console.log(`failed to load module for ${name}`, err);
-      }
-      /* c8 ignore end */
-      resolve();
-    })();
-  });
-  await Promise.all([styleLoaded, scriptLoaded]);
-}
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));

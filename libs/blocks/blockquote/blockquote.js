@@ -5,12 +5,12 @@
  *  ex...
  *   <figure>
  *    <blockquote>
- *      <p>Words can be like X-rays, if you use them properly—they’ll go through anything. You read and you’re pierced.</p>
+ *      <p>Words can be like X-rays... You read and you’re pierced.</p>
  *    </blockquote>
  *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
  *   </figure>
  */
-import createTag from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 function isHexColorDark(color) {
   if (!color.trim().startsWith('#')) return false;
@@ -38,7 +38,7 @@ export default function init(el) {
   const lastRow = allRows[allRows.length - 1];
   lastRow.classList.add('last-row');
   const rows = el.querySelectorAll(':scope > div:not([class])');
-  rows.forEach( row => {
+  rows.forEach((row) => {
     decorateBlockBg(el, row);
   });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');

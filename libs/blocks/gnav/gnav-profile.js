@@ -1,5 +1,4 @@
-import { getEnv } from '../../utils/utils.js';
-import createTag from './gnav-utils.js';
+import { getEnv, createTag } from '../../utils/utils.js';
 
 function decorateEmail(email) {
   const MAX_CHAR = 12;

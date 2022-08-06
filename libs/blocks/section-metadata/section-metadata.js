@@ -1,4 +1,4 @@
-import createTag from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 function handleBackground(div, section) {
   const pic = div.querySelector('picture');

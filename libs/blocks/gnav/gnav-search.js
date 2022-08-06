@@ -1,4 +1,4 @@
-import createTag from './gnav-utils.js';
+import { createTag } from '../../utils/utils.js';
 
 /**
  * Returns a picture element with webp and fallbacks
