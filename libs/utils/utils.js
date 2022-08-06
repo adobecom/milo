@@ -3,6 +3,7 @@ import MILO_BLOCKS from '../blocks/list.js';
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
+const ICON_BLOCKS = ['media', 'z-pattern'];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
@@ -11,7 +12,6 @@ const AUTO_BLOCKS = [
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
-const ICON_BLOCKS = ['media', 'z-pattern'];
 const ENVS = {
   local: { name: 'local' },
   stage: {
@@ -30,10 +30,8 @@ const ENVS = {
   },
 };
 
-let config = {
-  imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
-};
+let config;
+
 /**
  * Allow a consumer to set basic configs
  *

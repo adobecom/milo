@@ -18,9 +18,16 @@ import {
   loadDelayed,
   loadStyle,
   loadTemplate,
+  setConfig,
 } from '../utils/utils.js';
 
+const config = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+};
+
 async function loadPage() {
+  setConfig(config);
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP({ blocks });
