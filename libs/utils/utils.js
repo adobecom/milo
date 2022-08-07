@@ -1,9 +1,23 @@
-import MILO_BLOCKS from '../blocks/list.js';
-
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
+const MILO_BLOCKS = [
+  'adobetv',
+  'caas',
+  'faas',
+  'columns',
+  'header',
+  'footer',
+  'faq',
+  'fragment',
+  'how-to',
+  'modal',
+  'marquee',
+  'gnav',
+  'blockquote',
+  'section-metadata',
+];
+
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
-const ICON_BLOCKS = ['media', 'z-pattern'];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
@@ -148,7 +162,6 @@ export async function loadBlock(block) {
   if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
-
   const base = config.miloLibs && MILO_BLOCKS.includes(name) ? config.miloLibs : config.projectRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
@@ -181,15 +194,6 @@ export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
     const lcpIdx = blocks.indexOf(lcpBlock);
     blocks.splice(lcpIdx, 1);
     await loadBlock(lcpBlock, true);
-  }
-}
-
-export async function loadTokens(blocks, url = '/docs/library/tokens.json') {
-  const iconBlock = blocks.find((block) => ICON_BLOCKS.includes(block.classList[0]));
-  if (iconBlock) {
-    const { getTokenLibrary, decorateIcons } = await import('./decorate.js');
-    const tokenLibrary = await getTokenLibrary(url);
-    await decorateIcons(tokenLibrary);
   }
 }
 
