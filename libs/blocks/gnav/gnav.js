@@ -293,7 +293,7 @@ class Gnav {
     window.adobeid = {
       client_id: this.config.imsClientId,
       scope: 'AdobeID,openid,gnav',
-      locale: 'en_US',
+      locale: this.config.locale.ietf || 'en-US',
       autoValidateToken: true,
       environment: this.env.ims,
       useLocalStorage: false,

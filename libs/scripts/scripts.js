@@ -16,26 +16,32 @@ import {
   loadLCP,
   loadArea,
   loadDelayed,
-  loadStyle,
   loadTemplate,
   setConfig,
 } from '../utils/utils.js';
+import setFonts from '../utils/fonts.js';
 
-const config = {
-  imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
+const locales = {
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
 };
 
-async function loadPage() {
-  setConfig(config);
+const conf = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+  locales,
+};
+
+(async function loadPage() {
+  const config = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP({ blocks });
-  loadStyle('/fonts/fonts.css');
+  setFonts(config.locale);
+  loadTemplate();
   await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
-  await loadTemplate();
   loadDelayed();
-}
-await loadPage();
+}());

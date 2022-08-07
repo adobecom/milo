@@ -37,8 +37,16 @@ let config;
  *
  * @param {String} projectConfig
  */
-export function setConfig(projectConfig) {
-  config = projectConfig;
+export function setConfig(conf) {
+  config = conf;
+  if (conf.locales) {
+    const { pathname } = window.location;
+    const split = pathname.split('/');
+    const locale = conf.locales[split[1]] || conf.locales[''];
+    document.documentElement.setAttribute('lang', locale.ietf);
+    config.locale = locale;
+  }
+  return config;
 }
 
 export function getConfig() {
