@@ -29,6 +29,7 @@ const conf = {
     cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
   },
 };
+
 (async function loadPage() {
   const config = setConfig(conf);
   const blocks = decorateArea();
