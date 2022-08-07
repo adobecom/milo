@@ -19,12 +19,7 @@ const conf = {
     cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
   },
 };
-
 (async function loadPage() {
-  // The first image should not be lazy.
-  const img = document.querySelector('main img');
-  img?.setAttribute('loading', 'eager');
-
   const {
     decorateArea,
     decorateNavs,
@@ -34,7 +29,6 @@ const conf = {
     loadTemplate,
     setConfig,
   } = await import('../utils/utils.js');
-
   const config = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();

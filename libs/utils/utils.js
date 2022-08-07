@@ -1,5 +1,6 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
+const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 const MILO_BLOCKS = [
   'adobetv',
   'caas',
@@ -16,8 +17,6 @@ const MILO_BLOCKS = [
   'blockquote',
   'section-metadata',
 ];
-
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
   { youtube: 'https://www.youtube.com' },
@@ -195,6 +194,16 @@ export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
     blocks.splice(lcpIdx, 1);
     await loadBlock(lcpBlock, true);
   }
+  const lcpImg = document.querySelector('main img');
+  await new Promise((resolve) => {
+    if (lcpImg && !lcpImg.complete) {
+      lcpImg.setAttribute('loading', 'eager');
+      lcpImg.addEventListener('load', () => resolve());
+      lcpImg.addEventListener('error', () => resolve());
+    } else {
+      resolve();
+    }
+  });
 }
 
 export function decorateSVG(a) {
