@@ -34,6 +34,10 @@ const conf = {
 };
 
 (async function loadPage() {
+  // The first image should not be lazy.
+  const img = document.querySelector('main img');
+  img.setAttribute('loading', 'eager');
+
   const config = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();
