@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-import setFonts from '../utils/fonts.js';
-
 const conf = {
   imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
@@ -41,6 +39,7 @@ const conf = {
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP({ blocks });
+  const { default: setFonts } = await import('../utils/fonts.js');
   setFonts(config.locale);
   loadTemplate();
   await loadArea({ blocks: [...navs, ...blocks] });
