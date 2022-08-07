@@ -182,6 +182,16 @@ export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
     blocks.splice(lcpIdx, 1);
     await loadBlock(lcpBlock, true);
   }
+  const lcpImg = document.querySelector('main img');
+  await new Promise((resolve) => {
+    if (lcpImg && !lcpImg.complete) {
+      lcpImg.setAttribute('loading', 'eager');
+      lcpImg.addEventListener('load', () => resolve());
+      lcpImg.addEventListener('error', () => resolve());
+    } else {
+      resolve();
+    }
+  });
 }
 
 export async function loadTokens(blocks, url = '/docs/library/tokens.json') {

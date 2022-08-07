@@ -21,23 +21,17 @@ import {
 } from '../utils/utils.js';
 import setFonts from '../utils/fonts.js';
 
-const locales = {
-  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-  de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
-};
-
 const conf = {
   imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
-  locales,
+  locales: {
+    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+    cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
+  },
 };
 
 (async function loadPage() {
-  // The first image should not be lazy.
-  const img = document.querySelector('main img');
-  img.setAttribute('loading', 'eager');
-
   const config = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();
