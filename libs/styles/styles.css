@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-@import url('variables.css');
-
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
@@ -26,6 +24,89 @@
   size-adjust: 93%;
   src: local('Trebuchet MS'),
        local('TrebuchetMS');
+}
+
+
+
+:root {
+  /* Colors */
+  --link-color: #035fe6;
+  --link-hover-color: #136ff6;
+  --link-color-dark: #5EAAF7;
+  --link-hover-color-dark: #5EAAF7;
+  --background-color: #fff;
+  --overlay-background-color: #ffffff20;
+  --highlight-background-color: #ffffff40;
+  --text-color: #2c2c2c;
+
+  /*** Typography ***/
+
+  /* Fonts */
+  --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
+
+  /* Spacing */
+  --spacing-xxs: 8px;
+  --spacing-xs: 16px;
+  --spacing-s: 24px;
+  --spacing-m: 32px;
+  --spacing-l: 40px;
+  --spacing-xl: 48px;
+  --spacing-xxl: 56px;
+  --spacing-xxxl: 80px;
+
+  /* Headings (Consonant) */
+  --type-heading-all-weight: 700;
+  --type-heading-all-lh: 1.25;
+  --type-heading-xxl-size: 36px;
+  --type-heading-xl-size: 28px;
+  --type-heading-l-size: 24px;
+  --type-heading-m-size: 20px;
+  --type-heading-s-size: 18px;
+  --type-heading-xs-size: 16px;
+
+  /* Body (Consonant) */
+  --type-body-all-lh: 1.5;
+  --type-body-xxl-size: 28px;
+  --type-body-xl-size: 22px;
+  --type-body-l-size: 20px;
+  --type-body-m-size: 18px;
+  --type-body-s-size: 16px;
+  --type-body-xs-size: 14px;
+  --type-body-xxs-size: 12px;
+
+  /* Detail */
+  --type-detail-all-weight: 700;
+  --type-detail-all-transform: uppercase;
+  --type-detail-all-lh: 1.25;
+  --type-detail-xl-size: 20px;
+  --type-detail-l-size: 16px;
+  --type-detail-m-size: 12px;
+  --type-detail-s-size: 10px;
+
+  /* grid sizes */
+  --grid-container-width: 83.4%;
+  --grid-column-width: calc(var(--grid-container-width) / 12);
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --spacing-xl: 56px;
+    --spacing-xxl: 80px;
+    --spacing-xxxl: 104px;
+    --type-heading-xxl-size: 44px;
+    --type-heading-xl-size: 36px;
+    --type-heading-l-size: 28px;
+    --type-heading-m-size: 24px;
+    --type-heading-s-size: 20px;
+    --type-heading-xs-size: 18px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --grid-container-width: 1200px;
+  }
 }
 
 body {
