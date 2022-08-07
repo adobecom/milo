@@ -10,16 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-import {
-  decorateArea,
-  decorateNavs,
-  loadLCP,
-  loadArea,
-  loadDelayed,
-  loadTemplate,
-  setConfig,
-} from '../utils/utils.js';
-
 const conf = {
   imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
@@ -31,6 +21,20 @@ const conf = {
 };
 
 (async function loadPage() {
+  // The first image should not be lazy.
+  const img = document.querySelector('main img');
+  img?.setAttribute('loading', 'eager');
+
+  const {
+    decorateArea,
+    decorateNavs,
+    loadLCP,
+    loadArea,
+    loadDelayed,
+    loadTemplate,
+    setConfig,
+  } = await import('../utils/utils.js');
+
   const config = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();
