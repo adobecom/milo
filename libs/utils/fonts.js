@@ -6,6 +6,14 @@ function dynamicTypekit(kitId, d = document) {
   const h = d.documentElement; const t = setTimeout(() => { h.className = `${h.className.replace(/\bwf-loading\b/g, '')} wf-inactive`; }, config.scriptTimeout); const tk = d.createElement('script'); let f = false; const s = d.getElementsByTagName('script')[0]; let a; h.className += ' wf-loading'; tk.src = `https://use.typekit.net/${config.kitId}.js`; tk.async = true; tk.onload = tk.onreadystatechange = function () { a = this.readyState; if (f || a && a != 'complete' && a != 'loaded') return; f = true; clearTimeout(t); try { Typekit.load(config); } catch (e) {} }; s.parentNode.insertBefore(tk, s);
 }
 
+/**
+ * Set the fonts of the page.
+ *
+ * Determines if the font should be a classic CSS integration
+ * or if it should be a JS integration (dynamic subsetting) for CJA.
+ *
+ * @param {Object} locale the locale details
+ */
 export default function setFonts(locale) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
