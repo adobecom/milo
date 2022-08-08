@@ -37,8 +37,6 @@
   --highlight-background-color: #ffffff40;
   --text-color: #2c2c2c;
 
-  /*** Typography ***/
-
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
@@ -123,10 +121,19 @@ header {
   display: flex;
   align-content: stretch;
   font-weight: 700;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: var(--background-color);
+  z-index: 3;
 }
 
-header nav {
-  display: none;
+main {
+  margin: 64px 0 0;
+}
+
+.nav-off main {
+  margin: 0;
 }
 
 .section .section-metadata {

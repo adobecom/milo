@@ -302,8 +302,11 @@ function decorateDefaults(el) {
 }
 
 export function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('header') !== 'off') { selectors.push('header'); }
+  const selectors = ['header', 'footer'];
+  if (getMetadata('header') === 'off') {
+    document.body.classList.add('nav-off');
+    selectors.shift();
+  }
   if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
   const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {

@@ -42,7 +42,4 @@ const conf = {
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   loadDelayed();
-
-  const { default: test } = await import('../utils/test.js');
-  test();
 }());
