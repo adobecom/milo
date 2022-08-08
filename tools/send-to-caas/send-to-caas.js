@@ -4,7 +4,7 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 
-loadStyle('/tools/publish-caas/publish-caas.css');
+loadStyle('/tools/send-to-caas/send-to-caas.css');
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -632,7 +632,7 @@ const postToCaaS = async (propsObj, accessToken, publishingModal) => {
   }
 };
 
-const publishToCaaS = async ({ host = '', project = '', branch = '', repo = '', owner = '' } = {}) => {
+const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', owner = '' } = {}) => {
   if (isPublishing()) return;
 
   setConfig({ host, project, branch, repo, owner });
@@ -665,4 +665,4 @@ const publishToCaaS = async ({ host = '', project = '', branch = '', repo = '', 
   }
 };
 
-export default publishToCaaS;
+export default sendToCaaS;
