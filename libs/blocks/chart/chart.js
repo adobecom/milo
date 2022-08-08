@@ -304,7 +304,7 @@ export const getColors = (authoredColor) => {
 
   if (
     isNullish(authoredColor)
-    || !Object.hasOwn(colorPalette, authoredColor)
+    || !Object.hasOwnProperty.call(colorPalette, authoredColor)
   ) return colorList;
 
   const colorIndex = colorList.indexOf(colorPalette[authoredColor]);
@@ -434,7 +434,9 @@ const init = async (el) => {
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const hasOverride = Object.keys(data?.data[0])?.some((header) => header.toLowerCase() === 'color');
-  const colors = hasOverride ? getOverrideColors(authoredColor, data.data) : getColors(authoredColor);
+  const colors = hasOverride
+    ? getOverrideColors(authoredColor, data.data)
+    : getColors(authoredColor);
 
   updateContainerSize(chartWrapper, size, chartType);
 
