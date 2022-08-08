@@ -223,3 +223,18 @@ main > .section > .content {
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
+
+div[data-failed=true] {
+  border: 1px solid red;
+  border-top-width: 20px;
+  position: relative;
+}
+
+div[data-failed=true]::before {
+  content: attr(data-reason);
+  color: white;
+  position: absolute;
+  top: -20px;
+  font-size: 14px;
+  font-weight: 600;
+}

@@ -91,6 +91,10 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${blockName}`, err);
+        if (getEnv() !== 'prod') {
+          block.dataset.failed = 'true';
+          block.dataset.reason = `Failed loading ${blockName.toUpperCase()} block - ${err}`;
+        }
       }
       resolve();
     })();
