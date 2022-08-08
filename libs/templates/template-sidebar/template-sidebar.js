@@ -2,7 +2,7 @@
 Template: Sidebar
 */
 
-import createTag from "../../utils/utils.js";
+import { createTag } from "../../utils/utils.js";
 
 function templateSidebar() {
   const i = 1;
