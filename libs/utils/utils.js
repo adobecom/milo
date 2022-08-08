@@ -64,6 +64,7 @@ const [setConfig, getConfig] = (() => {
         const { pathname } = window.location;
         const split = pathname.split('/');
         const locale = conf.locales[split[1]] || conf.locales[''];
+        locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
         document.documentElement.setAttribute('lang', locale.ietf);
         config.locale = locale;
       }

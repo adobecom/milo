@@ -423,9 +423,8 @@ async function fetchGnav(url) {
 }
 
 export default async function init(header) {
-  header.className = 'header';
-  // TODO: Make the fixed path more consumer friendly.
-  const url = getMetadata('gnav-source') || '/gnav';
+  const { prefix } = getConfig().locale;
+  const url = getMetadata('gnav-source') || `${prefix}/gnav`;
   const html = await fetchGnav(url);
   if (html) {
     try {
