@@ -14,14 +14,6 @@
 
   const w = window;
 
-  function setClientId(id) {
-    w.lana.options.clientId = id;
-  }
-
-  function setDefaultOptions(options) {
-    w.lana.options = getOptions(options);
-  }
-
   function getOptions(op) {
     const o = w.lana.options;
     function getOpt(key) {
@@ -47,7 +39,10 @@
     }
 
     const o = getOptions(options);
-    if (!o.clientId) console.warn('LANA ClientID is not set.');
+    if (!o.clientId) {
+      console.warn('LANA ClientID is not set in options.');
+      return;
+    }
 
     const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
 
@@ -95,9 +90,15 @@
   w.lana = {
     debug: false,
     log: log,
-    setClientId: setClientId,
-    setDefaultOptions: setDefaultOptions,
     options: options || defaultOptions,
+    setClientId: function (id) {
+      console.warn('LANA setClientId is deprecated and will be removed in a future release.');
+      w.lana.options.clientId = id;
+    },
+    setDefaultOptions: function (options) {
+      console.warn('LANA setDefaultOptions is deprecated and will be removed in a future release.');
+      w.lana.options = getOptions(options);
+    },
   };
 
   /* c8 ignore next */
