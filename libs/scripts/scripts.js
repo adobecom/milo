@@ -20,7 +20,7 @@ import {
   setConfig,
 } from '../utils/utils.js';
 
-const conf = {
+const config = {
   imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
   locales: {
@@ -31,12 +31,11 @@ const conf = {
 };
 
 (async function loadPage() {
-  const { locale } = setConfig(conf);
+  setConfig(config);
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP({ blocks });
-  const { default: setFonts } = await import('../utils/fonts.js');
-  setFonts(locale);
+  import('../utils/fonts.js');
   loadTemplate();
   await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');

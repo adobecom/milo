@@ -1,4 +1,4 @@
-import { loadStyle } from './utils.js';
+import { loadStyle, getConfig } from './utils.js';
 
 // A gently modified version of the dynamic subsetting loader from Adobe Fonts
 function dynamicTypekit(kitId, d = document) {
@@ -14,11 +14,12 @@ function dynamicTypekit(kitId, d = document) {
  *
  * @param {Object} locale the locale details
  */
-export default function setFonts(locale) {
+(async function loadFonts() {
+  const { locale } = getConfig();
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
     loadStyle(`https://use.typekit.net/${locale.tk}`);
   } else {
     dynamicTypekit(locale.tk);
   }
-}
+}());
