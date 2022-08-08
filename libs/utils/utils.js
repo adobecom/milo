@@ -42,30 +42,7 @@ const ENVS = {
   },
 };
 
-let config;
-
-/**
- * Allow a consumer to set basic configs
- *
- * @param {String} projectConfig
- */
-export function setConfig(conf) {
-  config = conf;
-  if (conf.locales) {
-    const { pathname } = window.location;
-    const split = pathname.split('/');
-    const locale = conf.locales[split[1]] || conf.locales[''];
-    document.documentElement.setAttribute('lang', locale.ietf);
-    config.locale = locale;
-  }
-  return config;
-}
-
-export function getConfig() {
-  return config;
-}
-
-export function getEnv() {
+function getEnv() {
   const { host, href } = window.location;
   const location = new URL(href);
   const query = location.searchParams.get('env');
@@ -77,6 +54,24 @@ export function getEnv() {
   return ENVS.prod;
   /* c8 ignore stop */
 }
+
+const [setConfig, getConfig] = (() => {
+  let config = {};
+  return [
+    (conf) => {
+      config = { ...conf, env: getEnv() };
+      if (conf.locales) {
+        const { pathname } = window.location;
+        const split = pathname.split('/');
+        const locale = conf.locales[split[1]] || conf.locales[''];
+        document.documentElement.setAttribute('lang', locale.ietf);
+        config.locale = locale;
+      }
+      return config;
+    },
+    () => config,
+  ];
+})();
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
@@ -142,9 +137,7 @@ export async function loadTemplate() {
     (async () => {
       try {
         await import(`/libs/templates/${name}/${name}.js`);
-      }
-      /* c8 ignore start */
-      catch (err) {
+      } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
@@ -160,7 +153,8 @@ export async function loadBlock(block) {
   if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
-  const base = config.miloLibs && MILO_BLOCKS.includes(name) ? config.miloLibs : config.projectRoot;
+  const { miloLibs, projectRoot } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
@@ -442,3 +436,5 @@ export function getBlockClasses(className) {
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
 }
+
+export { setConfig, getConfig };

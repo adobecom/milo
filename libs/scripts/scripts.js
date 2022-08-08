@@ -29,16 +29,20 @@ const conf = {
     cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
   },
 };
+
 (async function loadPage() {
-  const config = setConfig(conf);
+  const { locale } = setConfig(conf);
   const blocks = decorateArea();
   const navs = decorateNavs();
   await loadLCP({ blocks });
   const { default: setFonts } = await import('../utils/fonts.js');
-  setFonts(config.locale);
+  setFonts(locale);
   loadTemplate();
   await loadArea({ blocks: [...navs, ...blocks] });
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   loadDelayed();
+
+  const { default: test } = await import('../utils/test.js');
+  test();
 }());
