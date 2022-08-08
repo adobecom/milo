@@ -2,7 +2,6 @@ import {
   createTag,
   loadScript,
   getConfig,
-  getEnv,
   getBlockClasses,
   makeRelative,
   getMetadata,
@@ -17,8 +16,6 @@ class Gnav {
   constructor(body, el) {
     this.el = el;
     this.body = body;
-    this.env = getEnv();
-    this.config = getConfig();
     this.decorateBlocks();
     this.desktop = window.matchMedia('(min-width: 1200px)');
   }
@@ -289,13 +286,13 @@ class Gnav {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
     const profileEl = createTag('div', { class: 'gnav-profile' });
-
+    const { locale, imsClientId, env } = getConfig();
     window.adobeid = {
-      client_id: this.config.imsClientId,
+      client_id: imsClientId,
       scope: 'AdobeID,openid,gnav',
-      locale: this.config.locale.ietf || 'en-US',
+      locale: locale || 'en-US',
       autoValidateToken: true,
-      environment: this.env.ims,
+      environment: env.ims,
       useLocalStorage: false,
       onReady: () => { this.imsReady(blockEl, profileEl); },
     };
@@ -307,7 +304,8 @@ class Gnav {
   imsReady = async (blockEl, profileEl) => {
     const accessToken = window.adobeIMS.getAccessToken();
     if (accessToken) {
-      const ioResp = await fetch(`https://${this.env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
+      const { env } = getConfig();
+      const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
 
       if (ioResp.status === 200) {
         const profile = await import('./gnav-profile.js');
