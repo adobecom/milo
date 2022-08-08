@@ -130,13 +130,15 @@ export async function loadTemplate() {
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
+  const { miloLibs, projectRoot } = getConfig();
+  const base = miloLibs ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/libs/templates/${name}/${name}.css`, resolve);
+    loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        await import(`/libs/templates/${name}/${name}.js`);
+        await import(`${base}/templates/${name}/${name}.js`);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
