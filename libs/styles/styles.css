@@ -10,6 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
+@import url('variables.css');
+@import url('typography.css');
+
 @font-face {
   font-family: 'Trebuchet MS';
   font-weight: 700;
