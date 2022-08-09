@@ -65,8 +65,8 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 
 export const getConfig = (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const language = state.language ? state.language.split('/').at(-1) : 'en';
-  const country = state.country ? state.country.split('/').at(-1) : 'us';
+  const language = state.language ? state.language.split('/').pop() : 'en';
+  const country = state.country ? state.country.split('/').pop() : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity =
