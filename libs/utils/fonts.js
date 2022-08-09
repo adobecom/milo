@@ -10,7 +10,7 @@ function dynamicTypekit(kitId, d = document) {
  * Set the fonts of the page.
  *
  * Determines if the font should be a classic CSS integration
- * or if it should be a JS integration (dynamic subsetting) for CJA.
+ * or if it should be a JS integration (dynamic subsetting) for CJK.
  *
  * @param {Object} locale the locale details
  */

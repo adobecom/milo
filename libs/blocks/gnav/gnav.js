@@ -287,6 +287,7 @@ class Gnav {
     if (!blockEl) return null;
     const profileEl = createTag('div', { class: 'gnav-profile' });
     const { locale, imsClientId, env } = getConfig();
+    if (!imsClientId) return null;
     window.adobeid = {
       client_id: imsClientId,
       scope: 'AdobeID,openid,gnav',
@@ -297,7 +298,6 @@ class Gnav {
       onReady: () => { this.imsReady(blockEl, profileEl); },
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
-
     return profileEl;
   };
 
@@ -426,19 +426,17 @@ export default async function init(header) {
   const { prefix } = getConfig().locale;
   const url = getMetadata('gnav-source') || `${prefix}/gnav`;
   const html = await fetchGnav(url);
-  if (html) {
-    try {
-      const initEvent = new Event('gnav:init');
-      const parser = new DOMParser();
-      const gnavDoc = parser.parseFromString(html, 'text/html');
-      const gnav = new Gnav(gnavDoc.body, header);
-      gnav.init();
-      header.dispatchEvent(initEvent);
-      return gnav;
-    } catch {
-      console.log('Could not create global navigation.');
-    }
+  if (!html) return null;
+  try {
+    const initEvent = new Event('gnav:init');
+    const parser = new DOMParser();
+    const gnavDoc = parser.parseFromString(html, 'text/html');
+    const gnav = new Gnav(gnavDoc.body, header);
+    gnav.init();
+    header.dispatchEvent(initEvent);
+    return gnav;
+  } catch {
+    console.log('Could not create global navigation.');
+    return null;
   }
-
-  return null;
 }
