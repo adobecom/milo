@@ -15,11 +15,13 @@ export const loadStrings = async (url) => {
 };
 
 export const loadCaasFiles = () => {
-  loadStyle('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.css');
+  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
+
+  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
   return Promise.all([
-    loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.umd.js'),
-    loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.dom.umd.js'),
-  ]).then(() => loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js'));
+    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`),
+    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`),
+  ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
 };
 
 export const initCaas = (state, caasStrs, el) => {
