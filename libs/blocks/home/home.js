@@ -1,5 +1,5 @@
 async function decorateHero(el, fg) {
-  const { default: nav } = await import('../header/header.js');
+  const { default: nav } = await import('../milonav/milonav.js');
   const navblock = await nav(fg);
   navblock.querySelector('li:first-child').remove();
 }
