@@ -428,30 +428,30 @@ const init = async (el) => {
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
-  const data = await fetchData(dataLink);
-
-  if (!data) return;
-
-  const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
-  const hasOverride = Object.keys(data?.data[0])?.some((header) => header.toLowerCase() === 'color');
-  const colors = hasOverride
-    ? getOverrideColors(authoredColor, data.data)
-    : getColors(authoredColor);
-
   updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType !== 'oversizedNumber') {
-    loadScript('/libs/deps/echarts.common.min.js')
-      .then(() => {
-        const observerOptions = {
-          root: null,
-          rootMargin: '0px',
-          threshold: 0.5,
-        };
+    Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
+      .then((values) => {
+        const data = values[0];
+
+        if (!data) return;
+
+        const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+        const hasOverride = Object.keys(data?.data[0])?.some((header) => header.toLowerCase() === 'color');
+        const colors = hasOverride
+          ? getOverrideColors(authoredColor, data.data)
+          : getColors(authoredColor);
 
         if (!(window.IntersectionObserver)) {
           initChart(chartWrapper, chartType, data, colors, size);
         } else {
+          const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.5,
+          };
+
           const observer = new IntersectionObserver(
             handleIntersect(chartWrapper, chartType, data, colors, size),
             observerOptions,
