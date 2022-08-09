@@ -232,6 +232,7 @@ export const getChartOptions = (chartType, data, colors, size) => {
     color: colors,
     legend: {
       show: true,
+      inactiveColor: '#6C6C6C',
       type: 'scroll',
     },
     tooltip: {
