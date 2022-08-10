@@ -237,7 +237,9 @@ div[data-failed=true]::before {
   top: -20px;
   font-size: 14px;
   font-weight: 600;
-div[data-failed=true] {
+}
+
+div[data-failed="true"] {
   border: 4px solid #ff00a0;
   position: relative;
   margin: 12px;
@@ -245,7 +247,7 @@ div[data-failed=true] {
   display: block;
 }
 
-div[data-failed=true]::before {
+div[data-failed="true"]::before {
   content: attr(data-reason);
   color: white;
   font-weight: 600;
