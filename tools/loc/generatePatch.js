@@ -1,8 +1,9 @@
 import parseMarkdown from './helix/parseMarkdown.bundle.js';
-import mdast2docx from './helix/mdast2docx.bundle.js';
+import { mdast2docx, sanitizeHtml } from './helix/mdast2docx.bundle.js';
+
 import {
   connect as connectToSP,
-  saveFile,
+  saveFileAndUpdateMetadata,
 } from '../translation/sharepoint.js';
 
 let types = new Set();
@@ -84,13 +85,15 @@ async function getMdast(path) {
 
 // eslint-disable-next-line no-unused-vars
 async function getProcessedMdastFromPath(path) {
-  const mdast = await getMdast(path);
+  let mdast = await getMdast(path);
+  mdast = await sanitizeHtml(mdast);
   const nodes = mdast.children || [];
   return processMdast(nodes);
 }
 
 async function getProcessedMdast(mdast) {
-  const nodes = mdast.children || [];
+  const mdastWithBlocks = await sanitizeHtml(mdast);
+  const nodes = mdastWithBlocks.children || [];
   return processMdast(nodes);
 }
 
@@ -107,11 +110,16 @@ function display(id, toBeDisplayed) {
 }
 
 // eslint-disable-next-line no-unused-vars
-async function persist(mdast, path) {
-  const docx = await mdast2docx(mdast);
-  await connectToSP(async () => {
-    await saveFile(docx, path);
-  });
+async function persist(srcPath, mdast, dstPath) {
+  try {
+    const docx = await mdast2docx(mdast);
+    await connectToSP(async () => {
+      await saveFileAndUpdateMetadata(srcPath, docx, dstPath);
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log('Failed to save file', error);
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -178,12 +186,12 @@ function reset() {
   hashToContentMap = new Map();
 }
 
-function updateMergedMdast(mergedMdast, node) {
-  if (node.opInfo.op !== 'deleted') {
-    const hash = node.opInfo.op === 'edited' ? node.opInfo.newHash : node.hash;
-    const content = hashToContentMap.get(hash);
-    mergedMdast.children.push(content);
-  }
+function updateMergedMdast(mergedMdast, node, author) {
+  const hash = node.opInfo.op === 'edited' ? node.opInfo.newHash : node.hash;
+  const content = hashToContentMap.get(hash);
+  content.author = author;
+  content.action = node.opInfo.op;
+  mergedMdast.children.push(content);
 }
 
 function getMergedMdast(left, right) {
@@ -199,17 +207,21 @@ function getMergedMdast(left, right) {
         const leftHash = leftArrayElement[0];
         const leftOpInfo = leftArrayElement[1];
         if (leftHash === rightHash) {
-          const toAdd = rightOpInfo.op === 'nochange' ? { hash: leftHash, opInfo: leftOpInfo }
-            : { hash: rightHash, opInfo: rightOpInfo };
-          updateMergedMdast(mergedMdast, toAdd);
+          let toAdd = { hash: leftHash, opInfo: leftOpInfo };
+          let author = 'langmaster';
+          if (rightOpInfo.op === 'nochange') {
+            toAdd = { hash: rightHash, opInfo: rightOpInfo };
+            author = 'region';
+          }
+          updateMergedMdast(mergedMdast, toAdd, author);
           leftPointer += 1;
           break;
         } else {
-          updateMergedMdast(mergedMdast, { hash: leftHash, opInfo: leftOpInfo });
+          updateMergedMdast(mergedMdast, { hash: leftHash, opInfo: leftOpInfo }, 'langmaster');
         }
       }
     } else {
-      updateMergedMdast(mergedMdast, { hash: rightHash, opInfo: rightOpInfo });
+      updateMergedMdast(mergedMdast, { hash: rightHash, opInfo: rightOpInfo }, 'region');
     }
   }
   // Check if there are excess elements in left array - if yes update them into the mergedMdast.
@@ -217,7 +229,11 @@ function getMergedMdast(left, right) {
     // eslint-disable-next-line no-plusplus
     for (leftPointer; leftPointer < leftArray.length; leftPointer++) {
       const leftArrayElement = leftArray[leftPointer];
-      updateMergedMdast(mergedMdast, { hash: leftArrayElement[0], opInfo: leftArrayElement[1] });
+      updateMergedMdast(
+        mergedMdast,
+        { hash: leftArrayElement[0], opInfo: leftArrayElement[1] },
+        'langmaster',
+      );
     }
   }
   return mergedMdast;
@@ -240,7 +256,7 @@ async function process(folderPath) {
   display('regionV1Diff', langmasterBaseToRegionV1Changes);
   const regionV2Mdast = getMergedMdast(langmasterBaseToV1Changes, langmasterBaseToRegionV1Changes);
   display('regionV2', regionV2Mdast);
-  await persist(regionV2Mdast, `${folderPath}/Region(V2).docx`);
+  await persist(`${folderPath}/Langmaster(Base).docx`, regionV2Mdast, `${folderPath}/Region(V2).docx`);
 }
 
 async function init() {
