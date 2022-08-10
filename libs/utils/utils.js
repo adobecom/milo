@@ -346,3 +346,15 @@ export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) 
     }
   };
 };
+
+export function hasPropertyCI(data, name) {
+  return Object.keys(data).some((column) => column.toLowerCase() === name.toLowerCase());
+}
+
+export function propertyNameCI(data, name) {
+  return Object.keys(data).find((column) => column.toLowerCase() === name.toLowerCase());
+}
+
+export function propertyValueCI(data, name) {
+  return data[propertyNameCI(data, name)];
+}
