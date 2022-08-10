@@ -273,9 +273,7 @@ export function loadDelayed(delay = 3000) {
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
-  if (script) {
-    resolve(script);
-  } else {
+  if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
