@@ -12,16 +12,6 @@
  */
 import { createTag } from '../../utils/utils.js';
 
-function isHexColorDark(color) {
-  if (!color.trim().startsWith('#')) return false;
-  const hex = color.trim().replace('#', '');
-  const cR = parseInt(hex.substr(0, 2), 16);
-  const cG = parseInt(hex.substr(2, 2), 16);
-  const cB = parseInt(hex.substr(4, 2), 16);
-  const brightness = ((cR * 299) + (cG * 587) + (cB * 114)) / 1000;
-  return brightness < 155;
-}
-
 function decorateBlockBg(block, node) {
   if (node.querySelector(':scope img')) {
     node.classList.add('quote-image');
@@ -30,7 +20,6 @@ function decorateBlockBg(block, node) {
     block.style.background = node.textContent.trim();
     node.remove();
   }
-  if (isHexColorDark(node.textContent)) block.classList.add('dark');
 }
 
 export default function init(el) {
@@ -43,8 +32,16 @@ export default function init(el) {
   });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
-  const figcaptionCopy = copyNodes[1];
-  const citeCopy = copyNodes[2];
+  let figcaptionCopy = copyNodes[1];
+  let citeCopy = copyNodes[2];
+  const strongTitle = figcaptionCopy.querySelector('strong');
+  if (strongTitle) {
+    let figCopy = strongTitle;
+    strongTitle.remove();
+    let citeCopyPlus = createTag('p', {}, figcaptionCopy.innerText.trim());
+    figcaptionCopy = figCopy;
+    citeCopy = citeCopy ? citeCopy.insertAdjacentElement('afterbegin', citeCopyPlus) : citeCopyPlus;
+  }
   const blockquote = createTag('blockquote', { cite: '' }, quoteCopy);
   const figcaption = createTag('figcaption', {}, figcaptionCopy);
   const cite = createTag('cite', {}, citeCopy);
@@ -62,4 +59,6 @@ export default function init(el) {
   if (imageRow) blockquote.insertAdjacentElement('beforebegin', imageRow);
   wrapper.insertAdjacentElement('beforeend', figcaption);
   wrapper.insertAdjacentElement('afterbegin', blockquote);
+  const elScope = el.closest('.sidebar-wrapper');
+  if (elScope) el.classList.add('no-margin');
 }

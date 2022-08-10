@@ -47,6 +47,7 @@
 
 .blockquote blockquote .quote {
   font-size: var(--type-heading-m-size);
+  margin-top: 0;
 }
 
 .blockquote figcaption .figcaption {
@@ -84,6 +85,16 @@
 
 .blockquote.borders.background figure {
   padding: var(--spacing-xs);
+}
+
+.blockquote.no-margin {
+  margin: 0;
+  max-width: initial;
+}
+
+.blockquote.no-margin figure {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Tablet */
