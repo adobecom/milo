@@ -27,11 +27,24 @@ const chartTypes = [
   'column',
   'line',
   'area',
+  'list',
 ];
 
 const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
 
-export function processDataset(data) {
+function hasPropertyCI(data, name) {
+  return Object.keys(data).some((column) => column.toLowerCase() === name.toLowerCase());
+}
+
+function propertyNameCI(data, name) {
+  return Object.keys(data).find((column) => column.toLowerCase() === name.toLowerCase());
+}
+
+function propertyValueCI(data, name) {
+  return data[propertyNameCI(data, name)];
+}
+
+function processDataset(data) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color'];
   const headers = Object.keys(data[0]).filter((header) => (
@@ -97,18 +110,18 @@ export function processMarkData(series) {
   return seriesOptions;
 }
 
-/**
- * Return data as object with two entries
- */
 async function fetchData(link) {
   const path = makeRelative(link.href);
-  const data = {};
   const resp = await fetch(path.toLowerCase());
 
-  if (!resp.ok) return data;
+  if (!resp.ok) return {};
 
   const json = await resp.json();
+  return json;
+}
 
+export function chartData(json) {
+  const data = {};
   // Check the type of data
   if (json[':type'] === 'multi-sheet') {
     const dataSheet = json[':names'].includes('data') ? 'data' : json[':names'].shift();
@@ -118,6 +131,30 @@ async function fetchData(link) {
   } else {
     data.data = json.data;
     data.series = [];
+  }
+  return data;
+}
+
+export function listChartData(json) {
+  const data = {};
+
+  if (json[':type'] === 'multi-sheet') {
+    if (json.table) {
+      data.table = json.table?.data;
+      json.table?.data.forEach((column) => {
+        const sheet = propertyValueCI(column, 'sheet');
+        const title = propertyValueCI(column, 'title');
+        data[title] = json[sheet].data;
+      });
+    } else {
+      json[':names'].forEach((sheet) => {
+        const title = Object.keys(json[sheet].data[0])[0];
+        data[title] = json[sheet].data;
+      });
+    }
+  } else {
+    const title = Object.keys(json.data[0])[0];
+    data[title] = json.data;
   }
 
   return data;
@@ -216,8 +253,8 @@ const areaSeriesOptions = (firstDataset) => (
  */
 export const getChartOptions = (chartType, data, colors, size) => {
   const headers = data?.data?.[0];
-  const hasOverride = headers ? Object.keys(headers).some((header) => header.toLowerCase() === 'color') : false;
-  const unitKey = headers ? Object.keys(headers).find((header) => header.toLowerCase() === 'unit') : null;
+  const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
+  const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
   const units = headers?.[unitKey]?.split('-') || [];
   const dataset = processDataset(data.data);
   const source = dataset?.source;
@@ -314,8 +351,7 @@ export const getColors = (authoredColor) => {
 };
 
 export const getOverrideColors = (authoredColor, data) => data.map((row) => {
-  const overrideColumn = Object.keys(row).find((key) => key.toLowerCase() === 'color');
-  const overrideColor = row[overrideColumn];
+  const overrideColor = propertyValueCI(row, 'color');
 
   return colorPalette[overrideColor || authoredColor] || Object.values(colorPalette)[0];
 });
@@ -431,15 +467,24 @@ const init = async (el) => {
 
   updateContainerSize(chartWrapper, size, chartType);
 
-  if (chartType !== 'oversizedNumber') {
+  if (chartType === 'list') {
+    fetchData(dataLink).then((json) => {
+      const data = listChartData(json);
+      // TODO: MWPW-114086 initialize list chart
+      const pre = document.createElement('pre');
+      pre.innerText = JSON.stringify(data, null, 2);
+      chartWrapper.parentNode.replaceWith(pre);
+    });
+  } else if (chartType !== 'oversizedNumber') {
     Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
       .then((values) => {
-        const data = values[0];
+        const json = values[0];
+        const data = chartData(json);
 
         if (!data) return;
 
         const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
-        const hasOverride = Object.keys(data?.data[0])?.some((header) => header.toLowerCase() === 'color');
+        const hasOverride = hasPropertyCI(data?.data[0], 'color');
         const colors = hasOverride
           ? getOverrideColors(authoredColor, data.data)
           : getColors(authoredColor);
