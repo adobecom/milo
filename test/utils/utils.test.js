@@ -98,28 +98,34 @@ describe('Utils', () => {
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
   });
 
-  it('isNullish returns true for empty string', () => {
-    expect(utils.isNullish('')).to.be.true;
-  });
+  describe('throttle', () => {
+    let clock;
 
-  it('isNullish returns true for falsy values', () => {
-    expect(utils.isNullish(undefined)).to.be.true;
-    expect(utils.isNullish(null)).to.be.true;
-    expect(utils.isNullish(0 / 0)).to.be.true;
-  });
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
 
-  it('isNullish returns false for truthy values', () => {
-    expect(utils.isNullish('hello world')).to.be.false;
-    expect(utils.isNullish({})).to.be.false;
-    expect(utils.isNullish([])).to.be.false;
-    expect(utils.isNullish(true)).to.be.false;
-  });
+    after(() => {
+      clock.restore();
+    });
 
-  it('isEmptyObject returns true for empty objects', () => {
-    expect(utils.isEmptyObject({})).to.be.true;
-  });
+    it('callback called twice, once right away and once after delay', () => {
+      const callback = sinon.spy();
+      const throttled = utils.throttle(200, callback);
+      throttled();
+      expect(callback.callCount).to.equal(1);
+      clock.tick(200);
+      expect(callback.callCount).to.equal(2);
+    });
 
-  it('isEmptyObject returns false for non-empty objects', () => {
-    expect(utils.isEmptyObject({ key: 'value' })).to.be.false;
+    it('callback only called twice even with multiple throttle calls', () => {
+      const callback = sinon.spy();
+      const throttled = utils.throttle(200, callback);
+      throttled();
+      throttled();
+      throttled();
+      clock.tick(200);
+      expect(callback.calledTwice).to.be.true;
+    });
   });
 });

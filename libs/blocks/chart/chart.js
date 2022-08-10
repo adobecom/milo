@@ -1,4 +1,4 @@
-import { makeRelative, loadScript, throttle, isNullish } from '../../utils/utils.js';
+import { makeRelative, loadScript, throttle } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
 export const SMALL = 'small';
@@ -303,10 +303,7 @@ const handleIntersect = (chartWrapper, chartType, data, colors, size) => (entrie
 export const getColors = (authoredColor) => {
   const colorList = Object.values(colorPalette);
 
-  if (
-    isNullish(authoredColor)
-    || !Object.hasOwnProperty.call(colorPalette, authoredColor)
-  ) return colorList;
+  if (!authoredColor || !Object.hasOwnProperty.call(colorPalette, authoredColor)) return colorList;
 
   const colorIndex = colorList.indexOf(colorPalette[authoredColor]);
 
@@ -344,7 +341,7 @@ export const getContainerSize = (chartSize, chartType) => {
     },
   };
   const containerSize = chartType in chartHeights
-    ? chartHeights?.[chartType]?.[chartSize] || {}
+    ? chartHeights[chartType]?.[chartSize] || {}
     : chartHeights?.default?.[chartSize] || {};
   containerSize.width = '100%';
   return containerSize;

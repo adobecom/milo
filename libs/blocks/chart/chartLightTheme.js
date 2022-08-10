@@ -1,11 +1,9 @@
 // Custom Echarts Theme https://echarts.apache.org/en/theme-builder.html
-import { isEmptyObject } from '../../utils/utils.js';
-
 export const LIGHT_SMALL = 'lightSmall';
 export const LIGHT_LARGE = 'lightLarge';
 
 export default (deviceSize) => {
-  if (isEmptyObject(window.echarts)) return null;
+  if (!window.echarts) return null;
 
   const SMALL = 'small';
   const MEDIUM = 'medium';
@@ -13,7 +11,7 @@ export default (deviceSize) => {
   let size = LARGE;
   let themeName = LIGHT_LARGE;
 
-  if (deviceSize && (deviceSize === SMALL || deviceSize === MEDIUM)) {
+  if (deviceSize === SMALL || deviceSize === MEDIUM) {
     size = SMALL;
     themeName = LIGHT_SMALL;
   }

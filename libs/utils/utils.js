@@ -344,29 +344,6 @@ export function updateObj(obj, defaultObj) {
   return obj;
 }
 
-export function isNullish(thing) {
-  const type = typeof thing;
-  return (
-    type === 'undefined'
-    || (type === 'object' && thing === null)
-    || (Number.isNaN(thing))
-    || (type === 'string' && thing === '')
-  );
-}
-
-export function isEmptyObject(obj) {
-  let isEmpty = false;
-
-  if (typeof obj !== 'object' || isNullish(obj)) {
-    isEmpty = true;
-  } else if (typeof obj === 'object' && !Array.isArray(obj)) {
-    isEmpty = Object.keys(obj).length <= 0;
-  } else if (typeof obj === 'object' && Array.isArray(obj)) {
-    isEmpty = obj.length <= 0;
-  }
-  return isEmpty;
-}
-
 export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) => {
   let previousTime = null;
   return () => {

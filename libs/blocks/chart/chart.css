@@ -34,10 +34,9 @@
   }
 }
 
-/* Not sure if we want these to be placed elsewhere, perhaps variables, bring to milo community */
 .chart {
-  --spectrum-global-color-static-white: rgb(255 255 255);
-  --spectrum-global-color-static-black: rgb(0 0 0);
+  --white: rgb(255 255 255);
+  --black: rgb(0 0 0);
   --chart-padding: 32px 32px 40px 32px;
   --spectrum-grey-900: rgb(44 44 44 / 100%);
 }
@@ -75,7 +74,7 @@
 
 .border {
   border-radius: 8px;
-  background-color: var(--spectrum-global-color-static-white);
+  background-color: var(--white);
   box-shadow: 0 3px 10px 0 rgb(0 0 0 / 10%);
   padding: var(--chart-padding);
   box-sizing: border-box;
@@ -89,40 +88,10 @@
 .chart .tooltip-icon {
   height: 16px;
   width: 16px;
-  background-color: var(--spectrum-global-color-static-black);
+  background-color: var(--black);
   position: absolute;
   bottom: -8px;
   right: 20px;
   transform: rotate(45deg);
   z-index: 0;
-}
-
-/* ToDo: Change classes to kebab case */
-.chart_oversizedContainer {
-  max-width: 430px;
-  margin: auto;
-  animation-name: oversized-number;
-  animation-duration: 1s;
-}
-
-.chart_oversizedContainer svg {
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.chart_oversizedTitle,
-.chart_oversizedSubtitle {
-  line-height: 1;
-  fill: var(--spectrum-global-color-static-white);
-  text-anchor: middle;
-}
-
-.chart_oversizedTitle {
-  font-weight: 800;
-}
-
-.chart_oversizedSubtitle {
-  font-size: 28px;
-  font-weight: 700;
 }
