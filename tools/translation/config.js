@@ -115,6 +115,10 @@ function getSharepointConfig(config) {
           baseURI,
           method: 'PUT',
         },
+        update: {
+          baseURI,
+          method: 'PATCH',
+        },
         createUploadSession: {
           baseURI,
           method: 'POST',

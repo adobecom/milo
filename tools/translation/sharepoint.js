@@ -220,7 +220,7 @@ async function saveFile(file, dest) {
   const { sp } = await getConfig();
   const createdUploadSession = await createUploadSession(sp, file, dest, filename);
   if (createdUploadSession) {
-    const uploadedFile = uploadFile(sp, createdUploadSession.uploadUrl, file);
+    const uploadedFile = await uploadFile(sp, createdUploadSession.uploadUrl, file);
     if (uploadedFile) {
       return uploadedFile;
     }
@@ -228,4 +228,50 @@ async function saveFile(file, dest) {
   throw new Error(`Could not upload file ${dest}`);
 }
 
-export { getFiles, saveFile, connect, updateProjectWithSpStatus };
+async function getFileVersionInfo(filePath) {
+  validateConnection();
+  const { sp } = await getConfig();
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  options.method = 'GET';
+  const versionInfo = await fetch(`${sp.api.file.update.baseURI}${filePath}:/versions/current`, options);
+  if (versionInfo.ok) {
+    const versionInfoJson = await versionInfo.json();
+    return versionInfoJson.id;
+  }
+  throw new Error(`Could not get file version ${filePath}`);
+}
+
+async function updateFile(dest, metadata) {
+  validateConnection();
+  const payload = {
+    RolloutVersion: metadata.rolloutVersion,
+    Rollout: metadata.rolloutTime,
+  };
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  const { sp } = await getConfig();
+  options.method = sp.api.file.update.method;
+  options.body = JSON.stringify(payload);
+  const updateMetadata = await fetch(`${sp.api.file.update.baseURI}${dest}:/listItem/fields`, options);
+  if (updateMetadata.ok) {
+    return updateMetadata.json();
+  }
+  throw new Error(`Could not update file with metadata ${metadata}`);
+}
+
+async function saveFileAndUpdateMetadata(srcPath, file, dest) {
+  const uploadedFile = await saveFile(file, dest);
+  const metadata = {};
+  if (uploadedFile) {
+    metadata.rolloutTime = uploadedFile.lastModifiedDateTime;
+    metadata.rolloutVersion = await getFileVersionInfo(srcPath);
+    await updateFile(dest, metadata);
+    return uploadedFile;
+  }
+  throw new Error(`Could not upload file ${dest}`);
+}
+
+export { getFiles, saveFile, saveFileAndUpdateMetadata, connect, updateProjectWithSpStatus };
