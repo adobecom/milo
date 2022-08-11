@@ -326,17 +326,6 @@ function decorateSections(el) {
   });
 }
 
-/**
- * Sanitizes a name for use as class name.
- * @param {string} name The unsanitized name
- * @returns {string} The class name
- */
-export function toClassName(name) {
-  return name && typeof name === 'string'
-    ? name.toLowerCase().replace(/[^0-9a-z]/gi, '-')
-    : '';
-}
-
 export function decorateArea(el = document) {
   const linkBlocks = decorateLinks(el);
   const blocks = decorateBlocks(el);
@@ -366,8 +355,9 @@ export function loadDelayed(delay = 3000) {
         import('../features/interlinks.js').then((mod) => {
           resolve(mod);
         });
+      } else {
+        resolve(null);
       }
-      resolve(null);
     }, delay);
   });
 }

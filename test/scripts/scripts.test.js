@@ -51,12 +51,16 @@ describe('Decorating', () => {
 
   it('Decorates auto blocks', async () => {
     const autoBlock = document.querySelector('a[class]');
-    expect(autoBlock.className).to.equal('youtube link-block');
+    expect(autoBlock.className).to.equal('adobetv link-block');
   });
 
   it('Decorates modal link', async () => {
     const modalLink = document.querySelector('a[data-modal-path]');
     expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
+  });
+
+  it('Decorates no nav', () => {
+    expect(document.body.classList.contains('nav-off')).to.be.true;
   });
 });
 
@@ -85,9 +89,15 @@ describe('Loading', () => {
     expect(blocks.length).to.equal(3);
   });
 
-  it('loadDelayed() test', async () => {
+  it('loadDelayed() test - expect moduled', async () => {
     const mod = await utils.loadDelayed(0);
     expect(mod).to.exist;
+  });
+
+  it('loadDelayed() test - expect nothing', async () => {
+    document.head.querySelector('meta[name="interlinks"]').remove();
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.be.null;
   });
 
   it('modal test', () => {
