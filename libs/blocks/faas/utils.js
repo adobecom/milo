@@ -9,7 +9,8 @@ import {
 const { env } = getConfig();
 
 export const getFaasHostSubDomain = (environment) => {
-  const faasEnv = environment ?? env;
+  const faasEnv = environment ?? env.name;
+  console.log(faasEnv);
   // TODO: prod should be updated as '' when QA is done from FAAS team.
   if (faasEnv === 'prod') {
     return '';
