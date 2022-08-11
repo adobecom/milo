@@ -3,13 +3,14 @@
 import { expect } from '@esm-bundle/chai';
 // import { fireEvent, render, screen } from '@testing-library/preact';
 import { html, render } from '../../../../../../libs/deps/htm-preact.js';
-import { waitForElement } from '../../../../../helpers/selectors.js';
+import { waitForElement, delay } from '../../../../../helpers/selectors.js';
 
 import Comments from '../../../../../../libs/blocks/review/components/review/Comments.js';
 
 describe('Comments', () => {
   beforeEach(() => {
-    const comment = html`<${Comments} label="" comment="" />`;
+    const mockFn = () => {};
+    const comment = html`<${Comments} label="" comment="" handleCommentChange=${mockFn} />`;
     render(comment, document.body);
   });
   it('should display text area', async () => {
@@ -31,5 +32,26 @@ describe('Comments', () => {
     const isSelected = textAreaElem === document.activeElement;
     expect(isSelected).to.be.true;
     expect(commentElem.classList.contains('has-focus')).to.be.true;
+  });
+
+  it ('should test for input blur', async () => {
+    const commentElem = await waitForElement(
+      '.hlx-Review-commentFields'
+    );
+    const textAreaElem = commentElem.querySelector('textarea');
+    const onBlurEvent = new Event('blur');
+    textAreaElem.dispatchEvent(onBlurEvent);
+    await delay(100);
+    expect(commentElem.classList.contains('has-focus')).to.be.false;
+  });
+
+  it ('should test for input change', async () => {
+    const commentElem = await waitForElement(
+      '.hlx-Review-commentFields'
+    );
+    const textAreaElem = commentElem.querySelector('textarea');
+    const onInputChange = new Event('input');
+    textAreaElem.dispatchEvent(onInputChange);
+    expect(textAreaElem.getAttribute('value')).to.be.null;
   });
 });
