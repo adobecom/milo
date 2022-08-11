@@ -341,20 +341,3 @@ export function updateObj(obj, defaultObj) {
   });
   return obj;
 }
-
-export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) => {
-  let previousTime = null;
-  return () => {
-    const time = new Date().getTime();
-    let timeout = null;
-
-    if (!previousTime || time - previousTime >= delay) {
-      previousTime = time;
-      throttled.apply(null, [opts, args]);
-      timeout = setTimeout(() => {
-        throttled.apply(null, [opts, args]);
-        timeout = null;
-      }, (delay));
-    }
-  };
-};

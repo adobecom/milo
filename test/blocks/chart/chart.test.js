@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-expressions */
-/* global describe it */
+/* global describe it before after */
 
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 const {
   SMALL,
@@ -17,6 +18,7 @@ const {
   getOverrideColors,
   processDataset,
   processMarkData,
+  throttle,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -229,5 +231,36 @@ describe('chart utils', () => {
 
     expect(markData.markArea.data).to.eql(markAreaData);
     expect(markData.markLine.data).to.eql(markLineData);
+  });
+
+  describe('throttle', () => {
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    after(() => {
+      clock.restore();
+    });
+
+    it('callback called twice, once right away and once after delay', () => {
+      const callback = sinon.spy();
+      const throttled = throttle(200, callback);
+      throttled();
+      expect(callback.callCount).to.equal(1);
+      clock.tick(200);
+      expect(callback.callCount).to.equal(2);
+    });
+
+    it('callback only called twice even with multiple throttle calls', () => {
+      const callback = sinon.spy();
+      const throttled = throttle(200, callback);
+      throttled();
+      throttled();
+      throttled();
+      clock.tick(200);
+      expect(callback.calledTwice).to.be.true;
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { makeRelative, loadScript, throttle } from '../../utils/utils.js';
+import { makeRelative, loadScript } from '../../utils/utils.js';
 import getTheme from './chartLightTheme.js';
 
 export const SMALL = 'small';
@@ -28,6 +28,23 @@ const chartTypes = [
   'line',
   'area',
 ];
+
+export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) => {
+  let previousTime = null;
+  return () => {
+    const time = new Date().getTime();
+    let timeout = null;
+
+    if (!previousTime || time - previousTime >= delay) {
+      previousTime = time;
+      throttled.apply(null, [opts, args]);
+      timeout = setTimeout(() => {
+        throttled.apply(null, [opts, args]);
+        timeout = null;
+      }, (delay));
+    }
+  };
+};
 
 const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
 
