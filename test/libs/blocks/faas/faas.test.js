@@ -13,9 +13,6 @@ const config = {
   projectRoot: `${window.location.origin}/libs`,
   locales: {
     '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
   },
 };
 setConfig(config);
