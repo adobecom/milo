@@ -1,7 +1,7 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
-const MILO_BLOCKS = [
+const MILO_TEMPLATES = [
   'adobetv',
   'caas',
   'faas',
@@ -52,7 +52,6 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
-<<<<<<< HEAD
 const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -71,46 +70,6 @@ const [setConfig, getConfig] = (() => {
     () => config,
   ];
 })();
-
-/**
-* Get the current Helix environment
-* @returns {Object} the env object
-*/
-export function getHelixEnv() {
-  let envName = sessionStorage.getItem('helix-env');
-  if (!envName) envName = 'prod';
-  const envs = {
-    stage: {
-      ims: 'stg1',
-      adobeIO: 'cc-collab-stage.adobe.io',
-      adminconsole: 'stage.adminconsole.adobe.com',
-      account: 'stage.account.adobe.com',
-    },
-    prod: {
-      ims: 'prod',
-      adobeIO: 'cc-collab.adobe.io',
-      adminconsole: 'adminconsole.adobe.com',
-      account: 'account.adobe.com',
-    },
-  };
-  const env = envs[envName];
-
-  const overrideItem = sessionStorage.getItem('helix-env-overrides');
-  if (overrideItem) {
-    const overrides = JSON.parse(overrideItem);
-    const keys = Object.keys(overrides);
-    env.overrides = keys;
-
-    keys.forEach((value) => {
-      env[value] = overrides[value];
-    });
-  }
-
-  if (env) {
-    env.name = envName;
-  }
-  return env;
-}
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
@@ -195,7 +154,7 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const name = block.classList[0];
   const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
