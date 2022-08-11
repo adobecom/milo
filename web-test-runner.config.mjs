@@ -10,7 +10,6 @@ export default {
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
       '**/hooks/**',
-      '**/libs/blocks/chart/**',
     ],
   },
   plugins: [importMapsPlugin({})],
