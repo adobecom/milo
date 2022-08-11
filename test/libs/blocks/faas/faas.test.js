@@ -5,22 +5,17 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForElement } from '../../../helpers/selectors.js';
-import init from '../../../../libs/blocks/faas/faas.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 
 const config = {
   imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const { default: init } = await import('../../../../libs/blocks/faas/faas.js');
 
 describe('Faas', () => {
   beforeEach(() => {

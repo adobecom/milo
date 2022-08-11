@@ -1,7 +1,8 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
-const MILO_TEMPLATES = [
+const MILO_TEMPLATES = [];
+const MILO_BLOCKS = [
   'adobetv',
   'caas',
   'faas',
@@ -12,7 +13,6 @@ const MILO_TEMPLATES = [
   'modal',
   'marquee',
   'section-metadata',
-  'ganv',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -129,7 +129,7 @@ export async function loadTemplate() {
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
   const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs || projectRoot;
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
@@ -154,7 +154,7 @@ export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const name = block.classList[0];
   const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
