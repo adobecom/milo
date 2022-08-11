@@ -15,6 +15,8 @@ const {
   tooltipFormatter,
   getColors,
   getOverrideColors,
+  chartData,
+  listChartData,
   processDataset,
   processMarkData,
 } = await import('../../../libs/blocks/chart/chart.js');
@@ -229,5 +231,217 @@ describe('chart utils', () => {
 
     expect(markData.markArea.data).to.eql(markAreaData);
     expect(markData.markLine.data).to.eql(markLineData);
+  });
+
+  it('fetch data sheet', () => {
+    const fetchedData = {
+      total: 1,
+      offset: 0,
+      limit: 1,
+      data: [
+        {
+          Browsers: 'Avg Visitors',
+          Chrome: '100',
+          Firefox: '156',
+          Edge: '105',
+          Group: '',
+          Unit: 'k',
+        },
+      ],
+      ':type': 'sheet',
+    };
+
+    const processedData = {
+      data: [
+        {
+          Browsers: 'Avg Visitors',
+          Chrome: '100',
+          Firefox: '156',
+          Edge: '105',
+          Group: '',
+          Unit: 'k',
+        },
+      ],
+      series: [],
+    };
+    expect(chartData(fetchedData)).to.eql(processedData);
+  });
+
+  it('fetch data multi', () => {
+    const fetchedData = {
+      extra: {
+        total: 4,
+        offset: 0,
+        limit: 4,
+        data: [
+          { Type: 'markArea', Name: 'Weekend Sale', Axis: 'xAxis', Value: 'Fri-Sun' },
+          { Type: 'markLine', Name: 'Promotion', Axis: 'xAxis', Value: 'Mon' },
+          { Type: 'markLine', Name: 'Campaign Launch', Axis: 'xAxis', Value: 'Thurs' },
+          { Type: 'markLine', Name: 'Goal', Axis: 'yAxis', Value: '200' },
+        ],
+      },
+      data: {
+        total: 7,
+        offset: 0,
+        limit: 7,
+        data: [
+          { Day: 'Mon', Visitors: '150', Group: '', Unit: 'k' },
+          { Day: 'Tues', Visitors: '230', Group: '', Unit: '' },
+          { Day: 'Weds', Visitors: '224', Group: '', Unit: '' },
+          { Day: 'Thurs', Visitors: '218', Group: '', Unit: '' },
+          { Day: 'Fri', Visitors: '135', Group: '', Unit: '' },
+          { Day: 'Sat', Visitors: '147', Group: '', Unit: '' },
+          { Day: 'Sun', Visitors: '260', Group: '', Unit: '' },
+        ],
+      },
+      ':version': 3,
+      ':names': [
+        'extra',
+        'data',
+      ],
+      ':type': 'multi-sheet',
+    };
+
+    const processedData = {
+      data: [
+        { Day: 'Mon', Visitors: '150', Group: '', Unit: 'k' },
+        { Day: 'Tues', Visitors: '230', Group: '', Unit: '' },
+        { Day: 'Weds', Visitors: '224', Group: '', Unit: '' },
+        { Day: 'Thurs', Visitors: '218', Group: '', Unit: '' },
+        { Day: 'Fri', Visitors: '135', Group: '', Unit: '' },
+        { Day: 'Sat', Visitors: '147', Group: '', Unit: '' },
+        { Day: 'Sun', Visitors: '260', Group: '', Unit: '' },
+      ],
+      series: [
+        { Type: 'markArea', Name: 'Weekend Sale', Axis: 'xAxis', Value: 'Fri-Sun' },
+        { Type: 'markLine', Name: 'Promotion', Axis: 'xAxis', Value: 'Mon' },
+        { Type: 'markLine', Name: 'Campaign Launch', Axis: 'xAxis', Value: 'Thurs' },
+        { Type: 'markLine', Name: 'Goal', Axis: 'yAxis', Value: '200' },
+      ],
+    };
+
+    expect(chartData(fetchedData)).to.eql(processedData);
+  });
+
+  it('fetch list data', () => {
+    const fetchedData = {
+      total: 5,
+      offset: 0,
+      limit: 5,
+      data: [
+        { 'Black Friday': 'XBOX One S', Price: '1.54' },
+        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
+        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
+        { 'Black Friday': 'Airpods', Price: '1.03' },
+        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' }],
+      ':type': 'sheet',
+    };
+
+    const processedData = {
+      'Black Friday': [
+        { 'Black Friday': 'XBOX One S', Price: '1.54' },
+        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
+        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
+        { 'Black Friday': 'Airpods', Price: '1.03' },
+        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' },
+      ],
+    };
+
+    expect(listChartData(fetchedData)).to.eql(processedData);
+  });
+
+  it('fetch list data multi', () => {
+    const fetchedData = {
+      'Black Friday': {
+        total: 5,
+        offset: 0,
+        limit: 5,
+        data: [
+          { 'Black Friday': 'XBOX One S', Price: '1.54' },
+          { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
+          { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
+          { 'Black Friday': 'Airpods', Price: '1.03' },
+          { 'Black Friday': 'Tickle me Elmo', Price: '1.01' }],
+      },
+      'Cyber Monday': {
+        total: 5,
+        offset: 0,
+        limit: 5,
+        data: [
+          { 'Cyber Monday': 'XBOX One S' },
+          { 'Cyber Monday': 'Swiffer Xtreme' },
+          { 'Cyber Monday': 'Teddy Ruxpin' },
+          { 'Cyber Monday': 'Airpods' },
+          { 'Cyber Monday': 'Tickle me Elmo' }],
+      },
+      ':version': 3,
+      ':names': ['Cyber Monday', 'Black Friday'],
+      ':type': 'multi-sheet',
+    };
+
+    const processedData = {
+      'Black Friday': [
+        { 'Black Friday': 'XBOX One S', Price: '1.54' },
+        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
+        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
+        { 'Black Friday': 'Airpods', Price: '1.03' },
+        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' },
+      ],
+      'Cyber Monday': [
+        { 'Cyber Monday': 'XBOX One S' },
+        { 'Cyber Monday': 'Swiffer Xtreme' },
+        { 'Cyber Monday': 'Teddy Ruxpin' },
+        { 'Cyber Monday': 'Airpods' },
+        { 'Cyber Monday': 'Tickle me Elmo' },
+      ],
+    };
+
+    expect(listChartData(fetchedData)).to.eql(processedData);
+  });
+
+  it('fetch list data multi with metadata', () => {
+    const fetchedData = {
+      table: {
+        total: 2,
+        offset: 0,
+        limit: 2,
+        data: [
+          { Title: 'Black Friday Numbers Ordered', Sheet: 'Black Friday', Type: 'numbered' },
+        ],
+      },
+      'Black Friday': {
+        total: 5,
+        offset: 0,
+        limit: 5,
+        data: [
+          { Name: 'XBOX One S', Price: '1.54' },
+          { Name: 'Swiffer Xtreme', Price: '1.27' },
+          { Name: 'Teddy Ruxpin', Price: '1.15' },
+          { Name: 'Airpods', Price: '1.03' },
+          { Name: 'Tickle me Elmo', Price: '1.01' }],
+      },
+      ':version': 3,
+      ':names': ['table', 'Black Friday'],
+      ':type': 'multi-sheet',
+    };
+
+    const processedData = {
+      table: [
+        {
+          Title: 'Black Friday Numbers Ordered',
+          Sheet: 'Black Friday',
+          Type: 'numbered',
+        },
+      ],
+      'Black Friday Numbers Ordered': [
+        { Name: 'XBOX One S', Price: '1.54' },
+        { Name: 'Swiffer Xtreme', Price: '1.27' },
+        { Name: 'Teddy Ruxpin', Price: '1.15' },
+        { Name: 'Airpods', Price: '1.03' },
+        { Name: 'Tickle me Elmo', Price: '1.01' },
+      ],
+    };
+
+    expect(listChartData(fetchedData)).to.eql(processedData);
   });
 });
