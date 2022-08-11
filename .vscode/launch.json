@@ -5,11 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}"
-        }
+        },
+        {
+          "type": "chrome",
+          "request": "launch",
+          "name": "Debug libs",
+          "url": "http://localhost:6456",
+          "webRoot": "${workspaceFolder}"
+      }
     ]
 }

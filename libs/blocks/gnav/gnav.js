@@ -435,7 +435,7 @@ export default async function init(header) {
     gnav.init();
     header.dispatchEvent(initEvent);
     return gnav;
-  } catch {
+  } catch (e) {
     console.log('Could not create global navigation.');
     return null;
   }
