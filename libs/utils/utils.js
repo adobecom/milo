@@ -12,6 +12,7 @@ const MILO_BLOCKS = [
   'modal',
   'marquee',
   'section-metadata',
+  'ganv',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -51,6 +52,7 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
+<<<<<<< HEAD
 const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -69,6 +71,46 @@ const [setConfig, getConfig] = (() => {
     () => config,
   ];
 })();
+
+/**
+* Get the current Helix environment
+* @returns {Object} the env object
+*/
+export function getHelixEnv() {
+  let envName = sessionStorage.getItem('helix-env');
+  if (!envName) envName = 'prod';
+  const envs = {
+    stage: {
+      ims: 'stg1',
+      adobeIO: 'cc-collab-stage.adobe.io',
+      adminconsole: 'stage.adminconsole.adobe.com',
+      account: 'stage.account.adobe.com',
+    },
+    prod: {
+      ims: 'prod',
+      adobeIO: 'cc-collab.adobe.io',
+      adminconsole: 'adminconsole.adobe.com',
+      account: 'account.adobe.com',
+    },
+  };
+  const env = envs[envName];
+
+  const overrideItem = sessionStorage.getItem('helix-env-overrides');
+  if (overrideItem) {
+    const overrides = JSON.parse(overrideItem);
+    const keys = Object.keys(overrides);
+    env.overrides = keys;
+
+    keys.forEach((value) => {
+      env[value] = overrides[value];
+    });
+  }
+
+  if (env) {
+    env.name = envName;
+  }
+  return env;
+}
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';

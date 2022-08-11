@@ -9,6 +9,7 @@ const blocks = [
   'modal',
   'marquee',
   'section-metadata',
+  'gnav',
 ];
 
 export default blocks;

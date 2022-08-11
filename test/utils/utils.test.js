@@ -92,13 +92,25 @@ describe('Utils', () => {
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
   });
 
-  // it('Test getEnv()', () => {
-  //   expect(utils.getEnv()).to.equal('local');
-  // });
+  it('Test getEnv()', () => {
+    expect(utils.getEnv()).to.equal('local');
+  });
 
   it('updateObj should add any missing keys to the obj', () => {
     const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
+  });
+
+  it('Test getHelixEnv', () => {
+    sessionStorage.setItem('helix-env-overrides', '{"a":"a"}');
+    const env = utils.getHelixEnv();
+    expect(env.overrides).to.exist;
+  });
+
+  it('Test getBlockClasses', () => {
+    const aBlockClass = utils.getBlockClasses('this-is-test-class--variant1-');
+    expect(aBlockClass.name).to.equal('this-is-test-class');
+    expect(aBlockClass.variants[0]).to.equal('variant1');
   });
 });
