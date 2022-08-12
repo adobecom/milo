@@ -105,6 +105,12 @@ nav.gnav .gnav-brand svg {
   width: 27px;
 }
 
+nav.gnav .gnav-brand picture img {
+  width: 100%;
+  max-height: 27px;
+  vertical-align: top;
+}
+
 nav.gnav .gnav-brand-title {
   display: none;
 }

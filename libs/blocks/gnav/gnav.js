@@ -5,6 +5,7 @@ import {
   getBlockClasses,
   makeRelative,
   getMetadata,
+  decorateSVG,
 } from '../../utils/utils.js';
 
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
@@ -92,12 +93,13 @@ class Gnav {
     const brandBlock = this.body.querySelector('[class^="gnav-brand"]');
     if (!brandBlock) return null;
     const brand = brandBlock.querySelector('a');
+    decorateSVG(brand);
     brand.className = brandBlock.className;
     const title = createTag('span', { class: 'gnav-brand-title' }, brand.textContent);
 
     brand.href = makeRelative(brand.href, true);
     brand.setAttribute('aria-label', brand.textContent);
-    brand.textContent = '';
+    if (brand.textContent !== '') brand.textContent = '';
     if (brand.classList.contains('logo')) {
       brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
     }
