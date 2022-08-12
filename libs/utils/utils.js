@@ -13,6 +13,7 @@ const MILO_BLOCKS = [
   'modal',
   'marquee',
   'section-metadata',
+  'gnav',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -153,6 +154,7 @@ export async function loadBlock(block) {
   if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
+  console.log(getConfig());
   const { miloLibs, projectRoot } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
