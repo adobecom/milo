@@ -13,7 +13,6 @@ const MILO_BLOCKS = [
   'modal',
   'marquee',
   'section-metadata',
-  'gnav',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -53,7 +52,7 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
-const [setConfig, getConfig] = (() => {
+export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
@@ -95,13 +94,13 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href, bypassCORS = false) {
+export function makeRelative(href) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
   const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(fixedHref);
   const relative = hosts.some((host) => url.hostname.includes(host))
     || url.hostname === window.location.hostname;
-  return relative || bypassCORS ? `${url.pathname}${url.search}${url.hash}` : href;
+  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
 }
 
 export function loadStyle(href, callback) {
@@ -142,7 +141,6 @@ export async function loadTemplate() {
         // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
-      /* c8 ignore end */
       resolve();
     })();
   });
@@ -154,7 +152,6 @@ export async function loadBlock(block) {
   if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
-  console.log(getConfig());
   const { miloLibs, projectRoot } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
@@ -168,6 +165,10 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
+        if (getEnv() !== 'prod') {
+          block.dataset.failed = 'true';
+          block.dataset.reason = `Failed loading ${name ? name.toUpperCase() : ''} block - ${err}`;
+        }
       }
       resolve();
     })();
@@ -190,13 +191,14 @@ export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
     await loadBlock(lcpBlock, true);
   }
   const lcpImg = document.querySelector('main img');
-  await new Promise((resolve) => {
+  return new Promise((resolve) => {
     if (lcpImg && !lcpImg.complete) {
+      /* c8 ignore next 3 */
       lcpImg.setAttribute('loading', 'eager');
-      lcpImg.addEventListener('load', () => resolve());
-      lcpImg.addEventListener('error', () => resolve());
+      lcpImg.addEventListener('load', () => resolve(lcpImg));
+      lcpImg.addEventListener('error', () => resolve(lcpImg));
     } else {
-      resolve();
+      resolve(lcpImg);
     }
   });
 }
@@ -423,13 +425,3 @@ export function updateObj(obj, defaultObj) {
   });
   return obj;
 }
-
-export function getBlockClasses(className) {
-  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
-  const blockWithVariants = className.split('--');
-  const name = trimDashes(blockWithVariants.shift());
-  const variants = blockWithVariants.map((v) => trimDashes(v));
-  return { name, variants };
-}
-
-export { setConfig, getConfig };

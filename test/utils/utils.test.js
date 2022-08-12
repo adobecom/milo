@@ -10,14 +10,8 @@ const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwc
 const utils = {};
 
 const config = {
-  imsClientId: 'milo',
   projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
@@ -92,19 +86,13 @@ describe('Utils', () => {
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
   });
 
-  it('Test getEnv()', () => {
-    expect(utils.getEnv()).to.equal('local');
-  });
+  // it('Test getEnv()', () => {
+  //   expect(utils.getEnv()).to.equal('local');
+  // });
 
   it('updateObj should add any missing keys to the obj', () => {
     const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
-  });
-
-  it('Test getBlockClasses', () => {
-    const aBlockClass = utils.getBlockClasses('this-is-test-class--variant1-');
-    expect(aBlockClass.name).to.equal('this-is-test-class');
-    expect(aBlockClass.variants[0]).to.equal('variant1');
   });
 });

@@ -60,6 +60,9 @@ describe('Decorating', () => {
   });
 
   it('Decorates no nav', () => {
+    const meta = utils.createTag('meta', { name: 'header', content: 'off' });
+    document.head.append(meta);
+    utils.decorateNavs();
     expect(document.body.classList.contains('nav-off')).to.be.true;
   });
 });
@@ -79,14 +82,16 @@ describe('Loading', () => {
   });
 
   it('Doesnt load a bad block', async () => {
-    await utils.loadBlock(document.querySelector('#not-block'));
-    expect(console.log.called).to.be.true;
+    const bad = document.querySelector('#not-block');
+    await utils.loadBlock(bad);
+    expect(bad.dataset.failed).to.equal('true');
   });
 
   it('Removes LCP block out of block list', async () => {
     const blocks = [...document.querySelectorAll('body > main > .section > [class]')];
-    await utils.loadLCP({ blocks });
+    const lcpImg = await utils.loadLCP({ blocks });
     expect(blocks.length).to.equal(3);
+    expect(lcpImg).to.exist;
   });
 
   it('loadDelayed() test - expect moduled', async () => {
