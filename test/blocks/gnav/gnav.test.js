@@ -121,6 +121,7 @@ describe('Fragments', () => {
     expect(searchMod.getRootPath()).to.be.empty;
   });
 
+  // gnav-utils
   it('createTag test', () => {
     const tag = createTag('div', { class: 'test' }, document.createElement('div'));
     expect(tag instanceof HTMLElement).to.be.true;
