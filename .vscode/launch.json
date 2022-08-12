@@ -11,12 +11,5 @@
           "url": "http://localhost:3000",
           "webRoot": "${workspaceFolder}"
       },
-      {
-        "type": "chrome",
-        "request": "launch",
-        "name": "Debug tests",
-        "url": "http://localhost:2000",
-        "webRoot": "${workspaceFolder}"
-      }
     ]
 }

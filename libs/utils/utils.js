@@ -425,3 +425,11 @@ export function updateObj(obj, defaultObj) {
   });
   return obj;
 }
+
+export function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
+}
