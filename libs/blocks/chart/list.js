@@ -1,5 +1,14 @@
 import { propertyNameCI, propertyValueCI } from './utils.js';
 
+export const listToLowerCase = (list) => (
+  list.map((item) => (
+    Object.keys(item).reduce((prev, key) => {
+      prev[key.toLowerCase()] = item[key];
+      return prev;
+    }, {})
+  ))
+);
+
 export function listChartData(json) {
   const data = [];
 
@@ -14,7 +23,7 @@ export function listChartData(json) {
     json[tableKey].data?.forEach((column) => {
       data.push({
         title: propertyValueCI(column, 'title'),
-        list: json[propertyValueCI(column, 'sheet')]?.data,
+        list: listToLowerCase(json[propertyValueCI(column, 'sheet')]?.data),
         type: propertyValueCI(column, 'type'),
       });
     });
@@ -22,7 +31,7 @@ export function listChartData(json) {
     json[':names'].forEach((sheet) => {
       data.push({
         title: sheet,
-        list: json[sheet]?.data,
+        list: listToLowerCase(json[sheet]?.data),
       });
     });
   }
@@ -35,19 +44,14 @@ export const getListHtml = (data) => {
   const firstList = data[0];
   const listType = firstList.type?.toLowerCase() === 'numbered' ? 'ol' : 'ul';
 
-  const listItems = firstList.list.reduce((prev, listItem) => {
-    const name = propertyValueCI(listItem, 'name') || '';
-    const extra = propertyValueCI(listItem, 'extra');
-    const image = propertyValueCI(listItem, 'image');
-    const alt = propertyValueCI(listItem, 'alt') || '';
-
-    return (`${prev}
+  const listItems = firstList.list.reduce((prev, { name = '', extra, image, alt = '' }) => (
+    `${prev}
     <li>
       ${image ? `<img src="${image}" alt="${alt}" />` : ''}
       <span class="name">${name}</span>
       ${extra ? `<span class="extra">${extra}</span>` : ''}
-    </li>`);
-  }, '');
+    </li>`
+  ), '');
 
   return `
     <article>

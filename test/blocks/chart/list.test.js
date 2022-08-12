@@ -2,7 +2,7 @@
 /* global describe it */
 import { expect } from '@esm-bundle/chai';
 
-const { listChartData, getListHtml } = await import('../../../libs/blocks/chart/list.js');
+const { listChartData, getListHtml, listToLowerCase } = await import('../../../libs/blocks/chart/list.js');
 
 describe('list', () => {
   it('fetch list data', () => {
@@ -34,11 +34,11 @@ describe('list', () => {
     const processedData = [{
       title: 'Black Friday Numbers Ordered',
       list: [
-        { Name: 'XBOX One S', Extra: '1.54' },
-        { Name: 'Swiffer Xtreme', Extra: '1.27' },
-        { Name: 'Teddy Ruxpin', Extra: '1.15' },
-        { Name: 'Airpods', Extra: '1.03' },
-        { Name: 'Tickle me Elmo', Extra: '1.01' },
+        { name: 'XBOX One S', extra: '1.54' },
+        { name: 'Swiffer Xtreme', extra: '1.27' },
+        { name: 'Teddy Ruxpin', extra: '1.15' },
+        { name: 'Airpods', extra: '1.03' },
+        { name: 'Tickle me Elmo', extra: '1.01' },
       ],
       type: 'numbered',
     }];
@@ -121,16 +121,16 @@ describe('list', () => {
       title: 'Black Friday',
       list: [
         {
-          Name: 'XBOX One S',
-          Extra: '1.54',
-          Image: 'image.png',
-          Alt: 'Image 1',
+          name: 'XBOX One S',
+          extra: '1.54',
+          image: 'image.png',
+          alt: 'Image 1',
         },
         {
-          Name: 'Swiffer Xtreme',
-          Extra: '1.27',
-          Image: 'image.png',
-          Alt: 'Image 2',
+          name: 'Swiffer Xtreme',
+          extra: '1.27',
+          image: 'image.png',
+          alt: 'Image 2',
         },
       ],
       type: 'numbered',
@@ -138,5 +138,27 @@ describe('list', () => {
     const html = '<article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article>';
 
     expect(getListHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
+  });
+
+  it('listToLowerCase', () => {
+    const input = [{
+      Name: 'XBOX One S',
+      Extra: '1.54',
+    },
+    {
+      Name: 'Swiffer Xtreme',
+      Extra: '1.27',
+    }];
+
+    const output = [{
+      name: 'XBOX One S',
+      extra: '1.54',
+    },
+    {
+      name: 'Swiffer Xtreme',
+      extra: '1.27',
+    }];
+
+    expect(listToLowerCase(input)).to.eql(output);
   });
 });
