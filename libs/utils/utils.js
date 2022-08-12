@@ -1,30 +1,75 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
+const MILO_TEMPLATES = [];
+const MILO_BLOCKS = [
+  'adobetv',
+  'caas',
+  'faas',
+  'columns',
+  'faq',
+  'fragment',
+  'how-to',
+  'modal',
+  'marquee',
+  'section-metadata',
+];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
-  { youtube: 'https://www.youtube.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
 ];
+const ENVS = {
+  local: { name: 'local' },
+  stage: {
+    name: 'stage',
+    ims: 'stg1',
+    adobeIO: 'cc-collab-stage.adobe.io',
+    adminconsole: 'stage.adminconsole.adobe.com',
+    account: 'stage.account.adobe.com',
+  },
+  prod: {
+    name: 'prod',
+    ims: 'prod',
+    adobeIO: 'cc-collab.adobe.io',
+    adminconsole: 'adminconsole.adobe.com',
+    account: 'account.adobe.com',
+  },
+};
 
-export function getEnv() {
-  const { hostname, href } = window.location;
+function getEnv() {
+  const { host, href } = window.location;
   const location = new URL(href);
-  const env = location.searchParams.get('env');
+  const query = location.searchParams.get('env');
 
+  if (query) { return ENVS.query; }
+  if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
-  if (env) {
-    return env;
-  }
-  if (hostname.includes('localhost')) return 'local';
-  if (hostname.includes('hlx.page') || hostname.includes('hlx.live')) return 'stage';
-
-  return 'prod';
+  if (host.includes('hlx.page') || host.includes('hlx.live')) return ENVS.stage;
+  return ENVS.prod;
   /* c8 ignore stop */
 }
+
+export const [setConfig, getConfig] = (() => {
+  let config = {};
+  return [
+    (conf) => {
+      config = { ...conf, env: getEnv() };
+      if (conf.locales) {
+        const { pathname } = window.location;
+        const split = pathname.split('/');
+        const locale = conf.locales[split[1]] || conf.locales[''];
+        locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
+        document.documentElement.setAttribute('lang', locale.ietf);
+        config.locale = locale;
+      }
+      return config;
+    },
+    () => config,
+  ];
+})();
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
@@ -32,7 +77,7 @@ export function getMetadata(name) {
   return meta && meta.content;
 }
 
-export default function createTag(tag, attributes, html) {
+export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
     if (html instanceof HTMLElement) {
@@ -75,25 +120,54 @@ export function loadStyle(href, callback) {
   return link;
 }
 
-export async function loadBlock(block) {
-  const { status } = block.dataset;
-  if (!status === 'loaded') return block;
-  block.dataset.status = 'loading';
-  const blockName = block.classList[0];
+/**
+ * Load template (page structure and styles).
+ */
+export async function loadTemplate() {
+  const template = getMetadata('template');
+  if (!template) return;
+  const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
+  document.body.classList.add(name);
+  const { miloLibs, projectRoot } = getConfig();
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`/libs/blocks/${blockName}/${blockName}.css`, resolve);
+    loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`/libs/blocks/${blockName}/${blockName}.js`);
+        await import(`${base}/templates/${name}/${name}.js`);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(`failed to load module for ${name}`, err);
+      }
+      resolve();
+    })();
+  });
+  await Promise.all([styleLoaded, scriptLoaded]);
+}
+
+export async function loadBlock(block) {
+  const { status } = block.dataset;
+  if (!status === 'loaded') return block;
+  block.dataset.status = 'loading';
+  const name = block.classList[0];
+  const { miloLibs, projectRoot } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
+  const styleLoaded = new Promise((resolve) => {
+    loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
+  });
+  const scriptLoaded = new Promise((resolve) => {
+    (async () => {
+      try {
+        const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.log(`Failed loading ${blockName}`, err);
+        console.log(`Failed loading ${name}`, err);
         if (getEnv() !== 'prod') {
           block.dataset.failed = 'true';
-          block.dataset.reason = `Failed loading ${blockName ? blockName.toUpperCase() : ''} block - ${err}`;
+          block.dataset.reason = `Failed loading ${name ? name.toUpperCase() : ''} block - ${err}`;
         }
       }
       resolve();
@@ -109,13 +183,24 @@ export async function loadBlock(block) {
   return block;
 }
 
-export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS, loader = loadBlock }) {
+export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
   const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
   if (lcpBlock) {
     const lcpIdx = blocks.indexOf(lcpBlock);
     blocks.splice(lcpIdx, 1);
-    await loader(lcpBlock, true);
+    await loadBlock(lcpBlock, true);
   }
+  const lcpImg = document.querySelector('main img');
+  return new Promise((resolve) => {
+    if (lcpImg && !lcpImg.complete) {
+      /* c8 ignore next 3 */
+      lcpImg.setAttribute('loading', 'eager');
+      lcpImg.addEventListener('load', () => resolve(lcpImg));
+      lcpImg.addEventListener('error', () => resolve(lcpImg));
+    } else {
+      resolve(lcpImg);
+    }
+  });
 }
 
 export function decorateSVG(a) {
@@ -218,12 +303,20 @@ function decorateDefaults(el) {
 }
 
 export function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('nav') !== 'off') { selectors.push('header'); }
+  const selectors = ['header', 'footer'];
+  if (getMetadata('header') === 'off') {
+    document.body.classList.add('nav-off');
+    selectors.shift();
+  }
   if (getMetadata('footer') !== 'off') { selectors.push('footer'); }
   const navs = el.querySelectorAll(selectors.toString());
   return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
+    const navType = nav.nodeName.toLowerCase();
+    if (navType === 'header') {
+      nav.className = getMetadata('header') || 'gnav';
+      return nav;
+    }
+    nav.className = navType;
     return nav;
   });
 }
@@ -246,15 +339,14 @@ export function decorateArea(el = document) {
   return [...linkBlocks, ...blocks];
 }
 
-export async function loadArea({ blocks, area, loader, noFollowPath }) {
+export async function loadArea({ blocks, area, noFollowPath }) {
   const el = area || document;
-  const blockLoader = loader || loadBlock;
   if (getMetadata('nofollow-links') === 'on') {
     const path = noFollowPath || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, el);
   }
-  const loaded = blocks.map((block) => blockLoader(block));
+  const loaded = blocks.map((block) => loadBlock(block));
   await Promise.all(loaded);
 }
 
@@ -264,9 +356,13 @@ export async function loadArea({ blocks, area, loader, noFollowPath }) {
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
-      import('../scripts/delayed.js').then((mod) => {
-        resolve(mod);
-      });
+      if (getMetadata('interlinks') === 'on') {
+        import('../features/interlinks.js').then((mod) => {
+          resolve(mod);
+        });
+      } else {
+        resolve(null);
+      }
     }, delay);
   });
 }
@@ -329,4 +425,3 @@ export function updateObj(obj, defaultObj) {
   });
   return obj;
 }
-
