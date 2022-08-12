@@ -1,4 +1,4 @@
-header.header nav {
+header.milonav nav {
   width: calc(var(--grid-container-width) + 20px);
   margin: 0 auto;
   display: flex;
