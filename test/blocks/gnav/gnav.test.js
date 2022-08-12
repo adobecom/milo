@@ -4,13 +4,28 @@
 import { readFile, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { setConfig } from '../../../libs/utils/utils.js';
+import createTag from '../../../libs/blocks/gnav/gnav-utils.js';
 
 window.lana = { log: stub() };
 
+document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+
 const mod = await import('../../../libs/blocks/gnav/gnav.js');
 const searchMod = await import('../../../libs/blocks/gnav/gnav-search.js');
 let gnav;
+const config = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+  locales: {
+    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+  },
+};
+setConfig(config);
 
 describe('Fragments', () => {
   beforeEach(() => {
@@ -21,12 +36,15 @@ describe('Fragments', () => {
     console.log.restore();
   });
 
-  it('test init gnav', async () => {
-    // init
-    const gnavToBeFailed = await mod.default(document.querySelector('#wrong'));
-    expect(gnavToBeFailed).to.be.null;
+  // it('test wrong gnav', async () => {
+  //   const gnavToBeFailed = await mod.default(document.querySelector('#wrong'));
+  //   console.log(gnavToBeFailed);
+  //   expect(gnavToBeFailed).to.be.null;
+  // });
+
+  it('test wrong gnav', async () => {
     gnav = await mod.default(document.querySelector('header'));
-    expect(gnav).to.be.not.null;
+    expect(gnav).to.not.null;
   });
 
   it('nav menu toggle test', async () => {
@@ -101,5 +119,10 @@ describe('Fragments', () => {
 
   it('getRootPath test', () => {
     expect(searchMod.getRootPath()).to.be.empty;
+  });
+
+  it('createTag test', () => {
+    const tag = createTag('div', { class: 'test' }, document.createElement('div'));
+    expect(tag instanceof HTMLElement).to.be.true;
   });
 });
