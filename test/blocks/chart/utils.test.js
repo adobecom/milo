@@ -21,13 +21,9 @@ describe('chart utils', () => {
       const callback = sinon.spy();
       const throttled = throttle(200, callback);
       throttled();
-      expect(callback.callCount)
-        .to
-        .equal(1);
+      expect(callback.callCount).to.equal(1);
       clock.tick(200);
-      expect(callback.callCount)
-        .to
-        .equal(2);
+      expect(callback.callCount).to.equal(2);
     });
 
     it('callback only called twice even with multiple throttle calls', () => {
