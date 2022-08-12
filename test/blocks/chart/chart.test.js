@@ -1,8 +1,7 @@
 /* eslint-disable no-unused-expressions */
-/* global describe it before after */
+/* global describe it */
 
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 
 const {
   SMALL,
@@ -17,10 +16,8 @@ const {
   getColors,
   getOverrideColors,
   chartData,
-  listChartData,
   processDataset,
   processMarkData,
-  throttle,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -235,41 +232,6 @@ describe('chart utils', () => {
     expect(markData.markLine.data).to.eql(markLineData);
   });
 
-  describe('throttle', () => {
-    let clock;
-
-    before(() => {
-      clock = sinon.useFakeTimers();
-    });
-
-    after(() => {
-      clock.restore();
-    });
-
-    it('callback called twice, once right away and once after delay', () => {
-      const callback = sinon.spy();
-      const throttled = throttle(200, callback);
-      throttled();
-      expect(callback.callCount)
-        .to
-        .equal(1);
-      clock.tick(200);
-      expect(callback.callCount)
-        .to
-        .equal(2);
-    });
-
-    it('callback only called twice even with multiple throttle calls', () => {
-      const callback = sinon.spy();
-      const throttled = throttle(200, callback);
-      throttled();
-      throttled();
-      throttled();
-      clock.tick(200);
-      expect(callback.calledTwice).to.be.true;
-    });
-  });
-
   it('fetch data sheet', () => {
     const fetchedData = {
       total: 1,
@@ -358,127 +320,5 @@ describe('chart utils', () => {
     };
 
     expect(chartData(fetchedData)).to.eql(processedData);
-  });
-
-  it('fetch list data', () => {
-    const fetchedData = {
-      total: 5,
-      offset: 0,
-      limit: 5,
-      data: [
-        { 'Black Friday': 'XBOX One S', Price: '1.54' },
-        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
-        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
-        { 'Black Friday': 'Airpods', Price: '1.03' },
-        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' }],
-      ':type': 'sheet',
-    };
-
-    const processedData = {
-      'Black Friday': [
-        { 'Black Friday': 'XBOX One S', Price: '1.54' },
-        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
-        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
-        { 'Black Friday': 'Airpods', Price: '1.03' },
-        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' },
-      ],
-    };
-
-    expect(listChartData(fetchedData)).to.eql(processedData);
-  });
-
-  it('fetch list data multi', () => {
-    const fetchedData = {
-      'Black Friday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { 'Black Friday': 'XBOX One S', Price: '1.54' },
-          { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
-          { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
-          { 'Black Friday': 'Airpods', Price: '1.03' },
-          { 'Black Friday': 'Tickle me Elmo', Price: '1.01' }],
-      },
-      'Cyber Monday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { 'Cyber Monday': 'XBOX One S' },
-          { 'Cyber Monday': 'Swiffer Xtreme' },
-          { 'Cyber Monday': 'Teddy Ruxpin' },
-          { 'Cyber Monday': 'Airpods' },
-          { 'Cyber Monday': 'Tickle me Elmo' }],
-      },
-      ':version': 3,
-      ':names': ['Cyber Monday', 'Black Friday'],
-      ':type': 'multi-sheet',
-    };
-
-    const processedData = {
-      'Black Friday': [
-        { 'Black Friday': 'XBOX One S', Price: '1.54' },
-        { 'Black Friday': 'Swiffer Xtreme', Price: '1.27' },
-        { 'Black Friday': 'Teddy Ruxpin', Price: '1.15' },
-        { 'Black Friday': 'Airpods', Price: '1.03' },
-        { 'Black Friday': 'Tickle me Elmo', Price: '1.01' },
-      ],
-      'Cyber Monday': [
-        { 'Cyber Monday': 'XBOX One S' },
-        { 'Cyber Monday': 'Swiffer Xtreme' },
-        { 'Cyber Monday': 'Teddy Ruxpin' },
-        { 'Cyber Monday': 'Airpods' },
-        { 'Cyber Monday': 'Tickle me Elmo' },
-      ],
-    };
-
-    expect(listChartData(fetchedData)).to.eql(processedData);
-  });
-
-  it('fetch list data multi with metadata', () => {
-    const fetchedData = {
-      table: {
-        total: 2,
-        offset: 0,
-        limit: 2,
-        data: [
-          { Title: 'Black Friday Numbers Ordered', Sheet: 'Black Friday', Type: 'numbered' },
-        ],
-      },
-      'Black Friday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { Name: 'XBOX One S', Price: '1.54' },
-          { Name: 'Swiffer Xtreme', Price: '1.27' },
-          { Name: 'Teddy Ruxpin', Price: '1.15' },
-          { Name: 'Airpods', Price: '1.03' },
-          { Name: 'Tickle me Elmo', Price: '1.01' }],
-      },
-      ':version': 3,
-      ':names': ['table', 'Black Friday'],
-      ':type': 'multi-sheet',
-    };
-
-    const processedData = {
-      table: [
-        {
-          Title: 'Black Friday Numbers Ordered',
-          Sheet: 'Black Friday',
-          Type: 'numbered',
-        },
-      ],
-      'Black Friday Numbers Ordered': [
-        { Name: 'XBOX One S', Price: '1.54' },
-        { Name: 'Swiffer Xtreme', Price: '1.27' },
-        { Name: 'Teddy Ruxpin', Price: '1.15' },
-        { Name: 'Airpods', Price: '1.03' },
-        { Name: 'Tickle me Elmo', Price: '1.01' },
-      ],
-    };
-
-    expect(listChartData(fetchedData)).to.eql(processedData);
   });
 });
