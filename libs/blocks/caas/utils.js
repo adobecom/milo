@@ -65,6 +65,24 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
   return encodeURIComponent(`${andQuery}${andQuery && orQuery ? '+AND+' : ''}${orQuery}`);
 };
 
+const getSortOptions = (state, strs) => {
+  const defaultVals = {
+    featured: 'Featured',
+    dateAsc: 'Date: (Oldest to Newest)',
+    dateDesc: 'Date: (Newest to Oldest)',
+    eventSort: 'Events: (Live, Upcoming, OnDemand)',
+    titleAsc: 'Title A-Z',
+    titleDesc: 'Title Z-A',
+    random: 'Random',
+  };
+
+  return Object.entries(defaultVals).reduce((options, [key, defaultValue]) => {
+    const fullKey = `sort${key.charAt(0).toUpperCase() + key.slice(1)}`;
+    if (state[fullKey]) options.push({ label: strs[fullKey] || defaultValue, sort: key });
+    return options;
+  }, []);
+};
+
 export const getConfig = (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').pop() : 'en';
@@ -79,20 +97,13 @@ export const getConfig = (state, strs = {}) => {
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
 
-  const sortOptions = Object.entries(strs).reduce((opts, [key, val]) => {
-    const parse = (keyType, propName) => {
-      if (key.startsWith(keyType)) {
-        const idx = parseInt(key.replace(keyType, ''), 10);
-        if (idx !== NaN) {
-          opts[idx - 1] = opts[idx - 1] || {};
-          opts[idx - 1][propName] = val;
-        }
-      }
-    };
-    parse('sortLabel', 'label');
-    parse('sortType', 'sort');
-    return opts;
-  }, []);
+  // const
+
+  // const sortOptions = Object.entries(strs).reduce((opts, [key, val]) => {
+  //   parse('sortLabel', 'label');
+  //   parse('sortType', 'sort');
+  //   return opts;
+  // }, []);
 
   const config = {
     collection: {
@@ -189,7 +200,7 @@ export const getConfig = (state, strs = {}) => {
     sort: {
       enabled: state.sortEnablePopup,
       defaultSort: state.sortDefault,
-      options: sortOptions,
+      options: getSortOptions(state, strs),
     },
     pagination: {
       animationStyle: state.paginationAnimationStyle,

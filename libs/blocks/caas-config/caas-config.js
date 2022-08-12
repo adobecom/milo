@@ -68,12 +68,12 @@ const defaultOptions = {
     'www.stage.adobe.com/chimera-api/collection': 'www.stage.adobe.com/chimera-api/collection',
     'business.stage.adobe.com/chimera-api/collection':
       'business.stage.adobe.com/chimera-api/collection',
-    '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1',
-    '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1',
-    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1',
+    '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   gutter: {
     '1x': '8px (1x)',
@@ -126,6 +126,7 @@ const defaultOptions = {
     hawks: 'Hawks',
     magento: 'Magento',
     marketo: 'Marketo',
+    milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
   },
@@ -368,11 +369,26 @@ const SortPanel = () => {
     <${Input} label="Reservoir Pool" prop="sortReservoirPool" type="number" />
   `;
 
+  const SortOptions = html`
+    <div>Sort options to display:</div>
+    <div class="sort-options">
+      <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
+      <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
+      <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
+      <${Input} label="Events" prop="sortEventSort" type="checkbox" />
+      <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
+      <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
+      <${Input} label="Random" prop="sortRandom" type="checkbox" />
+    </div>
+
+    <${Input} label="Customize Random Sample" prop="sortEnableRandomSampling" type="checkbox" />
+    ${state.sortEnableRandomSampling && RandomSampling}
+  `;
+
   return html`
     <${Select} label="Default Sort Order" prop="sortDefault" options=${defaultOptions.sort} />
     <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
-    <${Input} label="Customize Random Sample" prop="sortEnableRandomSampling" type="checkbox" />
-    ${state.sortEnableRandomSampling && RandomSampling}
+    ${state.sortEnablePopup && SortOptions}
   `;
 };
 

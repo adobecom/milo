@@ -337,9 +337,16 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
   // TODO - automatically get country
   country: (s) => s || 'us',
-  created: (s) => (s
-    ? getDateProp(s, `Invalid Created Date: ${s}`)
-    : getMetaContent('name', 'publication-date') || new Date(document.lastModified).toISOString()),
+  created: (s) => {
+    if (s) {
+      return getDateProp(s, `Invalid Created Date: ${s}`);
+    }
+
+    const pubDate = getMetaContent('name', 'publication-date');
+    return pubDate
+      ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
+      : getDateProp(document.lastModified, `document.lastModified is not a valid date: ${document.lastModified}`);
+  },
   cta1icon: (s) => checkUrl(s, `Invalid Cta1Icon url: ${s}`),
   cta1style: 0,
   cta1text: 0,
@@ -364,7 +371,7 @@ const props = {
   lang: (s) => s || 'en',
   modified: (s) => (s
     ? getDateProp(s, `Invalid Modified Date: ${s}`)
-    : new Date(document.lastModified).toISOString()),
+    : getDateProp(document.lastModified, `document.lastModified is not a valid date: ${document.lastModified}`)),
   origin: (s) => s || getOrigin(),
   playurl: (s) => checkUrl(s, `Invalid PlayURL: ${s}`),
   primarytag: (s) => {
