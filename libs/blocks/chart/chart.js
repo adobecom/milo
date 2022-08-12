@@ -1,4 +1,5 @@
 import { makeRelative, loadScript } from '../../utils/utils.js';
+import { throttle, parseValue, hasPropertyCI, propertyNameCI, propertyValueCI } from './utils.js';
 import getTheme from './chartLightTheme.js';
 
 export const SMALL = 'small';
@@ -30,38 +31,7 @@ const chartTypes = [
   'list',
 ];
 
-export const throttle = (delay = 250, throttled = () => {}, opts = {}, ...args) => {
-  let previousTime = null;
-  return () => {
-    const time = new Date().getTime();
-    let timeout = null;
-
-    if (!previousTime || time - previousTime >= delay) {
-      previousTime = time;
-      throttled.apply(null, [opts, args]);
-      timeout = setTimeout(() => {
-        throttled.apply(null, [opts, args]);
-        timeout = null;
-      }, (delay));
-    }
-  };
-};
-
-const parseValue = (value) => (Number.isInteger(Number(value)) ? parseInt(value, 10) : value);
-
-function hasPropertyCI(data, name) {
-  return Object.keys(data).some((column) => column.toLowerCase() === name.toLowerCase());
-}
-
-function propertyNameCI(data, name) {
-  return Object.keys(data).find((column) => column.toLowerCase() === name.toLowerCase());
-}
-
-function propertyValueCI(data, name) {
-  return data[propertyNameCI(data, name)];
-}
-
-function processDataset(data) {
+export function processDataset(data) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color'];
   const headers = Object.keys(data[0]).filter((header) => (
@@ -149,31 +119,6 @@ export function chartData(json) {
     data.data = json.data;
     data.series = [];
   }
-  return data;
-}
-
-export function listChartData(json) {
-  const data = {};
-
-  if (json[':type'] === 'multi-sheet') {
-    if (json.table) {
-      data.table = json.table?.data;
-      json.table?.data.forEach((column) => {
-        const sheet = propertyValueCI(column, 'sheet');
-        const title = propertyValueCI(column, 'title');
-        data[title] = json[sheet].data;
-      });
-    } else {
-      json[':names'].forEach((sheet) => {
-        const title = Object.keys(json[sheet].data[0])[0];
-        data[title] = json[sheet].data;
-      });
-    }
-  } else {
-    const title = Object.keys(json.data[0])[0];
-    data[title] = json.data;
-  }
-
   return data;
 }
 
@@ -482,14 +427,15 @@ const init = async (el) => {
   updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType === 'list') {
-    fetchData(dataLink).then((json) => {
-      const data = listChartData(json);
-      // TODO: MWPW-114086 initialize list chart
-      const pre = document.createElement('pre');
-      pre.innerText = JSON.stringify(data, null, 2);
-      chartWrapper.parentNode.replaceWith(pre);
-    });
-  } else if (chartType !== 'oversizedNumber') {
+    Promise.all([fetchData(dataLink), import('./list.js')])
+      .then(([json, { default: initList }]) => {
+        initList(chartWrapper, json);
+      })
+      .catch((error) => console.log('Error loading script:', error));
+    return;
+  }
+
+  if (chartType !== 'oversizedNumber') {
     Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
       .then((values) => {
         const json = values[0];
