@@ -8,16 +8,18 @@ Errors can be logged using `window.lana.log`.
 
 Any uncaught errors (or Promise Rejections) will automatically be logged to LANA.
 
+Note that any errors that happen on a `*.corp.adobe.com` domain will automatically be logged to LANA Stage.  This is to ensure that any errors logged to production LANA will be customer facing errors.
+
 ### Syntax
 
 `window.lana.log(message, options)`
 
 ### Parameters
 
-* `message` - string: The message to be logged.
+* `message` - string: **REQUIRED** The message to be logged.
 
 * `options` - object:
-    * `clientId` - string: Defaults to `''`
+    * **`clientId`** - string: **REQUIRED**
         * The client ID to identify the which product team the error belongs to.
     * `endpoint` - string: Prod AdobeIO API endpoint for LANA to send messages to.
     * `endpointStage` - string: Stage AdobeIO API endpoint for LANA to send messages to.
@@ -37,13 +39,13 @@ Any uncaught errors (or Promise Rejections) will automatically be logged to LANA
         * Toggle between prod and stage endpoints
 ## Helper Functions
 
-`window.lana.setClientId(clientId)`: sets the client ID for the current page.
+The helper functions have been deprecated in favor of the options being passed with every lana call.
 
-It is recommended that the client ID is set for every page so that implicit errors are logged with that client ID.
+~~`window.lana.setClientId(clientId)`: sets the client ID for the current page.~~
 
-`window.lana.setDefaultOptions(options)`: Updates the default options.  Any params not defined in the options object will keep the existing default options.
+~~`window.lana.setDefaultOptions(options)`: Updates the default options.  Any params not defined in the options object will keep the existing default options.~~
 
-Note that the current option state is stored in `window.lana.options` and can also be directly changed there.
+Note that the default option state is stored in `window.lana.options` and can be directly changed there, though it is not recommended as multiple lana clients can co-exist on a single page.
 
 ## Debugging
 
