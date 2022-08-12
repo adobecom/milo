@@ -75,8 +75,9 @@ describe('Loading', () => {
   });
 
   it('Doesnt load a bad block', async () => {
-    await utils.loadBlock(document.querySelector('#not-block'));
-    expect(console.log.called).to.be.true;
+    const bad = document.querySelector('#not-block');
+    await utils.loadBlock(bad);
+    expect(bad.dataset.failed).to.equal('true');
   });
 
   it('Removes LCP block out of block list', async () => {
