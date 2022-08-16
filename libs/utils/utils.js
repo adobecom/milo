@@ -156,8 +156,6 @@ export async function loadTemplate() {
 }
 
 export async function loadBlock(block) {
-  const { status } = block.dataset;
-  if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
   const { miloLibs, scriptsRoot } = getConfig();
