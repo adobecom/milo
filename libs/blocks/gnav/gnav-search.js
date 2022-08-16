@@ -85,7 +85,7 @@ function highlightTextElements(terms, elements) {
 
 export async function addSegmentToIndex(url, index, pageSize) {
   const resp = await fetch(url);
-  if (resp.status !== '200') {
+  if (resp.status !== 200) {
     window.blogIndex.complete = true;
     return;
   }
