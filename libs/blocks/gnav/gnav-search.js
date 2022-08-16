@@ -85,6 +85,10 @@ function highlightTextElements(terms, elements) {
 
 export async function addSegmentToIndex(url, index, pageSize) {
   const resp = await fetch(url);
+  if (resp.status !== '200') {
+    window.blogIndex.complete = true;
+    return;
+  }
   const json = await resp.json();
   const complete = (json.limit + json.offset) === json.total;
   json.data.forEach((post) => {
