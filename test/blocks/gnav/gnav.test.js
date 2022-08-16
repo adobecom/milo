@@ -17,7 +17,7 @@ const searchMod = await import('../../../libs/blocks/gnav/gnav-search.js');
 let gnav;
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
+  scriptsRoot: `${window.location.origin}/libs`,
   locales: {
     '': { ietf: 'en-US', tk: 'hah7vzn.css' },
     de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
@@ -115,10 +115,6 @@ describe('Fragments', () => {
   it('createOptimizedPicture test', () => {
     const picture = searchMod.createOptimizedPicture('/test/blocks/gnav/mocks/dog.png');
     expect(picture.querySelector('source').media).to.be.not.empty;
-  });
-
-  it('getRootPath test', () => {
-    expect(searchMod.getRootPath()).to.be.empty;
   });
 
   // gnav-utils

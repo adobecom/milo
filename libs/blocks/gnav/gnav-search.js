@@ -1,4 +1,5 @@
 import createTag from './gnav-utils.js';
+import { getConfig, getMetadata } from '../../utils/utils.js';
 
 /**
  * Returns a picture element with webp and fallbacks
@@ -96,20 +97,12 @@ export async function addSegmentToIndex(url, index, pageSize) {
 }
 
 /**
- * Returns the language dependent root path
- * @returns {string} The computed root path
- */
-export function getRootPath() {
-  const isBizBlog = window.location.origin.includes('business-website');
-  const loc = window.location.pathname.includes('/blog/') ? window.location.pathname.split('/blog/')[0] : '';
-  return isBizBlog ? `${loc}/blog` : loc;
-}
-
-/**
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
 export async function fetchBlogArticleIndex() {
+  const { contentRoot } = getConfig();
+  const url = getMetadata('search-index-source') || `${contentRoot}/query-index.json`;
   const pageSize = 1000;
   window.blogIndex = window.blogIndex || {
     data: [],
@@ -117,18 +110,16 @@ export async function fetchBlogArticleIndex() {
     offset: 0,
     complete: false,
   };
+
   if (window.blogIndex.complete) return (window.blogIndex);
   const index = window.blogIndex;
   const { offset } = index;
-  await addSegmentToIndex(`${getRootPath()}/query-index.json?limit=${pageSize}&offset=${offset}`, index, pageSize);
-  /* c8 ignore start */
-  if (getRootPath() === '/uk/blog' || getRootPath() === '/au/blog') {
-    await addSegmentToIndex(`/blog/query-index.json?limit=${pageSize}&offset=${offset}`, index, pageSize);
-    index.data.sort((a, b) => b.date - a.date);
-  }
+  await addSegmentToIndex(`${url}/?limit=${pageSize}&offset=${offset}`, index, pageSize);
+  index.data.sort((a, b) => b.date - a.date);
+
   return (index);
-  /* c8 ignore stop */
 }
+
 async function populateSearchResults(searchTerms, resultsContainer) {
   const limit = 12;
   const terms = searchTerms.toLowerCase().split(' ').map((e) => e.trim()).filter((e) => !!e);

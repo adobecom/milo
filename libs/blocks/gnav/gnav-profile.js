@@ -1,4 +1,4 @@
-import { getEnv, createTag } from '../../utils/utils.js';
+import { getConfig, createTag } from '../../utils/utils.js';
 
 function decorateEmail(email) {
   const MAX_CHAR = 12;
@@ -12,7 +12,7 @@ function decorateEmail(email) {
 }
 
 function decorateProfileLink(href, service) {
-  const env = getEnv();
+  const { env } = getConfig();
   if (env.name === 'prod') return href;
   const url = new URL(href);
   url.hostname = env[service];

@@ -10,7 +10,7 @@ const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwc
 const utils = {};
 
 const config = {
-  projectRoot: `${window.location.origin}/libs`,
+  scriptsRoot: `${window.location.origin}/libs`,
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 

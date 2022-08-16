@@ -52,19 +52,27 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
+export function getLocale(locales) {
+  if (!locales) {
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+  }
+  const { pathname } = window.location;
+  const split = pathname.split('/');
+  const locale = locales[split[1]] || locales[''];
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
+  return locale;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
       config = { ...conf, env: getEnv() };
-      if (conf.locales) {
-        const { pathname } = window.location;
-        const split = pathname.split('/');
-        const locale = conf.locales[split[1]] || conf.locales[''];
-        locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
-        document.documentElement.setAttribute('lang', locale.ietf);
-        config.locale = locale;
-      }
+      config.scriptsRoot ??= window.location.origin;
+      conf.locales ??= { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+      config.locale = getLocale(conf.locales);
+      document.documentElement.setAttribute('lang', config.locale.ietf);
+      config.contentRoot ??= `${window.location.origin}${config.locale.prefix}`;
       return config;
     },
     () => config,
@@ -128,8 +136,8 @@ export async function loadTemplate() {
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
-  const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
+  const { miloLibs, scriptsRoot } = getConfig();
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : scriptsRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
@@ -152,8 +160,8 @@ export async function loadBlock(block) {
   if (!status === 'loaded') return block;
   block.dataset.status = 'loading';
   const name = block.classList[0];
-  const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
+  const { miloLibs, scriptsRoot } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : scriptsRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });

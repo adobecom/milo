@@ -12,7 +12,7 @@ window.lana = {
 
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
+  scriptsRoot: `${window.location.origin}/libs`,
   locales: {
     '': { ietf: 'en-US', tk: 'hah7vzn.css' },
     de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
