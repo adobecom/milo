@@ -10,7 +10,7 @@
  *    <figcaption>—Aldous Huxley, <cite>Brave New World</cite></figcaption>
  *   </figure>
  */
-import { createTag } from '../../utils/utils.js';
+import createTag from '../../utils/utils.js';
 
 function decorateBlockBg(block, node) {
   if (node.querySelector(':scope img')) {
@@ -32,16 +32,8 @@ export default function init(el) {
   });
   const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const quoteCopy = copyNodes[0];
-  let figcaptionCopy = copyNodes[1];
-  let citeCopy = copyNodes[2];
-  const strongTitle = figcaptionCopy.querySelector('strong');
-  if (strongTitle) {
-    let figCopy = strongTitle;
-    strongTitle.remove();
-    let citeCopyPlus = createTag('p', {}, figcaptionCopy.innerText.trim());
-    figcaptionCopy = figCopy;
-    citeCopy = citeCopy ? citeCopy.insertAdjacentElement('afterbegin', citeCopyPlus) : citeCopyPlus;
-  }
+  const figcaptionCopy = copyNodes[1];
+  const citeCopy = copyNodes[2];
   const blockquote = createTag('blockquote', { cite: '' }, quoteCopy);
   const figcaption = createTag('figcaption', {}, figcaptionCopy);
   const cite = createTag('cite', {}, citeCopy);
