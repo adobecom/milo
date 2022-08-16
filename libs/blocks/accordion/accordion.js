@@ -1,4 +1,4 @@
-import createTag from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 

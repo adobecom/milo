@@ -15,11 +15,13 @@ export const loadStrings = async (url) => {
 };
 
 export const loadCaasFiles = () => {
-  loadStyle('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.css');
+  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
+
+  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
   return Promise.all([
-    loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.umd.js'),
-    loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/react.dom.umd.js'),
-  ]).then(() => loadScript('https://www.adobe.com/special/chimera/latest/dist/dexter/app.min.js'));
+    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`),
+    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`),
+  ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
 };
 
 export const initCaas = (state, caasStrs, el) => {
@@ -65,8 +67,8 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 
 export const getConfig = (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const language = state.language ? state.language.split('/').at(-1) : 'en';
-  const country = state.country ? state.country.split('/').at(-1) : 'us';
+  const language = state.language ? state.language.split('/').pop() : 'en';
+  const country = state.country ? state.country.split('/').pop() : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity =

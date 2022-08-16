@@ -4,10 +4,23 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = {
   log: stub(),
 };
+
+const config = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+  locales: {
+    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+  },
+};
+setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');

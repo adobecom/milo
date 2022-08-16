@@ -18,6 +18,31 @@ function hasSchema(host) {
   return false;
 }
 
+const sendToCaaS = async (_, sk) => {
+  const SCRIPT_ID = 'send-caas-listener';
+  const dispatchEvent = () => document.dispatchEvent(
+    new CustomEvent('send-to-caas', {
+      detail: {
+        host: sk.config.host,
+        project: sk.config.project,
+        branch: sk.config.ref,
+        repo: sk.config.repo,
+        owner: sk.config.owner,
+      },
+    }),
+  );
+
+  if (!document.getElementById(SCRIPT_ID)) {
+    const script = document.createElement('script');
+    script.src = '/tools/send-to-caas/sendToCaasEventListener.js';
+    script.id = SCRIPT_ID;
+    script.onload = () => dispatchEvent();
+    document.head.appendChild(script);
+  } else {
+    dispatchEvent();
+  }
+};
+
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
@@ -25,39 +50,37 @@ function hasSchema(host) {
     libraries: [
       {
         text: 'Blocks',
-        path: '/docs/library/blocks.json',
-      },
-      {
-        text: 'Templates',
-        path: '/docs/library/templates.json',
-      },
-      {
-        text: 'Placeholders',
-        path: '/docs/library/placeholders.json',
-      },
-      {
-        text: 'Tokens',
-        path: '/docs/library/tokens.json',
+        paths: ['https://main--milo--adobecom.hlx.page/docs/library/blocks.json'],
       },
     ],
     plugins: [
+      {
+        id: 'register-caas',
+        condition: (s) => s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
+        button: {
+          text: 'Send to CaaS',
+          action: sendToCaaS,
+        },
+      },
       // TOOLS ---------------------------------------------------------------------
       {
         id: 'library',
-        condition: () => true,
+        condition: (s) => s.isEditor(),
         button: {
           text: 'Library',
           action: (_, s) => {
             const { config } = s;
+            // Change this for local development
+            const domain = `https://${config.innerHost}`;
             const script = document.createElement('script');
             script.onload = () => {
               const skEvent = new CustomEvent(
                 'hlx:library-loaded',
-                { detail: { domain: `https://${config.innerHost}`, libraries: config.libraries } },
+                { detail: { domain, libraries: config.libraries } },
               );
               document.dispatchEvent(skEvent);
             };
-            script.src = `https://${config.innerHost}/libs/ui/library/library.js`;
+            script.src = `${domain}/libs/ui/library/library.js`;
             document.head.appendChild(script);
           },
         },
@@ -80,7 +103,14 @@ function hasSchema(host) {
           text: 'Translate',
           action: (_, sk) => {
             const { config } = sk;
-            window.open(`${config.pluginHost ? config.pluginHost : `http://${config.innerHost}`}/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${config.owner}&repo=${config.repo}&ref=${config.ref}`, 'hlx-sidekick-spark-translation');
+            window.open(
+              `${
+                config.pluginHost ? config.pluginHost : `http://${config.innerHost}`
+              }/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${
+                config.owner
+              }&repo=${config.repo}&ref=${config.ref}`,
+              'hlx-sidekick-spark-translation',
+            );
           },
         },
       },
@@ -90,7 +120,12 @@ function hasSchema(host) {
         button: {
           text: 'Check Schema',
           action: () => {
-            window.open(`https://search.google.com/test/rich-results?url=${encodeURIComponent(window.location.href)}`, 'check-schema');
+            window.open(
+              `https://search.google.com/test/rich-results?url=${encodeURIComponent(
+                window.location.href,
+              )}`,
+              'check-schema',
+            );
           },
         },
       },
