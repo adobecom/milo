@@ -91,4 +91,8 @@ describe('Utils', () => {
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
   });
+
+  it('getLocale default return', () => {
+    expect(utils.getLocale().ietf).to.equal('en-US');
+  });
 });
