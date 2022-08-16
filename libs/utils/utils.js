@@ -52,6 +52,7 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
+// find out current locale based on pathname and existing locales object from config.
 export function getLocale(locales) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
