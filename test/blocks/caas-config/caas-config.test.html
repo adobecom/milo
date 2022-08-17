@@ -4,7 +4,7 @@
     <script type="importmap">
       {
         "imports": {
-          "../../../../libs/utils/utils.js": "../caas/mocks/utils.js"
+          "../../../libs/utils/utils.js": "../caas/mocks/utils.js"
         }
       }
     </script>
@@ -25,14 +25,14 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import init from '../../../../libs/blocks/caas-config/caas-config.js';
+    import init from '../../../libs/blocks/caas-config/caas-config.js';
     import {
       delay,
       findByLabel,
       tagSelectorDropdownChoose,
       tagSelectorModalChoose,
       waitForElement,
-    } from '../../../helpers/selectors.js';
+    } from '../../helpers/selectors.js';
     import defaultConfig from './expectedConfigs/defaultConfig.js';
     import { stubFetch, restoreFetch } from './mockFetch.js';
 

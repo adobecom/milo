@@ -4,8 +4,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../../helpers/selectors.js';
-import { setConfig } from '../../../../libs/utils/utils.js';
+import { waitForElement } from '../../helpers/selectors.js';
+import { setConfig, parseEncodedConfig } from '../../../libs/utils/utils.js';
 
 const config = {
   imsClientId: 'milo',
@@ -20,8 +20,7 @@ const config = {
 setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { parseEncodedConfig } = await import('../../../../libs/utils/utils.js');
-const { getFaasHostSubDomain, loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../../libs/blocks/faas/utils.js');
+const { getFaasHostSubDomain, loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../libs/blocks/faas/utils.js');
 
 describe('Faas', () => {
   beforeEach(() => {

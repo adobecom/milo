@@ -3,8 +3,8 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../../helpers/selectors.js';
-import init from '../../../../libs/blocks/review/review.js';
+import { waitForElement } from '../../helpers/selectors.js';
+import init from '../../../libs/blocks/review/review.js';
 
 describe('Review Comp', () => {
   beforeEach(async () => {

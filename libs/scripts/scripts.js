@@ -11,12 +11,8 @@
  */
 
 import {
-  decorateArea,
-  decorateNavs,
-  loadLCP,
   loadArea,
   loadDelayed,
-  loadTemplate,
   setConfig,
 } from '../utils/utils.js';
 
@@ -31,14 +27,14 @@ const config = {
   },
 };
 
+(async function loadLCPImage() {
+  const lcpImg = document.querySelector('img');
+  lcpImg?.setAttribute('loading', 'eager');
+}());
+
 (async function loadPage() {
   setConfig(config);
-  const blocks = decorateArea();
-  const navs = decorateNavs();
-  await loadLCP({ blocks });
-  import('../utils/fonts.js');
-  loadTemplate();
-  await loadArea({ blocks: [...navs, ...blocks] });
+  await loadArea();
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   loadDelayed();
