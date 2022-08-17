@@ -23,6 +23,10 @@ const {
   setDonutLabel,
   handleDonutSelect,
   getChartOptions,
+  fetchData,
+  barTooltipFormatter,
+  barSeriesOptions,
+  lineSeriesOptions,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart', () => {
@@ -324,5 +328,140 @@ describe('chart', () => {
 
   it('getChartOptions', () => {
     expect(typeof getChartOptions()).to.equal('object');
+  });
+
+  it('fetchData returns json given an anchor tag', async () => {
+    const fetch = sinon.stub(window, 'fetch');
+    const link = document.createElement('a');
+    const linkRel = '/drafts/data-viz/line.json';
+    link.href = `https://data-viz--milo--adobecom.hlx.page${linkRel}`;
+    const goodResponse = { ok: true, json: () => true };
+    fetch.withArgs(linkRel).returns(goodResponse);
+    const response = await fetchData(link);
+    expect(response).to.be.true;
+  });
+
+  it('barTooltipFormatter returns expected string', () => {
+    const value = ['Avg Visitors', 100, 156, 105];
+    const encode = { x: [1] };
+    const expected = 'Chrome<br />* 100k Avg Visitors<i class="tooltip-icon"></i>';
+    expect(barTooltipFormatter({ seriesName: 'Chrome', marker: '*', value, encode, name: 'Avg Visitors' }, 'k')).to.equal(expected);
+  });
+
+  it('barSeriesOptions', () => {
+    const firstDataset = [100, 156];
+    const colors = ['#EA3829', '#F48411', '#F5D704', '#A9D814', '#26BB36', '#008F5D', '#12B5AE', '#34C5E8', '#3991F3', '#686DF4', '#8A3CE7', '#E054E2', '#DE3C82'];
+    const expected = [
+      {
+        type: 'bar',
+        label: {
+          show: true,
+          formatter: '{@[1]}K',
+          position: 'right',
+          textBorderColor: '#000',
+          distance: 8,
+          fontSize: 14,
+        },
+        colorBy: 'series',
+        showBackground: true,
+        backgroundStyle: {
+          color: '#EA3829',
+          borderRadius: 3,
+          opacity: 0.35,
+        },
+        itemStyle: { borderRadius: 3 },
+        barCategoryGap: 0,
+        barGap: '33.3%',
+        yAxisIndex: 0,
+      },
+      {
+        type: 'bar',
+        label: {
+          show: true,
+          formatter: '{@[2]}K',
+          position: 'right',
+          textBorderColor: '#000',
+          distance: 8,
+          fontSize: 14,
+        },
+        colorBy: 'series',
+        showBackground: true,
+        backgroundStyle: {
+          color: '#F48411',
+          borderRadius: 3,
+          opacity: 0.35,
+        },
+        itemStyle: { borderRadius: 3 },
+        barCategoryGap: 0,
+        barGap: '33.3%',
+        yAxisIndex: 0,
+      },
+    ];
+    expect(barSeriesOptions('bar', false, firstDataset, colors, 'medium', ['K'])).to.eql(expected);
+  });
+
+  it('lineSeriesOptions returns correct options with marks', () => {
+    const series = [{ Type: 'markArea', Name: 'Weekend', Axis: 'xAxis', Value: 'Saturday-Sunday' }, { Type: 'markLine', Name: 'Standout', Axis: 'xAxis', Value: 'Tuesday' }, { Type: 'markLine', Name: 'Average', Axis: 'yAxis', Value: '200' }];
+    const firstDataset = [100, 156, 160];
+    const units = ['K'];
+    const expected = [
+      {
+        type: 'line',
+        symbol: 'none',
+        lineStyle: { width: 3 },
+        yAxisIndex: 0,
+        markArea: {
+          data: [
+            [
+              {
+                name: 'Weekend',
+                xAxis: 'Saturday',
+              },
+              { xAxis: 'Sunday' },
+            ],
+          ],
+          label: { show: false },
+          emphasis: {
+            label: {
+              show: true,
+              position: 'top',
+              distance: 0,
+            },
+          },
+        },
+        markLine: {
+          data: [
+            {
+              name: 'Standout',
+              xAxis: 'Tuesday',
+            },
+            {
+              name: 'Average',
+              yAxis: 200,
+            },
+          ],
+          label: {
+            show: false,
+            formatter: '{b}',
+            position: 'insideStartBottom',
+          },
+          emphasis: { label: { show: true } },
+        },
+      },
+      {
+        type: 'line',
+        symbol: 'none',
+        lineStyle: { width: 3 },
+        yAxisIndex: 0,
+      },
+      {
+        type: 'line',
+        symbol: 'none',
+        lineStyle: { width: 3 },
+        yAxisIndex: 0,
+      },
+    ];
+
+    expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
   });
 });
