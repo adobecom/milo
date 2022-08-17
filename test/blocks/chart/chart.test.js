@@ -2,6 +2,7 @@
 /* global describe it */
 
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 const {
   SMALL,
@@ -18,6 +19,10 @@ const {
   chartData,
   processDataset,
   processMarkData,
+  donutSeriesOptions,
+  setDonutLabel,
+  handleDonutSelect,
+  getChartOptions,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart utils', () => {
@@ -320,5 +325,26 @@ describe('chart utils', () => {
     };
 
     expect(chartData(fetchedData)).to.eql(processedData);
+  });
+
+  it('donutSeriesOptions returns array', () => {
+    expect(Array.isArray(donutSeriesOptions(null, null, null, null, { on: () => {} }))).to.be.true;
+  });
+
+  it('setDonutLabel sets expects options', () => {
+    const chart = { setOption: sinon.spy() };
+    const expected = { series: [{ label: { formatter: [`{a|${'100'.toLocaleString()}k}`, '{b|title}'].join('\n') } }] };
+    setDonutLabel(chart, 100, 'k', 'title');
+    expect(chart.setOption.calledWith(expected)).to.be.true;
+  });
+
+  it('handleDonutSelect returns new sum', () => {
+    const source = [[100, 'Monday'], [276, 'Tuesday'], [200, 'Wednesday']];
+    const selected = { Monday: false, Tuesday: true, Wednesday: true };
+    expect(handleDonutSelect(source, selected, { setOption: () => {} }, null, null)).to.equal(476);
+  });
+
+  it('getChartOptions', () => {
+    expect(typeof getChartOptions()).to.equal('object');
   });
 });
