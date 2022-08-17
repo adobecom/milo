@@ -107,7 +107,7 @@ describe('Fragments', () => {
   });
 
   it('createOptimizedPicture test', () => {
-    const picture = searchMod.createOptimizedPicture('/test/blocks/gnav/mocks/dog.png');
+    const picture = searchMod.createOptimizedPicture('/test/scripts/mocks/media_.png');
     expect(picture.querySelector('source').media).to.be.not.empty;
   });
 
