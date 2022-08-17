@@ -7,7 +7,7 @@ import { waitForElement } from '../../../helpers/selectors.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 
 const config = {
-  scriptsRoot: `${window.location.origin}/libs`,
+  codeRoot: `${window.location.origin}/libs`,
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 setConfig(config);

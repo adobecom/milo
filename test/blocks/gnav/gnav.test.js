@@ -16,13 +16,8 @@ const searchMod = await import('../../../libs/blocks/gnav/gnav-search.js');
 let gnav;
 const config = {
   imsClientId: 'milo',
-  scriptsRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  codeRoot: `${window.location.origin}/libs`,
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 setConfig(config);
 

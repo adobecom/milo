@@ -4,12 +4,12 @@ import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const cssConfig = {
-  scriptsRoot: `${window.location.origin}/libs`,
+  codeRoot: `${window.location.origin}/libs`,
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
 const jsConfig = {
-  scriptsRoot: `${window.location.origin}/libs`,
+  codeRoot: `${window.location.origin}/libs`,
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn' } },
 };
 

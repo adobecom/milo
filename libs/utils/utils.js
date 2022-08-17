@@ -69,7 +69,7 @@ export const [setConfig, getConfig] = (() => {
   return [
     (conf) => {
       config = { ...conf, env: getEnv() };
-      config.scriptsRoot ??= window.location.origin;
+      config.codeRoot ??= window.location.origin;
       conf.locales ??= { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
@@ -137,8 +137,8 @@ export async function loadTemplate() {
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
-  const { miloLibs, scriptsRoot } = getConfig();
-  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : scriptsRoot;
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
@@ -159,8 +159,8 @@ export async function loadTemplate() {
 export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const name = block.classList[0];
-  const { miloLibs, scriptsRoot } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : scriptsRoot;
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
