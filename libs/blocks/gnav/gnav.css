@@ -320,7 +320,7 @@ nav.gnav .gnav-mainnav {
   backdrop-filter: blur(1em);
 }
 
-.gnav-search-field {
+nav.gnav .gnav-search-field {
   position: relative;
   margin: 0 auto;
   display: grid;
@@ -330,7 +330,7 @@ nav.gnav .gnav-mainnav {
   box-sizing: border-box;
 }
 
-.gnav-search-field svg {
+nav.gnav .gnav-search-field svg {
   width: 20px;
   height: 20px;
   position: absolute;
@@ -340,15 +340,15 @@ nav.gnav .gnav-mainnav {
   transition: fill 130ms ease-in-out;
 }
 
-.gnav-search-field:hover svg {
+nav.gnav .gnav-search-field:hover svg {
   fill: rgb(44, 44, 44);
 }
 
-.gnav-search-field:hover .gnav-search-input {
+nav.gnav .gnav-search-field:hover .gnav-search-input {
   border-color: rgb(179, 179, 179);
 }
 
-.gnav-search-field .gnav-search-input {
+nav.gnav .gnav-search-field .gnav-search-input {
   display: block;
   width: 100%;
   line-height: 30px;
@@ -364,7 +364,7 @@ nav.gnav .gnav-mainnav {
   transition: border-color 130ms ease-in-out, box-shadow 130ms ease-in-out;
 }
 
-.gnav-search-field a {
+nav.gnav .gnav-search-field a {
   line-height: 32px;
   background: rgb(20, 115, 230);
   color: white;
@@ -374,7 +374,7 @@ nav.gnav .gnav-mainnav {
   padding: 0 16px;
 }
 
-.gnav-search-field .gnav-search-input:focus {
+nav.gnav .gnav-search-field .gnav-search-input:focus {
   border-color: rgb(42, 124, 223);
 }
 
@@ -386,7 +386,7 @@ nav.gnav .gnav-mainnav {
 }
 
 .gnav-search-input:focus::placeholder,
-.gnav-search-field:hover .gnav-search-input::placeholder {
+nav.gnav .gnav-search-field:hover .gnav-search-input::placeholder {
   color: #2c2c2c;
 }
 
@@ -692,7 +692,7 @@ nav.gnav .gnav-mainnav {
 }
 
 @media (min-width: 1440px) {
-  nav.gnav, .gnav-search-field, .gnav-search-results {
+  nav.gnav, nav.gnav .gnav-search-field, .gnav-search-results {
     max-width: 1440px;
   }
 }
