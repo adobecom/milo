@@ -95,10 +95,15 @@ nav.gnav .gnav-brand {
   font-size: 16px;
   line-height: 16px;
   font-weight: 700;
+  width: 175px;
 }
 
 nav.gnav .gnav-brand svg {
   width: 27px;
+}
+
+nav.gnav .gnav-brand picture {
+  width: 100%;
 }
 
 nav.gnav .gnav-brand picture img {
