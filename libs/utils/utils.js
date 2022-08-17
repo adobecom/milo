@@ -5,13 +5,14 @@ const MILO_TEMPLATES = [];
 const MILO_BLOCKS = [
   'adobetv',
   'caas',
-  'faas',
   'columns',
+  'faas',
   'faq',
   'fragment',
+  'gnav',
   'how-to',
-  'modal',
   'marquee',
+  'modal',
   'section-metadata',
 ];
 const AUTO_BLOCKS = [
@@ -68,12 +69,16 @@ export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
+      const { origin } = window.location;
       config = { ...conf, env: getEnv() };
-      config.codeRoot ??= window.location.origin;
-      conf.locales ??= { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+      config.codeRoot ??= origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
-      config.contentRoot ??= `${window.location.origin}${config.locale.prefix}`;
+      if (config.contentRoot) {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
+      } else {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
+      }
       return config;
     },
     () => config,

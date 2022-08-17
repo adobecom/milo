@@ -104,8 +104,8 @@ export async function addSegmentToIndex(url, index, pageSize) {
  * @returns {object} index with data and path lookup
  */
 export async function fetchBlogArticleIndex() {
-  const { contentRoot } = getConfig();
-  const url = getMetadata('search-index-source') || `${contentRoot}/query-index.json`;
+  const { locale } = getConfig();
+  const url = getMetadata('search-index-source') || `${locale.contentRoot}/query-index.json`;
   const pageSize = 1000;
   window.blogIndex = window.blogIndex || {
     data: [],

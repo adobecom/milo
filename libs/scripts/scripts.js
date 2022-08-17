@@ -18,7 +18,6 @@ import {
   loadDelayed,
   loadTemplate,
   setConfig,
-  getLocale,
 } from '../utils/utils.js';
 
 const locales = {
@@ -29,8 +28,7 @@ const locales = {
 };
 const config = {
   imsClientId: 'milo',
-  scriptsRoot: `${window.location.origin}/libs`,
-  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+  codeRoot: '/libs',
   locales,
 };
 
