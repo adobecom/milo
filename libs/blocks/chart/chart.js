@@ -207,7 +207,17 @@ const areaSeriesOptions = (firstDataset) => (
 );
 
 export const setDonutLabel = (chart, label, unit = '', title = '') => {
-  chart?.setOption({ series: [{ label: { formatter: [`{a|${label?.toLocaleString()}${unit}}`, `{b|${title}}`].join('\n') } }] });
+  chart.setOption({ series: [{ label: { formatter: [`{a|${label?.toLocaleString()}${unit}}`, `{b|${title}}`].join('\n') } }] });
+};
+
+export const handleDonutSelect = (source, selected, chart, unit, title) => {
+  const selectedSum = source.reduce((total, current) => {
+    if (selected[current[1]]) return total + current[0];
+    return total;
+  }, 0);
+  setDonutLabel(chart, selectedSum, unit, title);
+
+  return selectedSum;
 };
 
 export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
@@ -216,22 +226,12 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
   const firstSeries = seriesData?.[0];
   const title = firstSeries ? propertyValueCI(firstSeries, 'title') : '';
   const sizeLarge = size === LARGE;
-  let mouseOutValue = '';
+  let mouseOutValue = sum;
 
-  chart?.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
-  chart?.on('mouseout', () => {
-    if (mouseOutValue.length === 0) {
-      mouseOutValue = sum;
-    }
-    setDonutLabel(chart, mouseOutValue, unit, title);
-  });
-  chart?.on('legendselectchanged', ({ selected }) => {
-    const selectedSum = source.reduce((total, current) => {
-      if (selected[current[1]]) return total + current[0];
-      return total;
-    }, 0);
-    mouseOutValue = selectedSum;
-    setDonutLabel(chart, selectedSum, unit, title);
+  chart.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
+  chart.on('mouseout', () => setDonutLabel(chart, mouseOutValue, unit, title));
+  chart.on('legendselectchanged', ({ selected }) => {
+    mouseOutValue = handleDonutSelect(source, selected, chart, unit, title);
   });
 
   return [{
