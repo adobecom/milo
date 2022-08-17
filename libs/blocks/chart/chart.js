@@ -223,7 +223,7 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
     if (mouseOutValue.length === 0) {
       mouseOutValue = sum;
     }
-    setDonutLabel(mouseOutValue, chart, unit, title);
+    setDonutLabel(chart, mouseOutValue, unit, title);
   });
   chart?.on('legendselectchanged', ({ selected }) => {
     const selectedSum = source.reduce((total, current) => {
@@ -231,7 +231,7 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
       return total;
     }, 0);
     mouseOutValue = selectedSum;
-    setDonutLabel(selectedSum, chart, unit, title);
+    setDonutLabel(chart, selectedSum, unit, title);
   });
 
   return [{
