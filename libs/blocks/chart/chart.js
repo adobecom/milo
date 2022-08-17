@@ -221,6 +221,7 @@ export const handleDonutSelect = (source, selected, chart, unit, title) => {
 };
 
 export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
+  // Remove header names
   source?.shift();
   const sum = source?.reduce((total, current) => total + current[0], 0);
   const firstSeries = seriesData?.[0];
