@@ -14,17 +14,11 @@
 
   const w = window;
 
-  function setClientId(id) {
-    w.lana.options.clientId = id;
-  }
-
-  function setDefaultOptions(options) {
-    w.lana.options = getOptions(options);
-  }
-
   function getOptions(op) {
     const o = w.lana.options;
-    const getOpt = (key) => (op[key] !== undefined ? op[key] : o[key]);
+    function getOpt(key) {
+      return op[key] !== undefined ? op[key] : o[key];
+    }
 
     return Object.keys(defaultOptions).reduce(function (options, key) {
       options[key] = getOpt(key);
@@ -45,17 +39,18 @@
     }
 
     const o = getOptions(options);
-    if (!o.clientId) console.warn('LANA ClientID is not set.');
+    if (!o.clientId) {
+      console.warn('LANA ClientID is not set in options.');
+      return;
+    }
 
-    let sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
-
-    // TODO: Samplerate is being hardcoded to 1% due to dxdc mistakenly setting to 100.
-    // Revert this when they've fixed their end.
-    if (o.clientId === 'dxdc') sampleRate = 1;
+    const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
-    const endpoint = o.useProd ? o.endpoint : o.endpointStage;
+    const isCorpAdobeCom = window.location.href.indexOf('.corp.adobe.com') !== -1;
+
+    const endpoint = (isCorpAdobeCom || !o.useProd) ? o.endpointStage : o.endpoint;
     const queryParams = [
       'm=' + encodeURIComponent(msg),
       'c=' + encodeURI(o.clientId),
@@ -95,9 +90,15 @@
   w.lana = {
     debug: false,
     log: log,
-    setClientId: setClientId,
-    setDefaultOptions: setDefaultOptions,
     options: options || defaultOptions,
+    setClientId: function (id) {
+      console.warn('LANA setClientId is deprecated and will be removed in a future release.');
+      w.lana.options.clientId = id;
+    },
+    setDefaultOptions: function (options) {
+      console.warn('LANA setDefaultOptions is deprecated and will be removed in a future release.');
+      w.lana.options = getOptions(options);
+    },
   };
 
   /* c8 ignore next */

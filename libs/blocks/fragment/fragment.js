@@ -1,4 +1,4 @@
-import { decorateArea, loadLazy, makeRelative } from '../../utils/utils.js';
+import { decorateArea, loadArea, makeRelative } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -29,7 +29,7 @@ const updateFragMap = (fragment, a, href) => {
 export default async function init(a, parent) {
   const relHref = makeRelative(a.href);
   if (isCircularRef(relHref)) {
-    console.log(`ERROR: Fragment Circular Reference loading ${a.href}`)
+    console.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
   const resp = await fetch(`${a.href}.plain.html`);
@@ -45,7 +45,7 @@ export default async function init(a, parent) {
       updateFragMap(fragment, a, relHref);
 
       const blocks = decorateArea(fragment);
-      await loadLazy(blocks, fragment);
+      await loadArea({ blocks, area: fragment });
 
       if (parent) {
         a.remove();

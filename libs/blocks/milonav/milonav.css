@@ -1,0 +1,53 @@
+header.milonav nav {
+  width: calc(var(--grid-container-width) + 20px);
+  margin: 0 auto;
+  display: flex;
+  align-content: stretch;
+  font-weight: 700;
+}
+
+header nav button {
+  display: none;
+}
+
+header nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+header nav ul li {
+  display: flex;
+  align-content: stretch;
+}
+
+header nav ul li > a:any-link {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-transform: uppercase;
+  font-size: 16px;
+  line-height: 64px;
+  padding: 0 10px;
+  color: #ff1693;
+}
+
+header nav ul li > a:hover {
+  text-decoration: none;
+  background-color: #ff1693;
+  clip-path: polygon(05% 5%, 100% 0%, 95% 100%, 0% 100%);
+  color: #FFF;
+}
+
+header nav ul li:nth-child(2) a:hover {
+  clip-path: polygon(0% 10%, 100% 0%, 95% 100%, 5% 100%);
+}
+
+header nav ul li:nth-child(3) a:hover {
+  clip-path: polygon(10% 10%, 90% 0%, 95% 100%, 5% 85%);
+}
+
+header nav ul li:nth-child(4) a:hover {
+  clip-path: polygon(0 0, 100% 10%, 90% 100%, 5% 85%);
+}

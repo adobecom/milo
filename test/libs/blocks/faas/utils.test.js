@@ -5,6 +5,19 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForElement } from '../../../helpers/selectors.js';
+import { setConfig } from '../../../../libs/utils/utils.js';
+
+const config = {
+  imsClientId: 'milo',
+  projectRoot: `${window.location.origin}/libs`,
+  locales: {
+    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+  },
+};
+setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { parseEncodedConfig } = await import('../../../../libs/utils/utils.js');

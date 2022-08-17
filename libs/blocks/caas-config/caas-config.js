@@ -22,14 +22,16 @@ const TAGS_ERROR = 'No tags data loaded, please check the tags url in Advanced P
 const caasFilesLoaded = loadCaasFiles();
 
 const loadCaasTags = async (tagsUrl) => {
-  const url = tagsUrl.startsWith('https') ? tagsUrl : `https://${tagsUrl}`;
+  const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
   try {
     const resp = await fetch(url);
     if (resp.ok) {
       const json = await resp.json();
       return json.namespaces.caas.tags;
     }
-  } catch (e) {}
+  } catch (e) {
+    // ignore
+  }
 
   return null;
 };
@@ -653,10 +655,12 @@ const Configurator = ({ rootEl }) => {
     </ConfiguratorContext.Provider>`;
 };
 
-export default async function init(el) {
+const init = async (el) => {
   loadStyle('/libs/ui/page/page.css');
 
   const app = html` <${Configurator} rootEl=${el} /> `;
 
   render(app, el);
-}
+};
+
+export { init as default, loadCaasTags };
