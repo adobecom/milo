@@ -116,7 +116,7 @@ nav.gnav .gnav-logo {
   display: none;
   justify-content: center;
   align-items: center;
-  min-width: 41px;
+  width: 41px;
   padding: 0 8px;
   box-sizing: border-box;
 }
