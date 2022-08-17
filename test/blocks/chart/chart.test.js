@@ -20,7 +20,7 @@ const {
   processMarkData,
 } = await import('../../../libs/blocks/chart/chart.js');
 
-describe('chart utils', () => {
+describe('chart', () => {
   it('getContainerSize provides default height and width', () => {
     expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
       .that.has.all.keys('height', 'width');
@@ -87,22 +87,8 @@ describe('chart utils', () => {
   });
 
   it('getColors returns rotated color list if color provided ', () => {
-    const authoredColor = 'cyan';
-    const colors = [
-      '#34C5E8',
-      '#3991F3',
-      '#686DF4',
-      '#8A3CE7',
-      '#E054E2',
-      '#DE3C82',
-      '#EA3829',
-      '#F48411',
-      '#F5D704',
-      '#A9D814',
-      '#26BB36',
-      '#008F5D',
-      '#12B5AE',
-    ];
+    const authoredColor = 'indigo';
+    const colors = ['#4046CA', '#7326D3', '#147AF3', '#72E06A', '#7E84FA', '#DE3D82', '#008F5D', '#CB5D00', '#E8C600', '#BCE931', '#0FB5AE', '#F68511'];
 
     expect(getColors(authoredColor)).to.eql(colors);
   });
@@ -113,22 +99,14 @@ describe('chart utils', () => {
         { Day: 'Mon', Visitors: '150', Group: '', Unit: 'k', Color: '' },
         { Day: 'Tues', Visitors: '230', Group: '', Unit: '', Color: '' },
         { Day: 'Weds', Visitors: '224', Group: '', Unit: '', Color: '' },
-        { Day: 'Thurs', Visitors: '218', Group: '', Unit: '', Color: 'red' },
-        { Day: 'Fri', Visitors: '135', Group: '', Unit: '', Color: 'red' },
-        { Day: 'Sat', Visitors: '147', Group: '', Unit: '', Color: 'red' },
+        { Day: 'Thurs', Visitors: '218', Group: '', Unit: '', Color: 'magenta' },
+        { Day: 'Fri', Visitors: '135', Group: '', Unit: '', Color: 'magenta' },
+        { Day: 'Sat', Visitors: '147', Group: '', Unit: '', Color: 'magenta' },
         { Day: 'Sun', Visitors: '260', Group: '', Unit: '', Color: '' },
       ],
     };
-    const authoredColor = 'cyan';
-    const colors = [
-      '#34C5E8',
-      '#34C5E8',
-      '#34C5E8',
-      '#EA3829',
-      '#EA3829',
-      '#EA3829',
-      '#34C5E8',
-    ];
+    const authoredColor = 'indigo';
+    const colors = ['#4046CA', '#4046CA', '#4046CA', '#DE3D82', '#DE3D82', '#DE3D82', '#4046CA'];
 
     expect(getOverrideColors(authoredColor, fetchedData.data)).to.eql(colors);
   });

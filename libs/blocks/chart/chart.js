@@ -8,19 +8,18 @@ export const LARGE = 'large';
 export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 export const colorPalette = {
-  red: '#EA3829',
-  orange: '#F48411',
-  yellow: '#F5D704',
-  chartreuse: '#A9D814',
-  celery: '#26BB36',
+  seafoam: '#0FB5AE',
+  orange: '#F68511',
+  indigo: '#4046CA',
+  purple: '#7326D3',
+  blue: '#147AF3',
+  lime: '#72E06A',
+  lavender: '#7E84FA',
+  magenta: '#DE3D82',
   green: '#008F5D',
-  seafoam: '#12B5AE',
-  cyan: '#34C5E8',
-  blue: '#3991F3',
-  indigo: '#686DF4',
-  purple: '#8A3CE7',
-  fuchsia: '#E054E2',
-  magenta: '#DE3C82',
+  copper: '#CB5D00',
+  yellow: '#E8C600',
+  chartreuse: '#BCE931',
 };
 const SECTION_CLASSNAME = 'chart-section';
 const chartTypes = [
