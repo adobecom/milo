@@ -96,6 +96,7 @@ nav.gnav .gnav-brand {
   line-height: 16px;
   font-weight: 700;
   min-width: 175px;
+  max-width: 250px;
 }
 
 nav.gnav .gnav-brand svg {
@@ -126,7 +127,8 @@ nav.gnav .gnav-logo {
   box-sizing: border-box;
 }
 
-nav.gnav .gnav-logo img {
+nav.gnav .gnav-logo img,
+nav.gnav .gnav-logo svg { 
   width: 25px;
 }
 
@@ -669,8 +671,8 @@ nav.gnav .gnav-search-field:hover .gnav-search-input::placeholder {
     position: fixed;
     left: 0;
     right: 0;
-    top: 64px;
-    max-height: calc(100% - 64px);
+    top: 63px;
+    max-height: calc(100% - 63px);
     overflow: scroll;
   }
 
