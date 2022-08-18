@@ -9,7 +9,7 @@ export const listToLowerCase = (list) => (
   ))
 );
 
-export function listChartData(json) {
+function listChartData(json) {
   const data = [];
 
   if (json[':type'] !== 'multi-sheet') {
@@ -41,7 +41,9 @@ export function listChartData(json) {
   return data;
 }
 
-export const getListHtml = (chart) => {
+const getListHtml = (chart) => {
+  if (!chart) return '';
+
   const listType = chart.type?.toLowerCase() === 'numbered' ? 'ol' : 'ul';
   const listItems = chart.list.reduce((prev, { name = '', extra, image, alt = '' }) => (
     `${prev}
@@ -62,7 +64,7 @@ export const getListHtml = (chart) => {
   `;
 };
 
-export const getCarouselHtml = (data) => {
+const getCarouselHtml = (data) => {
   const carouselItems = data.reduce((prev, list, idx) => (
     `${prev}
     <div class="carousel-item${idx === 0 ? ' active' : ''}"
@@ -108,7 +110,8 @@ const showCarouselItem = (element, index) => {
 
 const initList = (element, json) => {
   const data = listChartData(json);
-  const chartHtml = data.length === 1 ? getListHtml(data[0]) : getCarouselHtml(data);
+
+  const chartHtml = data.length > 1 ? getCarouselHtml(data) : getListHtml(data[0]);
 
   if (typeof chartHtml === 'string') element.innerHTML = chartHtml;
 
@@ -128,6 +131,8 @@ const initList = (element, json) => {
       showCarouselItem(element, index);
     });
   }
+
+  return element.firstElementChild;
 };
 
 export default initList;
