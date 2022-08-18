@@ -2,7 +2,7 @@
 /* global describe it */
 
 import { expect } from '@esm-bundle/chai';
-import Tree from '../../libs/utils/tree.js';
+import Tree from '../../../libs/utils/tree.js';
 
 describe('Tree Data Struct', () => {
   it('should create a tree with root node', () => {

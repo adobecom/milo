@@ -6,9 +6,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-window.lana = {
-  log: stub(),
-};
+window.lana = { log: stub() };
 
 const config = {
   imsClientId: 'milo',
@@ -58,6 +56,7 @@ describe('Fragments', () => {
   it('Doesnt create a malformed fragment', async () => {
     const a = document.querySelector('a.malformed');
     await getFragment(a);
+    console.log(window.lana.log.args);
     expect(window.lana.log.args[0][0]).to.equal('Could not make fragment');
   });
 

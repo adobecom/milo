@@ -1,4 +1,4 @@
-import { decorateArea, loadArea, makeRelative } from '../../utils/utils.js';
+import { loadArea, makeRelative, createTag } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -34,18 +34,17 @@ export default async function init(a, parent) {
   }
   const resp = await fetch(`${a.href}.plain.html`);
   if (resp.ok) {
-    try {
-      const html = await resp.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      const fragment = doc.querySelector('div');
-      fragment.className = 'fragment';
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const sections = doc.querySelectorAll('body > div');
+    if (sections.length > 0) {
+      const fragment = createTag('div', { class: 'fragment' });
+      fragment.append(...sections);
 
       updateFragMap(fragment, a, relHref);
 
-      const blocks = decorateArea(fragment);
-      await loadArea({ blocks, area: fragment });
+      await loadArea(fragment);
 
       if (parent) {
         a.remove();
@@ -53,7 +52,7 @@ export default async function init(a, parent) {
       } else if (a.parentElement) {
         a.parentElement.replaceChild(fragment, a);
       }
-    } catch (e) {
+    } else {
       window.lana.log('Could not make fragment');
     }
   } else {

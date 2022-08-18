@@ -5,6 +5,7 @@ import { getMetadata, makeRelative } from '../../utils/utils.js';
  * @param {Element} block The header block element
  */
 export default async function init(block) {
+  /* c8 ignore next 1 */
   const navPath = getMetadata('nav url') || '/nav';
   const resp = await fetch(`${navPath}.plain.html`);
   if (resp.ok) {

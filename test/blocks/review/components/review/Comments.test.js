@@ -2,10 +2,10 @@
 /* global describe it beforeEach */
 import { expect } from '@esm-bundle/chai';
 // import { fireEvent, render, screen } from '@testing-library/preact';
-import { html, render } from '../../../../../../libs/deps/htm-preact.js';
-import { waitForElement } from '../../../../../helpers/selectors.js';
+import { html, render } from '../../../../../libs/deps/htm-preact.js';
+import { waitForElement } from '../../../../helpers/selectors.js';
 
-import Comments from '../../../../../../libs/blocks/review/components/review/Comments.js';
+import Comments from '../../../../../libs/blocks/review/components/review/Comments.js';
 
 describe('Comments', () => {
   beforeEach(() => {
