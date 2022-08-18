@@ -9,13 +9,8 @@ import { setConfig, parseEncodedConfig } from '../../../libs/utils/utils.js';
 
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  codeRoot: `${window.location.origin}/libs`,
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 setConfig(config);
 

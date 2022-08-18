@@ -10,7 +10,7 @@ const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwc
 const utils = {};
 
 const config = {
-  projectRoot: `${window.location.origin}/libs`,
+  codeRoot: `${window.location.origin}/libs`,
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
@@ -136,5 +136,9 @@ describe('Utils', () => {
     document.head.append(meta);
     await utils.loadArea();
     expect(document.body.classList.contains('nav-off')).to.be.true;
+  });
+
+  it('getLocale default return', () => {
+    expect(utils.getLocale().ietf).to.equal('en-US');
   });
 });

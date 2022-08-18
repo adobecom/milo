@@ -4,19 +4,16 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  codeRoot: `${window.location.origin}/libs`,
+  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+  locales,
 };
 setConfig(config);
 
