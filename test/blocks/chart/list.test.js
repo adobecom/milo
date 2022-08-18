@@ -2,7 +2,7 @@
 /* global describe it */
 import { expect } from '@esm-bundle/chai';
 
-const { listChartData, getListHtml, listToLowerCase } = await import('../../../libs/blocks/chart/list.js');
+const { listChartData, getListHtml, getCarouselHtml, listToLowerCase } = await import('../../../libs/blocks/chart/list.js');
 
 describe('list', () => {
   it('fetch list data', () => {
@@ -13,6 +13,7 @@ describe('list', () => {
         limit: 2,
         data: [
           { Title: 'Black Friday Numbers Ordered', Sheet: 'Black Friday', Type: 'numbered' },
+          { Title: 'Cyber Monday', Sheet: 'N/A' },
         ],
       },
       'Black Friday': {
@@ -41,6 +42,10 @@ describe('list', () => {
         { name: 'Tickle me Elmo', extra: '1.01' },
       ],
       type: 'numbered',
+    }, {
+      list: [],
+      title: 'Cyber Monday',
+      type: undefined,
     }];
 
     expect(listChartData(fetchedData)).to.eql(processedData);
@@ -117,6 +122,30 @@ describe('list', () => {
   });
 
   it('getListHtml should output correct html', () => {
+    const data = {
+      title: 'Black Friday',
+      list: [
+        {
+          name: 'XBOX One S',
+          extra: '1.54',
+          image: 'image.png',
+          alt: 'Image 1',
+        },
+        {
+          name: 'Swiffer Xtreme',
+          extra: '1.27',
+          image: 'image.png',
+          alt: 'Image 2',
+        },
+      ],
+      type: 'numbered',
+    };
+    const html = '<article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article>';
+
+    expect(getListHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
+  });
+
+  it('multi-item carousel should output correct html', () => {
     const data = [{
       title: 'Black Friday',
       list: [
@@ -134,10 +163,19 @@ describe('list', () => {
         },
       ],
       type: 'numbered',
+    }, {
+      title: 'Cyber Monday',
+      list: [
+        { name: 'XBOX One S' },
+        { name: 'Swiffer Xtreme' },
+        { name: 'Teddy Ruxpin' },
+        { name: 'Airpods' },
+        { name: 'Tickle me Elmo' },
+      ],
     }];
-    const html = '<article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article>';
+    const html = '<section class="carousel"><div class="controls"><button type="button"class="previous"aria-controls="listChartCarousel-items"aria-label="Previous Chart"></button><button type="button"class="next"aria-controls="listChartCarousel-items"aria-label="Next Chart"></button></div><div id="listChartCarousel-items"class="carousel-items"aria-live="polite"><div class="carousel-item active"role="group"aria-roledescription="slide"aria-label="0 of 2"><article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article></div><div class="carousel-item"role="group"aria-roledescription="slide"aria-label="1 of 2"><article><section class="title">Cyber Monday</section><section class="body"><ul><li><span class="name">XBOX One S</span></li><li><span class="name">Swiffer Xtreme</span></li><li><span class="name">Teddy Ruxpin</span></li><li><span class="name">Airpods</span></li><li><span class="name">Tickle me Elmo</span></li></ul></section></article></div></div></section>';
 
-    expect(getListHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
+    expect(getCarouselHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
   });
 
   it('listToLowerCase', () => {
