@@ -354,6 +354,7 @@ class Gnav {
     menuToggle.setAttribute('aria-expanded', false);
     this.curtain.classList.remove(IS_OPEN);
     this.state.openMenu = null;
+    document.body.style.overflow = '';
   };
 
   openMenu = (el, isSearch) => {
@@ -371,6 +372,7 @@ class Gnav {
       }
     } else {
       this.curtain.classList.add(IS_OPEN);
+      document.body.style.overflow = 'hidden';
       el.querySelector('.gnav-search-input').focus();
     }
     this.state.openMenu = el;
