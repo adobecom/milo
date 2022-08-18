@@ -325,6 +325,7 @@ nav.gnav .gnav-mainnav {
   background: rgba(0,0,0,0.75);
   -webkit-backdrop-filter: blur(1em);
   backdrop-filter: blur(1em);
+  z-index: 98;
 }
 
 nav.gnav .gnav-search-field {
