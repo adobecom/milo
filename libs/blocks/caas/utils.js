@@ -24,7 +24,22 @@ export const loadCaasFiles = () => {
   ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
 };
 
-export const initCaas = (state, caasStrs, el) => {
+export const loadCaasTags = async (tagsUrl) => {
+  const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
+  try {
+    const resp = await fetch(url);
+    if (resp.ok) {
+      const json = await resp.json();
+      return json.namespaces.caas.tags;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return null;
+};
+
+export const initCaas = async (state, caasStrs, el) => {
   const caasEl = el || document.getElementById('caas');
   if (!caasEl) return;
 
@@ -36,8 +51,20 @@ export const initCaas = (state, caasStrs, el) => {
   newEl.className = 'caas-preview';
   appEl.append(newEl);
 
-  new ConsonantCardCollection(getConfig(state, caasStrs), newEl);
+  const config = await getConfig(state, caasStrs);
+
+  new ConsonantCardCollection(config, newEl);
 };
+
+const getTags = (() => {
+  let tags;
+  return (async (tagsUrl) => {
+    if (tags) return tags;
+
+    tags = await loadCaasTags(tagsUrl);
+    return tags;
+  });
+})();
 
 const getContentIdStr = (cardStr, card) => {
   if (card.contentId) {
@@ -83,7 +110,70 @@ const getSortOptions = (state, strs) => {
   }, []);
 };
 
-export const getConfig = (state, strs = {}) => {
+const findTagById = (id, tags) => {
+  let tagObj = Object.values(tags).find((tag) => tag.tagID === id);
+  if (tagObj) return tagObj;
+
+  Object.values(tags).some((tag) => {
+    tagObj = findTagById(id, tag.tags);
+    return tagObj;
+  });
+
+  return tagObj;
+};
+
+const alphaSort = (a, b) => {
+  const itemA = a.label.toUpperCase();
+  const itemB = b.label.toUpperCase();
+  if (itemA < itemB) return -1;
+  if (itemA > itemB) return 1;
+  return 0;
+};
+
+const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
+  if (!filterTag?.[0]) return null;
+  const tagId = filterTag[0];
+  const tag = findTagById(tagId, tags);
+  const items = Object.values(tag.tags)
+    .map((itemTag) => {
+      if (excludeTags.includes(itemTag.tagID)) return null;
+
+      return {
+        id: itemTag.tagID,
+        label: itemTag.title.replace('&amp;', '&'),
+      };
+    })
+    .filter((i) => i !== null)
+    .sort(alphaSort);
+
+  const filterObj = {
+    id: tagId,
+    openedOnLoad: !!openedOnLoad,
+    items,
+    group: tag.title,
+  };
+
+  if (icon) {
+    filterObj.icon = icon;
+  }
+
+  return filterObj;
+};
+
+const getFilterArray = async (state) => {
+  if (!state.showFilters || state.filters.length === 0) {
+    return [];
+  }
+
+  const tags = await getTags(state.tagsUrl);
+  const filters = state.filters
+    .map((filter) => getFilterObj(filter, tags))
+    .filter((filter) => filter !== null);
+  console.log(filters);
+  return filters;
+};
+
+export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').pop() : 'en';
   const country = state.country ? state.country.split('/').pop() : 'us';
@@ -96,14 +186,6 @@ export const getConfig = (state, strs = {}) => {
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
-
-  // const
-
-  // const sortOptions = Object.entries(strs).reduce((opts, [key, val]) => {
-  //   parse('sortLabel', 'label');
-  //   parse('sortType', 'sort');
-  //   return opts;
-  // }, []);
 
   const config = {
     collection: {
@@ -156,11 +238,11 @@ export const getConfig = (state, strs = {}) => {
     },
     filterPanel: {
       enabled: state.showFilters,
-      eventFilter: 'not-timed',
-      type: 'left',
-      showEmptyFilters: 'true',
-      filters: [],
-      filterLogic: 'or',
+      eventFilter: state.filterEvent,
+      type: state.showFilters ? state.filterLocation : 'top',
+      showEmptyFilters: state.filtersShowEmpty,
+      filters: await getFilterArray(state),
+      filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
           header: strs.filterLeftPanel || 'Refine Your Results',
@@ -169,13 +251,13 @@ export const getConfig = (state, strs = {}) => {
             filtersBtnLabel: strs.filterMobileButton || 'Filters',
             panel: {
               header: strs.filterMobilePanel || 'Filter by',
-              totalResultsText: '{total} results',
+              totalResultsText: strs.totalResults || '{total} results',
               applyBtnText: strs.filterApply || 'Apply',
               clearFilterText: strs.filterClear || 'Clear',
               doneBtnText: strs.filterDone || 'Done',
             },
             group: {
-              totalResultsText: '{total} results',
+              totalResultsText: strs.totalResults || '{total} results',
               applyBtnText: strs.filterApply || 'Apply',
               clearFilterText: strs.filterClear || 'Clear',
               doneBtnText: strs.filterDone || 'Done',
@@ -183,7 +265,7 @@ export const getConfig = (state, strs = {}) => {
           },
         },
         topPanel: {
-          groupLabel: 'Filters:',
+          groupLabel: strs.filterGroupLabel || 'Filters:',
           clearAllFiltersText: strs.filterClearAll || 'Clear All',
           moreFiltersBtnText: strs.filtermore || 'More Filters +',
           mobile: {
@@ -284,6 +366,11 @@ export const defaultState = {
   excludedCards: [],
   fallbackEndpoint: '',
   featuredCards: [],
+  filterEvent: '',
+  filterLocation: 'left',
+  filterLogic: 'or',
+  filters: [],
+  filtersShowEmpty: false,
   gutter: '4x',
   includeTags: [],
   language: 'caas:language/en',

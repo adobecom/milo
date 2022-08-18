@@ -8,9 +8,16 @@ import {
   useReducer,
   useState,
 } from '../../deps/htm-preact.js';
-import { updateObj, cloneObj, getHashConfig, isValidUuid, loadStyle, utf8ToB64 } from '../../utils/utils.js';
+import {
+  updateObj,
+  cloneObj,
+  getHashConfig,
+  isValidUuid,
+  loadStyle,
+  utf8ToB64,
+} from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { defaultState, initCaas, loadCaasFiles, loadStrings } from '../caas/utils.js';
+import { defaultState, initCaas, loadCaasFiles, loadCaasTags, loadStrings } from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
@@ -20,21 +27,6 @@ const LS_KEY = 'caasConfiguratorState';
 const TAGS_ERROR = 'No tags data loaded, please check the tags url in Advanced Panel';
 
 const caasFilesLoaded = loadCaasFiles();
-
-const loadCaasTags = async (tagsUrl) => {
-  const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
-  try {
-    const resp = await fetch(url);
-    if (resp.ok) {
-      const json = await resp.json();
-      return json.namespaces.caas.tags;
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  return null;
-};
 
 const ConfiguratorContext = createContext();
 
@@ -74,6 +66,26 @@ const defaultOptions = {
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+  },
+  filterBuildPanel: {
+    automatic: 'Automatic',
+    custom: 'Custom',
+  },
+  filterEvent: {
+    '': 'All',
+    live: 'Live',
+    upcoming: 'Upcoming',
+    'on-demand': 'On Demand',
+    'not-timed': 'Not Timed',
+  },
+  filterLocation: {
+    left: 'Left',
+    top: 'Top',
+  },
+  filterLogic: {
+    or: 'Display cards that match any selected filter (or)',
+    and: 'Display cards that match all selected filters (and)',
+    xor: 'Get cards that match one filter at a time (xor)',
   },
   gutter: {
     '1x': '8px (1x)',
@@ -209,8 +221,8 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
   `;
 };
 
-const DropdownSelect = ({ label, isModal = false, options, prop }) => {
-  const { dispatch, state} = useContext(ConfiguratorContext);
+const DropdownSelect = ({ label, options, prop }) => {
+  const { dispatch, state } = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     dispatch({
       type: 'MULTI_SELECT_CHANGE',
@@ -225,7 +237,7 @@ const DropdownSelect = ({ label, isModal = false, options, prop }) => {
       options=${options}
       value=${state[prop]}
       label=${label}
-      isModal=${isModal}
+
       onChange=${onChange}
     />
   `;
@@ -288,8 +300,8 @@ const TagsPanel = ({ tagsData }) => {
       prop="contentTypeTags"
       label="Content Type Tags"
     />
-    <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" isModal />
-    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" isModal />
+    <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
+    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -302,7 +314,7 @@ const TagsPanel = ({ tagsData }) => {
         name="intraTagLogic"
         options=${defaultOptions.intraTagLogicOptions}
       />
-      <${TagSelect} id="andTags" options=${allTags} label="Tags with overall AND logic" isModal />
+      <${TagSelect} id="andTags" options=${allTags} label="Tags with overall AND logic" />
     <//>
     <${MultiField}
       onChange=${onLogicTagChange('orLogicTags')}
@@ -311,7 +323,7 @@ const TagsPanel = ({ tagsData }) => {
       title="OR logic Tags"
       subTitle=""
     >
-      <${TagSelect} id="orTags" options=${allTags} label="Tags with overall OR logic" isModal
+      <${TagSelect} id="orTags" options=${allTags} label="Tags with overall OR logic"
     /><//>
   `;
 };
@@ -392,16 +404,45 @@ const SortPanel = () => {
   `;
 };
 
-// const FilterPanel = () => {
-//   const { state } = useContext(ConfiguratorContext);
-//   // TODO: Filters
-//   const FilterOptions = '';
+const FilterPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
+  const { state } = context;
 
-//   return html`
-//     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-//     ${state.showFilters && FilterOptions}
-//   `;
-// };
+  const allTags = getTagTree(tagsData);
+
+  const onChange = (prop) => (values) => {
+    console.log(prop, values);
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop,
+      value: values,
+    });
+  };
+
+  const FilterOptions = html`
+    <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
+    <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
+    <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
+    <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${MultiField}
+      onChange=${onChange('filters')}
+      className="filters"
+      values=${context.state.filters}
+      title="Filter Test"
+      subTitle=""
+    >
+    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+      <${FormInput} label="Icon Path" name="icon" />
+      <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
+    <//>
+  `;
+
+  return html`
+    <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
+    ${state.showFilters && FilterOptions}
+  `;
+};
 
 const SearchPanel = () => html`
   <${Input} label="Show Search" prop="showSearch" type="checkbox" />
@@ -572,7 +613,7 @@ const CopyBtn = () => {
     </button>`;
 };
 /* c8 ignore stop */
-
+// https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM
 const getPanels = (tagsData) => [
   {
     title: 'Basics',
@@ -598,10 +639,10 @@ const getPanels = (tagsData) => [
     title: 'Bookmarks',
     content: html`<${BookmarksPanel} />`,
   },
-  // {
-  //   title: 'Filters',
-  //   content: html`<${FilterPanel} />`,
-  // },
+  {
+    title: 'Filters',
+    content: html`<${FilterPanel} tagsData=${tagsData} />`,
+  },
   {
     title: 'Search',
     content: html`<${SearchPanel} />`,
@@ -658,9 +699,9 @@ const Configurator = ({ rootEl }) => {
     }
   }, [state.tagsUrl]);
 
-  useEffect(() => {
+  useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
-      initCaas(state, strings);
+      await initCaas(state, strings);
       saveStateToLocalStorage(state);
     }
   }, [isCaasLoaded, state, strings]);
