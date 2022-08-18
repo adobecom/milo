@@ -27,10 +27,22 @@ describe('Utils', () => {
   });
 
   before(async () => {
-    const module = await import('../../libs/utils/utils.js');
+    const module = await import('../../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
+    });
+  });
+
+  describe('Template', () => {
+    it('loads a template script and style', async () => {
+      const meta = document.createElement('meta');
+      meta.name = 'template';
+      meta.content = 'Template Sidebar';
+      document.head.append(meta);
+      await utils.loadTemplate();
+      const hasTemplateSidebar = document.querySelector('body.template-sidebar');
+      expect(hasTemplateSidebar).to.exist;
     });
   });
 
@@ -56,13 +68,29 @@ describe('Utils', () => {
   });
 
   it('Sets up nofollow links', async () => {
-    const meta = document.createElement('meta');
-    meta.name = 'nofollow-links';
-    meta.content = 'on';
-    document.head.append(meta);
-    await utils.loadArea({ blocks: [] });
-    const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+    const metaOn = document.createElement('meta');
+    metaOn.name = 'nofollow-links';
+    metaOn.content = 'on';
+
+    const metaPath = document.createElement('meta');
+    metaPath.name = 'nofollow-path';
+    metaPath.content = '/test/utils/mocks/nofollow.json';
+
+    document.head.append(metaOn, metaPath);
+    await utils.loadDeferred(document);
+    const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
     expect(gaLink).to.exist;
+  });
+
+  it('loadDelayed() test - expect moduled', async () => {
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.exist;
+  });
+
+  it('loadDelayed() test - expect nothing', async () => {
+    document.head.querySelector('meta[name="interlinks"]').remove();
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.be.null;
   });
 
   it('Converts UTF-8 to Base 64', () => {
@@ -90,6 +118,24 @@ describe('Utils', () => {
     const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
+  });
+
+  it('Clones an object', () => {
+    const o = {
+      sortReservoirPool: 1000,
+      source: ['hawks'],
+      tagsUrl: 'www.adobe.com/chimera-api/tags',
+      targetActivity: '',
+      targetEnabled: false,
+    };
+    expect(utils.cloneObj(o)).to.be.eql(o);
+  });
+
+  it('Decorates no nav', async () => {
+    const meta = utils.createTag('meta', { name: 'header', content: 'off' });
+    document.head.append(meta);
+    await utils.loadArea();
+    expect(document.body.classList.contains('nav-off')).to.be.true;
   });
 
   it('getLocale default return', () => {

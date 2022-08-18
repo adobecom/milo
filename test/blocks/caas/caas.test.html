@@ -4,7 +4,7 @@
     <script type="importmap">
       {
         "imports": {
-          "../../../../libs/utils/utils.js": "./mocks/utils.js"
+          "../../../libs/utils/utils.js": "./mocks/utils.js"
         }
       }
     </script>
@@ -27,8 +27,8 @@
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
-    import init from '../../../../libs/blocks/caas/caas.js';
-    import { loadScript, loadStyle } from '../../../../libs/utils/utils.js';
+    import init from '../../../libs/blocks/caas/caas.js';
+    import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
 
     let config;
     let caasEl;

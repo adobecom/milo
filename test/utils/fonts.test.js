@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 /* global it */
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 
 const cssConfig = {
   codeRoot: `${window.location.origin}/libs`,
@@ -14,15 +14,15 @@ const jsConfig = {
 };
 
 it('Loads CSS fonts', async () => {
-  setConfig(cssConfig);
+  const { locale } = setConfig(cssConfig);
   const { default: loadFonts } = await import('../../../libs/utils/fonts.js');
-  const fontResp = await loadFonts();
+  const fontResp = await loadFonts(locale, loadStyle);
   expect(fontResp).to.exist;
 });
 
-it('Loads CSS fonts', async () => {
-  setConfig(jsConfig);
+it('Loads JS fonts', async () => {
+  const { locale } = setConfig(jsConfig);
   const { default: loadFonts } = await import('../../../libs/utils/fonts.js');
-  const fontResp = await loadFonts();
+  const fontResp = await loadFonts(locale, loadStyle);
   expect(fontResp.classList.contains('wf-loading')).to.be.true;
 });

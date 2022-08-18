@@ -3,8 +3,8 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../../helpers/selectors.js';
-import { setConfig } from '../../../../libs/utils/utils.js';
+import { waitForElement } from '../../helpers/selectors.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const config = {
   codeRoot: `${window.location.origin}/libs`,
@@ -13,7 +13,7 @@ const config = {
 setConfig(config);
 
 document.body.innerHTML = await readFile({ path: './mocks/modal.html' });
-const { default: init } = await import('../../../../libs/blocks/faas/faas.js');
+const { default: init } = await import('../../../libs/blocks/faas/faas.js');
 
 describe('Faas', () => {
   it('FaaS Modal Initiation', async () => {
