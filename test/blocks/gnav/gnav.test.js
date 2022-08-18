@@ -30,12 +30,6 @@ describe('Fragments', () => {
     console.log.restore();
   });
 
-  // it('test wrong gnav', async () => {
-  //   const gnavToBeFailed = await mod.default(document.querySelector('#wrong'));
-  //   console.log(gnavToBeFailed);
-  //   expect(gnavToBeFailed).to.be.null;
-  // });
-
   it('test wrong gnav', async () => {
     gnav = await mod.default(document.querySelector('header'));
     expect(gnav).to.not.null;
