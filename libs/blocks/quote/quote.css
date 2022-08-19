@@ -1,35 +1,16 @@
+/*
+Quote
+variants: inline, borders
+options: dark, contained, *-spacing (xs-xl), alignment (left, right)
+*/
+
 .quote {
   text-align: center;
   margin: 0 auto;
 }
 
-.quote.contained figure {
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-}
-
-.quote.dark {
-  color: #ffffff;
-}
-
-.quote.xxl-spacing {
-  padding: var(--spacing-xxl) 0;
-}
-
-.quote.xl-spacing {
-  padding: var(--spacing-xl) 0;
-}
-
-.quote.l-spacing {
-  padding: var(--spacing-l) 0;
-}
-
-.quote.s-spacing {
-  padding: var(--spacing-s) 0;
-}
-
-.quote.xs-spacing {
-  padding: var(--spacing-xs) 0;
+.quote p {
+  margin: 0
 }
 
 .quote figure {
@@ -37,8 +18,9 @@
   padding: 0;
 }
 
-.quote p {
-  margin: 0
+.quote.contained figure {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
 .quote .quote-image {
@@ -49,23 +31,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* align */
-.quote.align-left {
-  text-align: left;
-}
-
-.quote.align-right {
-  text-align: right;
-}
-
-.quote.align-left .quote-image > div {
-  justify-content: start;
-}
-
-.quote.align-right .quote-image > div {
-  justify-content: end;
 }
 
 .quote .quote-image picture{
@@ -120,9 +85,46 @@
   padding: var(--spacing-s) 0;
 }
 
-.quote.background figure,
-.quote.borders.background figure {
-  padding: var(--spacing-s);
+/* options */
+.quote.dark {
+  color: #ffffff;
+}
+
+.quote.xxl-spacing {
+  padding: var(--spacing-xxl) 0;
+}
+
+.quote.xl-spacing {
+  padding: var(--spacing-xl) 0;
+}
+
+.quote.l-spacing {
+  padding: var(--spacing-l) 0;
+}
+
+.quote.s-spacing {
+  padding: var(--spacing-s) 0;
+}
+
+.quote.xs-spacing {
+  padding: var(--spacing-xs) 0;
+}
+
+/* align */
+.quote.align-left {
+  text-align: left;
+}
+
+.quote.align-right {
+  text-align: right;
+}
+
+.quote.align-left .quote-image > div {
+  justify-content: start;
+}
+
+.quote.align-right .quote-image > div {
+  justify-content: end;
 }
 
 /* Tablet */
