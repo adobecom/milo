@@ -19,12 +19,8 @@ import { createTag } from '../../utils/utils.js';
 export default function init(el) {
   const allRows = el.querySelectorAll(':scope > div');
   const lastRow = allRows[allRows.length - 1];
-  let imageRow = null;
-  if (allRows.length > 1) {
-    imageRow = allRows[0];
-    imageRow.classList.add('quote-image');
-  }
-  const copyNodes = lastRow.querySelectorAll('p');
+  const imageRow = allRows.length > 1 ? allRows[0] : false;
+  const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
   const blockquote = createTag('blockquote', {}, copyNodes[0]);
   const figcaption = createTag('figcaption', {}, copyNodes[1]);
   const cite = createTag('cite', {}, copyNodes[2]);
@@ -37,7 +33,10 @@ export default function init(el) {
   el.insertAdjacentElement('afterbegin', figure);
   if (copyNodes[2]) figcaption.insertAdjacentElement('beforeend', cite);
   blockquote.insertAdjacentElement('afterend', figcaption);
-  if (imageRow) blockquote.insertAdjacentElement('beforebegin', imageRow);
+  if (imageRow) {
+    imageRow.classList.add('quote-image');
+    blockquote.insertAdjacentElement('beforebegin', imageRow);
+  }
   wrapper.insertAdjacentElement('beforeend', figcaption);
   wrapper.insertAdjacentElement('afterbegin', blockquote);
 }
