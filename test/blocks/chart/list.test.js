@@ -1,181 +1,82 @@
 /* eslint-disable no-unused-expressions */
 /* global describe it */
-import { expect } from '@esm-bundle/chai';
 
-const { listChartData, getListHtml, getCarouselHtml, listToLowerCase } = await import('../../../libs/blocks/chart/list.js');
+import { readFile } from '@web/test-runner-commands';
+import { expect } from '@esm-bundle/chai';
+import initList, { listToLowerCase } from '../../../libs/blocks/chart/list.js';
 
 describe('list', () => {
-  it('fetch list data', () => {
-    const fetchedData = {
-      table: {
-        total: 2,
-        offset: 0,
-        limit: 2,
-        data: [
-          { Title: 'Black Friday Numbers Ordered', Sheet: 'Black Friday', Type: 'numbered' },
-          { Title: 'Cyber Monday', Sheet: 'N/A' },
-        ],
-      },
-      'Black Friday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { Name: 'XBOX One S', Extra: '1.54' },
-          { Name: 'Swiffer Xtreme', Extra: '1.27' },
-          { Name: 'Teddy Ruxpin', Extra: '1.15' },
-          { Name: 'Airpods', Extra: '1.03' },
-          { Name: 'Tickle me Elmo', Extra: '1.01' }],
-      },
-      ':version': 3,
-      ':names': ['table', 'Black Friday'],
-      ':type': 'multi-sheet',
-    };
+  it('Single list chart without table should be empty', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
-    const processedData = [{
-      title: 'Black Friday Numbers Ordered',
-      list: [
-        { name: 'XBOX One S', extra: '1.54' },
-        { name: 'Swiffer Xtreme', extra: '1.27' },
-        { name: 'Teddy Ruxpin', extra: '1.15' },
-        { name: 'Airpods', extra: '1.03' },
-        { name: 'Tickle me Elmo', extra: '1.01' },
-      ],
-      type: 'numbered',
-    }, {
-      list: [],
-      title: 'Cyber Monday',
-      type: undefined,
-    }];
+    const chartWrapper = document.querySelector('.chart_wrapper');
+    const chartData = await readFile({ path: './mocks/listChartSingle.json' });
+    const fetchedData = JSON.parse(chartData);
+    const chart = initList(chartWrapper, fetchedData);
 
-    expect(listChartData(fetchedData)).to.eql(processedData);
+    expect(chart).to.not.exist;
   });
 
-  it('fetch list data multi without table', () => {
-    const fetchedData = {
-      'Black Friday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { name: 'XBOX One S', extra: '1.54' },
-          { name: 'Swiffer Xtreme', extra: '1.27' },
-          { name: 'Teddy Ruxpin', extra: '1.15' },
-          { name: 'Airpods', extra: '1.03' },
-          { name: 'Tickle me Elmo', extra: '1.01' }],
-      },
-      'Cyber Monday': {
-        total: 5,
-        offset: 0,
-        limit: 5,
-        data: [
-          { name: 'XBOX One S' },
-          { name: 'Swiffer Xtreme' },
-          { name: 'Teddy Ruxpin' },
-          { name: 'Airpods' },
-          { name: 'Tickle me Elmo' }],
-      },
-      ':version': 3,
-      ':names': ['Cyber Monday', 'Black Friday'],
-      ':type': 'multi-sheet',
-    };
+  it('Single list chart with table should be an article', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
-    const processedData = [{
-      title: 'Cyber Monday',
-      list: [
-        { name: 'XBOX One S' },
-        { name: 'Swiffer Xtreme' },
-        { name: 'Teddy Ruxpin' },
-        { name: 'Airpods' },
-        { name: 'Tickle me Elmo' },
-      ],
-    },
-    {
-      title: 'Black Friday',
-      list: [
-        { name: 'XBOX One S', extra: '1.54' },
-        { name: 'Swiffer Xtreme', extra: '1.27' },
-        { name: 'Teddy Ruxpin', extra: '1.15' },
-        { name: 'Airpods', extra: '1.03' },
-        { name: 'Tickle me Elmo', extra: '1.01' },
-      ],
-    }];
+    const chartWrapper = document.querySelector('.chart_wrapper');
+    const chartData = await readFile({ path: './mocks/listChartSingleTable.json' });
+    const fetchedData = JSON.parse(chartData);
+    const chart = initList(chartWrapper, fetchedData);
 
-    expect(listChartData(fetchedData)).to.eql(processedData);
+    expect(chart.nodeName).to.eql('ARTICLE');
+    expect(chart.querySelector('img').src).to.eql('http://localhost:2000/image.png');
   });
 
-  it('fetchedData should return empty array if no table', () => {
-    const fetchedData = {
-      total: 5,
-      offset: 0,
-      limit: 5,
-      data: [
-        { name: 'XBOX One S', extra: '1.54' },
-        { name: 'Swiffer Xtreme', extra: '1.27' },
-        { name: 'Teddy Ruxpin', extra: '1.15' },
-        { name: 'Airpods', extra: '1.03' },
-        { name: 'Tickle me Elmo', extra: '1.01' }],
-      ':type': 'sheet',
-    };
+  it('Multi list chart without table should be a carousel', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
-    expect(listChartData(fetchedData)).to.eql([]);
+    const chartWrapper = document.querySelector('.chart_wrapper');
+    const chartData = await readFile({ path: './mocks/listChartMulti.json' });
+    const fetchedData = JSON.parse(chartData);
+    const chart = initList(chartWrapper, fetchedData);
+
+    expect(chart.classList.contains('carousel')).to.be.true;
   });
 
-  it('getListHtml should output correct html', () => {
-    const data = {
-      title: 'Black Friday',
-      list: [
-        {
-          name: 'XBOX One S',
-          extra: '1.54',
-          image: 'image.png',
-          alt: 'Image 1',
-        },
-        {
-          name: 'Swiffer Xtreme',
-          extra: '1.27',
-          image: 'image.png',
-          alt: 'Image 2',
-        },
-      ],
-      type: 'numbered',
-    };
-    const html = '<article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article>';
+  it('Multi list chart with table should be named', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
-    expect(getListHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
+    const chartWrapper = document.querySelector('.chart_wrapper');
+    const chartData = await readFile({ path: './mocks/listChartMultiTable.json' });
+    const fetchedData = JSON.parse(chartData);
+    const chart = initList(chartWrapper, fetchedData);
+
+    const carouselItems = chart.querySelector('.carousel-items').children;
+    const carouselTitle = carouselItems[0].querySelector('.title');
+
+    expect(carouselTitle.textContent).to.eql('Black Friday Numbers Ordered');
   });
 
-  it('multi-item carousel should output correct html', () => {
-    const data = [{
-      title: 'Black Friday',
-      list: [
-        {
-          name: 'XBOX One S',
-          extra: '1.54',
-          image: 'image.png',
-          alt: 'Image 1',
-        },
-        {
-          name: 'Swiffer Xtreme',
-          extra: '1.27',
-          image: 'image.png',
-          alt: 'Image 2',
-        },
-      ],
-      type: 'numbered',
-    }, {
-      title: 'Cyber Monday',
-      list: [
-        { name: 'XBOX One S' },
-        { name: 'Swiffer Xtreme' },
-        { name: 'Teddy Ruxpin' },
-        { name: 'Airpods' },
-        { name: 'Tickle me Elmo' },
-      ],
-    }];
-    const html = '<section class="carousel"><div class="controls"><button type="button"class="previous"aria-controls="listChartCarousel-items"aria-label="Previous Chart"></button><button type="button"class="next"aria-controls="listChartCarousel-items"aria-label="Next Chart"></button></div><div id="listChartCarousel-items"class="carousel-items"aria-live="polite"><div class="carousel-item active"role="group"aria-roledescription="slide"aria-label="0 of 2"><article><section class="title">Black Friday</section><section class="body"><ol><li><img src="image.png" alt="Image 1" /><span class="name">XBOX One S</span><span class="extra">1.54</span></li><li><img src="image.png" alt="Image 2" /><span class="name">Swiffer Xtreme</span><span class="extra">1.27</span></li></ol></section></article></div><div class="carousel-item"role="group"aria-roledescription="slide"aria-label="1 of 2"><article><section class="title">Cyber Monday</section><section class="body"><ul><li><span class="name">XBOX One S</span></li><li><span class="name">Swiffer Xtreme</span></li><li><span class="name">Teddy Ruxpin</span></li><li><span class="name">Airpods</span></li><li><span class="name">Tickle me Elmo</span></li></ul></section></article></div></div></section>';
+  it('Multi list chart navigation should loop', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/list.html' });
 
-    expect(getCarouselHtml(data).replace(/\s{2,}|[\n]/g, '')).to.equal(html);
+    const chartWrapper = document.querySelector('.chart_wrapper');
+    const chartData = await readFile({ path: './mocks/listChartMultiTable.json' });
+    const fetchedData = JSON.parse(chartData);
+    const chart = initList(chartWrapper, fetchedData);
+
+    const previous = chart.querySelector('button.previous');
+    const next = chart.querySelector('button.next');
+    const firstCarousel = chart.querySelector('.carousel-item');
+
+    previous.click();
+    expect(firstCarousel.classList.contains('active')).to.be.false;
+
+    previous.click();
+    expect(firstCarousel.classList.contains('active')).to.be.true;
+
+    next.click();
+    expect(firstCarousel.classList.contains('active')).to.be.false;
+
+    next.click();
+    expect(firstCarousel.classList.contains('active')).to.be.true;
   });
 
   it('listToLowerCase', () => {
