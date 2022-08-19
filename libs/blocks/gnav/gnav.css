@@ -27,9 +27,22 @@ nav.gnav {
   font-weight: normal;
 }
 
+.gnav.is-Open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 100%;
+  overflow: scroll;
+}
+
 nav.gnav a {
   color: #2e2e2e;
   text-decoration: none;
+}
+
+nav.gnav em a {
+  color: var(--link-color);
+  font-style: normal;
 }
 
 nav.gnav strong a {
@@ -44,14 +57,6 @@ nav.gnav strong a {
   font-weight: 400;
   text-decoration: none;
   display: inline-block;
-}
-
-.gnav.is-Open {
-  position: fixed;
-  left: 0;
-  right: 0;
-  height: 100%;
-  overflow: scroll;
 }
 
 nav.gnav strong a {
