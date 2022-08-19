@@ -97,7 +97,7 @@ export function processMarkData(series) {
   return seriesOptions;
 }
 
-async function fetchData(link) {
+export async function fetchData(link) {
   const path = makeRelative(link.href);
   const resp = await fetch(path.toLowerCase());
 
@@ -122,7 +122,7 @@ export function chartData(json) {
   return data;
 }
 
-const barTooltipFormatter = ({
+export const barTooltipFormatter = ({
   seriesName,
   marker,
   value,
@@ -149,7 +149,7 @@ export const tooltipFormatter = (params, units) => {
   return tooltip;
 };
 
-const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, units) => {
+export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, units) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -177,7 +177,7 @@ const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, un
   }));
 };
 
-const lineSeriesOptions = (series, firstDataset, units) => {
+export const lineSeriesOptions = (series, firstDataset, units) => {
   const marks = processMarkData(series);
 
   return firstDataset.map((value, index) => {
