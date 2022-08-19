@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-expressions */
-/* global describe it */
+/* global describe it before after */
 
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { readFile } from '@web/test-runner-commands';
 
 const {
   SMALL,
@@ -27,9 +28,22 @@ const {
   barTooltipFormatter,
   barSeriesOptions,
   lineSeriesOptions,
+  default: init,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart', () => {
+  let fetch;
+  let log;
+
+  before(() => {
+    fetch = sinon.stub(window, 'fetch');
+    log = sinon.spy(console, 'log');
+  });
+
+  after(() => {
+    sinon.restore();
+  });
+
   it('getContainerSize provides default height and width', () => {
     expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
       .that.has.all.keys('height', 'width');
@@ -331,7 +345,6 @@ describe('chart', () => {
   });
 
   it('fetchData returns json given an anchor tag', async () => {
-    const fetch = sinon.stub(window, 'fetch');
     const link = document.createElement('a');
     const linkRel = '/drafts/data-viz/line.json';
     link.href = `https://data-viz--milo--adobecom.hlx.page${linkRel}`;
@@ -463,5 +476,54 @@ describe('chart', () => {
     ];
 
     expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
+  });
+
+  it('init returns undefined if missing type', async () => {
+    document.body.innerHTML = '<div class="chart"></div>';
+    const el = document.querySelector('.chart');
+    expect(await init(el)).to.be.undefined;
+  });
+
+  it('init generates list chart', async () => {
+    const linkRel = '/drafts/data-viz/list.json';
+    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    const data = await readFile({ path: './mocks/listChartSingleTable.json' });
+    const parsedData = JSON.parse(data);
+    fetch.withArgs(linkRel).returns({ ok: true, json: () => parsedData });
+    const el = document.querySelector('.chart');
+    await init(el);
+    const listWrapper = document.querySelector('.list-wrapper');
+    expect(listWrapper).to.exist;
+  });
+
+  it('init catches list promise error', async () => {
+    const linkRel = '/drafts/data-viz/list.json';
+    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    fetch.withArgs(linkRel).throws(() => new Error());
+    const el = document.querySelector('.chart');
+    await init(el);
+    expect(log.calledWithMatch('Error loading script:')).to.be.true;
+  });
+
+  it('init chart with echarts without intersection observer', async () => {
+    window.IntersectionObserver = undefined;
+    const linkRel = '/drafts/data-viz/bar.json';
+    document.body.innerHTML = `<div class="chart bar"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    const data = await readFile({ path: './mocks/barChart.json' });
+    const parsedData = JSON.parse(data);
+    fetch.withArgs(linkRel).returns({ ok: true, json: () => parsedData });
+    const el = document.querySelector('.chart');
+    await init(el);
+    const svg = document.querySelector('svg');
+    expect(svg).to.exist;
+  });
+
+  it('init catches echarts promise error', async () => {
+    const linkRel = '/drafts/data-viz/bar.json';
+    document.body.innerHTML = `<div class="chart bar"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    fetch.withArgs(linkRel).throws(() => new Error());
+    const el = document.querySelector('.chart');
+    await init(el);
+    expect(log.calledWithMatch('Error loading script:')).to.be.true;
   });
 });

@@ -104,6 +104,7 @@ export async function fetchData(link) {
   if (!resp.ok) return {};
 
   const json = await resp.json();
+
   return json;
 }
 
@@ -491,50 +492,55 @@ const init = async (el) => {
   updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType === 'list') {
-    Promise.all([fetchData(dataLink), import('./list.js')])
-      .then(([json, { default: initList }]) => {
-        initList(chartWrapper, json);
-      })
-      .catch((error) => console.log('Error loading script:', error));
+    try {
+      const result = await Promise.all([fetchData(dataLink), import('./list.js')]);
+      const [json, { default: initList }] = result;
+
+      initList(chartWrapper, json);
+    } catch (error) {
+      console.log('Error loading script:', error);
+    }
     return;
   }
 
   if (chartType !== 'oversizedNumber') {
-    Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
-      .then((values) => {
-        const json = values[0];
-        const data = chartData(json);
+    try {
+      const values = await Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')]);
+      const json = values[0];
+      const data = chartData(json);
 
-        if (!data) return;
+      if (!data) return;
 
-        const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
-        const hasOverride = hasPropertyCI(data?.data[0], 'color');
-        const colors = hasOverride
-          ? getOverrideColors(authoredColor, data.data)
-          : getColors(authoredColor);
+      const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+      const hasOverride = hasPropertyCI(data?.data[0], 'color');
+      const colors = hasOverride
+        ? getOverrideColors(authoredColor, data.data)
+        : getColors(authoredColor);
 
-        if (!(window.IntersectionObserver)) {
-          initChart(chartWrapper, chartType, data, colors, size);
-        } else {
-          const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.5,
-          };
+      if (!(window.IntersectionObserver)) {
+        initChart(chartWrapper, chartType, data, colors, size);
+      } else {
+        /* c8 ignore next 12 */
+        const observerOptions = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.5,
+        };
 
-          const observer = new IntersectionObserver(
-            handleIntersect(chartWrapper, chartType, data, colors, size),
-            observerOptions,
-          );
-          observer.observe(el);
-        }
+        const observer = new IntersectionObserver(
+          handleIntersect(chartWrapper, chartType, data, colors, size),
+          observerOptions,
+        );
+        observer.observe(el);
+      }
 
-        window.addEventListener('resize', throttle(
-          1000,
-          () => handleResize(el, authoredSize, chartType, data, colors),
-        ));
-      })
-      .catch((error) => console.log('Error loading script:', error));
+      window.addEventListener('resize', throttle(
+        1000,
+        () => handleResize(el, authoredSize, chartType, data, colors),
+      ));
+    } catch (error) {
+      console.log('Error loading script:', error);
+    }
   }
 };
 
