@@ -11,22 +11,32 @@
  */
 
 import {
-  decorateArea,
-  decorateNavs,
-  loadLCP,
   loadArea,
   loadDelayed,
-  loadStyle,
+  setConfig,
 } from '../utils/utils.js';
 
-async function loadPage() {
-  const blocks = decorateArea();
-  const navs = decorateNavs();
-  await loadLCP({ blocks });
-  loadStyle('/fonts/fonts.css');
-  await loadArea({ blocks: [...navs, ...blocks] });
+const locales = {
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+  cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+  kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+};
+const config = {
+  imsClientId: 'milo',
+  codeRoot: '/libs',
+  locales,
+};
+
+(async function loadLCPImage() {
+  const lcpImg = document.querySelector('img');
+  lcpImg?.setAttribute('loading', 'eager');
+}());
+
+(async function loadPage() {
+  setConfig(config);
+  await loadArea();
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   loadDelayed();
-}
-await loadPage();
+}());

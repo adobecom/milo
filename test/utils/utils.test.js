@@ -5,10 +5,14 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const hashConfig =
-  '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
+const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
 
 const utils = {};
+
+const config = {
+  codeRoot: `${window.location.origin}/libs`,
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+};
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -23,9 +27,22 @@ describe('Utils', () => {
   });
 
   before(async () => {
-    const module = await import('../../libs/utils/utils.js');
+    const module = await import('../../../libs/utils/utils.js');
+    module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
+    });
+  });
+
+  describe('Template', () => {
+    it('loads a template script and style', async () => {
+      const meta = document.createElement('meta');
+      meta.name = 'template';
+      meta.content = 'Template Sidebar';
+      document.head.append(meta);
+      await utils.loadTemplate();
+      const hasTemplateSidebar = document.querySelector('body.template-sidebar');
+      expect(hasTemplateSidebar).to.exist;
     });
   });
 
@@ -51,13 +68,29 @@ describe('Utils', () => {
   });
 
   it('Sets up nofollow links', async () => {
-    const meta = document.createElement('meta');
-    meta.name = 'nofollow-links';
-    meta.content = 'on';
-    document.head.append(meta);
-    await utils.loadArea({ blocks: [] });
-    const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+    const metaOn = document.createElement('meta');
+    metaOn.name = 'nofollow-links';
+    metaOn.content = 'on';
+
+    const metaPath = document.createElement('meta');
+    metaPath.name = 'nofollow-path';
+    metaPath.content = '/test/utils/mocks/nofollow.json';
+
+    document.head.append(metaOn, metaPath);
+    await utils.loadDeferred(document);
+    const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
     expect(gaLink).to.exist;
+  });
+
+  it('loadDelayed() test - expect moduled', async () => {
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.exist;
+  });
+
+  it('loadDelayed() test - expect nothing', async () => {
+    document.head.querySelector('meta[name="interlinks"]').remove();
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.be.null;
   });
 
   it('Converts UTF-8 to Base 64', () => {
@@ -71,9 +104,9 @@ describe('Utils', () => {
   });
 
   it('Converts Base 64 to UTF-8', () => {
-    window.location.hash = hashConfig;
-    const config = utils.getHashConfig();
-    expect(config.cardStyle).to.equal('full-card');
+    window.location.hash = hash;
+    const hashConfig = utils.getHashConfig();
+    expect(hashConfig.cardStyle).to.equal('full-card');
   });
 
   it('Successfully dies parsing a bad config', () => {
@@ -81,13 +114,31 @@ describe('Utils', () => {
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
   });
 
-  it('Text getEnv()', () => {
-    expect(utils.getEnv()).to.equal('local');
-  });
-
   it('updateObj should add any missing keys to the obj', () => {
     const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
     expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
     expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
+  });
+
+  it('Clones an object', () => {
+    const o = {
+      sortReservoirPool: 1000,
+      source: ['hawks'],
+      tagsUrl: 'www.adobe.com/chimera-api/tags',
+      targetActivity: '',
+      targetEnabled: false,
+    };
+    expect(utils.cloneObj(o)).to.be.eql(o);
+  });
+
+  it('Decorates no nav', async () => {
+    const meta = utils.createTag('meta', { name: 'header', content: 'off' });
+    document.head.append(meta);
+    await utils.loadArea();
+    expect(document.body.classList.contains('nav-off')).to.be.true;
+  });
+
+  it('getLocale default return', () => {
+    expect(utils.getLocale().ietf).to.equal('en-US');
   });
 });
