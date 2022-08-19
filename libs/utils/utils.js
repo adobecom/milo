@@ -14,6 +14,7 @@ const MILO_BLOCKS = [
   'how-to',
   'marquee',
   'modal',
+  'quote',
   'section-metadata',
 ];
 const AUTO_BLOCKS = [
