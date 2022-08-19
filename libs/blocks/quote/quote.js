@@ -11,7 +11,7 @@
  */
 
 /*
- * blockquote - v1.0.0
+ * quote - v1.0.0
  */
 
 import { createTag } from '../../utils/utils.js';
