@@ -251,9 +251,13 @@ nav.gnav .gnav-mainnav {
   background-color: #F5F5F5;
 }
 
-.gnav-promo {
-  width: 260px;
-  padding: 6px 0;
+nav.gnav .gnav-navitem.has-Menu.is-Open div.gnav-promo > div {
+  padding: 28px;
+  background-color: #fff;
+}
+
+.gnav-navitem.large-menu .gnav-navitem-menu .gnav-promo a {
+  padding: 0;
 }
 
 .gnav-promo picture,
@@ -263,6 +267,7 @@ nav.gnav .gnav-mainnav {
 
 .gnav-promo img {
   width: 100%;
+  min-width: 160px;
 }
 
 .gnav-cta {
