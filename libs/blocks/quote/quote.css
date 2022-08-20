@@ -75,6 +75,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 }
 
 .quote.inline figure .quote-image img {
+  height: 200px;
   max-height: 200px;
 }
 
