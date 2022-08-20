@@ -11,7 +11,7 @@ window.lana = { log: stub() };
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
   imsClientId: 'milo',
-  codeRoot: `${window.location.origin}/libs`,
+  codeRoot: '/libs',
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   locales,
 };
