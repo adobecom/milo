@@ -806,6 +806,10 @@ nav.gnav .gnav-search-field:hover .gnav-search-input::placeholder {
   .gnav-navitem.has-Menu.is-Open .gnav-navitem-menu > div div:first-child{
       padding-left: 0;
   }
+  
+  .gnav-navitem.large-menu .link-group:first-of-type {
+    margin-top: 40px;
+  }
 }
 
 @media (min-width: 1440px) {
