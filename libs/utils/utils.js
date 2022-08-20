@@ -73,7 +73,7 @@ export const [setConfig, getConfig] = (() => {
     (conf) => {
       const { origin } = window.location;
       config = { ...conf, env: getEnv() };
-      config.codeRoot ??= origin;
+      config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       if (config.contentRoot) {
