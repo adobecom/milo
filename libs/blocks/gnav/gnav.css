@@ -240,9 +240,10 @@ nav.gnav .gnav-navitem.has-Menu.is-Open div.gnav-promo > div {
   display: block;
 }
 
-.gnav-promo img {
-  width: 100%;
+nav.gnav .gnav-menu-container .gnav-promo img {
+  width: initial;
   min-width: 160px;
+  margin: 0 auto;
 }
 
 .gnav-cta {
