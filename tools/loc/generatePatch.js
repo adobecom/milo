@@ -1,5 +1,6 @@
 import parseMarkdown from './helix/parseMarkdown.bundle.js';
 import { mdast2docx, sanitizeHtml } from './helix/mdast2docx.bundle.js';
+import { docx2md } from './helix/docx2md.bundle.js';
 
 import {
   connect as connectToSP,
@@ -113,6 +114,7 @@ function display(id, toBeDisplayed) {
 async function persist(srcPath, mdast, dstPath) {
   try {
     const docx = await mdast2docx(mdast);
+    const md = await docx2md(docx, { });
     await connectToSP(async () => {
       await saveFileAndUpdateMetadata(srcPath, docx, dstPath);
     });
@@ -189,8 +191,10 @@ function reset() {
 function updateMergedMdast(mergedMdast, node, author) {
   const hash = node.opInfo.op === 'edited' ? node.opInfo.newHash : node.hash;
   const content = hashToContentMap.get(hash);
-  content.author = author;
-  content.action = node.opInfo.op;
+  if (node.opInfo.op !== 'edited' && node.opInfo.op !== 'nochange') {
+    content.author = author;
+    content.action = node.opInfo.op;
+  }
   mergedMdast.children.push(content);
 }
 
@@ -209,7 +213,7 @@ function getMergedMdast(left, right) {
         if (leftHash === rightHash) {
           let toAdd = { hash: leftHash, opInfo: leftOpInfo };
           let author = 'langmaster';
-          if (rightOpInfo.op === 'nochange') {
+          if (rightOpInfo.op !== 'nochange') {
             toAdd = { hash: rightHash, opInfo: rightOpInfo };
             author = 'region';
           }
@@ -256,7 +260,7 @@ async function process(folderPath) {
   display('regionV1Diff', langmasterBaseToRegionV1Changes);
   const regionV2Mdast = getMergedMdast(langmasterBaseToV1Changes, langmasterBaseToRegionV1Changes);
   display('regionV2', regionV2Mdast);
-  await persist(`${folderPath}/Langmaster(Base).docx`, regionV2Mdast, `${folderPath}/Region(V2).docx`);
+  await persist(`${folderPath}/langmaster-base.docx`, regionV2Mdast, `${folderPath}/Region(V2).docx`);
 }
 
 async function init() {
