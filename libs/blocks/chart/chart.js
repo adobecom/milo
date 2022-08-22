@@ -104,7 +104,6 @@ export async function fetchData(link) {
   if (!resp.ok) return {};
 
   const json = await resp.json();
-
   return json;
 }
 
