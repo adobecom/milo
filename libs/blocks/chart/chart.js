@@ -509,8 +509,7 @@ const init = (el) => {
 
         if (!data) return;
 
-        const authoredColor = Array.from(chartStyles)
-          ?.find((style) => style in colorPalette);
+        const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
         const hasOverride = hasPropertyCI(data?.data[0], 'color');
         const colors = hasOverride
           ? getOverrideColors(authoredColor, data.data)
