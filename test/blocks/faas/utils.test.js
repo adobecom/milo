@@ -9,7 +9,7 @@ import { setConfig, parseEncodedConfig } from '../../../libs/utils/utils.js';
 
 const config = {
   imsClientId: 'milo',
-  codeRoot: `${window.location.origin}/libs`,
+  codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 setConfig(config);

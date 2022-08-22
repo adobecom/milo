@@ -10,7 +10,7 @@ const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwc
 const utils = {};
 
 const config = {
-  codeRoot: `${window.location.origin}/libs`,
+  codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
