@@ -11,34 +11,31 @@
  */
 
 import {
-  decorateArea,
-  decorateNavs,
-  loadLCP,
   loadArea,
   loadDelayed,
-  loadTemplate,
   setConfig,
 } from '../utils/utils.js';
 
+const locales = {
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+  cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+  kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+};
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  codeRoot: '/libs',
+  locales,
 };
+
+(async function loadLCPImage() {
+  const lcpImg = document.querySelector('img');
+  lcpImg?.setAttribute('loading', 'eager');
+}());
 
 (async function loadPage() {
   setConfig(config);
-  const blocks = decorateArea();
-  const navs = decorateNavs();
-  await loadLCP({ blocks });
-  import('../utils/fonts.js');
-  loadTemplate();
-  await loadArea({ blocks: [...navs, ...blocks] });
+  await loadArea();
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   loadDelayed();
