@@ -4,6 +4,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
+import { waitForElement } from '../../helpers/selectors.js';
 
 const {
   SMALL,
@@ -33,11 +34,9 @@ const {
 
 describe('chart', () => {
   let fetch;
-  let log;
 
   before(() => {
     fetch = sinon.stub(window, 'fetch');
-    log = sinon.spy(console, 'log');
   });
 
   after(() => {
@@ -481,7 +480,7 @@ describe('chart', () => {
   it('init returns undefined if missing type', async () => {
     document.body.innerHTML = '<div class="chart"></div>';
     const el = document.querySelector('.chart');
-    expect(await init(el)).to.be.undefined;
+    expect(init(el)).to.be.undefined;
   });
 
   it('init generates list chart', async () => {
@@ -491,18 +490,9 @@ describe('chart', () => {
     const parsedData = JSON.parse(data);
     fetch.withArgs(linkRel).returns({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
-    await init(el);
-    const listWrapper = document.querySelector('.list-wrapper');
+    init(el);
+    const listWrapper = await waitForElement('.list-wrapper');
     expect(listWrapper).to.exist;
-  });
-
-  it('init catches list promise error', async () => {
-    const linkRel = '/drafts/data-viz/list.json';
-    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
-    fetch.withArgs(linkRel).throws(() => new Error());
-    const el = document.querySelector('.chart');
-    await init(el);
-    expect(log.calledWithMatch('Error loading script:')).to.be.true;
   });
 
   it('init chart with echarts without intersection observer', async () => {
@@ -513,17 +503,8 @@ describe('chart', () => {
     const parsedData = JSON.parse(data);
     fetch.withArgs(linkRel).returns({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
-    await init(el);
-    const svg = document.querySelector('svg');
+    init(el);
+    const svg = await waitForElement('svg');
     expect(svg).to.exist;
-  });
-
-  it('init catches echarts promise error', async () => {
-    const linkRel = '/drafts/data-viz/bar.json';
-    document.body.innerHTML = `<div class="chart bar"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
-    fetch.withArgs(linkRel).throws(() => new Error());
-    const el = document.querySelector('.chart');
-    await init(el);
-    expect(log.calledWithMatch('Error loading script:')).to.be.true;
   });
 });
