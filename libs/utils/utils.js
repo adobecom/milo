@@ -136,6 +136,27 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export const loadScript = (url, type) => new Promise((resolve, reject) => {
+  let script = document.querySelector(`head > script[src="${url}"]`);
+  if (script) {
+    resolve(script);
+  } else {
+    const { head } = document;
+    script = document.createElement('script');
+    script.setAttribute('src', url);
+    if (type) {
+      script.setAttribute('type', type);
+    }
+    script.onload = () => {
+      resolve(script);
+    };
+    script.onerror = () => {
+      reject(new Error('error loading script'));
+    };
+    head.append(script);
+  }
+});
+
 /**
  * Load template (page structure and styles).
  */
@@ -317,9 +338,11 @@ function decorateSections(el, isDoc) {
 }
 
 async function loadPostLCP() {
+  const { locale } = getConfig();
+  const { default: loadMartech } = await import('./martech.js');
+  loadMartech(locale, loadScript);
   loadHeader();
   loadTemplate();
-  const { locale } = getConfig();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(locale, loadStyle);
 }
@@ -375,27 +398,6 @@ export function loadDelayed(delay = 3000) {
     }, delay);
   });
 }
-
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
-  let script = document.querySelector(`head > script[src="${url}"]`);
-  if (script) {
-    resolve(script);
-  } else {
-    const { head } = document;
-    script = document.createElement('script');
-    script.setAttribute('src', url);
-    if (type) {
-      script.setAttribute('type', type);
-    }
-    script.onload = () => {
-      resolve(script);
-    };
-    script.onerror = () => {
-      reject(new Error('error loading script'));
-    };
-    head.append(script);
-  }
-});
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
