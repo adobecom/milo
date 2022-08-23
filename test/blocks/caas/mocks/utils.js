@@ -20,6 +20,11 @@ export function updateObj(obj, defaultObj) {
   return obj;
 }
 
+export function setIntersectionObserver({ el, callback, once = true, options = {} }) {
+  // fire immediately
+  callback(el, { target: el });
+}
+
 export const parseEncodedConfig = stub().returns({
   analyticsTrackImpression: false,
   analyticsCollectionName: '',
