@@ -458,7 +458,7 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
   }
 };
 
-const init = async (el) => {
+const init = (el) => {
   const children = el?.querySelectorAll(':scope > div');
   const chartWrapper = children[2]?.querySelector(':scope > div');
   children[0]?.classList.add('title');
@@ -491,6 +491,7 @@ const init = async (el) => {
   updateContainerSize(chartWrapper, size, chartType);
 
   if (chartType === 'list') {
+    // Must use chained promise. Await will cause loading issues
     Promise.all([fetchData(dataLink), import('./list.js')])
       .then(([json, { default: initList }]) => {
         initList(chartWrapper, json);
@@ -500,6 +501,7 @@ const init = async (el) => {
   }
 
   if (chartType !== 'oversizedNumber') {
+    // Must use chained promise. Await will cause loading issues
     Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
       .then((values) => {
         const json = values[0];
@@ -516,6 +518,7 @@ const init = async (el) => {
         if (!(window.IntersectionObserver)) {
           initChart(chartWrapper, chartType, data, colors, size);
         } else {
+          /* c8 ignore next 12 */
           const observerOptions = {
             root: null,
             rootMargin: '0px',

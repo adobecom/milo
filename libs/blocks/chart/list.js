@@ -55,7 +55,7 @@ const getListHtml = (chart) => {
   ), '');
 
   return `
-    <article>
+    <article class="list-wrapper">
       <section class="title">${chart.title}</section>
       <section class="body">
         <${listType}>${listItems}</${listType}>
