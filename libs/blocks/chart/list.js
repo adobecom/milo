@@ -1,4 +1,5 @@
 import { propertyNameCI, propertyValueCI } from './utils.js';
+import { loadStyle } from '../../utils/utils.js';
 
 export const listToLowerCase = (list) => (
   list.map((item) => (
@@ -41,37 +42,40 @@ function listChartData(json) {
   return data;
 }
 
-const getListHtml = (chart) => {
+const getListHtml = (chart, hexcode) => {
   if (!chart) return '';
 
+  const hasIcon = typeof chart.list?.[0]?.image === 'string';
   const listType = chart.type?.toLowerCase() === 'numbered' ? 'ol' : 'ul';
   const listItems = chart.list.reduce((prev, { name = '', extra, image, alt = '' }) => (
     `${prev}
     <li>
-      ${image ? `<img src="${image}" alt="${alt}" />` : ''}
-      <span class="name">${name}</span>
-      ${extra ? `<span class="extra">${extra}</span>` : ''}
+      <div class="list-flex">
+        <div class="name">
+          ${image ? `<img src="${image}" alt="${alt}" />` : ''}
+          ${name}
+        </div>
+        ${extra ? `<span class="extra">${extra}</span>` : ''}
+      </div>
     </li>`
   ), '');
 
   return `
     <article class="list-wrapper">
-      <section class="title">${chart.title}</section>
-      <section class="body">
-        <${listType}>${listItems}</${listType}>
-      </section>
+      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}"}>${chart.title}</section>
+      <${listType} class="${hasIcon ? 'icon-list' : ''}">${listItems}</${listType}>
     </article>
   `;
 };
 
-const getCarouselHtml = (data) => {
+const getCarouselHtml = (data, hexcode) => {
   const carouselItems = data.reduce((prev, list, idx) => (
     `${prev}
     <div class="carousel-item${idx === 0 ? ' active' : ''}"
       role="group"
       aria-roledescription="slide"
       aria-label="${idx} of ${data.length}">
-      ${getListHtml(list)}
+      ${getListHtml(list, hexcode)}
     </div>
     `
   ), '');
@@ -108,12 +112,14 @@ const showCarouselItem = (element, index) => {
   });
 };
 
-const initList = (element, json) => {
+const initList = (element, json, hexcode) => {
   const data = listChartData(json);
 
-  const chartHtml = data.length > 1 ? getCarouselHtml(data) : getListHtml(data[0]);
+  const chartHtml = data.length > 1 ? getCarouselHtml(data, hexcode) : getListHtml(data[0], hexcode);
 
   if (typeof chartHtml === 'string') element.innerHTML = chartHtml;
+
+  loadStyle('/libs/blocks/chart/list.css');
 
   if (data.length > 1) {
     let index = 0;

@@ -401,6 +401,7 @@ export const getContainerSize = (chartSize, chartType) => {
       medium: { minHeight: 295 },
       large: { minHeight: 350 },
     },
+    list: {},
   };
   const containerSize = chartType in chartHeights
     ? chartHeights[chartType]?.[chartSize] || {}
@@ -490,11 +491,13 @@ const init = (el) => {
 
   updateContainerSize(chartWrapper, size, chartType);
 
+  const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+
   if (chartType === 'list') {
     // Must use chained promise. Await will cause loading issues
     Promise.all([fetchData(dataLink), import('./list.js')])
       .then(([json, { default: initList }]) => {
-        initList(chartWrapper, json);
+        initList(chartWrapper, json, colorPalette[authoredColor]);
       })
       .catch((error) => console.log('Error loading script:', error));
     return;
@@ -509,7 +512,6 @@ const init = (el) => {
 
         if (!data) return;
 
-        const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
         const hasOverride = hasPropertyCI(data?.data[0], 'color');
         const colors = hasOverride
           ? getOverrideColors(authoredColor, data.data)
