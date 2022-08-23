@@ -477,12 +477,6 @@ describe('chart', () => {
     expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
   });
 
-  it('init returns undefined if missing type', async () => {
-    document.body.innerHTML = '<div class="chart"></div>';
-    const el = document.querySelector('.chart');
-    expect(init(el)).to.be.undefined;
-  });
-
   it('init generates list chart', async () => {
     const linkRel = '/drafts/data-viz/list.json';
     document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
