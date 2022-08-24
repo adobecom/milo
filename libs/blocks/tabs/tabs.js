@@ -21,7 +21,7 @@ function initTabs(e) {
     // Enable arrow navigation between tabs in the tab list
     let tabFocus = 0;
 
-    tabList.addEventListener("keydown", () => {
+    tabList.addEventListener("keydown", (e) => {
       // Move right
       if (e.keyCode === 39 || e.keyCode === 37) {
         tabs[tabFocus].setAttribute("tabindex", -1);
