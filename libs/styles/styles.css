@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
- @import url('variables.css');
+@import url('variables.css');
+@import url('typography.css');
 
 @font-face {
   font-family: 'Trebuchet MS';
@@ -29,6 +30,7 @@
 }
 
 body {
+  display: block;
   font-family: var(--body-font-family);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-all-lh);
@@ -40,7 +42,7 @@ body {
 }
 
 header {
-  min-height: 64px;
+  min-height: 65px;
   display: flex;
   align-content: stretch;
   font-weight: 700;
@@ -107,48 +109,6 @@ a:hover {
 
 .light a {
   color: #2C2C2C;
-}
-
-.con-button {
-  color: #FFF;
-  border: 2px solid;
-  background-color: transparent;
-  border-radius: 16px;
-  display: inline-block;
-  line-height: 28px;
-  padding: 0 14px;
-  text-decoration: none;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 700;
-}
-
-.con-button.button-l {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.con-button.button-xl {
-  padding: 0 18px;
-  line-height: 36px;
-  border-radius: 20px;
-  font-size: 17px;
-}
-
-.light .con-button {
-  color: #000;
-}
-
-.con-button.blue {
-  color: #FFF;
-  background: rgb(20 115 230);
-  border: 2px solid rgb(20 115 230);
-}
-
-.con-button.blue:hover {
-  text-decoration: none;
 }
 
 img {
@@ -222,4 +182,21 @@ main > .section > .content {
   display: block;
   max-width: var(--grid-container-width);
   margin: 0 auto;
+}
+
+div[data-failed="true"] {
+  border: 4px solid #ff00a0;
+  position: relative;
+  margin: 12px;
+  border-radius: 6px;
+  display: block;
+}
+
+div[data-failed="true"]::before {
+  content: attr(data-reason);
+  color: white;
+  padding: 0 0 2px 6px;
+  background: #ff00a0;
+  font-weight: 700;
+  display: block;
 }
