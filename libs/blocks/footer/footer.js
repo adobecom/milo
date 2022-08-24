@@ -4,8 +4,8 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const GLOBE_IMG = '<img class="footer-region-img" loading="lazy" alt="wireframe globe" src="/libs/blocks/footer/globe.svg">';
-const ADCHOICE_IMG = '<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="/libs/blocks/footer/adchoices-small.svg">';
+const GLOBE_IMG = '<img class="footer-region-img" loading="lazy" alt="wireframe globe" src="/libs/blocks/footer/globe.svg" height="20" width=20">';
+const ADCHOICE_IMG = '<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="/libs/blocks/footer/adchoices-small.svg" height="9" width="9">';
 
 class Footer {
   constructor(body, el) {
@@ -177,6 +177,8 @@ class Footer {
           loading: 'lazy',
           src: `/libs/blocks/footer/${domain}-square.svg`,
           alt: `${domain} logo`,
+          height: '18',
+          width: '18',
         });
         a.setAttribute('aria-label', domain);
         a.textContent = '';
