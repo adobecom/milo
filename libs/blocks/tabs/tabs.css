@@ -82,8 +82,6 @@
   width: 100%;
 }
 
-div[role="tabpanel"] { }
-
 div[role="tablist"] button {
   padding: 14px 16px 12px;
   line-height: 16px;

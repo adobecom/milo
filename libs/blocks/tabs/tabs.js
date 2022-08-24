@@ -6,17 +6,22 @@ function initTabs(e) {
   const tabLists = e.querySelectorAll('[role="tablist"]');
 
   tabLists.forEach( tabList => {
-    let lastKnownScrollPosition = 0, ticking = false;
-    tabList.addEventListener('scroll', () => {
-      lastKnownScrollPosition = tabList.scrollLeft;
-      if (!ticking) {
-        window.requestAnimationFrame(function() {
-          doSomething(lastKnownScrollPosition, tabList.scrollWidth, tabList.offsetWidth);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    });
+
+    // tabList horizontal scroll overflow
+    const horizontalScrollEnabled = false;
+    if (horizontalScrollEnabled) {
+      let lastKnownScrollPosition = 0, ticking = false;
+      tabList.addEventListener('scroll', () => {
+        lastKnownScrollPosition = tabList.scrollLeft;
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            logScrollPosition(lastKnownScrollPosition, tabList.scrollWidth, tabList.offsetWidth);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    }
 
     // Enable arrow navigation between tabs in the tab list
     let tabFocus = 0;
@@ -53,7 +58,7 @@ function initTabs(e) {
 
 }
 
-const doSomething = (scrollPos, scrollWidth, offsetWidth) => {
+const logScrollPosition = (scrollPos, scrollWidth, offsetWidth) => {
   // let tabListBound = horizontallyBound(tabsListContainer, tabIt);
   console.log('scrollPos, scrollWidth, offsetWidth');
   console.log(scrollPos, scrollWidth, offsetWidth);
@@ -112,6 +117,8 @@ function changeTabs(e) {
 
   // Set this tab as selected
   target.setAttribute("aria-selected", true);
+
+  // Scroll tab into view if off Viewport
   scrollTabIntoView(target);
 
   // Hide all tab panels
