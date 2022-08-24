@@ -298,6 +298,7 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
+  footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
   footer.className = 'footer';
   await loadBlock(footer);
   return footer;
@@ -441,4 +442,25 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
+}
+
+export async function fetchPlaceholders() {
+  if (!window.placeholders) {
+    const resp = await fetch(`${window.location.origin}/placeholders.json`);
+    const json = await resp.json();
+    window.placeholders = {};
+    json.data.forEach((placeholder) => {
+      window.placeholders[placeholder.Key] = placeholder.Text;
+    });
+  }
+  return window.placeholders;
+}
+
+export function debug(message) {
+  const { hostname } = window.location;
+  const env = getEnv();
+  if (env.name !== 'prod' || hostname === 'local') {
+    // eslint-disable-next-line no-console
+    console.log(message);
+  }
 }
