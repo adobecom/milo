@@ -99,9 +99,32 @@ describe('getConfig', () => {
   state.orLogicTags = [{ orTags: ['caas:content-type/video', 'caas:content-type/blog'] }];
   state.targetEnabled = true;
   state.targetActivity = 'myTargetActivity';
+  state.tagsUrl = '';
+  state.showFilters = true;
+  state.filters = [
+    {
+      filterTag: [
+        'caas:business-unit/creative-cloud',
+      ],
+      openedOnLoad: true,
+      icon: '',
+      excludeTags: [],
+    },
+    {
+      filterTag: [
+        'caas:product-categories',
+      ],
+      openedOnLoad: '',
+      icon: '/path/to/icon.svg',
+      excludeTags: [
+        'caas:product-categories/video',
+      ],
+    },
+  ];
 
-  it('should return a caas config object', () => {
-    expect(getConfig(state, strings)).to.be.eql({
+  it('should return a caas config object', async () => {
+    const config = await getConfig(state, strings);
+    expect(config).to.be.eql({
       collection: {
         mode: 'lightest',
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
@@ -133,11 +156,54 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       filterPanel: {
-        enabled: false,
-        eventFilter: 'not-timed',
+        enabled: true,
+        eventFilter: '',
         type: 'left',
-        showEmptyFilters: 'true',
-        filters: [],
+        showEmptyFilters: false,
+        filters: [
+          {
+            group: 'Creative Cloud',
+            id: 'caas:business-unit/creative-cloud',
+            items: [],
+            openedOnLoad: true,
+          },
+          {
+            group: 'Product Categories',
+            icon: '/path/to/icon.svg',
+            id: 'caas:product-categories',
+            items: [
+              {
+                id: 'caas:product-categories/3d-and-ar',
+                label: '3D and AR',
+              },
+              {
+                id: 'caas:product-categories/acrobat-and-pdf',
+                label: 'Acrobat and PDF',
+              },
+              {
+                id: 'caas:product-categories/graphic-design',
+                label: 'Graphic Design',
+              },
+              {
+                id: 'caas:product-categories/illustration',
+                label: 'Illustration',
+              },
+              {
+                id: 'caas:product-categories/photo',
+                label: 'Photo',
+              },
+              {
+                id: 'caas:product-categories/social-media',
+                label: 'Social Media',
+              },
+              {
+                id: 'caas:product-categories/ui-and-ux',
+                label: 'UI and UX',
+              },
+            ],
+            openedOnLoad: false,
+          },
+        ],
         filterLogic: 'or',
         i18n: {
           leftPanel: {
@@ -147,13 +213,13 @@ describe('getConfig', () => {
               filtersBtnLabel: 'Filters',
               panel: {
                 header: 'Filter by',
-                totalResultsText: '{total} results',
+                totalResultsText: '{total} Results',
                 applyBtnText: 'Apply',
                 clearFilterText: 'Clear',
                 doneBtnText: 'Done',
               },
               group: {
-                totalResultsText: '{total} results',
+                totalResultsText: '{total} Results',
                 applyBtnText: 'Apply',
                 clearFilterText: 'Clear',
                 doneBtnText: 'Done',
@@ -178,11 +244,7 @@ describe('getConfig', () => {
       sort: {
         enabled: false,
         defaultSort: 'dateDesc',
-        options: [
-          { label: 'Featured Sort', sort: 'featured' },
-          { label: 'Most recent', sort: 'dateDesc' },
-          { label: 'Title', sort: 'titleAsc' },
-        ],
+        options: [],
       },
       pagination: {
         animationStyle: 'paged',

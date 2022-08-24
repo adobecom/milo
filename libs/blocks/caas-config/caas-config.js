@@ -24,7 +24,6 @@ import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
 
 const LS_KEY = 'caasConfiguratorState';
-const TAGS_ERROR = 'No tags data loaded, please check the tags url in Advanced Panel';
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -411,7 +410,6 @@ const FilterPanel = ({ tagsData }) => {
   const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
-    console.log(prop, values);
     context.dispatch({
       type: 'SELECT_CHANGE',
       prop,
@@ -428,7 +426,7 @@ const FilterPanel = ({ tagsData }) => {
       onChange=${onChange('filters')}
       className="filters"
       values=${context.state.filters}
-      title="Filter Test"
+      title="Filter Tags"
       subTitle=""
     >
     <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
@@ -613,7 +611,6 @@ const CopyBtn = () => {
     </button>`;
 };
 /* c8 ignore stop */
-// https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM
 const getPanels = (tagsData) => [
   {
     title: 'Basics',
@@ -690,13 +687,9 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
-    const tagsData = await loadCaasTags(state.tagsUrl);
-    setPanels(getPanels(tagsData));
-    if (!tagsData) {
-      setError(TAGS_ERROR);
-    } else if (error === TAGS_ERROR) {
-      setError('');
-    }
+    const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
+    setPanels(getPanels(tags));
+    setError(errorMsg || '');
   }, [state.tagsUrl]);
 
   useEffect(async () => {

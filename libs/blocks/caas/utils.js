@@ -25,18 +25,30 @@ export const loadCaasFiles = () => {
 };
 
 export const loadCaasTags = async (tagsUrl) => {
-  const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
-  try {
-    const resp = await fetch(url);
-    if (resp.ok) {
-      const json = await resp.json();
-      return json.namespaces.caas.tags;
+  let errorMsg = '';
+  if (tagsUrl) {
+    const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const json = await resp.json();
+        return {
+          tags: json.namespaces.caas.tags,
+          error: '',
+        };
+      }
+    } catch (e) {
+      errorMsg = 'Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel';
     }
-  } catch (e) {
-    // ignore
+  } else {
+    errorMsg = 'Tags url is not defined in the Advanced Panel';
   }
 
-  return null;
+  const { default: caasTags } = await import('../caas-config/caas-tags.js');
+  return {
+    tags: caasTags.namespaces.caas.tags,
+    errorMsg,
+  };
 };
 
 export const initCaas = async (state, caasStrs, el) => {
@@ -165,11 +177,10 @@ const getFilterArray = async (state) => {
     return [];
   }
 
-  const tags = await getTags(state.tagsUrl);
+  const { tags } = await getTags(state.tagsUrl);
   const filters = state.filters
     .map((filter) => getFilterObj(filter, tags))
     .filter((filter) => filter !== null);
-  console.log(filters);
   return filters;
 };
 
