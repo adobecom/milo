@@ -143,7 +143,14 @@ function getHelixAdminConfig() {
   };
 }
 
-async function getConfig(configPath = LOC_CONFIG) {
+async function getConfig() {
+  const location = new URL(document.location.href);
+  function getParam(name) { return location.searchParams.get(name); }
+  const owner = getParam('owner');
+  const repo = getParam('repo');
+  const ref = getParam('ref');
+  const configPath = `https://${ref}--${repo}--${owner}.hlx.page${LOC_CONFIG}`;
+
   if (!decoratedConfig) {
     const configJson = await fetchConfigJson(configPath);
     const locales = await getLocalesConfig(configJson);
