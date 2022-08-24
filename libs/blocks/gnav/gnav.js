@@ -186,6 +186,13 @@ class Gnav {
     });
   };
 
+  decorateButtons = (menu) => {
+    const buttons = menu.querySelectorAll('strong a');
+    buttons.forEach((btn) => {
+      btn.classList.add('con-button', 'outline', 'button-M');
+    });
+  }
+
   decorateMenu = (navItem, navLink, menu) => {
     menu.className = 'gnav-navitem-menu';
     const childCount = menu.childElementCount;
@@ -211,6 +218,7 @@ class Gnav {
       e.stopPropagation();
       this.toggleMenu(navItem);
     });
+    this.decorateButtons(menu);
     return menu;
   };
 
@@ -229,12 +237,13 @@ class Gnav {
   };
 
   decorateCta = () => {
-    const cta = this.body.querySelector('strong > a');
+    const cta = this.body.querySelector('strong a');
     if (cta) {
       const { origin } = new URL(cta.href);
       if (origin !== window.location.origin) {
         cta.target = '_blank';
       }
+      cta.classList.add('con-button', 'blue', 'button-M');
       cta.parentElement.classList.add('gnav-cta');
       return cta.parentElement;
     }
