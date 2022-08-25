@@ -29,6 +29,7 @@ const chartTypes = [
   'area',
   'list',
   'donut',
+  'pie',
 ];
 
 export function processDataset(data) {
@@ -130,6 +131,15 @@ export const barTooltipFormatter = ({
   name,
 } = {}, unit = '') => (
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
+);
+
+export const pieTooltipFormatter = ({
+  marker,
+  data,
+  encode: { value = [] },
+  name,
+} = {}, unit = '') => (
+  `${name}<br />${marker} ${data[value[0]]}${unit}<i class="tooltip-icon"></i>`
 );
 
 export const tooltipFormatter = (params, units) => {
@@ -257,12 +267,35 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
         b: {
           fontSize: sizeLarge ? 28 : 20,
           lineHeight: sizeLarge ? 32 : 30,
-          fontWeight: sizeLarge ? 'bold' : 'regular',
+          fontWeight: sizeLarge ? 'bold' : 'normal',
         },
       },
     },
     labelLine: { show: false },
     emphasis: { label: { show: true } },
+    center: ['50%', '46%'],
+  }];
+};
+
+export const pieSeriesOptions = (size) => {
+  const isSmall = size === SMALL;
+
+  return [{
+    type: 'pie',
+    radius: isSmall ? '90%' : '80%',
+    height: isSmall ? '90%' : 'auto',
+    silent: false,
+    label: {
+      show: !isSmall,
+      fontSize: '16px',
+      fontWeight: 'normal',
+      color: '#2c2c2c',
+      bleedMargin: 0,
+    },
+    labelLine: {
+      length: 10,
+      length2: 10,
+    },
     center: ['50%', '46%'],
   }];
 };
@@ -298,10 +331,12 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
     },
     tooltip: {
       show: true,
-      formatter: isBar
-        ? (params) => barTooltipFormatter(params, units[0])
-        : (params) => tooltipFormatter(params, units),
-      trigger: isBar ? 'item' : 'axis',
+      formatter: ((params) => {
+        if (isBar) return barTooltipFormatter(params, units[0]);
+        if (chartType === 'pie') return pieTooltipFormatter(params, units[0]);
+        return tooltipFormatter(params, units);
+      }),
+      trigger: isBar || chartType === 'pie' ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
     xAxis: {
@@ -337,6 +372,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       if (chartType === 'donut') return donutSeriesOptions(source, data.series, size, units[0], chart);
+      if (chartType === 'pie') return pieSeriesOptions(size);
       return [];
     })(),
   };
@@ -402,6 +438,11 @@ export const getContainerSize = (chartSize, chartType) => {
       large: { minHeight: 350 },
     },
     list: {},
+    pie: {
+      small: { height: 345 },
+      medium: { height: 450 },
+      large: { height: 512 },
+    },
   };
   const containerSize = chartType in chartHeights
     ? chartHeights[chartType]?.[chartSize] || {}

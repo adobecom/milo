@@ -30,6 +30,8 @@ const {
   barSeriesOptions,
   lineSeriesOptions,
   default: init,
+  pieTooltipFormatter,
+  pieSeriesOptions,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 describe('chart', () => {
@@ -500,5 +502,35 @@ describe('chart', () => {
     init(el);
     const svg = await waitForElement('svg');
     expect(svg).to.exist;
+  });
+
+  it('pieTooltipFormatter returns expected string', () => {
+    const data = [100, 'Chrome'];
+    const encode = { value: [0] };
+    const expected = 'Chrome<br />* 100k<i class="tooltip-icon"></i>';
+    expect(pieTooltipFormatter({ marker: '*', data, encode, name: 'Chrome' }, 'k')).to.equal(expected);
+  });
+
+  it('pieSeriesOptions returns correct options', () => {
+    const expected = [{
+      type: 'pie',
+      radius: '90%',
+      height: '90%',
+      silent: false,
+      label: {
+        show: false,
+        fontSize: '16px',
+        fontWeight: 'normal',
+        color: '#2c2c2c',
+        bleedMargin: 0,
+      },
+      labelLine: {
+        length: 10,
+        length2: 10,
+      },
+      center: ['50%', '46%'],
+    }];
+
+    expect(pieSeriesOptions(SMALL)).to.eql(expected);
   });
 });
