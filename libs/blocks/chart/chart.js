@@ -1,5 +1,12 @@
 import { makeRelative, loadScript } from '../../utils/utils.js';
-import { throttle, parseValue, hasPropertyCI, propertyNameCI, propertyValueCI } from './utils.js';
+import {
+  throttle,
+  parseValue,
+  hasPropertyCI,
+  propertyNameCI,
+  propertyValueCI,
+  formatExcelDate,
+} from './utils.js';
 import getTheme from './chartLightTheme.js';
 
 export const SMALL = 'small';
@@ -32,7 +39,7 @@ const chartTypes = [
   'pie',
 ];
 
-export function processDataset(data) {
+export function processDataset(data, xAxisType) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color'];
   const headers = Object.keys(data[0]).filter((header) => (
@@ -42,20 +49,29 @@ export function processDataset(data) {
 
   // Use headers to set source
   data.forEach((element) => {
-    const values = headers.map((column) => parseValue(element[column]));
+    let values = [];
+
+    if (xAxisType === 'date') {
+      values = headers.map((column, index) => (
+        index ? parseValue(element[column]) : formatExcelDate(element[column])
+      ));
+    } else {
+      values = headers.map((column) => parseValue(element[column]));
+    }
+
     dataset.source.push(values);
   });
 
   return dataset;
 }
 
-export function processMarkData(series) {
+export function processMarkData(series, xAxisType) {
   const seriesOptions = series.reduce((options, mark) => {
     options[mark.Type] ??= { data: [] };
 
     const markData = options[mark.Type].data;
     const split = mark.Value?.split('-');
-    const value = parseValue(split[0]);
+    const value = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
     const markObject = {
       ...(mark.Name ? { name: mark.Name } : {}),
       ...(mark.Axis ? { [mark.Axis]: value } : {}),
@@ -66,7 +82,9 @@ export function processMarkData(series) {
       markData[0].push(markObject);
 
       if (split.length > 1) {
-        markData[0].push((mark.Axis ? { [mark.Axis]: parseValue(split[1]) } : {}));
+        const endRangeValue = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
+
+        markData[0].push((mark.Axis ? { [mark.Axis]: endRangeValue } : {}));
       }
     } else {
       markData.push(markObject);
@@ -187,8 +205,8 @@ export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, s
   }));
 };
 
-export const lineSeriesOptions = (series, firstDataset, units) => {
-  const marks = processMarkData(series);
+export const lineSeriesOptions = (series, firstDataset, units, xAxisType) => {
+  const marks = processMarkData(series, xAxisType);
 
   return firstDataset.map((value, index) => {
     let options = {
@@ -313,12 +331,17 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
   const units = headers?.[unitKey]?.split('-') || [];
-  const dataset = data ? processDataset(data.data) : {};
+  const xAxisType = units[0] === 'date' ? units[0] : '';
+  const dataset = data ? processDataset(data.data, xAxisType) : {};
   const source = dataset?.source;
   const firstDataset = source?.[1]?.slice() || [];
   const isBar = chartType === 'bar';
   const isColumn = chartType === 'column';
   const isPie = chartType === 'pie';
+
+  if (xAxisType) {
+    units.shift();
+  }
 
   firstDataset.shift();
 
@@ -370,7 +393,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       if (isBar || isColumn) {
         return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
       }
-      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units);
+      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units, xAxisType);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       if (chartType === 'donut') return donutSeriesOptions(source, data.series, size, units[0], chart);
       if (isPie) return pieSeriesOptions(size);

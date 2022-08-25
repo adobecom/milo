@@ -175,7 +175,50 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data)).to.eql(dataset);
+    expect(processDataset(fetchedData.data, '')).to.eql(dataset);
+  });
+
+  it('chart dataset with date', () => {
+    const fetchedData = {
+      data: [
+        {
+          Day: '44775', Chrome: '100', Firefox: '245', Edge: '335', Group: '', Unit: 'date-k',
+        },
+        {
+          Day: '44776', Chrome: '565', Firefox: '345', Edge: '945', Group: '', Unit: '',
+        },
+        {
+          Day: '44777', Chrome: '344', Firefox: '234', Edge: '723', Group: '', Unit: '',
+        },
+        {
+          Day: '44778', Chrome: '156', Firefox: '283', Edge: '305', Group: '', Unit: '',
+        },
+        {
+          Day: '44779', Chrome: '84', Firefox: '273', Edge: '126', Group: '', Unit: '',
+        },
+        {
+          Day: '44780', Chrome: '189', Firefox: '273', Edge: '103', Group: '', Unit: '',
+        },
+        {
+          Day: '44781', Chrome: '103', Firefox: '111', Edge: '157', Group: '', Unit: '',
+        },
+      ],
+    };
+
+    const dataset = {
+      source: [
+        ['Day', 'Chrome', 'Firefox', 'Edge'],
+        ['8/2/22', 100, 245, 335],
+        ['8/3/22', 565, 345, 945],
+        ['8/4/22', 344, 234, 723],
+        ['8/5/22', 156, 283, 305],
+        ['8/6/22', 84, 273, 126],
+        ['8/7/22', 189, 273, 103],
+        ['8/8/22', 103, 111, 157],
+      ],
+    };
+
+    expect(processDataset(fetchedData.data, 'date')).to.eql(dataset);
   });
 
   it('chart mark series data', () => {
@@ -185,19 +228,19 @@ describe('chart', () => {
           Type: 'markArea',
           Name: 'Weekend Sale',
           Axis: 'xAxis',
-          Value: 'Fri-Sun',
+          Value: '8/5/2022-8/6/2022',
         },
         {
           Type: 'markLine',
           Name: 'Promotion',
           Axis: 'xAxis',
-          Value: 'Mon',
+          Value: '44775',
         },
         {
           Type: 'markLine',
           Name: 'Campaign Launch',
           Axis: 'xAxis',
-          Value: 'Thurs',
+          Value: '8/7/2022',
         },
         {
           Type: 'markLine',
@@ -211,24 +254,24 @@ describe('chart', () => {
     const markAreaData = [
       [{
         name: 'Weekend Sale',
-        xAxis: 'Fri',
-      }, { xAxis: 'Sun' }],
+        xAxis: '8/5/22',
+      }, { xAxis: '8/6/22' }],
     ];
     const markLineData = [
       {
         name: 'Promotion',
-        xAxis: 'Mon',
+        xAxis: '8/2/22',
       },
       {
         name: 'Campaign Launch',
-        xAxis: 'Thurs',
+        xAxis: '8/7/22',
       },
       {
         name: 'Goal',
         yAxis: 200,
       },
     ];
-    const markData = processMarkData(fetchedData.series);
+    const markData = processMarkData(fetchedData.series, 'date');
 
     expect(markData.markArea.data).to.eql(markAreaData);
     expect(markData.markLine.data).to.eql(markLineData);
@@ -493,9 +536,9 @@ describe('chart', () => {
 
   it('init chart with echarts without intersection observer', async () => {
     window.IntersectionObserver = undefined;
-    const linkRel = '/drafts/data-viz/bar.json';
-    document.body.innerHTML = `<div class="chart bar"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
-    const data = await readFile({ path: './mocks/barChart.json' });
+    const linkRel = '/drafts/data-viz/column.json';
+    document.body.innerHTML = `<div class="chart column"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    const data = await readFile({ path: './mocks/columnChart.json' });
     const parsedData = JSON.parse(data);
     fetch.withArgs(linkRel).returns({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
