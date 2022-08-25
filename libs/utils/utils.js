@@ -5,6 +5,7 @@ const MILO_BLOCKS = [
   'adobetv',
   'caas',
   'card-metadata',
+  'chart',
   'columns',
   'faas',
   'faq',
