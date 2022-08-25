@@ -266,8 +266,8 @@ class Footer {
     }
   };
 
-  onMediaChange = (e) => {
-    if (e.matches) {
+  onMediaChange = (desktop) => {
+    if (desktop.matches) {
       document.querySelectorAll('.footer-nav-item-title').forEach((button) => {
         button.removeAttribute('tabindex');
         window.removeEventListener('keydown', this.toggleOnKey);
