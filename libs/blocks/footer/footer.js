@@ -72,13 +72,10 @@ class Footer {
         // build grid column item
         const navItem = createTag('div', { class: 'footer-nav-item' });
         const titleId = heading.textContent.trim().toLowerCase().replace(/ /g, '-');
-        let expanded = false;
-        if (this.desktop.matches) { expanded = true; }
-        // populate grid column item
         const title = createTag('a', {
           class: 'footer-nav-item-title',
           role: 'button',
-          'aria-expanded': expanded,
+          'aria-expanded': this.desktop.matches,
           'aria-controls': `${titleId}-menu`,
         });
         title.textContent = heading.textContent;
