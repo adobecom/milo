@@ -54,12 +54,13 @@
   width: 100%;
 }
 
-.section.heading-center h1,
-.section.heading-center h2,
-.section.heading-center h3,
-.section.heading-center h4,
-.section.heading-center h5,
-.section.heading-center h6 {
+.section.center .content > h1,
+.section.center .content > h2,
+.section.center .content > h3,
+.section.center .content > h4,
+.section.center .content > h5,
+.section.center .content > h6,
+.section.center .content > p {
   text-align: center;
 }
 

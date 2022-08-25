@@ -30,7 +30,7 @@ function getUrlInfo() {
     owner,
     repo,
     ref,
-    origin: `${location.origin}`,
+    origin: `https://${ref}--${repo}--${owner}.hlx.page`,
     isValid() {
       return sp && owner && repo && ref;
     },

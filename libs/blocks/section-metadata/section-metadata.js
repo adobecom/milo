@@ -21,7 +21,7 @@ function handleStyle(div, section) {
 }
 
 export default function init(el) {
-  const section = el.closest('main > div');
+  const section = el.closest('.section');
   if (!section) return;
   section.className = 'section';
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
