@@ -25,4 +25,12 @@ describe('chartLightTheme', async () => {
     expect(typeof getTheme(LARGE)).to.equal('string');
     expect(window.echarts.registerTheme.called).to.be.false;
   });
+
+  it('theme tooltip position', () => {
+    window.dataViz = { lightLarge: false };
+    window.echarts = { registerTheme: sinon.spy() };
+    getTheme(LARGE);
+    const options = window.echarts.registerTheme.firstCall.args[1];
+    expect(Array.isArray(options.tooltip.position([0, 0], null, document.body))).to.be.true;
+  });
 });
