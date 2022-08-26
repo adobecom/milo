@@ -224,7 +224,7 @@ export const lineSeriesOptions = (series, firstDataset, units, xAxisType) => {
   });
 };
 
-const areaSeriesOptions = (firstDataset) => (
+export const areaSeriesOptions = (firstDataset) => (
   firstDataset.map(() => ({
     type: 'line',
     symbol: 'none',
@@ -258,9 +258,7 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
 
   chart.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
   chart.on('mouseout', () => setDonutLabel(chart, mouseOutValue, unit, title));
-  chart.on('legendselectchanged', ({ selected }) => {
-    mouseOutValue = handleDonutSelect(source, selected, chart, unit, title);
-  });
+  chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(source, selected, chart, unit, title); });
 
   return [{
     type: 'pie',
@@ -503,6 +501,7 @@ export const getResponsiveSize = (authoredSize) => {
   return size;
 };
 
+/* c8 ignore next 19 */
 const handleResize = (el, authoredSize, chartType, data, colors) => {
   const currentSize = getResponsiveSize(authoredSize);
   const previousSize = el?.getAttribute('data-responsive-size');
