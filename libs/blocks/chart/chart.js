@@ -1,4 +1,4 @@
-import { makeRelative, loadScript } from '../../utils/utils.js';
+import { makeRelative, loadScript, getConfig } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -568,8 +568,11 @@ const init = (el) => {
   }
 
   if (chartType !== 'oversizedNumber') {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+
     // Must use chained promise. Await will cause loading issues
-    Promise.all([fetchData(dataLink), loadScript('/libs/deps/echarts.common.min.js')])
+    Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
       .then((values) => {
         const json = values[0];
         const data = chartData(json);

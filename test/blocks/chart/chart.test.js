@@ -5,6 +5,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { waitForElement } from '../../helpers/selectors.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const {
   SMALL,
@@ -34,6 +35,9 @@ const {
   pieTooltipFormatter,
   pieSeriesOptions,
 } = await import('../../../libs/blocks/chart/chart.js');
+
+const config = { codeRoot: '/libs' };
+setConfig(config);
 
 describe('chart', () => {
   let fetch;
