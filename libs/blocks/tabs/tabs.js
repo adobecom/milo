@@ -135,14 +135,6 @@ function changeTabs(e) {
 let initCount = 0;
 
 const init = (element) => {
-  // const tabListBg = element.querySelector(':scope > div:first-of-type > div');
-  // tabListBg.classList.add('tabListBg');
-  // const bgImg = tabListBg.querySelector(':scope img');
-  // if (!bgImg) {
-  //   const bgColor = tabListBg.textContent;
-  //   tabListBg.style = `background: ${bgColor}`;
-  //   tabListBg.innerHTML = '';
-  // }
   // create the tabs list container div
   const rows = element.querySelectorAll(':scope > div');
   if(rows.length) {
