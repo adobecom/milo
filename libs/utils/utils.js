@@ -13,9 +13,11 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'marquee',
+  'media',
   'modal',
   'quote',
   'section-metadata',
+  'z-pattern',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -362,8 +364,12 @@ export async function loadArea(area = document) {
     delete section.el.dataset.idx;
   }
 
-  // Load the footer after all sections have shown
-  if (isDoc) { loadFooter(); }
+  // Post section loading on document
+  if (isDoc) {
+    loadFooter();
+    const { default: loadFavIcon } = await import('./favicon.js');
+    loadFavIcon(createTag, getConfig(), getMetadata);
+  }
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area);
