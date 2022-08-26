@@ -42,7 +42,7 @@ body {
 }
 
 header {
-  min-height: 64px;
+  min-height: 65px;
   display: flex;
   align-content: stretch;
   font-weight: 700;

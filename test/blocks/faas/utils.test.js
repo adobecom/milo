@@ -1,0 +1,83 @@
+/* eslint-disable no-unused-expressions */
+/* global describe beforeEach afterEach it */
+
+import { readFile } from '@web/test-runner-commands';
+import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
+import { waitForElement } from '../../helpers/selectors.js';
+import { setConfig, parseEncodedConfig } from '../../../libs/utils/utils.js';
+
+const config = {
+  imsClientId: 'milo',
+  codeRoot: '/libs',
+  locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+};
+setConfig(config);
+
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const { getFaasHostSubDomain, loadFaasFiles, initFaas, makeFaasConfig, defaultState } = await import('../../../libs/blocks/faas/utils.js');
+
+describe('Faas', () => {
+  beforeEach(() => {
+    sinon.spy(console, 'log');
+  });
+
+  afterEach(() => {
+    console.log.restore();
+  });
+
+  const a = document.querySelector('a');
+  const encodedConfig = a.href.split('#')[1];
+  const state = parseEncodedConfig(encodedConfig);
+
+  it('Parse Enconded Config', () => {
+    expect(typeof state).to.equal('object');
+  });
+
+  it('Load FaaS Files', async () => {
+    await loadFaasFiles();
+    expect(typeof $).to.equal('function');
+  });
+
+  it('Make FaaS config', () => {
+    const config = makeFaasConfig(state);
+    expect(config.id).to.equal('42');
+    expect(config.l).to.equal('en_us');
+    expect(config.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
+    expect(config.as).to.equal(true);
+    expect(config.ar).to.equal(false);
+    expect(config.e.afterYiiLoadedCallback).to.exist;
+    expect(makeFaasConfig()).to.equal(defaultState);
+  });
+
+  it('FaaS Initiation Error Case test', async () => {
+    await initFaas('', '');
+    const faas = document.querySelector('.faas-form');
+    expect(faas).to.be.null;
+  });
+
+  it('FaaS Initiation', async () => {
+    state.style_backgroundTheme = '';
+    state.style_layout = '';
+    state.isGate = false;
+    await initFaas(state, a);
+    const faas = await waitForElement('.faas-form-wrapper');
+    expect(faas).to.exist;
+    const formWrapperEl = document.querySelector('.block.faas');
+    expect(formWrapperEl.classList.contains('white')).to.equal(true);
+    expect(formWrapperEl.classList.contains('column1')).to.equal(true);
+    expect(formWrapperEl.classList.contains('gated')).to.equal(false);
+  });
+
+  it('FaaS Title', () => {
+    const title = document.querySelector('.faas-title');
+    expect(title).to.exist;
+  });
+
+  it('Test environment', () => {
+    expect(getFaasHostSubDomain('prod')).to.equal('');
+    expect(getFaasHostSubDomain('stage')).to.equal('staging.');
+    expect(getFaasHostSubDomain('dev')).to.equal('dev.');
+    expect(getFaasHostSubDomain()).to.equal('qa.');
+  });
+});

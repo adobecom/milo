@@ -1,17 +1,20 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
 const MILO_TEMPLATES = [];
 const MILO_BLOCKS = [
   'adobetv',
   'caas',
-  'faas',
+  'card-metadata',
   'columns',
+  'faas',
   'faq',
   'fragment',
+  'footer',
+  'gnav',
   'how-to',
-  'modal',
   'marquee',
+  'modal',
+  'quote',
   'section-metadata',
 ];
 const AUTO_BLOCKS = [
@@ -52,18 +55,31 @@ function getEnv() {
   /* c8 ignore stop */
 }
 
+// find out current locale based on pathname and existing locales object from config.
+export function getLocale(locales) {
+  if (!locales) {
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+  }
+  const { pathname } = window.location;
+  const split = pathname.split('/');
+  const locale = locales[split[1]] || locales[''];
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
+  return locale;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
+      const { origin } = window.location;
       config = { ...conf, env: getEnv() };
-      if (conf.locales) {
-        const { pathname } = window.location;
-        const split = pathname.split('/');
-        const locale = conf.locales[split[1]] || conf.locales[''];
-        locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
-        document.documentElement.setAttribute('lang', locale.ietf);
-        config.locale = locale;
+      config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.locale = getLocale(conf.locales);
+      document.documentElement.setAttribute('lang', config.locale.ietf);
+      if (config.contentRoot) {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
+      } else {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
       }
       return config;
     },
@@ -128,8 +144,8 @@ export async function loadTemplate() {
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
-  const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : projectRoot;
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
@@ -150,8 +166,8 @@ export async function loadTemplate() {
 export async function loadBlock(block) {
   block.dataset.status = 'loading';
   const name = block.classList[0];
-  const { miloLibs, projectRoot } = getConfig();
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : projectRoot;
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
@@ -165,7 +181,7 @@ export async function loadBlock(block) {
         console.log(`Failed loading ${name}`, err);
         if (getEnv() !== 'prod') {
           block.dataset.failed = 'true';
-          block.dataset.reason = `Failed loading ${name ? name.toUpperCase() : ''} block - ${err}`;
+          block.dataset.reason = `Failed loading ${name || ''} block.`;
         }
       }
       resolve();
@@ -173,32 +189,7 @@ export async function loadBlock(block) {
   });
   await Promise.all([styleLoaded, scriptLoaded]);
   delete block.dataset.status;
-  const section = block.closest('.section[data-status]');
-  if (section) {
-    const decoratedBlock = section.querySelector(':scope > [data-status]');
-    if (!decoratedBlock) { delete section.dataset.status; }
-  }
   return block;
-}
-
-export async function loadLCP({ blocks = [], lcpList = LCP_BLOCKS }) {
-  const lcpBlock = blocks.find((block) => lcpList.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loadBlock(lcpBlock, true);
-  }
-  const lcpImg = document.querySelector('main img');
-  return new Promise((resolve) => {
-    if (lcpImg && !lcpImg.complete) {
-      /* c8 ignore next 3 */
-      lcpImg.setAttribute('loading', 'eager');
-      lcpImg.addEventListener('load', () => resolve(lcpImg));
-      lcpImg.addEventListener('error', () => resolve(lcpImg));
-    } else {
-      resolve(lcpImg);
-    }
-  });
 }
 
 export function decorateSVG(a) {
@@ -252,16 +243,8 @@ function decorateLinks(el) {
   }, []);
 }
 
-function decoratePictures(el) {
-  const styledPictures = el.querySelectorAll('strong > picture, em > picture');
-  styledPictures.forEach((picture) => {
-    const styleEl = picture.parentElement;
-    styleEl.parentElement.replaceChild(picture, styleEl);
-  });
-}
-
 function decorateBlocks(el) {
-  const blocks = el.querySelectorAll('div[class]');
+  const blocks = el.querySelectorAll('div[class]:not(.content)');
   return [...blocks].map((block) => {
     block.dataset.status = 'decorated';
     return block;
@@ -300,51 +283,84 @@ function decorateDefaults(el) {
   });
 }
 
-export function decorateNavs(el = document) {
-  const selectors = ['header', 'footer'];
+async function loadHeader() {
+  const header = document.querySelector('header');
   if (getMetadata('header') === 'off') {
     document.body.classList.add('nav-off');
-    selectors.shift();
+    header.remove();
+    return null;
   }
-  const navs = el.querySelectorAll(selectors.toString());
-  return [...navs].map((nav) => {
-    const navType = nav.nodeName.toLowerCase();
-    if (navType === 'header') {
-      nav.className = getMetadata('header') || 'gnav';
-      return nav;
-    }
-    nav.className = navType;
-    return nav;
-  });
+  header.dataset.status = 'decorated';
+  header.className = getMetadata('header') || 'gnav';
+  await loadBlock(header);
+  return header;
 }
 
-function decorateSections(el) {
-  el.querySelectorAll('body > main > div').forEach((section) => {
+async function loadFooter() {
+  const footer = document.querySelector('footer');
+  footer.className = 'footer';
+  await loadBlock(footer);
+  return footer;
+}
+
+function decorateSections(el, isDoc) {
+  const selector = isDoc ? 'body > main > div' : ':scope > div';
+  return [...el.querySelectorAll(selector)].map((section, idx) => {
     decorateDefaults(section);
+    const links = decorateLinks(section);
+    const blocks = decorateBlocks(section);
     section.className = 'section';
-    // Only mark as decorated if blocks are still loading inside
-    const decoratedBlock = section.querySelector(':scope > [data-status]');
-    if (decoratedBlock) { section.dataset.status = 'decorated'; }
+    section.dataset.status = 'decorated';
+    section.dataset.idx = idx;
+    return { el: section, blocks: [...links, ...blocks] };
   });
 }
 
-export function decorateArea(el = document) {
-  const linkBlocks = decorateLinks(el);
-  const blocks = decorateBlocks(el);
-  decoratePictures(el);
-  decorateSections(el);
-  return [...linkBlocks, ...blocks];
+async function loadPostLCP() {
+  loadHeader();
+  loadTemplate();
+  const { locale } = getConfig();
+  const { default: loadFonts } = await import('./fonts.js');
+  loadFonts(locale, loadStyle);
 }
 
-export async function loadArea({ blocks, area, noFollowPath }) {
-  const el = area || document;
+export async function loadDeferred(area) {
   if (getMetadata('nofollow-links') === 'on') {
-    const path = noFollowPath || '/seo/nofollow.json';
+    const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, el);
+    nofollow(path, area);
   }
-  const loaded = blocks.map((block) => loadBlock(block));
-  await Promise.all(loaded);
+}
+
+export async function loadArea(area = document) {
+  const isDoc = area === document;
+  const sections = decorateSections(area, isDoc);
+  // For loops correctly handle awaiting inside them.
+  // eslint-disable-next-line no-restricted-syntax
+  for (const section of sections) {
+    const loaded = section.blocks.map((block) => loadBlock(block));
+
+    // Only move on to the next section when all blocks are loaded.
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.all(loaded);
+
+    // Post LCP operations.
+    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(); }
+
+    // Show the section when all blocks inside are done.
+    delete section.el.dataset.status;
+    delete section.el.dataset.idx;
+  }
+
+  // Post section loading on document
+  if (isDoc) {
+    loadFooter();
+    const { default: loadFavIcon } = await import('./favicon.js');
+    loadFavIcon(createTag, getConfig(), getMetadata);
+  }
+
+  // Load everything that can be deferred until after all blocks load.
+  await loadDeferred(area);
 }
 
 /**
@@ -421,4 +437,12 @@ export function updateObj(obj, defaultObj) {
     if (obj[key] === undefined) obj[key] = ds[key];
   });
   return obj;
+}
+
+export function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
 }

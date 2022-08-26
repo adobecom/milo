@@ -4,21 +4,16 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 
-window.lana = {
-  log: stub(),
-};
+window.lana = { log: stub() };
 
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
   imsClientId: 'milo',
-  projectRoot: `${window.location.origin}/libs`,
-  locales: {
-    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
-    de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
-    cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
-    kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
-  },
+  codeRoot: '/libs',
+  contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
+  locales,
 };
 setConfig(config);
 
@@ -58,6 +53,7 @@ describe('Fragments', () => {
   it('Doesnt create a malformed fragment', async () => {
     const a = document.querySelector('a.malformed');
     await getFragment(a);
+    console.log(window.lana.log.args);
     expect(window.lana.log.args[0][0]).to.equal('Could not make fragment');
   });
 

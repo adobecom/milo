@@ -9,6 +9,7 @@ const blocks = [
   'modal',
   'marquee',
   'section-metadata',
+  'review',
 ];
 
 export default blocks;
