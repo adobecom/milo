@@ -1,5 +1,5 @@
 import { initCaas, loadCaasFiles, loadStrings } from './utils.js';
-import { parseEncodedConfig, setIntersectionObserver } from '../../utils/utils.js';
+import { parseEncodedConfig, createIntersectionObserver } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 1000;
 
@@ -12,7 +12,7 @@ const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
 });
 
 export default async function init(link) {
-  setIntersectionObserver({
+  createIntersectionObserver({
     el: link,
     options: { rootMargin: `${ROOT_MARGIN}px` },
     callback: async (a) => {

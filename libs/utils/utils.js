@@ -443,7 +443,7 @@ export function getBlockClasses(className) {
   return { name, variants };
 }
 
-export function setIntersectionObserver({ el, callback, once = true, options = {} }) {
+export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach(async (entry) => {
       if (entry.isIntersecting) {
@@ -453,4 +453,5 @@ export function setIntersectionObserver({ el, callback, once = true, options = {
     });
   }, options);
   io.observe(el);
+  return io;
 }
