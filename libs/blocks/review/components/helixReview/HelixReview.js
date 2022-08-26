@@ -53,7 +53,7 @@ const HelixReview = ({
 
   const getHelixData = (localDataTotalReviews = 0, hasLocalData = false) => {
     try {
-      if (!reviewPath) {
+      if (!reviewPath || reviewPath === 'no-path') {
         setDisplayReviewComp(true);
         return;
       }
