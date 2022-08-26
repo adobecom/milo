@@ -318,6 +318,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
   const firstDataset = source?.[1]?.slice() || [];
   const isBar = chartType === 'bar';
   const isColumn = chartType === 'column';
+  const isPie = chartType === 'pie';
 
   firstDataset.shift();
 
@@ -333,10 +334,10 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       show: true,
       formatter: ((params) => {
         if (isBar) return barTooltipFormatter(params, units[0]);
-        if (chartType === 'pie') return pieTooltipFormatter(params, units[0]);
+        if (isPie) return pieTooltipFormatter(params, units[0]);
         return tooltipFormatter(params, units);
       }),
-      trigger: isBar || chartType === 'pie' ? 'item' : 'axis',
+      trigger: isBar || isPie ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
     xAxis: {
@@ -372,7 +373,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       if (chartType === 'donut') return donutSeriesOptions(source, data.series, size, units[0], chart);
-      if (chartType === 'pie') return pieSeriesOptions(size);
+      if (isPie) return pieSeriesOptions(size);
       return [];
     })(),
   };
