@@ -13,7 +13,7 @@ const IMS_ENV = 'stg1';
 const URL_POSTXDM = 'https://14257-milocaasproxy-cpeyer.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 
-const isKeyValPair = /(\s*\w+\s*:\s*\w+\s*)/;
+const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
 
 const [setPublishingTrue, setPublishingFalse, isPublishing] = (() => {
@@ -313,8 +313,8 @@ const showConfirm = (msg, {
  * funcs that return an object with { error: string } will report the error
  */
 const props = {
-  arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ type: pair.key, value: pair.value })),
-  badges: (s) => getKeyValPairs(s).map((pair) => ({ [pair.key]: pair.value })),
+  arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ key: pair.key, value: pair.value })),
+  badges: (s) => getKeyValPairs(s).map((pair) => ({ type: pair.key, value: pair.value })),
   bookmarkaction: 0,
   bookmarkenabled: (s = '') => {
     if (s) {
