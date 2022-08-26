@@ -13,9 +13,11 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'marquee',
+  'media',
   'modal',
   'quote',
   'section-metadata',
+  'z-pattern',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },

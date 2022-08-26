@@ -1,0 +1,43 @@
+/* z-pattern - consonant v5.1 */
+@import '../media/media.css';
+
+.z-pattern {
+  padding: var(--spacing-xxl) 0;
+}
+
+.dark .z-pattern,
+.z-pattern.dark {
+  color: #fff;
+}
+
+.z-pattern .heading-row {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.z-pattern .heading-row .headline,
+.z-pattern .heading-row p {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.z-pattern .media > .foreground .media-row {
+  padding: var(--spacing-l) 0;
+}
+
+.z-pattern .media:last-of-type > .foreground .media-row {
+  padding-bottom: 0;
+}
+
+@media screen and (min-width: 600px) {
+  .z-pattern .heading-row {
+    max-width: 1000px;
+  }
+
+  .z-pattern.small .heading-row {
+    max-width: 800px;
+  }
+
+  .z-pattern.large .heading-row {
+    max-width: 1200px;
+  }
+}
