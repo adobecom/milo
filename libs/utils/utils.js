@@ -298,7 +298,16 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
-  footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
+  const footerPath = getMetadata('footerPath');
+  if (getMetadata('footer') === 'off') {
+    footer.remove();
+    return null;
+  }
+  if (footerPath) {
+    footer.setAttribute('data-footer-source', `${footerPath}/footer`);
+  } else {
+    footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
+  }
   footer.className = 'footer';
   await loadBlock(footer);
   return footer;
