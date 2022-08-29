@@ -124,6 +124,10 @@ function getSharepointConfig(config) {
           method: 'POST',
           payload: { '@microsoft.graph.conflictBehavior': 'replace' },
         },
+        copy: {
+          baseURI,
+          method: 'POST',
+        },
       },
       directory: {
         create: {

@@ -228,6 +228,38 @@ async function saveFile(file, dest) {
   throw new Error(`Could not upload file ${dest}`);
 }
 
+async function getVersionOfFile(filePath, versionNumber) {
+  validateConnection();
+  const { sp } = await getConfig();
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  options.method = 'GET';
+  const versionFile = await fetch(`${sp.api.file.get.baseURI}${filePath}:/versions/${versionNumber}/content`, options);
+  if (versionFile.ok) {
+    return versionFile.blob();
+  }
+  throw new Error(`Could not get version ${versionNumber} of ${filePath}`);
+}
+
+async function getLastRolloutVersion(filePath) {
+  validateConnection();
+  const { sp } = await getConfig();
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  options.method = 'GET';
+  const itemFields = await fetch(`${sp.api.file.get.baseURI}${filePath}:/listItem/fields`, options);
+  if (itemFields.ok) {
+    const itemFieldsJson = await itemFields.json();
+    return itemFieldsJson.RolloutVersion;
+  }
+  if (itemFields.status === 404) {
+    return '0.0';
+  }
+  throw new Error(`Could not get last rollout version ${filePath}`);
+}
+
 async function getFileVersionInfo(filePath) {
   validateConnection();
   const { sp } = await getConfig();
@@ -262,16 +294,53 @@ async function updateFile(dest, metadata) {
   throw new Error(`Could not update file with metadata ${metadata}`);
 }
 
+async function getMetadata(srcPath, file) {
+  const metadata = {};
+  if (file) {
+    metadata.rolloutTime = file.lastModifiedDateTime;
+    metadata.rolloutVersion = await getFileVersionInfo(srcPath);
+  }
+  return metadata;
+}
+
+async function copy(srcPath, dest) {
+  validateConnection();
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  const { sp } = await getConfig();
+  options.method = sp.api.file.copy.method;
+  const { baseURI } = sp.api.file.update;
+  const payload = { parentReference: { path: `${baseURI.split('/').pop()}${dest}` } };
+  options.body = JSON.stringify(payload);
+  return fetch(`${baseURI}${srcPath}:/copy`, options);
+}
+
+async function copyFileAndUpdateMetadata(srcPath, dest) {
+  const copiedFile = await copy(srcPath, dest);
+  const fileName = srcPath.split('/').pop();
+  if (copiedFile) {
+    await updateFile(`${dest}/${fileName}`, await getMetadata(srcPath, copiedFile));
+    return copiedFile;
+  }
+  throw new Error(`Could not copy file ${dest}`);
+}
+
 async function saveFileAndUpdateMetadata(srcPath, file, dest) {
   const uploadedFile = await saveFile(file, dest);
-  const metadata = {};
   if (uploadedFile) {
-    metadata.rolloutTime = uploadedFile.lastModifiedDateTime;
-    metadata.rolloutVersion = await getFileVersionInfo(srcPath);
-    await updateFile(dest, metadata);
+    await updateFile(dest, await getMetadata(srcPath, uploadedFile));
     return uploadedFile;
   }
   throw new Error(`Could not upload file ${dest}`);
 }
 
-export { getFiles, saveFile, saveFileAndUpdateMetadata, connect, updateProjectWithSpStatus };
+export { getFiles,
+  getLastRolloutVersion,
+  getVersionOfFile,
+  getFileVersionInfo,
+  saveFile,
+  saveFileAndUpdateMetadata,
+  copyFileAndUpdateMetadata,
+  connect,
+  updateProjectWithSpStatus };
