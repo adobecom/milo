@@ -10,7 +10,7 @@ const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const IMS_CLIENT_ID = 'milo_ims';
 const IMS_ENV = 'stg1';
-const URL_POSTXDM = 'https://14257-milocaasproxy-cpeyer.adobeio-static.net/api/v1/web/milocaas/postXDM';
+const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
@@ -279,6 +279,7 @@ const showConfirm = (msg, {
   ctaText = 'OK',
   cancelBtnType = 'default',
   cancelText = 'Cancel',
+  footerContent = '',
   leftButton,
 } = {}) => new Promise((resolve) => {
   let ok = false;
@@ -286,12 +287,15 @@ const showConfirm = (msg, {
     footer: true,
     closeMethods: ['escape'],
     onClose() {
-      if (onClose) onClose();
+      if (onClose) onClose(this);
       this.destroy();
       resolve(ok);
     },
   });
   modal.setContent(msg);
+  if (footerContent) {
+    modal.setFooterContent(footerContent);
+  }
   modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
     ok = true;
     modal.close();
@@ -382,6 +386,7 @@ const getCaasProps = (p) => {
     entityId: p.entityid,
     contentId: p.contentid,
     contentType: p.contenttype,
+    draftOnly: p.draftOnly,
     environment: p.env,
     url: p.url,
     floodGateColor: p.floodgatecolor,
@@ -497,10 +502,20 @@ const displayPublishingModal = () => {
 
 const checkTags = async (tags, tagErrors, showAllPropertiesAlert) => {
   let okToContinue = false;
+  let draftOnly = false;
+
   const seeAllPropsBtn = {
     text: 'See all properties',
     callback: showAllPropertiesAlert,
   };
+
+  const draftCb = '<div id="caas-draft-cb"><input type="checkbox" id="draftcb" name="draftcb">'
+    + '<label for="draftcb">Publish to Draft only</label></div>';
+
+  const onClose = () => {
+    draftOnly = document.getElementById('draftcb')?.checked;
+  };
+
   if (tagErrors.length) {
     const msg = [
       '<p><b>The following tags were not found:</b></p>',
@@ -514,7 +529,9 @@ const checkTags = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelBtnType: 'grey',
       cancelText: 'Cancel Registration',
       ctaBtnType: 'danger',
+      footerContent: draftCb,
       leftButton: seeAllPropsBtn,
+      onClose,
     });
   } else {
     const msg = [
@@ -526,10 +543,15 @@ const checkTags = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelBtnType: 'grey',
       cancelText: 'Cancel Registration',
       ctaText: 'Continue with these tags',
+      footerContent: draftCb,
       leftButton: seeAllPropsBtn,
+      onClose,
     });
   }
-  return okToContinue;
+  return {
+    okToContinue,
+    draftOnly,
+  };
 };
 
 const validateProps = async (prodHost, publishingModal) => {
@@ -539,7 +561,9 @@ const validateProps = async (prodHost, publishingModal) => {
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${JSON.stringify(caasMetadata, undefined, 4)}</pre>`);
   };
 
-  const okToContinue = await checkTags(tags, tagErrors, showAllPropertiesAlert);
+  const { okToContinue, draftOnly } = await checkTags(tags, tagErrors, showAllPropertiesAlert);
+
+  caasMetadata.draftOnly = draftOnly;
 
   if (!okToContinue) {
     setPublishingFalse();
@@ -590,10 +614,16 @@ const checkIms = async (publishingModal) => {
 };
 
 const postToCaaS = async (propsObj, accessToken, publishingModal) => {
+  const draftOnly = propsObj.draftOnly || false;
+  delete propsObj.draftOnly;
+
   const options = {
     method: 'POST',
     body: JSON.stringify(propsObj),
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      draft: draftOnly,
+    },
   };
 
   try {
