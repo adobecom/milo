@@ -1,0 +1,211 @@
+/* icon-block Block */
+
+.icon-block {
+  display: flex;
+  width: 100%;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+
+.icon-block p {
+  margin: 0;
+}
+
+/* Standard */
+
+.icon-block .background {
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.icon-block .background>div {
+  height: 100%;
+}
+
+.icon-block .background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+}
+
+.icon-block .foreground.container {
+  padding-top: var(--spacing-xxxl);
+  display: flex;
+  position: relative;
+  align-items: baseline;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.icon-block .foreground.container .text {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  width: 100%;
+  margin-bottom: var(--spacing-xxxl);
+}
+
+.icon-block .foreground.container .icon-area {
+  margin: 0 auto var(--spacing-xs) auto;
+  height: 80px;
+  max-width: 234px;
+  overflow: hidden;
+}
+
+.icon-block .foreground.container .icon-area img {
+  height: 80px;
+  width: auto;
+}
+
+.icon-block .foreground.container .text>* {
+  width: 100%;
+}
+
+.icon-block .foreground.container .text .heading-XL,
+.icon-block .foreground.container .text .heading-S {
+  margin: var(--spacing-xs) 0;
+}
+
+.icon-block .foreground.container .text .body-M {
+  margin-bottom: var(--spacing-s);
+}
+
+.icon-block .foreground.container .text .action-area {
+  margin-bottom: 0;
+}
+
+.icon-block .foreground.container .text .action-area>a {
+  margin-right: var(--spacing-s);
+  white-space: nowrap;
+}
+
+.icon-block .foreground.container .text .action-area>a:last-child {
+  margin: 0;
+}
+
+
+.icon-block .foreground.container div {
+  flex: 1 1 auto;
+}
+
+/* Vertical */
+
+.icon-block.vertical .foreground.container {
+  text-align: left;
+  margin-bottom: var(--spacing-s);
+}
+
+.icon-block.vertical .foreground.container .text {
+  margin-bottom: var(--spacing-xxl);
+}
+
+.icon-block.vertical .foreground.container .icon-area {
+  margin: 0;
+  margin-bottom: var(--spacing-xxs);
+}
+
+.icon-block.vertical .foreground.container .text .action-area>a:not(.con-button) {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+
+/* Tablet */
+@media screen and (min-width: 600px) {
+  .icon-block .foreground.container .icon-area {
+    max-width: 234px;
+  }
+
+  /* Vertical */
+
+  .icon-block.vertical .foreground.container {
+    gap: 32px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .icon-block.vertical.two-up .foreground.container .text,
+  .icon-block.vertical.three-up .foreground.container .text,
+  .icon-block.vertical.four-up .foreground.container .text {
+    flex: 1 1 45%;
+  }
+
+  /* 3up tablet layout with flexbox */
+  .icon-block.vertical.three-up .foreground.container .text:last-child {
+    padding-right: 53%;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 1200px) {
+  .icon-block .foreground.container {
+    padding: var(--spacing-xxxl) 0;
+  }
+
+  .icon-block .foreground.container .text {
+    margin: 0 auto;
+  }
+
+  .icon-block:not(.vertical) .foreground.container {
+    max-width: 800px;
+  }
+
+  .icon-block .foreground.container .icon-area {
+    max-width: 400px;
+  }
+
+  /* Vertical */
+
+  .icon-block.vertical .foreground.container {
+    flex-wrap: nowrap;
+    margin-bottom: 0;
+  }
+
+  .icon-block.vertical .foreground.container .text {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-bottom: 0;
+  }
+
+  .icon-block.vertical.two-up .foreground.container {
+    max-width: 1000px;
+  }
+
+  .icon-block.vertical.two-up .foreground.container .text {
+    flex: 1 1 50%;
+  }
+
+  .icon-block.vertical.three-up .foreground.container .text {
+    flex: 1 1 33.3%;
+  }
+
+  .icon-block.vertical.four-up .foreground.container .text {
+    flex: 1 1 25%;
+  }
+
+  .icon-block.vertical.three-up .foreground.container .text:last-child {
+    padding-right: 0;
+  }
+
+  .icon-block.vertical.two-up .foreground.container .icon-area {
+    max-width: 400px;
+  }
+
+  .icon-block.vertical.three-up .foreground.container .icon-area {
+    max-width: 300px;
+  }
+
+  .icon-block.vertical.four-up .foreground.container .icon-area {
+    max-width: 276px;
+  }
+}
