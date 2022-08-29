@@ -18,31 +18,6 @@ function hasSchema(host) {
   return false;
 }
 
-const sendToCaaS = async (_, sk) => {
-  const SCRIPT_ID = 'send-caas-listener';
-  const dispatchEvent = () => document.dispatchEvent(
-    new CustomEvent('send-to-caas', {
-      detail: {
-        host: sk.config.host,
-        project: sk.config.project,
-        branch: sk.config.ref,
-        repo: sk.config.repo,
-        owner: sk.config.owner,
-      },
-    }),
-  );
-
-  if (!document.getElementById(SCRIPT_ID)) {
-    const script = document.createElement('script');
-    script.src = '/tools/send-to-caas/sendToCaasEventListener.js';
-    script.id = SCRIPT_ID;
-    script.onload = () => dispatchEvent();
-    document.head.appendChild(script);
-  } else {
-    dispatchEvent();
-  }
-};
-
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
@@ -55,11 +30,14 @@ const sendToCaaS = async (_, sk) => {
     ],
     plugins: [
       {
-        id: 'register-caas',
+        id: 'send-to-caas',
         condition: (s) => s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
         button: {
           text: 'Send to CaaS',
-          action: sendToCaaS,
+          action: async (_, sk) => {
+            const { default: sendToCaaS } = await import('/tools/send-to-caas/sidekick.js');
+            sendToCaaS(_, sk);
+          },
         },
       },
       // TOOLS ---------------------------------------------------------------------
