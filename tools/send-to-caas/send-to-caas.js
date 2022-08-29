@@ -4,7 +4,7 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 
-loadStyle('/tools/send-to-caas/send-to-caas.css');
+loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -252,7 +252,10 @@ const isPagePublished = async () => {
 // Tingle is the js library for displaying modals
 const loadTingleModalFiles = async () => {
   if (!window.tingle?.modal) {
-    await Promise.all([loadScript('/libs/deps/tingle.js'), loadStyle('/libs/deps/tingle.css')]);
+    await Promise.all([
+      loadScript('https://milo.adobe.com/libs/deps/tingle.js'),
+      loadStyle('https://milo.adobe.com/libs/deps/tingle.css'),
+    ]);
   }
 };
 
