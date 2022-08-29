@@ -35,7 +35,7 @@ function hasSchema(host) {
         button: {
           text: 'Send to CaaS',
           action: async (_, sk) => {
-            const { default: sendToCaaS } = await import('/tools/send-to-caas/sidekick.js');
+            const { default: sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/sidekick.js');
             sendToCaaS(_, sk);
           },
         },
