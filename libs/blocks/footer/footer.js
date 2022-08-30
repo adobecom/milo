@@ -2,6 +2,7 @@ import {
   debug,
   createTag,
   getConfig,
+  decorateAutoBlock,
 } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -104,33 +105,23 @@ class Footer {
   };
 
   decorateRegion = async () => {
-    const region = this.body.querySelector('.region-selector > div');
-    const regionTextContent = this.body.querySelector('.region-selector div > div')?.innerText;
-    if (!region) return null;
+    const regionButton = this.body.querySelector('.region-selector a');
+    if (!regionButton) return null;
+    decorateAutoBlock(regionButton);
+    const regionTextContent = regionButton.textContent;
+    regionButton.textContent = '';
+    regionButton.className = 'footer-region-button';
+    regionButton.setAttribute('aria-haspopup', true);
+    regionButton.setAttribute('aria-label', regionTextContent);
+    regionButton.setAttribute('role', 'button');
+    regionButton.setAttribute('tabindex', 0);
+
     const regionContainer = createTag('div', { class: 'footer-region' });
-    const regionButton = createTag('a', {
-      class: 'footer-region-button',
-      id: 'region-button',
-      'aria-haspopup': true,
-      'aria-label': regionTextContent,
-      href: '#modal',
-      role: 'button',
-      tabindex: 0,
-    });
+
     const regionText = createTag('span', { class: 'footer-region-text' }, regionTextContent);
     regionButton.insertAdjacentHTML('afterbegin', GLOBE_IMG);
     regionButton.append(regionText);
     regionContainer.append(regionButton);
-
-    const regionLinks = region.querySelectorAll('a');
-    regionLinks.forEach((link) => {
-      const selected = link.parentNode.nodeName === 'STRONG';
-      const options = { class: 'footer-region-option' };
-      if (selected) {
-        options.class += ' footer-region-selected';
-        options['aria-current'] = 'page';
-      }
-    });
     return regionContainer;
   };
 
