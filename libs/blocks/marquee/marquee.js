@@ -19,7 +19,7 @@ function decorateText(el, isLarge) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
   heading.className = isLarge ? 'heading-XXL' : 'heading-XL';
-  heading.nextElementSibling.className = isLarge ? 'body-XL' : 'body-M';
+  heading.nextElementSibling?.className = isLarge ? 'body-XL' : 'body-M';
   if (heading.previousElementSibling) {
     heading.previousElementSibling.className = isLarge ? 'detail-L' : 'detail-M';
   }
