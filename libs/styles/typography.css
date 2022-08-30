@@ -111,3 +111,12 @@
   background-color: #fff;
   color: #000;
 }
+
+/* mobile only */
+@media (max-width: 600px) {
+  .con-button.button-justified-mobile {
+    display: block;
+    text-align: center;
+    width: 100%;
+  }
+}

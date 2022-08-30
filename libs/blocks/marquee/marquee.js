@@ -25,6 +25,14 @@ function decorateText(el, isLarge) {
   }
 }
 
+function extendButtonsClass(text) {
+  const buttons = text.querySelectorAll('a.con-button');
+  if (buttons.length === 0) return;
+  buttons.forEach((button) => {
+    button.classList.add('button-justified-mobile');
+  });
+}
+
 export default function init(el) {
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
@@ -41,4 +49,5 @@ export default function init(el) {
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-XL' : false);
   decorateText(text, size === 'large');
+  extendButtonsClass(text, size === 'large');
 }

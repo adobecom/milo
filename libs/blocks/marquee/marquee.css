@@ -9,7 +9,7 @@
 }
 
 .marquee.light, .marquee.quiet, .marquee.inline {
-  color: #2C2C2C;
+  color: var(--text-color);
 }
 
 .marquee.centered {
@@ -30,27 +30,22 @@
 
 .marquee .foreground {
   position: relative;
-  display: flex;
-  align-items: stretch;
-  flex-direction: column;
-  gap: var(--spacing-m);
   padding: var(--spacing-xl) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-l);
 }
 
 .marquee.small .foreground {
   padding: var(--spacing-l) 0;
 }
 
-.marquee.large .foreground {
-  padding: 0;
-  max-width: 100%;
-}
-
 .marquee .foreground > div {
-  flex: 0 0 auto;
+  flex: 1 1 50%;
 }
 
-.marquee.quiet .foreground > div {
+.marquee.quiet .foreground > div,
+.marquee.inline .foreground > div{
   flex: 0 0 100%;
 }
 
@@ -113,8 +108,8 @@
 }
 
 .marquee .action-area a {
-  width: 100%;
-  text-align: center;
+  /*width: 100%;*/
+  /*text-align: center;*/
 }
 
 .marquee.large .supplemental-text {
@@ -135,7 +130,6 @@
 .marquee .image img {
   display: block;
   width: 100%;
-  min-height: 150px; /* this should change after breaking 05 */
   height: auto;
 }
 
@@ -171,26 +165,17 @@
 
   .marquee .foreground {
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
     padding: 0;
-    gap: calc(var(--grid-column-width));
+    gap: var(--spacing-l);
   }
 
   .marquee.small .foreground {
     padding: 0;
   }
 
-  .marquee.large .foreground {
-    max-width: var(--grid-container-width);
-  }
-
-  .marquee .text {
-    width: calc(var(--grid-column-width) * 5);
-  }
-
-  .marquee .image {
-    width: calc(var(--grid-column-width) * 6);
+  .marquee .image img {
+    min-height: 150px;
   }
 
   .marquee .text {
