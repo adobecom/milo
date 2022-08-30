@@ -300,7 +300,7 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
-  const footerPath = getMetadata('footerpath');
+  const footerPath = getMetadata('footer-source');
   if (getMetadata('footer') === 'off') {
     footer.remove();
     return null;
