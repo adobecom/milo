@@ -10,7 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
-import { decorateButtons, decorateBlockBg, decorateBlockDaa, decorateText } from '../../scripts/decorate.js';
+import { decorateButtons, decorateBlockBg, decorateText } from '../../utils/decorate.js';
+import { decorateBlockAnalytics } from '../../utils/analytics.js'
 
 /*
  * Text Block - v5.1
@@ -39,6 +40,7 @@ export default function init(el) {
   const container = document.createElement('div');
   container.classList.add('foreground', 'container');
   el.appendChild(container);
+  el.classList.add('block');
 
   // process rows
   rows.forEach((row, idx) => {
@@ -56,5 +58,5 @@ export default function init(el) {
     col.querySelector('a + a')?.closest('p').classList.add('action-area');
     decorateText(el, col.querySelector('h1, h2, h3, h4, h5, h6'));
   });
-  decorateBlockDaa(el);
+  decorateBlockAnalytics(el);
 }

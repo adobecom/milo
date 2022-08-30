@@ -1,11 +1,6 @@
 .text.block {
-  display: none;
   padding: var(--spacing-xxl) 0;
   position: relative;
-}
-
-.text[data-block-status="loaded"] {
-  display: block;
 }
 
 .text p {
