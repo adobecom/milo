@@ -191,13 +191,17 @@ export default async function init(block) {
   if (url) {
     const html = await fetchFooter(url);
     if (html) {
-      try {
-        const parser = new DOMParser();
-        const footerDoc = parser.parseFromString(html, 'text/html');
-        const footer = new Footer(footerDoc.body, block);
-        footer.init();
-      } catch {
-        debug('Could not create footer.');
+      if (html === '404 Not Found') {
+        debug('404 Page not found.');
+      } else {
+        try {
+          const parser = new DOMParser();
+          const footerDoc = parser.parseFromString(html, 'text/html');
+          const footer = new Footer(footerDoc.body, block);
+          footer.init();
+        } catch {
+          debug('Could not create footer.');
+        }
       }
     }
   }
