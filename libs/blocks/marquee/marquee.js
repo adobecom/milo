@@ -13,23 +13,7 @@
 /*
  * Marquee - v1.0.0
  */
-
-function decorateButtons(el, isLarge) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
-}
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 
 function decorateText(el, isLarge) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -42,6 +26,8 @@ function decorateText(el, isLarge) {
 }
 
 export default function init(el) {
+  const isLight = el.classList.contains('light');
+  if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {
@@ -52,7 +38,7 @@ export default function init(el) {
   text.classList.add('text');
   const image = foreground.querySelector(':scope > div:not([class])');
   image?.classList.add('image');
-  const isLarge = el.closest('.marquee').classList.contains('large');
-  decorateButtons(text, isLarge);
-  decorateText(text, isLarge);
+  const size = getBlockSize(el);
+  decorateButtons(text, size === 'large' ? 'button-XL' : false);
+  decorateText(text, size === 'large');
 }

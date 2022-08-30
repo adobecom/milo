@@ -11,6 +11,7 @@
  */
 
 /* Consonant Typography */
+.heading-XXL,
 .heading-XL,
 .heading-L,
 .heading-M,
@@ -25,12 +26,14 @@
   margin: 0;
 }
 
+.heading-XXL { font-size: var(--type-heading-xl-size); }
 .heading-XL { font-size: var(--type-heading-xl-size); }
 .heading-L { font-size: var(--type-heading-l-size); }
 .heading-M { font-size: var(--type-heading-m-size); }
 .heading-S { font-size: var(--type-heading-s-size); }
 .heading-XS { font-size: var(--type-heading-xs-size); }
 
+.body-XL { font-size: var(--type-body-Xl-size); }
 .body-L { font-size: var(--type-body-l-size); }
 .body-M { font-size: var(--type-body-m-size); }
 .body-S { font-size: var(--type-body-s-size); }

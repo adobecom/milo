@@ -1,13 +1,14 @@
 // Decorate utils
 
-export function decorateButtons(el, isLarge) {
+export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
+    button.classList.add('con-button', buttonType);
+    // size class opt. - button-L, button-XL
+    if (size) button.classList.add(size);
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
