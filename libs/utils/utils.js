@@ -210,7 +210,7 @@ export function decorateSVG(a) {
   }
 }
 
-function decorateAutoBlock(a) {
+export function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
