@@ -300,13 +300,13 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
-  const footerPath = getMetadata('footerPath');
+  const footerPath = getMetadata('footerpath');
   if (getMetadata('footer') === 'off') {
     footer.remove();
     return null;
   }
   if (footerPath) {
-    footer.setAttribute('data-footer-source', `${footerPath}/footer`);
+    footer.setAttribute('data-footer-source', `${footerPath}`);
   } else {
     footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
   }
@@ -457,18 +457,6 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
-}
-
-export async function fetchPlaceholders() {
-  if (!window.placeholders) {
-    const resp = await fetch(`${window.location.origin}/placeholders.json`);
-    const json = await resp.json();
-    window.placeholders = {};
-    json.data.forEach((placeholder) => {
-      window.placeholders[placeholder.Key] = placeholder.Text;
-    });
-  }
-  return window.placeholders;
 }
 
 export function debug(message) {
