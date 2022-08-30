@@ -494,6 +494,7 @@ const CopyBtn = () => {
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [configUrl, setConfigUrl] = useState('');
+  const [btnText, setBtnText] = useState('Copy');
 
   const setTempStatus = (setFn, status = true) => {
     setFn(status);
@@ -522,10 +523,24 @@ const CopyBtn = () => {
     const data = [new ClipboardItem({ [blob.type]: blob })];
     navigator.clipboard.write(data).then(
       () => {
-        setTempStatus(setIsSuccess);
+        setTempStatus((status) => {
+          if (status) {
+            setBtnText('OK!');
+          } else {
+            setBtnText('Copy');
+          }
+          setIsSuccess(status);
+        });
       },
       () => {
-        setTempStatus(setIsError);
+        setTempStatus((status) => {
+          if (status) {
+            setBtnText('Error');
+          } else {
+            setBtnText('Copy');
+          }
+          setIsError(status);
+        });
       },
     );
   };
@@ -537,7 +552,7 @@ const CopyBtn = () => {
         : ''}"
       onClick=${copyConfig}
     >
-      Copy
+      ${btnText}
     </button>`;
 };
 /* c8 ignore stop */
