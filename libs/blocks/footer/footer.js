@@ -182,26 +182,31 @@ class Footer {
 
 async function fetchFooter(url) {
   const resp = await fetch(`${url}.plain.html`);
-  const html = await resp.text();
-  return html;
+  const respText = await resp.text();
+
+  if (!resp.ok) {
+    return { error: respText }; // can pass additional Response info if needed
+  }
+
+  return { html: respText };
 }
 
 export default async function init(block) {
   const url = block.getAttribute('data-footer-source');
   if (url) {
-    const html = await fetchFooter(url);
+    const { html, error } = await fetchFooter(url);
+    if (error) {
+      debug(`Could not create footer: ${error}`);
+      return;
+    }
     if (html) {
-      if (html === '404 Not Found') {
-        debug('404 Page not found.');
-      } else {
-        try {
-          const parser = new DOMParser();
-          const footerDoc = parser.parseFromString(html, 'text/html');
-          const footer = new Footer(footerDoc.body, block);
-          footer.init();
-        } catch {
-          debug('Could not create footer.');
-        }
+      try {
+        const parser = new DOMParser();
+        const footerDoc = parser.parseFromString(html, 'text/html');
+        const footer = new Footer(footerDoc.body, block);
+        footer.init();
+      } catch {
+        debug('Could not create footer.');
       }
     }
   }
