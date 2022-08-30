@@ -74,7 +74,7 @@ describe('loadStrings', () => {
             ],
           }),
         });
-      })
+      }),
     );
   });
 
