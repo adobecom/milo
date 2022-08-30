@@ -47,7 +47,7 @@
 
 .tingle-modal .tingle-btn.tingle-btn--grey {
     color: rgb(34, 34, 34);
-    background-color: rgb(230, 230, 230);
+    background-color: rgb(179, 179, 179);
     border-color: rgb(245, 245, 245);
 }
 
@@ -63,4 +63,18 @@
 .tingle-modal .tingle-btn.tingle-btn--danger:hover {
     background-color: rgb(174, 1, 1);
     border-color: transparent;
+}
+
+.tingle-modal .tingle-modal-box__footer #caas-draft-cb {
+    text-align: center;
+    background-color: rgb(230, 230, 230);
+    border-radius: 5px;
+    margin-bottom: 16px;
+    padding: 5px 0;
+    width: 300px;
+    margin: -10px auto 16px auto;
+}
+
+.tingle-modal .tingle-modal-box__footer #caas-draft-cb > label {
+    margin-left: 5px;
 }
