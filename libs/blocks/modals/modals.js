@@ -1,4 +1,3 @@
-import getFragment from '../fragment/fragment.js';
 import { getMetadata, makeRelative } from '../../utils/utils.js';
 
 function getDetails() {
@@ -48,6 +47,7 @@ async function getModal() {
     const linkBlock = document.createElement('a');
     linkBlock.href = details.path;
 
+    const { default: getFragment } = await import('../fragment/fragment.js');
     await getFragment(linkBlock, dialog);
 
     dialog.append(linkBlock, close);

@@ -21,13 +21,48 @@ function hasSchema(host) {
 // This file contains the project-specific configuration for the sidekick.
 (() => {
   window.hlx.initSidekick({
-    project: 'Milo',
-    host: 'milo.adobe.com',
-    previewHost: 'main--milo--adobecom.hlx.page',
-    byocdn: true,
     hlx3: true,
+    libraries: [
+      {
+        text: 'Blocks',
+        paths: ['https://main--milo--adobecom.hlx.page/docs/library/blocks.json'],
+      },
+    ],
     plugins: [
+      {
+        id: 'send-to-caas',
+        condition: (s) => s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
+        button: {
+          text: 'Send to CaaS',
+          action: async (_, sk) => {
+            const { default: sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/sidekick.js');
+            sendToCaaS(_, sk);
+          },
+        },
+      },
       // TOOLS ---------------------------------------------------------------------
+      {
+        id: 'library',
+        condition: (s) => s.isEditor(),
+        button: {
+          text: 'Library',
+          action: (_, s) => {
+            const { config } = s;
+            // Change this for local development
+            const domain = `https://${config.innerHost}`;
+            const script = document.createElement('script');
+            script.onload = () => {
+              const skEvent = new CustomEvent(
+                'hlx:library-loaded',
+                { detail: { domain, libraries: config.libraries } },
+              );
+              document.dispatchEvent(skEvent);
+            };
+            script.src = `${domain}/libs/ui/library/library.js`;
+            document.head.appendChild(script);
+          },
+        },
+      },
       {
         id: 'tools',
         condition: (s) => s.isEditor(),
@@ -35,7 +70,7 @@ function hasSchema(host) {
           text: 'Tools',
           action: (_, s) => {
             const { config } = s;
-            window.open(`https://${config.previewHost}/tools/`, 'milo-tools');
+            window.open(`https://${config.innerHost}/tools/`, 'milo-tools');
           },
         },
       },
@@ -46,7 +81,14 @@ function hasSchema(host) {
           text: 'Translate',
           action: (_, sk) => {
             const { config } = sk;
-            window.open(`${config.pluginHost ? config.pluginHost : `http://${config.innerHost}`}/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${config.owner}&repo=${config.repo}&ref=${config.ref}`, 'hlx-sidekick-spark-translation');
+            window.open(
+              `${
+                config.pluginHost ? config.pluginHost : `http://${config.innerHost}`
+              }/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${
+                config.owner
+              }&repo=${config.repo}&ref=${config.ref}`,
+              'hlx-sidekick-spark-translation',
+            );
           },
         },
       },
@@ -56,7 +98,12 @@ function hasSchema(host) {
         button: {
           text: 'Check Schema',
           action: () => {
-            window.open(`https://search.google.com/test/rich-results?url=${encodeURIComponent(window.location.href)}`, 'check-schema');
+            window.open(
+              `https://search.google.com/test/rich-results?url=${encodeURIComponent(
+                window.location.href,
+              )}`,
+              'check-schema',
+            );
           },
         },
       },

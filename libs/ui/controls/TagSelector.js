@@ -99,7 +99,14 @@ const TagSelectDropdown = ({
   `;
 };
 
-const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value = [] }) => {
+const TagSelectModal = ({
+  close,
+  onToggle,
+  options = {},
+  optionMap = {},
+  singleSelect = false,
+  value = [],
+}) => {
   const [columns, setColumns] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -125,6 +132,12 @@ const TagSelectModal = ({ close, onToggle, options = {}, optionMap = {}, value =
   const onCheck = (e) => {
     e.preventDefault();
     const inputEl = e.currentTarget.firstChild;
+
+    if (singleSelect) {
+      onToggle(inputEl.id);
+      close();
+      return;
+    }
 
     if (inputEl.classList.contains('checked')) {
       inputEl.classList.remove('checked');
@@ -250,6 +263,7 @@ const TagSelect = ({
   onChange,
   options = {},
   value = [],
+  singleSelect = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModal, setIsModal] = useState(false);
@@ -316,7 +330,7 @@ const TagSelect = ({
     if (!value.includes(val)) {
       value.push(val);
     }
-    onChange([...value]);
+    onChange(singleSelect ? [val] : [...value]);
   };
 
   const removeOption = (val) => {
@@ -368,6 +382,7 @@ const TagSelect = ({
             value=${value}
             close=${toggleOpen}
             onToggle=${onToggle}
+            singleSelect=${singleSelect}
           />`,
           modalDiv,
         )}

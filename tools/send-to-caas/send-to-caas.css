@@ -1,0 +1,88 @@
+.modal-text-align-center .tingle-modal-box__content {
+    text-align: center;
+}
+
+.modal-error {
+    display: flex;
+    align-items: center;
+}
+
+.modal-alert {
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-right: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='18' width='18'%3E%3Cpath d='M8.563 1.29.2 16.255A.5.5 0 0 0 .636 17h16.728a.5.5 0 0 0 .436-.744L9.436 1.29a.5.5 0 0 0-.872 0ZM10 14.75a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' style='fill:%23464646'/%3E%3C/svg%3E");
+}
+
+.tingle-modal-box {
+    max-width: 800px;
+}
+
+.tingle-modal .tingle-btn {
+    background-color: rgb(4, 105, 227);
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 2px;
+    font-size: 16px;
+    font-weight: 700;
+    height: auto;
+    min-height: 36px;
+    min-width: 72px;
+    padding: 3px 14px 5px;
+
+    /* border-radius: 27px; */
+    font-family: adobe-clean-bold,adobe-clean,Helvetica Neue,Helvetica,sans-serif;
+    /* font-size: 1.375rem;
+    min-height: 48px;
+    padding: 8px 36.5px; */
+}
+
+.tingle-modal .tingle-btn.tingle-btn--default:hover,
+.tingle-modal .tingle-btn.tingle-btn--primary:hover {
+    background-color: rgb(2, 98, 213);
+    border-color: transparent;
+}
+
+.tingle-modal .tingle-btn.tingle-btn--grey {
+    color: rgb(34, 34, 34);
+    background-color: rgb(179, 179, 179);
+    border-color: rgb(245, 245, 245);
+}
+
+.tingle-modal .tingle-btn.tingle-btn--grey:hover {
+    background-color: rgb(223, 223, 223);
+    border-color: transparent;
+}
+
+.tingle-modal .tingle-btn.tingle-btn--danger {
+    background-color: rgb(187, 2, 2);
+}
+
+.tingle-modal .tingle-btn.tingle-btn--danger:hover {
+    background-color: rgb(174, 1, 1);
+    border-color: transparent;
+}
+
+.tingle-modal .tingle-modal-box__footer #caas-draft-cb {
+    margin-left: 20px;
+    text-align: center;
+}
+
+.tingle-modal .tingle-modal-box__footer .verify-info-footer {
+    align-items: center;
+    display: flex;
+    font-weight: 500;
+    justify-content: flex-start;
+    margin: -10px 0 20px 20px;
+}
+
+.tingle-modal .caas-env {
+    display: flex;
+    align-items: center;
+}
+
+.tingle-modal .caas-env > label {
+    margin-right: 10px;
+}

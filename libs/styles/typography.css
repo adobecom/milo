@@ -34,6 +34,7 @@
 .body-L { font-size: var(--type-body-l-size); }
 .body-M { font-size: var(--type-body-m-size); }
 .body-S { font-size: var(--type-body-s-size); }
+.body-XS { font-size: var(--type-body-xs-size); }
 
 .detail-L { font-size: var(--type-detail-l-size); }
 .detail-M { font-size: var(--type-detail-m-size); }

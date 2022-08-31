@@ -10,51 +10,35 @@
  * governing permissions and limitations under the License.
  */
 
-import { getMetadata, decorateArea, loadBlock, loadLazy, loadStyle } from '../utils/utils.js';
+import {
+  loadArea,
+  loadDelayed,
+  setConfig,
+} from '../utils/utils.js';
 
-const LCP_BLOCKS = ['hero', 'home', 'marquee', 'section-metadata'];
+const locales = {
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+  cn: { ietf: 'zh-CN', tk: 'tav4wnu' },
+  kr: { ietf: 'ko-KR', tk: 'zfo3ouc' },
+};
+const config = {
+  imsClientId: 'milo',
+  codeRoot: '/libs',
+  locales,
+};
 
-function decorateNavs(el = document) {
-  const selectors = [];
-  if (getMetadata('nav') !== 'off') {
-    selectors.push('header');
-  }
-  if (getMetadata('footer') !== 'off') {
-    selectors.push('footer');
-  }
-  const navs = el.querySelectorAll(selectors.toString());
-  return [...navs].map((nav) => {
-    nav.className = nav.nodeName.toLowerCase();
-    return nav;
-  });
-}
+(async function loadLCPImage() {
+  const lcpImg = document.querySelector('img');
+  lcpImg?.setAttribute('loading', 'eager');
+}());
 
-export async function loadLCP(blocks) {
-  const lcpBlock = blocks.find((block) => LCP_BLOCKS.includes(block.classList[0]));
-  if (lcpBlock) {
-    const lcpIdx = blocks.indexOf(lcpBlock);
-    blocks.splice(lcpIdx, 1);
-    await loadBlock(lcpBlock, true);
-  }
-}
-
-/**
- * Load everything that impacts performance later.
- */
-export function loadDelayed() {
-  window.setTimeout(() => import('./delayed.js'), 3000);
-}
-
-async function loadPage() {
-  const blocks = decorateArea();
-  const navs = decorateNavs();
-  await loadLCP(blocks);
-  loadStyle('/fonts/fonts.css');
-  await loadLazy([...navs, ...blocks]);
+(async function loadPage() {
+  setConfig(config);
+  await loadArea();
   const { default: loadModals } = await import('../blocks/modals/modals.js');
   loadModals();
   const { getIconLibrary } = await import('../utils/decorate.js');
   await getIconLibrary();
   loadDelayed();
-}
-loadPage();
+}());

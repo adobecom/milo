@@ -37,7 +37,7 @@ describe('Modals', () => {
   it('Opens an inherited modal', async () => {
     const meta = document.createElement('meta');
     meta.name = '-otis';
-    meta.content = 'https://milo.adobe.com/test/scripts/modals/mocks/otis';
+    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/otis';
     document.head.append(meta);
     window.location.hash = '#otis';
     const modal = await init(true);

@@ -1,0 +1,260 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../caas/mocks/utils.js"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <div id="caas-config" class="caas-config">
+          <div>
+            <div><h1 id="content-as-a-service">Content as a Service</h1></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import { stub } from 'sinon';
+    import init from '../../../libs/blocks/caas-config/caas-config.js';
+    import {
+      delay,
+      findByLabel,
+      tagSelectorDropdownChoose,
+      tagSelectorModalChoose,
+      waitForElement,
+    } from '../../helpers/selectors.js';
+    import defaultConfig from './expectedConfigs/defaultConfig.js';
+    import { stubFetch, restoreFetch } from './mockFetch.js';
+
+    stubFetch();
+
+    let config;
+    let caasEl;
+
+    // mock
+    class ConsonantCardCollection {
+      constructor(cfg, el) {
+        config = cfg;
+        caasEl = el;
+      }
+    }
+
+    window.ConsonantCardCollection = ConsonantCardCollection;
+
+    const waitForCaaS = (configPanelEl) =>
+      new Promise((resolve, reject) => {
+        const caasObserver = new MutationObserver((_, observer) => {
+          observer.disconnect();
+          resolve();
+        });
+
+        caasObserver.observe(configPanelEl, {
+          childList: true,
+          subtree: true,
+        });
+      });
+
+    const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+
+    runTests(async () => {
+      await init(document.getElementById('caas-config'));
+      const configPanelEl = document.querySelector('.config-panel');
+      await waitForCaaS(configPanelEl);
+
+      beforeEach(async () => {
+        configPanelEl.querySelector('.resetToDefaultState').click();
+        await delay(50);
+        localStorage.clear();
+      })
+
+      it('inits the CaaS collection', async () => {
+        expect(config).to.eql(defaultConfig);
+      });
+
+      it('copies the config', async () => {});
+
+      it('updates source', async () => {
+        await tagSelectorDropdownChoose('Source', 'Northstar');
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000';
+
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Selects tags using modal', async () => {
+        const expectedConfig = cloneObj(defaultConfig);
+        await tagSelectorModalChoose('Tags to Include', [
+          ['Topic'],
+          ['Country', 'Canada'],
+          ['Country', 'China'],
+          ['Events', 'MAX', 'Track', 'Video'],
+        ]);
+        await delay(50);
+        expectedConfig.collection.endpoint =
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn,caas:events/max/track/video&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Can update the country', async () => {
+        const countrySelectEl = findByLabel('Country', configPanelEl);
+        countrySelectEl.value = 'caas:country/ca';
+        countrySelectEl.dispatchEvent(new Event('change'))
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
+        await delay(50)
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Can update the Target Activity', async () => {
+        const targetEnabledCb = findByLabel('Target Enabled', configPanelEl);
+        targetEnabledCb.checked = true;
+        targetEnabledCb.dispatchEvent(new Event('change'));
+
+        const targetInput = findByLabel('Target Activity', configPanelEl);
+        targetInput.value = 'My Target Activity';
+        targetInput.dispatchEvent(new Event('change'));
+        await delay(50)
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000&flatFile=false';
+        expectedConfig.target.enabled = true;
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Ignores AND logic Tags when no tags are specified', async () => {
+        const andTagMultifield = configPanelEl.querySelector('.andLogicTags.multifield-add');
+        andTagMultifield.click();
+        andTagMultifield.click();
+        andTagMultifield.click();
+
+        await waitForElement('#intraTagLogic');
+        const intraTagLogic = findByLabel('Intra Tag Logic', configPanelEl);
+        intraTagLogic.value = 'OR';
+        intraTagLogic.dispatchEvent(new Event('change'));
+        await delay(50);
+        await tagSelectorModalChoose('Tags to Include', [
+          ['Topic'],
+          ['Country', 'Canada'],
+        ])
+        await delay(50);
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000';
+
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Can add featured cards', async () => {
+        const featuredCardAdd = configPanelEl.querySelector('.featuredCards.multifield-add');
+        featuredCardAdd.click();
+
+        const contentIdEl = await waitForElement('#contentId');
+        contentIdEl.value = 'featured-card-id';
+        contentIdEl.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=featured-card-id&environment=&draft=false&size=2000';
+
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('has error if tag URL is wrong', async () => {
+        const tagUrlInput = findByLabel('Tags Url', configPanelEl);
+        tagUrlInput.value = 'https://not.the.right.url/tags';
+        tagUrlInput.dispatchEvent(new Event('change'));
+        await delay(50);
+        tagUrlInput.value = 'not.the.right.url/tags';
+        tagUrlInput.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        const errorEl = configPanelEl.querySelector('.tool-error');
+        expect(errorEl).to.not.be.null;
+        expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('defaults to default if tagUrl is blank', async () => {
+        const tagUrlInput = findByLabel('Tags Url', configPanelEl);
+        tagUrlInput.value = '';
+        tagUrlInput.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        const errorEl = configPanelEl.querySelector('.tool-error');
+        expect(errorEl).to.be.null;
+      });
+
+      it('shows additional random sampling options when Customize Random Sample is checked', async () => {
+        const enableSortCb = findByLabel('Enable Sort Popup');
+        enableSortCb.checked = true;
+        enableSortCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        const randomSampleCb = findByLabel('Customize Random Sample');
+        randomSampleCb.checked = true;
+        randomSampleCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(findByLabel('Reservoir Sample')).to.not.be.null;
+      });
+
+      it('shows additional pagination options when Enable Pagination is checked', async () => {
+        const paginationCb = findByLabel('Enable Pagination');
+        paginationCb.checked = true;
+        paginationCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(findByLabel('Pagination Type')).to.not.be.null;
+      });
+
+      it('shows additional filter options when Show Filters is checked', async () => {
+        const showFiltersCb = findByLabel('Show Filters');
+        showFiltersCb.checked = true;
+        showFiltersCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(findByLabel('Event Filter')).to.not.be.null;
+
+        // Verify adding of filter tag
+        const addBtn = configPanelEl.querySelector('.filters.multifield-add');
+        addBtn.click();
+
+        await waitForElement('#icon');
+        const openedOnLoadCb = findByLabel('Opened on load');
+        openedOnLoadCb.checked = true;
+        openedOnLoadCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(openedOnLoadCb.checked).to.be.true;
+      });
+
+      it('Can copy the config to a hash', async () => {
+        const copyBtn = document.querySelector('.copy-config');
+        copyBtn.click();
+        await delay(50);
+        const copyTextArea = document.querySelector('.copy-text');
+        expect(copyTextArea.value.split('#')[1]).to.equal('eyJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOmZhbHNlLCJhbmFseXRpY3NDb2xsZWN0aW9uTmFtZSI6IiIsImFuZExvZ2ljVGFncyI6W10sImJvb2ttYXJrSWNvblNlbGVjdCI6IiIsImJvb2ttYXJrSWNvblVuc2VsZWN0IjoiIiwiY2FyZFN0eWxlIjoiaGFsZi1oZWlnaHQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiMTIwME1heFdpZHRoIiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImVudmlyb25tZW50IjoiIiwiZW5kcG9pbnQiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL2NvbGxlY3Rpb24iLCJleGNsdWRlVGFncyI6W10sImV4Y2x1ZGVkQ2FyZHMiOltdLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImZpbHRlckV2ZW50IjoiIiwiZmlsdGVyTG9jYXRpb24iOiJsZWZ0IiwiZmlsdGVyTG9naWMiOiJvciIsImZpbHRlcnMiOltdLCJmaWx0ZXJzU2hvd0VtcHR5IjpmYWxzZSwiZ3V0dGVyIjoiNHgiLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVXNlVGhlbWUzIjpmYWxzZSwicGFnaW5hdGlvblR5cGUiOiJub25lIiwicGxhY2Vob2xkZXJVcmwiOiIiLCJyZXN1bHRzUGVyUGFnZSI6NSwic2VhcmNoRmllbGRzIjpbXSwic2V0Q2FyZEJvcmRlcnMiOmZhbHNlLCJzaG93Qm9va21hcmtzRmlsdGVyIjpmYWxzZSwic2hvd0Jvb2ttYXJrc09uQ2FyZHMiOmZhbHNlLCJzaG93RmlsdGVycyI6ZmFsc2UsInNob3dTZWFyY2giOmZhbHNlLCJzaG93VG90YWxSZXN1bHRzIjpmYWxzZSwic29ydERlZmF1bHQiOiJkYXRlRGVzYyIsInNvcnRFbmFibGVQb3B1cCI6ZmFsc2UsInNvcnRFbmFibGVSYW5kb21TYW1wbGluZyI6ZmFsc2UsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRSZXNlcnZvaXJQb29sIjoxMDAwLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoxMCwidXNlTGlnaHRUZXh0IjpmYWxzZSwidXNlT3ZlcmxheUxpbmtzIjpmYWxzZSwidXNlckluZm8iOltdfQ==')
+      });
+
+    });
+  </script>
+</html>

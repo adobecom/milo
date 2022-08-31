@@ -11,16 +11,14 @@
  */
 
 /*
- * Media - v5.1
+ * media - consonant v5.1
  */
 
-import { decorateBlockBg, decorateText, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../utils/analytics.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
 export default function init(el) {
-  decorateBlockAnalytics(el);
   const children = el.querySelectorAll(':scope > div');
-  if (children.length && children[0].childElementCount === 1) {
+  if (children[0]?.childElementCount === 1) {
     decorateBlockBg(el, children[0]);
   }
   const size = getBlockSize(el);
@@ -33,7 +31,7 @@ export default function init(el) {
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
-      decorateText(text, size);
+      decorateBlockText(text, size);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');

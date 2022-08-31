@@ -4,12 +4,30 @@
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
+  --link-color-dark: #5EAAF7;
+  --link-hover-color-dark: #5EAAF7;
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
   --text-color: #2c2c2c;
 
-  /*** Typography ***/
+  --color-white: #FFF;
+  --color-gray-100: #F8F8F8;
+  --color-gray-200: #E8E8E8;
+  --color-gray-300: #D4D4D4;
+  --color-gray-400: #B6B6B6;
+  --color-gray-500: #909090;
+  --color-gray-600: #686868;
+  --color-gray-700: #444;
+  --color-gray-800: #242424;
+  --color-black: #000;
+  --color-brand-title: #000B1D;
+  --color-accent: rgb(20, 115, 230);
+  --color-accent-hover: rgb(13, 102, 208);
+  --color-info-accent: #5C5CE0;
+  --color-info-accent-hover: #4646C6;
+  --color-info-accent-down: #3D3DB4;
+  --color-info-accent-light: #DEDEF9;
 
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
@@ -34,6 +52,7 @@
   --type-heading-m-size: 20px;
   --type-heading-s-size: 18px;
   --type-heading-xs-size: 16px;
+  --type-heading-xxs-size: 14px;
 
   /* Body (Consonant) */
   --type-body-all-lh: 1.5;
@@ -59,12 +78,15 @@
   --grid-column-width: calc(var(--grid-container-width) / 12);
 }
 
+:root:lang(ko-KR) {
+  --body-font-family: adobe-han-k, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
 @media (min-width: 1200px) {
   :root {
     --spacing-xl: 56px;
     --spacing-xxl: 80px;
     --spacing-xxxl: 104px;
-
     --type-heading-xxl-size: 44px;
     --type-heading-xl-size: 36px;
     --type-heading-l-size: 28px;

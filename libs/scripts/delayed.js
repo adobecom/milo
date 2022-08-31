@@ -14,7 +14,7 @@
  * Executes everything that happens a lot later, without impacting the user experience.
  */
 async function delayed() {
-  const { default: interlinks } = await import('../blocks/interlinks/interlinks.js');
+  const { default: interlinks } = await import('../features/interlinks.js');
   interlinks('/keywords.json');
 }
 delayed();
