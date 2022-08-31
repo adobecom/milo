@@ -187,7 +187,7 @@
 
         const errorEl = configPanelEl.querySelector('.tool-error');
         expect(errorEl).to.not.be.null;
-        expect(errorEl.textContent).to.be.equal('No tags data loaded, please check the tags url in Advanced Panel')
+        expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
 
         const expectedConfig = cloneObj(defaultConfig);
         expect(config).to.eql(expectedConfig);
@@ -204,6 +204,11 @@
       });
 
       it('shows additional random sampling options when Customize Random Sample is checked', async () => {
+        const enableSortCb = findByLabel('Enable Sort Popup');
+        enableSortCb.checked = true;
+        enableSortCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
         const randomSampleCb = findByLabel('Customize Random Sample');
         randomSampleCb.checked = true;
         randomSampleCb.dispatchEvent(new Event('change'));
@@ -221,12 +226,33 @@
         expect(findByLabel('Pagination Type')).to.not.be.null;
       });
 
+      it('shows additional filter options when Show Filters is checked', async () => {
+        const showFiltersCb = findByLabel('Show Filters');
+        showFiltersCb.checked = true;
+        showFiltersCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(findByLabel('Event Filter')).to.not.be.null;
+
+        // Verify adding of filter tag
+        const addBtn = configPanelEl.querySelector('.filters.multifield-add');
+        addBtn.click();
+
+        await waitForElement('#icon');
+        const openedOnLoadCb = findByLabel('Opened on load');
+        openedOnLoadCb.checked = true;
+        openedOnLoadCb.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        expect(openedOnLoadCb.checked).to.be.true;
+      });
+
       it('Can copy the config to a hash', async () => {
         const copyBtn = document.querySelector('.copy-config');
         copyBtn.click();
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
-        expect(copyTextArea.value.split('#')[1]).to.equal('eyJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOmZhbHNlLCJhbmFseXRpY3NDb2xsZWN0aW9uTmFtZSI6IiIsImFuZExvZ2ljVGFncyI6W10sImJvb2ttYXJrSWNvblNlbGVjdCI6IiIsImJvb2ttYXJrSWNvblVuc2VsZWN0IjoiIiwiY2FyZFN0eWxlIjoiaGFsZi1oZWlnaHQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiMTIwME1heFdpZHRoIiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImVudmlyb25tZW50IjoiIiwiZW5kcG9pbnQiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL2NvbGxlY3Rpb24iLCJleGNsdWRlVGFncyI6W10sImV4Y2x1ZGVkQ2FyZHMiOltdLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImd1dHRlciI6IjR4IiwiaW5jbHVkZVRhZ3MiOltdLCJsYW5ndWFnZSI6ImNhYXM6bGFuZ3VhZ2UvZW4iLCJsYXlvdXRUeXBlIjoiNHVwIiwibG9hZE1vcmVCdG5TdHlsZSI6InByaW1hcnkiLCJvbmx5U2hvd0Jvb2ttYXJrZWRDYXJkcyI6ZmFsc2UsIm9yTG9naWNUYWdzIjpbXSwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInBsYWNlaG9sZGVyVXJsIjoiIiwicmVzdWx0c1BlclBhZ2UiOjUsInNlYXJjaEZpZWxkcyI6W10sInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0Jvb2ttYXJrc0ZpbHRlciI6ZmFsc2UsInNob3dCb29rbWFya3NPbkNhcmRzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic2hvd1RvdGFsUmVzdWx0cyI6ZmFsc2UsInNvcnREZWZhdWx0IjoiZGF0ZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRhZ3NVcmwiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL3RhZ3MiLCJ0YXJnZXRBY3Rpdml0eSI6IiIsInRhcmdldEVuYWJsZWQiOmZhbHNlLCJ0aGVtZSI6ImxpZ2h0ZXN0IiwidG90YWxDYXJkc1RvU2hvdyI6MTAsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsInVzZXJJbmZvIjpbXX0=')
+        expect(copyTextArea.value.split('#')[1]).to.equal('eyJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOmZhbHNlLCJhbmFseXRpY3NDb2xsZWN0aW9uTmFtZSI6IiIsImFuZExvZ2ljVGFncyI6W10sImJvb2ttYXJrSWNvblNlbGVjdCI6IiIsImJvb2ttYXJrSWNvblVuc2VsZWN0IjoiIiwiY2FyZFN0eWxlIjoiaGFsZi1oZWlnaHQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiMTIwME1heFdpZHRoIiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImVudmlyb25tZW50IjoiIiwiZW5kcG9pbnQiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL2NvbGxlY3Rpb24iLCJleGNsdWRlVGFncyI6W10sImV4Y2x1ZGVkQ2FyZHMiOltdLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImZpbHRlckV2ZW50IjoiIiwiZmlsdGVyTG9jYXRpb24iOiJsZWZ0IiwiZmlsdGVyTG9naWMiOiJvciIsImZpbHRlcnMiOltdLCJmaWx0ZXJzU2hvd0VtcHR5IjpmYWxzZSwiZ3V0dGVyIjoiNHgiLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVXNlVGhlbWUzIjpmYWxzZSwicGFnaW5hdGlvblR5cGUiOiJub25lIiwicGxhY2Vob2xkZXJVcmwiOiIiLCJyZXN1bHRzUGVyUGFnZSI6NSwic2VhcmNoRmllbGRzIjpbXSwic2V0Q2FyZEJvcmRlcnMiOmZhbHNlLCJzaG93Qm9va21hcmtzRmlsdGVyIjpmYWxzZSwic2hvd0Jvb2ttYXJrc09uQ2FyZHMiOmZhbHNlLCJzaG93RmlsdGVycyI6ZmFsc2UsInNob3dTZWFyY2giOmZhbHNlLCJzaG93VG90YWxSZXN1bHRzIjpmYWxzZSwic29ydERlZmF1bHQiOiJkYXRlRGVzYyIsInNvcnRFbmFibGVQb3B1cCI6ZmFsc2UsInNvcnRFbmFibGVSYW5kb21TYW1wbGluZyI6ZmFsc2UsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRSZXNlcnZvaXJQb29sIjoxMDAwLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoxMCwidXNlTGlnaHRUZXh0IjpmYWxzZSwidXNlT3ZlcmxheUxpbmtzIjpmYWxzZSwidXNlckluZm8iOltdfQ==')
       });
 
     });

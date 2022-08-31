@@ -7,7 +7,7 @@ export const waitForElement = (
       childList: true,
       subtree: true,
     },
-    rootEl = document.documentElement,
+    rootEl = document.body,
     textContent = '',
   } = {}
 ) =>
@@ -36,7 +36,6 @@ export const waitForElement = (
           let { currentNode } = treeWalker;
           while (currentNode) {
             if (currentNode.matches && currentNode.matches(selector)) {
-              // if (textContent && node.textContent !== textContent) continue;
               obsv.disconnect();
               resolve(currentNode);
               return true;
@@ -56,7 +55,7 @@ export const waitForUpdate = (
   options = {
     childList: true,
     subtree: true,
-  }
+  },
 ) =>
   new Promise((resolve) => {
     const observer = new MutationObserver((mutations, obsv) => {

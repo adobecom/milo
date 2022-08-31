@@ -6,3 +6,12 @@
 .tool-error {
   color: red;
 }
+
+dd.content .sort-options {
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+
+dd.content .sort-options > .field {
+  margin-bottom: -5px;
+}

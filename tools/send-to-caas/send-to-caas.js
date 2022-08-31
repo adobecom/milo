@@ -9,7 +9,7 @@ loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const IMS_CLIENT_ID = 'milo_ims';
-const IMS_ENV = 'stg1';
+const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 
@@ -194,7 +194,7 @@ const getDateProp = (dateStr, errorMsg) => {
 };
 
 const getOrigin = () => {
-  let origin = getConfig().project || getConfig().repo;
+  const origin = getConfig().project || getConfig().repo;
   if (origin) return origin;
 
   if (window.location.hostname.endsWith('.hlx.page')) {
@@ -217,15 +217,14 @@ const getFirstImageAlt = () => document.querySelector('main')?.querySelector('im
 const getImsToken = async () => {
   window.adobeid = {
     client_id: IMS_CLIENT_ID,
-    environment: IMS_ENV,
+    environment: 'prod',
     scope: 'AdobeID,openid',
   };
 
-  // Ready to publish, get user info
   if (!window.adobeIMS) {
-    await loadScript('https://auth-stg1.services.adobe.com/imslib/imslib.js');
+    await loadScript(IMS_PROD_URL);
   }
-  return window.adobeIMS.getAccessToken()?.token;
+  return window.adobeIMS?.getAccessToken()?.token;
 };
 
 const isPagePublished = async () => {
@@ -268,16 +267,18 @@ const showAlert = (msg, { error = false, onClose } = {}) => {
       this.destroy();
     },
   });
+  let msgContent = msg;
   if (error) { // show alert icon
-    msg = `<div class="modal-error"><div class="modal-alert"></div><div>${msg}</div></div>`;
+    msgContent = `<div class="modal-error"><div class="modal-alert"></div><div>${msg}</div></div>`;
   }
-  modal.setContent(msg);
+  modal.setContent(msgContent);
   modal.addFooterBtn('OK', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => modal.close());
   modal.open();
 };
 
 const showConfirm = (msg, {
   onClose,
+  cssClass = [],
   ctaBtnType = 'primary',
   ctaText = 'OK',
   cancelBtnType = 'default',
@@ -287,6 +288,7 @@ const showConfirm = (msg, {
 } = {}) => new Promise((resolve) => {
   let ok = false;
   const modal = new tingle.modal({
+    cssClass,
     footer: true,
     closeMethods: ['escape'],
     onClose() {
@@ -337,9 +339,16 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
   // TODO - automatically get country
   country: (s) => s || 'us',
-  created: (s) => (s
-    ? getDateProp(s, `Invalid Created Date: ${s}`)
-    : getMetaContent('name', 'publication-date') || new Date(document.lastModified).toISOString()),
+  created: (s) => {
+    if (s) {
+      return getDateProp(s, `Invalid Created Date: ${s}`);
+    }
+
+    const pubDate = getMetaContent('name', 'publication-date');
+    return pubDate
+      ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
+      : getDateProp(document.lastModified, `document.lastModified is not a valid date: ${document.lastModified}`);
+  },
   cta1icon: (s) => checkUrl(s, `Invalid Cta1Icon url: ${s}`),
   cta1style: 0,
   cta1text: 0,
@@ -364,7 +373,7 @@ const props = {
   lang: (s) => s || 'en',
   modified: (s) => (s
     ? getDateProp(s, `Invalid Modified Date: ${s}`)
-    : new Date(document.lastModified).toISOString()),
+    : getDateProp(document.lastModified, `document.lastModified is not a valid date: ${document.lastModified}`)),
   origin: (s) => s || getOrigin(),
   playurl: (s) => checkUrl(s, `Invalid PlayURL: ${s}`),
   primarytag: (s) => {
@@ -389,7 +398,6 @@ const getCaasProps = (p) => {
     entityId: p.entityid,
     contentId: p.contentid,
     contentType: p.contenttype,
-    draftOnly: p.draftOnly,
     environment: p.env,
     url: p.url,
     floodGateColor: p.floodgatecolor,
@@ -503,57 +511,77 @@ const displayPublishingModal = () => {
   return publishingModal;
 };
 
-const checkTags = async (tags, tagErrors, showAllPropertiesAlert) => {
+const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
   let okToContinue = false;
   let draftOnly = false;
+  let caasEnv;
 
   const seeAllPropsBtn = {
     text: 'See all properties',
     callback: showAllPropertiesAlert,
   };
 
-  const draftCb = '<div id="caas-draft-cb"><input type="checkbox" id="draftcb" name="draftcb">'
-    + '<label for="draftcb">Publish to Draft only</label></div>';
+  const footerOptions = `
+    <div class="verify-info-footer">
+      <div class="caas-env">
+        <label for="caas-env-select">CaaS Env</label>
+        <select name="1A" id="caas-env-select">
+          <option>Prod</option>
+          <option>Stage</option>
+          <option>Dev</option>
+        </select>
+      </div>
+      <div id="caas-draft-cb">
+        <input type="checkbox" id="draftcb" name="draftcb">
+        <label for="draftcb">Publish to Draft only</label>
+      </div>
+    </div>`;
 
   const onClose = () => {
     draftOnly = document.getElementById('draftcb')?.checked;
+    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
   };
 
   if (tagErrors.length) {
     const msg = [
+      '<div class="">',
       '<p><b>The following tags were not found:</b></p>',
       tagErrors.join('<br>'),
       '<p><b>Ok to publish without those tags defined?</b></p>',
       '<p>The following tags will be used:</p>',
       tags.join('<br>'),
+      '</div>',
     ].join('');
     okToContinue = await showConfirm(msg, {
+      cssClass: ['verify-info-modal'],
       ctaText: 'Publish with missing tags',
       cancelBtnType: 'grey',
       cancelText: 'Cancel Registration',
       ctaBtnType: 'danger',
-      footerContent: draftCb,
+      footerContent: footerOptions,
       leftButton: seeAllPropsBtn,
       onClose,
     });
   } else {
     const msg = [
-      '<p><b>The following tags will be used:</b></p>',
+      '<div><p><b>The following tags will be used:</b></p>',
       tags.join('<br>'),
-      '<p><b>Please verify that these are correct.</b></p>',
+      '<p><b>Please verify that these are correct.</b></p></div>',
     ].join('');
     okToContinue = await showConfirm(msg, {
+      cssClass: ['verify-info-modal'],
       cancelBtnType: 'grey',
       cancelText: 'Cancel Registration',
       ctaText: 'Continue with these tags',
-      footerContent: draftCb,
+      footerContent: footerOptions,
       leftButton: seeAllPropsBtn,
       onClose,
     });
   }
   return {
-    okToContinue,
+    caasEnv,
     draftOnly,
+    okToContinue,
   };
 };
 
@@ -564,9 +592,11 @@ const validateProps = async (prodHost, publishingModal) => {
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${JSON.stringify(caasMetadata, undefined, 4)}</pre>`);
   };
 
-  const { okToContinue, draftOnly } = await checkTags(tags, tagErrors, showAllPropertiesAlert);
-
-  caasMetadata.draftOnly = draftOnly;
+  const { draftOnly, caasEnv, okToContinue } = await verifyInfoModal(
+    tags,
+    tagErrors,
+    showAllPropertiesAlert,
+  );
 
   if (!okToContinue) {
     setPublishingFalse();
@@ -584,7 +614,11 @@ const validateProps = async (prodHost, publishingModal) => {
     showAlert(msg, { error: true, onClose: setPublishingFalse });
     return false;
   }
-  return caasMetadata;
+  return {
+    caasEnv,
+    caasMetadata,
+    draftOnly,
+  };
 };
 
 const checkPublishStatus = async (publishingModal) => {
@@ -616,16 +650,14 @@ const checkIms = async (publishingModal) => {
   return accessToken;
 };
 
-const postToCaaS = async (propsObj, accessToken, publishingModal) => {
-  const draftOnly = propsObj.draftOnly || false;
-  delete propsObj.draftOnly;
-
+const postToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly, publishingModal }) => {
   const options = {
     method: 'POST',
-    body: JSON.stringify(propsObj),
+    body: JSON.stringify(caasProps),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       draft: draftOnly,
+      'caas-env': caasEnv,
     },
   };
 
@@ -645,17 +677,23 @@ const postToCaaS = async (propsObj, accessToken, publishingModal) => {
 
       if (response.success) {
         showAlert(
-          `<p>Successfully published page to CaaS!<p><p>Card ID: ${propsObj.entityId}</p>`,
+          `<p>Successfully published page to CaaS!<p><p>Card ID: ${caasProps.entityId}</p>`,
           { onClose: setPublishingFalse },
         );
-      } else if (response.error === 'Invalid User: Not an Adobe employee') {
-        const shouldLogIn = await window.confirm(
-          'Please login with your Adobe company account.  Do you want to try logging in again?',
-        );
+      } else if (response.error?.startsWith('Invalid User: Not an Adobe employee')) {
+        const msg = 'Please login with your Adobe company account.  Do you want to try logging in again?';
+        const shouldLogIn = await showConfirm(msg, {
+          cancelBtnType: 'grey',
+          cancelText: 'Cancel',
+          ctaText: 'Login',
+        });
         setPublishingFalse();
         if (shouldLogIn) window.adobeIMS.signIn();
       } else {
-        showAlert(response.message || response, { error: true, onClose: setPublishingFalse });
+        showAlert(
+          response.message || response.error || JSON.stringify(response),
+          { error: true, onClose: setPublishingFalse },
+        );
       }
     }
   } catch (e) {
@@ -679,7 +717,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
     if (!host) throw new Error('host must be specified');
 
     await loadCaasTags();
-    const caasMetadata = await validateProps(host, publishingModal);
+    const { caasEnv, caasMetadata, draftOnly } = await validateProps(host, publishingModal);
     if (!caasMetadata) return;
 
     const isPublished = await checkPublishStatus(publishingModal);
@@ -690,7 +728,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
 
     const caasProps = getCaasProps(caasMetadata);
 
-    postToCaaS(caasProps, accessToken, publishingModal);
+    postToCaaS({ accessToken, caasEnv, caasProps, draftOnly, publishingModal });
   } catch (e) {
     setPublishingFalse();
     publishingModal.close();
@@ -698,4 +736,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
   }
 };
 
-export default sendToCaaS;
+document.addEventListener('send-to-caas', async (e) => {
+  const { host, project, branch, repo, owner } = e.detail;
+  sendToCaaS({ host, project, branch, repo, owner });
+});

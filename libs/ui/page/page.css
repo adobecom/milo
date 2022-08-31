@@ -91,13 +91,13 @@
 }
 
 .tool-header button.copy-config.is-error {
-  transition:outline 0s;
-  outline: red solid 3px;
+  transition: background-color .5s;
+  background-color: red;
 }
 
 .tool-header button.copy-config.is-success {
-  transition:outline 0s;
-  outline: green solid 3px;
+  transition: background-color .5s;
+  background-color: green;
 }
 
 .tool-content {
