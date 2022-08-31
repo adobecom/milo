@@ -228,7 +228,7 @@ export function decorateSVG(a) {
   }
 }
 
-function decorateAutoBlock(a) {
+export function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -318,6 +318,16 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
+  const footerPath = getMetadata('footer-source');
+  if (getMetadata('footer') === 'off') {
+    footer.remove();
+    return null;
+  }
+  if (footerPath) {
+    footer.setAttribute('data-footer-source', `${footerPath}`);
+  } else {
+    footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
+  }
   footer.className = 'footer';
   await loadBlock(footer);
   return footer;
@@ -454,4 +464,26 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
+}
+
+export function debug(message) {
+  const { hostname } = window.location;
+  const env = getEnv();
+  if (env.name !== 'prod' || hostname === 'local') {
+    // eslint-disable-next-line no-console
+    console.log(message);
+  }  
+}
+
+export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+  const io = new IntersectionObserver((entries, observer) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting) {
+        if (once) observer.unobserve(entry.target);
+        callback(entry.target, entry);
+      }
+    });
+  }, options);
+  io.observe(el);
+  return io;
 }
