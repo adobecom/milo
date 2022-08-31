@@ -10,29 +10,16 @@
  * governing permissions and limitations under the License.
  */
 
-import { decorateButtons, decorateBlockBg, decorateText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../utils/analytics.js'
 
 /*
  * Text Block - v5.1
  */
 
-// decorate text content in block by passing array of classes [ detail, heading, body ]
-function decorateContent(el, classList) {
-  if (el) {
-    const text = el.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
-    text?.classList.add('text');
-    const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const heading = headings[headings.length - 1];
-    heading.classList.add(classList[1]);
-    heading.nextElementSibling.classList.add(classList[2]);
-    if (heading.previousElementSibling) heading.previousElementSibling.classList.add(classList[0]);
-  }
-}
-
 export default function init(el) {
   const children = el.querySelectorAll(':scope > div');
-  const [background, ...rows] = children;
+  const [background, ...cols] = children;
   // basic background handling
   decorateBlockBg(el, background);
 
@@ -42,21 +29,18 @@ export default function init(el) {
   el.appendChild(container);
   el.classList.add('block');
 
-  // process rows
-  rows.forEach((row, idx) => {
-    let headingClass = 'heading-M';
+  // process columns
+  cols.forEach((col, idx) => {
+    let headingClass = 'medium';
     if (idx === 0 && (el.classList.contains('full-width') || el.classList.contains('has-intro'))) {
-      row.children[0].classList.add('full-width');
-      headingClass = el.classList.contains('large') ? 'heading-XL' : 'heading-L';
+      col.children[0].classList.add('full-width');
+      headingClass = el.classList.contains('large') ? 'large' : 'medium';
     }
-    decorateContent(row, ['', headingClass, 'body-M']);
-    container.insertAdjacentElement('beforeend', row.children[0]);
-    row.remove();
-  });
-  decorateButtons(el);
-  el.querySelectorAll('.text').forEach((col) => {
+    col.children[0].classList.add('text');
+    decorateBlockText(el, headingClass);
     col.querySelector('a + a')?.closest('p').classList.add('action-area');
-    decorateText(el, col.querySelector('h1, h2, h3, h4, h5, h6'));
+    container.insertAdjacentElement('beforeend', col.children[0]);
+    col.remove();
   });
   decorateBlockAnalytics(el);
 }

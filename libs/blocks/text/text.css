@@ -4,6 +4,7 @@
 }
 
 .text p {
+  line-height: var(--type-body-all-lh);
   margin-top: 0;
 }
 
@@ -42,10 +43,6 @@
   width: 100%;
 }
 
-.text .full-width > * {
-  max-width: var(--block-container-width-s);
-}
-
 .text .full-width .heading-XL,
 .text .full-width .heading-L {
   margin: 0 0 var(--spacing-xs);
@@ -79,14 +76,14 @@
 
 .text.vertical .container > div:not(.full-width) a:not(.con-button) {
   font-size: var(--type-body-xs-size);
-  line-height: var(--type-body-xs-lh);
+  line-height: var(--type-body-all-lh);
 }
 
 .text.vertical a.outline + a {
   margin-left: var(--spacing-s);
 }
 
-.text.vertical .heading-M {
+.text .heading-M {
   margin: 0 0 var(--spacing-xs);
 }
 
@@ -111,5 +108,9 @@
 
   .text.three-up .container > div {
     flex: 0 0 calc(33.333% - calc(var(--spacing-m) / 2));
+  }
+
+  .text .full-width > * {
+    max-width: calc(var(--grid-column-width) * 8);
   }
 }
