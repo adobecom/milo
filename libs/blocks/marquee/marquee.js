@@ -11,24 +11,25 @@
  */
 
 /*
- * Marquee - v1.0.0
+ * Marquee - v6.0
  */
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 
-function decorateText(el, isLarge) {
+function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  heading.className = isLarge ? 'heading-XXL' : 'heading-XL';
-  if (heading.nextElementSibling) heading.nextElementSibling.className = isLarge ? 'body-XL' : 'body-M';
-  if (heading.previousElementSibling) heading.previousElementSibling.className = isLarge ? 'detail-L' : 'detail-M';
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+  };
+  size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
 }
 
 function extendButtonsClass(text) {
-  const buttons = text.querySelectorAll('a.con-button');
+  const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => {
-    button.classList.add('button-justified-mobile');
-  });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
 
 export default function init(el) {
@@ -46,6 +47,6 @@ export default function init(el) {
   image?.classList.add('image');
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-XL' : false);
-  decorateText(text, size === 'large');
-  extendButtonsClass(text, size === 'large');
+  decorateText(text, size);
+  extendButtonsClass(text);
 }

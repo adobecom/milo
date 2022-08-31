@@ -7,8 +7,7 @@ export function decorateButtons(el, size) {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
     button.classList.add('con-button', buttonType);
-    // size class opt. - button-L, button-XL
-    if (size) button.classList.add(size);
+    if (size) button.classList.add(size); /* button-L, button-XL */
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
@@ -30,17 +29,15 @@ export function decorateBlockText(el, size = 'small') {
   const heading = headings[headings.length - 1];
   const decorate = (headingEl, headingSize, bodySize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling.classList.add(`body-${bodySize}`);
-    if (headingEl.previousElementSibling) {
-      headingEl.previousElementSibling.classList.add(`detail-${detailSize}`);
-    }
+    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
   };
-  if (size === 'medium') {
-    decorate(heading, 'M', 'S', 'M');
+  if (size === 'small') {
+    decorate(heading, 'XS', 'S', 'M');
   } else if (size === 'large') {
     decorate(heading, 'XL', 'M', 'L');
   } else {
-    decorate(heading, 'XS', 'S', 'M');
+    decorate(heading, 'M', 'S', 'M');
   }
   decorateIcons(el);
   decorateButtons(el);
@@ -56,5 +53,5 @@ export function decorateBlockBg(block, node) {
 
 export function getBlockSize(el) {
   const sizes = ['small', 'medium', 'large'];
-  return sizes.find((size) => el.classList.contains(size)) || sizes[1];
+  return sizes.find((size) => el.classList.contains(size)) || sizes[1]; /* medium default */
 }
