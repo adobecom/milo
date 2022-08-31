@@ -165,6 +165,8 @@ class Gnav {
     navLink.setAttribute('role', 'button');
     navLink.setAttribute('aria-expanded', false);
     navLink.setAttribute('aria-controls', id);
+    navLink.setAttribute('daa-ll', navLink.textContent);
+    navLink.setAttribute('daa-lh', 'header|Open');
   };
 
   decorateLinkGroups = (menu) => {
@@ -436,8 +438,9 @@ async function fetchGnav(url) {
 }
 
 export default async function init(header) {
-  const { prefix } = getConfig().locale;
-  const url = getMetadata('gnav-source') || `${prefix}/gnav`;
+  const { locale, imsClientId } = getConfig();
+  const name = imsClientId ? `|${imsClientId}` : '';
+  const url = getMetadata('gnav-source') || `${locale.prefix}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
   try {
@@ -447,6 +450,8 @@ export default async function init(header) {
     const gnav = new Gnav(gnavDoc.body, header);
     gnav.init();
     header.dispatchEvent(initEvent);
+    header.setAttribute('daa-im', 'true');
+    header.setAttribute('daa-lh', `gnav${name}`);
     return gnav;
   } catch (e) {
     console.log('Could not create global navigation.');
