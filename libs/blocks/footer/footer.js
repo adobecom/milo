@@ -155,7 +155,7 @@ class Footer {
 
   decoratePrivacy = () => {
     const copyrightEl = this.body.querySelector('div em');
-    const links = copyrightEl.parentElement.querySelectorAll('a');
+    const links = copyrightEl?.parentElement.querySelectorAll('a');
     if (!copyrightEl || !links) return null;
     const privacyWrapper = createTag('div', { class: 'footer-privacy' });
     const copyright = createTag('p', { class: 'footer-privacy-copyright' });
