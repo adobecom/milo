@@ -30,7 +30,7 @@
     import { stub } from 'sinon';
     import init from '../../../libs/blocks/caas/caas.js';
     import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
-    import { waitForElement } from '../../helpers/selectors.js';
+    import { delay, waitForElement } from '../../helpers/selectors.js';
 
     let config;
     let caasEl;
@@ -82,6 +82,7 @@
           const a = document.getElementById('caaslink');
           await init(a);
           await waitForElement('#caas');
+          await delay(5);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
