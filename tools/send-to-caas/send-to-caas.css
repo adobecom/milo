@@ -66,15 +66,23 @@
 }
 
 .tingle-modal .tingle-modal-box__footer #caas-draft-cb {
+    margin-left: 20px;
     text-align: center;
-    background-color: rgb(230, 230, 230);
-    border-radius: 5px;
-    margin-bottom: 16px;
-    padding: 5px 0;
-    width: 300px;
-    margin: -10px auto 16px auto;
 }
 
-.tingle-modal .tingle-modal-box__footer #caas-draft-cb > label {
-    margin-left: 5px;
+.tingle-modal .tingle-modal-box__footer .verify-info-footer {
+    align-items: center;
+    display: flex;
+    font-weight: 500;
+    justify-content: flex-start;
+    margin: -10px 0 20px 20px;
+}
+
+.tingle-modal .caas-env {
+    display: flex;
+    align-items: center;
+}
+
+.tingle-modal .caas-env > label {
+    margin-right: 10px;
 }
