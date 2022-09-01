@@ -28,8 +28,12 @@ const MultiField = ({ children, className = '', values = [], onChange, subTitle,
   const [fieldSets, setFieldSets] = useState([]);
   const [keys] = useState(getFieldNameOrId(Array.isArray(children) ? children : [children]));
 
-  const onMultifieldChange = (name, idx) => (value, e) => {
+  const onMultifieldChange = (name, idx) => (val, e) => {
     const newVals = [...values];
+    const value = e?.target.type === 'checkbox'
+      ? e.target.checked
+      : val;
+
     newVals[idx][name] = value;
     onChange(newVals);
   };

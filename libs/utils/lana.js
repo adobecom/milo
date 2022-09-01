@@ -32,13 +32,13 @@
     });
   }
 
-  function log(msg, options = {}) {
+  function log(msg, options) {
     msg = msg && msg.stack ? msg.stack : msg;
     if (msg.length > MSG_LIMIT) {
       msg = msg.slice(0, MSG_LIMIT) + '<trunc>';
     }
 
-    const o = getOptions(options);
+    const o = getOptions(options || {});
     if (!o.clientId) {
       console.warn('LANA ClientID is not set in options.');
       return;
