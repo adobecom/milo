@@ -139,6 +139,7 @@
   margin: 0;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .marquee.large p.action-area {
@@ -186,23 +187,7 @@
 
 @media screen and (min-width: 600px) {
 
-  /* Split */
-  .marquee .image.bleed {
-    position: absolute;
-    width: 50vw;
-    right: 0;
-    height: 100%;
-  }
 
-  .marquee .image.bleed picture {
-    height: 100%;
-    object-fit: fill;
-  }
-  .marquee .image.bleed img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -264,6 +249,32 @@
 
   .marquee.large .supplemental-text {
     margin: var(--spacing-s) 0 0 0;
+  }
+
+  /* Split */
+  .marquee.split {
+    display: flex;
+    align-items: center;
+  }
+  .marquee.split .foreground.container .text {
+    max-width: calc(50% - var(--spacing-m));
+  }
+
+  .marquee .image.bleed {
+    position: absolute;
+    width: 50vw;
+    right: 0;
+    height: 100%;
+  }
+
+  .marquee .image.bleed picture {
+    height: 100%;
+    object-fit: fill;
+  }
+  .marquee .image.bleed img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
