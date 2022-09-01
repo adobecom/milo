@@ -251,8 +251,11 @@
     display: flex;
     align-items: center;
   }
-
   .marquee.split .foreground.container .text {
+    max-width: calc(50% - 32px);
+  }
+
+  .marquee.split.large .foreground.container .text {
     max-width: calc(50% - 100px);
   }
 
