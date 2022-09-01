@@ -32,9 +32,9 @@ const defaultConfig = {
   },
   filterPanel: {
     enabled: false,
-    eventFilter: 'not-timed',
-    type: 'left',
-    showEmptyFilters: 'true',
+    eventFilter: '',
+    type: 'top',
+    showEmptyFilters: false,
     filters: [],
     filterLogic: 'or',
     i18n: {

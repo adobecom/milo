@@ -20,6 +20,11 @@ export function updateObj(obj, defaultObj) {
   return obj;
 }
 
+export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+  // fire immediately
+  callback(el, { target: el });
+}
+
 export const parseEncodedConfig = stub().returns({
   analyticsTrackImpression: false,
   analyticsCollectionName: '',
@@ -49,7 +54,7 @@ export const parseEncodedConfig = stub().returns({
   paginationQuantityShown: false,
   paginationUseTheme3: false,
   paginationType: 'none',
-  placeholderUrl: '',
+  placeholderUrl: '/my/placeholder.json',
   resultsPerPage: 5,
   searchFields: [],
   setCardBorders: false,
