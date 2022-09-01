@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateButtons, getBlockSize } from '../../utils/decorate.js';
 
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -43,16 +43,22 @@ export default function init(el) {
   const foreground = children[children.length - 1];
   if (children.length > 1) {
     children[0].classList.add('background');
+    decorateBlockBg(el, children[0]);
   }
   foreground.classList.add('foreground', 'container');
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
-  console.log('headline', headline, {foreground});
-  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6').closest('div');
+  const text = headline.closest('div');
   text.classList.add('text');
   const image = foreground.querySelector(':scope > div:not([class])');
   image?.classList.add('image');
   const size = getBlockSize(el);
-  decorateButtons(text, size === 'large' ? 'button-XL' : false);
+  decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
   decorateText(text, size);
   extendButtonsClass(text);
+  if (el.classList.contains('split')) {
+    if (foreground && image) {
+      image.classList.add('bleed');
+      foreground.insertAdjacentElement('beforebegin', image);
+    }
+  }
 }
