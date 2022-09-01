@@ -1,4 +1,4 @@
-const sendToCaaS = async (_, sk) => {
+const sendToCaaS = async (_, sk, options) => {
   const SCRIPT_ID = 'send-caas-listener';
   const dispatchEvent = () => document.dispatchEvent(
     new CustomEvent('send-to-caas', {
@@ -14,8 +14,9 @@ const sendToCaaS = async (_, sk) => {
 
   if (!document.getElementById(SCRIPT_ID)) {
     const script = document.createElement('script');
-    script.src = 'https://milo.adobe.com/tools/send-to-caas/sendToCaasEventListener.js';
+    script.src = 'https://milo.adobe.com/tools/send-to-caas/send-to-caas.js';
     script.id = SCRIPT_ID;
+    script.type = 'module';
     script.onload = () => dispatchEvent();
     document.head.appendChild(script);
   } else {

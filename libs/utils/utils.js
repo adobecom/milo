@@ -139,9 +139,39 @@ export function loadStyle(href, callback) {
   return link;
 }
 
-/**
- * Load template (page structure and styles).
- */
+export const loadScript = (url, type) => new Promise((resolve, reject) => {
+  let script = document.querySelector(`head > script[src="${url}"]`);
+  if (!script) {
+    const { head } = document;
+    script = document.createElement('script');
+    script.setAttribute('src', url);
+    if (type) {
+      script.setAttribute('type', type);
+    }
+    head.append(script);
+  }
+
+  if (script.dataset.loaded) {
+    resolve(script);
+    return;
+  }
+
+  const onScript = (event) => {
+    script.removeEventListener('load', onScript);
+    script.removeEventListener('error', onScript);
+
+    if (event.type === 'error') {
+      reject(new Error('error loading script'));
+    } else if (event.type === 'load') {
+      script.dataset.loaded = true;
+      resolve(script);
+    }
+  };
+
+  script.addEventListener('load', onScript);
+  script.addEventListener('error', onScript);
+});
+
 export async function loadTemplate() {
   const template = getMetadata('template');
   if (!template) return;
@@ -211,7 +241,7 @@ export function decorateSVG(a) {
   }
 }
 
-function decorateAutoBlock(a) {
+export function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -301,6 +331,16 @@ async function loadHeader() {
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
+  const footerPath = getMetadata('footer-source');
+  if (getMetadata('footer') === 'off') {
+    footer.remove();
+    return null;
+  }
+  if (footerPath) {
+    footer.setAttribute('data-footer-source', `${footerPath}`);
+  } else {
+    footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
+  }
   footer.className = 'footer';
   await loadBlock(footer);
   return footer;
@@ -319,12 +359,19 @@ function decorateSections(el, isDoc) {
   });
 }
 
-async function loadPostLCP() {
+async function loadMartech(config) {
+  const query = new URL(window.location.href).searchParams.get('martech');
+  if (query !== 'off') {
+    const { default: martech } = await import('./martech.js');
+    martech(config, loadScript, getMetadata);
+  }
+}
+
+async function loadPostLCP(config) {
   loadHeader();
   loadTemplate();
-  const { locale } = getConfig();
   const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(locale, loadStyle);
+  loadFonts(config.locale, loadStyle);
 }
 
 export async function loadDeferred(area) {
@@ -336,9 +383,12 @@ export async function loadDeferred(area) {
 }
 
 export async function loadArea(area = document) {
+  const config = getConfig();
   const isDoc = area === document;
+
+  if (isDoc) { loadMartech(config); }
+
   const sections = decorateSections(area, isDoc);
-  // For loops correctly handle awaiting inside them.
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
@@ -348,7 +398,7 @@ export async function loadArea(area = document) {
     await Promise.all(loaded);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(); }
+    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
@@ -382,39 +432,6 @@ export function loadDelayed(delay = 3000) {
     }, delay);
   });
 }
-
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
-  let script = document.querySelector(`head > script[src="${url}"]`);
-  if (!script) {
-    const { head } = document;
-    script = document.createElement('script');
-    script.setAttribute('src', url);
-    if (type) {
-      script.setAttribute('type', type);
-    }
-    head.append(script);
-  }
-
-  if (script.dataset.loaded) {
-    resolve(script);
-    return;
-  }
-
-  const onScript = (event) => {
-    script.removeEventListener('load', onScript);
-    script.removeEventListener('error', onScript);
-
-    if (event.type === 'error') {
-      reject(new Error('error loading script'));
-    } else if (event.type === 'load') {
-      script.dataset.loaded = true;
-      resolve(script);
-    }
-  };
-
-  script.addEventListener('load', onScript);
-  script.addEventListener('error', onScript);
-});
 
 export function utf8ToB64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
@@ -460,4 +477,26 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
+}
+
+export function debug(message) {
+  const { hostname } = window.location;
+  const env = getEnv();
+  if (env.name !== 'prod' || hostname === 'local') {
+    // eslint-disable-next-line no-console
+    console.log(message);
+  }
+}
+
+export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+  const io = new IntersectionObserver((entries, observer) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting) {
+        if (once) observer.unobserve(entry.target);
+        callback(entry.target, entry);
+      }
+    });
+  }, options);
+  io.observe(el);
+  return io;
 }
