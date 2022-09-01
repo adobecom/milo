@@ -253,7 +253,7 @@
   }
 
   .marquee.split .foreground.container .text {
-    max-width: calc(50% - var(--spacing-m));
+    max-width: calc(50% - 100px);
   }
 
   .marquee.split .image.bleed {
