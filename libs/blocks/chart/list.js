@@ -1,5 +1,5 @@
 import { propertyNameCI, propertyValueCI } from './utils.js';
-import { loadStyle } from '../../utils/utils.js';
+import { loadStyle, getConfig } from '../../utils/utils.js';
 
 export const listToLowerCase = (list) => (
   list.map((item) => (
@@ -114,12 +114,16 @@ const showCarouselItem = (element, index) => {
 
 const initList = (element, json, hexcode) => {
   const data = listChartData(json);
-
-  const chartHtml = data.length > 1 ? getCarouselHtml(data, hexcode) : getListHtml(data[0], hexcode);
+  const chartHtml = data.length > 1
+    ? getCarouselHtml(data, hexcode)
+    : getListHtml(data[0], hexcode);
 
   if (typeof chartHtml === 'string') element.innerHTML = chartHtml;
 
-  loadStyle('/libs/blocks/chart/list.css');
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+
+  loadStyle(`${base}/blocks/chart/list.css`);
 
   if (data.length > 1) {
     let index = 0;
