@@ -21,7 +21,11 @@ function decorateText(el, size) {
   const decorate = (headingEl, headingSize, bodySize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+    const sib = headingEl.previousElementSibling;
+    if (sib) {
+      sib.querySelector('img', '.icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      sib.previousElementSibling?.classList.add('icon-area');
+    }
   };
   size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
 }
@@ -41,6 +45,8 @@ export default function init(el) {
     children[0].classList.add('background');
   }
   foreground.classList.add('foreground', 'container');
+  const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
+  console.log('headline', headline, {foreground});
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6').closest('div');
   text.classList.add('text');
   const image = foreground.querySelector(':scope > div:not([class])');

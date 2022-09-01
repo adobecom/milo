@@ -26,7 +26,7 @@
   margin: 0;
 }
 
-.heading-XXL { font-size: var(--type-heading-xl-size); }
+.heading-XXL { font-size: var(--type-heading-xxl-size); }
 .heading-XL { font-size: var(--type-heading-xl-size); }
 .heading-L { font-size: var(--type-heading-l-size); }
 .heading-M { font-size: var(--type-heading-m-size); }
