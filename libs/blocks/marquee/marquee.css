@@ -208,6 +208,7 @@
   }
 
   .marquee .text,
+  .marquee.small .text,
   .marquee.large .text {
     order: unset;
   }
@@ -217,6 +218,8 @@
     display: flex;
   }
 
+  .marquee .image,
+  .marquee.small .image,
   .marquee.large .image {
     order: unset;
   }
