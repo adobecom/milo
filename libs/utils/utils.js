@@ -438,6 +438,8 @@ export function parseEncodedConfig(encodedConfig) {
   return null;
 }
 
+export const removeHash = (url) => url?.split('#')[0];
+
 export function getHashConfig() {
   const { hash } = window.location;
   if (!hash) return null;
@@ -473,7 +475,7 @@ export function debug(message) {
   if (env.name !== 'prod' || hostname === 'local') {
     // eslint-disable-next-line no-console
     console.log(message);
-  }  
+  }
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
