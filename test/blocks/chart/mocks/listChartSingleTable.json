@@ -1,0 +1,24 @@
+{
+  "table": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      { "Title": "Black Friday Numbers Ordered", "Sheet": "Black Friday", "Type": "numbered" }
+    ]
+  },
+  "Black Friday": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      { "Name": "XBOX One S", "Extra": "1.54", "image": "image.png", "alt": "Image 1" },
+      { "Name": "Swiffer Xtreme", "Extra": "1.27", "image": "image.png", "alt": "Image 2" },
+      { "Name": "Teddy Ruxpin", "Extra": "1.15", "image": "image.png", "alt": "Image 3" },
+      { "Name": "Airpods", "Extra": "1.03", "image": "image.png", "alt": "Image 4" },
+      { "Name": "Tickle me Elmo", "Extra": "1.01", "image": "image.png", "alt": "Image 5" }]
+  },
+  ":version": 3,
+  ":names": ["table", "Black Friday"],
+  ":type": "multi-sheet"
+}
