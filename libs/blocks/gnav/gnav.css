@@ -308,9 +308,9 @@ nav.gnav .gnav-menu-container .gnav-promo img {
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(0,0,0,0.75);
-  -webkit-backdrop-filter: blur(1em);
-  backdrop-filter: blur(1em);
+  background: rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(.5em);
+  backdrop-filter: blur(.5em);
   z-index: 98;
 }
 
