@@ -15,11 +15,10 @@ function getDetails() {
   return null;
 }
 
-function closeModals() {
-  const modals = document.querySelectorAll('dialog[open]');
-  modals.forEach((modal) => {
-    modal.close();
-  });
+function closeModals(modals) {
+  const qModals = modals || document.querySelectorAll('dialog[open]');
+  qModals.forEach((modal) => { modal.remove(); });
+  window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   return null;
 }
 
@@ -39,9 +38,8 @@ async function getModal() {
     close.className = 'dialog-close';
 
     close.addEventListener('click', (e) => {
+      closeModals([dialog]);
       e.preventDefault();
-      window.location.hash = '#';
-      dialog.close();
     });
 
     const linkBlock = document.createElement('a');
@@ -55,25 +53,21 @@ async function getModal() {
     dialog.showModal();
   }
 
-  dialog.addEventListener('close', (e) => {
-    window.location.hash = '#';
-    e.target.remove();
-  });
-
   return dialog;
 }
 
-export default function init(once = false) {
-  return new Promise((resolve) => {
-    if (window.location.hash) {
-      resolve(getModal());
-    }
-    window.addEventListener('hashchange', () => {
-      if (!window.location.hash) {
-        resolve(closeModals());
-      } else {
-        resolve(getModal());
-      }
-    }, { once });
-  });
+export default function init(el) {
+  const { modalHash } = el.dataset;
+  if (window.location.hash === modalHash) {
+    getModal();
+  }
 }
+
+// First import will cause this side effect (on purpose)
+window.addEventListener('hashchange', () => {
+  if (!window.location.hash) {
+    closeModals();
+  } else {
+    getModal();
+  }
+});

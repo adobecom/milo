@@ -241,7 +241,8 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        return false;
+        a.className = 'modal link-block';
+        return true;
       }
       a.className = `${key} link-block`;
       return true;
