@@ -5,6 +5,7 @@ const MILO_BLOCKS = [
   'adobetv',
   'caas',
   'card-metadata',
+  'chart',
   'columns',
   'faas',
   'faq',
@@ -141,23 +142,35 @@ export function loadStyle(href, callback) {
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
-  if (script) {
-    resolve(script);
-  } else {
+  if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
     if (type) {
       script.setAttribute('type', type);
     }
-    script.onload = () => {
-      resolve(script);
-    };
-    script.onerror = () => {
-      reject(new Error('error loading script'));
-    };
     head.append(script);
   }
+
+  if (script.dataset.loaded) {
+    resolve(script);
+    return;
+  }
+
+  const onScript = (event) => {
+    script.removeEventListener('load', onScript);
+    script.removeEventListener('error', onScript);
+
+    if (event.type === 'error') {
+      reject(new Error('error loading script'));
+    } else if (event.type === 'load') {
+      script.dataset.loaded = true;
+      resolve(script);
+    }
+  };
+
+  script.addEventListener('load', onScript);
+  script.addEventListener('error', onScript);
 });
 
 export async function loadTemplate() {
@@ -473,7 +486,7 @@ export function debug(message) {
   if (env.name !== 'prod' || hostname === 'local') {
     // eslint-disable-next-line no-console
     console.log(message);
-  }  
+  }
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
