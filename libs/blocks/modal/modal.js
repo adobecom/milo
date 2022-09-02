@@ -36,7 +36,7 @@ async function getModal(el) {
     dialog.className = 'dialog-modal';
     dialog.id = details.id;
 
-    const close = createTag('button', { class: 'dialog-close' }, CLOSE_ICON);
+    const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
 
     close.addEventListener('click', (e) => {
       closeModals([dialog]);
