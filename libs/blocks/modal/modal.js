@@ -1,6 +1,12 @@
 import { createTag, getMetadata, makeRelative } from '../../utils/utils.js';
 
-const CLOSE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16" height="16" focusable="false"><path d="M14 3.41L9.41 8 14 12.59 12.59 14 8 9.41 3.41 14 2 12.59 6.59 8 2 3.41 3.41 2 8 6.59 12.59 2z"></path></svg>';
+const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+  </g>
+</svg>`;
 
 function getDetails(el) {
   const details = { id: window.location.hash.replace('#', '') };
