@@ -25,18 +25,17 @@ function decorateLayout(el) {
 }
 
 function decorateContent(el) {
-  if (el) {
-    const text = el.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
-    text?.classList.add('text');
-    const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const heading = headings?.[headings.length - 1];
-    heading?.classList.add('heading-XL');
-    heading?.nextElementSibling?.classList.add('body-S');
-    heading?.previousElementSibling?.classList.add('detail-M');
-    el.querySelector(':scope > div:not([class])')?.classList.add('image');
-    const image = text?.querySelector('img');
-    if (image) image.closest('p')?.classList.add('icon-area');
-  }
+  if (!el) return;
+  const text = el.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
+  text?.classList.add('text');
+  const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const heading = headings?.[headings.length - 1];
+  heading?.classList.add('heading-XL');
+  heading?.nextElementSibling?.classList.add('body-S');
+  heading?.previousElementSibling?.classList.add('detail-M');
+  el.querySelector(':scope > div:not([class])')?.classList.add('image');
+  const image = text?.querySelector('img');
+  if (image) image.closest('p')?.classList.add('icon-area');
 }
 
 export default function init(el) {
