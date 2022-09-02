@@ -1,11 +1,13 @@
 import {
   createTag,
-  loadScript,
-  getConfig,
-  getBlockClasses,
-  makeRelative,
-  getMetadata,
   decorateSVG,
+  analyticsDecorateList,
+  analyticsGetLabel,
+  getBlockClasses,
+  getConfig,
+  getMetadata,
+  loadScript,
+  makeRelative,
 } from '../../utils/utils.js';
 
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
@@ -13,10 +15,7 @@ const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"
 const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
 
 export const IS_OPEN = 'is-Open';
-const RE_ALPHANUM = /[^0-9a-z]/gi;
-const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
 
-const daaText = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
 const isHeading = (el) => el?.nodeName.startsWith('H');
 const childIndexOf = (el) => [...el.parentElement.children]
   .filter((e) => (e.nodeName === 'DIV' || e.nodeName === 'P'))
@@ -207,7 +206,7 @@ class Gnav {
         if (el.classList.contains('link-group')) {
           const title = el.querySelector('.link-group-title')?.innerHTML.split('<')?.[0].trim();
           if (title) {
-            el.firstChild.setAttribute('daa-lh', `${daaText(title)}-${childIndexOf(el) + 1}`);
+            el.firstChild.setAttribute('daa-lh', `${analyticsGetLabel(title)}-${childIndexOf(el) + 1}`);
           }
         } else {
           [...el.children].forEach((childEl) => this.setMenuAnalytics(childEl));
@@ -217,16 +216,12 @@ class Gnav {
         if (isHeading(el.previousElementSibling)) {
           el.setAttribute('daa-lh', el.previousElementSibling.textContent);
         }
-        [...el.children].forEach((li, idx) => {
-          const link = li.firstChild?.nodeName === 'A' && li.firstChild;
-          if (!link) return;
-          link.setAttribute('daa-ll', `${daaText(link.textContent)}-${idx + 1}`);
-        });
+        [...el.children].forEach(analyticsDecorateList);
         break;
       default: {
         const a = el.querySelector('a');
         if (a) {
-          a.setAttribute('daa-ll', `${daaText(a.textContent)}-${childIndexOf(el) + 1}`);
+          a.setAttribute('daa-ll', `${analyticsGetLabel(a.textContent)}-${childIndexOf(el) + 1}`);
         }
       }
     }
@@ -294,7 +289,7 @@ class Gnav {
         cta.target = '_blank';
       }
       cta.classList.add('con-button', 'blue', 'button-M');
-      cta.setAttribute('daa-ll', daaText(cta.textContent));
+      cta.setAttribute('daa-ll', analyticsGetLabel(cta.textContent));
       cta.parentElement.classList.add('gnav-cta');
       return cta.parentElement;
     }
