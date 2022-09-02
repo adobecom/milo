@@ -11,7 +11,16 @@ import {
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
 const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
 const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
+
 export const IS_OPEN = 'is-Open';
+const RE_ALPHANUM = /[^0-9a-z]/gi;
+const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
+
+const daaText = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
+const isHeading = (el) => el?.nodeName.startsWith('H');
+const childIndexOf = (el) => [...el.parentElement.children]
+  .filter((e) => (e.nodeName === 'DIV' || e.nodeName === 'P'))
+  .indexOf(el);
 
 class Gnav {
   constructor(body, el) {
@@ -100,6 +109,7 @@ class Gnav {
 
     brand.href = makeRelative(brand.href, true);
     brand.setAttribute('aria-label', brand.textContent);
+    brand.setAttribute('daa-ll', 'Brand');
     if (brand.textContent !== '') brand.textContent = '';
     if (brand.classList.contains('logo')) {
       brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
@@ -113,6 +123,7 @@ class Gnav {
     logo.href = makeRelative(logo.href, true);
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
+    logo.setAttribute('daa-ll', 'Logo');
     logo.textContent = '';
     logo.insertAdjacentHTML('afterbegin', COMPANY_IMG);
     return logo;
@@ -175,29 +186,64 @@ class Gnav {
     linkGroups.forEach((linkGroup) => {
       const image = linkGroup.querySelector('picture');
       const anchor = linkGroup.querySelector('p a');
-      const title = anchor.textContent;
+      const title = anchor?.textContent;
       const subtitle = linkGroup.querySelector('p:last-of-type');
       const titleWrapper = createTag('div');
+      titleWrapper.className = 'link-group-title';
       anchor.href = makeRelative(anchor.href, true);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
       titleWrapper.append(title, subtitle);
-      const contents = !image ? [titleWrapper] : [image, titleWrapper];
+      const contents = image ? [image, titleWrapper] : [titleWrapper];
       link.append(...contents);
       linkGroup.appendChild(link);
     });
   };
+
+  setMenuAnalytics = (el) => {
+    switch (el.nodeName) {
+      case 'DIV':
+        if (el.classList.contains('link-group')) {
+          const title = el.querySelector('.link-group-title')?.innerHTML.split('<')?.[0].trim();
+          if (title) {
+            el.firstChild.setAttribute('daa-lh', `${daaText(title)}-${childIndexOf(el) + 1}`);
+          }
+        } else {
+          [...el.children].forEach((childEl) => this.setMenuAnalytics(childEl));
+        }
+        break;
+      case 'UL':
+        if (isHeading(el.previousElementSibling)) {
+          el.setAttribute('daa-lh', el.previousElementSibling.textContent);
+        }
+        [...el.children].forEach((li, idx) => {
+          const link = li.firstChild?.nodeName === 'A' && li.firstChild;
+          if (!link) return;
+          link.setAttribute('daa-ll', `${daaText(link.textContent)}-${idx + 1}`);
+        });
+        break;
+      default: {
+        const a = el.querySelector('a');
+        if (a) {
+          a.setAttribute('daa-ll', `${daaText(a.textContent)}-${childIndexOf(el) + 1}`);
+        }
+      }
+    }
+  };
+
+  decorateAnalytics = (menu) => [...menu.children].forEach((child) => this.setMenuAnalytics(child));
 
   decorateButtons = (menu) => {
     const buttons = menu.querySelectorAll('strong a');
     buttons.forEach((btn) => {
       btn.classList.add('con-button', 'outline', 'button-M');
     });
-  }
+  };
 
   decorateMenu = (navItem, navLink, menu) => {
     menu.className = 'gnav-navitem-menu';
+    menu.setAttribute('daa-lh', `header|${navLink.textContent}`);
     const childCount = menu.childElementCount;
     if (childCount === 1) {
       menu.classList.add('small-Variant');
@@ -210,6 +256,7 @@ class Gnav {
       menu.append(container);
     }
     this.decorateLinkGroups(menu);
+    this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
       window.addEventListener('keydown', this.toggleOnSpace);
     });
@@ -247,6 +294,7 @@ class Gnav {
         cta.target = '_blank';
       }
       cta.classList.add('con-button', 'blue', 'button-M');
+      cta.setAttribute('daa-ll', daaText(cta.textContent));
       cta.parentElement.classList.add('gnav-cta');
       return cta.parentElement;
     }
@@ -267,6 +315,7 @@ class Gnav {
           'aria-label': label,
           'aria-expanded': false,
           'aria-controls': 'gnav-search-bar',
+          'daa-ll': 'Search',
         },
         SEARCH_ICON,
       );
@@ -283,7 +332,11 @@ class Gnav {
   decorateSearchBar = (label, advancedLink) => {
     const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
     const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
-    const searchInput = createTag('input', { class: 'gnav-search-input', placeholder: label });
+    const searchInput = createTag('input', {
+      class: 'gnav-search-input',
+      placeholder: label,
+      'daa-ll': 'search-results:standard search',
+    });
     const searchResults = createTag('div', { class: 'gnav-search-results' });
 
     searchInput.addEventListener('input', (e) => {
@@ -335,6 +388,7 @@ class Gnav {
   decorateSignIn = (blockEl, profileEl) => {
     const signIn = blockEl.querySelector('a');
     signIn.classList.add('gnav-signin');
+    signIn.setAttribute('daa-ll', 'Sign In');
     profileEl.append(signIn);
     profileEl.addEventListener('click', (e) => {
       e.preventDefault();
@@ -364,6 +418,7 @@ class Gnav {
     window.removeEventListener('keydown', this.closeOnEscape);
     const menuToggle = this.state.openMenu.querySelector('[aria-expanded]');
     menuToggle.setAttribute('aria-expanded', false);
+    menuToggle.setAttribute('daa-lh', 'header|Open');
     this.curtain.classList.remove(IS_OPEN);
     this.state.openMenu = null;
   };
@@ -373,6 +428,7 @@ class Gnav {
 
     const menuToggle = el.querySelector('[aria-expanded]');
     menuToggle.setAttribute('aria-expanded', true);
+    menuToggle.setAttribute('daa-lh', 'header|Close');
 
     document.addEventListener('click', this.closeOnDocClick);
     window.addEventListener('keydown', this.closeOnEscape);
@@ -454,7 +510,7 @@ export default async function init(header) {
     header.setAttribute('daa-lh', `gnav${name}`);
     return gnav;
   } catch (e) {
-    console.log('Could not create global navigation.');
+    console.log('Could not create global navigation:', e);
     return null;
   }
 }
