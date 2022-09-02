@@ -28,21 +28,20 @@ function decorateLayout(el) {
 }
 
 function decorateContent(row, isVertical) {
-  if (row) {
-    const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
-    if (text) {
-      text?.classList.add('text');
-      const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      const heading = headings?.[headings.length - 1];
-      heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
-      heading?.nextElementSibling?.classList.add('body-M');
-      heading?.previousElementSibling?.classList.add('icon-area');
-      decorateButtons(row);
-    } else {
-      row.classList.add('text');
-      const image = row.querySelector(':scope img');
-      image?.parentElement?.parentElement?.classList?.add('icon-area');
-    }
+  if (!row) return;
+  const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
+  if (text) {
+    text?.classList.add('text');
+    const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const heading = headings?.[headings.length - 1];
+    heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
+    heading?.nextElementSibling?.classList.add('body-M');
+    heading?.previousElementSibling?.classList.add('icon-area');
+    decorateButtons(row);
+  } else {
+    row.classList.add('text');
+    const image = row.querySelector(':scope img');
+    image?.parentElement?.parentElement?.classList?.add('icon-area');
   }
 }
 

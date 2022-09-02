@@ -1,5 +1,3 @@
-/* icon-block Block */
-
 .icon-block {
   display: flex;
   width: 100%;
@@ -13,8 +11,6 @@
 .icon-block p {
   margin: 0;
 }
-
-/* Standard */
 
 .icon-block .background {
   overflow: hidden;
@@ -97,8 +93,6 @@
   flex: 1 1 auto;
 }
 
-/* Vertical */
-
 .icon-block.vertical .foreground.container {
   text-align: left;
   margin-bottom: var(--spacing-s);
@@ -118,14 +112,10 @@
   line-height: 21px;
 }
 
-
-/* Tablet */
 @media screen and (min-width: 600px) {
   .icon-block .foreground.container .icon-area {
     max-width: 234px;
   }
-
-  /* Vertical */
 
   .icon-block.vertical .foreground.container {
     gap: 32px;
@@ -140,13 +130,11 @@
     flex: 1 1 45%;
   }
 
-  /* 3up tablet layout with flexbox */
   .icon-block.vertical.three-up .foreground.container .text:last-child {
     padding-right: 53%;
   }
 }
 
-/* Desktop */
 @media screen and (min-width: 1200px) {
   .icon-block .foreground.container {
     padding: var(--spacing-xxxl) 0;
@@ -163,8 +151,6 @@
   .icon-block .foreground.container .icon-area {
     max-width: 400px;
   }
-
-  /* Vertical */
 
   .icon-block.vertical .foreground.container {
     flex-wrap: nowrap;
