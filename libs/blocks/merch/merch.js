@@ -1,9 +1,7 @@
 import { loadScript, getConfig, createTag } from '../../utils/utils.js';
 
-const { miloLibs, codeRoot } = getConfig();
+const { miloLibs, codeRoot, env } = getConfig();
 const base = miloLibs || codeRoot;
-
-await loadScript(`${base}/deps/tacocat-index.js`);
 
 function buildButton(a, osi) {
   if (!a) return null;
@@ -33,6 +31,9 @@ function getPriceType(name) {
 }
 
 export default async function init(el) {
+  if (!window.tacocat) {
+    await loadScript(`${base}/deps/tacocat-index.js`);
+  }
   const osi = el.querySelector(':scope > div:first-of-type > div').textContent;
   if (!osi) return;
   const priceType = getPriceType([...el.classList][1]);
@@ -51,5 +52,5 @@ export default async function init(el) {
     el.append(price);
   }
 
-  window.tacocat();
+  window.tacocat({ environment: env.name });
 }
