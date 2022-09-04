@@ -1,6 +1,6 @@
 import { loadScript, getConfig, createTag } from '../../utils/utils.js';
 
-const { miloLibs, codeRoot, env } = getConfig();
+const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 function buildButton(a, osi) {
@@ -52,5 +52,5 @@ export default async function init(el) {
     el.append(price);
   }
 
-  window.tacocat({ environment: env.name });
+  window.tacocat();
 }
