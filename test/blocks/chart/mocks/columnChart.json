@@ -1,0 +1,57 @@
+{
+  "total": 7,
+  "offset": 0,
+  "limit": 7,
+  "data": [
+    {
+      "Day": "44775",
+      "Chrome with a Really Really Long Name": "100",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "156",
+      "Group": "",
+      "Unit": "date-K"
+    },
+    {
+      "Day": "44776",
+      "Chrome with a Really Really Long Name": "276",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "220",
+      "Group": "",
+      "Unit": ""
+    },
+    {
+      "Day": "44777",
+      "Chrome with a Really Really Long Name": "300",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "204",
+      "Group": "",
+      "Unit": ""
+    },
+    {
+      "Day": "44778",
+      "Chrome with a Really Really Long Name": "160",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "120",
+      "Group": "",
+      "Unit": ""
+    },
+    {
+      "Day": "44779",
+      "Chrome with a Really Really Long Name": "228",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "252",
+      "Group": "",
+      "Unit": ""
+    },
+    {
+      "Day": "44780",
+      "Chrome with a Really Really Long Name": "200",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "180",
+      "Group": "",
+      "Unit": ""
+    },
+    {
+      "Day": "44781",
+      "Chrome with a Really Really Long Name": "140",
+      "Firefox Lorem Ipsum Dolor Sit Amet": "180",
+      "Group": "",
+      "Unit": ""
+    }
+  ],
+  ":type": "sheet"
+}

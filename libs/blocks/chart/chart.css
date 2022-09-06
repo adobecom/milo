@@ -1,0 +1,97 @@
+@keyframes oversized-number {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+.section.chart-section {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 0 auto;
+}
+
+.chart-section > * {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 1200px) {
+  .up-2 > div:not(.section-metadata) {
+    width: calc(50% - 8px);
+    max-width: calc(50% - 8px);
+    flex: 1 1 auto;
+  }
+
+  .up-3 > div:not(.section-metadata) {
+    width: calc(33% - 8px);
+    max-width: calc(33% - 8px);
+    flex: 1 1 auto;
+  }
+}
+
+.chart {
+  --white: rgb(255 255 255);
+  --black: rgb(0 0 0);
+  --chart-padding: 32px 32px 40px 32px;
+  --spectrum-grey-900: rgb(44 44 44 / 100%);
+}
+
+.chart .title  * {
+  color: var(--spectrum-grey-900);
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.chart .subtitle * {
+  color: var(--spectrum-grey-900);
+  font-weight: normal;
+  font-size: 18px;
+  line-height: 1.5;
+  margin-bottom: 40px;
+  display: block;
+}
+
+.chart .footnote * {
+  margin-top: 24px;
+  text-align: right;
+  font-size: 14px;
+  color: #767676;
+  display: block;
+}
+
+@media only screen and (min-width: 75rem) {
+  .chart [data-chart-type="area"] > div {
+    height: 900px;
+  }
+}
+
+.border {
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 3px 10px 0 rgb(0 0 0 / 10%);
+  padding: var(--chart-padding);
+  box-sizing: border-box;
+}
+
+.chart.small.border,
+.chart.medium.border {
+  padding: var(--chart-padding);
+}
+
+.chart .tooltip-icon {
+  height: 16px;
+  width: 16px;
+  background-color: var(--black);
+  position: absolute;
+  bottom: -8px;
+  right: 20px;
+  transform: rotate(45deg);
+  z-index: 0;
+}
