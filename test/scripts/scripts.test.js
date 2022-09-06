@@ -3,7 +3,8 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../helpers/selectors.js';
+import { stub } from 'sinon';
+import { waitForElement } from '../helpers/waitfor.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -12,6 +13,7 @@ const EXTERNAL_SCRIPTS = [
   'https://www.adobe.com/marketingtech/main.standard.min.js',
 ];
 
+// Prevents loading of EXTERNAL_SCRIPTS
 const observer = new MutationObserver((mutations) => {
   mutations.forEach(({ addedNodes }) => {
     addedNodes.forEach((node) => {
@@ -45,15 +47,11 @@ describe('Decorating', () => {
     expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
   });
 
-  it('modal test', async () => {
-    window.location.hash = '#play-video';
-    await waitForElement('dialog');
-    const modal = document.querySelector('dialog');
-    expect(modal).to.exist;
-  });
-
   it('martech test', async () => {
-    const el = await waitForElement('script[src="https://www.adobe.com/marketingtech/main.standard.min.js"]');
+    const el = await waitForElement(
+      'script[src="https://www.adobe.com/marketingtech/main.standard.min.js"]',
+      { rootEl: document.head },
+    );
     expect(el).to.exist;
     expect(window.alloy_load).to.exist;
   });

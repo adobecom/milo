@@ -31,12 +31,12 @@ function closeModals(modals) {
   }
 }
 
-async function getModal(el) {
+export async function getModal(el) {
   const details = getDetails(el);
   if (!details) return null;
   let dialog = document.querySelector(`#${details.id}`);
   if (dialog) {
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
   } else {
     dialog = document.createElement('dialog');
     dialog.className = 'dialog-modal';
@@ -50,6 +50,7 @@ async function getModal(el) {
     });
 
     dialog.addEventListener('click', (e) => {
+      // on click outside of modal
       if (e.target === dialog) {
         closeModals([dialog]);
       }
@@ -76,8 +77,9 @@ async function getModal(el) {
 export default function init(el) {
   const { modalHash } = el.dataset;
   if (window.location.hash === modalHash) {
-    getModal(el);
+    return getModal(el);
   }
+  return null;
 }
 
 // First import will cause this side effect (on purpose)
