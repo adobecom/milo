@@ -1,4 +1,3 @@
-/* Aside Block */
 .aside {
   display: flex;
   width: 100%;
@@ -29,7 +28,6 @@
   min-height: 700px;
 }
 
-/* Standard */
 .aside .background {
   overflow: hidden;
   position: absolute;
@@ -118,7 +116,6 @@
   object-position: left top;
 }
 
-/* Simple */
 .aside.simple .foreground.container .text {
   margin-bottom: 80px;
 }
@@ -127,13 +124,16 @@
   display: none;
 }
 
-/* Split */
 .aside.split {
   flex-direction: column;
 }
 
 .aside.split.large {
   flex-direction: column-reverse;
+}
+
+.aside.split .foreground.container {
+  width: 100%;
 }
 
 .aside.split .foreground.container .text {
@@ -179,7 +179,6 @@
   flex-direction: column;
 }
 
-/* Augmented Image */
 .aside.augmented-image .foreground.container {
   justify-content: center;
   align-items: center;
@@ -193,172 +192,159 @@
   margin: 0;
 }
 
-/* Tablet */
 @media screen and (min-width: 600px) {
-
-  /* Standard */
   .aside .foreground.container {
-      justify-content: space-between;
-      align-items: stretch;
-      flex-direction: row;
-      margin: 0 auto;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-direction: row;
+    margin: 0 auto;
   }
 
   .aside .foreground.container .image {
-      margin: 0;
-      flex: 0 0 50%;
-      display: block;
-      max-width: 302px;
-      padding-left: 16px;
+    margin: 0;
+    flex: 0 0 50%;
+    display: block;
+    max-width: 302px;
+    padding-left: 16px;
   }
 
   .aside .foreground.container .text {
-      margin-bottom: 0;
-      padding: var(--spacing-xxxl) 0;
-      flex: 1 0 50%;
-      max-width: 302px;
-      padding-right: 16px;
+    margin-bottom: 0;
+    padding: var(--spacing-xxxl) 0;
+    flex: 1 0 50%;
+    max-width: 302px;
+    padding-right: 16px;
   }
 
-  /* Simple */
   .aside.simple .foreground.container .text {
-      margin-bottom: 0;
-      max-width: 318px;
-      padding-right: 0;
+    margin-bottom: 0;
+    max-width: 318px;
+    padding-right: 0;
   }
 
-  /* Split */
   .aside.split.large {
-      flex-direction: column;
-      background-color: #1E1E1E;
+    flex-direction: column;
+    background-color: #1E1E1E;
   }
 
   .aside.split .background {
-      background-color: #1E1E1E;
-      position: absolute;
+    background-color: #1E1E1E;
+    position: absolute;
   }
 
   .aside.split .background img {
-      width: 60.5vw;
-      max-width: 1396px;
-      position: absolute;
-      right: 0;
-      object-fit: cover;
-      object-position: center top;
+    width: 60.5vw;
+    max-width: 1396px;
+    position: absolute;
+    right: 0;
+    object-fit: cover;
+    object-position: center top;
   }
 
   .aside.split .foreground.container {
-      flex-direction: row;
-      justify-content: stretch;
-      max-width: var(--grid-container-width);
-      margin: 0 auto;
-      background-color: transparent;
+    flex-direction: row;
+    justify-content: stretch;
+    max-width: var(--grid-container-width);
+    margin: 0 auto;
+    background-color: transparent;
   }
 
   .aside.split .foreground.container .text {
-      color: white;
-      flex: 0 0 212px;
-      padding: var(--spacing-xxl) 0;
-      max-width: 100%;
-      margin: 0;
+    color: white;
+    flex: 0 0 212px;
+    padding: var(--spacing-xxl) 0;
+    max-width: 100%;
+    margin: 0;
   }
 
   .aside.split .foreground.container .image {
-      object-fit: cover;
-      flex: 0 0 61%;
-      display: block;
-      padding: 0;
+    object-fit: cover;
+    flex: 0 0 61%;
+    display: block;
+    padding: 0;
   }
 
-  /* Split - Half */
   .aside.split.half .background img {
-      width: 50vw;
-      max-width: 1396px;
+    width: 50vw;
+    max-width: 1396px;
   }
 
   .aside.split.half .foreground.container .text {
-      flex: 0 0 41.72%;
+    flex: 0 0 41.72%;
   }
 
   .aside.split.right .foreground.container {
-      flex-direction: row-reverse;
+    flex-direction: row-reverse;
   }
 
   .aside.split.right .background img {
-      left: 0;
+    left: 0;
   }
 
-  /* Augmented Image */
   .aside.augmented-image .background {
-      clip-path: inset(19% 0);
+    clip-path: inset(19% 0);
   }
 
   .aside.augmented-image .foreground.container .image {
-      flex: 0 0 57%;
-      max-width: none;
+    flex: 0 0 57%;
+    max-width: none;
   }
 
   .aside.augmented-image .foreground.container .text {
-      flex: 0 0 43%;
+    flex: 0 0 43%;
   }
 }
 
-/* Desktop */
 @media screen and (min-width: 1200px) {
-
-  /* Standard */
   .aside .foreground.container {
-      min-height: 420px;
-      width: var(--grid-container-width);
+    min-height: 420px;
+    width: var(--grid-container-width);
   }
 
   .aside .foreground.container .image {
-      flex: 0 0 50%;
-      max-width: 500px;
-      object-fit: cover;
-      padding-left: 0;
+    flex: 0 0 50%;
+    max-width: 500px;
+    object-fit: cover;
+    padding-left: 0;
   }
 
   .aside .foreground.container .text {
-      max-width: 500px;
-      padding: var(--spacing-xxl) 0;
+    max-width: 500px;
+    padding: var(--spacing-xxl) 0;
   }
 
   .aside .foreground.container .icon-area {
-      max-width: 400px;
+    max-width: 400px;
   }
 
   .aside .foreground.container .text .heading-XL {
-      margin: var(--spacing-xs) 0;
+    margin: var(--spacing-xs) 0;
   }
 
-  /* Simple */
   .aside.simple .foreground.container .text {
-      margin-bottom: 0;
-      max-width: 500px;
+    margin-bottom: 0;
+    max-width: 500px;
   }
 
-  /* Split */
   .aside.split .foreground.container .text {
-      flex: 0 0 300px;
+    flex: 0 0 300px;
   }
 
   .aside.split .foreground.container .image {
-      flex: 0 0 70%;
-      max-width: none;
-      object-fit: cover;
+    flex: 0 0 70%;
+    max-width: none;
+    object-fit: cover;
   }
 
   .aside.split.half .foreground.container .text {
-      max-width: 500px;
+    max-width: 500px;
   }
 
-  /* Augmented Image */
   .aside.augmented-image {
-      min-height: 700px;
+    min-height: 700px;
   }
 
   .aside.augmented-image .foreground.container .image img {
-      width: 130%;
+    width: 130%;
   }
 }
