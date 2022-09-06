@@ -1,0 +1,3 @@
+a[href*="/tools/caas#"] {
+  visibility: hidden !important;
+}
