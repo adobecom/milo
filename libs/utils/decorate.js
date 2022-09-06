@@ -58,7 +58,7 @@ export function getBlockSize(el) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[1];
 }
 
-export function decorateGrid(el, grids = ['two-up', 'three-up', 'four-up']) {
+export function getGridClass(el, grids = ['two-up', 'three-up', 'four-up']) {
   if (grids.some(className => el.classList.contains(className))) {
     return Array.from(el.classList).filter(className => grids.includes(className))?.[0];
   } else return;
