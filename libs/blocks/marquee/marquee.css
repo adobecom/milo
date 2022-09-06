@@ -34,6 +34,21 @@
   display: block;
 }
 
+.marquee.split .image img {
+  max-height: 560px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.marquee.split.small .image img {
+  max-height: 360px;
+}
+
+.marquee.split.large .image img {
+  max-height: 700px;
+}
+
 .marquee .foreground {
   position: relative;
   padding: var(--spacing-xxl) 0;
@@ -269,12 +284,6 @@
   .marquee.split .image.bleed picture {
     height: 100%;
     object-fit: fill;
-  }
-
-  .marquee.split .image.bleed img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 
   .marquee.split.large .text {
