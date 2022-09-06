@@ -90,7 +90,8 @@ async function getSpFiles(projectFiles) {
     const payload = { requests: [] };
     for (let i = 0; i < BATCH_REQUEST_LIMIT && index < projectFiles.length; index += 1, i += 1) {
       const projectFile = projectFiles[index];
-      const filePath = projectFile.draftLocaleFilePath || projectFile.filePath;
+      const langFilePath = projectFile.language === 'en' ? projectFile.languageAltLangFilePath : projectFile.languageFilePath;
+      const filePath = langFilePath || projectFile.filePath;
       payload.requests.push(getSharepointFileRequest(sp, index, filePath));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
@@ -107,19 +108,19 @@ function getEnFilePaths(project) {
   return enFilePaths;
 }
 
-function getLocaleFilePaths(project) {
-  let localeFilePaths = [];
-  project.locales.forEach((l) => {
-    localeFilePaths = localeFilePaths.concat(project[l]);
+function getLanguageFilePaths(project) {
+  let languagePaths = [];
+  project.languages.forEach((l) => {
+    languagePaths = languagePaths.concat(project[l]);
   });
-  return localeFilePaths;
+  return languagePaths;
 }
 
 async function updateProjectWithSpStatus(project, callback) {
   if (!project) {
     return;
   }
-  const filePaths = [].concat(getEnFilePaths(project), getLocaleFilePaths(project));
+  const filePaths = [].concat(getEnFilePaths(project), getLanguageFilePaths(project));
   const spBatchFiles = await getSpFiles(filePaths);
   spBatchFiles.forEach((spFiles) => {
     if (spFiles && spFiles.responses) {
@@ -176,8 +177,11 @@ async function createFolder(folder) {
   throw new Error(`Could not create folder: ${folder}`);
 }
 
-function getFolderNameFromPath(path) {
-  return path.substring(0, path.lastIndexOf('/'));
+function getFolderFromPath(path) {
+  if (path.includes('.')) {
+    return path.substring(0, path.lastIndexOf('/'));
+  }
+  return path;
 }
 
 function getFileNameFromPath(path) {
@@ -215,7 +219,7 @@ async function uploadFile(sp, uploadUrl, file) {
 
 async function saveFile(file, dest) {
   validateConnection();
-  const folder = getFolderNameFromPath(dest);
+  const folder = getFolderFromPath(dest);
   const filename = getFileNameFromPath(dest);
   await createFolder(folder);
   const { sp } = await getConfig();
@@ -304,27 +308,29 @@ async function getMetadata(srcPath, file) {
   return metadata;
 }
 
-async function copy(srcPath, dest) {
+async function copyFile(srcPath, destinationFolder) {
   validateConnection();
+  await createFolder(destinationFolder);
   const options = getAuthorizedRequestOption();
   options.headers.append('Accept', 'application/json');
   options.headers.append('Content-Type', 'application/json');
   const { sp } = await getConfig();
   options.method = sp.api.file.copy.method;
-  const { baseURI } = sp.api.file.update;
-  const payload = { parentReference: { path: `${baseURI.split('/').pop()}${dest}` } };
+  const { baseURI } = sp.api.file.copy;
+  const rootFolder = baseURI.split('/').pop();
+  const payload = { parentReference: { path: `${rootFolder}${destinationFolder}` } };
   options.body = JSON.stringify(payload);
   return fetch(`${baseURI}${srcPath}:/copy`, options);
 }
 
-async function copyFileAndUpdateMetadata(srcPath, dest) {
-  const copiedFile = await copy(srcPath, dest);
+async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
+  const copiedFile = await copyFile(srcPath, destinationFolder);
   const fileName = srcPath.split('/').pop();
   if (copiedFile) {
-    await updateFile(`${dest}/${fileName}`, await getMetadata(srcPath, copiedFile));
+    await updateFile(`${destinationFolder}/${fileName}`, await getMetadata(srcPath, copiedFile));
     return copiedFile;
   }
-  throw new Error(`Could not copy file ${dest}`);
+  throw new Error(`Could not copy file ${destinationFolder}`);
 }
 
 async function saveFileAndUpdateMetadata(srcPath, file, dest) {
@@ -341,6 +347,7 @@ export { getFiles,
   getVersionOfFile,
   getFileVersionInfo,
   saveFile,
+  copyFile,
   saveFileAndUpdateMetadata,
   copyFileAndUpdateMetadata,
   connect,

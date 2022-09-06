@@ -9,7 +9,8 @@ import {
   getLastRolloutVersion,
   getVersionOfFile,
   saveFileAndUpdateMetadata,
-} from '../translation/sharepoint.js';
+} from './sharepoint.js';
+import { asyncForEach, loadingON } from './utils.js';
 
 let types = new Set();
 let hashToContentMap = new Map();
@@ -62,7 +63,6 @@ function processMdast(nodes) {
   return { hashToIndex, arrayWithTypeAndHash };
 }
 
-// TODO - This will later be replaced with actual reading of the docx version and conversion to md
 async function simulatePreview(mdPath, retryAttempt = 1) {
   const previewUrl = `https://admin.hlx3.page/preview/adobecom/milo/diffpoc${mdPath}`;
   const response = await fetch(
@@ -225,7 +225,7 @@ function getMergedMdast(left, right) {
         const leftOpInfo = leftArrayElement[1];
         if (leftHash === rightHash) {
           let toAdd = { hash: leftHash, opInfo: leftOpInfo };
-          let author = 'langmaster';
+          let author = 'language';
           if (rightOpInfo.op !== 'nochange') {
             toAdd = { hash: rightHash, opInfo: rightOpInfo };
             author = 'region';
@@ -234,7 +234,7 @@ function getMergedMdast(left, right) {
           leftPointer += 1;
           break;
         } else {
-          updateMergedMdast(mergedMdast, { hash: leftHash, opInfo: leftOpInfo }, 'langmaster');
+          updateMergedMdast(mergedMdast, { hash: leftHash, opInfo: leftOpInfo }, 'language');
         }
       }
     } else {
@@ -249,54 +249,100 @@ function getMergedMdast(left, right) {
       updateMergedMdast(
         mergedMdast,
         { hash: leftArrayElement[0], opInfo: leftArrayElement[1] },
-        'langmaster',
+        'language',
       );
     }
   }
   return mergedMdast;
 }
 
+async function rollout(filePath, targetFolders) {
+  await connectToSP();
+  const filePathWithoutExtension = filePath.substring(0, filePath.lastIndexOf('.'));
+  const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+  await asyncForEach(targetFolders, async (targetFolder) => {
+    let languagePrevMd;
+    const livecopyFilePath = `${targetFolder}/${fileName}`;
+    loadingON(`Rollout to ${livecopyFilePath} started`);
+    const languagePrevVersion = await getLastRolloutVersion(livecopyFilePath);
+    const languageCurrentVersion = await getFileVersionInfo(filePath);
+    if (!languagePrevVersion) {
+      // Cannot merge since we don't have rollout version info.
+      // eslint-disable-next-line no-console
+      loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
+    } else if (languagePrevVersion === '0.0') {
+      // just copy since regional document does not exist
+      await copyFileAndUpdateMetadata(filePath, targetFolder);
+      loadingON(`Rollout to ${livecopyFilePath} complete`);
+    } else if (languageCurrentVersion === languagePrevVersion) {
+      languagePrevMd = await getMd(filePathWithoutExtension);
+    } else {
+      const languageBaseFile = await getVersionOfFile(filePath, languagePrevVersion);
+      languagePrevMd = await docx2md(languageBaseFile, {});
+    }
+    if (languagePrevMd) {
+      const languagePrev = await getMdastFromMd(languagePrevMd);
+      const languageBaseProcessed = await getProcessedMdast(languagePrev);
+      const languageCurrent = await getMdast(filePathWithoutExtension);
+      const languageCurrentProcessed = await getProcessedMdast(languageCurrent);
+      const languageBaseToCurrentChanges = getChanges(
+        languageBaseProcessed,
+        languageCurrentProcessed,
+      );
+      const livecopy = await getMdast(`${targetFolder}/${fileName.substring(0, fileName.lastIndexOf('.'))}`);
+      const livecopyProcessed = await getProcessedMdast(livecopy);
+      const languageBaseToRegionChanges = getChanges(languageBaseProcessed, livecopyProcessed);
+      const livecopyMergedMdast = getMergedMdast(
+        languageBaseToCurrentChanges,
+        languageBaseToRegionChanges,
+      );
+      await persist(filePath, livecopyMergedMdast, livecopyFilePath);
+      loadingON(`Rollout to ${livecopyFilePath} complete`);
+    }
+  });
+}
+
 async function process(folderPath) {
   reset();
   await connectToSP();
-  let langmasterPrevMd;
-  const langmasterPrevVersion = await getLastRolloutVersion(`${folderPath}/region/loc.docx`);
-  const langmasterCurrentVersion = await getFileVersionInfo(`${folderPath}/langmaster/loc.docx`);
-  if (!langmasterPrevVersion) {
+  let languagePrevMd;
+  const languagePrevVersion = await getLastRolloutVersion(`${folderPath}/region/loc.docx`);
+  const languageCurrentVersion = await getFileVersionInfo(`${folderPath}/language/loc.docx`);
+  if (!languagePrevVersion) {
     // Cannot merge since we don't have rollout version info.
     // eslint-disable-next-line no-console
     console.log('Cannot rollout since last rollout version info is unavailable');
-  } else if (langmasterPrevVersion === '0.0') {
+  } else if (languagePrevVersion === '0.0') {
     // just copy since regional document does not exist
-    await copyFileAndUpdateMetadata(`${folderPath}/langmaster/loc.docx`, `${folderPath}/region`);
-  } else if (langmasterCurrentVersion === langmasterPrevVersion) {
-    langmasterPrevMd = await getMd(`${folderPath}/langmaster/loc`);
+    await copyFileAndUpdateMetadata(`${folderPath}/language/loc.docx`, `${folderPath}/region`);
+  } else if (languageCurrentVersion === languagePrevVersion) {
+    languagePrevMd = await getMd(`${folderPath}/language/loc`);
   } else {
-    const langmasterBaseFile = await getVersionOfFile(`${folderPath}/langmaster/loc.docx`, langmasterPrevVersion);
-    langmasterPrevMd = await docx2md(langmasterBaseFile, {});
+    const languageBaseFile = await getVersionOfFile(`${folderPath}/language/loc.docx`, languagePrevVersion);
+    languagePrevMd = await docx2md(languageBaseFile, {});
   }
-  const langmasterPrev = await getMdastFromMd(langmasterPrevMd);
-  const langmasterBaseProcessed = await getProcessedMdast(langmasterPrev);
-  display('langmasterPrev', langmasterBaseProcessed);
-  const langmasterCurrent = await getMdast(`${folderPath}/langmaster/loc`);
-  const langmasterCurrentProcessed = await getProcessedMdast(langmasterCurrent);
-  display('langmasterCurrent', langmasterCurrentProcessed);
-  const langmasterBaseToCurrentChanges = getChanges(
-    langmasterBaseProcessed,
-    langmasterCurrentProcessed,
+  const languagePrev = await getMdastFromMd(languagePrevMd);
+  const languageBaseProcessed = await getProcessedMdast(languagePrev);
+  display('languagePrev', languageBaseProcessed);
+  const languageCurrent = await getMdast(`${folderPath}/language/loc`);
+  const languageCurrentProcessed = await getProcessedMdast(languageCurrent);
+  display('languageCurrent', languageCurrentProcessed);
+  const languageBaseToCurrentChanges = getChanges(
+    languageBaseProcessed,
+    languageCurrentProcessed,
   );
-  display('langmasterDiff', langmasterBaseToCurrentChanges);
+  display('languageDiff', languageBaseToCurrentChanges);
   const region = await getMdast(`${folderPath}/region-v2`);
   const regionProcessed = await getProcessedMdast(region);
   display('region', regionProcessed);
-  const langmasterBaseToRegionChanges = getChanges(langmasterBaseProcessed, regionProcessed);
-  display('regionDiff', langmasterBaseToRegionChanges);
+  const languageBaseToRegionChanges = getChanges(languageBaseProcessed, regionProcessed);
+  display('regionDiff', languageBaseToRegionChanges);
   const regionMergedMdast = getMergedMdast(
-    langmasterBaseToCurrentChanges,
-    langmasterBaseToRegionChanges,
+    languageBaseToCurrentChanges,
+    languageBaseToRegionChanges,
   );
   display('regionMerged', regionMergedMdast);
-  await persist(`${folderPath}/langmaster/loc.docx`, regionMergedMdast, `${folderPath}/Region.docx`);
+  await persist(`${folderPath}/language/loc.docx`, regionMergedMdast, `${folderPath}/Region.docx`);
 }
 
 async function init() {
@@ -307,4 +353,4 @@ async function init() {
   });
 }
 
-export default init;
+export { init, rollout };

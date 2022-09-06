@@ -112,6 +112,7 @@ td button {
   background: #d6d6d6;
   color: #676767;
   font-weight: 500;
+  margin-bottom: 6px;
 }
 
 td button:first-child {
