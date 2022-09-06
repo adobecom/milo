@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { asyncForEach, getPathFromUrl } from './utils.js';
+import { asyncForEach, getSharepointLocationFromUrl } from './utils.js';
 import getConfig from './config.js';
 
 const PROJECTS_ROOT_PATH = '/drafts/localization/projects/';
@@ -67,8 +67,8 @@ function getHelixAdminApiUrl(urlInfo, apiBaseUri) {
 async function readProjectFile(projectWebUrl) {
   const resp = await fetch(projectWebUrl, { cache: 'no-store' });
   const json = await resp.json();
-  if (json && json.data) {
-    return json.data;
+  if (json && json.translation && json.translation.data) {
+    return json.translation.data;
   }
   return undefined;
 }
@@ -77,21 +77,8 @@ function getProjectFolder(path) {
   return path.substring(0, path.lastIndexOf('.'));
 }
 
-function getSharepointLocationFromUrl(url) {
-  let path = getPathFromUrl(url);
-  if (!path) {
-    return undefined;
-  }
-  if (path.endsWith('/')) {
-    path += 'index';
-  } else if (path.endsWith('.html')) {
-    path = path.slice(0, -5);
-  }
-  return path;
-}
-
-function shouldBeTranslated(targetLocale, translationRow) {
-  return translationRow[targetLocale] && `${translationRow[targetLocale]}`.toLowerCase() === 'y';
+function shouldBeTranslated(language, translationRow) {
+  return translationRow[language] && `${translationRow[language]}`.toLowerCase() === 'translate';
 }
 
 function addToExistingOrCreate(projectDetail, key, task) {
@@ -107,33 +94,55 @@ function addToArrayIfNotPresent(array, toAdd) {
 
 function updateProjectDetailWithTask(projectDetail, task) {
   const urlToTranslate = task.URL;
-  const targetLocale = task.locale;
+  const { language } = task;
   addToExistingOrCreate(projectDetail, urlToTranslate, task);
-  addToExistingOrCreate(projectDetail, targetLocale, task);
-  addToArrayIfNotPresent(projectDetail.locales, targetLocale);
+  addToExistingOrCreate(projectDetail, language, task);
   addToArrayIfNotPresent(projectDetail.urls, urlToTranslate);
+  addToArrayIfNotPresent(projectDetail.languages, language);
   if (!projectDetail.docs[urlToTranslate]) {
     projectDetail.docs[urlToTranslate] = { filePath: task.filePath };
   }
 }
 
-async function addLocaleTasksToProject(projectDetail, projectFolder, locConfig, translationTask) {
+function getTargetFolders(srcPath, projectFolder, targetLocales) {
+  const targetFolders = [];
+  if (!targetLocales) {
+    return targetFolders;
+  }
+  const targetLocalesArray = targetLocales.split(',');
+  // eslint-disable-next-line no-restricted-syntax
+  for (const targetLocale of targetLocalesArray) {
+    targetFolders.push(`/${targetLocale}${srcPath.substring(0, srcPath.lastIndexOf('/'))}`);
+  }
+  return targetFolders;
+}
+
+async function addLanguageTasksToProject(projectDetail, projectFolder, locConfig, translationTask) {
   const localesConfig = locConfig.locales;
   const urlToTranslate = translationTask.URL;
+  const srcPath = getSharepointLocationFromUrl(urlToTranslate);
   await asyncForEach(localesConfig, async (localeConfig) => {
-    const targetLocale = localeConfig.locale;
-    if (shouldBeTranslated(targetLocale, translationTask)) {
-      const srcPath = getSharepointLocationFromUrl(urlToTranslate);
-      const targetLocalePath = await locConfig.getPathForLocale(targetLocale);
+    const languageCode = localeConfig.languagecode;
+    const altLanguageCode = localeConfig.altLanguagecode;
+    const { language } = localeConfig;
+    if (languageCode === 'en' || shouldBeTranslated(language, translationTask)) {
+      const targetLivecopies = await locConfig.getLivecopiesForLanguage(languageCode);
+      const targetLivecopyFolders = getTargetFolders(srcPath, projectFolder, targetLivecopies);
+      const targetAltLangLocales = await locConfig.getAltLangLocales(languageCode);
+      const targetAltLangFolders = getTargetFolders(srcPath, projectFolder, targetAltLangLocales);
       const task = {
         URL: urlToTranslate,
-        locale: targetLocale,
+        language: languageCode,
+        altlanguage: altLanguageCode,
         path: srcPath,
         filePath: `${srcPath}.docx`,
-        localePath: `/${targetLocalePath}${srcPath}`,
-        localeFilePath: `/${targetLocalePath}${srcPath}.docx`,
-        draftLocalePath: `${projectFolder}/${targetLocalePath}${srcPath}`,
-        draftLocaleFilePath: `${projectFolder}/${targetLocalePath}${srcPath}.docx`,
+        languagePath: `/langstore/${languageCode}${srcPath}`,
+        languageFilePath: `/langstore/${languageCode}${srcPath}.docx`,
+        languageAltLangFilePath: `/langstore/${languageCode}/altlang${srcPath}.docx`,
+        tempLanguagePath: `${projectFolder}/${languageCode}${srcPath}`,
+        tempLanguageFilePath: `${projectFolder}/${languageCode}${srcPath}.docx`,
+        livecopyFolders: targetLivecopyFolders,
+        altLangFolders: targetAltLangFolders,
       };
       updateProjectDetailWithTask(projectDetail, task);
     }
@@ -169,7 +178,13 @@ async function init() {
     },
     async detail() {
       const projectFileJson = await readProjectFile(projectUrl);
-      const projectDetail = { locales: [], urls: [], url: projectUrl, docs: {}, name: projectName };
+      const projectDetail = {
+        languages: [],
+        urls: [],
+        url: projectUrl,
+        docs: {},
+        name: projectName,
+      };
       if (!projectFileJson) {
         return projectDetail;
       }
@@ -179,7 +194,7 @@ async function init() {
         if (!urlToTranslate) {
           return;
         }
-        await addLocaleTasksToProject(
+        await addLanguageTasksToProject(
           projectDetail,
           projectFolder,
           locConfig,

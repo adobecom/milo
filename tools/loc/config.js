@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* global */
-const LOC_CONFIG = '/drafts/localization/configs/config.json';
+const LOC_CONFIG = '/drafts/localization/configs/config-v2.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 
@@ -31,10 +31,14 @@ function getLocalesConfig(config) {
 async function getDecoratedLocalesConfig(localesConfig) {
   const decoratedLocalesConfig = {};
   localesConfig.forEach((localeConfig) => {
-    decoratedLocalesConfig[localeConfig.locale] = {
-      path: localeConfig.path,
+    decoratedLocalesConfig[localeConfig.languagecode] = {
+      livecopies: localeConfig.livecopies,
+      altlang: localeConfig.altlang,
       workflow: localeConfig.workflow,
+      altlangWorflow: localeConfig.altlangWorflow,
       language: localeConfig.language,
+      languagecode: localeConfig.languagecode,
+      altLanguagecode: localeConfig.altLanguagecode,
     };
   });
   return decoratedLocalesConfig;
@@ -57,9 +61,18 @@ function getWorkflowForLocale(workflowsConfig, locale, decoratedLocales) {
   };
 }
 
+function getAltLangWorkflowForLocale(workflowsConfig, locale, decoratedLocales) {
+  const localeConfig = decoratedLocales[locale];
+  const { altlangWorkflow } = localeConfig;
+  return {
+    name: altlangWorkflow,
+    ...workflowsConfig[altlangWorkflow],
+  };
+}
+
 function getGLaaSRedirectURI() {
   const location = new URL(window.location.href);
-  return encodeURI(`${location.origin}/tools/translation/glaas.html`);
+  return encodeURI(`${location.origin}/tools/loc/glaas.html`);
 }
 
 async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
@@ -105,7 +118,7 @@ function getSharepointConfig(config) {
         authority: sharepointConfig.authority,
       },
     },
-    login: { redirectUri: '/tools/translation/spauth' },
+    login: { redirectUri: '/tools/loc/spauth' },
     api: {
       url: GRAPH_API,
       file: {
@@ -173,12 +186,19 @@ async function getConfig() {
       glaas: await getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
       sp: getSharepointConfig(configJson),
       admin: getHelixAdminConfig(),
-      async getPathForLocale(locale) {
-        const localeConfig = decoratedLocales[locale];
-        return localeConfig?.path ? localeConfig.path : null;
+      async getLivecopiesForLanguage(language) {
+        const localeConfig = decoratedLocales[language];
+        return localeConfig?.livecopies ? localeConfig.livecopies : null;
+      },
+      async getAltLangLocales(language) {
+        const localeConfig = decoratedLocales[language];
+        return localeConfig?.altlang ? localeConfig.altlang : null;
       },
       async getWorkflowForLocale(locale) {
         return getWorkflowForLocale(configJson, locale, decoratedLocales);
+      },
+      async getAltLangWorkflowForLocale(locale) {
+        return getAltLangWorkflowForLocale(configJson, locale, decoratedLocales);
       },
     };
   }

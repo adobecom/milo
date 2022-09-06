@@ -76,10 +76,10 @@ function hasSchema(host) {
         },
       },
       {
-        id: 'translate',
+        id: 'localize',
         condition: (s) => s.isEditor() && s.location.href.includes('/:x'),
         button: {
-          text: 'Translate',
+          text: 'Localize',
           action: (_, sk) => {
             const { config } = sk;
             window.open(
@@ -88,7 +88,7 @@ function hasSchema(host) {
               }/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${
                 config.owner
               }&repo=${config.repo}&ref=${config.ref}`,
-              'hlx-sidekick-spark-translation',
+              'hlx-sidekick-spark-loc',
             );
           },
         },
