@@ -1,12 +1,9 @@
 .icon-block {
-  display: flex;
+  display: block;
   width: 100%;
   position: relative;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
-
 
 .icon-block p {
   margin: 0;
@@ -34,11 +31,7 @@
 
 .icon-block .foreground.container {
   padding-top: var(--spacing-xxxl);
-  display: flex;
   position: relative;
-  align-items: baseline;
-  justify-content: center;
-  flex-direction: column;
   text-align: center;
 }
 
@@ -88,7 +81,6 @@
   margin: 0;
 }
 
-
 .icon-block .foreground.container div {
   flex: 1 1 auto;
 }
@@ -119,15 +111,6 @@
 
   .icon-block.vertical .foreground.container {
     gap: 32px;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .icon-block.vertical.two-up .foreground.container .text,
-  .icon-block.vertical.three-up .foreground.container .text,
-  .icon-block.vertical.four-up .foreground.container .text {
-    flex: 1 1 45%;
   }
 
   .icon-block.vertical.three-up .foreground.container .text:last-child {
@@ -163,35 +146,23 @@
     margin-bottom: 0;
   }
 
-  .icon-block.vertical.two-up .foreground.container {
+  .icon-block.vertical .foreground.container.two-up {
     max-width: 1000px;
   }
 
-  .icon-block.vertical.two-up .foreground.container .text {
-    flex: 1 1 50%;
-  }
-
-  .icon-block.vertical.three-up .foreground.container .text {
-    flex: 1 1 33.3%;
-  }
-
-  .icon-block.vertical.four-up .foreground.container .text {
-    flex: 1 1 25%;
-  }
-
-  .icon-block.vertical.three-up .foreground.container .text:last-child {
+  .icon-block.vertical .foreground.container.three-up .text:last-child {
     padding-right: 0;
   }
 
-  .icon-block.vertical.two-up .foreground.container .icon-area {
+  .icon-block.vertical .foreground.container.two-up .icon-area {
     max-width: 400px;
   }
 
-  .icon-block.vertical.three-up .foreground.container .icon-area {
+  .icon-block.vertical .foreground.container.three-up .icon-area {
     max-width: 300px;
   }
 
-  .icon-block.vertical.four-up .foreground.container .icon-area {
+  .icon-block.vertical.four-up .foreground.container.four-up .icon-area {
     max-width: 276px;
   }
 }

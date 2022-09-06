@@ -67,3 +67,18 @@
 .section.divider {
   border-bottom: 1px solid #d8d8d8;
 }
+
+.section .two-up,
+.section .three-up,
+.section .four-up {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.section .three-up {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.section .four-up {
+  grid-template-columns: repeat(4, 1fr);
+}
