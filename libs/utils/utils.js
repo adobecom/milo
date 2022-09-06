@@ -316,7 +316,7 @@ function decorateDefaults(el) {
   });
 }
 
-async function loadHeader() {
+export async function loadHeader() {
   const header = document.querySelector('header');
   if (getMetadata('header') === 'off') {
     document.body.classList.add('nav-off');
@@ -329,7 +329,7 @@ async function loadHeader() {
   return header;
 }
 
-async function loadFooter() {
+export async function loadFooter() {
   const footer = document.querySelector('footer');
   const footerPath = getMetadata('footer-source');
   if (getMetadata('footer') === 'off') {
