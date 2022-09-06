@@ -1,0 +1,116 @@
+.text.block {
+  padding: var(--spacing-xxl) 0;
+  position: relative;
+}
+
+.text p {
+  line-height: var(--type-body-all-lh);
+  margin-top: 0;
+}
+
+.text p.action-area {
+  display: flex;
+  align-items: center;
+}
+
+.text p.action-area a.con-button {
+  flex: 0 0 auto;
+}
+
+.text a:not(.con-button) {
+  color: var(--link-color);
+  font-weight: 700;
+}
+
+.text a:not(.con-button):hover {
+  color: var(--link-hover-color);
+}
+
+.text .background {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+}
+
+.text .full-width {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+}
+
+.text .full-width .heading-XL,
+.text .full-width .heading-L {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.text .full-width p {
+  margin: 0;
+}
+
+.text .full-width p:not(:last-child) {
+  margin: 0 0 var(--spacing-s);
+}
+
+.text.vertical .container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.text.vertical .container .full-width {
+  padding-bottom: var(--spacing-xl);
+}
+
+.text.vertical p {
+  margin-bottom: var(--spacing-s);
+}
+
+.text.vertical .container > div:not(.full-width) {
+  margin: 0 0 var(--spacing-m)
+}
+
+.text.vertical .container > div:not(.full-width) a:not(.con-button) {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-all-lh);
+}
+
+.text.vertical a.outline + a {
+  margin-left: var(--spacing-s);
+}
+
+.text .heading-M {
+  margin: 0 0 var(--spacing-xs);
+}
+
+/* Tablet */
+
+@media screen and (min-width: 600px) {
+  .text.vertical .container > div {
+    flex: 0 0 calc(50% - calc(var(--spacing-m) / 2));
+  }
+
+  .text.vertical .container .full-width {
+    flex: 0 0 100%;
+  }
+}
+
+/* Desktop */
+
+@media screen and (min-width: 1200px) {
+  .text.two-up .container {
+    width: calc(var(--grid-column-width) * 10);
+  }
+
+  .text.three-up .container > div {
+    flex: 0 0 calc(33.333% - calc(var(--spacing-m) / 2));
+  }
+
+  .text .full-width > * {
+    max-width: calc(var(--grid-column-width) * 8);
+  }
+}
