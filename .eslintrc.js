@@ -20,4 +20,8 @@ module.exports = {
       ExportDeclaration: 'never',
     }],
   },
+  ignorePatterns: [
+    '/libs/deps/*',
+    '/tools/*',
+  ],
 };

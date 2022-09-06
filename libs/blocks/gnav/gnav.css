@@ -71,8 +71,6 @@ nav.gnav .gnav-brand {
   font-size: 16px;
   line-height: 16px;
   font-weight: 700;
-  min-width: 175px;
-  max-width: 250px;
 }
 
 nav.gnav .gnav-brand svg {
@@ -131,7 +129,7 @@ nav.gnav .gnav-mainnav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 20px;
+  padding: 20px;
   color: #4B4B4B;
   transition: background-color .1s ease;
 }
@@ -308,9 +306,9 @@ nav.gnav .gnav-menu-container .gnav-promo img {
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(0,0,0,0.75);
-  -webkit-backdrop-filter: blur(1em);
-  backdrop-filter: blur(1em);
+  background: rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(.5em);
+  backdrop-filter: blur(.5em);
   z-index: 98;
 }
 
@@ -606,6 +604,7 @@ nav.gnav .gnav-search-field:hover .gnav-search-input::placeholder {
   .gnav-navitem a {
     justify-content: unset;
     line-height: 24px;
+    padding: 20px 12px;
   }
 
   .gnav-navitem > a {
@@ -689,6 +688,9 @@ nav.gnav .gnav-search-field:hover .gnav-search-input::placeholder {
 @media (min-width: 1440px) {
   nav.gnav, nav.gnav .gnav-search-field, .gnav-search-results {
     max-width: 1440px;
+  }
+  .gnav-navitem a {
+    padding: 20px;
   }
 }
 
