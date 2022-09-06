@@ -98,12 +98,16 @@ async function connect(callback) {
   }
 }
 
-function createGLaaSTask(glaas, locale, gLaaSProjectName) {
-  const localeAPI = glaas.localeApi(locale);
+function getGLaaSLanguage(language) {
+  return language === 'en' ? 'en-GB' : language;
+}
+
+function createGLaaSTask(glaas, language, gLaaSProjectName) {
+  const localeAPI = glaas.localeApi(language);
   const payload = {
     ...localeAPI.tasks.create.payload,
     name: gLaaSProjectName,
-    targetLocales: [locale],
+    targetLocales: [getGLaaSLanguage(language)],
   };
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/json');
@@ -115,58 +119,58 @@ function createGLaaSTask(glaas, locale, gLaaSProjectName) {
   });
 }
 
-async function addAssetsToCreatedTask(glaas, locale, files, gLaaSProjectName) {
+async function addAssetsToCreatedTask(glaas, language, files, gLaaSProjectName) {
   const formData = new FormData();
   files.forEach((file, index) => {
     formData.append(`file${index > 0 ? index : ''}`, file, file.path.replace(/\//gm, '_'));
   });
 
-  return fetch(`${glaas.url}${(glaas.localeApi(locale)).tasks.assets.baseURI}/${gLaaSProjectName}/assets?targetLanguages=${locale}`, {
+  return fetch(`${glaas.url}${(glaas.localeApi(language)).tasks.assets.baseURI}/${gLaaSProjectName}/assets?targetLanguages=${getGLaaSLanguage(language)}`, {
     method: 'POST',
     headers: getAuthorizationHeaders(glaas),
     body: formData,
   });
 }
 
-function markTaskAsCreated(glaas, locale, gLaaSProjectName) {
+function markTaskAsCreated(glaas, language, gLaaSProjectName) {
   const data = new URLSearchParams();
   data.append('newStatus', 'CREATED');
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/x-www-form-urlencoded');
   headers.append('Accept', 'application/json');
-  return fetch(`${glaas.url}${(glaas.localeApi(locale)).tasks.updateStatus.baseURI}/${gLaaSProjectName}/${locale}/updateStatus`, {
+  return fetch(`${glaas.url}${(glaas.localeApi(language)).tasks.updateStatus.baseURI}/${gLaaSProjectName}/${getGLaaSLanguage(language)}/updateStatus`, {
     method: 'POST',
     headers,
     body: data,
   });
 }
 
-async function sendToGLaaS(project, locale) {
-  const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, locale);
-  const files = await getFiles(project, locale);
+async function sendToGLaaS(project, language) {
+  const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
+  const files = await getFiles(project, language);
   if (!files || files.length === 0) {
     throw new Error('No valid files found to send for translation');
   }
   const { glaas } = await getConfig();
-  const createdGLaaSTask = await createGLaaSTask(glaas, locale, gLaaSProjectName);
+  const createdGLaaSTask = await createGLaaSTask(glaas, language, gLaaSProjectName);
   if (!createdGLaaSTask.ok) {
     throw new Error('Cannot create the GLaaS task');
   }
-  const addedAssets = await addAssetsToCreatedTask(glaas, locale, files, gLaaSProjectName);
+  const addedAssets = await addAssetsToCreatedTask(glaas, language, files, gLaaSProjectName);
   if (!addedAssets.ok) {
     throw new Error('Cannot add assets to created GLaaS Task');
   }
-  const taskStatus = await markTaskAsCreated(glaas, locale, gLaaSProjectName);
+  const taskStatus = await markTaskAsCreated(glaas, language, gLaaSProjectName);
   if (!taskStatus.ok) {
     throw new Error('Cannot update GLaaS task as newly created.');
   }
 }
 
-function getGLaaSTaskStatus(glaas, locale, gLaaSProjectName) {
+function getGLaaSTaskStatus(glaas, language, gLaaSProjectName) {
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/json');
   headers.append('Accept', 'application/json');
-  return fetch(`${glaas.url}${((glaas.localeApi(locale))).tasks.get.baseURI}/${gLaaSProjectName}`, {
+  return fetch(`${glaas.url}${((glaas.localeApi(language))).tasks.get.baseURI}/${gLaaSProjectName}`, {
     method: 'GET',
     headers,
   });
@@ -176,18 +180,18 @@ function getPathFromAssetName(assetName) {
   return assetName.replace(/_/gm, '/');
 }
 
-function updateProjectWithTaskStatus(project, locale, gLaaSProjectName, gLaaSTaskStatus) {
+function updateProjectWithTaskStatus(project, language, gLaaSProjectName, gLaaSTaskStatus) {
   const taskStatus = gLaaSTaskStatus.status;
   const defaultStatus = taskStatus === 'CREATED' ? 'IN PROGRESS' : taskStatus;
   gLaaSTaskStatus.assets.forEach((asset) => {
     const path = getPathFromAssetName(asset.name);
-    const task = project[locale].find((t) => t.filePath === path);
+    const task = project[language].find((t) => t.filePath === path);
     if (!task) {
       return;
     }
     task.glaas = task.glaas || {};
     task.glaas.status = asset.status !== 'DRAFT' ? asset.status : defaultStatus;
-    task.glaas.assetPath = `${gLaaSProjectName}/assets/${locale}/${asset.name}`;
+    task.glaas.assetPath = `${gLaaSProjectName}/assets/${getGLaaSLanguage(language)}/${asset.name}`;
   });
 }
 
@@ -196,12 +200,12 @@ async function updateProject(project, callback) {
     return;
   }
   const { glaas } = await getConfig();
-  await asyncForEach(project.locales, async (locale) => {
-    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, locale);
-    const status = await getGLaaSTaskStatus(glaas, locale, gLaaSProjectName);
+  await asyncForEach(project.languages, async (language) => {
+    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
+    const status = await getGLaaSTaskStatus(glaas, language, gLaaSProjectName);
     const statusJson = await status.json();
     if (statusJson && statusJson[0] && statusJson[0].assets) {
-      updateProjectWithTaskStatus(project, locale, gLaaSProjectName, statusJson[0]);
+      updateProjectWithTaskStatus(project, language, gLaaSProjectName, statusJson[0]);
     } else {
       // eslint-disable-next-line no-console
       console.error(`Could not find assets in ${gLaaSProjectName}...`);
@@ -211,10 +215,10 @@ async function updateProject(project, callback) {
   if (callback) await callback();
 }
 
-async function getFile(task, locale) {
+async function getFile(task, language) {
   const { glaas } = await getConfig();
   const response = await fetch(
-    `${glaas.url}${(await glaas.localeApi(locale)).tasks.assets.baseURI}/${task.glaas.assetPath}`,
+    `${glaas.url}${(glaas.localeApi(language)).tasks.assets.baseURI}/${task.glaas.assetPath}`,
     { headers: getAuthorizationHeaders(glaas) },
   );
 

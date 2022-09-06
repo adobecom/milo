@@ -21,32 +21,32 @@
     </form>
     <table style="display:none">
       <tr>
-        <th>Langmaster Prev</th>
-        <th>Langmaster Current</th>
+        <th>Language Prev</th>
+        <th>Language Current</th>
         <th>Regional</th>
       </tr>
       <tr>
-        <td id="langmasterPrev"></td>
-        <td id="langmasterCurrent"></td>
+        <td id="languagePrev"></td>
+        <td id="languageCurrent"></td>
         <td id="region"></td>
       </tr>
     </table>
     <br/>
     <table>
       <tr>
-        <th>Langmaster (Prev) <-> Langmaster Current</th>
-        <th>Langmaster (Prev) <-> Region</th>
-        <th>RegionMerged - Merged Result of Langmaster Current and Region</th>
+        <th>Language (Prev) <-> Language Current</th>
+        <th>Language (Prev) <-> Region</th>
+        <th>RegionMerged - Merged Result of Language Current and Region</th>
       </tr>
       <tr>
-        <td id="langmasterDiff"></td>
+        <td id="languageDiff"></td>
         <td id="regionDiff"></td>
         <td id="regionMerged"></td>
       </tr>
     </table>
   </main>
   <script type="module">
-    import init from './generatePatch.js';
+    import { init } from './rollout.js';
     init();
   </script>
 </body>
