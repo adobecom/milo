@@ -240,6 +240,11 @@
     object-fit: cover;
     object-position: center top;
   }
+  
+  .aside.split.right .background img,
+  .aside.split.half .background img {
+    object-position: left top;
+  }
 
   .aside.split .foreground.container {
     flex-direction: row;
