@@ -11,7 +11,6 @@
 */
 
 import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../utils/analytics.js'
 
 /*
  * Text Block - v5.1
@@ -42,5 +41,4 @@ export default function init(el) {
     container.insertAdjacentElement('beforeend', col.children[0]);
     col.remove();
   });
-  decorateBlockAnalytics(el);
 }
