@@ -85,7 +85,7 @@ function hasSchema(host) {
             window.open(
               `${
                 config.pluginHost ? config.pluginHost : `http://${config.innerHost}`
-              }/tools/translation/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${
+              }/tools/loc/index.html?sp=${encodeURIComponent(window.location.href)}&owner=${
                 config.owner
               }&repo=${config.repo}&ref=${config.ref}`,
               'hlx-sidekick-spark-loc',
@@ -94,13 +94,13 @@ function hasSchema(host) {
         },
       },
       {
-        id: 'generatePatch',
+        id: 'rollout',
         condition: (s) => s.isEditor() && s.location.href.includes('/:w'),
         button: {
-          text: 'Generate Patch',
+          text: 'Rollout',
           action: (_, sk) => {
             const { config } = sk;
-            window.open(`${config.pluginHost ? config.pluginHost : `http://${config.innerHost}`}/tools/loc/generatePatch.html?sp=${encodeURIComponent(window.location.href)}&owner=${config.owner}&repo=${config.repo}&ref=${config.ref}`, 'generate-patch');
+            window.open(`${config.pluginHost ? config.pluginHost : `http://${config.innerHost}`}/tools/loc/rolloutTest.html?sp=${encodeURIComponent(window.location.href)}&owner=${config.owner}&repo=${config.repo}&ref=${config.ref}`, 'generate-patch');
           },
         },
       },
