@@ -68,17 +68,17 @@
   border-bottom: 1px solid #d8d8d8;
 }
 
-.section.two-up .foreground.container,
-.section.three-up .foreground.container,
-.section.four-up .foreground.container {
+.section.two-up .grid,
+.section.three-up .grid,
+.section.four-up .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.section.three-up .foreground.container {
+.section.three-up .grid {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.section.four-up .foreground.container {
+.section.four-up .grid {
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }

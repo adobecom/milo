@@ -22,7 +22,7 @@ function decorateLayout(el) {
     decorateBlockBg(el, children[0]);
   }
   const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container');
+  foreground.classList.add('foreground', 'container', 'grid');
   el.appendChild(foreground);
   return foreground;
 }
