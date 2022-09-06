@@ -68,17 +68,17 @@
   border-bottom: 1px solid #d8d8d8;
 }
 
-.section .two-up,
-.section .three-up,
-.section .four-up {
+.section.two-up .foreground.container,
+.section.three-up .foreground.container,
+.section.four-up .foreground.container {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.section .three-up {
+.section.three-up .foreground.container {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.section .four-up {
+.section.four-up .foreground.container {
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }

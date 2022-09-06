@@ -14,7 +14,7 @@
 * Icon Block - v5.1
 */
 
-import { decorateBlockBg, decorateButtons, getGridClass } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
 
 function decorateLayout(el) {
   const children = el.querySelectorAll(':scope > div');
@@ -23,11 +23,6 @@ function decorateLayout(el) {
   }
   const foreground = document.createElement('div');
   foreground.classList.add('foreground', 'container');
-  const gridClass = getGridClass(el);
-  if (gridClass) {
-    foreground.classList.add(gridClass);
-    el.classList.remove(gridClass);
-  }
   el.appendChild(foreground);
   return foreground;
 }
