@@ -54,7 +54,7 @@ function getEnv() {
   if (query) { return ENVS.query; }
   if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
-  if (host.includes('hlx.page') || host.includes('hlx.live')) return ENVS.stage;
+  if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
   return ENVS.prod;
   /* c8 ignore stop */
 }
