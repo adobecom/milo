@@ -1,9 +1,8 @@
 /* eslint-disable no-unused-expressions */
 /* global describe it beforeEach */
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
-import { waitForElement, delay } from '../../../../helpers/selectors.js';
+import { waitForElement, delay } from '../../../../helpers/waitfor.js';
 
 import HelixReview from '../../../../../libs/blocks/review/components/helixReview/HelixReview.js';
 import {
