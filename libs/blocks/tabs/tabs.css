@@ -56,10 +56,10 @@
   margin: auto;
 }
 
-.tabs .tab-content {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--tabs-border-color);
-  width: 100%;
+/*role="tabpanel"*/
+.tabs .tabContent-container {
+  margin-top: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .tabs div[role="tablist"]:before {
@@ -73,19 +73,20 @@
 }
 
 .tabs div[role="tablist"] button {
-  padding: 14px 16px 12px;
-  font-family: var(--body-font-family);
-  cursor: pointer;
+  background: transparent;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid transparent;
   color: var(--tabs-text-color);
-  width: 100%;
+  cursor: pointer;
   float: left;
-  border: 1px solid;
-  border-color: var(--tabs-border-color) transparent;
-  margin-top: -1px;
-  background: var(--tabs-bg-color);
-  transition: color 0.1s ease-in-out, border-bottom-color 0.2s ease-in-out;
+  font-family: var(--body-font-family);
+  margin-left: -1px;
+  margin-top: 0;
+  padding: 14px 16px 12px;
   text-decoration: none;
+  transition: color 0.1s ease-in-out, border-bottom-color 0.2s ease-in-out;
   white-space: nowrap;
+  width: auto;
   z-index: 1;
 }
 
@@ -129,18 +130,6 @@
   border-bottom-color: var(--tabs-active-color);
 }
 
-/*invoke tabs as media (uncomment to enable)*/
-/*@media (min-width: 600px) {*/
-
-.tabs div[role="tablist"] button {
-  width: auto;
-  border-radius: 4px 4px 0 0;
-  margin-left: -1px;
-  margin-top: 0;
-  border-color: transparent;
-  background: transparent;
-}
-
 .tabs div[role="tablist"] button[aria-selected="true"] {
   border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
 }
@@ -150,7 +139,6 @@
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
-    font-size: 18px;
   }
 
   .tabs.quiet div[role="tablist"] button {
