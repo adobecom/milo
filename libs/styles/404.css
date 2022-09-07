@@ -1,4 +1,27 @@
-main > h1 {
+main {
+  position: relative;
+}
+
+.background-404 {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.background-404 img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.columns-404 {
+  display: flex;
+  gap: 48px;
+}
+
+
+/* main > h1 {
   text-transform: uppercase;
   background-color: rgba(0,0,0,.7);
   margin: 0;
@@ -32,4 +55,4 @@ main .section {
 
 .try-links {
   display: flex;
-}
+} */

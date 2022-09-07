@@ -20,24 +20,41 @@ export default async function load404() {
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    const main = document.querySelector('main');
-    const section = createTag('div', { class: 'section' });
-    const content = createTag('div', { class: 'content' });
-    const titles = createTag('div', { class: 'titles' });
-    const tryLinks = createTag('div', { class: 'try-links' });
-    content.append(titles, tryLinks);
-    section.append(content);
+
+    const picture = doc.querySelector('picture');
+    picture.classList.add('background-404');
+
+    const sections = doc.querySelectorAll('body > div');
+    sections.forEach((section, idx) => {
+      if (idx === 0) { section.classList.add('header-404'); }
+      section.classList.add('section-404', 'section');
+    });
+
+    const header = [...sections].shift();
+    const columns = createTag('div', { class: 'columns-404' });
+    columns.append(...[...sections]);
+
+    const main = document.body.querySelector('main');
+    main.append(picture, header, columns);
+
+    // const main = document.querySelector('main');
+    // const section = createTag('div', { class: 'section' });
+    // const content = createTag('div', { class: 'content' });
+    // const titles = createTag('div', { class: 'titles' });
+    // const tryLinks = createTag('div', { class: 'try-links' });
+    // content.append(titles, tryLinks);
+    // section.append(content);
 
     // background
-    const background = doc.querySelector('picture');
-    section.style.backgroundImage = `url(${background.querySelector('img').src})`;
-    background.parentElement.remove();
+    // const background = doc.querySelector('picture');
+    // section.style.backgroundImage = `url(${background.querySelector('img').src})`;
+    // background.parentElement.remove();
 
-    //
-    const contents = doc.body.querySelectorAll(':scope > div');
-    titles.append(contents[0]);
-    tryLinks.innerHTML = doc.body.innerHTML;
-    main.append(section);
+    // //
+    // const contents = doc.body.querySelectorAll(':scope > div');
+    // titles.append(contents[0]);
+    // tryLinks.innerHTML = doc.body.innerHTML;
+    // main.append(section);
   }
 }
 
