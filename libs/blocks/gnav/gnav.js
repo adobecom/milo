@@ -24,14 +24,14 @@ class Gnav {
   init = () => {
     this.state = {};
     this.curtain = createTag('div', { class: 'gnav-curtain' });
-    const nav = createTag('nav', { class: 'gnav' });
+    this.nav = createTag('nav', { class: 'gnav' });
 
-    const mobileToggle = this.decorateToggle(nav);
-    nav.append(mobileToggle);
+    const mobileToggle = this.decorateToggle(this.nav);
+    this.nav.append(mobileToggle);
 
     const brand = this.decorateBrand();
     if (brand) {
-      nav.append(brand);
+      this.nav.append(brand);
     }
 
     const mainNav = this.decorateMainNav();
@@ -39,24 +39,24 @@ class Gnav {
     if (cta) {
       mainNav.append(cta);
     }
-    nav.append(mainNav);
+    this.nav.append(mainNav);
 
     const search = this.decorateSearch();
     if (search) {
-      nav.append(search);
+      this.nav.append(search);
     }
 
     const profile = this.decorateProfile();
     if (profile) {
-      nav.append(profile);
+      this.nav.append(profile);
     }
 
     const logo = this.decorateLogo();
     if (logo) {
-      nav.append(logo);
+      this.nav.append(logo);
     }
 
-    const wrapper = createTag('div', { class: 'gnav-wrapper' }, nav);
+    const wrapper = createTag('div', { class: 'gnav-wrapper' }, this.nav);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -84,6 +84,7 @@ class Gnav {
         this.desktop.addEventListener('change', onMediaChange);
         this.curtain.classList.add(IS_OPEN);
         this.loadSearch();
+        document.addEventListener('scroll', this.closeOnScroll, { passive: true });
       }
     });
     return toggle;
@@ -165,6 +166,8 @@ class Gnav {
     navLink.setAttribute('role', 'button');
     navLink.setAttribute('aria-expanded', false);
     navLink.setAttribute('aria-controls', id);
+    navLink.setAttribute('daa-ll', navLink.textContent);
+    navLink.setAttribute('daa-lh', 'header|Open');
   };
 
   decorateLinkGroups = (menu) => {
@@ -363,7 +366,6 @@ class Gnav {
     menuToggle.setAttribute('aria-expanded', false);
     this.curtain.classList.remove(IS_OPEN);
     this.state.openMenu = null;
-    document.body.style.overflow = '';
   };
 
   openMenu = (el, isSearch) => {
@@ -374,16 +376,11 @@ class Gnav {
 
     document.addEventListener('click', this.closeOnDocClick);
     window.addEventListener('keydown', this.closeOnEscape);
-    if (!isSearch) {
-      const desktop = window.matchMedia('(min-width: 1200px)');
-      if (desktop.matches) {
-        document.addEventListener('scroll', this.closeOnScroll, { passive: true });
-      }
-    } else {
+    if (isSearch) {
       this.curtain.classList.add(IS_OPEN);
-      document.body.style.overflow = 'hidden';
       el.querySelector('.gnav-search-input').focus();
     }
+    document.addEventListener('scroll', this.closeOnScroll, { passive: true });
     this.state.openMenu = el;
   };
 
@@ -400,6 +397,11 @@ class Gnav {
     if (!scrolled) {
       if (this.state.openMenu) {
         this.toggleMenu(this.state.openMenu);
+      }
+      if (this.nav.classList.contains(IS_OPEN)) {
+        this.nav.classList.remove(IS_OPEN);
+        this.curtain.classList.remove(IS_OPEN);
+        this.desktop.removeEventListener('change', onMediaChange);
       }
       scrolled = true;
       document.removeEventListener('scroll', this.closeOnScroll);
@@ -436,8 +438,9 @@ async function fetchGnav(url) {
 }
 
 export default async function init(header) {
-  const { prefix } = getConfig().locale;
-  const url = getMetadata('gnav-source') || `${prefix}/gnav`;
+  const { locale, imsClientId } = getConfig();
+  const name = imsClientId ? `|${imsClientId}` : '';
+  const url = getMetadata('gnav-source') || `${locale.prefix}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
   try {
@@ -447,6 +450,8 @@ export default async function init(header) {
     const gnav = new Gnav(gnavDoc.body, header);
     gnav.init();
     header.dispatchEvent(initEvent);
+    header.setAttribute('daa-im', 'true');
+    header.setAttribute('daa-lh', `gnav${name}`);
     return gnav;
   } catch (e) {
     console.log('Could not create global navigation.');

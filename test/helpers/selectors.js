@@ -1,83 +1,7 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-export const waitForElement = (
-  selector,
-  {
-    options = {
-      childList: true,
-      subtree: true,
-    },
-    rootEl = document.documentElement,
-    textContent = '',
-  } = {}
-) =>
-  new Promise((resolve, reject) => {
-    const el = document.querySelector(selector);
-
-    if (el) {
-      resolve(el);
-      return;
-    }
-
-    const observer = new MutationObserver((mutations, obsv) => {
-      mutations.forEach((mutation) => {
-        const nodes = [...mutation.addedNodes];
-        nodes.some((node) => {
-          if (node.matches && node.matches(selector)) {
-            if (textContent && node.textContent !== textContent) return false;
-
-            obsv.disconnect();
-            resolve(node);
-            return true;
-          }
-
-          // check for child in added node
-          const treeWalker = document.createTreeWalker(node);
-          let { currentNode } = treeWalker;
-          while (currentNode) {
-            if (currentNode.matches && currentNode.matches(selector)) {
-              // if (textContent && node.textContent !== textContent) continue;
-              obsv.disconnect();
-              resolve(currentNode);
-              return true;
-            }
-            currentNode = treeWalker.nextNode();
-          }
-          return false;
-        });
-      });
-    });
-
-    observer.observe(rootEl, options);
-  });
-
-export const waitForUpdate = (
-  el,
-  options = {
-    childList: true,
-    subtree: true,
-  }
-) =>
-  new Promise((resolve) => {
-    const observer = new MutationObserver((mutations, obsv) => {
-      obsv.disconnect();
-      resolve();
-    });
-    observer.observe(el, options);
-  });
-
-/**
- * Promise based setTimeout that can be await'd
- * @param {int} timeOut time out in milliseconds
- * @param {*} cb Callback function to call when time elapses
- * @returns
- */
-export const delay = (timeOut, cb) =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve((cb && cb()) || null);
-    }, timeOut);
-  });
+import { delay, waitForElement, waitForUpdate } from './waitfor.js';
 
 const asyncSome = async (arr, predicate) => {
   for (let e of arr) {
@@ -169,7 +93,7 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
           return true;
         }
         return false;
-      }
+      },
     );
 
     return choiceFound;
@@ -187,7 +111,7 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
 };
 
 export const tagSelectorModalChoose = async (label, choices = []) => {
-  for (let choiceArr of choices) {
+  for (const choiceArr of choices) {
     await tagSelectorModalSelectItem(label, choiceArr);
   }
 };

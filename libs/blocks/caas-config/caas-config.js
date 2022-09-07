@@ -8,33 +8,24 @@ import {
   useReducer,
   useState,
 } from '../../deps/htm-preact.js';
-import { updateObj, cloneObj, getHashConfig, isValidUuid, loadStyle, utf8ToB64 } from '../../utils/utils.js';
+import {
+  updateObj,
+  cloneObj,
+  getHashConfig,
+  isValidUuid,
+  loadStyle,
+  utf8ToB64,
+} from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { defaultState, initCaas, loadCaasFiles, loadStrings } from '../caas/utils.js';
+import { defaultState, initCaas, loadCaasFiles, loadCaasTags, loadStrings } from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
 
 const LS_KEY = 'caasConfiguratorState';
-const TAGS_ERROR = 'No tags data loaded, please check the tags url in Advanced Panel';
 
 const caasFilesLoaded = loadCaasFiles();
-
-const loadCaasTags = async (tagsUrl) => {
-  const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
-  try {
-    const resp = await fetch(url);
-    if (resp.ok) {
-      const json = await resp.json();
-      return json.namespaces.caas.tags;
-    }
-  } catch (e) {
-    // ignore
-  }
-
-  return null;
-};
 
 const ConfiguratorContext = createContext();
 
@@ -68,12 +59,32 @@ const defaultOptions = {
     'www.stage.adobe.com/chimera-api/collection': 'www.stage.adobe.com/chimera-api/collection',
     'business.stage.adobe.com/chimera-api/collection':
       'business.stage.adobe.com/chimera-api/collection',
-    '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1',
-    '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1',
-    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1':
-      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1',
+    '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+  },
+  filterBuildPanel: {
+    automatic: 'Automatic',
+    custom: 'Custom',
+  },
+  filterEvent: {
+    '': 'All',
+    live: 'Live',
+    upcoming: 'Upcoming',
+    'on-demand': 'On Demand',
+    'not-timed': 'Not Timed',
+  },
+  filterLocation: {
+    left: 'Left',
+    top: 'Top',
+  },
+  filterLogic: {
+    or: 'Display cards that match any selected filter (or)',
+    and: 'Display cards that match all selected filters (and)',
+    xor: 'Get cards that match one filter at a time (xor)',
   },
   gutter: {
     '1x': '8px (1x)',
@@ -126,6 +137,7 @@ const defaultOptions = {
     hawks: 'Hawks',
     magento: 'Magento',
     marketo: 'Marketo',
+    milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
   },
@@ -208,8 +220,8 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
   `;
 };
 
-const DropdownSelect = ({ label, isModal = false, options, prop }) => {
-  const { dispatch, state} = useContext(ConfiguratorContext);
+const DropdownSelect = ({ label, options, prop }) => {
+  const { dispatch, state } = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     dispatch({
       type: 'MULTI_SELECT_CHANGE',
@@ -224,7 +236,7 @@ const DropdownSelect = ({ label, isModal = false, options, prop }) => {
       options=${options}
       value=${state[prop]}
       label=${label}
-      isModal=${isModal}
+
       onChange=${onChange}
     />
   `;
@@ -287,8 +299,8 @@ const TagsPanel = ({ tagsData }) => {
       prop="contentTypeTags"
       label="Content Type Tags"
     />
-    <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" isModal />
-    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" isModal />
+    <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
+    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -301,7 +313,7 @@ const TagsPanel = ({ tagsData }) => {
         name="intraTagLogic"
         options=${defaultOptions.intraTagLogicOptions}
       />
-      <${TagSelect} id="andTags" options=${allTags} label="Tags with overall AND logic" isModal />
+      <${TagSelect} id="andTags" options=${allTags} label="Tags with overall AND logic" />
     <//>
     <${MultiField}
       onChange=${onLogicTagChange('orLogicTags')}
@@ -310,7 +322,7 @@ const TagsPanel = ({ tagsData }) => {
       title="OR logic Tags"
       subTitle=""
     >
-      <${TagSelect} id="orTags" options=${allTags} label="Tags with overall OR logic" isModal
+      <${TagSelect} id="orTags" options=${allTags} label="Tags with overall OR logic"
     /><//>
   `;
 };
@@ -343,7 +355,7 @@ const CardsPanel = () => {
       title="Excluded Cards"
       subTitle="Enter the UUID for cards to be excluded"
     >
-      <${FormInput} name="excludedCards" label="Content ID" onValidate=${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
   `;
 };
@@ -368,24 +380,67 @@ const SortPanel = () => {
     <${Input} label="Reservoir Pool" prop="sortReservoirPool" type="number" />
   `;
 
-  return html`
-    <${Select} label="Default Sort Order" prop="sortDefault" options=${defaultOptions.sort} />
-    <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
+  const SortOptions = html`
+    <div>Sort options to display:</div>
+    <div class="sort-options">
+      <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
+      <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
+      <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
+      <${Input} label="Events" prop="sortEventSort" type="checkbox" />
+      <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
+      <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
+      <${Input} label="Random" prop="sortRandom" type="checkbox" />
+    </div>
+
     <${Input} label="Customize Random Sample" prop="sortEnableRandomSampling" type="checkbox" />
     ${state.sortEnableRandomSampling && RandomSampling}
   `;
+
+  return html`
+    <${Select} label="Default Sort Order" prop="sortDefault" options=${defaultOptions.sort} />
+    <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
+    ${state.sortEnablePopup && SortOptions}
+  `;
 };
 
-// const FilterPanel = () => {
-//   const { state } = useContext(ConfiguratorContext);
-//   // TODO: Filters
-//   const FilterOptions = '';
+const FilterPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
+  const { state } = context;
 
-//   return html`
-//     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-//     ${state.showFilters && FilterOptions}
-//   `;
-// };
+  const allTags = getTagTree(tagsData);
+
+  const onChange = (prop) => (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop,
+      value: values,
+    });
+  };
+
+  const FilterOptions = html`
+    <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
+    <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
+    <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
+    <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${MultiField}
+      onChange=${onChange('filters')}
+      className="filters"
+      values=${context.state.filters}
+      title="Filter Tags"
+      subTitle=""
+    >
+    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+      <${FormInput} label="Icon Path" name="icon" />
+      <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
+    <//>
+  `;
+
+  return html`
+    <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
+    ${state.showFilters && FilterOptions}
+  `;
+};
 
 const SearchPanel = () => html`
   <${Input} label="Show Search" prop="showSearch" type="checkbox" />
@@ -494,6 +549,7 @@ const CopyBtn = () => {
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [configUrl, setConfigUrl] = useState('');
+  const [btnText, setBtnText] = useState('Copy');
 
   const setTempStatus = (setFn, status = true) => {
     setFn(status);
@@ -522,10 +578,24 @@ const CopyBtn = () => {
     const data = [new ClipboardItem({ [blob.type]: blob })];
     navigator.clipboard.write(data).then(
       () => {
-        setTempStatus(setIsSuccess);
+        setTempStatus((status) => {
+          if (status) {
+            setBtnText('OK!');
+          } else {
+            setBtnText('Copy');
+          }
+          setIsSuccess(status);
+        });
       },
       () => {
-        setTempStatus(setIsError);
+        setTempStatus((status) => {
+          if (status) {
+            setBtnText('Error');
+          } else {
+            setBtnText('Copy');
+          }
+          setIsError(status);
+        });
       },
     );
   };
@@ -537,11 +607,10 @@ const CopyBtn = () => {
         : ''}"
       onClick=${copyConfig}
     >
-      Copy
+      ${btnText}
     </button>`;
 };
 /* c8 ignore stop */
-
 const getPanels = (tagsData) => [
   {
     title: 'Basics',
@@ -567,10 +636,10 @@ const getPanels = (tagsData) => [
     title: 'Bookmarks',
     content: html`<${BookmarksPanel} />`,
   },
-  // {
-  //   title: 'Filters',
-  //   content: html`<${FilterPanel} />`,
-  // },
+  {
+    title: 'Filters',
+    content: html`<${FilterPanel} tagsData=${tagsData} />`,
+  },
   {
     title: 'Search',
     content: html`<${SearchPanel} />`,
@@ -618,18 +687,14 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
-    const tagsData = await loadCaasTags(state.tagsUrl);
-    setPanels(getPanels(tagsData));
-    if (!tagsData) {
-      setError(TAGS_ERROR);
-    } else if (error === TAGS_ERROR) {
-      setError('');
-    }
+    const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
+    setPanels(getPanels(tags));
+    setError(errorMsg || '');
   }, [state.tagsUrl]);
 
-  useEffect(() => {
+  useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
-      initCaas(state, strings);
+      await initCaas(state, strings);
       saveStateToLocalStorage(state);
     }
   }, [isCaasLoaded, state, strings]);

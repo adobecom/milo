@@ -1,5 +1,7 @@
 import { html, useEffect, useState } from '../../deps/htm-preact.js';
 
+let checkboxIdx = 0;
+
 const Select = ({ label, name, onChange, options, value }) => {
   const onSelectChange = (e) => {
     onChange(e.target.value, e);
@@ -38,15 +40,21 @@ const Input = ({ label, name, onChange, onValidate, type = 'text', value }) => {
     onChange(inputVal, e);
   };
 
-  const computedValue = { [type === 'checkbox' ? 'checked' : 'value']: value };
+  const isCheckbox = type === 'checkbox';
+
+  const computedValue = { [isCheckbox ? 'checked' : 'value']: value };
+
+  const id = isCheckbox
+    ? `${name}${checkboxIdx++}`
+    : name;
 
   return html`
-    <div class="field ${type === 'checkbox' ? 'checkbox' : ''}">
-      <label for=${name}>${label}</label>
+    <div class="field ${isCheckbox ? 'checkbox' : ''}">
+      <label for=${id}>${label}</label>
       <input
         class=${!isValid && 'input-invalid'}
         type=${type}
-        id=${name}
+        id=${id}
         name=${name}
         ...${computedValue}
         onChange=${onInputChange}

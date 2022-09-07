@@ -1,18 +1,36 @@
 import { initCaas, loadCaasFiles, loadStrings } from './utils.js';
-import { parseEncodedConfig } from '../../utils/utils.js';
+import { parseEncodedConfig, createIntersectionObserver } from '../../utils/utils.js';
 
-export default async function init(a) {
-  await loadCaasFiles();
+const ROOT_MARGIN = 1000;
 
-  const encodedConfig = a.href.split('#')[1];
-  const state = parseEncodedConfig(encodedConfig);
-  const caasStrs = state.placeholderUrl ? await loadStrings(state.placeholderUrl) : {};
+const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
+  if (placeholderUrl) {
+    resolve(loadStrings(placeholderUrl));
+    return;
+  }
+  resolve({});
+});
 
-  const block = document.createElement('div');
-  block.className = a.className;
-  block.id = 'caas';
-  a.insertAdjacentElement('afterend', block);
-  a.remove();
+export default async function init(link) {
+  createIntersectionObserver({
+    el: link,
+    options: { rootMargin: `${ROOT_MARGIN}px` },
+    callback: async (a) => {
+      const encodedConfig = a.href.split('#')[1];
+      const state = parseEncodedConfig(encodedConfig);
 
-  initCaas(state, caasStrs, block);
+      const [caasStrs] = await Promise.all([
+        getCaasStrings(state.placeholderUrl),
+        loadCaasFiles(),
+      ]);
+
+      const block = document.createElement('div');
+      block.className = a.className;
+      block.id = 'caas';
+      a.insertAdjacentElement('afterend', block);
+      a.remove();
+
+      initCaas(state, caasStrs, block);
+    },
+  });
 }

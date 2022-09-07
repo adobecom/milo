@@ -54,6 +54,13 @@ describe('Utils', () => {
     expect(script).to.exist;
   });
 
+  it('Loads a script twice', async () => {
+    const scriptOne = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(scriptOne).to.exist;
+    const scriptTwo = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+    expect(scriptTwo).to.exist;
+  });
+
   it('Rejects a bad script', async () => {
     try {
       await utils.loadScript('/test/utils/mocks/error.js');
@@ -140,5 +147,21 @@ describe('Utils', () => {
 
   it('getLocale default return', () => {
     expect(utils.getLocale().ietf).to.equal('en-US');
+  });
+
+  it('creates an IntersectionObserver', (done) => {
+    const block = document.createElement('div');
+    block.id = 'myblock';
+    block.innerHTML = '<div>hello</div>';
+    document.body.appendChild(block);
+    const io = utils.createIntersectionObserver({
+      el: block,
+      options: { rootMargin: '10000px' },
+      callback: (target) => {
+        expect(target).to.equal(block);
+        done();
+      },
+    });
+    expect(io instanceof IntersectionObserver).to.be.true;
   });
 });
