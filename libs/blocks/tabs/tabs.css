@@ -26,7 +26,7 @@
   background-color: var(--tabs-active-bg-color);
 }
 
-.tabs div[role="tablist"]{
+.tabs div[role="tablist"] {
   position: relative;
   display: flex;
   z-index: 2;
@@ -90,16 +90,16 @@
   z-index: 1;
 }
 
-.tabs div[role="tablist"] button:first-of-type{
+.tabs div[role="tablist"] button:first-of-type {
   margin-left: 0;
   margin-top: 0;
 }
 
-.tabs div[role="tablist"] button:hover{
+.tabs div[role="tablist"] button:hover {
   color: var(--tabs-active-text-color);
 }
 
-.tabs div[role="tablist"] button:active{
+.tabs div[role="tablist"] button:active {
   color: var(--tabs-active-color);
 }
 
@@ -109,7 +109,7 @@
 }
 
 /*- Tabs: .quiet -*/
-.tabs.quiet div[role="tablist"] button{
+.tabs.quiet div[role="tablist"] button {
   border-width: 0 0 2px;
   border-color: transparent;
   background: transparent;
@@ -122,11 +122,11 @@
   margin-left: 0;
 }
 
-.tabs.quiet div[role="tablist"] button:hover{
+.tabs.quiet div[role="tablist"] button:hover {
   border-bottom-color: var(--tabs-border-hover-color);
 }
 
-.tabs.quiet div[role="tablist"] button[aria-selected="true"]{
+.tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-color);
 }
 
@@ -135,7 +135,6 @@
 }
 
 @media screen and (min-width: 1440px) {
-
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
