@@ -17,6 +17,7 @@ const MILO_BLOCKS = [
   'icon-block',
   'marquee',
   'media',
+  'merch',
   'modal',
   'quote',
   'section-metadata',
