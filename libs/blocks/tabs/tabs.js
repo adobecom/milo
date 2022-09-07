@@ -136,7 +136,6 @@ const init = (element) => {
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container container'});
   let btnClass = [...element.classList].includes('quiet') ? 'heading-S' : 'heading-S'; // tabList size
-  console.log(element.classList.contains('quiet'), btnClass);
   rows.forEach((row, i) => {
     const rowTitle = row.querySelector(':scope > div:nth-child(1)');
     const rowContent = row.querySelector(':scope > div:nth-child(2)');
@@ -166,7 +165,7 @@ const init = (element) => {
   tabList.append(tabListContainer);
   element.prepend(tabList);
   element.append(tabContentContainer);
-  
+
   initCount++;
   initTabs(element);
 };
