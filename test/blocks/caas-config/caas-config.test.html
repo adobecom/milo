@@ -27,12 +27,11 @@
     import { stub } from 'sinon';
     import init from '../../../libs/blocks/caas-config/caas-config.js';
     import {
-      delay,
       findByLabel,
       tagSelectorDropdownChoose,
       tagSelectorModalChoose,
-      waitForElement,
     } from '../../helpers/selectors.js';
+    import { delay, waitForElement } from '../../helpers/waitfor.js';
     import defaultConfig from './expectedConfigs/defaultConfig.js';
     import { stubFetch, restoreFetch } from './mockFetch.js';
 
