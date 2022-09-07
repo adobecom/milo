@@ -3,6 +3,7 @@ const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [];
 const MILO_BLOCKS = [
   'adobetv',
+  'aside',
   'caas',
   'card-metadata',
   'chart',

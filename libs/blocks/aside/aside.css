@@ -1,0 +1,355 @@
+.aside {
+  display: flex;
+  width: 100%;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.aside .detail-M {
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.aside p {
+  margin: 0;
+}
+
+.aside.small {
+  min-height: 420px;
+}
+
+.aside.medium {
+  min-height: 560px;
+}
+
+.aside.large {
+  min-height: 700px;
+}
+
+.aside .background {
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.aside .background>div {
+  height: 100%;
+}
+
+.aside .background img {
+  object-fit: cover;
+  min-height: 700px;
+  width: 100%;
+  height: 100%;
+}
+
+.aside .foreground.container {
+  display: flex;
+  position: relative;
+  align-items: baseline;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.aside .foreground.container .text {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  padding: var(--spacing-xxxl) 0 0;
+}
+
+.aside .foreground.container .text>* {
+  width: 100%;
+}
+
+.aside .foreground.container .text .heading-XL {
+  margin: var(--spacing-xs) 0;
+}
+
+.aside .foreground.container .text .body-S {
+  margin-bottom: var(--spacing-s);
+}
+
+.aside .foreground.container .text .action-area {
+  margin-bottom: 0;
+}
+
+.aside .foreground.container .text .action-area>a {
+  margin-right: var(--spacing-s);
+}
+
+.aside .foreground.container div {
+  flex: 1 1 auto;
+}
+
+.aside .foreground.container .image {
+  margin-top: 32px;
+  margin-bottom: var(--spacing-xxxl);
+}
+
+.aside .foreground.container img {
+  object-fit: contain;
+  height: 100%;
+  width: 100%;
+}
+
+.aside .foreground.container .icon-area {
+  height: 56px;
+  max-width: 234px;
+  margin-bottom: var(--spacing-s);
+}
+
+.aside .foreground.container .icon-area .icon {
+  color: transparent;
+}
+
+.aside .foreground.container .icon-area img {
+  max-width: 234px;
+  height: 56px;
+  width: auto;
+  object-fit: cover;
+  object-position: left top;
+}
+
+.aside.simple .foreground.container .text {
+  margin-bottom: 80px;
+}
+
+.aside.simple .foreground.container .image {
+  display: none;
+}
+
+.aside.split {
+  flex-direction: column;
+}
+
+.aside.split.large {
+  flex-direction: column-reverse;
+}
+
+.aside.split .foreground.container {
+  width: 100%;
+}
+
+.aside.split .foreground.container .text {
+  color: white;
+}
+
+.aside.split .background {
+  position: relative;
+  background-color: #1E1E1E;
+}
+
+.aside.split.large .background {
+  background-color: transparent;
+}
+
+.aside.split .background img {
+  position: relative;
+  min-height: 270px;
+}
+
+.aside.split .foreground.container {
+  background-color: #1E1E1E;
+  max-width: 100%;
+}
+
+.aside.split .foreground.container .text {
+  padding: 40px 0;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.aside.split .foreground.container .image {
+  margin: 0;
+  display: none;
+}
+
+.aside.split .foreground.container img {
+  object-fit: cover;
+  height: 270px;
+}
+
+.aside.split .foreground.container {
+  flex-direction: column;
+}
+
+.aside.augmented-image .foreground.container {
+  justify-content: center;
+  align-items: center;
+}
+
+.aside.augmented-image .foreground.container .text {
+  margin: 0;
+}
+
+.aside.augmented-image .foreground.container .image {
+  margin: 0;
+}
+
+@media screen and (min-width: 600px) {
+  .aside .foreground.container {
+    justify-content: space-between;
+    align-items: stretch;
+    flex-direction: row;
+    margin: 0 auto;
+  }
+
+  .aside .foreground.container .image {
+    margin: 0;
+    flex: 0 0 50%;
+    display: block;
+    max-width: 302px;
+    padding-left: 16px;
+  }
+
+  .aside .foreground.container .text {
+    margin-bottom: 0;
+    padding: var(--spacing-xxxl) 0;
+    flex: 1 0 50%;
+    max-width: 302px;
+    padding-right: 16px;
+  }
+
+  .aside.simple .foreground.container .text {
+    margin-bottom: 0;
+    max-width: 318px;
+    padding-right: 0;
+  }
+
+  .aside.split.large {
+    flex-direction: column;
+    background-color: #1E1E1E;
+  }
+
+  .aside.split .background {
+    background-color: #1E1E1E;
+    position: absolute;
+  }
+
+  .aside.split .background img {
+    width: 60.5vw;
+    max-width: 1396px;
+    position: absolute;
+    right: 0;
+    object-fit: cover;
+    object-position: center top;
+  }
+  
+  .aside.split.right .background img,
+  .aside.split.half .background img {
+    object-position: left top;
+  }
+
+  .aside.split .foreground.container {
+    flex-direction: row;
+    justify-content: stretch;
+    max-width: var(--grid-container-width);
+    margin: 0 auto;
+    background-color: transparent;
+  }
+
+  .aside.split .foreground.container .text {
+    color: white;
+    flex: 0 0 212px;
+    padding: var(--spacing-xxl) 0;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .aside.split .foreground.container .image {
+    object-fit: cover;
+    flex: 0 0 61%;
+    display: block;
+    padding: 0;
+  }
+
+  .aside.split.half .background img {
+    width: 50vw;
+    max-width: 1396px;
+  }
+
+  .aside.split.half .foreground.container .text {
+    flex: 0 0 41.72%;
+  }
+
+  .aside.split.right .foreground.container {
+    flex-direction: row-reverse;
+  }
+
+  .aside.split.right .background img {
+    left: 0;
+  }
+
+  .aside.augmented-image .background {
+    clip-path: inset(19% 0);
+  }
+
+  .aside.augmented-image .foreground.container .image {
+    flex: 0 0 57%;
+    max-width: none;
+  }
+
+  .aside.augmented-image .foreground.container .text {
+    flex: 0 0 43%;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .aside .foreground.container {
+    min-height: 420px;
+    width: var(--grid-container-width);
+  }
+
+  .aside .foreground.container .image {
+    flex: 0 0 50%;
+    max-width: 500px;
+    object-fit: cover;
+    padding-left: 0;
+  }
+
+  .aside .foreground.container .text {
+    max-width: 500px;
+    padding: var(--spacing-xxl) 0;
+  }
+
+  .aside .foreground.container .icon-area {
+    max-width: 400px;
+  }
+
+  .aside .foreground.container .text .heading-XL {
+    margin: var(--spacing-xs) 0;
+  }
+
+  .aside.simple .foreground.container .text {
+    margin-bottom: 0;
+    max-width: 500px;
+  }
+
+  .aside.split .foreground.container .text {
+    flex: 0 0 300px;
+  }
+
+  .aside.split .foreground.container .image {
+    flex: 0 0 70%;
+    max-width: none;
+    object-fit: cover;
+  }
+
+  .aside.split.half .foreground.container .text {
+    max-width: 500px;
+  }
+
+  .aside.augmented-image {
+    min-height: 700px;
+  }
+
+  .aside.augmented-image .foreground.container .image img {
+    width: 130%;
+  }
+}
