@@ -6,9 +6,7 @@ import { createTag } from '../../utils/utils.js';
 function initTabs(e) {
   const tabs = e.querySelectorAll('[role="tab"]');
   const tabLists = e.querySelectorAll('[role="tablist"]');
-
   tabLists.forEach( tabList => {
-
     // tabList horizontal scroll overflow
     const horizontalScrollEnabled = false;
     if (horizontalScrollEnabled) {
@@ -24,10 +22,8 @@ function initTabs(e) {
         }
       });
     }
-
     // Enable arrow navigation between tabs in the tab list
     let tabFocus = 0;
-
     tabList.addEventListener("keydown", (e) => {
       // Move right
       if (e.keyCode === 39 || e.keyCode === 37) {
@@ -50,14 +46,11 @@ function initTabs(e) {
         tabs[tabFocus].focus();
       }
     });
-
   });
-
   // Add a click event handler to each tab
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
-
 }
 
 const logScrollPosition = (scrollPos, scrollWidth, offsetWidth) => {
@@ -69,7 +62,6 @@ const logScrollPosition = (scrollPos, scrollWidth, offsetWidth) => {
   if(check >= scrollWidth) {
     console.log('End in [', scrollWidth-(offsetWidth + scrollPos), ']px');
   }
-
   if(scrollPos <= offsetUnit) {
     console.log('Start in [-',scrollPos,']px');
   }
@@ -135,7 +127,6 @@ function changeTabs(e) {
 }
 
 let initCount = 0;
-
 const init = (element) => {
   const rows = element.querySelectorAll(':scope > div');
   if(!rows.length) return;
@@ -144,7 +135,7 @@ const init = (element) => {
   tabList.setAttribute('aria-label', 'TODO: Add Tab Title');
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container container'});
-  let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-S';
+  let btnClass = [...element.classList].includes('quiet') ? 'heading-S' : 'heading-S'; // tabList size
   console.log(element.classList.contains('quiet'), btnClass);
   rows.forEach((row, i) => {
     const rowTitle = row.querySelector(':scope > div:nth-child(1)');
@@ -175,7 +166,7 @@ const init = (element) => {
   tabList.append(tabListContainer);
   element.prepend(tabList);
   element.append(tabContentContainer);
-
+  
   initCount++;
   initTabs(element);
 };
