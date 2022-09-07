@@ -74,8 +74,7 @@
 
 .tabs div[role="tablist"] button {
   padding: 14px 16px 12px;
-  line-height: 16px;
-  font-size: 16px;
+  font-family: var(--body-font-family);
   cursor: pointer;
   color: var(--tabs-text-color);
   width: 100%;
