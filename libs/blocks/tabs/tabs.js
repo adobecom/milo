@@ -144,13 +144,14 @@ const init = (element) => {
   tabList.setAttribute('aria-label', 'TODO: Add Tab Title');
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container container'});
-  const headerClass = element.classList.contains('quite') ? 'heading-XS' : 'heading-S';
+  let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-S';
+  console.log(element.classList.contains('quiet'), btnClass);
   rows.forEach((row, i) => {
     const rowTitle = row.querySelector(':scope > div:nth-child(1)');
     const rowContent = row.querySelector(':scope > div:nth-child(2)');
     const tabBtnAttributes = {
       role: 'tab',
-      class: headerClass,
+      class: btnClass,
       id: `tab-${initCount}-${i}`,
       tabindex: (i > 0) ? '0' : '-1',
     }
