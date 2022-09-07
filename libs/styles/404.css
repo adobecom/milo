@@ -1,6 +1,35 @@
-main .content {
-  display: block;
+main > h1 {
+  text-transform: uppercase;
+  background-color: rgba(0,0,0,.7);
+  margin: 0;
+  font-size: 13px;
+  padding: 32px;
+  text-align: center;
+  color: #FFF;
+  font-weight: 900;
+}
+
+main .section {
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  padding: 40px 0;
+}
+
+.content h1 {
+  margin: 0;
+}
+
+.content h3 {
+  margin: 15px 0;
+  font-size: 20px;
+  font-style: italic;
+}
+
+.content-1 {
+  display: flex;
+}
+
+.try-links {
+  display: flex;
 }

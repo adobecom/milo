@@ -21,15 +21,23 @@ export default async function load404() {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const main = document.querySelector('main');
-    const content = doc.querySelector('div');
+    const section = createTag('div', { class: 'section' });
+    const content = createTag('div', { class: 'content' });
+    const titles = createTag('div', { class: 'titles' });
+    const tryLinks = createTag('div', { class: 'try-links' });
+    content.append(titles, tryLinks);
+    section.append(content);
 
     // background
     const background = doc.querySelector('picture');
-    content.classList.add('content');
-    content.style.backgroundImage = `url(${background.querySelector('img').src})`;
+    section.style.backgroundImage = `url(${background.querySelector('img').src})`;
     background.parentElement.remove();
 
-    main.append(doc.body);
+    //
+    const contents = doc.body.querySelectorAll(':scope > div');
+    titles.append(contents[0]);
+    tryLinks.innerHTML = doc.body.innerHTML;
+    main.append(section);
   }
 }
 
