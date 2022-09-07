@@ -1,4 +1,6 @@
-import { getConfig, setConfig, createTag, getMetadata, loadHeader, loadFooter } from '../utils/utils.js';
+import {
+  getConfig, setConfig, createTag, getMetadata, loadHeader, loadFooter,
+} from '../utils/utils.js';
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -16,45 +18,42 @@ export default async function load404() {
   setConfig(config);
   const { locale } = getConfig();
   const resp = await fetch(`${locale.contentRoot}/404.plain.html`);
+  console.log(`${locale.contentRoot}/404.plain.html`);
   if (resp.ok) {
+    const columns = createTag('div', { class: 'columns-404' });
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
+    // picture for background img
     const picture = doc.querySelector('picture');
-    picture.classList.add('background-404');
+    picture.classList.add('bg-img');
 
+    // sections
     const sections = doc.querySelectorAll('body > div');
-    sections.forEach((section, idx) => {
-      if (idx === 0) { section.classList.add('header-404'); }
-      section.classList.add('section-404', 'section');
+    const header = [...sections].shift();
+    header.classList.add('header-404', 'section');
+    sections.forEach((section) => {
+      if (section.querySelector('ul')) {
+        if (section.querySelectorAll('li').length > 5) {
+          section.classList.add('split-items');
+        }
+        section.classList.add('column');
+        columns.append(section);
+      } else {
+        section.classList.add('section');
+      }
     });
 
-    const header = [...sections].shift();
-    const columns = createTag('div', { class: 'columns-404' });
-    columns.append(...[...sections]);
-
+    // appending doc elements to main //
     const main = document.body.querySelector('main');
+
+    // appending background img, header, columns
     main.append(picture, header, columns);
+    header.querySelector('p').remove();
 
-    // const main = document.querySelector('main');
-    // const section = createTag('div', { class: 'section' });
-    // const content = createTag('div', { class: 'content' });
-    // const titles = createTag('div', { class: 'titles' });
-    // const tryLinks = createTag('div', { class: 'try-links' });
-    // content.append(titles, tryLinks);
-    // section.append(content);
-
-    // background
-    // const background = doc.querySelector('picture');
-    // section.style.backgroundImage = `url(${background.querySelector('img').src})`;
-    // background.parentElement.remove();
-
-    // //
-    // const contents = doc.body.querySelectorAll(':scope > div');
-    // titles.append(contents[0]);
-    // tryLinks.innerHTML = doc.body.innerHTML;
-    // main.append(section);
+    // appending other sections to main
+    main.append(...doc.querySelectorAll('body > *'));
   }
 }
 
