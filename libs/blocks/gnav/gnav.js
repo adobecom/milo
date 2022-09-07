@@ -184,9 +184,9 @@ class Gnav {
     const linkGroups = menu.querySelectorAll('.link-group');
     linkGroups.forEach((linkGroup) => {
       const image = linkGroup.querySelector('picture');
-      const anchor = linkGroup.querySelector('p a');
+      const anchor = linkGroup.querySelector('a');
       const title = anchor?.textContent;
-      const subtitle = linkGroup.querySelector('p:last-of-type');
+      const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
       anchor.href = makeRelative(anchor.href, true);
@@ -204,7 +204,7 @@ class Gnav {
     switch (el.nodeName) {
       case 'DIV':
         if (el.classList.contains('link-group')) {
-          const title = el.querySelector('.link-group-title')?.innerHTML.split('<')?.[0].trim();
+          const title = el.querySelector('.link-group-title')?.childNodes?.[0]?.textContent;
           if (title) {
             el.firstChild.setAttribute('daa-lh', `${analyticsGetLabel(title)}-${childIndexOf(el) + 1}`);
           }
