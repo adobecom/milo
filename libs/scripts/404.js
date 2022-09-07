@@ -18,7 +18,6 @@ export default async function load404() {
   setConfig(config);
   const { locale } = getConfig();
   const resp = await fetch(`${locale.contentRoot}/404.plain.html`);
-  console.log(`${locale.contentRoot}/404.plain.html`);
   if (resp.ok) {
     const columns = createTag('div', { class: 'columns-404' });
     const html = await resp.text();
