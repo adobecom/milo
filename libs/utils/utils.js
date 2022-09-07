@@ -255,7 +255,8 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        return false;
+        a.className = 'modal link-block';
+        return true;
       }
       a.className = `${key} link-block`;
       return true;
@@ -450,6 +451,8 @@ export function parseEncodedConfig(encodedConfig) {
   }
   return null;
 }
+
+export const removeHash = (url) => url?.split('#')[0];
 
 export function getHashConfig() {
   const { hash } = window.location;

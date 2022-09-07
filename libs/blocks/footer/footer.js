@@ -2,6 +2,7 @@ import {
   debug,
   createTag,
   getConfig,
+  loadBlock,
   decorateAutoBlock,
 } from '../../utils/utils.js';
 
@@ -107,7 +108,6 @@ class Footer {
   decorateRegion = async () => {
     const regionButton = this.body.querySelector('.region-selector a');
     if (!regionButton) return null;
-    decorateAutoBlock(regionButton);
     const regionTextContent = regionButton.textContent;
     regionButton.textContent = '';
     regionButton.className = 'footer-region-button';
@@ -115,9 +115,10 @@ class Footer {
     regionButton.setAttribute('aria-label', regionTextContent);
     regionButton.setAttribute('role', 'button');
     regionButton.setAttribute('tabindex', 0);
+    decorateAutoBlock(regionButton);
+    loadBlock(regionButton);
 
     const regionContainer = createTag('div', { class: 'footer-region' });
-
     const regionText = createTag('span', { class: 'footer-region-text' }, regionTextContent);
     regionButton.insertAdjacentHTML('afterbegin', GLOBE_IMG);
     regionButton.append(regionText);

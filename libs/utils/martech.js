@@ -34,6 +34,7 @@ export default async function init(config, loadScript) {
       alloy: { edgeConfigId },
       target: true,
     },
+    // TODO: Do we need to add diagnostic.page.aemimplementation
   };
 
   await loadScript('https://www.adobe.com/marketingtech/main.standard.min.js');
