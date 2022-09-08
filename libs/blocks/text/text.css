@@ -56,25 +56,15 @@
   margin: 0 0 var(--spacing-s);
 }
 
-.text.vertical .container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.text.vertical .container .full-width {
-  padding-bottom: var(--spacing-xl);
-}
-
 .text.vertical p {
   margin-bottom: var(--spacing-s);
 }
 
-.text.vertical .container > div:not(.full-width) {
-  margin: 0 0 var(--spacing-m)
+.text.vertical .container > div {
+  padding: 0 var(--spacing-xs) var(--spacing-m);
 }
 
-.text.vertical .container > div:not(.full-width) a:not(.con-button) {
+.text.vertical a:not(.con-button) {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-all-lh);
 }
@@ -87,29 +77,9 @@
   margin: 0 0 var(--spacing-xs);
 }
 
-/* Tablet */
-
-@media screen and (min-width: 600px) {
-  .text.vertical .container > div {
-    flex: 0 0 calc(50% - calc(var(--spacing-m) / 2));
-  }
-
-  .text.vertical .container .full-width {
-    flex: 0 0 100%;
-  }
-}
-
 /* Desktop */
 
 @media screen and (min-width: 1200px) {
-  .text.two-up .container {
-    width: calc(var(--grid-column-width) * 10);
-  }
-
-  .text.three-up .container > div {
-    flex: 0 0 calc(33.333% - calc(var(--spacing-m) / 2));
-  }
-
   .text .full-width > * {
     max-width: calc(var(--grid-column-width) * 8);
   }
