@@ -4,7 +4,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/selectors.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig, parseEncodedConfig } from '../../../libs/utils/utils.js';
 
 const config = {

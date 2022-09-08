@@ -3,7 +3,7 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../helpers/selectors.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const config = {
