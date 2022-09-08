@@ -1,6 +1,6 @@
 import { getConfig, createTag } from '../../utils/utils.js';
 
-export default async function load404() {
+async function load404() {
   const { locale } = getConfig();
   const resp = await fetch(`${locale.contentRoot}/404.plain.html`);
   if (resp.ok) {
@@ -40,3 +40,7 @@ export default async function load404() {
     main.append(...doc.querySelectorAll('body > *'));
   }
 }
+
+(async function init() {
+  load404();
+}());
