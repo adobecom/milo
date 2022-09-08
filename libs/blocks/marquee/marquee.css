@@ -129,16 +129,16 @@
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .icon-area {
+.marquee .text .icon-area {
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .icon-area picture {
+.marquee .text .icon-area picture {
   display: block;
   line-height: 0;
 }
 
-.marquee .icon-area img {
+.marquee .text .icon-area img {
   height: 48px;
   width: auto;
   display: block;
