@@ -3,7 +3,7 @@
 import { expect } from '@esm-bundle/chai';
 // import { fireEvent, render, screen } from '@testing-library/preact';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
-import { waitForElement, delay } from '../../../../helpers/selectors.js';
+import { waitForElement, delay } from '../../../../helpers/waitfor.js';
 
 import Review from '../../../../../libs/blocks/review/components/review/Review.js';
 
