@@ -3,8 +3,10 @@ const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [];
 const MILO_BLOCKS = [
   'adobetv',
+  'aside',
   'caas',
   'card-metadata',
+  'chart',
   'columns',
   'faas',
   'faq',
@@ -14,6 +16,7 @@ const MILO_BLOCKS = [
   'how-to',
   'marquee',
   'media',
+  'merch',
   'modal',
   'quote',
   'section-metadata',
@@ -52,7 +55,7 @@ function getEnv() {
   if (query) { return ENVS.query; }
   if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
-  if (host.includes('hlx.page') || host.includes('hlx.live')) return ENVS.stage;
+  if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
   return ENVS.prod;
   /* c8 ignore stop */
 }
@@ -140,23 +143,35 @@ export function loadStyle(href, callback) {
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
-  if (script) {
-    resolve(script);
-  } else {
+  if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
     if (type) {
       script.setAttribute('type', type);
     }
-    script.onload = () => {
-      resolve(script);
-    };
-    script.onerror = () => {
-      reject(new Error('error loading script'));
-    };
     head.append(script);
   }
+
+  if (script.dataset.loaded) {
+    resolve(script);
+    return;
+  }
+
+  const onScript = (event) => {
+    script.removeEventListener('load', onScript);
+    script.removeEventListener('error', onScript);
+
+    if (event.type === 'error') {
+      reject(new Error('error loading script'));
+    } else if (event.type === 'load') {
+      script.dataset.loaded = true;
+      resolve(script);
+    }
+  };
+
+  script.addEventListener('load', onScript);
+  script.addEventListener('error', onScript);
 });
 
 export async function loadTemplate() {
@@ -241,7 +256,8 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        return false;
+        a.className = 'modal link-block';
+        return true;
       }
       a.className = `${key} link-block`;
       return true;
@@ -437,6 +453,8 @@ export function parseEncodedConfig(encodedConfig) {
   return null;
 }
 
+export const removeHash = (url) => url?.split('#')[0];
+
 export function getHashConfig() {
   const { hash } = window.location;
   if (!hash) return null;
@@ -472,7 +490,7 @@ export function debug(message) {
   if (env.name !== 'prod' || hostname === 'local') {
     // eslint-disable-next-line no-console
     console.log(message);
-  }  
+  }
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
