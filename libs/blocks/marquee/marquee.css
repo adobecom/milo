@@ -129,21 +129,16 @@
   margin-bottom: var(--spacing-s);
 }
 
-.icon-area img {
-  max-height: 48px;
-  width: auto;
+.marquee .icon-area {
+  margin-bottom: var(--spacing-s);
 }
 
-.icon-area picture {
+.marquee .icon-area picture {
   display: block;
   line-height: 0;
 }
 
-.marquee .text .icon-area {
-  margin-bottom: var(--spacing-s);
-}
-
-.marquee .text .icon-area img {
+.marquee .icon-area img {
   height: 48px;
   width: auto;
   display: block;
