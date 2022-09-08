@@ -14,6 +14,7 @@ const MILO_BLOCKS = [
   'footer',
   'gnav',
   'how-to',
+  'icon-block',
   'marquee',
   'media',
   'merch',
