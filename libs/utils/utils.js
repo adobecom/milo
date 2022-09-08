@@ -21,6 +21,7 @@ const MILO_BLOCKS = [
   'modal',
   'quote',
   'section-metadata',
+  'youtube',
   'z-pattern',
 ];
 const AUTO_BLOCKS = [
@@ -29,6 +30,8 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { youtube: 'https://www.youtube.com' },
+  { youtube: 'https://youtu.be' },
 ];
 const ENVS = {
   local: { name: 'local' },
