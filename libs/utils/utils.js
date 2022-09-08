@@ -176,11 +176,13 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
 
 export async function loadTemplate() {
   const template = getMetadata('template');
+  console.log('template', template);
   if (!template) return;
   const name = template.toLowerCase().replace(/[^0-9a-z]/gi, '-');
   document.body.classList.add(name);
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : codeRoot;
+  console.log('base', base);
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
