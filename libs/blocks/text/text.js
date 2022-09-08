@@ -13,7 +13,7 @@
 import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
 
 /*
- * Text Block - v5.1
+ * Text Block - v1.0
  */
 
 export default function init(el) {
@@ -24,7 +24,7 @@ export default function init(el) {
 
   // create foreground
   const container = document.createElement('div');
-  container.classList.add('foreground', 'container');
+  container.classList.add('foreground', 'container', 'grid');
   el.appendChild(container);
   el.classList.add('block');
 
