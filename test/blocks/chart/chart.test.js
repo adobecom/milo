@@ -23,6 +23,7 @@ const {
   processDataset,
   processMarkData,
   areaSeriesOptions,
+  donutTooltipFormatter,
   donutSeriesOptions,
   setDonutLabel,
   handleDonutSelect,
@@ -409,6 +410,13 @@ describe('chart', () => {
     expect(handleDonutSelect(source, selected, { setOption: () => { } }, null, null)).to.equal(476);
   });
 
+  it('donutTooltipFormatter returns expected string', () => {
+    const data = [43, 'Mobile'];
+    const encode = { value: [0] };
+    const expected = '* Mobile<br />43k 43%<i class="tooltip-icon"></i>';
+    expect(donutTooltipFormatter({ marker: '*', data, encode, name: 'Mobile', percent: 43 }, 'k')).to.equal(expected);
+  });
+
   it('getChartOptions', () => {
     expect(typeof getChartOptions()).to.equal('object');
   });
@@ -421,6 +429,11 @@ describe('chart', () => {
   it('getChartOptions barTooltipFormatter', () => {
     const options = getChartOptions('bar');
     expect(typeof options.tooltip.formatter({ seriesName: '', marker: '', value: [''], encode: {}, name: '' })).to.equal('string');
+  });
+
+  it('getChartOptions donutTooltipFormatter', () => {
+    const options = getChartOptions('donut');
+    expect(typeof options.tooltip.formatter({ marker: '*', data: [''], encode: { value: [0] }, name: 'Mobile', percent: 0 }, '')).to.equal('string');
   });
 
   it('getChartOptions pieTooltipFormatter', () => {
