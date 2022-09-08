@@ -129,7 +129,7 @@
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .text .icon-area {
+.marquee .text p.icon-area {
   margin-bottom: var(--spacing-s);
 }
 
