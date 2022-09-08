@@ -16,6 +16,11 @@
   text-align: center;
 }
 
+.marquee .background .tablet,
+.marquee .background .desktop {
+  display: none;
+}
+
 .marquee .background picture {
   display: block;
   position: absolute;
@@ -199,10 +204,31 @@
   order: 2;
 }
 
+
+@media screen and (min-width: 600px) {
+  .marquee .background .mobile,
+  .marquee .background .desktop {
+    display: none;
+  }
+  .marquee .background .tablet {
+    display: block;
+  }
+}
+
+
 @media screen and (min-width: 1200px) {
 
   .marquee {
     min-height: 560px;
+  }
+
+  .marquee .background .mobile,
+  .marquee .background .tablet {
+    display: none;
+  }
+
+  .marquee .background .desktop {
+    display: block;
   }
 
   .marquee .foreground {

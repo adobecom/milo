@@ -45,6 +45,16 @@ export function decorateBlockText(el, size = 'small') {
 
 export function decorateBlockBg(block, node) {
   node.classList.add('background');
+  if (node.childElementCount > 1) {
+    const viewports = ['mobile', 'tablet', 'desktop'];
+    let children = node.children;
+    console.log('node', {node});
+    let index = 0;
+    for (const child of node.children) {
+      child.classList.add(viewports[index]);
+      index += 1;
+    }
+  }
   if (!node.querySelector(':scope img')) {
     block.style.background = node.textContent;
     node.remove();
