@@ -1,6 +1,8 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const MILO_TEMPLATES = [];
+const MILO_TEMPLATES = [
+  '404',
+];
 const MILO_BLOCKS = [
   'adobetv',
   'aside',

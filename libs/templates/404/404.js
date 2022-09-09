@@ -2,6 +2,8 @@ import { getConfig, createTag } from '../../utils/utils.js';
 
 async function load404() {
   const { locale } = getConfig();
+  const main = document.body.querySelector('main');
+  main.innerHTML = '';
   const resp = await fetch(`${locale.contentRoot}/404.plain.html`);
   if (resp.ok) {
     const columns = createTag('div', { class: 'columns-404' });
@@ -29,15 +31,14 @@ async function load404() {
       }
     });
 
-    // appending doc elements to main //
-    const main = document.body.querySelector('main');
-
     // appending background img, header, columns
     main.append(picture, header, columns);
     header.querySelector('p').remove();
 
     // appending other sections to main
     main.append(...doc.querySelectorAll('body > *'));
+  } else {
+    main.append('404 Not Found');
   }
 }
 
