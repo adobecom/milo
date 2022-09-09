@@ -3,7 +3,7 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../helpers/selectors.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 import init from '../../../libs/blocks/review/review.js';
 
 describe('Review Comp', () => {
