@@ -70,7 +70,7 @@ async function simulatePreview(mdPath, retryAttempt = 1) {
     { method: 'POST' },
   );
   if (!response.ok && retryAttempt <= MAX_RETRIES) {
-    await simulatePreview(`${previewUrl}`, retryAttempt + 1);
+    await simulatePreview(mdPath, retryAttempt + 1);
   }
 }
 

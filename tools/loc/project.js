@@ -92,7 +92,7 @@ function addToArrayIfNotPresent(array, toAdd) {
 function updateProjectDetailWithTask(projectDetail, task) {
   const urlToTranslate = task.URL;
   const { language } = task;
-  addToExistingOrCreate(projectDetail, urlToTranslate, task);
+  // addToExistingOrCreate(projectDetail, urlToTranslate, task);
   addToExistingOrCreate(projectDetail, language, task);
   addToArrayIfNotPresent(projectDetail.urls, urlToTranslate);
   addToArrayIfNotPresent(projectDetail.languages, language);

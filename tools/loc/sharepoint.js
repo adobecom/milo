@@ -80,18 +80,21 @@ function getSharepointFileRequest(spConfig, fileIndex, filePath) {
   };
 }
 
-async function getSpFiles(projectFiles) {
+async function getSpViewUrl(filePath) {
+  const { sp } = await getConfig();
+  return sp.shareUrl.replace('<relativePath>', filePath);
+}
+
+async function getSpFiles(filePaths) {
   let index = 0;
   const spFilePromises = [];
   const { sp } = await getConfig();
   const spBatchApi = `${sp.api.batch.uri}`;
 
-  while (index < projectFiles.length) {
+  while (index < filePaths.length) {
     const payload = { requests: [] };
-    for (let i = 0; i < BATCH_REQUEST_LIMIT && index < projectFiles.length; index += 1, i += 1) {
-      const projectFile = projectFiles[index];
-      const langFilePath = projectFile.language === 'en' ? projectFile.languageAltLangFilePath : projectFile.languageFilePath;
-      const filePath = langFilePath || projectFile.filePath;
+    for (let i = 0; i < BATCH_REQUEST_LIMIT && index < filePaths.length; index += 1, i += 1) {
+      const filePath = filePaths[index];
       payload.requests.push(getSharepointFileRequest(sp, index, filePath));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
@@ -100,35 +103,51 @@ async function getSpFiles(projectFiles) {
   return Promise.all(spFileResponses.map((file) => file.json()));
 }
 
-function getEnFilePaths(project) {
-  const enFilePaths = [];
+function getEnFilePathToTaskMap(project) {
+  const enFilePathToTaskMap = new Map();
   project.urls.forEach((u) => {
-    enFilePaths.push(project.docs[u]);
+    enFilePathToTaskMap.set(project.docs[u].filePath, project.docs[u]);
   });
-  return enFilePaths;
+  return enFilePathToTaskMap;
 }
 
-function getLanguageFilePaths(project) {
-  let languagePaths = [];
-  project.languages.forEach((l) => {
-    languagePaths = languagePaths.concat(project[l]);
+function getLanguageFilePathToTaskMap(project) {
+  let languagePathToTaskMap = new Map();
+  project.languages.forEach((language) => {
+    const currentLangTasks = project[language];
+    currentLangTasks.forEach((task) => {
+      languagePathToTaskMap.set(task.languageFilePath, task);
+      if (language === 'en') {
+        languagePathToTaskMap.set(task.languageAltLangFilePath, task);
+      }
+    });
   });
-  return languagePaths;
+  return languagePathToTaskMap;
 }
 
 async function updateProjectWithSpStatus(project, callback) {
   if (!project) {
     return;
   }
-  const filePaths = [].concat(getEnFilePaths(project), getLanguageFilePaths(project));
+  const enFilePathToTaskMap = getEnFilePathToTaskMap(project);
+  const languageFilePathToTaskMap = getLanguageFilePathToTaskMap(project);
+  const filePathsToTaskMap =  new Map([...enFilePathToTaskMap, ...languageFilePathToTaskMap]);
+  const filePaths = [...filePathsToTaskMap.keys()];
   const spBatchFiles = await getSpFiles(filePaths);
   spBatchFiles.forEach((spFiles) => {
     if (spFiles && spFiles.responses) {
       spFiles.responses.forEach((file) => {
         const filePath = filePaths[file.id];
         const spFileStatus = file.status;
-        filePath.sp = spFileStatus === 200 ? file.body : {};
-        filePath.sp.status = spFileStatus;
+        const taskLinkedToFilePath = filePathsToTaskMap.get(filePath);
+        const fileBody = spFileStatus === 200 ? file.body : {};
+        if (filePath.includes('altlang')) {
+          taskLinkedToFilePath.altlangsp = fileBody;
+          taskLinkedToFilePath.altlangsp.status = spFileStatus;
+        } else {
+          taskLinkedToFilePath.sp = spFileStatus === 200 ? file.body : {};
+          taskLinkedToFilePath.sp.status = spFileStatus;
+        }
       });
     }
   });
@@ -210,11 +229,61 @@ async function uploadFile(sp, uploadUrl, file) {
   // TODO API is limited to 60Mb, for more, we need to batch the upload.
   options.headers.append('Content-Length', file.size);
   options.headers.append('Content-Range', `bytes 0-${file.size - 1}/${file.size}`);
+  options.headers.append('Prefer', 'bypass-shared-lock');
   options.method = sp.api.file.upload.method;
   options.body = file;
+  return await fetch(`${uploadUrl}`, options);
+}
 
-  const uploadedFile = await fetch(`${uploadUrl}`, options);
-  return uploadedFile.ok ? uploadedFile.json() : undefined;
+async function deleteFile(sp, filePath) {
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Prefer', 'bypass-shared-lock');
+  options.method = sp.api.file.delete.method;
+  return await fetch(filePath, options);
+}
+
+async function renameFile(spFileUrl, filename) {
+  const options = getAuthorizedRequestOption();
+  options.headers.append('Prefer', 'bypass-shared-lock');
+  options.headers.append('Accept', 'application/json');
+  options.headers.append('Content-Type', 'application/json');
+  options.method = 'PATCH';
+  options.body = JSON.stringify({ 'name': filename });
+  return await fetch(spFileUrl, options);
+}
+
+async function releaseUploadSession(sp, uploadUrl) {
+  await deleteFile(sp, uploadUrl);
+}
+
+function getLockedFileNewName(filename) {
+  const extIndex = filename.indexOf(".");
+  const fileNameWithoutExtn = filename.substring(0, extIndex);
+  const fileExtn = filename.substring(extIndex);
+  return `${fileNameWithoutExtn}-locked-${Date.now()}${fileExtn}`;
+}
+
+async function createSessionAndUploadFile(sp, file, dest, filename) {
+  const createdUploadSession = await createUploadSession(sp, file, dest, filename);
+  const status = {};
+  if (createdUploadSession) {
+    const uploadSessionUrl = createdUploadSession.uploadUrl;
+    if (!uploadSessionUrl) {
+      return status;
+    }
+    status.sessionUrl = uploadSessionUrl;
+    const uploadedFile = await uploadFile(sp, uploadSessionUrl, file);
+    if (!uploadedFile) {
+      return status;
+    }
+    if (uploadedFile.ok) {
+      status.uploadedFile = uploadedFile.json();
+      status.success = true;
+    } else if (uploadedFile.status === 423) {
+      status.locked = true;
+    }
+  }
+  return status;
 }
 
 async function saveFile(file, dest) {
@@ -223,11 +292,27 @@ async function saveFile(file, dest) {
   const filename = getFileNameFromPath(dest);
   await createFolder(folder);
   const { sp } = await getConfig();
-  const createdUploadSession = await createUploadSession(sp, file, dest, filename);
-  if (createdUploadSession) {
-    const uploadedFile = await uploadFile(sp, createdUploadSession.uploadUrl, file);
-    if (uploadedFile) {
-      return uploadedFile;
+  let uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename);
+  try {
+    if (uploadFileStatus.locked) {
+      await releaseUploadSession(sp, uploadFileStatus.sessionUrl);
+      const lockedFileNewName = getLockedFileNewName(filename);
+      const spFileUrl = `${sp.api.file.get.baseURI}${dest}`;
+      await renameFile(spFileUrl, lockedFileNewName);
+      const newLockedFilePath = `${folder}/${lockedFileNewName}`;
+      const copyFileStatus = await copyFile(newLockedFilePath, folder, filename);
+      uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename);
+      if (uploadFileStatus.success) {
+        await deleteFile(sp,  `${sp.api.file.get.baseURI}${newLockedFilePath}`);
+      }
+    }
+    const uploadedFileJson = uploadFileStatus.uploadedFile;
+    if (uploadedFileJson) {
+      return uploadedFileJson;
+    }
+  } finally {
+    if (uploadFileStatus.sessionUrl) {
+      await releaseUploadSession(sp, uploadFileStatus.sessionUrl);
     }
   }
   throw new Error(`Could not upload file ${dest}`);
@@ -308,7 +393,7 @@ async function getMetadata(srcPath, file) {
   return metadata;
 }
 
-async function copyFile(srcPath, destinationFolder) {
+async function copyFile(srcPath, destinationFolder, newName) {
   validateConnection();
   await createFolder(destinationFolder);
   const options = getAuthorizedRequestOption();
@@ -319,16 +404,33 @@ async function copyFile(srcPath, destinationFolder) {
   const { baseURI } = sp.api.file.copy;
   const rootFolder = baseURI.split('/').pop();
   const payload = { parentReference: { path: `${rootFolder}${destinationFolder}` } };
+  if (newName) {
+    payload.name = newName;
+  }
   options.body = JSON.stringify(payload);
-  return fetch(`${baseURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetch(`${baseURI}${srcPath}:/copy`, options);
+  const statusUrl = copyStatusInfo.headers.get("Location");
+  let copyStatus = false;
+  while (!copyStatus) {
+    const status = await fetch(statusUrl);
+    if (status.ok) {
+      copyStatus = (await status.json()).status === 'completed';
+    }
+  }
+  return copyStatus;
 }
 
 async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
-  const copiedFile = await copyFile(srcPath, destinationFolder);
+  const copyStatus = await copyFile(srcPath, destinationFolder);
   const fileName = srcPath.split('/').pop();
-  if (copiedFile) {
-    await updateFile(`${destinationFolder}/${fileName}`, await getMetadata(srcPath, copiedFile));
-    return copiedFile;
+  if (copyStatus) {
+    const { sp } = await getConfig();
+    const copiedFile = await fetch(`${sp.api.file.get.baseURI}${destinationFolder}/${getFileNameFromPath(srcPath)}`, getAuthorizedRequestOption());
+    if (copiedFile.ok) {
+      const copiedFileJson = await copiedFile.json();
+      await updateFile(`${destinationFolder}/${fileName}`, await getMetadata(srcPath, copiedFileJson));
+      return copiedFileJson;
+    }
   }
   throw new Error(`Could not copy file ${destinationFolder}`);
 }
@@ -351,4 +453,5 @@ export { getFiles,
   saveFileAndUpdateMetadata,
   copyFileAndUpdateMetadata,
   connect,
+  getSpViewUrl,
   updateProjectWithSpStatus };
