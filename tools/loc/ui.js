@@ -23,6 +23,7 @@ import {
 import {
   saveFile,
   connect as connectToSP,
+  getSpViewUrl,
   updateProjectWithSpStatus as updateSPStatus, copyFile,
 } from './sharepoint.js';
 import { init as initProject } from './project.js';
@@ -83,13 +84,14 @@ async function createTableWithHeaders(config) {
   const $tr = createRow('header');
   $tr.appendChild(createHeaderColumn('URL'));
   $tr.appendChild(createHeaderColumn('Source file'));
+  $tr.appendChild(createHeaderColumn('English Langstore file'));
   await appendLanguages($tr, config, projectDetail.languages);
   $table.appendChild($tr);
   return $table;
 }
 
-function getAnchorHtml(url) {
-  return `<a href="${url}" target="_new">${getPathFromUrl(url)}</a>`;
+function getAnchorHtml(url, text) {
+  return `<a href="${url}" target="_new">${text}</a>`;
 }
 
 function getSharepointStatus(url) {
@@ -201,10 +203,13 @@ async function displayProjectDetail() {
 
   await asyncForEach(projectDetail.urls, async (url) => {
     const $tr = createRow();
-    const pageUrl = getAnchorHtml(url);
+    const pageUrl = getAnchorHtml(url, getPathFromUrl(url));
     $tr.appendChild(createColumn(pageUrl));
     const sharepointStatus = getSharepointStatus(url);
-    $tr.appendChild(createColumn(sharepointStatus.msg));
+    const usEnDoc = sharepointStatus.msg;
+    $tr.appendChild(createColumn(getAnchorHtml(await getSpViewUrl(usEnDoc), usEnDoc)));
+    const langstoreEnDoc = '/langstore/en' + sharepointStatus.msg;
+    $tr.appendChild(createColumn(getAnchorHtml(await getSpViewUrl(langstoreEnDoc), langstoreEnDoc)));
     await asyncForEach(projectDetail.languages, async (language) => {
       let filesMissingInSharepoint = false;
       const $td = createTag('td');
@@ -233,6 +238,7 @@ async function displayProjectDetail() {
 
   if (showCombinedPersistRow) {
     const finalRow = createRow();
+    finalRow.appendChild(createColumn());
     finalRow.appendChild(createColumn());
     finalRow.appendChild(createColumn());
 
@@ -367,7 +373,7 @@ async function copyFilesToLanguageEn() {
   await asyncForEach(projectDetail.urls, async (url) => {
     const srcPath = `${getSharepointLocationFromUrl(url)}.docx`;
     loadingON(`Copying ${srcPath} to languages/en`);
-    const destinationFolder = `/languages/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
+    const destinationFolder = `/langstore/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
     await copyFile(srcPath, destinationFolder);
     loadingON(`Copied ${srcPath} to languages/en`);
   });

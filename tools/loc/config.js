@@ -118,6 +118,7 @@ function getSharepointConfig(config) {
         authority: sharepointConfig.authority,
       },
     },
+    shareUrl: sharepointConfig.shareurl,
     login: { redirectUri: '/tools/loc/spauth' },
     api: {
       url: GRAPH_API,
@@ -127,6 +128,10 @@ function getSharepointConfig(config) {
         upload: {
           baseURI,
           method: 'PUT',
+        },
+        delete: {
+          baseURI,
+          method: 'DELETE',
         },
         update: {
           baseURI,
