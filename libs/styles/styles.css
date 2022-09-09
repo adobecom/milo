@@ -175,3 +175,17 @@ div[data-failed="true"]::before {
   font-weight: 700;
   display: block;
 }
+
+/* Utilities */
+picture.bg-img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+picture.bg-img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
