@@ -151,6 +151,16 @@ export const barTooltipFormatter = ({
   `${seriesName}<br />${marker} ${value[x[0]]}${unit} ${name}<i class="tooltip-icon"></i>`
 );
 
+export const donutTooltipFormatter = ({
+  marker,
+  data,
+  encode: { value = [] },
+  name,
+  percent,
+} = {}, unit = '') => (
+  `${marker} ${name}<br />${data[value[0]]}${unit} ${percent}%<i class="tooltip-icon"></i>`
+);
+
 export const pieTooltipFormatter = ({
   marker,
   data,
@@ -256,9 +266,9 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
   const sizeLarge = size === LARGE;
   let mouseOutValue = sum;
 
-  chart.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
-  chart.on('mouseout', () => setDonutLabel(chart, mouseOutValue, unit, title));
-  chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(source, selected, chart, unit, title); });
+  chart?.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
+  chart?.on('mouseout', () => setDonutLabel(chart, mouseOutValue, unit, title));
+  chart?.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(source, selected, chart, unit, title); });
 
   return [{
     type: 'pie',
@@ -336,6 +346,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
   const isBar = chartType === 'bar';
   const isColumn = chartType === 'column';
   const isPie = chartType === 'pie';
+  const isDonut = chartType === 'donut';
 
   if (xAxisType) {
     units.shift();
@@ -356,9 +367,10 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       formatter: ((params) => {
         if (isBar) return barTooltipFormatter(params, units[0]);
         if (isPie) return pieTooltipFormatter(params, units[0]);
+        if (isDonut) return donutTooltipFormatter(params, units[0]);
         return tooltipFormatter(params, units);
       }),
-      trigger: isBar || isPie ? 'item' : 'axis',
+      trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
     xAxis: {
@@ -391,9 +403,9 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       if (isBar || isColumn) {
         return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
       }
-      if (chartType === 'line') return lineSeriesOptions(data.series, firstDataset, units, xAxisType);
+      if (chartType === 'line') return lineSeriesOptions(data?.series, firstDataset, units, xAxisType);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
-      if (chartType === 'donut') return donutSeriesOptions(source, data.series, size, units[0], chart);
+      if (isDonut) return donutSeriesOptions(source, data?.series, size, units[0], chart);
       if (isPie) return pieSeriesOptions(size);
       return [];
     })(),
