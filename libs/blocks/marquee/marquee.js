@@ -11,48 +11,54 @@
  */
 
 /*
- * Marquee - v1.0.0
+ * Marquee - v6.0
  */
+import { decorateBlockBg, decorateButtons, getBlockSize } from '../../utils/decorate.js';
 
-function decorateButtons(el, isLarge) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    const buttonSize = isLarge ? 'button-XL' : 'button-M';
-    button.classList.add('con-button', buttonType, buttonSize);
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  if (buttons.length > 0) {
-    const actionArea = buttons[0].closest('p');
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
-}
-
-function decorateText(el, isLarge) {
+function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  heading.className = isLarge ? 'heading-XXL' : 'heading-XL';
-  heading.nextElementSibling.className = isLarge ? 'body-XL' : 'body-M';
-  if (heading.previousElementSibling) {
-    heading.previousElementSibling.className = isLarge ? 'detail-L' : 'detail-M';
-  }
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+    const sib = headingEl.previousElementSibling;
+    if (sib) {
+      sib.querySelector('img', '.icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      sib.previousElementSibling?.classList.add('icon-area');
+    }
+  };
+  size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
+}
+
+function extendButtonsClass(text) {
+  const buttons = text.querySelectorAll('.con-button');
+  if (buttons.length === 0) return;
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
 
 export default function init(el) {
+  const isLight = el.classList.contains('light');
+  if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
   if (children.length > 1) {
     children[0].classList.add('background');
+    decorateBlockBg(el, children[0]);
   }
   foreground.classList.add('foreground', 'container');
-  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6').closest('div');
+  const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
+  const text = headline.closest('div');
   text.classList.add('text');
   const image = foreground.querySelector(':scope > div:not([class])');
   image?.classList.add('image');
-  const isLarge = el.closest('.marquee').classList.contains('large');
-  decorateButtons(text, isLarge);
-  decorateText(text, isLarge);
+  const size = getBlockSize(el);
+  decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
+  decorateText(text, size);
+  extendButtonsClass(text);
+  if (el.classList.contains('split')) {
+    if (foreground && image) {
+      image.classList.add('bleed');
+      foreground.insertAdjacentElement('beforebegin', image);
+    }
+  }
 }
