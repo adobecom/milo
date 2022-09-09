@@ -9,6 +9,6 @@ jobs:
     steps:
     - uses: yogevbd/enforce-label-action@2.1.0
       with:
-        REQUIRED_LABELS_ANY: "verified-fixed,trivial"
+        REQUIRED_LABELS_ANY: "verified,trivial"
         REQUIRED_LABELS_ANY_DESCRIPTION: "PR must be labeled with 'verified-fixed' or 'trivial'"
         BANNED_LABELS: "do-not-merge,duplicate,invalid,wontfix"
