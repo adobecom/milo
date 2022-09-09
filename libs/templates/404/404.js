@@ -5,7 +5,7 @@ async function load404() {
   const main = document.body.querySelector('main');
   main.innerHTML = '';
   let resp = await fetch(`${locale.contentRoot}/404.plain.html`);
-  if (!resp.ok) {
+  if (!resp || !resp.ok) {
     resp = await fetch('/404.plain.html');
   }
   const columns = createTag('div', { class: 'columns-404' });
