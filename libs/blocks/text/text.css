@@ -14,11 +14,8 @@
 }
 
 .text p.action-area a {
-  margin-right: var(--spacing-s);
-}
-
-.text p.action-area a:nth-child(n+3) {
-  margin-top: var(--spacing-xs);
+  margin: 0 var(--spacing-s) var(--spacing-xxs) 0;
+  white-space: nowrap;
 }
 
 .text p.action-area a.con-button {
