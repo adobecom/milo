@@ -14,7 +14,6 @@ const {
   DESKTOP_BREAKPOINT,
   TABLET_BREAKPOINT,
   colorPalette,
-  getContainerSize,
   getResponsiveSize,
   tooltipFormatter,
   getColors,
@@ -35,6 +34,7 @@ const {
   default: init,
   pieTooltipFormatter,
   pieSeriesOptions,
+  getOversizedNumberSize,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 const config = { codeRoot: '/libs' };
@@ -49,16 +49,6 @@ describe('chart', () => {
 
   after(() => {
     sinon.restore();
-  });
-
-  it('getContainerSize provides default height and width', () => {
-    expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
-      .that.has.all.keys('height', 'width');
-  });
-
-  it('getContainerSize provides custom area height and width', () => {
-    expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
-      .that.has.all.keys('height', 'width');
   });
 
   it('getResponsiveSize returns same sizes on desktop', () => {
@@ -648,5 +638,29 @@ describe('chart', () => {
     }];
 
     expect(pieSeriesOptions(SMALL)).to.eql(expected);
+  });
+
+  it('init generates oversized number chart', async () => {
+    const linkRel = '/drafts/data-viz/oversized-number.json';
+    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    const data = await readFile({ path: './mocks/oversized-number.json' });
+    const parsedData = JSON.parse(data);
+    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
+    const el = document.querySelector('.chart');
+    init(el);
+    const svg = await waitForElement('svg');
+    expect(svg).to.exist;
+  });
+
+  it('getOversizedNumberSize returns maximum size for 1 character', () => {
+    expect(getOversizedNumberSize(1)).to.eql([240, 60, 70]);
+  });
+
+  it('getOversizedNumberSize returns reduced size for 4 characters', () => {
+    expect(getOversizedNumberSize(4)).to.eql([150, 60, 70]);
+  });
+
+  it('getOversizedNumberSize returns miniumum size for more than 6 characters', () => {
+    expect(getOversizedNumberSize(100)).to.eql([90, 55, 65]);
   });
 });
