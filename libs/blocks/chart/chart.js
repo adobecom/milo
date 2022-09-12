@@ -37,6 +37,7 @@ const chartTypes = [
   'list',
   'donut',
   'pie',
+  'oversized-number',
 ];
 
 export function processDataset(data, xAxisType) {
@@ -449,57 +450,6 @@ export const getOverrideColors = (authoredColor, data) => data.map((row) => {
   return colorPalette[overrideColor || authoredColor] || Object.values(colorPalette)[0];
 });
 
-export const getContainerSize = (chartSize, chartType) => {
-  const chartHeights = {
-    area: {
-      small: { height: 345 },
-      medium: { height: 310 },
-      large: { height: 512 },
-    },
-    default: {
-      small: { height: 290 },
-      medium: { height: 295 },
-      large: { height: 350 },
-    },
-    donut: {
-      small: { height: 345 },
-      medium: { height: 450 },
-      large: { height: 512 },
-    },
-    oversizedNumber: {
-      small: { minHeight: 290 },
-      medium: { minHeight: 295 },
-      large: { minHeight: 350 },
-    },
-    list: {},
-    pie: {
-      small: { height: 345 },
-      medium: { height: 450 },
-      large: { height: 512 },
-    },
-  };
-  const containerSize = chartType in chartHeights
-    ? chartHeights[chartType]?.[chartSize] || {}
-    : chartHeights?.default?.[chartSize] || {};
-  containerSize.width = '100%';
-  return containerSize;
-};
-
-const updateContainerSize = (chartWrapper, chartSize, chartType) => {
-  const containerSize = getContainerSize(chartSize, chartType);
-  const chartRow = chartWrapper?.parentElement;
-
-  if (chartRow) {
-    chartRow.style.width = containerSize?.width;
-    chartRow.style.height = `${containerSize?.height}px`;
-  }
-
-  if (chartWrapper) {
-    chartWrapper.style.width = containerSize?.width;
-    chartWrapper.style.height = `${containerSize?.height}px`;
-  }
-};
-
 export const getResponsiveSize = (authoredSize) => {
   const width = window.innerWidth;
   let size = LARGE;
@@ -519,11 +469,10 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
   const previousSize = el?.getAttribute('data-responsive-size');
   const previousIsLarge = previousSize === LARGE;
   const currentIsLarge = currentSize === LARGE;
-  const chartWrapper = el?.querySelector('.chart_wrapper');
+  const chartWrapper = el?.querySelector('.chart-wrapper');
   const chartInstance = window.echarts?.getInstanceByDom(chartWrapper);
 
   if (currentSize !== previousSize) {
-    updateContainerSize(chartWrapper, currentSize, chartType);
     el.setAttribute('data-responsive-size', currentSize);
   }
 
@@ -535,13 +484,35 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
   }
 };
 
+export const getOversizedNumberSize = (charLength) => {
+  let fontSize = 240; // max font size, for 1 char
+  let titleY = 60; // vertical alignment by percent
+  let subtitleY = 70; // vertical alignment by percent
+
+  if (charLength > 0 && charLength <= 6) {
+    // Decrease the font size by 30 for every additional character
+    fontSize -= 30 * (charLength - 1);
+  } else {
+    fontSize = 90;
+  }
+
+  // Reduce the vertical spacing for small font sizes
+  if (fontSize <= 100) {
+    titleY -= 5;
+    subtitleY -= 5;
+  }
+
+  return [fontSize, titleY, subtitleY];
+};
+
 const init = (el) => {
   const children = el?.querySelectorAll(':scope > div');
   const chartWrapper = children[2]?.querySelector(':scope > div');
   children[0]?.classList.add('title');
   children[1]?.classList.add('subtitle');
+  children[2]?.classList.add('chart-container');
   children[3]?.classList.add('footnote');
-  chartWrapper?.classList.add('chart_wrapper');
+  chartWrapper?.classList.add('chart-wrapper');
 
   const chartStyles = el?.classList;
   const section = el?.parentElement?.matches('.section') ? el.parentElement : null;
@@ -565,8 +536,6 @@ const init = (el) => {
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
-  updateContainerSize(chartWrapper, size, chartType);
-
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
 
   if (chartType === 'list') {
@@ -579,47 +548,65 @@ const init = (el) => {
     return;
   }
 
-  if (chartType !== 'oversizedNumber') {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-
+  if (chartType === 'oversized-number') {
     // Must use chained promise. Await will cause loading issues
-    Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
-      .then((values) => {
-        const json = values[0];
-        const data = chartData(json);
+    fetchData(dataLink)
+      .then((json) => {
+        const data = json?.data?.[0];
+        const number = data?.number;
+        const [fontSize, titleY, subtitleY] = getOversizedNumberSize(number?.length);
 
-        if (!data) return;
+        const html = `<svg viewBox="0 0 430 430">
+            <circle cx="50%" cy="50%" r="50%" fill="${colorPalette[authoredColor]}" />
+            <text x="50%" y="${titleY}%" class="number" font-size="${fontSize}px">${number}</text>
+            <text x="50%" y="${subtitleY}%" class="subtitle">${data?.subtitle}</text>
+        </svg>`;
 
-        const hasOverride = hasPropertyCI(data?.data[0], 'color');
-        const colors = hasOverride
-          ? getOverrideColors(authoredColor, data.data)
-          : getColors(authoredColor);
-
-        if (!(window.IntersectionObserver)) {
-          initChart(chartWrapper, chartType, data, colors, size);
-        } else {
-          /* c8 ignore next 12 */
-          const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.5,
-          };
-
-          const observer = new IntersectionObserver(
-            handleIntersect(chartWrapper, chartType, data, colors, size),
-            observerOptions,
-          );
-          observer.observe(el);
-        }
-
-        window.addEventListener('resize', throttle(
-          1000,
-          () => handleResize(el, authoredSize, chartType, data, colors),
-        ));
+        chartWrapper.innerHTML = html;
       })
       .catch((error) => console.log('Error loading script:', error));
+    return;
   }
+
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+
+  // Must use chained promise. Await will cause loading issues
+  Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
+    .then((values) => {
+      const json = values[0];
+      const data = chartData(json);
+
+      if (!data) return;
+
+      const hasOverride = hasPropertyCI(data?.data[0], 'color');
+      const colors = hasOverride
+        ? getOverrideColors(authoredColor, data.data)
+        : getColors(authoredColor);
+
+      if (!(window.IntersectionObserver)) {
+        initChart(chartWrapper, chartType, data, colors, size);
+      } else {
+        /* c8 ignore next 12 */
+        const observerOptions = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.5,
+        };
+
+        const observer = new IntersectionObserver(
+          handleIntersect(chartWrapper, chartType, data, colors, size),
+          observerOptions,
+        );
+        observer.observe(el);
+      }
+
+      window.addEventListener('resize', throttle(
+        1000,
+        () => handleResize(el, authoredSize, chartType, data, colors),
+      ));
+    })
+    .catch((error) => console.log('Error loading script:', error));
 };
 
 export default init;

@@ -95,3 +95,96 @@
   transform: rotate(45deg);
   z-index: 0;
 }
+
+.chart .chart-container,
+.chart .chart-wrapper {
+  width: 100%;
+}
+
+.chart.oversized-number .chart-wrapper {
+  max-width: 430px;
+  margin: auto;
+  animation-name: oversizedNumber;
+  animation-duration: 1s;
+}
+
+.chart.oversized-number svg {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.chart.oversized-number .number,
+.chart.oversized-number .subtitle {
+  line-height: 1;
+  fill: var(--white);
+  text-anchor: middle;
+}
+
+.chart.oversized-number .number {
+  font-weight: 800;
+}
+
+.chart.oversized-number .subtitle {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.chart[data-responsive-size=small] .chart-container,
+.chart[data-responsive-size=small] .chart-wrapper {
+  height: 290px;
+}
+
+.chart[data-responsive-size=medium] .chart-container,
+.chart[data-responsive-size=medium] .chart-wrapper {
+  height: 295px;
+}
+
+.chart[data-responsive-size=large] .chart-container,
+.chart[data-responsive-size=large] .chart-wrapper {
+  height: 350px;
+}
+
+.chart.list .chart-container,
+.chart.list .chart-wrapper,
+.chart.oversized-number .chart-container,
+.chart.oversized-number .chart-wrapper {
+  height: auto;
+}
+
+.chart.area[data-responsive-size=small] .chart-container,
+.chart.area[data-responsive-size=small] .chart-wrapper {
+  height: 345px;
+}
+
+.chart.area[data-responsive-size=medium] .chart-container,
+.chart.area[data-responsive-size=medium] .chart-wrapper {
+  height: 310px;
+}
+
+.chart.area[data-responsive-size=large] .chart-container,
+.chart.area[data-responsive-size=large] .chart-wrapper {
+  height: 512px;
+}
+
+.chart.donut[data-responsive-size=small] .chart-container,
+.chart.donut[data-responsive-size=small] .chart-wrapper,
+.chart.pie[data-responsive-size=small] .chart-container,
+.chart.pie[data-responsive-size=small] .chart-wrapper {
+  height: 345px;
+}
+
+.chart.donut[data-responsive-size=medium] .chart-container,
+.chart.donut[data-responsive-size=medium] .chart-wrapper,
+.chart.pie[data-responsive-size=medium] .chart-container,
+.chart.pie[data-responsive-size=medium] .chart-wrapper {
+  height: 450px;
+}
+
+.chart.donut[data-responsive-size=large] .chart-container,
+.chart.donut[data-responsive-size=large] .chart-wrapper,
+.chart.pie[data-responsive-size=large] .chart-container,
+.chart.pie[data-responsive-size=large] .chart-wrapper {
+  height: 512px;
+}
+
