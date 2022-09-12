@@ -23,7 +23,7 @@ function decorateText(el, size) {
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
     const sib = headingEl.previousElementSibling;
     if (sib) {
-      sib.querySelector('img', '.icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      sib.querySelector('img, .icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
