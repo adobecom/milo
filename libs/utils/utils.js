@@ -392,6 +392,22 @@ export async function loadDeferred(area) {
   }
 }
 
+/**
+* Load the Privacy library
+*/
+function loadPrivacy() {
+  // Configure Privacy
+  window.fedsConfig = {
+    privacy: {
+      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
+    },
+  };
+
+  const env = getEnv().name === 'prod' ? '' : 'stage.';
+  loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -420,6 +436,7 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    loadPrivacy();
   }
 
   // Load everything that can be deferred until after all blocks load.
