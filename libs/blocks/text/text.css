@@ -4,13 +4,21 @@
 }
 
 .text p {
-  line-height: var(--type-body-all-lh);
   margin-top: 0;
 }
 
 .text p.action-area {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+}
+
+.text p.action-area a {
+  margin-right: var(--spacing-s);
+}
+
+.text p.action-area a:nth-child(n+3) {
+  margin-top: var(--spacing-xs);
 }
 
 .text p.action-area a.con-button {
@@ -66,11 +74,6 @@
 
 .text.vertical a:not(.con-button) {
   font-size: var(--type-body-xs-size);
-  line-height: var(--type-body-all-lh);
-}
-
-.text.vertical a.outline + a {
-  margin-left: var(--spacing-s);
 }
 
 .text .heading-M {
