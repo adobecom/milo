@@ -172,7 +172,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, '')).to.eql(dataset);
+    expect(processDataset(fetchedData.data, '').dataset).to.eql(dataset);
   });
 
   it('chart dataset with date', () => {
@@ -215,7 +215,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, 'date')).to.eql(dataset);
+    expect(processDataset(fetchedData.data, 'date').dataset).to.eql(dataset);
   });
 
   it('chart mark series data', () => {
@@ -464,7 +464,7 @@ describe('chart', () => {
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions('', { data: [{ Unit: 'k-m' }] });
+    const options = getChartOptions('', null, null, null, null, null, ['k', 'm']);
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
