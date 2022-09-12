@@ -45,33 +45,50 @@
 
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
-  --type-heading-all-lh: 1.25;
+  --type-heading-xxxl-size: 44px;
+  --type-heading-xxxl-lh: 55px;
   --type-heading-xxl-size: 36px;
+  --type-heading-xxl-lh: 45px;
   --type-heading-xl-size: 28px;
+  --type-heading-xl-lh: 35px;
   --type-heading-l-size: 24px;
+  --type-heading-l-lh: 30px;
   --type-heading-m-size: 20px;
+  --type-heading-m-lh: 25px;
   --type-heading-s-size: 18px;
+  --type-heading-s-lh: 22.5px;
   --type-heading-xs-size: 16px;
+  --type-heading-xs-lh: 20px;
   --type-heading-xxs-size: 14px;
+  --type-heading-xxs-lh: 18px;
 
   /* Body (Consonant) */
-  --type-body-all-lh: 1.5;
   --type-body-xxl-size: 28px;
+  --type-body-xxl-lh: 42px;
   --type-body-xl-size: 22px;
+  --type-body-xl-lh: 33px;
   --type-body-l-size: 20px;
+  --type-body-l-lh: 30px;
   --type-body-m-size: 18px;
+  --type-body-m-lh: 27px;
   --type-body-s-size: 16px;
+  --type-body-s-lh: 24px;
   --type-body-xs-size: 14px;
+  --type-body-xs-lh: 21px;
   --type-body-xxs-size: 12px;
+  --type-body-xxs-lh: 18px;
 
   /* Detail */
   --type-detail-all-weight: 700;
   --type-detail-all-transform: uppercase;
-  --type-detail-all-lh: 1.25;
   --type-detail-xl-size: 20px;
+  --type-detail-xl-lh: 25px;
   --type-detail-l-size: 16px;
+  --type-detail-l-lh: 20px;
   --type-detail-m-size: 12px;
+  --type-detail-m-lh: 15px;
   --type-detail-s-size: 10px;
+  --type-detail-s-lh: 12px;
 
   /* grid sizes */
   --grid-container-width: 83.4%;
@@ -87,12 +104,20 @@
     --spacing-xl: 56px;
     --spacing-xxl: 80px;
     --spacing-xxxl: 104px;
+    --type-heading-xxxl-size: 80px;
+    --type-heading-xxxl-lh: 88px;
     --type-heading-xxl-size: 44px;
+    --type-heading-xxl-lh: 55px;
+    --type-heading-xl-lh: 45px;
     --type-heading-xl-size: 36px;
     --type-heading-l-size: 28px;
+    --type-heading-l-lh: 35px;
     --type-heading-m-size: 24px;
+    --type-heading-m-lh: 30px;
     --type-heading-s-size: 20px;
+    --type-heading-s-lh: 25px;
     --type-heading-xs-size: 18px;
+    --type-heading-xs-lh: 22.5px;
   }
 }
 
