@@ -1,9 +1,8 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
 /**
- * @param {String} path the path to the SVG
- * @param {Array} selectors an array of selectors to look for
- * @returns {Array} an array of objects with
+ *
+ * @returns {Array} an array of objects with a name and svg attribute
  */
 export async function getSVGsfromFile(path, selectors) {
   if (!path) return null;
@@ -24,7 +23,7 @@ export async function getSVGsfromFile(path, selectors) {
     const symbol = doc.querySelector(`#${selector}`);
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     while (symbol.firstChild) svg.appendChild(symbol.firstChild);
-    [...symbol.attributes].forEach((attr) => s.attributes.setNamedItem(attr.cloneNode()))
+    [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
     svg.classList.add('icon');
     svg.classList.add(`icon-${selector}`);
     svg.removeAttribute('id');
