@@ -4,6 +4,7 @@
 import { readFile, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
+import { delay } from '../../helpers/waitfor.js';
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
@@ -57,6 +58,18 @@ describe('Gnav', () => {
     largeMenuBtn.click();
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
     expect(largeMenu.querySelector('.section.last-link-blue')).to.exist;
+  });
+
+  it('nav menu close on scroll', async () => {
+    const largeMenu = document.querySelector('.gnav-navitem.section');
+    const largeMenuBtn = largeMenu.querySelector(':scope > a');
+    await setViewport({ width: 1250, height: 640 });
+
+    largeMenuBtn.click();
+    expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
+    window.scrollTo(0, 400);
+    await delay(10);
+    expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
   });
 
   it('nav menu toggle test - 1', async () => {
