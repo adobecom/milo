@@ -1,6 +1,7 @@
 import {
   analyticsDecorateList,
   createTag,
+  debug,
   decorateAutoBlock,
   getConfig,
   loadBlock,
