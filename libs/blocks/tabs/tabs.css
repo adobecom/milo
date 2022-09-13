@@ -4,7 +4,7 @@
   --tabs-border-color: #d8d8d8;
   --tabs-border-hover-color: #acacac;
   --tabs-text-color: #7e7e7e;
-  --tabs-active-text-color: #000000;
+  --tabs-active-text-color: #2C2C2C;
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #ffffff;
   --tabs-list-bg-gradient: linear-gradient(rgba(255,255,255,0), rgba(245,245,245,1));
@@ -160,7 +160,7 @@
   border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 1200px) {
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
