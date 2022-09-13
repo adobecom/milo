@@ -14,8 +14,7 @@
 }
 
 .text p.action-area a {
-  margin: 0 var(--spacing-s) var(--spacing-xxs) 0;
-  white-space: nowrap;
+  margin-right: var(--spacing-s);
 }
 
 .text p.action-area a.con-button {
