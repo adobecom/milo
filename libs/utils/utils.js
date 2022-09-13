@@ -109,7 +109,7 @@ export function getMetadata(name) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement) {
+    if (html instanceof HTMLElement || html instanceof SVGElement) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
