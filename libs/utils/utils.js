@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'section-metadata',
   'youtube',
   'z-pattern',
+  'share',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -108,7 +109,7 @@ export function getMetadata(name) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement) {
+    if (html instanceof HTMLElement || html instanceof SVGElement) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
