@@ -1,9 +1,9 @@
 import {
-  debug,
+  analyticsDecorateList,
   createTag,
+  decorateAutoBlock,
   getConfig,
   loadBlock,
-  decorateAutoBlock,
 } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -59,6 +59,7 @@ class Footer {
       wrapper.append(infoRow);
     }
 
+    this.addAnalytics(wrapper);
     this.el.append(wrapper);
   };
 
@@ -173,6 +174,21 @@ class Footer {
     });
     privacyWrapper.append(infoLinks);
     return privacyWrapper;
+  };
+
+  addAnalytics = (el) => {
+    if (el.nodeName === 'DIV' && el.childElementCount > 0) {
+      [...el.children].forEach((child) => this.addAnalytics(child));
+      return;
+    }
+
+    if (el.nodeName === 'UL') {
+      if (el.previousElementSibling?.classList.contains('footer-nav-item-title')) {
+        el.setAttribute('daa-lh', el.previousElementSibling.textContent);
+      }
+
+      [...el.children].forEach(analyticsDecorateList);
+    }
   };
 }
 
