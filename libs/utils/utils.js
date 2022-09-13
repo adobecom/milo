@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'section-metadata',
   'youtube',
   'z-pattern',
+  'share',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
