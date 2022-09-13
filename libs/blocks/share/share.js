@@ -75,7 +75,7 @@ export default async function decorate(el) {
   svgs.forEach((svg) => {
     const details = getDetails(svg.name, url);
     if (!details) return;
-    const shareLink = createTag('a', { target: '_blank', href: details.hef, title: `Share to ${details.title}` }, svg.svg);
+    const shareLink = createTag('a', { target: '_blank', href: details.href, title: `Share to ${details.title}` }, svg.svg);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
