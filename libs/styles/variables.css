@@ -82,7 +82,7 @@
   --body-font-family: adobe-han-k, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 600px) {
   :root {
     --spacing-xl: 56px;
     --spacing-xxl: 80px;

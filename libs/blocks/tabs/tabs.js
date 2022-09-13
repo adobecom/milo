@@ -131,11 +131,12 @@ const init = (element) => {
   const rows = element.querySelectorAll(':scope > div');
   if(!rows.length) return;
 
-  const tabList = createTag('div', {role: 'tablist'});
+  const tabListBg = createTag('div', {class: 'tabList-bg'});
+  const tabList = createTag('div', {role: 'tablist'}, tabListBg);
   tabList.setAttribute('aria-label', 'TODO: Add Tab Title');
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container container'});
-  let btnClass = [...element.classList].includes('quiet') ? 'heading-S' : 'heading-S'; // tabList size
+  let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
   rows.forEach((row, i) => {
     const rowTitle = row.querySelector(':scope > div:nth-child(1)');
     const rowContent = row.querySelector(':scope > div:nth-child(2)');

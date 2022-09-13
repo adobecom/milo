@@ -30,7 +30,6 @@
   position: relative;
   display: flex;
   z-index: 2;
-  background-image: var(--tabs-list-bg-gradient);
   /* ScrollProps */
   /* If content exceeds height of container, overflow! */
   overflow: auto;
@@ -44,25 +43,26 @@
   display: none; /* Safari and Chrome */
 }
 
-.tabs div[role="tablist"] .tabList-container {
-  display: flex;
-  width: var(--grid-container-width);
+/* tabList bg */
+.tabs .tabList-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-image: var(--tabs-list-bg-gradient);
 }
 
-/* center tabs */
-.tabs.center div[role="tablist"]:after,
-.tabs.center div[role="tablist"]:before {
-  content: "";
-  margin: auto;
+.tabs .tabList-bg picture {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
-/*role="tabpanel"*/
-.tabs .tabContent-container {
-  margin-top: var(--spacing-s);
-  margin-bottom: var(--spacing-s);
-}
-
-.tabs div[role="tablist"]:before {
+.tabs .tabList-bg:before {
   content: "";
   height: 1px;
   background-color: var(--tabs-border-color);
@@ -70,6 +70,31 @@
   bottom: 0;
   left: 0;
   width: 100%;
+}
+
+.tabs div[role="tablist"] .tabList-container {
+  display: flex;
+  width: var(--grid-container-width);
+}
+
+/* center tabs */
+.tabs.center div[role="tablist"] .tabList-container {
+  justify-content: center;
+}
+.tabs.right div[role="tablist"] .tabList-container {
+  justify-content: flex-end;
+}
+
+/*.tabs.center div[role="tablist"]:after,*/
+/*.tabs.center div[role="tablist"]:before {*/
+/*  content: "";*/
+/*  margin: auto;*/
+/*}*/
+
+/*role="tabpanel"*/
+.tabs .tabContent-container {
+  margin-top: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
 }
 
 .tabs div[role="tablist"] button {
@@ -80,6 +105,7 @@
   cursor: pointer;
   float: left;
   font-family: var(--body-font-family);
+  font-weight: 600;
   margin-left: -1px;
   margin-top: 0;
   padding: 14px 16px 12px;
@@ -134,7 +160,7 @@
   border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
 }
 
-@media screen and (min-width: 1440px) {
+@media screen and (min-width: 600px) {
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
