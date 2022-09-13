@@ -1,9 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 
-/**
- *
- * @returns {Array} an array of objects with a name and svg attribute
- */
 export async function getSVGsfromFile(path, selectors) {
   if (!path) return null;
   const resp = await fetch(path);
