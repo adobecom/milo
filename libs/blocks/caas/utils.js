@@ -62,6 +62,7 @@ const fixAlloyAnalytics = async () => {
 
     const ogSLP = window.__satelliteLoadedPromise;
     window.__satelliteLoadedPromise = Promise.resolve({
+      /* c8 ignore next 9 */
       getVisitorId: () => ({
         getMarketingCloudVisitorID: () => mcgvid,
         getSupplementalDataID: () => '',
