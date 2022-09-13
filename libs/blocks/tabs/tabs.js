@@ -132,7 +132,7 @@ const init = (element) => {
   if(!rows.length) return;
 
   const tabListBg = createTag('div', {class: 'tabList-bg'});
-  const tabList = createTag('div', {role: 'tablist'}, tabListBg);
+  const tabList = createTag('div', {role: 'tablist'});
   tabList.setAttribute('aria-label', 'TODO: Add Tab Title');
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container container'});
@@ -165,6 +165,7 @@ const init = (element) => {
   });
   tabList.append(tabListContainer);
   element.prepend(tabList);
+  element.prepend(tabListBg);
   element.append(tabContentContainer);
 
   initCount++;
