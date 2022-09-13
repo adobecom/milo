@@ -40,30 +40,33 @@ const chartTypes = [
   'oversized-number',
 ];
 
-export function processDataset(data, xAxisType) {
+export function processDataset(data) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color'];
-  const headers = Object.keys(data[0]).filter((header) => (
+  const headers = data?.[0];
+  const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
+  const units = headers?.[unitKey]?.split('-') || [];
+  const cleanHeaders = Object.keys(headers).filter((header) => (
     !optionalHeaders.includes(header.toLowerCase())
   ));
-  dataset.source = [headers];
+  dataset.source = [cleanHeaders];
 
   // Use headers to set source
   data.forEach((element) => {
     let values = [];
 
-    if (xAxisType === 'date') {
-      values = headers.map((column, index) => (
+    if (units[0] === 'date') {
+      values = cleanHeaders.map((column, index) => (
         index ? parseValue(element[column]) : formatExcelDate(element[column])
       ));
     } else {
-      values = headers.map((column) => parseValue(element[column]));
+      values = cleanHeaders.map((column) => parseValue(element[column]));
     }
 
     dataset.source.push(values);
   });
 
-  return dataset;
+  return { dataset, headers, units };
 }
 
 export function processMarkData(series, xAxisType) {
@@ -244,8 +247,10 @@ export const areaSeriesOptions = (firstDataset) => (
   }))
 );
 
-export const setDonutLabel = (chart, label, unit = '', title = '') => {
-  chart.setOption({ series: [{ label: { formatter: [`{a|${label?.toLocaleString()}${unit}}`, `{b|${title}}`].join('\n') } }] });
+const donutTitleFormatter = (label, unit = '', title = '') => [`{a|${label?.toLocaleString()}${unit}}`, `{b|${title}}`].join('\n');
+
+export const setDonutTitle = (chart, label, unit = '', title = '') => {
+  chart.setOption({ title: { text: donutTitleFormatter(label, unit, title) } });
 };
 
 export const handleDonutSelect = (source, selected, chart, unit, title) => {
@@ -253,38 +258,26 @@ export const handleDonutSelect = (source, selected, chart, unit, title) => {
     if (selected[current[1]]) return total + current[0];
     return total;
   }, 0);
-  setDonutLabel(chart, selectedSum, unit, title);
+  setDonutTitle(chart, selectedSum, unit, title);
 
   return selectedSum;
 };
 
-export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
+export const donutTitleOptions = (source, seriesData, unit, size) => {
   // Remove header names
-  source?.shift();
-  const sum = source?.reduce((total, current) => total + current[0], 0);
+  const sourceData = (source && source[0].every((i) => typeof i === 'string')) ? source.slice(1) : source;
+  const sum = sourceData?.reduce((total, current) => total + current[0], 0);
   const firstSeries = seriesData?.[0];
   const title = firstSeries ? propertyValueCI(firstSeries, 'title') : '';
   const sizeLarge = size === LARGE;
-  let mouseOutValue = sum;
+  const sizeSmall = size === SMALL;
 
-  chart?.on('mouseover', (value) => setDonutLabel(chart, value?.data?.[0], unit, title));
-  chart?.on('mouseout', () => setDonutLabel(chart, mouseOutValue, unit, title));
-  chart?.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(source, selected, chart, unit, title); });
-
-  return [{
-    type: 'pie',
-    radius: ['70%', '90%'],
-    avoidLabelOverlap: true,
-    height: size === SMALL ? '90%' : 'auto',
-    silent: false,
-    label: {
-      show: true,
-      color: '#000',
-      position: 'center',
-      formatter: [
-        `{a|${sum?.toLocaleString()}${unit}}`,
-        `{b|${title}}`,
-      ].join('\n'),
+  return {
+    show: true,
+    left: 'center',
+    bottom: sizeSmall ? '48%' : '46%',
+    text: donutTitleFormatter(sum, unit, title),
+    textStyle: {
       rich: {
         a: {
           fontSize: sizeLarge ? 64 : 44,
@@ -297,12 +290,22 @@ export const donutSeriesOptions = (source, seriesData, size, unit, chart) => {
           fontWeight: sizeLarge ? 'bold' : 'normal',
         },
       },
+      color: '#000',
     },
-    labelLine: { show: false },
-    emphasis: { label: { show: true } },
-    center: ['50%', '46%'],
-  }];
+  };
 };
+
+export const donutSeriesOptions = (size) => [{
+  type: 'pie',
+  radius: ['70%', '90%'],
+  avoidLabelOverlap: true,
+  height: size === SMALL ? '90%' : 'auto',
+  silent: false,
+  label: { show: false },
+  labelLine: { show: false },
+  emphasis: { label: { show: false } },
+  center: ['50%', '46%'],
+}];
 
 export const pieSeriesOptions = (size) => {
   const isSmall = size === SMALL;
@@ -330,18 +333,17 @@ export const pieSeriesOptions = (size) => {
 /**
  * Returns object of echart options
  * @param {string} chartType
- * @param {object} data
+ * @param {object} dataset
+ * @param {object} series
+ * @param {array} headers
  * @param {array} colors
  * @param {string} size
+ * @param {array} units
  * @returns {object}
  */
-export const getChartOptions = (chartType, data, colors, size, chart) => {
-  const headers = data?.data?.[0];
+export const getChartOptions = (chartType, dataset, series, headers, colors, size, units = []) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
-  const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
-  const units = headers?.[unitKey]?.split('-') || [];
   const xAxisType = units[0] === 'date' ? units[0] : '';
-  const dataset = data ? processDataset(data.data, xAxisType) : {};
   const source = dataset?.source;
   const firstDataset = source?.[1]?.slice() || [];
   const isBar = chartType === 'bar';
@@ -363,6 +365,7 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       inactiveColor: '#6C6C6C',
       type: 'scroll',
     },
+    title: isDonut ? donutTitleOptions(source, series, units[0], size) : {},
     tooltip: {
       show: true,
       formatter: ((params) => {
@@ -404,21 +407,39 @@ export const getChartOptions = (chartType, data, colors, size, chart) => {
       if (isBar || isColumn) {
         return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
       }
-      if (chartType === 'line') return lineSeriesOptions(data?.series, firstDataset, units, xAxisType);
+      if (chartType === 'line') return lineSeriesOptions(series, firstDataset, units, xAxisType);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
-      if (isDonut) return donutSeriesOptions(source, data?.series, size, units[0], chart);
+      if (isDonut) return donutSeriesOptions(size);
       if (isPie) return pieSeriesOptions(size);
       return [];
     })(),
   };
 };
 
-const initChart = (chartWrapper, chartType, data, colors, size) => {
+const setDonutListeners = (chart, source, seriesData, units = []) => {
+  // Remove header names
+  const sourceData = (source && source[0].every((i) => typeof i === 'string')) ? source.slice(1) : source;
+  const sum = sourceData?.reduce((total, current) => total + current[0], 0);
+  const firstSeries = seriesData?.[0];
+  const title = firstSeries ? propertyValueCI(firstSeries, 'title') : '';
+  let mouseOutValue = sum;
+
+  chart.on('mouseover', (value) => setDonutTitle(chart, value?.data?.[0], units?.[0], title));
+  chart.on('mouseout', () => setDonutTitle(chart, mouseOutValue, units?.[0], title));
+  chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
+};
+
+const initChart = (chartWrapper, chartType, { data, series }, colors, size) => {
   const themeName = getTheme(size);
+  const { dataset, headers, units } = processDataset(data);
+  const chartOptions = getChartOptions(chartType, dataset, series, headers, colors, size, units);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
-  const chartOptions = getChartOptions(chartType, data, colors, size, chart);
 
   chart.setOption(chartOptions);
+
+  if (chartType === 'donut') {
+    setDonutListeners(chart, dataset?.source, series, units);
+  }
 
   return chart;
 };
