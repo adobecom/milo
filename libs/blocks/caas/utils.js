@@ -54,6 +54,7 @@ export const loadCaasTags = async (tagsUrl) => {
 
 const fixAlloyAnalytics = async () => {
   const sat = await window.__satelliteLoadedPromise;
+  if (!sat || !window.alloy) return;
   if (sat.getVisitorId() === null) {
     const identity = await window.alloy('getIdentity');
     const mcgvid = identity.identity.ECID;
