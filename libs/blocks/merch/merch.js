@@ -52,5 +52,6 @@ export default async function init(el) {
     el.append(price);
   }
 
-  window.tacocat({ environment: env.name });
+  const wcs = { apiKey: 'wcms-commerce-ims-ro-user-cc' };
+  window.tacocat({ environment: env.name, wcs });
 }
