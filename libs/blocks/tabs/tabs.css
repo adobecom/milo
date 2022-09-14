@@ -43,26 +43,14 @@
   display: none; /* Safari and Chrome */
 }
 
-/* tabList bg */
-.tabs .tabList-bg {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background-image: var(--tabs-list-bg-gradient);
+.tabs .tab-headline {
+  margin-top: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xl);
+}
+.tabs.center .tab-headline {
+    text-align: center;
 }
 
-.tabs .tabList-bg:before {
-  content: "";
-  height: 1px;
-  background-color: var(--tabs-border-color);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-}
 
 .tabs div[role="tablist"] .tabList-container {
   display: flex;
@@ -70,15 +58,18 @@
   padding: 0 8.3%;
 }
 
-.tabs div[role="tablist"] .tabList-container:before {
-  content: "";
-  height: 1px;
-  background-color: var(--tabs-border-color);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+.tabs div[role="tablist"] {
+  box-shadow: 0 -1px 0 inset var(--tabs-border-color);
 }
+  /*.tabs div[role="tablist"] .tabList-container:before {*/
+/*  content: "";*/
+/*  height: 1px;*/
+/*  background-color: var(--tabs-border-color);*/
+/*  position: absolute;*/
+/*  bottom: 0;*/
+/*  left: 0;*/
+/*  width: 100%;*/
+/*}*/
 
 /* center tabs */
 .tabs.center div[role="tablist"]:after,
@@ -93,8 +84,8 @@
 
 /*role="tabpanel"*/
 .tabs .tabContent-container {
-  margin-top: var(--spacing-s);
-  margin-bottom: var(--spacing-s);
+  padding: var(--spacing-s) 0;
+  border-bottom: 1px solid var(--tabs-border-color)
 }
 
 .tabs div[role="tablist"] button {
@@ -161,17 +152,10 @@
 }
 
 @media screen and (min-width: 1200px) {
-  .tabs .tabList-bg {
-    height: 62px;
-  }
 
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
-  }
-
-  .tabs.quiet .tabList-bg {
-    height: 56px;
   }
 
   .tabs.quiet div[role="tablist"] button {
