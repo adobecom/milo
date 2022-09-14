@@ -7,7 +7,7 @@
   --tabs-active-text-color: #2C2C2C;
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #ffffff;
-  --tabs-list-bg-gradient: linear-gradient(rgba(255,255,255,0), rgba(245,245,245,1));
+  --tabs-list-bg-gradient: linear-gradient(rgba(255,255,255,0) 60%, rgba(245,245,245,.8));
 }
 
 :root .dark {
@@ -16,7 +16,7 @@
   --tabs-active-text-color: #ffffff;
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111111;
-  --tabs-list-bg-gradient: linear-gradient(rgba(0,0,0,0), rgba(38,38,38,1));
+  --tabs-list-bg-gradient: linear-gradient(rgba(0,0,0,0) 60%, rgba(0,0,0,.8));
 }
 
 .tabs {
@@ -37,6 +37,8 @@
   scroll-snap-type: x mandatory;
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   scrollbar-width: none; /* Firefox 64 */
+  /*default bg*/
+  background: var(--tabs-list-bg-gradient);
 }
 
 .tabs div[role="tablist"]::-webkit-scrollbar {

@@ -7,21 +7,6 @@ function initTabs(e) {
   const tabs = e.querySelectorAll('[role="tab"]');
   const tabLists = e.querySelectorAll('[role="tablist"]');
   tabLists.forEach( tabList => {
-    // tabList horizontal scroll overflow
-    const horizontalScrollEnabled = false;
-    if (horizontalScrollEnabled) {
-      let lastKnownScrollPosition = 0, ticking = false;
-      tabList.addEventListener('scroll', () => {
-        lastKnownScrollPosition = tabList.scrollLeft;
-        if (!ticking) {
-          window.requestAnimationFrame(function() {
-            logScrollPosition(lastKnownScrollPosition, tabList.scrollWidth, tabList.offsetWidth);
-            ticking = false;
-          });
-          ticking = true;
-        }
-      });
-    }
     // Enable arrow navigation between tabs in the tab list
     let tabFocus = 0;
     tabList.addEventListener("keydown", (e) => {
@@ -51,28 +36,6 @@ function initTabs(e) {
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
-}
-
-const logScrollPosition = (scrollPos, scrollWidth, offsetWidth) => {
-  // let tabListBound = horizontallyBound(tabsListContainer, tabIt);
-  console.log('scrollPos, scrollWidth, offsetWidth');
-  console.log(scrollPos, scrollWidth, offsetWidth);
-  let offsetUnit = 28;
-  let check = (offsetWidth + scrollPos) + offsetUnit;
-  if(check >= scrollWidth) {
-    console.log('End in [', scrollWidth-(offsetWidth + scrollPos), ']px');
-  }
-  if(scrollPos <= offsetUnit) {
-    console.log('Start in [-',scrollPos,']px');
-  }
-  // scrolled to end of Y
-  if(offsetWidth+scrollPos === scrollWidth) {
-    console.log('END');
-  }else if(scrollPos === 0) {
-    console.log('BEGINNING');
-  }else {
-    console.log('MIDDLE');
-  }
 }
 
 const isElementInContainerView = (targetEl) => {
@@ -129,13 +92,9 @@ function changeTabs(e) {
 function decorateTabBg(el, target1, target2) {
   const values = el.querySelectorAll(':scope > div > p');
   if (!values) return;
-  if (values.length === 2) {
-    target1.style.background = values[0].textContent;
-    target2.style.background = values[1].textContent;
-  } else if (values.length === 1) {
-    target1.style.background = values[0].textContent;
-    target2.style.background = values[0].textContent;
-  }
+  const activeTabColor = '#ffffff';
+  target1.style.background = values[0].textContent;
+  if (values.length === 2) target2.style.background = values[1].textContent;
   el.remove();
 }
 
@@ -145,7 +104,6 @@ const init = (element) => {
   console.log(rows);
   if(!rows.length) return;
   const tabList = createTag('div', {role: 'tablist'});
-  tabList.setAttribute('aria-label', 'TODO: Add Tab Title');
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
   const tabContentContainerContainer = createTag('div', {class: 'container'});
   const tabContentContainer = createTag('div', {class: 'tabContent-container'}, tabContentContainerContainer);
@@ -153,7 +111,6 @@ const init = (element) => {
 
   // indicates bg decorator and/or title row(s)
   let singleColRows = 0;
-  let headline = false;
   rows.forEach((row) => { if (row.childElementCount === 1) singleColRows += 1; });
   if (singleColRows) {
     if (singleColRows === 1) {
@@ -165,7 +122,11 @@ const init = (element) => {
     }
     const bgRow = element.querySelector(':scope > div.background');
     const tabHeadline = element.querySelector(':scope > div.tab-headline');
-    if (tabHeadline) tabHeadline.classList.add('container');
+    if (tabHeadline) {
+      tabHeadline.classList.add('container');
+      const headlineHeader = tabHeadline.querySelector('h1, h2, h3, h4, h5, h6');
+      if (headlineHeader) tabList.setAttribute('aria-label', headlineHeader.textContent);
+    }
     if (bgRow) decorateTabBg(bgRow, tabList, tabContentContainer);
   }
 
