@@ -1,4 +1,4 @@
-// Decorate utils
+import { decorateLinkAnalytics } from './analytics.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
@@ -41,6 +41,7 @@ export function decorateBlockText(el, size = 'small') {
   }
   decorateIcons(el);
   decorateButtons(el);
+  decorateLinkAnalytics(el, heading);
 }
 
 export function decorateBlockBg(block, node) {
