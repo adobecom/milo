@@ -62,7 +62,7 @@ const getListHtml = (chart, hexcode) => {
 
   return `
     <article class="list-wrapper">
-      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}"}>${chart.title}</section>
+      <section aria-live="polite" class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}">${chart.title}</section>
       <${listType} class="${hasIcon ? 'icon-list' : ''}">${listItems}</${listType}>
     </article>
   `;
@@ -93,8 +93,7 @@ const getCarouselHtml = (data, hexcode) => {
           aria-label="Next Chart"></button>
       </div>
       <div id="listChartCarousel-items"
-        class="carousel-items"
-        aria-live="polite">
+        class="carousel-items">
         ${carouselItems}
       </div>
     </section>`;
