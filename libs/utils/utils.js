@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'section-metadata',
   'youtube',
   'z-pattern',
+  'share',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -108,7 +109,7 @@ export function getMetadata(name) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement) {
+    if (html instanceof HTMLElement || html instanceof SVGElement) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
@@ -392,6 +393,22 @@ export async function loadDeferred(area) {
   }
 }
 
+/**
+* Load the Privacy library
+*/
+function loadPrivacy() {
+  // Configure Privacy
+  window.fedsConfig = {
+    privacy: {
+      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
+    },
+  };
+
+  const env = getEnv().name === 'prod' ? '' : 'stage.';
+  loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -420,6 +437,7 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    loadPrivacy();
   }
 
   // Load everything that can be deferred until after all blocks load.
@@ -450,6 +468,20 @@ export function utf8ToB64(str) {
 export function b64ToUtf8(str) {
   return decodeURIComponent(escape(window.atob(str)));
 }
+
+const RE_ALPHANUM = /[^0-9a-z]/gi;
+const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
+export const analyticsGetLabel = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
+
+export const analyticsDecorateList = (li, idx) => {
+  const link = li.firstChild?.nodeName === 'A' && li.firstChild;
+  if (!link) return;
+
+  const label = link.textContent || link.getAttribute('aria-label');
+  if (!label) return;
+
+  link.setAttribute('daa-ll', `${analyticsGetLabel(label)}-${idx + 1}`);
+};
 
 export function parseEncodedConfig(encodedConfig) {
   try {

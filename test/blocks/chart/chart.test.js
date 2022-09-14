@@ -14,7 +14,6 @@ const {
   DESKTOP_BREAKPOINT,
   TABLET_BREAKPOINT,
   colorPalette,
-  getContainerSize,
   getResponsiveSize,
   tooltipFormatter,
   getColors,
@@ -24,8 +23,9 @@ const {
   processMarkData,
   areaSeriesOptions,
   donutTooltipFormatter,
+  donutTitleOptions,
   donutSeriesOptions,
-  setDonutLabel,
+  setDonutTitle,
   handleDonutSelect,
   getChartOptions,
   fetchData,
@@ -35,6 +35,7 @@ const {
   default: init,
   pieTooltipFormatter,
   pieSeriesOptions,
+  getOversizedNumberSize,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 const config = { codeRoot: '/libs' };
@@ -49,16 +50,6 @@ describe('chart', () => {
 
   after(() => {
     sinon.restore();
-  });
-
-  it('getContainerSize provides default height and width', () => {
-    expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
-      .that.has.all.keys('height', 'width');
-  });
-
-  it('getContainerSize provides custom area height and width', () => {
-    expect(getContainerSize(LARGE, 'bar')).to.be.an('object')
-      .that.has.all.keys('height', 'width');
   });
 
   it('getResponsiveSize returns same sizes on desktop', () => {
@@ -181,7 +172,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, '')).to.eql(dataset);
+    expect(processDataset(fetchedData.data, '').dataset).to.eql(dataset);
   });
 
   it('chart dataset with date', () => {
@@ -224,7 +215,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, 'date')).to.eql(dataset);
+    expect(processDataset(fetchedData.data, 'date').dataset).to.eql(dataset);
   });
 
   it('chart mark series data', () => {
@@ -397,17 +388,44 @@ describe('chart', () => {
     expect(Array.isArray(donutSeriesOptions(null, null, null, null, { on: () => { } }))).to.be.true;
   });
 
-  it('setDonutLabel sets expects options', () => {
+  it('setDonutTitle sets expects options', () => {
     const chart = { setOption: sinon.spy() };
-    const expected = { series: [{ label: { formatter: [`{a|${'100'.toLocaleString()}k}`, '{b|title}'].join('\n') } }] };
-    setDonutLabel(chart, 100, 'k', 'title');
-    expect(chart.setOption.calledWith(expected)).to.be.true;
+    const expected = [[{ title: { text: [`{a|${'100'.toLocaleString()}k}`, '{b|title}'].join('\n') } }]];
+    setDonutTitle(chart, 100, 'k', 'title');
+    expect(chart.setOption.args).to.eql(expected);
   });
 
   it('handleDonutSelect returns new sum', () => {
     const source = [[100, 'Monday'], [276, 'Tuesday'], [200, 'Wednesday']];
     const selected = { Monday: false, Tuesday: true, Wednesday: true };
     expect(handleDonutSelect(source, selected, { setOption: () => { } }, null, null)).to.equal(476);
+  });
+
+  it('donutTitleOptions sums values', () => {
+    const source = [[100, 'Monday'], [276, 'Tuesday'], [200, 'Wednesday']];
+    const options = donutTitleOptions(source, ['test'], 'M', 'small');
+    const expected = {
+      show: true,
+      left: 'center',
+      bottom: '48%',
+      text: '{a|576M}\n{b|}',
+      textStyle: {
+        rich: {
+          a: {
+            fontSize: 44,
+            lineHeight: 55,
+            fontWeight: 'bolder',
+          },
+          b: {
+            fontSize: 20,
+            lineHeight: 30,
+            fontWeight: 'normal',
+          },
+        },
+        color: '#000',
+      },
+    };
+    expect(options).to.eql(expected);
   });
 
   it('donutTooltipFormatter returns expected string', () => {
@@ -446,7 +464,7 @@ describe('chart', () => {
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions('', { data: [{ Unit: 'k-m' }] });
+    const options = getChartOptions('', null, null, null, null, null, ['k', 'm']);
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
@@ -584,6 +602,21 @@ describe('chart', () => {
     expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
   });
 
+  it('init donut chart', async () => {
+    document.body.innerHTML = '<div class="chart"><div>Title</div><div>Subtitle</div><div><div><a href="/drafts/data-viz/chart.json"></a></div></div><div>Footnote</div></div>';
+    const el = document.querySelector('.chart');
+    const data = await readFile({ path: './mocks/donutChart.json' });
+    fetch.withArgs('/drafts/data-viz/chart.json').resolves({ ok: true, json: () => JSON.parse(data) });
+    el.classList.add('donut');
+    init(el);
+    const svg = await waitForElement('svg');
+    expect(svg).to.exist;
+
+    const sum = 1404;
+    const title = Array.from(svg.querySelectorAll('text')).find((text) => text.textContent.includes(sum.toLocaleString()));
+    expect(title).to.exist;
+  });
+
   it('init generates list chart', async () => {
     const linkRel = '/drafts/data-viz/list.json';
     document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
@@ -648,5 +681,29 @@ describe('chart', () => {
     }];
 
     expect(pieSeriesOptions(SMALL)).to.eql(expected);
+  });
+
+  it('init generates oversized number chart', async () => {
+    const linkRel = '/drafts/data-viz/oversized-number.json';
+    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    const data = await readFile({ path: './mocks/oversized-number.json' });
+    const parsedData = JSON.parse(data);
+    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
+    const el = document.querySelector('.chart');
+    init(el);
+    const svg = await waitForElement('svg');
+    expect(svg).to.exist;
+  });
+
+  it('getOversizedNumberSize returns maximum size for 1 character', () => {
+    expect(getOversizedNumberSize(1)).to.eql([240, 60, 70]);
+  });
+
+  it('getOversizedNumberSize returns reduced size for 4 characters', () => {
+    expect(getOversizedNumberSize(4)).to.eql([150, 60, 70]);
+  });
+
+  it('getOversizedNumberSize returns miniumum size for more than 6 characters', () => {
+    expect(getOversizedNumberSize(100)).to.eql([90, 55, 65]);
   });
 });

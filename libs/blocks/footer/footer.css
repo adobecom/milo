@@ -169,7 +169,12 @@ footer a:not(:any-link) {
   position: relative;
   margin-right: 1rem;
   margin-bottom: 1rem;
-} 
+}
+
+.footer-region a.modal.link-block {
+    display: flex;
+    align-items: center;
+}
 
 @media (min-width: 700px) {
   .footer-region {
