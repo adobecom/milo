@@ -62,7 +62,7 @@ const getListHtml = (chart, hexcode) => {
 
   return `
     <article class="list-wrapper">
-      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}"}>${chart.title}</section>
+      <section class="title" style="${hexcode ? `background-color: ${hexcode};` : ''}">${chart.title}</section>
       <${listType} class="${hasIcon ? 'icon-list' : ''}">${listItems}</${listType}>
     </article>
   `;
@@ -92,24 +92,27 @@ const getCarouselHtml = (data, hexcode) => {
           aria-controls="listChartCarousel-items"
           aria-label="Next Chart"></button>
       </div>
-      <div id="listChartCarousel-items"
-        class="carousel-items"
-        aria-live="polite">
+      <div id="listChartCarousel-items" class="carousel-items">
         ${carouselItems}
       </div>
+      <div class="carousel-screen-reader" aria-live="polite"></div>
     </section>`;
 };
 
 const showCarouselItem = (element, index) => {
   const carouselItems = element.querySelectorAll('.carousel-item');
+  const carouselScreenReader = element.querySelector('.carousel-screen-reader');
 
-  carouselItems?.forEach((carousel, idx) => {
+  carouselItems?.forEach((slide, idx) => {
     if (idx === index) {
-      carousel.classList.add('active');
+      slide.classList.add('active');
+      carouselScreenReader.innerText = slide.querySelector('.title')?.innerText;
     } else {
-      carousel.classList.remove('active');
+      slide.classList.remove('active');
     }
   });
+
+  setTimeout(() => { carouselScreenReader.innerText = ''; }, 5000);
 };
 
 const initList = (element, json, hexcode) => {
