@@ -41,7 +41,7 @@ export function decorateBlockText(el, size = 'small') {
   }
   decorateIcons(el);
   decorateButtons(el);
-  decorateLinkAnalytics(el, heading);
+  decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {
