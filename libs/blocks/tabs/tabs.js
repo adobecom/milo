@@ -1,6 +1,7 @@
-// Tabs JS
-// https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
-
+/*
+ * tabs - consonant v5.1
+ * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
+ */
 import { createTag } from '../../utils/utils.js';
 
 function initTabs(e) {
@@ -16,16 +17,14 @@ function initTabs(e) {
         if (e.keyCode === 39) {
           tabFocus++;
           // If we're at the end, go to the start
-          if (tabFocus >= tabs.length) {
-            tabFocus = 0;
-          }
+          /* c8 ignore next */
+          if (tabFocus >= tabs.length) tabFocus = 0;
           // Move left
         } else if (e.keyCode === 37) {
           tabFocus--;
           // If we're at the start, move to the end
-          if (tabFocus < 0) {
-            tabFocus = tabs.length - 1;
-          }
+          /* c8 ignore next */
+          if (tabFocus < 0) tabFocus = tabs.length - 1;
         }
         tabs[tabFocus].setAttribute("tabindex", 0);
         tabs[tabFocus].focus();
@@ -50,17 +49,9 @@ const isElementInContainerView = (targetEl) => {
 
 const scrollTabIntoView = (e) => {
   const isElInView = isElementInContainerView(e);
-  if (!isElInView) {
-    e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  }
+  /* c8 ignore next */
+  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 };
-
-const horizontallyBound = (parentDiv, childDiv) => {
-  const parentRect = parentDiv.getBoundingClientRect();
-  const childRect = childDiv.getBoundingClientRect();
-
-  return parentRect.left <= childRect.left && parentRect.right >= childRect.right;
-}
 
 function changeTabs(e) {
   const target = e.target;
@@ -90,18 +81,17 @@ function changeTabs(e) {
 }
 
 function decorateTabBg(el, target1, target2) {
-  const values = el.querySelectorAll(':scope > div > p');
+  const row = el.querySelector(':scope > div');
+  const values = row.children.length ? [...row.children] : [row];
   if (!values) return;
-  const activeTabColor = '#ffffff';
   target1.style.background = values[0].textContent;
-  if (values.length === 2) target2.style.background = values[1].textContent;
+  if (row.children.length === 2) target2.style.background = values[1].textContent;
   el.remove();
 }
 
 let initCount = 0;
 const init = (element) => {
   const rows = element.querySelectorAll(':scope > div');
-  console.log(rows);
   if(!rows.length) return;
   const tabList = createTag('div', {role: 'tablist'});
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
@@ -158,14 +148,10 @@ const init = (element) => {
     tabContentContainerContainer.append(rowContentParent);
   });
   tabList.append(tabListContainer);
-  // element.prepend(tabListBg);
   element.append(tabList);
   element.append(tabContentContainer);
-
   initCount++;
   initTabs(element);
 };
 
 export default init;
-
-
