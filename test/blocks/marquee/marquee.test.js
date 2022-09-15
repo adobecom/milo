@@ -25,4 +25,11 @@ describe('marquee', () => {
       expect(dark).to.be.true;
     });
   });
+
+  describe('second marquee small', () => {
+    it('has an icon-area', () => {
+      const iconArea = marquees[1].querySelector('.icon-area');
+      expect(iconArea).to.exist;
+    });
+  });
 });
