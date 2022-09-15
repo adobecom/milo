@@ -25,13 +25,19 @@ const decorateVideo = (container) => {
 };
 
 const decorateBlockBg = (block, node) => {
-  const viewports = ['mobile', 'tablet', 'desktop'];
-  const hasMultiBg = node.childElementCount > 1;
+  const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+  const childCount = node.childElementCount;
+  const { children } = node;
 
   node.classList.add('background');
 
-  Array.from(node.children).forEach((child, index) => {
-    if (hasMultiBg) {
+  if (childCount === 2) {
+    children[0].classList.add(viewports[0], viewports[1]);
+    children[1].classList.add(viewports[2]);
+  }
+
+  Array.from(children).forEach((child, index) => {
+    if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
 
