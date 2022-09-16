@@ -41,3 +41,40 @@ dialog > .fragment > .section > .content > *:last-child {
     width: 60vw;
   }
 }
+
+.region-selector > div > p,
+.region-selector > div > ul li {
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.region-selector > div > p {
+  font-size: 20px;
+}
+
+.region-selector-text {
+  padding-top: 32px;
+}
+
+.region-selector-text > div > p {
+  margin: 0 0 6px;
+}
+
+.region-selector-text > div > p:first-of-type {
+  font-size: 24px;
+}
+
+dialog > .fragment > .section.region-selector-text > .content > p:last-of-type {
+  margin-bottom: 24px;
+}
+
+.region-selector > div > ul li > a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+} 
+
+.region-selector ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
