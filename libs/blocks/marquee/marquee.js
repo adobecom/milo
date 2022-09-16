@@ -13,7 +13,44 @@
 /*
  * Marquee - v6.0
  */
-import { decorateBlockBg, decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+
+const decorateVideo = (container) => {
+  const link = container.querySelector('a[href$=".mp4"]');
+
+  container.innerHTML = `<video preload="metadata" autoplay muted loop>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
+};
+
+const decorateBlockBg = (block, node) => {
+  const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+  const childCount = node.childElementCount;
+  const { children } = node;
+
+  node.classList.add('background');
+
+  if (childCount === 2) {
+    children[0].classList.add(viewports[0], viewports[1]);
+    children[1].classList.add(viewports[2]);
+  }
+
+  Array.from(children).forEach((child, index) => {
+    if (childCount === 3) {
+      child.classList.add(viewports[index]);
+    }
+
+    if (child.querySelector('a[href$=".mp4"]')) {
+      decorateVideo(child);
+    }
+  });
+
+  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
+    block.style.background = node.textContent;
+    node.remove();
+  }
+};
 
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -49,16 +86,23 @@ export default function init(el) {
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
   const text = headline.closest('div');
   text.classList.add('text');
-  const image = foreground.querySelector(':scope > div:not([class])');
-  image?.classList.add('image');
+  const media = foreground.querySelector(':scope > div:not([class])');
+  media?.classList.add('media');
+
+  if (media?.querySelector('a[href$=".mp4"]')) {
+    decorateVideo(media);
+  } else {
+    media?.classList.add('image');
+  }
+
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
   decorateText(text, size);
   extendButtonsClass(text);
   if (el.classList.contains('split')) {
-    if (foreground && image) {
-      image.classList.add('bleed');
-      foreground.insertAdjacentElement('beforebegin', image);
+    if (foreground && media) {
+      media.classList.add('bleed');
+      foreground.insertAdjacentElement('beforebegin', media);
     }
   }
 }

@@ -1,11 +1,12 @@
 /* eslint-disable no-unused-expressions */
-/* global describe it */
+/* global describe it before */
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
+const video = await readFile({ path: './mocks/video.html' });
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {
@@ -30,6 +31,30 @@ describe('marquee', () => {
     it('has an icon-area', () => {
       const iconArea = marquees[1].querySelector('.icon-area');
       expect(iconArea).to.exist;
+    });
+  });
+
+  describe('supports videos', () => {
+    before(() => {
+      document.body.innerHTML = video;
+    });
+
+    it('in background, single', () => {
+      const marquee = document.getElementById('single-background');
+      init(marquee);
+      expect(marquee.querySelector('.background video')).to.exist;
+    });
+
+    it('in background, multiple', () => {
+      const marquee = document.getElementById('multiple-background');
+      init(marquee);
+      expect(marquee.querySelectorAll('.background video').length).to.equal(3);
+    });
+
+    it('in foreground', () => {
+      const marquee = document.getElementById('foreground');
+      init(marquee);
+      expect(marquee.querySelector('.foreground video')).to.exist;
     });
   });
 });
