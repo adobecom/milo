@@ -17,11 +17,16 @@ import { PublicClientApplication } from './lib/msal-browser-2.14.2.js';
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
 
+const getAccessToken = () => accessToken;
+
 async function connect(callback) {
   const { sp } = await getConfig();
   const publicClientApplication = new PublicClientApplication(sp.clientApp);
-  await publicClientApplication.loginPopup(sp.login);
-  const account = publicClientApplication.getAllAccounts()[0];
+  let account = publicClientApplication.getAllAccounts()[0];
+  if (!account) {
+    await publicClientApplication.loginPopup(sp.login);
+    account = publicClientApplication.getAllAccounts()[0];
+  }
   const accessTokenRequest = {
     scopes: ['files.readwrite', 'sites.readwrite.all'],
     account,
@@ -52,23 +57,35 @@ function validateConnection() {
   }
 }
 
-function getAuthorizedRequestOption() {
+function getAuthorizedRequestOption({
+  body = null,
+  json = true,
+  method = 'GET',
+ } = {}) {
   validateConnection();
   const bearer = `Bearer ${accessToken}`;
   const headers = new Headers();
   headers.append('Authorization', bearer);
-  return {
-    method: 'GET',
+  if (json) {
+    headers.append('Accept', 'application/json');
+    headers.append('Content-Type', 'application/json');
+  }
+
+  const options = {
+    method,
     headers,
   };
+
+  if (body) {
+    options.body = typeof body === 'string' ? body : JSON.stringify(body);
+  }
+
+  return options;
 }
 
 const loadSharepointData = (spBatchApi, payload) => {
-  const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
+  const options = getAuthorizedRequestOption({ method: 'POST' });
   options.body = JSON.stringify(payload);
-  options.method = 'POST';
   return fetch(spBatchApi, options);
 };
 
@@ -183,10 +200,7 @@ async function createFolder(folder) {
   validateConnection();
   const { sp } = await getConfig();
 
-  const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
-  options.method = sp.api.directory.create.method;
+  const options = getAuthorizedRequestOption({ method: sp.api.directory.create.method });
   options.body = JSON.stringify(sp.api.directory.create.payload);
 
   const res = await fetch(`${sp.api.directory.create.baseURI}${folder}`, options);
@@ -214,10 +228,7 @@ async function createUploadSession(sp, file, dest, filename) {
     fileSize: file.size,
     name: filename,
   };
-  const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
-  options.method = sp.api.file.createUploadSession.method;
+  const options = getAuthorizedRequestOption({ method: sp.api.file.createUploadSession.method });
   options.body = JSON.stringify(payload);
 
   const createdUploadSession = await fetch(`${sp.api.file.createUploadSession.baseURI}${dest}:/createUploadSession`, options);
@@ -225,29 +236,30 @@ async function createUploadSession(sp, file, dest, filename) {
 }
 
 async function uploadFile(sp, uploadUrl, file) {
-  const options = getAuthorizedRequestOption();
+  const options = getAuthorizedRequestOption({
+    json: false,
+    method: sp.api.file.upload.method,
+  });
   // TODO API is limited to 60Mb, for more, we need to batch the upload.
   options.headers.append('Content-Length', file.size);
   options.headers.append('Content-Range', `bytes 0-${file.size - 1}/${file.size}`);
   options.headers.append('Prefer', 'bypass-shared-lock');
-  options.method = sp.api.file.upload.method;
   options.body = file;
   return await fetch(`${uploadUrl}`, options);
 }
 
 async function deleteFile(sp, filePath) {
-  const options = getAuthorizedRequestOption();
+  const options = getAuthorizedRequestOption({
+    json: false,
+    method: sp.api.file.delete.method,
+  });
   options.headers.append('Prefer', 'bypass-shared-lock');
-  options.method = sp.api.file.delete.method;
   return await fetch(filePath, options);
 }
 
 async function renameFile(spFileUrl, filename) {
-  const options = getAuthorizedRequestOption();
+  const options = getAuthorizedRequestOption({ method: 'PATCH' });
   options.headers.append('Prefer', 'bypass-shared-lock');
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
-  options.method = 'PATCH';
   options.body = JSON.stringify({ 'name': filename });
   return await fetch(spFileUrl, options);
 }
@@ -322,8 +334,6 @@ async function getVersionOfFile(filePath, versionNumber) {
   validateConnection();
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
   options.method = 'GET';
   const versionFile = await fetch(`${sp.api.file.get.baseURI}${filePath}:/versions/${versionNumber}/content`, options);
   if (versionFile.ok) {
@@ -336,8 +346,6 @@ async function getLastRolloutVersion(filePath) {
   validateConnection();
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
   options.method = 'GET';
   const itemFields = await fetch(`${sp.api.file.get.baseURI}${filePath}:/listItem/fields`, options);
   if (itemFields.ok) {
@@ -354,8 +362,6 @@ async function getFileVersionInfo(filePath) {
   validateConnection();
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
   options.method = 'GET';
   const versionInfo = await fetch(`${sp.api.file.update.baseURI}${filePath}:/versions/current`, options);
   if (versionInfo.ok) {
@@ -372,8 +378,6 @@ async function updateFile(dest, metadata) {
     Rollout: metadata.rolloutTime,
   };
   const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
   const { sp } = await getConfig();
   options.method = sp.api.file.update.method;
   options.body = JSON.stringify(payload);
@@ -397,8 +401,6 @@ async function copyFile(srcPath, destinationFolder, newName) {
   validateConnection();
   await createFolder(destinationFolder);
   const options = getAuthorizedRequestOption();
-  options.headers.append('Accept', 'application/json');
-  options.headers.append('Content-Type', 'application/json');
   const { sp } = await getConfig();
   options.method = sp.api.file.copy.method;
   const { baseURI } = sp.api.file.copy;
@@ -444,14 +446,18 @@ async function saveFileAndUpdateMetadata(srcPath, file, dest) {
   throw new Error(`Could not upload file ${dest}`);
 }
 
-export { getFiles,
-  getLastRolloutVersion,
-  getVersionOfFile,
-  getFileVersionInfo,
-  saveFile,
-  copyFile,
-  saveFileAndUpdateMetadata,
-  copyFileAndUpdateMetadata,
+export {
   connect,
+  copyFile,
+  copyFileAndUpdateMetadata,
+  getAccessToken,
+  getAuthorizedRequestOption,
+  getFiles,
+  getFileVersionInfo,
+  getLastRolloutVersion,
   getSpViewUrl,
-  updateProjectWithSpStatus };
+  getVersionOfFile,
+  saveFile,
+  saveFileAndUpdateMetadata,
+  updateProjectWithSpStatus,
+};
