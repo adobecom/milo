@@ -435,6 +435,7 @@ const initChart = (chartWrapper, chartType, { data, series }, colors, size) => {
   const chartOptions = getChartOptions(chartType, dataset, series, headers, colors, size, units);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
+  chartWrapper.tabIndex = 0;
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
