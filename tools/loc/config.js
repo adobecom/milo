@@ -173,6 +173,8 @@ function getHelixAdminConfig() {
 }
 
 async function getConfig() {
+  if (decoratedConfig) return decoratedConfig;
+
   const location = new URL(document.location.href);
   function getParam(name) { return location.searchParams.get(name); }
   const owner = getParam('owner');
@@ -180,32 +182,30 @@ async function getConfig() {
   const ref = getParam('ref');
   const configPath = `https://${ref}--${repo}--${owner}.hlx.page${LOC_CONFIG}`;
 
-  if (!decoratedConfig) {
-    const configJson = await fetchConfigJson(configPath);
-    const locales = await getLocalesConfig(configJson);
-    const decoratedLocales = await getDecoratedLocalesConfig(locales);
-    const workflowsConfig = getWorkflowsConfig(configJson);
-    decoratedConfig = {
-      locales,
-      decoratedLocales,
-      glaas: await getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
-      sp: getSharepointConfig(configJson),
-      admin: getHelixAdminConfig(),
-      async getLivecopiesForLanguage(language) {
-        const localeConfig = decoratedLocales[language];
-        return localeConfig?.livecopies ? localeConfig.livecopies : null;
-      },
-      async getAltLangLocales(language) {
-        const localeConfig = decoratedLocales[language];
-        return localeConfig?.altlang ? localeConfig.altlang : null;
-      },
-      async getWorkflowForLocale(locale) {
-        return getWorkflowForLocale(configJson, locale, decoratedLocales);
-      },
-      async getAltLangWorkflowForLocale(locale) {
-        return getAltLangWorkflowForLocale(configJson, locale, decoratedLocales);
-      },
-    };
+  const configJson = await fetchConfigJson(configPath);
+  const locales = await getLocalesConfig(configJson);
+  const decoratedLocales = await getDecoratedLocalesConfig(locales);
+  const workflowsConfig = getWorkflowsConfig(configJson);
+  decoratedConfig = {
+    locales,
+    decoratedLocales,
+    glaas: await getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
+    sp: getSharepointConfig(configJson),
+    admin: getHelixAdminConfig(),
+    async getLivecopiesForLanguage(language) {
+      const localeConfig = decoratedLocales[language];
+      return localeConfig?.livecopies ? localeConfig.livecopies : null;
+    },
+    async getAltLangLocales(language) {
+      const localeConfig = decoratedLocales[language];
+      return localeConfig?.altlang ? localeConfig.altlang : null;
+    },
+    async getWorkflowForLocale(locale) {
+      return getWorkflowForLocale(configJson, locale, decoratedLocales);
+    },
+    async getAltLangWorkflowForLocale(locale) {
+      return getAltLangWorkflowForLocale(configJson, locale, decoratedLocales);
+    },
   }
   return decoratedConfig;
 }

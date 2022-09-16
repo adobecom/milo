@@ -29,6 +29,7 @@ import {
 import { init as initProject } from './project.js';
 import { connect as connectToGLaaS, sendToGLaaS, getFile as getFileFromGLaaS, updateProject as updateGLaaSStatus } from './glaas.js';
 import { rollout } from './rollout.js';
+import excelTest from './excel.js';
 
 let projectDetail;
 const MAX_RETRIES = 5;
@@ -380,12 +381,13 @@ async function copyFilesToLanguageEn() {
   loadingOFF();
 }
 
-function setListeners() {
+function setListeners(project) {
   document.querySelector('#reload button').addEventListener('click', reloadProjectFile);
   document.querySelector('#copyToEn button').addEventListener('click', copyFilesToLanguageEn);
   document.querySelector('#send button').addEventListener('click', sendForTranslation);
   document.querySelector('#refresh button').addEventListener('click', refresh);
   document.querySelector('#loading').addEventListener('click', loadingOFF);
+  document.querySelector('#excelTest').addEventListener('click', excelTest(project));
 }
 
 async function getSafely(method, errMsg) {
@@ -399,7 +401,6 @@ async function getSafely(method, errMsg) {
 }
 
 async function init() {
-  setListeners();
   loadingON('Fetching Localization Config...');
   const config = await getSafely(getConfig, 'Something is wrong with the Localization Configuration');
   if (!config) {
@@ -414,26 +415,29 @@ async function init() {
   loadingON(`Fetching project details for ${project.url}`);
   setProjectUrl(project);
   projectDetail = await project.detail();
+  setListeners(project);
   loadingON('Project Details loaded');
   await displayProjectDetail();
   loadingON('Connecting now to Sharepoint...');
   await connectToSP(async () => {
     loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
-    await updateSPStatus(projectDetail, async () => {
-      loadingON('Status updated! Updating UI.');
-      await displayProjectDetail();
+    // DEBUG
+    // await updateSPStatus(projectDetail, async () => {
+    //   loadingON('Status updated! Updating UI.');
+    //   await displayProjectDetail();
       loadingOFF();
-    });
+    // });
   });
   loadingON('Connecting now to GLaaS...');
-  await connectToGLaaS(async () => {
-    loadingON('Connected to GLaaS! Updating the GLaaS Status...');
-    await updateGLaaSStatus(projectDetail, async () => {
-      loadingON('Status updated! Updating UI.');
-      await displayProjectDetail();
-      loadingOFF();
-    });
-  });
+  // DEBUG
+  // await connectToGLaaS(async () => {
+  //   loadingON('Connected to GLaaS! Updating the GLaaS Status...');
+  //   await updateGLaaSStatus(projectDetail, async () => {
+  //     loadingON('Status updated! Updating UI.');
+  //     await displayProjectDetail();
+  //     loadingOFF();
+  //   });
+  // });
   loadingON('App loaded.');
   loadingOFF();
 }

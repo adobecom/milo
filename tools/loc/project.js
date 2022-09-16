@@ -165,6 +165,7 @@ async function init() {
     url: projectUrl,
     path: projectPath,
     name: projectFileStatus.edit.name,
+    xlsxId: projectFileStatus.edit.sourceLocation?.split('/').pop(),
     sp: urlInfo.sp,
     owner: urlInfo.owner,
     repo: urlInfo.repo,

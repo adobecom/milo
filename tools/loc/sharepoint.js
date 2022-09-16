@@ -58,6 +58,7 @@ function validateConnection() {
 }
 
 function getAuthorizedRequestOption({
+  additionalHeaders  = [],
   body = null,
   json = true,
   method = 'GET',
@@ -69,6 +70,12 @@ function getAuthorizedRequestOption({
   if (json) {
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
+  }
+
+  if (additionalHeaders.length) {
+    additionalHeaders.forEach(([header, val]) => {
+      headers.append(header, val);
+    });
   }
 
   const options = {
@@ -455,6 +462,8 @@ export {
   getFiles,
   getFileVersionInfo,
   getLastRolloutVersion,
+  getSharepointFileRequest,
+  getSpFiles,
   getSpViewUrl,
   getVersionOfFile,
   saveFile,
