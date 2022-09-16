@@ -88,10 +88,18 @@ footer a:not(:any-link) {
 
 .footer-nav-item-title[aria-expanded=false]::after {
   content: '\2228';
+  position: relative;
+  left: -10px;
+  transform: scaleX(1.5);
+  font-size: 12px;
 }
 
 .footer-nav-item-title[aria-expanded=true]::after {
   content: '\2227';
+  position: relative;
+  left: -10px;
+  transform: scaleX(1.5);
+  font-size: 12px;
 }
 
 @media (min-width: 900px) {
