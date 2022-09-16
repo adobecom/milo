@@ -1,5 +1,7 @@
 // Decorate utils
 
+import { createTag, getConfig, } from '../utils/utils.js';
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
@@ -16,11 +18,34 @@ export function decorateButtons(el, size) {
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
-export function decorateIcons(el) {
+export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
     if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
+  });
+}
+
+export async function decorateIconsInBlock(el) {
+  console.log('decorateIconsInBlock', el);
+  const icons = el.querySelectorAll('span.icon');
+  icons?.forEach((i) => {
+    const iconName = i.classList[1].replace('icon-icon-milo-', '');
+    if(iconName) {
+
+      const { miloLibs, codeRoot } = getConfig();
+      const base = miloLibs ? miloLibs : codeRoot;
+      const svgPath = `${base}/img/icons/${iconName}.svg`;
+      const size = iconName.includes('persona') ? 80 : 40;
+      const svg = createTag('object', {type:'image/svg+xml', data:`${iconName}.svg`}, '');
+      const img = createTag('img', {src:`${svgPath}`}, '');
+      img.height = size;
+      img.width = size;
+      svg.appendChild(img);
+      i.insertAdjacentElement('afterbegin', svg);
+      console.log('svg', svg);
+      console.log('iconName', iconName, 'svgPath', svgPath);
+    }
   });
 }
 
@@ -39,8 +64,9 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIcons(el);
+  decorateIconArea(el);
   decorateButtons(el);
+  decorateIconsInBlock(el);
 }
 
 export function decorateBlockBg(block, node) {

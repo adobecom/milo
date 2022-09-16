@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, decorateIconsInBlock, getBlockSize } from '../../utils/decorate.js';
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
@@ -99,6 +99,7 @@ export default function init(el) {
   decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
   decorateText(text, size);
   extendButtonsClass(text);
+  decorateIconsInBlock(text);
   if (el.classList.contains('split')) {
     if (foreground && media) {
       media.classList.add('bleed');
