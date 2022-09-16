@@ -175,7 +175,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.removeEventListener('error', onScript);
 
     if (event.type === 'error') {
-      reject(new Error('error loading script'));
+      reject(new Error(`error loading script: ${script.src}`));
     } else if (event.type === 'load') {
       script.dataset.loaded = true;
       resolve(script);
