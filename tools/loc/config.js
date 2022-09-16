@@ -117,6 +117,9 @@ function getSharepointConfig(config) {
         clientId: sharepointConfig.clientId,
         authority: sharepointConfig.authority,
       },
+      cache: {
+        cacheLocation: 'sessionStorage',
+      },
     },
     shareUrl: sharepointConfig.shareurl,
     login: { redirectUri: '/tools/loc/spauth' },
