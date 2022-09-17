@@ -139,10 +139,12 @@ describe('Utils', () => {
   });
 
   it('Decorates no nav', async () => {
-    const meta = utils.createTag('meta', { name: 'header', content: 'off' });
-    document.head.append(meta);
+    const headerMeta = utils.createTag('meta', { name: 'header', content: 'off' });
+    const footerMeta = utils.createTag('meta', { name: 'footer', content: 'off' });
+    document.head.append(headerMeta, footerMeta);
     await utils.loadArea();
-    expect(document.body.classList.contains('nav-off')).to.be.true;
+    expect(document.querySelector('header')).to.not.exist;
+    expect(document.querySelector('footer')).to.not.exist;
   });
 
   it('getLocale default return', () => {

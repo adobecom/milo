@@ -4,11 +4,11 @@ export default function loadFavicon(createTag, config, getMetadata) {
   const favBase = `${codeRoot}/img/favicons/${name}`;
 
   const favicon = document.head.querySelector('link[rel="icon"]');
-  const tags = `
-    <link rel="icon" href="${favBase}.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="${favBase}-180.png">
-    <link rel="manifest" href="${favBase}.webmanifest">
-  `;
-  favicon.insertAdjacentHTML('afterend', tags);
   favicon.href = `${favBase}.ico`;
+  const tags = [
+    createTag('manifest', { rel: 'icon', href: `${favBase}.webmanifest` }),
+    createTag('link', { rel: 'icon', href: `${favBase}.svg`, type: 'image/svg+xml' }),
+    createTag('link', { rel: 'apple-touch-icon', href: `${favBase}-180.png`, type: 'image/svg+xml' }),
+  ];
+  document.head.append(...tags);
 }

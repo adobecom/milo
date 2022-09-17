@@ -1,10 +1,10 @@
 import {
-  createTag,
-  decorateSVG,
   analyticsDecorateList,
   analyticsGetLabel,
-  getBlockClasses,
+  createTag,
+  decorateSVG,
   getConfig,
+  getBlockClasses,
   getMetadata,
   loadScript,
   makeRelative,
@@ -13,8 +13,7 @@ import {
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
 const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
 const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
-
-export const IS_OPEN = 'is-Open';
+export const IS_OPEN = 'is-open';
 
 const isHeading = (el) => el?.nodeName.startsWith('H');
 const childIndexOf = (el) => [...el.parentElement.children]
@@ -32,39 +31,53 @@ class Gnav {
   init = () => {
     this.state = {};
     this.curtain = createTag('div', { class: 'gnav-curtain' });
-    this.nav = createTag('nav', { class: 'gnav' });
+    const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
 
-    const mobileToggle = this.decorateToggle(this.nav);
-    this.nav.append(mobileToggle);
+    const mobileToggle = this.decorateToggle(nav);
+    nav.append(mobileToggle);
 
     const brand = this.decorateBrand();
     if (brand) {
-      this.nav.append(brand);
+      nav.append(brand);
     }
 
+    const scrollWrapper = createTag('div', { class: 'mainnav-wrapper' });
+
     const mainNav = this.decorateMainNav();
-    const cta = this.decorateCta();
-    if (cta) {
-      mainNav.append(cta);
+    if (mainNav) {
+      const cta = this.decorateCta();
+      if (cta) {
+        mainNav.append(cta);
+      }
+      scrollWrapper.append(mainNav);
     }
-    this.nav.append(mainNav);
 
     const search = this.decorateSearch();
     if (search) {
-      this.nav.append(search);
+      scrollWrapper.append(search);
+    }
+
+    if (scrollWrapper.children.length > 0) {
+      nav.append(scrollWrapper);
     }
 
     const profile = this.decorateProfile();
     if (profile) {
-      this.nav.append(profile);
+      nav.append(profile);
     }
 
     const logo = this.decorateLogo();
     if (logo) {
-      this.nav.append(logo);
+      nav.append(logo);
     }
 
-    const wrapper = createTag('div', { class: 'gnav-wrapper' }, this.nav);
+    const wrapper = createTag('div', { class: 'gnav-wrapper' }, nav);
+
+    const breadcrumbs = this.decorateBreadcrumbs();
+    if (breadcrumbs) {
+      wrapper.append(breadcrumbs);
+    }
+
     this.el.append(this.curtain, wrapper);
   };
 
@@ -74,25 +87,21 @@ class Gnav {
     this.onSearchInput = gnavSearch.default;
   };
 
-  decorateToggle = (nav) => {
+  decorateToggle = () => {
     const toggle = createTag('button', { class: 'gnav-toggle', 'aria-label': 'Navigation menu', 'aria-expanded': false });
     const onMediaChange = (e) => {
       if (e.matches) {
-        nav.classList.remove(IS_OPEN);
-        this.curtain.classList.remove(IS_OPEN);
+        this.el.classList.remove(IS_OPEN);
       }
     };
     toggle.addEventListener('click', async () => {
-      if (nav.classList.contains(IS_OPEN)) {
-        nav.classList.remove(IS_OPEN);
-        this.curtain.classList.remove(IS_OPEN);
+      if (this.el.classList.contains(IS_OPEN)) {
+        this.el.classList.remove(IS_OPEN);
         this.desktop.removeEventListener('change', onMediaChange);
       } else {
-        nav.classList.add(IS_OPEN);
+        this.el.classList.add(IS_OPEN);
         this.desktop.addEventListener('change', onMediaChange);
-        this.curtain.classList.add(IS_OPEN);
         this.loadSearch();
-        document.addEventListener('scroll', this.closeOnScroll, { passive: true });
       }
     });
     return toggle;
@@ -163,7 +172,7 @@ class Gnav {
       if (navBlock) {
         navItem.classList.add('large-menu');
         if (navBlock.classList.contains('section')) {
-          navItem.classList.add('section');
+          navItem.classList.add('section-menu');
         }
         this.decorateLargeMenu(navLink, navItem, menu);
       }
@@ -232,7 +241,7 @@ class Gnav {
   decorateButtons = (menu) => {
     const buttons = menu.querySelectorAll('strong a');
     buttons.forEach((btn) => {
-      btn.classList.add('con-button', 'outline', 'button-M');
+      btn.classList.add('con-button', 'filled', 'blue', 'button-M');
     });
   };
 
@@ -276,6 +285,13 @@ class Gnav {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
+        const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
+        menuSections.forEach((sec) => { sec.classList.add('section'); });
+        const sectionMetas = decoratedMenu.querySelectorAll('.section-metadata');
+        sectionMetas.forEach(async (meta) => {
+          const { default: sectionMetadata } = await import('../section-metadata/section-metadata.js');
+          sectionMetadata(meta);
+        });
         navItem.appendChild(decoratedMenu);
       }
     });
@@ -334,11 +350,22 @@ class Gnav {
     });
     const searchResults = createTag('div', { class: 'gnav-search-results' });
 
+    // TODO: Fix locale URLs.
+    const href = new URL(advancedLink.href);
+    advancedLink.remove();
+
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResults, advancedLink);
+      this.onSearchInput(e.target.value, searchResults);
     });
 
-    searchField.append(searchInput, advancedLink);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.keyCode === 13) {
+        href.searchParams.set('q', e.target.value);
+        window.open(href);
+      }
+    });
+
+    searchField.append(searchInput);
     searchBar.append(searchField, searchResults);
     return searchBar;
   };
@@ -390,6 +417,20 @@ class Gnav {
       window.adobeIMS.signIn();
     });
   };
+
+  decorateBreadcrumbs = () => {
+    const parent = this.el.querySelector('.breadcrumbs');
+    if (parent) {
+      const ul = parent.querySelector('ul');
+      if (ul) {
+        ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
+        const nav = createTag('nav', { class: 'breadcrumbs', 'aria-label': 'Breadcrumb' }, ul);
+        parent.remove();
+        return nav;
+      }
+    }
+    return null;
+  };
   /* c8 ignore stop */
 
   /**
@@ -409,12 +450,13 @@ class Gnav {
 
   closeMenu = () => {
     this.state.openMenu.classList.remove(IS_OPEN);
+    this.curtain.classList.remove('is-open');
+    this.curtain.classList.remove('is-quiet');
     document.removeEventListener('click', this.closeOnDocClick);
     window.removeEventListener('keydown', this.closeOnEscape);
     const menuToggle = this.state.openMenu.querySelector('[aria-expanded]');
     menuToggle.setAttribute('aria-expanded', false);
     menuToggle.setAttribute('daa-lh', 'header|Open');
-    this.curtain.classList.remove(IS_OPEN);
     this.state.openMenu = null;
   };
 
@@ -427,11 +469,18 @@ class Gnav {
 
     document.addEventListener('click', this.closeOnDocClick);
     window.addEventListener('keydown', this.closeOnEscape);
-    if (isSearch) {
-      this.curtain.classList.add(IS_OPEN);
+    if (!isSearch) {
+      const desktop = window.matchMedia('(min-width: 900px)');
+      if (desktop.matches) {
+        document.addEventListener('scroll', this.closeOnScroll, { passive: true });
+        if (el.classList.contains('large-menu')) {
+          this.curtain.classList.add('is-open', 'is-quiet');
+        }
+      }
+    } else {
+      this.curtain.classList.add('is-open');
       el.querySelector('.gnav-search-input').focus();
     }
-    document.addEventListener('scroll', this.closeOnScroll, { passive: true });
     this.state.openMenu = el;
   };
 
@@ -449,11 +498,6 @@ class Gnav {
       if (this.state.openMenu) {
         this.toggleMenu(this.state.openMenu);
       }
-      if (this.nav.classList.contains(IS_OPEN)) {
-        this.nav.classList.remove(IS_OPEN);
-        this.curtain.classList.remove(IS_OPEN);
-        this.desktop.removeEventListener('change', onMediaChange);
-      }
       scrolled = true;
       document.removeEventListener('scroll', this.closeOnScroll);
     }
@@ -464,6 +508,9 @@ class Gnav {
     const isCurtain = e.target === this.curtain;
     if ((this.state.openMenu && !closest) || isCurtain) {
       this.toggleMenu(this.state.openMenu);
+    }
+    if (isCurtain) {
+      this.curtain.classList.remove('is-open');
     }
   };
 
