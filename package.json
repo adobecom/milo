@@ -9,7 +9,9 @@
     "libs": "hlx up --port=6456",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
-    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'"
+    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'",
+    "build:htm-preact": "microbundle ./build/htm-preact.js -o ./libs/deps/htm-preact.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact.modern.mjs ./libs/deps/htm-preact.js",
+    "build:preact-debug": "microbundle ./build/htm-preact-debug.js -o ./libs/deps/htm-preact-debug.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact-debug.modern.mjs ./libs/deps/htm-preact-debug.js"
   },
   "repository": {
     "type": "git",
@@ -35,6 +37,10 @@
     "sinon": "13.0.1",
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",
-    "stylelint-config-standard": "25.0.0"
+    "stylelint-config-standard": "25.0.0",
+    "htm": "^3.1.1",
+    "preact": "^10.11.0",
+    "@preact/signals": "1.0.4",
+    "microbundle": "0.15.1"
   }
 }
