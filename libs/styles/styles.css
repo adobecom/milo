@@ -33,12 +33,13 @@ body {
   display: block;
   font-family: var(--body-font-family);
   font-size: var(--type-body-m-size);
-  line-height: var(--type-body-all-lh);
+  line-height: var(--type-body-m-lh);
   background-color: var(--background-color);
   color: var(--text-color);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
+  opacity: 1 !important; /* Fix Target hiding */
 }
 
 header {
@@ -58,32 +59,32 @@ header nav {
 
 h1 {
   font-size: var(--type-heading-xl-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-xl-lh);
 }
 
 h2 {
   font-size: var(--type-heading-l-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-l-lh);
 }
 
 h3 {
   font-size: var(--type-heading-m-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-m-lh);
 }
 
 h4 {
   font-size: var(--type-heading-s-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-s-lh);
 }
 
 h5 {
   font-size: var(--type-heading-xs-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-xs-lh);
 }
 
 h6 {
   font-size: var(--type-heading-xs-size);
-  line-height: var(--type-heading-all-lh);
+  line-height: var(--type-heading-xs-lh);
 }
 
 /* Links */
@@ -174,4 +175,18 @@ div[data-failed="true"]::before {
   background: #ff00a0;
   font-weight: 700;
   display: block;
+}
+
+/* Utilities */
+picture.bg-img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+picture.bg-img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
 }
