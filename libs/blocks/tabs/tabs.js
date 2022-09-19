@@ -31,7 +31,6 @@ function initTabs(e) {
       }
     });
   });
-  // Add a click event handler to each tab
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
@@ -42,8 +41,8 @@ const isElementInContainerView = (targetEl) => {
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    rect.bottom <= (window.innerHeight || /* c8 ignore next */ document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || /* c8 ignore next */ document.documentElement.clientWidth)
   );
 };
 
@@ -80,18 +79,10 @@ function changeTabs(e) {
     .removeAttribute("hidden");
 }
 
-function decorateTabBg(el, target1, target2) {
-  const row = el.querySelector(':scope > div');
-  const values = row.children.length ? [...row.children] : [row];
-  if (!values) return;
-  target1.style.background = values[0].textContent;
-  if (row.children.length === 2) target2.style.background = values[1].textContent;
-  el.remove();
-}
-
 let initCount = 0;
 const init = (element) => {
   const rows = element.querySelectorAll(':scope > div');
+  /* c8 ignore next */
   if(!rows.length) return;
   const tabList = createTag('div', {role: 'tablist'});
   const tabListContainer = createTag('div', {class: 'tabList-container container'});
@@ -99,27 +90,14 @@ const init = (element) => {
   const tabContentContainer = createTag('div', {class: 'tabContent-container'}, tabContentContainerContainer);
   let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
 
-  // indicates bg decorator and/or title row(s)
+  // title row
   let singleColRows = 0;
   rows.forEach((row) => { if (row.childElementCount === 1) singleColRows += 1; });
   if (singleColRows) {
-    if (singleColRows === 1) {
-      const rowHeadler = rows[0].querySelector('h1, h2, h3, h4, h5, h6');
-      rows[0].classList.add(rowHeadler ? 'tab-headline' : 'background');
-    } else if (singleColRows && singleColRows === 2) {
-      rows[0].classList.add('background');
-      rows[1].classList.add('tab-headline');
-    }
-    const bgRow = element.querySelector(':scope > div.background');
-    const tabHeadline = element.querySelector(':scope > div.tab-headline');
-    if (tabHeadline) {
-      tabHeadline.classList.add('container');
-      const headlineHeader = tabHeadline.querySelector('h1, h2, h3, h4, h5, h6');
-      if (headlineHeader) tabList.setAttribute('aria-label', headlineHeader.textContent);
-    }
-    if (bgRow) decorateTabBg(bgRow, tabList, tabContentContainer);
+    const rowHeadler = rows[0].querySelector('h1, h2, h3, h4, h5, h6');
+    rows[0].classList.add('tab-headline', 'container');
+    tabList.setAttribute('aria-label', rowHeadler.textContent);
   }
-
   const tabRows = element.querySelectorAll(':scope > div:not([class])');
   tabRows.forEach((row, i) => {
     const rowTitle = row.querySelector(':scope > div:nth-child(1)');
