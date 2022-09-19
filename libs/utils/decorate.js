@@ -32,7 +32,8 @@ export async function decorateIconsInBlock(el) {
   icons?.forEach((i) => {
     const iconName = i.classList[1].replace('icon-icon-milo-', '');
     if(iconName) {
-
+      
+      // todo: test codeRoot path for milo icons.. 
       const { miloLibs, codeRoot } = getConfig();
       const base = miloLibs ? miloLibs : codeRoot;
       const svgPath = `${base}/img/icons/${iconName}.svg`;
