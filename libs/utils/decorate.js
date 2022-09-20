@@ -2,6 +2,17 @@
 
 import { createTag, getConfig, } from '../utils/utils.js';
 
+customElements.define("load-file", class extends HTMLElement {
+  async connectedCallback(
+    src = this.getAttribute("src"),
+    shadowRoot = this.shadowRoot || this.attachShadow({mode:"open"})
+  ) {
+    shadowRoot.innerHTML = await (await fetch(src)).text()
+    shadowRoot.append(...this.querySelectorAll("[shadowRoot]"))
+    this.hasAttribute("replaceWith") && this.replaceWith(...shadowRoot.childNodes)
+  }
+});
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
@@ -26,26 +37,27 @@ export function decorateIconArea(el) {
   });
 }
 
+function imageExists(url) {
+  return new Promise(resolve => {
+    var img = new Image()
+    img.addEventListener('load', () => resolve(true))
+    img.addEventListener('error', () => resolve(false))
+    img.src = url
+  })
+}
+
 export async function decorateIconsInBlock(el) {
-  console.log('decorateIconsInBlock', el);
   const icons = el.querySelectorAll('span.icon');
   icons?.forEach((i) => {
-    const iconName = i.classList[1].replace('icon-icon-milo-', '');
+    const iconName = i.classList[1].replace('icon-icon-', 'icon-');
     if(iconName) {
-      
-      // todo: test codeRoot path for milo icons.. 
       const { miloLibs, codeRoot } = getConfig();
       const base = miloLibs ? miloLibs : codeRoot;
       const svgPath = `${base}/img/icons/${iconName}.svg`;
-      const size = iconName.includes('persona') ? 80 : 40;
-      const svg = createTag('object', {type:'image/svg+xml', data:`${iconName}.svg`}, '');
-      const img = createTag('img', {src:`${svgPath}`}, '');
-      img.height = size;
-      img.width = size;
-      svg.appendChild(img);
-      i.insertAdjacentElement('afterbegin', svg);
-      console.log('svg', svg);
-      console.log('iconName', iconName, 'svgPath', svgPath);
+      if(imageExists(svgPath)) {
+        const loadFile = `<load-file replaceWith src="${svgPath}"></load-file>`;
+        i.insertAdjacentHTML('afterbegin', loadFile);
+      }
     }
   });
 }
