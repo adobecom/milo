@@ -110,17 +110,21 @@ class Gnav {
   decorateBrand = () => {
     const brandBlock = this.body.querySelector('[class^="gnav-brand"]');
     if (!brandBlock) return null;
-    const brand = brandBlock.querySelector('a');
-    decorateSVG(brand);
+    const brandLinks = [...brandBlock.querySelectorAll('a')];
+    const brand = brandLinks.pop();
+    const brandTitle = brand.textContent;
     brand.className = brandBlock.className;
-    const title = createTag('span', { class: 'gnav-brand-title' }, brand.textContent);
-
-    brand.href = makeRelative(brand.href, true);
+    const title = createTag('span', { class: 'gnav-brand-title' }, brandTitle);
     brand.setAttribute('aria-label', brand.textContent);
     brand.setAttribute('daa-ll', 'Brand');
     if (brand.textContent !== '') brand.textContent = '';
     if (brand.classList.contains('logo')) {
-      brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
+      if (brandLinks.length > 0) {
+        decorateSVG(brandLinks[0]);
+        brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
+      } else {
+        brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
+      }
     }
     brand.append(title);
     return brand;

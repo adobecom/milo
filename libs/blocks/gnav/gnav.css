@@ -101,7 +101,8 @@ header .gnav-wrapper a.gnav-brand {
   font-weight: 700;
 }
 
-header a.gnav-brand svg {
+header a.gnav-brand svg,
+header a.gnav-brand img {
   width: 27px;
 }
 
@@ -927,6 +928,10 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
 
   header .gnav-profile {
     grid-area: profile;
+  }
+
+  header .mainnav-wrapper + .gnav-logo {
+    margin-left: 16px;
   }
 
   .gnav .gnav-logo {
