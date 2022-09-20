@@ -939,7 +939,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-width: 25px;
+    width: 25px;
     box-sizing: border-box;
   }
 
