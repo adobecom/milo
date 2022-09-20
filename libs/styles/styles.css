@@ -43,17 +43,30 @@ body {
 }
 
 header {
-  min-height: 65px;
-  display: flex;
-  align-content: stretch;
-  font-weight: 700;
+  height: 57px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #FFF;
+  box-sizing: border-box;
 }
 
 header nav {
   display: none;
 }
 
-.section .section-metadata {
+header + main {
+  margin-top: 57px;
+}
+
+.breadcrumbs {
+  display: none;
+}
+
+.section-metadata {
   display: none;
 }
 
@@ -154,6 +167,12 @@ div:not([class]) > div > div img[src^="./media_"] {
   margin: 0 auto;
 }
 
+.section .section-background img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
 @media (min-width: 600px) {
   dialog {
     width: 60vw;
@@ -170,9 +189,7 @@ div:not([class]) > div > div img[src^="./media_"] {
 
 /* progressive section appearance */
 main > div,
-main .section[data-status='decorated'],
-main [data-status='decorated'],
-main [data-status='loading'] {
+main .section[data-status='decorated'] {
   display: none;
 }
 
@@ -217,3 +234,24 @@ picture.bg-img img {
   height: 100%;
   width: 100%;
 }
+
+@media (min-width: 900px) {
+  header {
+    min-height: 64px;
+    border-bottom: 1px solid #EAEAEA;
+    overflow: unset;
+  }
+
+  header.has-breadcrumbs {
+    min-height: 97px;
+  }
+
+  header nav {
+    display: unset;
+  }
+
+  header.has-breadcrumbs + main {
+    margin-top: 97px;
+  }
+}
+
