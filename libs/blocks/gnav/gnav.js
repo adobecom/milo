@@ -363,7 +363,7 @@ class Gnav {
     });
 
     searchInput.addEventListener('keydown', (e) => {
-      if (e.keyCode === 13) {
+      if (e.code === 'Enter') {
         href.searchParams.set('q', e.target.value);
         window.open(href);
       }
