@@ -348,20 +348,3 @@ footer a:not(:any-link) {
   content: '/';
   margin-left: 6px;
 }
-
-.region-selector-text {
-  padding: 0 32px;
-}
-.region-selector {
-  padding: 0 32px 32px 32px;
-}
-
-.region-selector .content {
-  column-count: 1;
-}
-
-@media (min-width: 900px) {
-  .region-selector .content {
-    column-count: 3;
-  }
-}
