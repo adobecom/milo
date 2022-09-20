@@ -15,14 +15,13 @@ export const loadStrings = async (url) => {
   return convertToObj(json.data);
 };
 
-export const loadCaasFiles = () => {
+export const loadCaasFiles = async () => {
   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
 
   loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
-  return Promise.all([
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`),
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`),
-  ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
