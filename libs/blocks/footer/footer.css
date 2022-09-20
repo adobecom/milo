@@ -24,7 +24,7 @@ footer a:not(:any-link) {
 }
 
 .footer-wrapper {
-  flex-shrink: 0; 
+  flex-shrink: 0;
   box-sizing: border-box;
   margin: auto;
   padding: 0 23px;
@@ -90,10 +90,18 @@ footer a:not(:any-link) {
 
 .footer-nav-item-title[aria-expanded=false]::after {
   content: '\2228';
+  position: relative;
+  left: -10px;
+  transform: scaleX(1.5);
+  font-size: 12px;
 }
 
 .footer-nav-item-title[aria-expanded=true]::after {
   content: '\2227';
+  position: relative;
+  left: -10px;
+  transform: scaleX(1.5);
+  font-size: 12px;
 }
 
 .footer-nav-item-title:hover,
