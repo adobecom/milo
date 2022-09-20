@@ -235,7 +235,7 @@
   /* Split */
   .marquee.split {
     display: flex;
-    align-items: center;
+    justify-content: center;
   }
 
   .marquee.split .foreground.container .text {
