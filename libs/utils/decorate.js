@@ -47,11 +47,14 @@ export function decorateBlockText(el, size = 'small') {
 export function decorateBlockBg(block, node) {
   node.classList.add('background');
   if (node.childElementCount > 1) {
-    const viewports = ['mobile', 'tablet', 'desktop'];
-    let index = 0;
-    for (const child of node.children) {
-      child.classList.add(viewports[index]);
-      index += 1;
+    const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+    if (node.childElementCount === 2) {
+      node.children[0].classList.add(viewports[0], viewports[1]);
+      node.children[1].classList.add(viewports[2]);
+    } else {
+      [...node.children].forEach( (e, i) => {
+        e.classList.add(viewports[i]);
+      });
     }
   }
   if (!node.querySelector(':scope img')) {
