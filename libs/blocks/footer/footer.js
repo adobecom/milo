@@ -95,6 +95,16 @@ class Footer {
         const linksContainer = heading.nextElementSibling;
         linksContainer.classList = 'footer-nav-item-links';
         linksContainer.id = `${titleId}-menu`;
+        if (!this.desktop.matches) {
+          title.setAttribute('tabindex', 0);
+          title.addEventListener('click', this.toggleMenu);
+          title.addEventListener('focus', () => {
+            window.addEventListener('keydown', this.toggleOnKey);
+          });
+          title.addEventListener('blur', () => {
+            window.removeEventListener('keydown', this.toggleOnKey);
+          });
+        }
         const links = linksContainer.querySelectorAll('li');
         links.forEach((link) => {
           link.classList.add('footer-nav-item-link');
@@ -189,6 +199,65 @@ class Footer {
       }
 
       [...el.children].forEach(analyticsDecorateList);
+    }
+  };
+
+  toggleMenu = (e) => {
+    const button = e.target.closest('[role=button]');
+    const expanded = button.getAttribute('aria-expanded');
+    if (expanded === 'true') {
+      this.closeMenu(button);
+    } else {
+      this.openMenu(button);
+    }
+  };
+
+  closeMenu = (el) => {
+    if (el.id === 'region-button') {
+      window.removeEventListener('keydown', this.closeOnEscape);
+      window.removeEventListener('click', this.closeOnDocClick);
+    }
+    el.setAttribute('aria-expanded', false);
+  };
+
+  openMenu = (el) => {
+    const type = el.classList[0];
+    const expandedMenu = document.querySelector(`.${type}[aria-expanded=true]`);
+    if (expandedMenu) { this.closeMenu(expandedMenu); }
+    if (el.id === 'region-button') {
+      window.addEventListener('keydown', this.closeOnEscape);
+      window.addEventListener('click', this.closeOnDocClick);
+    }
+    el.setAttribute('aria-expanded', true);
+  };
+
+  toggleOnKey = (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      this.toggleMenu(e);
+    }
+  };
+
+  onMediaChange = (e) => {
+    if (e.matches) {
+      document.querySelectorAll('.footer-nav-item-title').forEach((button) => {
+        button.removeAttribute('tabindex');
+        window.removeEventListener('keydown', this.toggleOnKey);
+        window.removeEventListener('keydown', this.toggleOnKey);
+        button.setAttribute('aria-expanded', true);
+        button.removeEventListener('click', this.toggleMenu);
+      });
+    } else {
+      document.querySelectorAll('.footer-nav-item-title').forEach((button) => {
+        button.setAttribute('tabindex', 0);
+        button.addEventListener('focus', () => {
+          window.addEventListener('keydown', this.toggleOnKey);
+        });
+        button.addEventListener('blur', () => {
+          window.removeEventListener('keydown', this.toggleOnKey);
+        });
+        button.setAttribute('aria-expanded', false);
+        button.addEventListener('click', this.toggleMenu);
+      });
     }
   };
 }
