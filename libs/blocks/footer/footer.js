@@ -23,6 +23,8 @@ class Footer {
   }
 
   init = async () => {
+    this.desktop.addEventListener('change', this.onMediaChange);
+
     const wrapper = createTag('div', { class: 'footer-wrapper' });
 
     const grid = this.decorateGrid();
@@ -81,6 +83,8 @@ class Footer {
       this.footerEl.classList.add('footer-small');
     }
 
+    const titles = [];
+
     columns.forEach((column) => {
       column.classList.add('footer-nav-column');
       const headings = column.querySelectorAll('h2');
@@ -95,7 +99,9 @@ class Footer {
         title.textContent = heading.textContent;
 
         const navItem = createTag('div', { class: 'footer-nav-item' });
+
         navItem.append(title);
+        titles.push(title);
 
         const linksContainer = heading.nextElementSibling;
         linksContainer.classList = 'footer-nav-item-links';
@@ -112,6 +118,10 @@ class Footer {
       });
       navGrid.append(column);
     });
+
+    if (!this.desktop.matches) {
+      this.setMobileTitles(titles);
+    }
 
     return navGrid;
   };
@@ -199,6 +209,75 @@ class Footer {
       }
 
       [...el.children].forEach(analyticsDecorateList);
+    }
+  };
+
+  toggleMenu = (e) => {
+    const button = e.target.closest('[role=button]');
+    const expanded = button.getAttribute('aria-expanded');
+    if (expanded === 'true') {
+      this.closeMenu(button);
+    } else {
+      this.openMenu(button);
+    }
+  };
+
+  closeMenu = (el) => {
+    if (el.id === 'region-button') {
+      window.removeEventListener('keydown', this.closeOnEscape);
+      window.removeEventListener('click', this.closeOnDocClick);
+    }
+    el.setAttribute('aria-expanded', false);
+  };
+
+  openMenu = (el) => {
+    const type = el.classList[0];
+    const expandedMenu = document.querySelector(`.${type}[aria-expanded=true]`);
+    if (expandedMenu) { this.closeMenu(expandedMenu); }
+    if (el.id === 'region-button') {
+      window.addEventListener('keydown', this.closeOnEscape);
+      window.addEventListener('click', this.closeOnDocClick);
+    }
+    el.setAttribute('aria-expanded', true);
+  };
+
+  toggleOnKey = (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      this.toggleMenu(e);
+    }
+  };
+
+  setDesktopTitles = (titles) => {
+    titles?.forEach((title) => {
+      title.removeAttribute('tabindex');
+      title.setAttribute('aria-expanded', true);
+
+      window.removeEventListener('keydown', this.toggleOnKey);
+      title.removeEventListener('click', this.toggleMenu);
+    });
+  };
+
+  setMobileTitles = (titles) => {
+    titles?.forEach((title) => {
+      title.setAttribute('tabindex', 0);
+      title.setAttribute('aria-expanded', false);
+      title.addEventListener('click', this.toggleMenu);
+
+      title.addEventListener('focus', () => {
+        window.addEventListener('keydown', this.toggleOnKey);
+      });
+      title.addEventListener('blur', () => {
+        window.removeEventListener('keydown', this.toggleOnKey);
+      });
+    });
+  };
+
+  onMediaChange = (e) => {
+    const footerTitles = document.querySelectorAll('.footer-nav-item-title');
+    if (e.matches) {
+      this.setDesktopTitles(footerTitles);
+    } else {
+      this.setMobileTitles(footerTitles);
     }
   };
 }
