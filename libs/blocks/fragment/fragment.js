@@ -50,7 +50,17 @@ export default async function init(a, parent) {
         a.remove();
         parent.append(fragment);
       } else if (a.parentElement) {
-        a.parentElement.replaceChild(fragment, a);
+        const pageSectionNode = a.parentElement.parentElement.parentElement;
+        const contentNode = a.parentElement.parentElement;
+        const hasContentClass = contentNode.classList.contains('content');
+        const contentChildrenCount = contentNode.childElementCount;
+        const contentChildTag = contentNode.children[0].tagName;
+
+        if (hasContentClass && contentChildrenCount === 1 && contentChildTag === 'P') {
+          pageSectionNode.replaceChild(fragment, contentNode);
+        } else {
+          a.parentElement.replaceChild(fragment, a);
+        }
       }
     } else {
       window.lana.log('Could not make fragment');
