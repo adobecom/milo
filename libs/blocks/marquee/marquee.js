@@ -14,6 +14,7 @@
  * Marquee - v6.0
  */
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../utils/analytics.js';
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
@@ -74,6 +75,7 @@ function extendButtonsClass(text) {
 }
 
 export default function init(el) {
+  decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
@@ -97,6 +99,8 @@ export default function init(el) {
 
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
+  const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  decorateLinkAnalytics(text, headings);
   decorateText(text, size);
   extendButtonsClass(text);
   if (el.classList.contains('split')) {
