@@ -14,9 +14,10 @@ const GLOBE_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" f
 const SPECTRUM_CHEVRON = '<svg class="icon-chevron-down" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><defs><style>.spectrum-chevron-down{fill:none;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path stroke="currentColor" class="spectrum-chevron-down" d="M3.47,5.74l4.53,4.53,4.54-4.53"/></svg>';
 const ADCHOICE_IMG = `<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="${base}/blocks/footer/adchoices-small.svg" height="9" width="9">`;
 const SUPPORTED_SOCIAL = ['facebook', 'instagram', 'twitter', 'linkedin'];
+
 class Footer {
-  constructor(body, el) {
-    this.el = el;
+  constructor(body, footerEl) {
+    this.footerEl = footerEl;
     this.body = body;
     this.desktop = window.matchMedia('(min-width: 900px)');
   }
@@ -29,6 +30,16 @@ class Footer {
       wrapper.append(grid);
     }
 
+    const infoRow = await this.createInfoRow();
+    if (infoRow.hasChildNodes()) {
+      wrapper.append(infoRow);
+    }
+
+    this.addAnalytics(wrapper);
+    this.footerEl.append(wrapper);
+  };
+
+  createInfoRow = async () => {
     const infoRow = createTag('div', { class: 'footer-info' });
     const infoColumnLeft = createTag('div', { class: 'footer-info-column' });
     const infoColumnRight = createTag('div', { class: 'footer-info-column' });
@@ -57,33 +68,23 @@ class Footer {
     if (infoColumnRight.hasChildNodes()) {
       infoRow.append(infoColumnRight);
     }
-    if (infoRow.hasChildNodes()) {
-      wrapper.append(infoRow);
-    }
 
-    this.addAnalytics(wrapper);
-    this.el.append(wrapper);
+    return infoRow;
   };
 
   decorateGrid = () => {
-    const gridBlock = this.body.querySelectorAll('div');
-    const footer = document.querySelector('footer');
-    if (!gridBlock) return null;
-    this.desktop.addEventListener('change', this.onMediaChange);
     const navGrid = createTag('div', { class: 'footer-nav-grid' });
-    const columns = gridBlock;
-    const columnsArray = Array.from(columns);
-    const regionSelectorIndex = columnsArray.findIndex((column) => column.classList.contains('region-selector'));
-    const navCols = columnsArray.slice(0, regionSelectorIndex - 1);
-    if (!navCols.length) {
-      footer.classList.add('footer-small');
+    const columns = [...this.body.querySelectorAll('body > div')]
+      .filter((col) => col.firstElementChild.nodeName === 'H2');
+
+    if (!columns.length) {
+      this.footerEl.classList.add('footer-small');
     }
-    navCols.forEach((column) => {
-      if (!column) { return; }
-      const navColumn = createTag('div', { class: 'footer-nav-column' });
+
+    columns.forEach((column) => {
+      column.classList.add('footer-nav-column');
       const headings = column.querySelectorAll('h2');
       headings.forEach((heading) => {
-        const navItem = createTag('div', { class: 'footer-nav-item' });
         const titleId = heading.textContent.trim().toLowerCase().replace(/ /g, '-');
         const title = createTag('a', {
           class: 'footer-nav-item-title',
@@ -92,25 +93,33 @@ class Footer {
           'aria-controls': `${titleId}-menu`,
         });
         title.textContent = heading.textContent;
+
+        const navItem = createTag('div', { class: 'footer-nav-item' });
         navItem.append(title);
+
         const linksContainer = heading.nextElementSibling;
         linksContainer.classList = 'footer-nav-item-links';
         linksContainer.id = `${titleId}-menu`;
+
         const links = linksContainer.querySelectorAll('li');
         links.forEach((link) => {
           link.classList.add('footer-nav-item-link');
         });
+
         navItem.append(linksContainer);
-        navColumn.append(navItem);
+        column.append(heading);
+        heading.replaceWith(navItem);
       });
-      navGrid.append(navColumn);
+      navGrid.append(column);
     });
+
     return navGrid;
   };
 
   decorateRegion = async () => {
     const regionButton = this.body.querySelector('.region-selector a');
     if (!regionButton) return null;
+
     const regionTextContent = regionButton.textContent;
     regionButton.textContent = '';
     regionButton.className = 'footer-region-button';
@@ -134,6 +143,7 @@ class Footer {
     const block = this.body.querySelector('.social');
     if (!block) return null;
     const socialList = createTag('ul', { class: 'footer-social' });
+
     SUPPORTED_SOCIAL.forEach((platform) => {
       const a = block.querySelector(`a[href*="${platform}"]`);
       if (!a) return;
@@ -152,11 +162,12 @@ class Footer {
       li.append(a);
       socialList.append(li);
     });
+
     return socialList;
   };
 
   decoratePrivacy = () => {
-    const copyrightEl = this.body.querySelector('div em');
+    const copyrightEl = this.body.querySelector('div > p > em');
     const links = copyrightEl?.parentElement.querySelectorAll('a');
     if (!copyrightEl || !links) return null;
     const privacyWrapper = createTag('div', { class: 'footer-privacy' });
