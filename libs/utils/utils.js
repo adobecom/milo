@@ -207,7 +207,6 @@ export async function loadTemplate() {
 }
 
 export async function loadBlock(block) {
-  block.dataset.status = 'loading';
   const name = block.classList[0];
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -231,7 +230,6 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  delete block.dataset.status;
   return block;
 }
 
@@ -289,10 +287,7 @@ function decorateLinks(el) {
 
 function decorateBlocks(el) {
   const blocks = el.querySelectorAll('div[class]:not(.content)');
-  return [...blocks].map((block) => {
-    block.dataset.status = 'decorated';
-    return block;
-  });
+  return [...blocks].map((block) => block);
 }
 
 function decorateContent(el) {
@@ -327,34 +322,33 @@ function decorateDefaults(el) {
   });
 }
 
-async function loadHeader() {
+function decorateHeader() {
   const header = document.querySelector('header');
-  if (getMetadata('header') === 'off') {
+  if (!header) return;
+  const headerMeta = getMetadata('header');
+  if (headerMeta === 'off') {
     document.body.classList.add('nav-off');
     header.remove();
-    return null;
+    return;
   }
-  header.dataset.status = 'decorated';
-  header.className = getMetadata('header') || 'gnav';
-  await loadBlock(header);
-  return header;
+  header.className = headerMeta || 'gnav';
+  const breadcrumbs = document.querySelector('.breadcrumbs');
+  if (breadcrumbs) {
+    header.classList.add('has-breadcrumbs');
+    header.append(breadcrumbs);
+  }
 }
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
-  const footerPath = getMetadata('footer-source');
-  if (getMetadata('footer') === 'off') {
+  if (!footer) return;
+  const footerMeta = getMetadata('footer');
+  if (footerMeta === 'off') {
     footer.remove();
-    return null;
+    return;
   }
-  if (footerPath) {
-    footer.setAttribute('data-footer-source', `${footerPath}`);
-  } else {
-    footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
-  }
-  footer.className = 'footer';
+  footer.className = footerMeta || 'footer';
   await loadBlock(footer);
-  return footer;
 }
 
 function decorateSections(el, isDoc) {
@@ -379,7 +373,8 @@ async function loadMartech(config) {
 }
 
 async function loadPostLCP(config) {
-  loadHeader();
+  const header = document.querySelector('header');
+  if (header) { loadBlock(header); }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -413,7 +408,10 @@ export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
-  if (isDoc) { loadMartech(config); }
+  if (isDoc) {
+    decorateHeader();
+    loadMartech(config);
+  }
 
   const sections = decorateSections(area, isDoc);
   // eslint-disable-next-line no-restricted-syntax
@@ -521,15 +519,6 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
-}
-
-export function debug(message) {
-  const { hostname } = window.location;
-  const env = getEnv();
-  if (env.name !== 'prod' || hostname === 'local') {
-    // eslint-disable-next-line no-console
-    console.log(message);
-  }
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
