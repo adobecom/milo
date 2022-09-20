@@ -146,42 +146,6 @@ div:not([class]) > div > div img[src^="./media_"] {
   width: 100%;
 }
 
-/* Section Metadata */
-/* .section.center .content > h1,
-.section.center .content > h2,
-.section.center .content > h3,
-.section.center .content > h4,
-.section.center .content > h5,
-.section.center .content > h6,
-.section.center .content > p {
-  text-align: center;
-} */
-
-/* Dialog */
-dialog {
-  border: none;
-  border-radius: 6px;
-  padding: 0;
-  width: 100%;
-}
-
-dialog::backdrop {
-  background: rgb(50 50 50 / 80%);
-}
-
-dialog button.dialog-close {
-  background: none;
-  border: none;
-  position: absolute;
-  right: 0;
-  font-size: 18px;
-  top: 4px;
-  padding: 0;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-}
-
 @media (min-width: 600px) {
   dialog {
     width: 60vw;
