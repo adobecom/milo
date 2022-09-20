@@ -18,7 +18,7 @@ import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
 
-  container.innerHTML = `<video preload="metadata" autoplay muted loop>
+  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
     <source src="${link.href}" type="video/mp4" />
   </video>`;
   container.classList.add('has-video');
