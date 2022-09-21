@@ -10,6 +10,7 @@ const MILO_BLOCKS = [
   'aside',
   'caas',
   'card-metadata',
+  'carousel',
   'chart',
   'columns',
   'faas',
