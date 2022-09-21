@@ -2,6 +2,7 @@ const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [
   '404',
+  'featured-story',
 ];
 const MILO_BLOCKS = [
   'accordion',
