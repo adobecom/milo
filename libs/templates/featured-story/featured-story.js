@@ -2,9 +2,7 @@
 Templates - featured story
 */
 
-import { getLibs } from '../../scripts/utils.js';
-
-const { createTag } = await import(`${getLibs()}/utils/utils.js`);
+import { createTag } from '../../utils/utils.js';
 
 function init() {
   const i = 1;
