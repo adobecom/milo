@@ -437,7 +437,6 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
-    loadPrivacy();
   }
 
   // Load everything that can be deferred until after all blocks load.
@@ -450,6 +449,7 @@ export async function loadArea(area = document) {
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
+      loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
         import('../features/interlinks.js').then((mod) => {
           resolve(mod);
