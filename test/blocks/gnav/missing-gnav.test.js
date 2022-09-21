@@ -31,7 +31,7 @@ describe('Fragments', () => {
   it('test wrong gnav', async () => {
     const gnav = await mod.default(document.querySelector('header'));
     expect(gnav).to.be.null;
-    expect(console.log.args[0][0]).to.equal('Could not create global navigation.');
+    expect(console.log.args[0][0]).to.equal('Could not create global navigation:');
   });
 
 
