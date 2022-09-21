@@ -317,11 +317,11 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   overflow-x: hidden;
   overflow-y: auto;
   list-style-type: none;
-
   border: 1px solid #d3d3d3;
   border-radius: 0 0 3px 3px;
   border-top: 0 solid #d3d3d3;
   padding: 10px 0;
+  margin: 0;
 }
 
 .gnav-search-results > ul li {
@@ -977,7 +977,8 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   }
 
   .gnav-search-results {
-    margin: 20px auto;
+    margin: 0 auto;
+    max-width: 1400px;
   }
 
   .gnav-profile {
