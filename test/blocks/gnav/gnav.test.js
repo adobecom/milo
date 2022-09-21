@@ -83,35 +83,6 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
   });
 
-  it('search', async () => {
-    await gnav.loadSearch();
-    const search = document.querySelector('.gnav-search');
-    const searchButton = document.querySelector('.gnav-search-button');
-    const searchInput = document.querySelector('.gnav-search-input');
-    searchButton.click();
-    expect(search.classList.contains(mod.IS_OPEN)).to.be.true;
-
-    // search result
-    expect(typeof searchMod.fetchBlogArticleIndex()).to.equal('object');
-    window.blogIndex = window.blogIndex || {
-      data: [],
-      byPath: {},
-      offset: 0,
-      complete: false,
-    };
-    await searchMod.addSegmentToIndex('/test/blocks/gnav/mocks/query-index.json?limit=206&offset=1000', window.blogIndex, 206);
-    searchInput.focus();
-    await sendKeys({ type: 'a b' });
-    expect(search.querySelector('.gnav-search-results').childElementCount).to.not.equal(0);
-    await sendKeys({ type: 'This is just for testing to get 0 result' });
-    expect(search.querySelector('.gnav-search-results').childElementCount).to.equal(0);
-  });
-
-  it('createOptimizedPicture test', () => {
-    const picture = searchMod.createOptimizedPicture('/test/scripts/mocks/media_.png');
-    expect(picture.querySelector('source').media).to.be.not.empty;
-  });
-
   // gnav-utils
   it('createTag test', () => {
     const tag = createTag('div', { class: 'test' }, document.createElement('div'));
