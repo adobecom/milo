@@ -224,7 +224,8 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
-        if (getEnv() !== 'prod') {
+        const config = getConfig();
+        if (config.env.name !== 'prod') {
           block.dataset.failed = 'true';
           block.dataset.reason = `Failed loading ${name || ''} block.`;
         }
