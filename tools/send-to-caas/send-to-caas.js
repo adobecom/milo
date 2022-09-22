@@ -51,6 +51,12 @@ const getKeyValPairs = (s) => {
     });
 };
 
+const addHost = (url) => {
+  if (url.startsWith('http')) return url;
+  const { host } = getConfig();
+  return `https://${host}${url.startsWith('/') ? '' : '/'}${url}`
+};
+
 const getMetaContent = (propType, propName) => {
   const metaEl = document.querySelector(`meta[${propType}='${propName}']`);
   if (!metaEl) return undefined;
@@ -230,8 +236,7 @@ const getThumbnailUrl = () => {
     || document.querySelector('main')?.querySelector('img')?.src;
 
   if (!thumbUrl) return null;
-  if (thumbUrl.startsWith('/')) return thumbUrl;
-  return new URL(thumbUrl)?.pathname;
+  return addHost(thumbUrl);
 };
 
 const getFirstImageAlt = () => document.querySelector('main')?.querySelector('img')?.alt;
@@ -241,8 +246,11 @@ const getBadges = (s) => {
   const keyValPairs = getKeyValPairs(s)
     .map((pair) => {
       const type = pair.key?.toLowerCase();
-      const value = pair.value;
-      if (type === 'image' && value) hasImageBadge = true;
+      let value = pair.value;
+      if (type === 'image' && value) {
+        hasImageBadge = true;
+        value = addHost(value);
+      }
       return (type && value)
       ? ({ type, value })
       : null;
@@ -252,7 +260,7 @@ const getBadges = (s) => {
   if (!hasImageBadge) {
     const imgPath = getImagePathMd('badgeimage');
     if (imgPath) {
-      keyValPairs.push({ type: 'image', value: imgPath });
+      keyValPairs.push({ type: 'image', value: addHost(imgPath) });
     }
   }
   return keyValPairs;
