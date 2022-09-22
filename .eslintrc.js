@@ -22,6 +22,6 @@ module.exports = {
   },
   ignorePatterns: [
     '/libs/deps/*',
-    '/tools/*',
+    '/tools/loc/*',
   ],
 };
