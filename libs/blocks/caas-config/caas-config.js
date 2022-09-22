@@ -132,6 +132,7 @@ const defaultOptions = {
     random: 'Random',
   },
   source: {
+    bacom: 'Bacom',
     doccloud: 'DocCloud',
     experienceleague: 'Experience League',
     hawks: 'Hawks',
