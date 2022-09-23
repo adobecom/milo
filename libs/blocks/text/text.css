@@ -89,7 +89,7 @@
 .inset.text-block .text-row-1 {
   padding-left: var(--spacing-l);
   border-left: 2px solid #ccc;
-  margin: var(--spacing-l) 0;
+  margin: var(--spacing-m) 0;
 }
 
 /* Desktop */
