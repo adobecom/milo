@@ -1,5 +1,7 @@
 /* global ClipboardItem */
 
+import { createTag } from '../../utils/utils.js';
+
 let domain;
 let libraries;
 
@@ -68,10 +70,22 @@ async function loadBlockList(paths, list) {
     const resp = await fetch(path);
     if (!resp.ok) return;
     const json = await resp.json();
-    console.log(json);
-    json.data.forEach(async (blockGroup) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const blockGroup of json.data) {
+      const titleText = createTag('p', { class: 'block-title' }, blockGroup.key);
+      const title = createTag('li', { class: 'block-group' }, titleText);
+      const previewButton = createTag('button', { class: 'preview-group' }, 'Preview');
+      title.append(previewButton);
+      list.append(title);
+
+      previewButton.addEventListener('click', () => {
+        window.open(blockGroup.value, '_blockpreview');
+      });
+
+      // eslint-disable-next-line no-await-in-loop
       const pageResp = await fetch(`${blockGroup.value}.plain.html`);
       if (!pageResp.ok) return;
+      // eslint-disable-next-line no-await-in-loop
       const html = await pageResp.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
@@ -91,7 +105,7 @@ async function loadBlockList(paths, list) {
         item.append(name, copy);
         list.append(item);
       });
-    });
+    }
   });
 }
 
@@ -130,10 +144,17 @@ function loadLibraries() {
   const finder = document.createElement('div');
   finder.className = 'con-finder';
 
-  const header = document.createElement('div');
-  header.className = 'con-header';
-  header.insertAdjacentHTML('afterbegin', '<p class="heading">Library</p>');
+  const button = createTag('button', { class: 'logo' }, 'Close');
+  button.addEventListener('click', () => {
+    finder.classList.toggle('is-collapsed');
+  });
+
+  const title = createTag('div', { class: 'con-title' }, button);
+  title.append(createTag('p', { class: 'headering' }, 'Library'));
+  const header = createTag('div', { class: 'con-header' }, title);
+
   const back = document.createElement('button');
+  back.className = 'con-back';
   back.addEventListener('click', () => {
     const insetEls = finder.querySelectorAll('.inset');
     insetEls.forEach((el) => {
