@@ -25,7 +25,7 @@ export default function init(el) {
   const figcaption = createTag('figcaption', {}, copyNodes[1]);
   const cite = createTag('cite', {}, copyNodes[2]);
   const wrapper = createTag('div', { class: 'quote-wrapper' });
-  const figure = createTag('figure', {}, wrapper);
+  const figure = createTag('figure', { class: 'grid' }, wrapper);
   copyNodes[0]?.classList.add('quote-copy');
   copyNodes[1]?.classList.add('figcaption');
   lastRow.remove();

@@ -23,6 +23,10 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
   margin: 0 auto;
 }
 
+.quote .grid {
+  margin: 0 auto;
+}
+
 .quote .quote-image {
   margin-bottom: var(--spacing-xs);
 }

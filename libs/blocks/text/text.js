@@ -11,30 +11,28 @@
 */
 
 import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 /*
  * Text Block - v1.0
  */
 
 export default function init(el) {
+  el.classList.add('text-block');
   const children = el.querySelectorAll(':scope > div');
   const [background, ...cols] = children;
   decorateBlockBg(el, background);
-
-  const container = document.createElement('div');
-  container.classList.add('foreground', 'container', 'grid');
+  const container = createTag('div', { class: 'foreground container grid' });
   el.appendChild(container);
-  el.classList.add('block');
-
   cols.forEach((col, idx) => {
     let headingClass = 'medium';
     if (idx === 0 && (el.classList.contains('full-width'))) {
       col.children[0].classList.add('full-width');
       headingClass = el.classList.contains('large') ? 'large' : 'medium';
     }
-    col.children[0].classList.add('text');
+    col.children[0].classList.add('text-row', `text-row-${idx}`);
     decorateBlockText(el, headingClass);
-    col.querySelector('a + a')?.closest('p').classList.add('action-area');
+    col.querySelector('a + a')?.closest('p, div')?.classList.add('action-area');
     container.insertAdjacentElement('beforeend', col.children[0]);
     col.remove();
   });

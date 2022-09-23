@@ -12,8 +12,8 @@ export function decorateButtons(el, size) {
     parent.remove();
   });
   const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  actionArea?.classList.add('action-area');
+  actionArea?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function decorateIcons(el) {
