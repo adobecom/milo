@@ -57,4 +57,15 @@ describe('marquee', () => {
       expect(marquee.querySelector('.foreground video')).to.exist;
     });
   });
+
+  describe('table of contents', () => {
+    it('has container', () => {
+      const marquee = document.querySelectorAll('.marquee');
+      // console.log(marquees[13], marquees.length);
+      // const marquee = document.querySelector('.toc');
+      console.log(marquee);
+      expect(marquee.querySelector('.foreground.toc-container')).to.exist;
+      marquee.querySelector()
+    });
+  });
 });

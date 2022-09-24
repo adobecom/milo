@@ -15,6 +15,7 @@
  */
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../utils/analytics.js';
+import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
@@ -71,12 +72,54 @@ function decorateText(el, size) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
+}
+
+function findAnchorTarget(text) {
+  let linkText = text.toLowerCase();
+  linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
+  linkText = linkText.replaceAll('_', '-');
+  linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
+  return document.querySelector(`[id^="${linkText}"]`);
+}
+
+const DOWN_ARROW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="10.875" height="13.323" viewBox="0 0 10.875 13.323">
+  <g id="Group_177418" data-name="Group 177418" transform="translate(223.353 -1276.435) rotate(90)">
+    <line id="line_color_border_" data-name="line [color_border]" x2="10.909" transform="translate(1277.435 217.875)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
+    <g id="arrow_head" data-name="arrow head" transform="translate(1284.32 213.892) rotate(45)">
+      <line id="line_color_border_2" data-name="line [color_border]" x2="5.69" transform="translate(0 0)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
+      <line id="line_color_border_3" data-name="line [color_border]" y2="5.69" transform="translate(5.69 0)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
+    </g>
+  </g>
+</svg>`;
+
+function tocItem(title, subtitle, target) {
+  const onClick = () => {
+    target?.scrollIntoView(true);
+    target?.focus();
+  };
+
+  const sectionTitle = `<p class="section-title">${title}</p>`;
+  const sectionDescription = subtitle ? `<p class="section-description">${subtitle}</p>` : '';
+  const html = `<div class="toc-link-text">
+    ${sectionTitle}
+    ${sectionDescription}
+  </div>
+  <div class="toc-arrow">
+    ${DOWN_ARROW_ICON}
+  </div>`;
+
+  const el = createTag('section', { class: 'toc-item' }, html);
+
+  el.addEventListener('click', onClick);
+
+  return el;
 }
 
 export default function init(el) {
   decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
+  const isTableOfContents = el.classList.contains('toc');
   if (!isLight) el.classList.add('dark');
   const children = el.querySelectorAll(':scope > div');
   const foreground = children[children.length - 1];
@@ -95,6 +138,25 @@ export default function init(el) {
     decorateVideo(media);
   } else {
     media?.classList.add('image');
+  }
+
+  if (isTableOfContents) {
+    const tocSource = foreground.lastElementChild;
+    const tocLinks = tocSource.querySelectorAll('a');
+    const title = tocSource.querySelector('p');
+
+    const tocTitle = `<p class="toc-title">${title.textContent}</p>`;
+    const toc = createTag('div', { class: 'toc-container' }, tocTitle);
+
+    tocLinks.forEach((link) => {
+      const target = findAnchorTarget(link.textContent);
+      const subtitle = link.closest('p')?.previousElementSibling;
+      const linkTitle = subtitle?.previousElementSibling;
+      const item = tocItem(linkTitle?.textContent, subtitle?.textContent, target);
+      toc.appendChild(item);
+    });
+
+    foreground.replaceChild(toc, tocSource);
   }
 
   const size = getBlockSize(el);
