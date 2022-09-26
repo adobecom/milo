@@ -128,21 +128,24 @@ const processData = async (data, accessToken) => {
   const errorArr = [];
   const successArr = [];
 
+  const statusModal = showAlert(`Publishing 1 of ${data.length}:`, { okBtn: false });
+
   // eslint-disable-next-line no-restricted-syntax
   for (const page of data) {
-    if (page.Path === 'stop') break; // debug, stop on empty line
+    const pageUrl = page.Path || page.path || page.url || page.URL || page.Url;
+    if (pageUrl === 'stop') break; // debug, stop on empty line
 
-    const { dom, error, lastModified } = await getPageDom(page.Path);
+    const { dom, error, lastModified } = await getPageDom(pageUrl);
     if (error) {
-      errorArr.push({ url: page.Path, error });
+      errorArr.push({ url: pageUrl, error });
       continue;
     }
 
-    setConfig({ bulkPublish: true, doc: dom, pageUrl: page.Path, lastModified });
-    const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: page.Path.replace('https://', '') });
+    setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
+    const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: pageUrl.replace('https://', '') });
 
     if (errors.length) {
-      errorArr.push({ url: page.Path, error: errors.join('\n') });
+      errorArr.push({ url: pageUrl, error: errors.join('\n') });
       continue;
     }
 
@@ -154,14 +157,12 @@ const processData = async (data, accessToken) => {
     const caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
     const draftOnly = document.getElementById('draftcb')?.checked;
 
-    const response = await postDataToCaaS({
-      accessToken, caasEnv, caasProps, draftOnly,
-    });
+    const response = await postDataToCaaS({ accessToken, caasEnv, caasProps, draftOnly });
 
     if (response.success) {
-      successArr.push({ url: page.Path, caasMetadata });
+      successArr.push({ url: pageUrl, caasMetadata });
     } else {
-      errorArr.push({ url: page.Path, response });
+      errorArr.push({ url: pageUrl, response });
     }
   }
 

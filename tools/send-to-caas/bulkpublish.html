@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/libs/ui/controls/accordion.css" />
+    <link rel="stylesheet" href="./bulkpublish.css" />
+  </head>
+
+  <body>
+    <div class="bulk-publisher">
+      <dt class="title is-expanded">
+        <span>CaaS Bulk Publisher</span>
+      </dt>
+      <dd class="content is-expanded">
+        <div class="field">
+          <label for="excelfile">Excel File Url:</label>
+          <input id="excelfile" name="excelfile" type="text" />
+        </div>
+        <div class="field">
+          <label for="caas-env-select">CaaS Env</label>
+          <select name="1A" id="caas-env-select">
+            <option>Prod</option>
+            <option>Stage</option>
+            <option>Dev</option>
+          </select>
+        </div>
+        <div id="caas-draft-cb" class="field checkbox">
+          <input type="checkbox" id="draftcb" name="draftcb" />
+          <label for="draftcb">Publish to Draft only</label>
+        </div>
+        <button id="bulkpublish" href="#">Bulk Publish</button>
+      </dd>
+
+      <dd class="content">
+        <label for="errors">Errors:</label>
+        <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
+        <label for="success">Success:</label>
+        <textarea id="success" name="success" rows="10" cols="50"></textarea>
+      </dd>
+    </div>
+    <script type="module">
+      import init from './bulk-publish-to-caas.js';
+      init();
+    </script>
+  </body>
+</html>

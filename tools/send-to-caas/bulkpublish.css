@@ -1,0 +1,16 @@
+#bulkpublish {
+  margin: 20px;
+}
+
+.bulk-publisher {
+  width: 500px;
+}
+
+.bulk-publisher .title {
+  grid-template-columns: 1fr;
+}
+
+dd.content .field {
+  padding: 0 20px;
+  margin: 20px 0
+}
