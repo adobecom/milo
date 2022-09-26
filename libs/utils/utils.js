@@ -261,6 +261,16 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
+      // Fragments
+      if (key === 'fragment' && url.hash === '') {
+        const { parentElement } = a;
+        const { nodeName, innerHTML } = parentElement;
+        const noText = innerHTML === a.outerHTML;
+        if (noText && nodeName === 'P') {
+          const div = createTag('div', null, a);
+          parentElement.parentElement.replaceChild(div, parentElement);
+        }
+      }
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -358,8 +368,8 @@ async function loadFooter() {
 function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   return [...el.querySelectorAll(selector)].map((section, idx) => {
-    decorateDefaults(section);
     const links = decorateLinks(section);
+    decorateDefaults(section);
     const blocks = decorateBlocks(section);
     section.className = 'section';
     section.dataset.status = 'decorated';

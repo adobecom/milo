@@ -46,6 +46,28 @@ describe('Utils', () => {
     });
   });
 
+  describe('Fragments', () => {
+    it('fully unwraps a fragment', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[0]);
+      expect(fragments[0].parentElement.nodeName).to.equal('DIV');
+    });
+
+    it('Does not unwrap when sibling content present', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[1]);
+      expect(fragments[1].parentElement.nodeName).to.equal('P');
+      expect(fragments[1].parentElement.textContent).to.contain('My sibling');
+    });
+
+    it('Does not unwrap when not in paragraph tag', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[1]);
+      expect(fragments[1].parentElement.nodeName).to.equal('P');
+      expect(fragments[1].parentElement.textContent).to.contain('My sibling');
+    });
+  });
+
   it('Loads a script', async () => {
     const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
     expect(script).to.exist;
