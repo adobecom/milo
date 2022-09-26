@@ -11,8 +11,11 @@ import {
   getImsToken,
   loadCaasTags,
   postDataToCaaS,
+  getConfig,
   setConfig,
 } from './send-utils.js';
+
+const LS_KEY = 'bulk-publish-caas';
 
 const sheetTagMap = {
   'adobe-com-enterprise:industry': 'caas:industry',
@@ -127,44 +130,64 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
 const processData = async (data, accessToken) => {
   const errorArr = [];
   const successArr = [];
+  let index = 0;
+  let keepGoing = true;
 
-  const statusModal = showAlert(`Publishing 1 of ${data.length}:`, { okBtn: false });
+  const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
 
   // eslint-disable-next-line no-restricted-syntax
   for (const page of data) {
-    const pageUrl = page.Path || page.path || page.url || page.URL || page.Url;
-    if (pageUrl === 'stop') break; // debug, stop on empty line
+    if (!keepGoing) break;
+    try {
+      const pageUrl = page.Path || page.path || page.url || page.URL || page.Url;
 
-    const { dom, error, lastModified } = await getPageDom(pageUrl);
-    if (error) {
-      errorArr.push({ url: pageUrl, error });
-      continue;
-    }
+      index += 1;
+      statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
 
-    setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
-    const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: pageUrl.replace('https://', '') });
+      if (pageUrl === 'stop') break; // debug, stop on empty line
 
-    if (errors.length) {
-      errorArr.push({ url: pageUrl, error: errors.join('\n') });
-      continue;
-    }
+      const { dom, error, lastModified } = await getPageDom(pageUrl);
+      if (error) {
+        errorArr.push({ url: pageUrl, error });
+        continue;
+      }
 
-    // Code for tags from spreadsheet
-    const updatedTags = updateTagsFromSheetData(caasMetadata.tags, page['cq:tags']);
-    caasMetadata.tags = updatedTags;
+      setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
+      const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: pageUrl.replace('https://', '') });
 
-    const caasProps = getCaasProps(caasMetadata);
-    const caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
-    const draftOnly = document.getElementById('draftcb')?.checked;
+      if (errors.length) {
+        errorArr.push({ url: pageUrl, error: errors.join('\n') });
+        continue;
+      }
 
-    const response = await postDataToCaaS({ accessToken, caasEnv, caasProps, draftOnly });
+      // Code for tags from spreadsheet
+      const updatedTags = updateTagsFromSheetData(caasMetadata.tags, page['cq:tags']);
+      caasMetadata.tags = updatedTags;
 
-    if (response.success) {
-      successArr.push({ url: pageUrl, caasMetadata });
-    } else {
-      errorArr.push({ url: pageUrl, response });
+      const caasProps = getCaasProps(caasMetadata);
+
+      // const caasEnv = document.getElementById('caasEnv')?.value?.toLowerCase();
+      // const draftOnly = document.getElementById('draftcb')?.checked;
+
+      const { caasEnv, draftOnly } = getConfig();
+
+      const response = await postDataToCaaS({ accessToken,
+        caasEnv: caasEnv?.toLowerCase(),
+        caasProps,
+        draftOnly,
+      });
+
+      if (response.success) {
+        successArr.push({ url: pageUrl, caasMetadata });
+      } else {
+        errorArr.push({ url: pageUrl, response });
+      }
+    } catch (e) {
+      console.log('ERROR: ' + e.message);
     }
   }
+
+  if (statusModal.modal) statusModal.close();
 
   document.getElementById('errors').value = JSON.stringify(errorArr, null, 2);
   document.getElementById('success').value = JSON.stringify(successArr, null, 2);
@@ -175,7 +198,7 @@ const bulkPublish = async () => {
   const accessToken = await checkIms();
   if (!accessToken) return;
 
-  const excelJsonUrl = document.getElementById('excelfile').value;
+  const excelJsonUrl = getConfig().excelFile;
   if (!excelJsonUrl) {
     await showAlert('Please enter an excel json url.');
   }
@@ -184,18 +207,53 @@ const bulkPublish = async () => {
   const { success, errors } = await processData(data, accessToken);
 };
 
-const init = async () => {
-  setConfig({
+const loadFromLS = () => {
+  const ls = localStorage.getItem(LS_KEY);
+  if (ls) {
+    try {
+      setConfig(JSON.parse(ls));
+      /* c8 ignore next */
+    } catch (e) {}
+  }
+  const fieldIds = ['host', 'repo', 'owner', 'excelFile', 'caasEnv'];
+  const defaults = {
+    excelFile: '',
     host: 'business.adobe.com',
-    project: '',
-    branch: 'main',
     repo: 'bacom',
     owner: 'adobecom',
+    caasEnv: 'Prod',
+  };
+  const config = getConfig();
+  fieldIds.forEach((field) => {
+    document.getElementById(field).value = config[field] || defaults[field];
   });
+};
+
+const init = async () => {
   await loadTingleModalFiles();
   await loadCaasTags();
+  loadFromLS();
+
+  window.addEventListener('beforeunload', () => {
+    const fieldIds = ['host', 'repo', 'owner', 'excelFile', 'caasEnv'];
+    const lsData = {};
+    fieldIds.forEach((field) => {
+      setConfig({ [field]: document.getElementById(field).value });
+    });
+    window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+  });
+
   const bulkPublishBtn = document.querySelector('#bulkpublish');
-  bulkPublishBtn.addEventListener('click', () => bulkPublish());
+  bulkPublishBtn.addEventListener('click', () => {
+    setConfig({
+      host: document.getElementById('host').value,
+      project: '',
+      branch: 'main',
+      repo: document.getElementById('repo').value,
+      owner: document.getElementById('owner').value,
+    });
+    bulkPublish();
+  });
 };
 
 export default init;

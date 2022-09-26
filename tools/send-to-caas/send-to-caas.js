@@ -34,7 +34,7 @@ const loadTingleModalFiles = async () => {
   }
 };
 
-const showAlert = (msg, { error = false, onClose, okBtn = true } = {}) => {
+const showAlert = (msg, { error = false, onClose, showBtn = true, btnText = 'OK' } = {}) => {
   const modal = new tingle.modal({
     footer: true,
     closeMethods: ['overlay', 'escape'],
@@ -48,10 +48,11 @@ const showAlert = (msg, { error = false, onClose, okBtn = true } = {}) => {
     msgContent = `<div class="modal-error"><div class="modal-alert"></div><div>${msg}</div></div>`;
   }
   modal.setContent(msgContent);
-  if (okBtn) {
-    modal.addFooterBtn('OK', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => modal.close());
+  if (showBtn) {
+    modal.addFooterBtn(btnText, 'tingle-btn tingle-btn--primary tingle-btn--pull-right', () => modal.close());
   }
   modal.open();
+  return modal;
 };
 
 const showConfirm = (msg, {

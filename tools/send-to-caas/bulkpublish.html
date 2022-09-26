@@ -11,29 +11,45 @@
       </dt>
       <dd class="content is-expanded">
         <div class="field">
-          <label for="excelfile">Excel File Url:</label>
-          <input id="excelfile" name="excelfile" type="text" />
+          <label for="host">Host:</label>
+          <input id="host" name="host" type="text" />
         </div>
         <div class="field">
-          <label for="caas-env-select">CaaS Env</label>
-          <select name="1A" id="caas-env-select">
+          <label for="repo">Repo:</label>
+          <input id="repo" name="repo" type="text" />
+        </div>
+        <div class="field">
+          <label for="owner">Repo Owner:</label>
+          <input id="owner" name="owner" type="text" />
+        </div>
+        <div class="field">
+          <label for="excelFile">Excel File Url:</label>
+          <input id="excelFile" name="excelFile" type="text" />
+        </div>
+        <div class="field">
+          <label for="caasEnv">CaaS Env</label>
+          <select name="1A" id="caasEnv">
             <option>Prod</option>
             <option>Stage</option>
             <option>Dev</option>
           </select>
         </div>
         <div id="caas-draft-cb" class="field checkbox">
-          <input type="checkbox" id="draftcb" name="draftcb" />
-          <label for="draftcb">Publish to Draft only</label>
+          <input type="checkbox" id="draftOnly" name="draftOnly" />
+          <label for="draftOnly">Publish to Draft only</label>
         </div>
         <button id="bulkpublish" href="#">Bulk Publish</button>
       </dd>
 
-      <dd class="content">
-        <label for="errors">Errors:</label>
-        <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
-        <label for="success">Success:</label>
-        <textarea id="success" name="success" rows="10" cols="50"></textarea>
+      <dd class="results">
+        <div>
+          <label for="errors">Errors:</label>
+          <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
+        </div>
+        <div>
+          <label for="success">Success:</label>
+          <textarea id="success" name="success" rows="10" cols="50"></textarea>
+        </div>
       </dd>
     </div>
     <script type="module">

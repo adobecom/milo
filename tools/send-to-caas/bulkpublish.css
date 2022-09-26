@@ -14,3 +14,11 @@ dd.content .field {
   padding: 0 20px;
   margin: 20px 0
 }
+
+.results {
+  display: flex;
+}
+
+.results > div {
+  padding: 20px;
+}
