@@ -20,6 +20,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'manual-card',
   'marquee',
   'media',
   'merch',
