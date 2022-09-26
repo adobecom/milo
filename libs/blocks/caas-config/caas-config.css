@@ -15,3 +15,15 @@ dd.content .sort-options {
 dd.content .sort-options > .field {
   margin-bottom: -5px;
 }
+
+.cardid {
+  display: none;
+}
+
+.show-ids .cardid {
+  display: block;
+  background-color: lightgreen;
+  position: absolute;
+  z-index: 2;
+  font-size: small;
+}
