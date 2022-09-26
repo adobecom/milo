@@ -25,5 +25,9 @@ dd.content .sort-options > .field {
   background-color: lightgreen;
   position: absolute;
   z-index: 2;
-  font-size: small;
+  font-size: 12px;
+}
+
+.show-ids .consonant-DoubleWideCard .cardid {
+  top: 12px;
 }

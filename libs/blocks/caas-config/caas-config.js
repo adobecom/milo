@@ -664,27 +664,23 @@ const getPanels = (tagsData) => [
   },
 ];
 
+const addIdOverlays = () => {
+  document.querySelectorAll('.consonant-Card').forEach((card) => {
+    if (!card.querySelector('.cardid')) {
+      const idDiv = document.createElement('div');
+      idDiv.classList.add('cardid');
+      idDiv.innerText = card.id;
+      card.appendChild(idDiv);
+    }
+  });
+};
+
 /* c8 ignore next 24 */
 const idOverlayMO = () => {
-  const mo = new MutationObserver((mutationList, observer) => {
-    mutationList.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.classList.contains('consonant-Card') && !node.querySelector('.cardid')) {
-          const idDiv = document.createElement('div');
-          idDiv.classList.add('cardid');
-          idDiv.innerText = node.id;
-          node.appendChild(idDiv);
-          if (mutation.previousSibling?.classList.contains('consonant-Card') && !mutation.previousSibling?.querySelector('.cardid')) {
-            const idd = document.createElement('div');
-            idd.classList.add('cardid');
-            idd.innerText = mutation.previousSibling.id;
-            mutation.previousSibling?.appendChild(idd);
-          }
-        }
-      });
-    });
+  const mo = new MutationObserver(() => {
+    setTimeout(() => addIdOverlays(), 500);
   });
-  mo.observe(document.querySelector('.content-panel'), { childList: true, subtree: true });
+  mo.observe(document.querySelector('.content-panel'), { attributes: true, childList: true, subtree: true });
   return mo;
 };
 
@@ -732,6 +728,9 @@ const Configurator = ({ rootEl }) => {
   useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
       await initCaas(state, strings);
+      if (state.showIds) {
+        setTimeout(() => addIdOverlays(), 500);
+      }
       saveStateToLocalStorage(state);
     }
   }, [isCaasLoaded, state, strings]);
