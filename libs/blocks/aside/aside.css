@@ -192,6 +192,34 @@
   margin: 0;
 }
 
+.aside.inline {
+  border-radius: 10px;
+}
+
+.aside.inline .foreground.container {
+  width: 100%;
+  min-height: 0;
+  margin: 32px;
+}
+
+.aside.inline .foreground.container .image,
+.aside.inline .foreground.container .text {
+  padding: 0;
+}
+
+.aside.inline .foreground.container .image {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.aside.inline .heading-S {
+  margin-bottom: 16px;
+}
+
+.aside.inline .action-area {
+  margin-top: 24px;
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     justify-content: space-between;
@@ -298,6 +326,17 @@
   .aside.augmented-image .foreground.container .text {
     flex: 0 0 43%;
   }
+
+  .aside.inline .foreground.container .image {
+    flex: 0 0 calc(40% - 16px);
+    margin-right: 32px;
+    margin-bottom: 0;
+  }
+
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(60% - 16px);
+    max-width: none;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -351,5 +390,19 @@
 
   .aside.augmented-image .foreground.container .image img {
     width: 130%;
+  }
+
+  .aside.inline {
+    max-width: 800px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .aside.inline .foreground.container .image {
+    flex: 0 0 calc(36% - 16px);
+  }
+
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(64% - 16px);
   }
 }
