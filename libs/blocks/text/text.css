@@ -3,6 +3,18 @@
   position: relative;
 }
 
+.text-block.xl-spacing { padding: var(--spacing-xl) 0; }
+
+.text-block.l-spacing { padding: var(--spacing-l) 0; }
+
+.text-block.m-spacing { padding: var(--spacing-m) 0; }
+
+.text-block.s-spacing { padding: var(--spacing-s) 0; }
+
+.text-block.xs-spacing { padding: var(--spacing-xs) 0; }
+
+.text-block.no-spacing { padding: 0; }
+
 .text-block .text-row {
   margin: var(--spacing-xs) 0;
 }
@@ -81,7 +93,11 @@
   font-size: var(--type-body-xs-size);
 }
 
-.text-block .heading-M {
+.text-block [class^="detail-"] {
+  margin: 0 0 var(--spacing-xxs);
+}
+
+.text-block [class^="heading-"] {
   margin: 0 0 var(--spacing-xs);
 }
 

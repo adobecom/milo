@@ -26,7 +26,7 @@ export function decorateIcons(el) {
 
 export function decorateBlockText(el, size = 'small') {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
+  const heading = headings[0];
   const decorate = (headingEl, headingSize, bodySize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);

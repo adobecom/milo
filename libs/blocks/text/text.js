@@ -10,7 +10,7 @@
 * governing permissions and limitations under the License.
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 /*
@@ -21,17 +21,14 @@ export default function init(el) {
   el.classList.add('text-block');
   const children = el.querySelectorAll(':scope > div');
   const [background, ...cols] = children;
-  decorateBlockBg(el, background);
   const container = createTag('div', { class: 'foreground container grid' });
+  decorateBlockBg(el, background);
+  const size = getBlockSize(el);
+  decorateBlockText(el, size);
   el.appendChild(container);
   cols.forEach((col, idx) => {
-    let headingClass = 'medium';
-    if (idx === 0 && (el.classList.contains('full-width'))) {
-      col.children[0].classList.add('full-width');
-      headingClass = el.classList.contains('large') ? 'large' : 'medium';
-    }
     col.children[0].classList.add('text-row', `text-row-${idx}`);
-    decorateBlockText(el, headingClass);
+    if (idx === 0 && (el.classList.contains('full-width'))) col.children[0].classList.add('full-width');
     col.querySelector('a + a')?.closest('p, div')?.classList.add('action-area');
     container.insertAdjacentElement('beforeend', col.children[0]);
     col.remove();
