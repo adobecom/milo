@@ -44,7 +44,6 @@ const addBackgroundImg = (picture, cardType, card) => {
   imageDiv.style.backgroundImage = `url(${url})`;
   imageDiv.classList.add(`consonant-${cardType}-img`);
   card.append(imageDiv);
-  picture.parentElement.remove();
 };
 
 const addInner = (el, cardType, card) => {
@@ -54,10 +53,11 @@ const addInner = (el, cardType, card) => {
 
   if (cardType === DOUBLE_WIDE) {
     inner = document.createElement('a');
-    inner.href = el.querySelector('a').href;
+    inner.href = el.querySelector('a')?.href || '';
     inner.rel = 'noopener noreferrer';
     inner.tabIndex = 0;
-    inner.append(title, text);
+    if (title) inner.append(title);
+    if (text) inner.append(text);
     el.querySelector(':scope > div:not([class])')?.remove();
   }
 
@@ -66,7 +66,7 @@ const addInner = (el, cardType, card) => {
 
   if (cardType === PRODUCT) {
     inner.querySelector(':scope > div')?.classList.add('consonant-ProductCard-row');
-    inner.append(text);
+    if (text) inner.append(text);
   }
 
   if (cardType === HALF_HEIGHT) {
@@ -90,7 +90,7 @@ const addFooter = (links, container) => {
   footer += '</div></div>';
 
   container.insertAdjacentHTML('beforeend', footer);
-  links[0].parentElement.remove();
+  links[0]?.parentElement?.remove();
 };
 
 const init = (el) => {
@@ -108,7 +108,7 @@ const init = (el) => {
 
   if (cardType === HALF_HEIGHT) {
     card = document.createElement('a');
-    card.href = links[0]?.href;
+    card.href = links[0]?.href || '';
     card.className = el.className;
 
     el.insertAdjacentElement('beforebegin', card);
@@ -118,12 +118,11 @@ const init = (el) => {
   card.classList.add('consonant-Card', `consonant-${cardType}`);
   if (!styles.includes('border')) card.classList.add('consonant-u-noBorders');
 
-  if (cardType === PRODUCT) {
-    picture?.parentElement.remove();
-  } else {
+  if (picture && cardType !== PRODUCT) {
     addBackgroundImg(picture, cardType, card);
   }
 
+  picture?.parentElement.remove();
   addInner(el, cardType, card);
   decorateButtons(el);
 
