@@ -6,11 +6,11 @@ import {
   connect as connectToSP,
   copyFileAndUpdateMetadata,
   getFileVersionInfo,
-  getLastRolloutVersion,
+  getFileMetadata,
   getVersionOfFile,
   saveFileAndUpdateMetadata,
 } from './sharepoint.js';
-import { asyncForEach, loadingON } from './utils.js';
+import { asyncForEach, loadingON, stripExtension } from './utils.js';
 
 let types = new Set();
 let hashToContentMap = new Map();
@@ -256,31 +256,40 @@ function getMergedMdast(left, right) {
   return mergedMdast;
 }
 
+function noRegionalChanges(fileMetadata) {
+  const lastModified = new Date(fileMetadata.lastModifiedDateTime);
+  const lastRollout = new Date(fileMetadata.Rollout);
+  const diffBetweenRolloutAndModification = Math.abs(lastRollout - lastModified) / 1000;
+  return diffBetweenRolloutAndModification < 10 ;
+}
+
 async function rollout(filePath, targetFolders) {
   await connectToSP();
-  const filePathWithoutExtension = filePath.substring(0, filePath.lastIndexOf('.'));
+  const filePathWithoutExtension = stripExtension(filePath);
   const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
   await asyncForEach(targetFolders, async (targetFolder) => {
     let languagePrevMd;
     const livecopyFilePath = `${targetFolder}/${fileName}`;
     loadingON(`Rollout to ${livecopyFilePath} started`);
-    const languagePrevVersion = await getLastRolloutVersion(livecopyFilePath);
+    const fileMetadata = await getFileMetadata(livecopyFilePath);
+    const isfileNotFound = fileMetadata.status && fileMetadata.status === 404;
+    const languagePrevVersion = fileMetadata.RolloutVersion;
     const languageCurrentVersion = await getFileVersionInfo(filePath);
-    if (!languagePrevVersion) {
-      // Cannot merge since we don't have rollout version info.
-      // eslint-disable-next-line no-console
-      loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
-    } else if (languagePrevVersion === '0.0') {
+    if (isfileNotFound || noRegionalChanges(fileMetadata)) {
       // just copy since regional document does not exist
       await copyFileAndUpdateMetadata(filePath, targetFolder);
       loadingON(`Rollout to ${livecopyFilePath} complete`);
+    } else if (!languagePrevVersion) {
+      // Cannot merge since we don't have rollout version info.
+      // eslint-disable-next-line no-console
+      loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
     } else if (languageCurrentVersion === languagePrevVersion) {
       languagePrevMd = await getMd(filePathWithoutExtension);
     } else {
       const languageBaseFile = await getVersionOfFile(filePath, languagePrevVersion);
       languagePrevMd = await docx2md(languageBaseFile, {});
     }
-    if (languagePrevMd) {
+    if (languagePrevMd != null) {
       const languagePrev = await getMdastFromMd(languagePrevMd);
       const languageBaseProcessed = await getProcessedMdast(languagePrev);
       const languageCurrent = await getMdast(filePathWithoutExtension);
@@ -306,7 +315,7 @@ async function process(folderPath) {
   reset();
   await connectToSP();
   let languagePrevMd;
-  const languagePrevVersion = await getLastRolloutVersion(`${folderPath}/region/loc.docx`);
+  const languagePrevVersion = await getFileMetadata(`${folderPath}/region/loc.docx`);
   const languageCurrentVersion = await getFileVersionInfo(`${folderPath}/language/loc.docx`);
   if (!languagePrevVersion) {
     // Cannot merge since we don't have rollout version info.

@@ -135,10 +135,12 @@ async function addLanguageTasksToProject(projectDetail, projectFolder, locConfig
         language: languageCode,
         altlanguage: altLanguageCode,
         path: srcPath,
+        skipLanguageTranslation: languageCode === 'en',
         filePath: `${srcPath}.docx`,
         languagePath: `/langstore/${languageCode}${srcPath}`,
         languageFilePath: `/langstore/${languageCode}${srcPath}.docx`,
-        languageAltLangFilePath: `/langstore/${languageCode}/altlang${srcPath}.docx`,
+        altLanguagePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}` : '',
+        altLanguageFilePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}.docx` : '',
         tempLanguagePath: `${projectFolder}/${languageCode}${srcPath}`,
         tempLanguageFilePath: `${projectFolder}/${languageCode}${srcPath}.docx`,
         livecopyFolders: targetLivecopyFolders,
@@ -167,7 +169,7 @@ async function init() {
   project = {
     url: projectUrl,
     path: projectPath,
-    name: projectFileStatus.edit.name,
+    name: projectName,
     sp: urlInfo.sp,
     owner: urlInfo.owner,
     repo: urlInfo.repo,
@@ -184,6 +186,7 @@ async function init() {
         url: projectUrl,
         docs: {},
         name: projectName,
+        altLangName: `${projectName}-altLang`,
       };
       if (!projectFileJson) {
         return projectDetail;

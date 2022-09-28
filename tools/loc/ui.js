@@ -15,7 +15,7 @@ import getConfig from './config.js';
 import {
   asyncForEach,
   createTag,
-  getPathFromUrl, getSharepointLocationFromUrl,
+  getPathFromUrl, getSharepointLocationFromUrl, isAltLang,
   loadingOFF,
   loadingON,
   setStatus,
@@ -27,11 +27,17 @@ import {
   updateProjectWithSpStatus as updateSPStatus, copyFile,
 } from './sharepoint.js';
 import { init as initProject } from './project.js';
-import { connect as connectToGLaaS, sendToGLaaS, getFile as getFileFromGLaaS, updateProject as updateGLaaSStatus } from './glaas.js';
+import {
+  connect as connectToGLaaS,
+  sendToGLaaS,
+  getFile as getFileFromGLaaS,
+  updateProject as updateGLaaSStatus,
+} from './glaas.js';
 import { rollout } from './rollout.js';
 
 let projectDetail;
 const MAX_RETRIES = 5;
+const GLAAS_COMPLTETE_STATUS = 'COMPLETED';
 
 function setError(msg, error) {
   // TODO UI
@@ -43,10 +49,6 @@ function setError(msg, error) {
 function setProjectUrl(project) {
   const projectName = project.name.replace(/\.[^/.]+$/, '').replaceAll('_', ' ');
   document.getElementById('project-url').innerHTML = `<a href="${project.sp}">${projectName}</a>`;
-}
-
-async function view(task) {
-  window.open(`${task.sp.webUrl}`);
 }
 
 function getProjectDetailContainer() {
@@ -109,10 +111,6 @@ function getSharepointStatus(url) {
   return { hasSourceFile, msg: sharepointStatus };
 }
 
-function isSentToGLaaS(task) {
-  return task?.glaas?.status;
-}
-
 function fileAlreadySavedInSharepoint(task) {
   return task.sp.status === 200;
 }
@@ -123,13 +121,20 @@ function createButton(innerHtml) {
   return $button;
 }
 
-function getPersistButtons(task, locale) {
+function getPersistButtons(task, language) {
   const fileInSharepoint = fileAlreadySavedInSharepoint(task);
   const $saveButton = createButton(fileInSharepoint ? 'Overwrite' : 'Save');
-  $saveButton.addEventListener('click', async () => { await save(task, locale); });
+  $saveButton.addEventListener('click', async () => { await save(task, language); });
+  const buttons = [];
   if (fileInSharepoint) {
-    const $viewButton = createButton('View');
-    $viewButton.addEventListener('click', () => { view(task); });
+    const $viewButton = createButton('Main');
+    $viewButton.addEventListener('click', () => { window.open(task.sp.webUrl); });
+    buttons.push($viewButton);
+    if (task.altlanguage && task.altlangsp.status === 200) {
+      const $viewAltLangButton = createButton('AltLang');
+      $viewAltLangButton.addEventListener('click', () => { window.open(task.altlangsp.webUrl); });
+      buttons.push($viewAltLangButton);
+    }
     const $rolloutButton = createButton('Rollout');
     $rolloutButton.addEventListener('click', async () => {
       loadingON(`Rollout to target folders of ${task.languageFilePath} in progress..`);
@@ -137,9 +142,9 @@ function getPersistButtons(task, locale) {
       loadingON(`Rollout ${task.languageFilePath} completed`);
     });
     loadingOFF();
-    return [$saveButton, $viewButton, $rolloutButton];
+    return buttons;
   }
-  return [$saveButton];
+  return buttons;
 }
 
 function getGLaaSStatus(config, language, url, hasSourceFile) {
@@ -150,12 +155,34 @@ function getGLaaSStatus(config, language, url, hasSourceFile) {
   }
   gLaaSStatus.innerHtml = 'Connect to GLaaS first';
   const gLaaSConfig = config.glaas;
-  const taskInGLaaS = isSentToGLaaS(languageTask);
-  if (taskInGLaaS) {
-    gLaaSStatus.innerHtml = taskInGLaaS;
+  const gLaaSStatusObject = languageTask?.glaas;
+  const altLang = languageTask.altlanguage;
+  const regularStatusInGLaaS = gLaaSStatusObject?.status;
+  if (regularStatusInGLaaS) {
     gLaaSStatus.taskFoundInGLaaS = true;
-    if (taskInGLaaS === 'COMPLETED' && languageTask.sp) {
-      gLaaSStatus.canSaveAll = true;
+    if (!altLang) {
+      gLaaSStatus.innerHtml = `${regularStatusInGLaaS}`;
+      if (regularStatusInGLaaS === GLAAS_COMPLTETE_STATUS && languageTask.sp) {
+        gLaaSStatus.canSaveAll = gLaaSStatusObject?.combinedStatus === GLAAS_COMPLTETE_STATUS;
+        gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
+      }
+    } else {
+      const altLangStatusInGLaaS = gLaaSStatusObject.altLangStatus ? gLaaSStatusObject.altLangStatus : 'PENDING';
+      const bothComplete = regularStatusInGLaaS === GLAAS_COMPLTETE_STATUS
+        && altLangStatusInGLaaS === GLAAS_COMPLTETE_STATUS;
+      gLaaSStatus.innerHtml = bothComplete ? GLAAS_COMPLTETE_STATUS : `Translation<br/>${regularStatusInGLaaS}<br/> AltLang<br/> ${altLangStatusInGLaaS}`;
+      if (bothComplete && languageTask.sp && languageTask?.altlangsp) {
+        gLaaSStatus.canSaveAll = gLaaSStatusObject?.combinedStatus === GLAAS_COMPLTETE_STATUS
+          && gLaaSStatusObject?.altLangCombinedStatus === GLAAS_COMPLTETE_STATUS;
+        gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
+      }
+    }
+  } else if (gLaaSStatusObject && languageTask.skipLanguageTranslation && altLang) {
+    gLaaSStatus.taskFoundInGLaaS = true;
+    const altLangStatusInGLaaS = gLaaSStatusObject.altLangStatus ? gLaaSStatusObject.altLangStatus : 'PENDING';
+    gLaaSStatus.innerHtml = altLangStatusInGLaaS;
+    if (altLangStatusInGLaaS === GLAAS_COMPLTETE_STATUS) {
+      gLaaSStatus.canSaveAll = gLaaSStatusObject?.altLangCombinedStatus === GLAAS_COMPLTETE_STATUS;
       gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
     }
   } else if (gLaaSConfig.accessToken) {
@@ -167,11 +194,13 @@ function getGLaaSStatus(config, language, url, hasSourceFile) {
 }
 
 async function initRollout(task) {
+  loadingON(`Rollout live-copy folders of ${task.languageFilePath} complete..`);
   await rollout(task.languageFilePath, task.livecopyFolders);
-  if (task.altLangFolders.length > 0) {
-    loadingON(`Rollout to alt-lang folders of ${task.languageFilePath} in progress..`);
-    await rollout(task.languageAltLangFilePath, task.altLangFolders);
-    loadingON(`Rollout to alt-lang folders of ${task.languageFilePath} complete..`);
+  loadingON(`Rollout to live-copy folders of ${task.languageFilePath} complete..`);
+  if (task.altlanguage) {
+    loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} in progress..`);
+    await rollout(task.altLanguageFilePath, task.altLangFolders);
+    loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} complete..`);
   }
 }
 
@@ -185,6 +214,11 @@ async function rolloutAll(language) {
   loadingON(`Rollout to target folders of ${language} complete`);
   loadingOFF();
   await refresh();
+}
+
+async function getLinkedPagePath(pagePath) {
+  const spViewUrl = await getSpViewUrl(pagePath);
+  return getAnchorHtml(spViewUrl, pagePath);
 }
 
 async function displayProjectDetail() {
@@ -206,10 +240,13 @@ async function displayProjectDetail() {
     const pageUrl = getAnchorHtml(url, getPathFromUrl(url));
     $tr.appendChild(createColumn(pageUrl));
     const sharepointStatus = getSharepointStatus(url);
-    const usEnDoc = sharepointStatus.msg;
-    $tr.appendChild(createColumn(getAnchorHtml(await getSpViewUrl(usEnDoc), usEnDoc)));
-    const langstoreEnDoc = '/langstore/en' + sharepointStatus.msg;
-    $tr.appendChild(createColumn(getAnchorHtml(await getSpViewUrl(langstoreEnDoc), langstoreEnDoc)));
+    const pathOrMsg = sharepointStatus.msg;
+    const usEnLinkedPath = sharepointStatus.hasSourceFile
+      ? await getLinkedPagePath(pathOrMsg) : pathOrMsg;
+    $tr.appendChild(createColumn(usEnLinkedPath));
+    const langstoreEnLinkedPath = sharepointStatus.hasSourceFile
+      ? await getLinkedPagePath(`/langstore/en${pathOrMsg}`) : pathOrMsg;
+    $tr.appendChild(createColumn(langstoreEnLinkedPath));
     await asyncForEach(projectDetail.languages, async (language) => {
       let filesMissingInSharepoint = false;
       const $td = createTag('td');
@@ -225,7 +262,7 @@ async function displayProjectDetail() {
       if (gLaaSStatus.canSaveAll) {
         showCombinedPersistRow = true;
         combinedSavePerLanguage.set(language, gLaaSStatus.canSaveAll);
-        filesMissingInSharepoint = gLaaSStatus.persistButtons.length === 1;
+        filesMissingInSharepoint = gLaaSStatus.persistButtons.length === 0;
         if (filesMissingInSharepoint) {
           hideCombinedRolloutPerLanguage.set(language, true);
         }
@@ -245,13 +282,13 @@ async function displayProjectDetail() {
     projectDetail.languages.forEach((language) => {
       if (combinedSavePerLanguage.get(language)) {
         const $td = createTag('td');
-        const $saveAllButton = createButton('Save all');
+        const $saveAllButton = createButton('Save');
         $saveAllButton.addEventListener('click', () => {
           saveAll(language);
         });
         $td.appendChild($saveAllButton);
         if (!hideCombinedRolloutPerLanguage.get(language)) {
-          const $rolloutAllButton = createButton('Rollout all');
+          const $rolloutAllButton = createButton('Rollout');
           $rolloutAllButton.addEventListener('click', () => {
             rolloutAll(language);
           });
@@ -329,17 +366,22 @@ async function refresh() {
   loadingOFF();
 }
 
-function fileExistsInSharepoint(task) {
-  return task.sp && task.sp.status === 200;
+function fileExistsInSharepoint(task, altLang) {
+  const sp = altLang ? task.altlangsp : task.sp;
+  return sp && sp.status === 200;
 }
 
-function getSavePath(task, language) {
-  return language === 'en' ? task.languageAltLangFilePath : task.languageFilePath;
+function getSavePath(task, altLang) {
+  return altLang ? task.altLanguageFilePath : task.languageFilePath;
 }
 
 async function save(task, language, doRefresh = true) {
-  const dest = `${getSavePath(task, language)}`.toLowerCase();
-  if (fileExistsInSharepoint(task)) {
+  const altLang = isAltLang(task, language);
+  if (task.skipLanguageTranslation && !altLang) {
+    return;
+  }
+  const dest = `${getSavePath(task, altLang)}`.toLowerCase();
+  if (fileExistsInSharepoint(task, altLang)) {
     // eslint-disable-next-line no-alert
     const confirm = window.confirm(`File ${dest} exists already. Are you sure you want to overwrite the current production version ?`);
     if (!confirm) return;
@@ -359,10 +401,13 @@ async function save(task, language, doRefresh = true) {
   }
 }
 
-async function saveAll(locale) {
-  await asyncForEach(projectDetail[locale], async (task) => {
+async function saveAll(language) {
+  await asyncForEach(projectDetail[language], async (task) => {
     if (task.glaas) {
-      await save(task, locale, false);
+      await save(task, language, false);
+      if (task.altlanguage && task.glaas.altLangStatus) {
+        await save(task, task.altlanguage, false);
+      }
     }
   });
   loadingOFF();
