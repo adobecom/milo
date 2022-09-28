@@ -141,3 +141,115 @@
     width: 100%;
   }
 }
+
+
+/* Max width util */
+.max-width-100 .container {
+  max-width: 100px;
+}
+.max-width-200 .container {
+  max-width: 200px;
+}
+.max-width-300 .container {
+  max-width: 300px;
+}
+.max-width-400 .container {
+  max-width: 400px;
+}
+.max-width-500 .container {
+  max-width: 500px;
+}
+.max-width-600 .container {
+  max-width: 600px;
+}
+.max-width-700 .container {
+  max-width: 700px;
+}
+.max-width-800 .container {
+  max-width: 800px;
+}
+.max-width-900 .container {
+  max-width: 900px;
+}
+.max-width-1000 .container {
+  max-width: 1000px;
+}
+.max-width-1100 .container {
+  max-width: 1100px;
+}
+.max-width-1200 .container {
+  max-width: 1200px;
+}
+
+/* Tablet up */
+@media screen and (min-width: 600px) {
+  .max-width-100-tablet .container {
+    max-width: 100px;
+  }
+  .max-width-200-tablet .container {
+    max-width: 200px;
+  }
+  .max-width-300-tablet .container {
+    max-width: 300px;
+  }
+  .max-width-400-tablet .container {
+    max-width: 400px;
+  }
+  .max-width-500-tablet .container {
+    max-width: 500px;
+  }
+  .max-width-600-tablet .container {
+    max-width: 600px;
+  }
+  .max-width-700-tablet .container {
+    max-width: 700px;
+  }
+  .max-width-800-tablet .container {
+    max-width: 800px;
+  }
+  .max-width-900-tablet .container {
+    max-width: 900px;
+  }
+  .max-width-1000-tablet .container {
+    max-width: 1000px;
+  }
+  .max-width-1100-tablet .container {
+    max-width: 1100px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .max-width-100-desktop .container {
+    max-width: 100px;
+  }
+  .max-width-200-desktop .container {
+    max-width: 200px;
+  }
+  .max-width-300-desktop .container {
+    max-width: 300px;
+  }
+  .max-width-400-desktop .container {
+    max-width: 400px;
+  }
+  .max-width-500-desktop .container {
+    max-width: 500px;
+  }
+  .max-width-600-desktop .container {
+    max-width: 600px;
+  }
+  .max-width-700-desktop .container {
+    max-width: 700px;
+  }
+  .max-width-800-desktop .container {
+    max-width: 800px;
+  }
+  .max-width-900-desktop .container {
+    max-width: 900px;
+  }
+  .max-width-1000-desktop .container {
+    max-width: 1000px;
+  }
+  .max-width-1100-desktop .container {
+    max-width: 1100px;
+  }
+}

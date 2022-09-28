@@ -14,11 +14,10 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 }
 
 .quote figure {
-  margin: 0;
   padding: 0;
 }
 
-.quote.contained figure {
+.quote.contained figure.container {
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }

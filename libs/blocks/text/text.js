@@ -21,7 +21,7 @@ export default function init(el) {
   el.classList.add('text-block');
   const children = el.querySelectorAll(':scope > div');
   const [background, ...cols] = children;
-  const container = createTag('div', { class: 'foreground container grid' });
+  const container = createTag('div', { class: 'foreground container' });
   decorateBlockBg(el, background);
   const size = getBlockSize(el);
   decorateBlockText(el, size);
