@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* global */
-const LOC_CONFIG = '/drafts/localization/configs/config-v2.json';
+const LOC_CONFIG = '/drafts/localization/configs/config-v3.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 
@@ -33,9 +33,7 @@ async function getDecoratedLocalesConfig(localesConfig) {
   localesConfig.forEach((localeConfig) => {
     decoratedLocalesConfig[localeConfig.languagecode] = {
       livecopies: localeConfig.livecopies,
-      altlang: localeConfig.altlang,
       workflow: localeConfig.workflow,
-      altlangWorflow: localeConfig.altlangWorflow,
       language: localeConfig.language,
       languagecode: localeConfig.languagecode,
       altLanguagecode: localeConfig.altLanguagecode,
@@ -75,6 +73,26 @@ function getGLaaSRedirectURI() {
   return encodeURI(`${location.origin}/tools/loc/glaas.html`);
 }
 
+function getGLaaSAPIDetails(workflow) {
+  const { product, project, workflowName } = workflow;
+  const baseURI = `/api/l10n/v1.1/tasks/${product}/${project}`;
+  const previewURL = (new URL(document.location.href)).origin;
+  return {
+    create: {
+      uri: `${baseURI}/create`,
+      payload: {
+        workflowName,
+        contentSource: 'Adhoc',
+        config: [{ value: `${previewURL}`, key: 'preview-server' }],
+      },
+    },
+    get: { baseURI: `${baseURI}` },
+    getAll: { uri: `${baseURI}` },
+    updateStatus: { baseURI: `${baseURI}` },
+    assets: { baseURI: `${baseURI}` },
+  };
+}
+
 async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
   return {
     ...config.glaas.data[0],
@@ -83,25 +101,9 @@ async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig
     redirectURI: getGLaaSRedirectURI(),
     accessToken: null,
     api: { session: { check: { uri: '/api/common/v1.0/checkSession' } } },
-    localeApi: (locale) => {
-      const workflow = getWorkflowForLocale(workflowsConfig, locale, decoratedLocales);
-      const { product, project, workflowName } = workflow;
-      const baseURI = `/api/l10n/v1.1/tasks/${product}/${project}`;
-      return {
-        tasks: {
-          create: {
-            uri: `${baseURI}/create`,
-            payload: {
-              workflowName,
-              contentSource: 'Adhoc',
-            },
-          },
-          get: { baseURI: `${baseURI}` },
-          getAll: { uri: `${baseURI}` },
-          updateStatus: { baseURI: `${baseURI}` },
-          assets: { baseURI: `${baseURI}` },
-        },
-      };
+    localeApi: (language) => {
+      const workflow = getWorkflowForLocale(workflowsConfig, language, decoratedLocales);
+      return { tasks: getGLaaSAPIDetails(workflow) };
     },
   };
 }
@@ -117,9 +119,7 @@ function getSharepointConfig(config) {
         clientId: sharepointConfig.clientId,
         authority: sharepointConfig.authority,
       },
-      cache: {
-        cacheLocation: 'sessionStorage',
-      },
+      cache: { cacheLocation: 'sessionStorage' },
     },
     shareUrl: sharepointConfig.shareurl,
     login: { redirectUri: '/tools/loc/spauth' },
@@ -197,7 +197,12 @@ async function getConfig() {
       },
       async getAltLangLocales(language) {
         const localeConfig = decoratedLocales[language];
-        return localeConfig?.altlang ? localeConfig.altlang : null;
+        const altLangCode = localeConfig.altLanguagecode;
+        if (altLangCode) {
+          const altLangConfig = decoratedLocales[altLangCode];
+          return altLangConfig?.livecopies ? altLangConfig.livecopies : null;
+        }
+        return null;
       },
       async getWorkflowForLocale(locale) {
         return getWorkflowForLocale(configJson, locale, decoratedLocales);

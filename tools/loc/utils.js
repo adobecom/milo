@@ -47,6 +47,20 @@ export function loadingOFF() {
   loading.classList.add('hidden');
 }
 
+export function isAltLang(task, language) {
+  return task.altlanguage === language;
+}
+
+export function getAltLanguage(project, language) {
+  const tasks = project[language];
+  const task = tasks.length > 0 ? tasks[0] : undefined;
+  return task && task?.altlanguage ? task.altlanguage : undefined;
+}
+
+export function stripExtension(path) {
+  return path.substring(0, path.lastIndexOf('.'));
+}
+
 export function getSharepointLocationFromUrl(url) {
   let path = getPathFromUrl(url);
   if (!path) {
@@ -59,4 +73,3 @@ export function getSharepointLocationFromUrl(url) {
   }
   return path;
 }
-
