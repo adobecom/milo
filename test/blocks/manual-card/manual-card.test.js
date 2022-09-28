@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions */
-/* global describe it */
+/* global describe it before */
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
@@ -27,10 +27,21 @@ describe('Manual Card', () => {
     expect(document.querySelector('.consonant-OneHalfCard')).to.exist;
   });
 
-  it('Supports Double Width card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/double-width.html' });
-    init(document.querySelector('.manual-card'));
-    expect(document.querySelector('.consonant-DoubleWideCard')).to.exist;
+  describe('Double Width Card', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/double-width.html' });
+    });
+
+    it('is supported', () => {
+      init(document.querySelector('.manual-card'));
+      expect(document.querySelector('.consonant-DoubleWideCard')).to.exist;
+    });
+  
+    it('does not display undefined if no content', async () => {
+      const el = document.querySelector('.manual-card.empty');
+      init(el);
+      expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
   });
 
   it('Supports Product card', async () => {
@@ -39,9 +50,20 @@ describe('Manual Card', () => {
     expect(document.querySelector('.consonant-ProductCard')).to.exist;
   });
 
-  it('Supports Half Height card', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/half-height.html' });
-    init(document.querySelector('.manual-card'));
-    expect(document.querySelector('.consonant-HalfHeightCard')).to.exist;
+  describe('Half Height Card', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/half-height.html' });
+    });
+
+    it('is supported', () => {
+      init(document.querySelector('.manual-card'));
+      expect(document.querySelector('.consonant-HalfHeightCard')).to.exist;
+    });
+  
+    it('does not display undefined if no content', async () => {
+      const el = document.querySelector('.manual-card.empty');
+      init(el);
+      expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
   });
 });
