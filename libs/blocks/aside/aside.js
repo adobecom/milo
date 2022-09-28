@@ -24,14 +24,14 @@ function decorateLayout(el) {
   return foreground;
 }
 
-function decorateContent(el) {
+function decorateContent(el, isInline) {
   if (!el) return;
   const text = el.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
   text?.classList.add('text');
   const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
-  heading?.classList.add('heading-XL');
-  heading?.nextElementSibling?.classList.add('body-S');
+  heading?.classList.add(`${isInline ? 'heading-S' : 'heading-XL'}`);
+  heading?.nextElementSibling?.classList.add(`${isInline ? 'body-M' : 'body-S'}`);
   heading?.previousElementSibling?.classList.add('detail-M');
   el.querySelector(':scope > div:not([class])')?.classList.add('image');
   const image = text?.querySelector('img');
@@ -40,6 +40,7 @@ function decorateContent(el) {
 
 export default function init(el) {
   const foreground = decorateLayout(el);
-  decorateContent(foreground);
+  const isInline = el.className.includes('inline');
+  decorateContent(foreground, isInline);
   decorateButtons(foreground);
 }
