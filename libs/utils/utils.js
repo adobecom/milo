@@ -9,6 +9,7 @@ const MILO_BLOCKS = [
   'adobetv',
   'aside',
   'caas',
+  'caas-config',
   'card-metadata',
   'carousel',
   'chart',

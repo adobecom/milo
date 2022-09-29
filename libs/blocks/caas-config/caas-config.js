@@ -11,6 +11,7 @@ import {
 import {
   updateObj,
   cloneObj,
+  getConfig,
   getHashConfig,
   isValidUuid,
   loadStyle,
@@ -757,7 +758,8 @@ const Configurator = ({ rootEl }) => {
 };
 
 const init = async (el) => {
-  loadStyle('/libs/ui/page/page.css');
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/ui/page/page.css`);
 
   const app = html` <${Configurator} rootEl=${el} /> `;
 

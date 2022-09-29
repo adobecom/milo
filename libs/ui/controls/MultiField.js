@@ -1,8 +1,9 @@
 import { html, useEffect, useState } from '../../deps/htm-preact.js';
 import cloneElement from '../../deps/cloneElement.js';
-import { loadStyle } from '../../utils/utils.js';
+import { getConfig, loadStyle } from '../../utils/utils.js';
 
-loadStyle('/libs/ui/controls/multifield.css');
+const { miloLibs, codeRoot } = getConfig();
+loadStyle(`${miloLibs || codeRoot}/ui/controls/multifield.css`);
 
 const FieldSet = ({ fields, onDelete }) => html`
     <div class="multifield-set">
