@@ -10,8 +10,33 @@
 * governing permissions and limitations under the License.
 */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateIcons, decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateLinkAnalytics } from '../../utils/analytics.js';
 import { createTag } from '../../utils/utils.js';
+
+export function decorateText(el, size = 'medium') {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+  };
+  headings.forEach((heading) => {
+    if (size === 'small') {
+      decorate(heading, 'S', 'S', 'S');
+    } else if (size === 'large') {
+      decorate(heading, 'L', 'L', 'L');
+    } else if (size === 'xlarge') {
+      decorate(heading, 'XL', 'XL', 'XL');
+    } else {
+      decorate(heading, 'M', 'M', 'M');
+    }
+  });
+
+  decorateIcons(el);
+  decorateButtons(el);
+  decorateLinkAnalytics(el, headings);
+}
 
 /*
  * Text Block - v1.0
@@ -19,18 +44,25 @@ import { createTag } from '../../utils/utils.js';
 
 export default function init(el) {
   el.classList.add('text-block');
-  const children = el.querySelectorAll(':scope > div');
-  const [background, ...cols] = children;
+  const rows = el.querySelectorAll(':scope > div');
   const container = createTag('div', { class: 'foreground container' });
-  decorateBlockBg(el, background);
+  if (rows.length > 1) decorateBlockBg(el, rows[0]);
   const size = getBlockSize(el);
-  decorateBlockText(el, size);
+  decorateText(el, size);
   el.appendChild(container);
-  cols.forEach((col, idx) => {
-    col.children[0].classList.add('text-row', `text-row-${idx}`);
-    if (idx === 0 && (el.classList.contains('full-width'))) col.children[0].classList.add('full-width');
-    col.querySelector('a + a')?.closest('p, div')?.classList.add('action-area');
-    container.insertAdjacentElement('beforeend', col.children[0]);
-    col.remove();
+  const textRows = el.querySelectorAll(':scope > div:not([class])');
+  textRows.forEach((row, idx) => {
+    row.children[0].classList.add('text-row', `text-row-${idx}`);
+    if (el.classList.contains('inset')) {
+      if (textRows.length === 1 && idx === 0) {
+        row.children[0].classList.add('text-row-inset');
+      } else if (textRows.length && idx === 1) {
+        row.children[0].classList.add('text-row-inset');
+      }
+    }
+    if (idx === 0 && (el.classList.contains('full-width'))) row.children[0].classList.add('full-width');
+    row.querySelector('a + a')?.closest('p, div')?.classList.add('action-area');
+    container.insertAdjacentElement('beforeend', row.children[0]);
+    row.remove();
   });
 }
