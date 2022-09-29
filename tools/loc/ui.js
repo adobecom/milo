@@ -194,13 +194,19 @@ function getGLaaSStatus(config, language, url, hasSourceFile) {
 }
 
 async function initRollout(task) {
+  const failedRollouts = [];
   loadingON(`Rollout live-copy folders of ${task.languageFilePath} complete..`);
-  await rollout(task.languageFilePath, task.livecopyFolders);
+  const failedRolloutPages = await rollout(task.languageFilePath, task.livecopyFolders);
+  failedRollouts.push(failedRolloutPages);
   loadingON(`Rollout to live-copy folders of ${task.languageFilePath} complete..`);
   if (task.altlanguage) {
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} in progress..`);
-    await rollout(task.altLanguageFilePath, task.altLangFolders);
+    const failedRolloutPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
+    failedRollouts.push(failedRolloutPages);
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} complete..`);
+  }
+  if (failedRollouts.length > 0) {
+    loadingON(`Rollout complete. Failed for following - ${failedRollouts}`);
   }
 }
 

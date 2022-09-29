@@ -263,10 +263,20 @@ function noRegionalChanges(fileMetadata) {
   return diffBetweenRolloutAndModification < 10 ;
 }
 
+async function safeGetVersionOfFile(filePath, version) {
+  let versionFile;
+  try {
+    versionFile = await getVersionOfFile(filePath, version);
+   /* c8 ignore next */
+  } catch (e) {}
+  return versionFile;
+}
+
 async function rollout(filePath, targetFolders) {
   await connectToSP();
   const filePathWithoutExtension = stripExtension(filePath);
   const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+  const failedRolloutPages = [];
   await asyncForEach(targetFolders, async (targetFolder) => {
     let languagePrevMd;
     const livecopyFilePath = `${targetFolder}/${fileName}`;
@@ -286,8 +296,10 @@ async function rollout(filePath, targetFolders) {
     } else if (languageCurrentVersion === languagePrevVersion) {
       languagePrevMd = await getMd(filePathWithoutExtension);
     } else {
-      const languageBaseFile = await getVersionOfFile(filePath, languagePrevVersion);
-      languagePrevMd = await docx2md(languageBaseFile, {});
+      const languageBaseFile = await safeGetVersionOfFile(filePath, languagePrevVersion);
+      if (languageBaseFile) {
+        languagePrevMd = await docx2md(languageBaseFile, {});
+      }
     }
     if (languagePrevMd != null) {
       const languagePrev = await getMdastFromMd(languagePrevMd);
@@ -307,8 +319,12 @@ async function rollout(filePath, targetFolders) {
       );
       await persist(filePath, livecopyMergedMdast, livecopyFilePath);
       loadingON(`Rollout to ${livecopyFilePath} complete`);
+    } else {
+      failedRolloutPages.push(livecopyFilePath);
+      loadingON(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
     }
   });
+  return failedRolloutPages;
 }
 
 async function process(folderPath) {
