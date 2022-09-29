@@ -26,7 +26,7 @@ import {
   getSpViewUrl,
   updateProjectWithSpStatus as updateSPStatus, copyFile,
 } from './sharepoint.js';
-import { init as initProject } from './project.js';
+import initProject from './project.js';
 import {
   connect as connectToGLaaS,
   sendToGLaaS,

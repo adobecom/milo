@@ -210,5 +210,4 @@ async function init() {
   return project;
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export { init, PROJECTS_ROOT_PATH };
+export { init as default, PROJECTS_ROOT_PATH };

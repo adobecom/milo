@@ -8,6 +8,8 @@ import {
   useReducer,
   useState,
 } from '../../libs/deps/htm-preact.js';
+import getConfig from './config.js';
+import getProject from './project.js';
 
 const CONFIG_SHEET_PATH = '/drafts/localization/configs/config-v2.json';
 
@@ -19,27 +21,22 @@ const fetchJson = async (url) => {
   return res.json();
 };
 
-const getQueryParams = (names) => {
-  const pageUrl = new URL(window.location.href);
-  return names.reduce((params, name) => {
-    params[name] = pageUrl.searchParams.get(name);
-    return params;
-  }, {});
-};
+// const getQueryParams = (names) => {
+//   const pageUrl = new URL(window.location.href);
+//   return names.reduce((params, name) => {
+//     params[name] = pageUrl.searchParams.get(name);
+//     return params;
+//   }, {});
+// };
 
-const getConfig = ({ owner, ref, repo } = {}) => {
-  if (!(owner || ref || repo)) {
-    throw new Error('Missing "owner", "ref", or "repo" queryparams.');
-  }
-  const configSheetUrl = `https://${ref}--${repo}--${owner}.hlx.page${CONFIG_SHEET_PATH}`;
-  const configJson = await fetchJson(configSheetUrl);
+// const getConfig = ({ owner, ref, repo } = {}) => {
+//   if (!(owner || ref || repo)) {
+//     throw new Error('Missing "owner", "ref", or "repo" queryparams.');
+//   }
+//   const configSheetUrl = `https://${ref}--${repo}--${owner}.hlx.page${CONFIG_SHEET_PATH}`;
+//   const configJson = await fetchJson(configSheetUrl);
 
-}
-
-const getProjectInfo = () => {
-  const projectInfo = getQueryParams(['owner', 'ref', 'repo']);
-  projectInfo.config = getConfig(projectInfo);
-};
+// }
 
 const SubProject = () => {
   const [language, setLanguage] = useState();
@@ -56,9 +53,12 @@ const LocProject = () => {
   const [pages, setPages] = useState();
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  useEffect(async () => {
     try {
-      setProjectInfo(getProjectInfo());
+      setConfig(await getConfig());
+      const project = await getProject();
+      project.details = await project.detail();
+      setProjectInfo(project);
     } catch (e) {
       setError(e.message);
     }
@@ -67,7 +67,7 @@ const LocProject = () => {
   return html`
     <div class="project-info">
       <h3>PROJECT</h3>
-      <div>${projectInfo?.name}</div>
+      <div>ProjectInfo: ${JSON.stringify(projectInfo, null, 2)}</div>
     </div>
     ${error && html`<div id="error">${error}</div>`}
   `;
