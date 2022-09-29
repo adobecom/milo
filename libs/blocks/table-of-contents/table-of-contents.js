@@ -13,8 +13,6 @@
 /*
  * Table of Contents
  */
-import { createTag } from '../../utils/utils.js';
-
 function findAnchorTarget(text) {
   let linkText = text.toLowerCase();
   linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
@@ -33,51 +31,56 @@ const DOWN_ARROW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="10.875" 
   </g>
 </svg>`;
 
-function tocItem(title, description, target) {
-  const onClick = (e) => {
-    e.preventDefault();
-    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = target?.getBoundingClientRect()?.top ?? 0;
-    const offsetPosition = targetPosition + window.pageYOffset - pageTop;
-
-    window.scrollTo(0, offsetPosition);
-    target?.setAttribute('tabindex', -1);
-    target?.focus();
-  };
-
-  const sectionTitle = `<p class="section-title">${title}</p>`;
-  const sectionDescription = description ? `<p class="section-description">${description}</p>` : '';
-  const sectionLink = target ? `<a class="section-link" href="#${target.id}">${target.textContent}</a>` : '';
-  const html = `<div class="toc-link-text">
-    ${sectionTitle}
-    ${sectionDescription}
-    ${sectionLink}
-  </div>
-  <div class="toc-arrow">
-    ${DOWN_ARROW_ICON}
-  </div>`;
-
-  const item = createTag('section', { class: 'toc-item' }, html);
-  item.querySelector('a')?.addEventListener('click', onClick);
-
-  return item;
+function getItemHTML(title, description, target) {
+  return `
+  <li class="toc-item">
+    <div class="toc-link-text">
+      ${target ? `<a class="section-title" href="#${target?.id}" target="_self">${title}</a>` : `<p class="section-title">${title}</p>`}
+      ${description ? `<p class="section-description">${description}</p>` : ''}
+    </div>
+    <div class="toc-arrow">
+      ${DOWN_ARROW_ICON}
+    </div>
+  </li>`;
 }
 
 export default function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const title = children.shift().textContent;
+  const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
 
-  const tocTitle = createTag('p', { class: 'toc-title' }, title);
-  const tocContainer = createTag('div', { class: 'container toc-container' }, tocTitle);
-
-  children.forEach((section) => {
+  const list = children.reduce((prev, section) => {
     const sectionTitle = section.querySelector('strong');
     const link = section.querySelector('a');
     const subtitle = section.querySelectorAll('p').length > 2 ? section.querySelectorAll('p')[1] : null;
     const target = findAnchorTarget(link.textContent);
-    const item = tocItem(sectionTitle?.textContent, subtitle?.textContent, target);
-    tocContainer.append(item);
-  });
+    const item = getItemHTML(sectionTitle?.textContent, subtitle?.textContent, target);
 
-  el.replaceChildren(tocContainer);
+    return prev + item;
+  }, '');
+  const sectionNav = `
+  <section class="container toc-container">
+    <p class="toc-title">${title}</p>
+    <nav aria-label="Table of contents">
+      <ul class="toc-list">${list}</ul>
+    </nav>
+  </section>`;
+
+  el.innerHTML = sectionNav;
+  el.querySelectorAll('.toc-item').forEach((item) => {
+    item.addEventListener('click', () => item.querySelector('a')?.click());
+  });
+  el.querySelectorAll('a').forEach((link) => {
+    const target = document.getElementById(link.href.split('#')[1]);
+    const onClick = (e) => {
+      const targetPosition = target?.getBoundingClientRect().top ?? 0;
+      const offsetPosition = targetPosition + window.pageYOffset - pageTop;
+
+      e.preventDefault();
+      window.scrollTo(0, offsetPosition);
+      target?.setAttribute('tabindex', -1);
+      target?.focus();
+    };
+    link.addEventListener('click', onClick);
+  });
 }
