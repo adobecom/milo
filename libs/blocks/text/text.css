@@ -108,6 +108,14 @@
   margin: var(--spacing-m) 0;
 }
 
+.inset.text-block .text-row-inset [class^="heading-"] {
+  margin-top: var(--spacing-xl);
+}
+
+.inset.text-block .text-row-inset [class^="heading-"]:first-of-type {
+  margin-top: 0;
+}
+
 /* Desktop */
 @media screen and (min-width: 1200px) {
   .text-block .full-width > * {
