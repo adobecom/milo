@@ -17,20 +17,31 @@ const getCardType = (styles) => {
   return cardTypes[authoredType] || HALF;
 };
 
+const getUpFromSectionMetadata = (section) => {
+  const keyDivs = Array.from(section.querySelectorAll('.section-metadata > div > div:first-child'));
+  const styleDiv = keyDivs.find((keyDiv) => keyDiv.innerText.includes('style'));
+  const styleValues = styleDiv?.nextElementSibling?.textContent.toLowerCase();
+  const styles = styleValues?.split(', ').map((style) => style.replaceAll(' ', '-'));
+
+  return styles?.find((style) => style.includes('-up'));
+};
+
 const addWrapper = (el, section, cardType) => {
   const { classList } = section;
   const gridCl = 'consonant-CardsGrid';
 
-  if (!classList.contains('consonant-Wrapper')) {
-    const up = Array.from(classList).find((style) => style.includes('-up'))?.replace('-', '') || '3up';
-    const innerWrapper = `<div class="consonant-Wrapper-inner">
-      <div class="consonant-Wrapper-collection">
-        <div class="${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}">
+  if (!section.querySelector('.consonant-Wrapper')) {
+    const upClass = Array.from(classList).find((style) => style.includes('-up')) || getUpFromSectionMetadata(section);
+    const up = upClass?.replace('-', '') || '3up';
+    const innerWrapper = `<div class="consonant-Wrapper consonant-Wrapper--1200MaxWidth">
+      <div class="consonant-Wrapper-inner">
+        <div class="consonant-Wrapper-collection">
+          <div class="${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}">
+          </div>
         </div>
       </div>
     </div>`;
 
-    classList.add('consonant-Wrapper', 'consonant-Wrapper--1200MaxWidth');
     section.insertAdjacentHTML('afterbegin', innerWrapper);
   }
 
@@ -71,7 +82,7 @@ const addInner = (el, cardType, card) => {
 
   if (cardType === HALF_HEIGHT) {
     text?.remove();
-    el.remove();
+    // el.remove();
   }
 
   title?.classList.add(`consonant-${cardType}-title`);
@@ -107,12 +118,17 @@ const init = (el) => {
   addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {
-    card = document.createElement('a');
-    card.href = links[0]?.href || '';
-    card.className = el.className;
+    const [link] = links;
 
-    el.insertAdjacentElement('beforebegin', card);
-    links[0]?.parentElement?.remove();
+    if (link) {
+      card = link;
+      el.prepend(link);
+    } else {
+      card = document.createElement('a');
+      card.href = link?.href || '';
+      el.prepend(card);
+      link?.parentElement?.remove();
+    }
   }
 
   card.classList.add('consonant-Card', `consonant-${cardType}`);
