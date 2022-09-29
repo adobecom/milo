@@ -21,8 +21,7 @@ describe('table of contents', () => {
 
   describe('table of contents', () => {
     it('has container', () => {
-      const toc = document.querySelector('.table-of-contents');
-      expect(toc.querySelector('.toc-container')).to.exist;
+      expect(document.querySelector('.table-of-contents .toc-container')).to.exist;
     });
 
     it('changes focus', () => {

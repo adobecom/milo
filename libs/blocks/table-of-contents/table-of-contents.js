@@ -33,10 +33,11 @@ const DOWN_ARROW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="10.875" 
   </g>
 </svg>`;
 
-function tocItem(title, subtitle, target) {
-  const onClick = () => {
+function tocItem(title, description, target) {
+  const onClick = (e) => {
+    e.preventDefault();
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = target.getBoundingClientRect().top;
+    const targetPosition = target?.getBoundingClientRect()?.top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
     window.scrollTo(0, offsetPosition);
@@ -45,18 +46,19 @@ function tocItem(title, subtitle, target) {
   };
 
   const sectionTitle = `<p class="section-title">${title}</p>`;
-  const sectionDescription = subtitle ? `<p class="section-description">${subtitle}</p>` : '';
+  const sectionDescription = description ? `<p class="section-description">${description}</p>` : '';
+  const sectionLink = target ? `<a class="section-link" href="#${target.id}">${target.textContent}</a>` : '';
   const html = `<div class="toc-link-text">
     ${sectionTitle}
     ${sectionDescription}
+    ${sectionLink}
   </div>
   <div class="toc-arrow">
     ${DOWN_ARROW_ICON}
   </div>`;
 
-  const item = createTag('section', { class: 'toc-item', tabindex: '0' }, html);
-
-  item.addEventListener('click', onClick);
+  const item = createTag('section', { class: 'toc-item' }, html);
+  item.querySelector('a')?.addEventListener('click', onClick);
 
   return item;
 }
@@ -69,7 +71,6 @@ export default function init(el) {
   const tocContainer = createTag('div', { class: 'container toc-container' }, tocTitle);
 
   children.forEach((section) => {
-    // const p = section.querySelectorAll('p');
     const sectionTitle = section.querySelector('strong');
     const link = section.querySelector('a');
     const subtitle = section.querySelectorAll('p').length > 2 ? section.querySelectorAll('p')[1] : null;
