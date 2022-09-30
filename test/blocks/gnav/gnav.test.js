@@ -53,7 +53,6 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
     largeMenuBtn.click();
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
-    expect(largeMenu.querySelector('.section.last-link-blue')).to.exist;
   });
 
   it('nav menu close on scroll', async () => {
@@ -64,7 +63,7 @@ describe('Gnav', () => {
     largeMenuBtn.click();
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
     window.scrollTo(0, 400);
-    await delay(10);
+    await delay(100);
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
   });
 

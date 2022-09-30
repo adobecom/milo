@@ -183,12 +183,7 @@
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-        tagUrlInput.value = 'not.the.right.url/tags';
-        tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-
-        const errorEl = configPanelEl.querySelector('.tool-error');
+        const errorEl = await waitForElement('.tool-error');
         expect(errorEl).to.not.be.null;
         expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
 
