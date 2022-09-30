@@ -32,6 +32,7 @@ const sheetTagMap = {
   'adobe-com-enterprise:industry/travel-and-hospitality': 'caas:industry/travel-and-hospitality',
   'adobe-com-enterprise:product': 'caas:products',
   'adobe-com-enterprise:product/acrobat-dc': 'caas:products/acrobat',
+  'adobe-com-enterprise:product/adobe-commerce': 'caas:products/adobe-commerce',
   'adobe-com-enterprise:product/advertising-cloud': 'caas:products/adobe-advertising-cloud',
   'adobe-com-enterprise:product/analytics': 'caas:products/adobe-analytics',
   'adobe-com-enterprise:product/audience-manager': 'caas:products/adobe-audience-manager',
