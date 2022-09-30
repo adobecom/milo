@@ -166,9 +166,6 @@ const processData = async (data, accessToken) => {
 
       const caasProps = getCaasProps(caasMetadata);
 
-      // const caasEnv = document.getElementById('caasEnv')?.value?.toLowerCase();
-      // const draftOnly = document.getElementById('draftcb')?.checked;
-
       const { caasEnv, draftOnly } = getConfig();
 
       const response = await postDataToCaaS({ accessToken,
