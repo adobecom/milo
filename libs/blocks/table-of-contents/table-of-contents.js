@@ -13,6 +13,9 @@
 /*
  * Table of Contents
  */
+
+import { createTag } from '../../utils/utils.js';
+
 function findAnchorTarget(text) {
   let linkText = text.toLowerCase();
   linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
@@ -31,48 +34,22 @@ const DOWN_ARROW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="10.875" 
   </g>
 </svg>`;
 
-function getItemHTML(title, description, target) {
-  return `
-  <li class="toc-item">
-    <div class="toc-link-text">
-      ${target ? `<a class="section-title" href="#${target?.id}" target="_self">${title}</a>` : `<p class="section-title">${title}</p>`}
-      ${description ? `<p class="section-description">${description}</p>` : ''}
-    </div>
-    <div class="toc-arrow">
-      ${DOWN_ARROW_ICON}
-    </div>
-  </li>`;
-}
-
-export default function init(el) {
-  const children = Array.from(el.querySelectorAll(':scope > div'));
-  const title = children.shift().textContent;
+function getItem(title, description, target) {
+  const item = createTag('li', { class: 'toc-item' });
+  const linkText = createTag('div', { class: 'toc-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
 
-  const list = children.reduce((prev, section) => {
-    const sectionTitle = section.querySelector('strong');
-    const link = section.querySelector('a');
-    const subtitle = section.querySelectorAll('p').length > 2 ? section.querySelectorAll('p')[1] : null;
-    const target = findAnchorTarget(link.textContent);
-    const item = getItemHTML(sectionTitle?.textContent, subtitle?.textContent, target);
+  if (title) {
+    const link = createTag('a', { class: 'section-title', href: `#${target?.id}`, target: '_self' }, title);
+    linkText.append(link);
+    item.addEventListener('click', () => {
+      const isTextSelected = window.getSelection().toString();
 
-    return prev + item;
-  }, '');
-  const sectionNav = `
-  <section class="container toc-container">
-    <p class="toc-title">${title}</p>
-    <nav aria-label="Table of contents">
-      <ul class="toc-list">${list}</ul>
-    </nav>
-  </section>`;
-
-  el.innerHTML = sectionNav;
-  el.querySelectorAll('.toc-item').forEach((item) => {
-    item.addEventListener('click', () => item.querySelector('a')?.click());
-  });
-  el.querySelectorAll('a').forEach((link) => {
-    const target = document.getElementById(link.href.split('#')[1]);
-    const onClick = (e) => {
+      if (!isTextSelected) {
+        link.click();
+      }
+    });
+    link.addEventListener('click', (e) => {
       const targetPosition = target?.getBoundingClientRect().top ?? 0;
       const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
@@ -80,7 +57,33 @@ export default function init(el) {
       window.scrollTo(0, offsetPosition);
       target?.setAttribute('tabindex', -1);
       target?.focus();
-    };
-    link.addEventListener('click', onClick);
-  });
+    });
+  }
+
+  if (description) linkText.append(createTag('p', { class: 'section-description' }, description));
+  item.append(linkText);
+  if (target) item.append(createTag('div', { class: 'toc-arrow' }, DOWN_ARROW_ICON));
+
+  return item;
+}
+
+export default function init(el) {
+  const children = Array.from(el.querySelectorAll(':scope > div'));
+  const title = children.shift().textContent;
+  const tocContainer = createTag('div', { class: 'container toc-container' }, `<p class="toc-title">${title}</p>`);
+  const tocNav = createTag('nav', { 'aria-label': 'Table of contents' });
+  const navUl = createTag('ul', { class: 'toc-list' });
+
+  children.forEach((section) => {
+    const sectionTitle = section.querySelector('strong');
+    const link = section.querySelector('a');
+    const subtitle = section.querySelector('p:not(:has(*))');
+    const target = link ? findAnchorTarget(link.textContent) : null;
+    const item = getItem(sectionTitle?.textContent, subtitle?.textContent, target);
+    navUl.append(item);
+  }, '');
+
+  tocNav.append(navUl);
+  tocContainer.append(tocNav);
+  el.replaceChildren(tocContainer);
 }

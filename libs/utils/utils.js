@@ -30,6 +30,7 @@ const MILO_BLOCKS = [
   'quote',
   'section-metadata',
   'tabs',
+  'table-of-contents',
   'youtube',
   'z-pattern',
   'share',

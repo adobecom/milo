@@ -24,11 +24,20 @@ describe('table of contents', () => {
       expect(document.querySelector('.table-of-contents .toc-container')).to.exist;
     });
 
+    it('Link by text content', () => {
+      const toc = document.querySelector('.table-of-contents');
+      const sections = toc.querySelectorAll('.toc-item');
+      const href = sections[0].querySelector('a')?.href;
+
+      expect(href).to.be.a('string');
+      expect(href).to.contain('#what-we-offer');
+    });
+
     it('changes focus', () => {
       const toc = document.querySelector('.table-of-contents');
-      const section = toc.querySelectorAll('.toc-item');
+      const sections = toc.querySelectorAll('.toc-item');
 
-      section[0].click();
+      sections[0].click();
       const heading = document.getElementById('what-we-offer');
 
       expect(heading === document.activeElement).to.be.true;
