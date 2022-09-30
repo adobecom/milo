@@ -1,11 +1,12 @@
 import { html, useEffect, useRef, useState } from '../../deps/htm-preact.js';
-import { loadStyle } from '../../utils/utils.js';
+import { getConfig, loadStyle } from '../../utils/utils.js';
 import createPortal from '../../deps/portal.js'; // '../../deps/portal.js';
 import useOnClickOutside from '../../hooks/useOnClickOutside.js';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll.js';
 import useDebounce from '../../hooks/useDebounce.js';
 
-loadStyle('/libs/ui/controls/tagSelector.css');
+const { miloLibs, codeRoot } = getConfig();
+loadStyle(`${miloLibs || codeRoot}/ui/controls/tagSelector.css`);
 
 const TagSelectDropdown = ({
   close,
