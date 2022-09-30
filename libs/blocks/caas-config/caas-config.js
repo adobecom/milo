@@ -760,6 +760,7 @@ const Configurator = ({ rootEl }) => {
 const init = async (el) => {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/ui/page/page.css`);
+  loadStyle(`${miloLibs || codeRoot}/blocks/caas/caas.css`);
 
   const app = html` <${Configurator} rootEl=${el} /> `;
 
