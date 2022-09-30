@@ -1,3 +1,7 @@
 a[href*="/tools/caas#"] {
   visibility: hidden !important;
 }
+
+main .consonant-TopFilters-filtersWrapper:first-child{
+  padding-top: 2px;
+}
