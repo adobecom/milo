@@ -20,17 +20,28 @@ function handleStyle(div, section) {
   }
 }
 
+function handleTab(div, section) {
+    const value = div.textContent.toLowerCase();
+    const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+    if (section) {
+        section.classList.add(...styles);
+    }
+}
+
 export default function init(el) {
-  const section = el.closest('.section');
-  if (!section) return;
-  const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
-  keyDivs.forEach((div) => {
-    const valueDiv = div.nextElementSibling;
-    if (div.textContent === 'style') {
-      handleStyle(valueDiv, section);
-    }
-    if (div.textContent === 'background') {
-      handleBackground(valueDiv, section);
-    }
-  });
+    const section = el.closest('.section');
+    if (!section) return;
+    const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
+    keyDivs.forEach((div) => {
+        const valueDiv = div.nextElementSibling;
+        if (div.textContent === 'style') {
+            handleStyle(valueDiv, section);
+        }
+        if (div.textContent === 'background') {
+            handleBackground(valueDiv, section);
+        }
+        if (div.textContent === 'tab') {
+            handleTab(valueDiv, section);
+        }
+    });
 }
