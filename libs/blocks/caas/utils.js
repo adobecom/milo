@@ -1,6 +1,19 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
+const fetchWithTimeout = async (resource, options = {}) => {
+  const { timeout = 5000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal,
+  });
+  clearTimeout(id);
+  return response;
+};
+
 export const loadStrings = async (url) => {
   // TODO: Loc based loading
   if (!url) return {};
@@ -29,7 +42,7 @@ export const loadCaasTags = async (tagsUrl) => {
   if (tagsUrl) {
     const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
     try {
-      const resp = await fetch(url);
+      const resp = await fetchWithTimeout(url);
       if (resp.ok) {
         const json = await resp.json();
         return {

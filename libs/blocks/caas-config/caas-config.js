@@ -676,7 +676,7 @@ const addIdOverlays = () => {
   });
 };
 
-/* c8 ignore next 24 */
+/* c8 ignore next 7 */
 const idOverlayMO = () => {
   const mo = new MutationObserver(() => {
     setTimeout(() => addIdOverlays(), 500);
