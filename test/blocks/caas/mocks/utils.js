@@ -4,6 +4,8 @@ export const isValidUuid = () => true;
 
 export const getHashConfig = stub();
 
+export const getConfig = () => ({});
+
 export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
 
 export const loadStyle = stub();

@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "description": "Website foundation technology.",
   "scripts": {
-    "test": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage",
+    "test": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4",
     "test:watch": "npm test -- --watch",
+    "test:file": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage",
     "libs": "hlx up --port=6456",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
