@@ -11,6 +11,7 @@ import {
 import {
   updateObj,
   cloneObj,
+  getConfig,
   getHashConfig,
   isValidUuid,
   loadStyle,
@@ -132,6 +133,7 @@ const defaultOptions = {
     random: 'Random',
   },
   source: {
+    bacom: 'Bacom',
     doccloud: 'DocCloud',
     experienceleague: 'Experience League',
     hawks: 'Hawks',
@@ -496,6 +498,7 @@ const AdvancedPanel = () => {
   };
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Select}
       label="Fallback Endpoint"
@@ -662,6 +665,26 @@ const getPanels = (tagsData) => [
   },
 ];
 
+const addIdOverlays = () => {
+  document.querySelectorAll('.consonant-Card').forEach((card) => {
+    if (!card.querySelector('.cardid')) {
+      const idDiv = document.createElement('div');
+      idDiv.classList.add('cardid');
+      idDiv.innerText = card.id;
+      card.appendChild(idDiv);
+    }
+  });
+};
+
+/* c8 ignore next 24 */
+const idOverlayMO = () => {
+  const mo = new MutationObserver(() => {
+    setTimeout(() => addIdOverlays(), 500);
+  });
+  mo.observe(document.querySelector('.content-panel'), { attributes: true, childList: true, subtree: true });
+  return mo;
+};
+
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || cloneObj(defaultState));
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
@@ -669,6 +692,7 @@ const Configurator = ({ rootEl }) => {
   const [panels, setPanels] = useState([]);
   const [title] = useState(rootEl.querySelector('h1, h2, h3, h4, h5, h6, p'));
   const [error, setError] = useState();
+  const [cardMutationObsv, setCardMutationObsv] = useState(null);
 
   useEffect(async () => {
     caasFilesLoaded
@@ -680,6 +704,16 @@ const Configurator = ({ rootEl }) => {
         console.log('Error loading script: ', error);
       });
   }, []);
+
+  useEffect(() => {
+    if (state.showIds && !cardMutationObsv) {
+      /* c8 ignore next */
+      setCardMutationObsv(idOverlayMO());
+    } else {
+      cardMutationObsv?.disconnect();
+      setCardMutationObsv(null);
+    }
+  }, [state.showIds]);
 
   useEffect(async () => {
     const strs = await loadStrings(state.placeholderUrl);
@@ -695,6 +729,9 @@ const Configurator = ({ rootEl }) => {
   useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
       await initCaas(state, strings);
+      if (state.showIds) {
+        setTimeout(() => addIdOverlays(), 500);
+      }
       saveStateToLocalStorage(state);
     }
   }, [isCaasLoaded, state, strings]);
@@ -708,7 +745,7 @@ const Configurator = ({ rootEl }) => {
         </div>
         <${CopyBtn} />
       </div>
-      <div class="tool-content">
+      <div class="tool-content ${state.showIds && 'show-ids'}">
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
@@ -721,7 +758,9 @@ const Configurator = ({ rootEl }) => {
 };
 
 const init = async (el) => {
-  loadStyle('/libs/ui/page/page.css');
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/ui/page/page.css`);
+  loadStyle(`${miloLibs || codeRoot}/blocks/caas/caas.css`);
 
   const app = html` <${Configurator} rootEl=${el} /> `;
 

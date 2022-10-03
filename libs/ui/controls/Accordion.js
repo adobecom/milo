@@ -1,7 +1,8 @@
-import { loadStyle } from '../../utils/utils.js';
+import { getConfig, loadStyle } from '../../utils/utils.js';
 import { html, useState } from '../../deps/htm-preact.js';
 
-loadStyle('/libs/ui/controls/accordion.css');
+const { miloLibs, codeRoot } = getConfig();
+loadStyle(`${miloLibs || codeRoot}/ui/controls/accordion.css`);
 
 const AccordionItem = ({ title, content, expand, onClick }) => {
   const isExpanded = expand ? 'is-expanded' : '';

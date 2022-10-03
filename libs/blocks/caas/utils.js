@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
 export const loadStrings = async (url) => {
@@ -14,14 +15,13 @@ export const loadStrings = async (url) => {
   return convertToObj(json.data);
 };
 
-export const loadCaasFiles = () => {
+export const loadCaasFiles = async () => {
   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
 
   loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
-  return Promise.all([
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`),
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`),
-  ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -51,6 +51,30 @@ export const loadCaasTags = async (tagsUrl) => {
   };
 };
 
+const fixAlloyAnalytics = async () => {
+  const sat = await window.__satelliteLoadedPromise;
+  if (!sat || !window.alloy) return;
+  if (sat.getVisitorId() === null) {
+    const identity = await window.alloy('getIdentity');
+    const mcgvid = identity.identity.ECID;
+    const mboxMCGLH = identity.edge.regionId;
+
+    const ogSLP = window.__satelliteLoadedPromise;
+    window.__satelliteLoadedPromise = Promise.resolve({
+      /* c8 ignore next 9 */
+      getVisitorId: () => ({
+        getMarketingCloudVisitorID: () => mcgvid,
+        getSupplementalDataID: () => '',
+        getAudienceManagerBlob: () => '',
+        getAudienceManagerLocationHint: () => {
+          setTimeout(() => (window.__satelliteLoadedPromise = ogSLP), 1);
+          return mboxMCGLH;
+        },
+      }),
+    });
+  }
+};
+
 export const initCaas = async (state, caasStrs, el) => {
   const caasEl = el || document.getElementById('caas');
   if (!caasEl) return;
@@ -64,6 +88,7 @@ export const initCaas = async (state, caasStrs, el) => {
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);
+  await fixAlloyAnalytics();
 
   new ConsonantCardCollection(config, newEl);
 };

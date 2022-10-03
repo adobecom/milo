@@ -1,11 +1,17 @@
 const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
-const MILO_TEMPLATES = [];
+const MILO_TEMPLATES = [
+  '404',
+  'featured-story',
+];
 const MILO_BLOCKS = [
+  'accordion',
   'adobetv',
   'aside',
   'caas',
+  'caas-config',
   'card-metadata',
+  'carousel',
   'chart',
   'columns',
   'faas',
@@ -14,13 +20,18 @@ const MILO_BLOCKS = [
   'footer',
   'gnav',
   'how-to',
+  'icon-block',
+  'manual-card',
   'marquee',
   'media',
   'merch',
   'modal',
   'quote',
   'section-metadata',
+  'tabs',
+  'youtube',
   'z-pattern',
+  'share',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -28,6 +39,8 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { youtube: 'https://www.youtube.com' },
+  { youtube: 'https://youtu.be' },
 ];
 const ENVS = {
   local: { name: 'local' },
@@ -101,7 +114,7 @@ export function getMetadata(name) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement) {
+    if (html instanceof HTMLElement || html instanceof SVGElement) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
@@ -199,7 +212,6 @@ export async function loadTemplate() {
 }
 
 export async function loadBlock(block) {
-  block.dataset.status = 'loading';
   const name = block.classList[0];
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -214,7 +226,8 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
-        if (getEnv() !== 'prod') {
+        const config = getConfig();
+        if (config.env.name !== 'prod') {
           block.dataset.failed = 'true';
           block.dataset.reason = `Failed loading ${name || ''} block.`;
         }
@@ -223,7 +236,6 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  delete block.dataset.status;
   return block;
 }
 
@@ -251,6 +263,16 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
+      // Fragments
+      if (key === 'fragment' && url.hash === '') {
+        const { parentElement } = a;
+        const { nodeName, innerHTML } = parentElement;
+        const noText = innerHTML === a.outerHTML;
+        if (noText && nodeName === 'P') {
+          const div = createTag('div', null, a);
+          parentElement.parentElement.replaceChild(div, parentElement);
+        }
+      }
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -281,10 +303,7 @@ function decorateLinks(el) {
 
 function decorateBlocks(el) {
   const blocks = el.querySelectorAll('div[class]:not(.content)');
-  return [...blocks].map((block) => {
-    block.dataset.status = 'decorated';
-    return block;
-  });
+  return [...blocks].map((block) => block);
 }
 
 function decorateContent(el) {
@@ -319,41 +338,40 @@ function decorateDefaults(el) {
   });
 }
 
-async function loadHeader() {
+function decorateHeader() {
   const header = document.querySelector('header');
-  if (getMetadata('header') === 'off') {
+  if (!header) return;
+  const headerMeta = getMetadata('header');
+  if (headerMeta === 'off') {
     document.body.classList.add('nav-off');
     header.remove();
-    return null;
+    return;
   }
-  header.dataset.status = 'decorated';
-  header.className = getMetadata('header') || 'gnav';
-  await loadBlock(header);
-  return header;
+  header.className = headerMeta || 'gnav';
+  const breadcrumbs = document.querySelector('.breadcrumbs');
+  if (breadcrumbs) {
+    header.classList.add('has-breadcrumbs');
+    header.append(breadcrumbs);
+  }
 }
 
 async function loadFooter() {
   const footer = document.querySelector('footer');
-  const footerPath = getMetadata('footer-source');
-  if (getMetadata('footer') === 'off') {
+  if (!footer) return;
+  const footerMeta = getMetadata('footer');
+  if (footerMeta === 'off') {
     footer.remove();
-    return null;
+    return;
   }
-  if (footerPath) {
-    footer.setAttribute('data-footer-source', `${footerPath}`);
-  } else {
-    footer.setAttribute('data-footer-source', `${window.location.origin}/footer`);
-  }
-  footer.className = 'footer';
+  footer.className = footerMeta || 'footer';
   await loadBlock(footer);
-  return footer;
 }
 
 function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   return [...el.querySelectorAll(selector)].map((section, idx) => {
-    decorateDefaults(section);
     const links = decorateLinks(section);
+    decorateDefaults(section);
     const blocks = decorateBlocks(section);
     section.className = 'section';
     section.dataset.status = 'decorated';
@@ -371,7 +389,8 @@ async function loadMartech(config) {
 }
 
 async function loadPostLCP(config) {
-  loadHeader();
+  const header = document.querySelector('header');
+  if (header) { loadBlock(header); }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -385,11 +404,30 @@ export async function loadDeferred(area) {
   }
 }
 
+/**
+* Load the Privacy library
+*/
+function loadPrivacy() {
+  // Configure Privacy
+  window.fedsConfig = {
+    privacy: {
+      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
+    },
+  };
+
+  const env = getEnv().name === 'prod' ? '' : 'stage.';
+  loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
-  if (isDoc) { loadMartech(config); }
+  if (isDoc) {
+    decorateHeader();
+    loadMartech(config);
+  }
 
   const sections = decorateSections(area, isDoc);
   // eslint-disable-next-line no-restricted-syntax
@@ -425,6 +463,7 @@ export async function loadArea(area = document) {
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
+      loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
         import('../features/interlinks.js').then((mod) => {
           resolve(mod);
@@ -443,6 +482,20 @@ export function utf8ToB64(str) {
 export function b64ToUtf8(str) {
   return decodeURIComponent(escape(window.atob(str)));
 }
+
+const RE_ALPHANUM = /[^0-9a-z]/gi;
+const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
+export const analyticsGetLabel = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
+
+export const analyticsDecorateList = (li, idx) => {
+  const link = li.firstChild?.nodeName === 'A' && li.firstChild;
+  if (!link) return;
+
+  const label = link.textContent || link.getAttribute('aria-label');
+  if (!label) return;
+
+  link.setAttribute('daa-ll', `${analyticsGetLabel(label)}-${idx + 1}`);
+};
 
 export function parseEncodedConfig(encodedConfig) {
   try {
@@ -482,15 +535,6 @@ export function getBlockClasses(className) {
   const name = trimDashes(blockWithVariants.shift());
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
-}
-
-export function debug(message) {
-  const { hostname } = window.location;
-  const env = getEnv();
-  if (env.name !== 'prod' || hostname === 'local') {
-    // eslint-disable-next-line no-console
-    console.log(message);
-  }
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {

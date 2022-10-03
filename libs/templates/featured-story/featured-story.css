@@ -1,0 +1,26 @@
+/*
+Template: Featured Story
+*/
+
+.featured-story-wrapper {
+  padding: var(--spacing-s) 0;
+}
+
+.section[template="featured-story"] {
+  background-color: #f5f5f5;
+}
+
+@media screen and (min-width: 1200px) {
+  .featured-story-wrapper {
+    display: flex;
+    gap: var(--spacing-xl);
+  }
+
+  .featured-story-wrapper .col-1 {
+    width: 30%;
+  }
+
+  .featured-story-wrapper .col-2 {
+    width: 70%;
+  }
+}

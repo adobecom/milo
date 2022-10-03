@@ -51,6 +51,12 @@ const getKeyValPairs = (s) => {
     });
 };
 
+const addHost = (url) => {
+  if (url.startsWith('http')) return url;
+  const { host } = getConfig();
+  return `https://${host}${url.startsWith('/') ? '' : '/'}${url}`
+};
+
 const getMetaContent = (propType, propName) => {
   const metaEl = document.querySelector(`meta[${propType}='${propName}']`);
   if (!metaEl) return undefined;
@@ -205,14 +211,60 @@ const getOrigin = () => {
   throw new Error('No Project or Repo defined in config');
 };
 
-const getFirstImageUrl = () => {
-  const img = document.querySelector('main')?.querySelector('img');
-  if (!img) return null;
-  const imgUrl = new URL(img.src);
-  return imgUrl.pathname;
+const getImagePathMd = (keyName) => {
+  const mdEl = document.querySelector('.card-metadata');
+  let url = '';
+  [...mdEl.children].some(n => {
+    const key = n.firstElementChild.textContent?.trim().toLowerCase();
+    if (key !== keyName) return false;
+
+    const img = n.lastElementChild.querySelector('img');
+
+    if (img) {
+      url = new URL(img.src)?.pathname;
+    } else {
+      url = n.lastElementChild.textContent?.trim();
+    }
+    return true;
+  });
+  return url;
+}
+
+const getThumbnailUrl = () => {
+  const thumbUrl = getImagePathMd('cardimagepath')
+    || document.querySelector('meta[property="og:image"]')?.content
+    || document.querySelector('main')?.querySelector('img')?.src;
+
+  if (!thumbUrl) return null;
+  return addHost(thumbUrl);
 };
 
 const getFirstImageAlt = () => document.querySelector('main')?.querySelector('img')?.alt;
+
+const getBadges = (s) => {
+  let hasImageBadge = false;
+  const keyValPairs = getKeyValPairs(s)
+    .map((pair) => {
+      const type = pair.key?.toLowerCase();
+      let value = pair.value;
+      if (type === 'image' && value) {
+        hasImageBadge = true;
+        value = addHost(value);
+      }
+      return (type && value)
+      ? ({ type, value })
+      : null;
+    })
+    .filter(i => i !== null);
+
+  if (!hasImageBadge) {
+    const imgPath = getImagePathMd('badgeimage');
+    if (imgPath) {
+      keyValPairs.push({ type: 'image', value: addHost(imgPath) });
+    }
+  }
+  return keyValPairs;
+}
 
 const getImsToken = async () => {
   window.adobeid = {
@@ -323,7 +375,7 @@ const showConfirm = (msg, {
  */
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ key: pair.key, value: pair.value })),
-  badges: (s) => getKeyValPairs(s).map((pair) => ({ type: pair.key, value: pair.value })),
+  badges: getBadges,
   bookmarkaction: 0,
   bookmarkenabled: (s = '') => {
     if (s) {
@@ -383,7 +435,7 @@ const props = {
   style: (s) => s || 'default',
   tags: (s) => getTags(s),
   thumbalt: (s) => s || getFirstImageAlt(),
-  thumburl: (s) => (s ? checkUrl(s, `Invalid Thumbnail URL: ${s}`) : getFirstImageUrl()),
+  thumburl: (s) => (s ? checkUrl(s, `Invalid Thumbnail URL: ${s}`) : getThumbnailUrl()),
   title: (s) => s || getMetaContent('property', 'og:title') || '',
   uci: (s) => s || window.location.pathname,
   url: (s, options) => {
@@ -483,18 +535,23 @@ const getCaaSMetadata = async (pageMd, options) => {
   return { caasMetadata: md, errors, tags, tagErrors };
 };
 
-const getCardMetadata = async (options) => {
+const parseCardMetadata = () => {
   const pageMd = {};
   const mdEl = document.querySelector('.card-metadata');
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
-      const key = n.children?.[0]?.textContent.toLowerCase();
-      const val = n.children?.[1]?.textContent.toLowerCase();
+      const key = n.children?.[0]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent?.toLowerCase();
       if (!key) return;
 
       pageMd[key] = val;
     });
   }
+  return pageMd;
+};
+
+const getCardMetadata = async (options) => {
+  const pageMd = parseCardMetadata();
   return getCaaSMetadata(pageMd, options);
 };
 

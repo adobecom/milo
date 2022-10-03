@@ -32,7 +32,7 @@ export default async function init(config, loadScript) {
     adobe: {
       launch: { url, controlPageLoad: true },
       alloy: { edgeConfigId },
-      target: true,
+      target: false,
     },
     // TODO: Do we need to add diagnostic.page.aemimplementation
   };

@@ -8,18 +8,47 @@
   min-height: 360px;
 }
 
+.marquee.inline hr {
+  margin-top: var(--spacing-m);
+  margin-bottom: 0;
+}
+
 .marquee.light, .marquee.quiet, .marquee.inline {
-  color: #2C2C2C;
+  color: var(--text-color);
 }
 
 .marquee.centered {
   text-align: center;
 }
 
+.marquee.centered .foreground,
+.marquee.centered .action-area {
+  justify-content: center;
+}
+
+.marquee .background.has-video {
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.marquee .background .mobileOnly.tabletOnly {
+  display: block;
+}
+
+.marquee .background .tabletOnly,
+.marquee .background .desktopOnly {
+  display: none;
+}
+
 .marquee .background picture {
   display: block;
   position: absolute;
   inset: 0;
+  line-height: 0;
 }
 
 .marquee .background img {
@@ -28,128 +57,154 @@
   width: 100%;
 }
 
+.marquee .background video {
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Split */
+.marquee.split {
+  flex-direction: column;
+}
+
+.marquee.split .media {
+  width: 100%;
+  margin: 0;
+}
+
+.marquee.split .media img,
+.marquee.split .media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-height: 360px;
+}
+
+.marquee.split.small .foreground {
+  order: 1;
+}
+.marquee.split.small .media {
+  order: 2;
+}
+
+.marquee.split .media {
+  order: 0;
+}
+
 .marquee .foreground {
   position: relative;
+  padding: var(--spacing-xxl) 0;
   display: flex;
-  align-items: stretch;
   flex-direction: column;
   gap: var(--spacing-m);
-  padding: var(--spacing-xl) 0;
 }
 
 .marquee.small .foreground {
-  padding: var(--spacing-l) 0;
+  padding: var(--spacing-xl) 0;
 }
 
-.marquee.large .foreground {
-  padding: 0;
-  max-width: 100%;
-}
-
-.marquee .foreground > div {
-  flex: 0 0 auto;
-}
-
-.marquee.quiet .foreground > div {
-  flex: 0 0 100%;
-}
-
-.marquee.large .text {
-  max-width: var(--grid-container-width);
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  margin: 0 auto;
-}
-
-.marquee .text .detail-M {
-  margin-bottom: var(--spacing-s);
-}
-
-.marquee.small .text .detail-M {
-  margin-bottom: var(--spacing-xs);
-}
-
-.marquee .text .detail-L {
-  order: 1;
-  margin-bottom: var(--spacing-xs);
-}
-
-.detail-M img {
+.marquee.large {
   display: block;
 }
 
-.marquee .text .heading-XL {
+.marquee.large .foreground {
+  padding: var(--spacing-m) 0;
+  gap: 0;
+}
+
+.marquee.large .background img {
+  max-height: 259px;
+}
+
+.marquee.large .background picture {
+ position: relative;
+}
+
+.marquee.large.dark {
+  background-color: black;
+}
+
+.marquee.large .text {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.marquee .text p {
+  margin: 0 0 var(--spacing-s);
+}
+
+.marquee .text p:last-of-type {
+  margin-bottom: 0;
+}
+
+.marquee .text .detail-M {
   margin-bottom: var(--spacing-xs);
 }
 
+.marquee .text .detail-L,
+.marquee .text .heading-XL,
 .marquee .text .heading-XXL {
-  order: 2;
-  margin-bottom: var(--spacing-m);
+  margin-bottom: var(--spacing-xs);
 }
 
-.marquee .text .body-M {
+.marquee .text p.icon-area {
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .text .body-XL {
-  order: 5;
-  margin-bottom: var(--spacing-m);
+.marquee .text .icon-area picture {
+  display: block;
+  line-height: 0;
 }
 
-.marquee .text img {
-  height: 56px;
+.marquee .text .icon-area img {
+  height: 48px;
   width: auto;
+  display: block;
 }
 
-.marquee.large .text img {
+.marquee.large .text .icon-area img {
   height: 64px;
 }
 
 .marquee .action-area {
   display: flex;
   margin: 0;
-  gap: var(--spacing-s);
+  gap: var(--spacing-xs);
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.marquee .action-area a {
-  width: 100%;
-  text-align: center;
-}
-
-.marquee.large .supplemental-text {
-  order: 4;
-  margin: 0 0 var(--spacing-m) 0;
-  font-weight: 700;
-}
-
-.marquee.large .action-area {
-  order: 3;
+.marquee.large p.action-area {
+  order: 2;
   margin-bottom: var(--spacing-s);
 }
 
-.marquee.quiet.centered .action-area {
-  justify-content: center;
+.marquee.large .text .body-XL {
+  order: 3;
 }
 
-.action-area a {
-  font-size: var(--type-body-xs-size);
-  line-height: 32px;
+.marquee.large .text .supplemental-text {
+  order: 2;
+  margin-bottom: var(--spacing-s);
+  font-weight: 700;
 }
 
-.action-area .con-button {
-  line-height: 28px;
+.marquee .media {
+  order: 1;
+  width: var(--grid-container-width); /* 10 grid / 83% */
+  margin: 0 auto;
 }
 
-.action-area .con-button.button-XL {
-  line-height: 36px;
-}
-
-.marquee .image img {
+.marquee .media img,
+.marquee .media video {
   display: block;
   width: 100%;
-  min-height: 150px; /* this should change after breaking 05 */
   height: auto;
 }
 
@@ -158,20 +213,65 @@
   order: 2;
 }
 
-.marquee .image,
-.marquee.large .image {
+.marquee.small .text {
   order: 1;
 }
 
-.marquee.small .text,
-.marquee.small .image {
-  order: unset;
+.marquee.small .media {
+  order: 2;
 }
 
 @media screen and (min-width: 600px) {
-  .marquee .action-area a {
-    width: unset;
+
+  .marquee .background .mobileOnly,
+  .marquee .background .desktopOnly {
+    display: none;
   }
+
+  .marquee .background .tabletOnly {
+    display: block;
+  }
+
+  /* Split */
+  .marquee.split {
+    display: flex;
+    justify-content: center;
+  }
+
+  .marquee.split .foreground.container .text {
+    max-width: calc(50% - 32px);
+  }
+
+  .marquee.split.large .foreground.container .text {
+    max-width: calc(50% - 100px);
+  }
+
+  .marquee.split .media.bleed {
+    position: absolute;
+    width: 50vw;
+    right: 0;
+    height: 100%;
+  }
+
+  .marquee.split .media.bleed picture,
+  .marquee.split .media.bleed video {
+    height: 100%;
+    object-fit: fill;
+  }
+
+  .marquee.split.large .text {
+    margin: 0;
+  }
+
+  .marquee.split.small .media img,
+  .marquee.split.large .media img,
+  .marquee.split .media img,
+  .marquee.split.small .media video,
+  .marquee.split.large .media video,
+  .marquee.split .media video {
+    max-height: initial;
+  }
+
 }
 
 @media screen and (min-width: 1200px) {
@@ -179,65 +279,88 @@
     min-height: 560px;
   }
 
-  .marquee.large {
-    min-height: 700px;
+  .marquee .background .mobileOnly.tabletOnly,
+  .marquee .background .mobileOnly,
+  .marquee .background .tabletOnly {
+    display: none;
+  }
+
+  .marquee .background .desktopOnly {
+    display: block;
   }
 
   .marquee .foreground {
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
     padding: 0;
-    gap: calc(var(--grid-column-width));
+    gap: 100px; /* 1 column */
+  }
+
+  .marquee .foreground .text {
+    max-width: 500px;
+  }
+
+  .marquee .foreground .media {
+    max-width: 600px;
+  }
+
+  .marquee.quiet.centered .foreground,
+  .marquee.inline.centered .foreground {
+    justify-content: center;
+  }
+
+  .marquee.quiet .foreground,
+  .marquee.inline .foreground,
+  .marquee.split .foreground {
+    justify-content: initial;
   }
 
   .marquee.small .foreground {
     padding: 0;
   }
 
-  .marquee.large .foreground {
-    max-width: var(--grid-container-width);
+  .marquee .media img,
+  .marquee .media video {
+    width: 100%;
+    max-width: initial;
+    min-height: 150px;
   }
 
   .marquee .text {
-    width: calc(var(--grid-column-width) * 5);
-  }
-  
-  .marquee .image {
-    width: calc(var(--grid-column-width) * 6);
-  }
-  
-  .marquee .text {
     padding: var(--spacing-xl) 0;
   }
-  
+
   .marquee.small .text {
     padding: var(--spacing-l) 0;
   }
-  
+
   .marquee .text,
+  .marquee.small .text,
   .marquee.large .text {
     order: unset;
+  }
+
+  .marquee.large {
+    min-height: 700px;
+    display: flex;
+  }
+
+  .marquee .media,
+  .marquee.small .media,
+  .marquee.large .media {
+    order: unset;
+  }
+
+  .marquee.large .background img {
+    max-height: unset;
+  }
+
+  .marquee.large .background picture {
+    position: absolute;
   }
 
   .marquee.large .text {
     display: block;
-  }
-
-  .marquee .image,
-  .marquee.large .image {
-    order: unset;
-  }
-
-  .marquee .text .action-area,
-  .marquee.small .text .action-area,
-  .marquee.large .text .action-area {
-    margin-bottom: 0;
-  }
-
-  .marquee.action-area .con-button.button-XL {
-    line-height: 44px;
-    border-radius: 22px;
   }
 
   .marquee.large .supplemental-text {

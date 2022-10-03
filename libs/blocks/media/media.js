@@ -15,8 +15,10 @@
  */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockAnalytics } from '../../utils/analytics.js';
 
 export default function init(el) {
+  decorateBlockAnalytics(el);
   const children = el.querySelectorAll(':scope > div');
   if (children[0]?.childElementCount === 1) {
     decorateBlockBg(el, children[0]);
