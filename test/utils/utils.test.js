@@ -46,6 +46,14 @@ describe('Utils', () => {
     });
   });
 
+  describe('PDF Viewer', () => {
+    it('pdf link with different text content opens in new window', () => {
+      const link = document.querySelector('a[href$="pdf"]');
+      utils.decorateAutoBlock(link);
+      expect(link.target).to.equal('_blank');
+    });
+  });
+
   describe('Fragments', () => {
     it('fully unwraps a fragment', () => {
       const fragments = document.querySelectorAll('.link-block.fragment');
