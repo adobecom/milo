@@ -26,6 +26,8 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
+  pdfViewerClientIdStage: '600a4521c23d4c7eb9c7b039bee534a0',
+  pdfViewerClientIdProd: '3c0a5ddf2cc04d3198d9e48efc390fa9',
 };
 
 (async function loadLCPImage() {
