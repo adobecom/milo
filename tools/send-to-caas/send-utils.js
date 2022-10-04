@@ -291,7 +291,7 @@ const isPagePublished = async () => {
  */
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ key: pair.key, value: pair.value })),
-  badgeimage: (s) => getImagePathMd(s),
+  badgeimage: () => getImagePathMd('badgeimage'),
   badgetext: 0,
   bookmarkaction: 0,
   bookmarkenabled: (s = '') => {
