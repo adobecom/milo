@@ -222,22 +222,23 @@ const getImagePathMd = (keyName) => {
 
 const getCardImageUrl = () => {
   const { doc } = getConfig();
-  const thumbUrl = getImagePathMd('cardimage')
+  const imageUrl = getImagePathMd('cardimage')
     || getImagePathMd('cardimagepath')
     || doc.querySelector('meta[property="og:image"]')?.content
     || doc.querySelector('main')?.querySelector('img')?.src;
 
-  if (!thumbUrl) return null;
-  return addHost(thumbUrl);
+  if (!imageUrl) return null;
+  return addHost(imageUrl);
 };
 
 const getCardImageAltText = () => {
+  // eslint-disable-next-line no-use-before-define
   const pageMd = parseCardMetadata();
-  if (pageMd.thumburl) return '';
-  const thumbUrl = getCardImageUrl();
-  const thumbImg = new URL(thumbUrl).pathname.split('/').pop();
-  const imgTagForThumb = getConfig().doc.querySelector(`img[src*="${thumbImg}"]`);
-  return imgTagForThumb?.alt;
+  if (pageMd.cardimage) return '';
+  const cardImageUrl = getCardImageUrl();
+  const cardImagePath = new URL(cardImageUrl).pathname.split('/').pop();
+  const imgTagForCardImage = getConfig().doc.querySelector(`img[src*="${cardImagePath}"]`);
+  return imgTagForCardImage?.alt;
 };
 
 const getBadges = (p) => {
@@ -380,10 +381,10 @@ const getCaasProps = (p) => {
     modifiedDate: p.modified,
     tags: p.tags,
     primaryTag: p.primarytag,
-    ...(p.thumburl && {
+    ...(p.cardimage && {
       thumbnail: {
-        altText: p.thumbalt,
-        url: p.thumburl,
+        altText: p.cardimagealttext,
+        url: p.cardimage,
       },
     }),
     country: p.country,
