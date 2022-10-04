@@ -210,8 +210,8 @@ const getImagePathMd = (keyName) => {
         } else {
           imgSrc = rawImgSrc;
         }
-        url = new URL(imgSrc)?.pathname;
       }
+      url = new URL(imgSrc)?.pathname;
     } else { // url string to img
       url = n.lastElementChild.textContent?.trim();
     }
