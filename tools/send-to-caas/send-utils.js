@@ -220,9 +220,10 @@ const getImagePathMd = (keyName) => {
   return url;
 };
 
-const getThumbnailUrl = () => {
+const getCardImageUrl = () => {
   const { doc } = getConfig();
-  const thumbUrl = getImagePathMd('cardimagepath')
+  const thumbUrl = getImagePathMd('cardimage')
+    || getImagePathMd('cardimagepath')
     || doc.querySelector('meta[property="og:image"]')?.content
     || doc.querySelector('main')?.querySelector('img')?.src;
 
@@ -230,38 +231,24 @@ const getThumbnailUrl = () => {
   return addHost(thumbUrl);
 };
 
-const getThumbUrlAlt = () => {
+const getCardImageAltText = () => {
   const pageMd = parseCardMetadata();
   if (pageMd.thumburl) return '';
-  const thumbUrl = getThumbnailUrl();
+  const thumbUrl = getCardImageUrl();
   const thumbImg = new URL(thumbUrl).pathname.split('/').pop();
   const imgTagForThumb = getConfig().doc.querySelector(`img[src*="${thumbImg}"]`);
   return imgTagForThumb?.alt;
 };
 
-const getBadges = (s) => {
-  let hasImageBadge = false;
-  const keyValPairs = getKeyValPairs(s)
-    .map((pair) => {
-      const type = pair.key?.toLowerCase();
-      let { value } = pair;
-      if (type === 'image' && value) {
-        hasImageBadge = true;
-        value = addHost(value);
-      }
-      return (type && value)
-        ? ({ type, value })
-        : null;
-    })
-    .filter((i) => i !== null);
-
-  if (!hasImageBadge) {
-    const imgPath = getImagePathMd('badgeimage');
-    if (imgPath) {
-      keyValPairs.push({ type: 'image', value: addHost(imgPath) });
-    }
+const getBadges = (p) => {
+  const badges = [];
+  if (p.badgeimage) {
+    badges.push({ type: 'image', value: addHost(p.badgeimage) });
   }
-  return keyValPairs;
+  if (p.badgetext) {
+    badges.push({ type: 'text', value: p.badgetext });
+  }
+  return badges;
 };
 
 const getImsToken = async () => {
@@ -304,7 +291,8 @@ const isPagePublished = async () => {
  */
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ key: pair.key, value: pair.value })),
-  badges: getBadges,
+  badgeimage: (s) => getImagePathMd(s),
+  badgetext: 0,
   bookmarkaction: 0,
   bookmarkenabled: (s = '') => {
     if (s) {
@@ -316,6 +304,8 @@ const props = {
     return undefined;
   },
   bookmarkicon: 0,
+  cardimage: () => getCardImageUrl(),
+  cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
   // TODO - automatically get country
@@ -350,7 +340,6 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s) => s || 'default',
-  headline: 0,
   // TODO: automatically get lang
   lang: (s) => s || 'en',
   modified: (s) => {
@@ -367,8 +356,6 @@ const props = {
   },
   style: (s) => s || 'default',
   tags: (s) => getTags(s),
-  thumburl: (s) => (s ? checkUrl(s, `Invalid Thumbnail URL: ${s}`) : getThumbnailUrl()),
-  thumbalt: (s) => s || getThumbUrlAlt(),
   title: (s) => s || getMetaContent('property', 'og:title') || '',
   uci: (s, options) => s || options.prodUrl || window.location.pathname,
   url: (s, options) => {
@@ -403,7 +390,7 @@ const getCaasProps = (p) => {
     language: p.lang,
     cardData: {
       style: p.style,
-      headline: p.headline || p.title,
+      headline: p.title,
       ...(p.details && { details: p.details }),
       ...((p.bookmarkenabled || p.bookmarkicon || p.bookmarkaction) && {
         bookmark: {
@@ -412,7 +399,7 @@ const getCaasProps = (p) => {
           action: p.bookmarkaction,
         },
       }),
-      badges: p.badges,
+      badges: getBadges(p),
       ...(p.playurl && { playUrl: p.playurl }),
       cta: {
         primaryCta: {
