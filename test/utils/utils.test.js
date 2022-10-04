@@ -95,7 +95,7 @@ describe('Utils', () => {
     try {
       await utils.loadScript('/test/utils/mocks/error.js');
     } catch (err) {
-      expect(err.message).to.equal('error loading script');
+      expect(err.message).to.equal('error loading script: http://localhost:2000/test/utils/mocks/error.js');
     }
   });
 
