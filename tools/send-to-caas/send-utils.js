@@ -138,7 +138,7 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.split(',').map((t) => t.trim());
+    rawTags = s.toLowerCase().split(',').map((t) => t.trim());
   } else {
     rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
       (metaEl) => metaEl.content,
@@ -461,7 +461,7 @@ const parseCardMetadata = () => {
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent;
       if (!key) return;
 
       pageMd[key] = val;
