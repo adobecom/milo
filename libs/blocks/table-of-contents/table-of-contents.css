@@ -1,14 +1,4 @@
-.section.toc {
-  display: flex;
-  flex-direction: column;
-}
-
-.section.toc .marquee {
-  flex: 1 1 auto;
-}
-
 .table-of-contents {
-  flex: 1 1 auto;
   border: 1px solid #E8E8E8;
   background-color: #FAFAFA;
 }
@@ -103,7 +93,12 @@
 
 @media screen and (min-width: 1200px) {
   .section.toc {
+    display: flex;
     flex-direction: row;
+  }
+  
+  .section.toc > div {
+    flex: 1 1 auto;
   }
 
   .section.toc .marquee .foreground.container {
@@ -131,9 +126,5 @@
 @media screen and (min-width: 1440px) {
   .section.toc .marquee .foreground.container {
     width: calc(var(--grid-container-width) - 400px);
-  }
-
-  .table-of-contents .toc-container {
-    max-width: 400px;
   }
 }

@@ -16,6 +16,8 @@
 
 import { createTag } from '../../utils/utils.js';
 
+const DOWN_ARROW_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10.875" height="13.323" viewBox="0 0 10.875 13.323"><title>down arrow</title><g fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"><path d="M5.478 1v10.909"/><g><path d="m9.461 7.885-4.023 4.023m0 0L1.414 7.885"/></g></g></svg>';
+
 function findAnchorTarget(text) {
   let linkText = text.toLowerCase();
   linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
@@ -23,16 +25,6 @@ function findAnchorTarget(text) {
   linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
   return document.querySelector(`[id^="${linkText}"]`);
 }
-
-const DOWN_ARROW_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="10.875" height="13.323" viewBox="0 0 10.875 13.323">
-  <g id="Group_177418" data-name="Group 177418" transform="translate(223.353 -1276.435) rotate(90)">
-    <line id="line_color_border_" data-name="line [color_border]" x2="10.909" transform="translate(1277.435 217.875)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
-    <g id="arrow_head" data-name="arrow head" transform="translate(1284.32 213.892) rotate(45)">
-      <line id="line_color_border_2" data-name="line [color_border]" x2="5.69" transform="translate(0 0)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
-      <line id="line_color_border_3" data-name="line [color_border]" y2="5.69" transform="translate(5.69 0)" fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"/>
-    </g>
-  </g>
-</svg>`;
 
 function getItem(title, description, target) {
   const item = createTag('li', { class: 'toc-item' });
