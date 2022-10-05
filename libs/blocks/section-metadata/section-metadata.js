@@ -20,14 +20,6 @@ function handleStyle(div, section) {
   }
 }
 
-function handleTab(div, section) {
-  const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
-  if (section) {
-    section.classList.add(...styles);
-  }
-}
-
 export default function init(el) {
   const section = el.closest('.section');
   if (!section) return;
@@ -39,9 +31,6 @@ export default function init(el) {
     }
     if (div.textContent === 'background') {
       handleBackground(valueDiv, section);
-    }
-    if (div.textContent === 'tab') {
-      handleTab(valueDiv, section);
     }
   });
 }

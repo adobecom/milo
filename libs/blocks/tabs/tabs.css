@@ -66,8 +66,9 @@
 
 .tabs div[role="tablist"] .tabList-container {
   display: flex;
-  width: var(--grid-container-width);
   padding: 0 8.3%;
+  width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
 .tabs div[role="tablist"] {
@@ -86,7 +87,7 @@
 }
 
 /*role="tabpanel"*/
-.tabs .tabContent-container {
+.tabs .tabContent {
   padding: var(--spacing-s) 0;
   border-bottom: 1px solid var(--tabs-border-color)
 }

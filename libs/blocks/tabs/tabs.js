@@ -67,67 +67,76 @@ function changeTabs(e) {
 let initCount = 0;
 const init = (e) => {
   const rows = e.querySelectorAll(':scope > div');
-  const tabList = rows[0].querySelectorAll(':scope ul > li');
-  rows[0].classList.add('tabList');
+  /* c8 ignore next */
+  if(!rows.length) return;
+
+  // Tab Content
+  const tabContentContainer = createTag('div', {class: 'container'});
+  const tabContent = createTag('div', {class: 'tabContent'}, tabContentContainer);
+  e.append(tabContent);
+
+  // Tab List
+  const tabList = rows[0];
+  const tabId = `tabs-${initCount}`;
+  e.id = tabId;
+  tabList.classList.add('tabList');
+  tabList.setAttribute('role', 'tablist');
+  const tabListContainer = tabList.querySelector(':scope > div');
+  tabListContainer.classList.add('tabList-container');
+  const tabListItems = rows[0].querySelectorAll(':scope li');
+  if (tabListItems) {
+    let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
+    tabListItems.forEach((item, i) => {
+      const tabBtnAttributes = {
+        role: 'tab',
+        class: btnClass,
+        id: `tab-${initCount}-${i}`,
+        tabindex: (i > 0) ? '0' : '-1',
+      }
+      const tabBtn = createTag('button', tabBtnAttributes);
+      tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
+      tabBtn.setAttribute('aria-controls', `tab-panel-${initCount}-${i}`);
+      tabBtn.innerText = item.textContent;
+      tabListContainer.append(tabBtn);
+
+      const tabContentAttributes = {
+        id: `tab-panel-${initCount}-${i}`,
+        role: 'tabpanel',
+        tabindex: '0',
+      }
+      const tabListContent = createTag('div', tabContentAttributes);
+      tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${i}`);
+      if(i > 0) tabListContent.setAttribute('hidden', '');
+      tabContentContainer.append(tabListContent);
+    });
+    tabListItems[0].parentElement.remove();
+  }
+
+  // Tab Config
   const configRows = e.querySelectorAll(':scope > div:not([class])');
   const config = {};
   configRows?.forEach((row) => {
     const rowKey = row.children[0].textContent.trim().replace(' ', '-').toLowerCase();
     const rowVal = row.children[1].textContent.trim();
     config[rowKey] = rowVal;
+    row.remove();
   });
-  console.log('init', {e}, 'tabList', {tabList}, 'configRows', {configRows}, 'config', config);
 
-  const tabContentList = 'can we get tab content from sections?';
-  console.log('tabContentList', {tabContentList});
-
-}
-
-const initOrig = (element) => {
-  const rows = element.querySelectorAll(':scope > div');
-  /* c8 ignore next */
-  if(!rows.length) return;
-  const tabList = createTag('div', {role: 'tablist'});
-  const tabListContainer = createTag('div', {class: 'tabList-container container'});
-  const containerWrapper = createTag('div', {class: 'container'});
-  const tabContentContainer = createTag('div', {class: 'tabContent-container'}, containerWrapper);
-  let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
-  let singleColRows = 0;
-  rows.forEach((row) => { if (row.childElementCount === 1) singleColRows += 1; });
-  if (singleColRows) {
-    const rowHeadler = rows[0].querySelector('h1, h2, h3, h4, h5, h6');
-    rows[0].classList.add('tab-headline', 'container');
-    tabList.setAttribute('aria-label', rowHeadler.textContent);
-  }
-  const tabRows = element.querySelectorAll(':scope > div:not([class])');
-  tabRows.forEach((row, i) => {
-    const rowTitle = row.querySelector(':scope > div:nth-child(1)');
-    const tabBtnAttributes = {
-      role: 'tab',
-      class: btnClass,
-      id: `tab-${initCount}-${i}`,
-      tabindex: (i > 0) ? '0' : '-1',
+  const allSections = Array.from(document.querySelectorAll('div.section'));
+  allSections.forEach((e, i) => {
+    const sectionMetadata = e.querySelector(':scope > .section-metadata');
+    if (!sectionMetadata) return;
+    const metadata = sectionMetadata.querySelectorAll(':scope > div > div');
+    if (metadata[0].textContent === 'tab') {
+      const metaValue = metadata[1].textContent.trim().replace(' ', '-').toLowerCase().slice(4,5);
+      const section = sectionMetadata.closest('.section');
+      const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue - 1}`);
+      if (assocTabItem) assocTabItem.append(section);
     }
-    const tabBtn = createTag('button', tabBtnAttributes);
-    tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
-    tabBtn.setAttribute('aria-controls', `panel-${initCount}-${i}`);
-    tabBtn.innerText = rowTitle.textContent;
-    tabListContainer.append(tabBtn);
-    const rowContent = row.querySelector(':scope > div:nth-child(2)');
-    const rowContentParent = rowContent.innerText !== '' ? rowContent.parentNode : createTag('div', {}, `<div data-failed="true">Data failed</label>`);
-    rowContentParent.id = `panel-${initCount}-${i}`;
-    rowContentParent.setAttribute('role', 'tabpanel');
-    rowContentParent.setAttribute('tabindex', '0');
-    rowContentParent.setAttribute('aria-labelledby', `tab-${initCount}-${i}`);
-    if(i > 0) rowContentParent.setAttribute('hidden', '');
-    containerWrapper.append(rowContentParent);
-    rowTitle.remove();
+    sectionMetadata.remove();
   });
-  tabList.append(tabListContainer);
-  element.append(tabList);
-  element.append(tabContentContainer);
   initCount++;
-  initTabs(element);
-};
+  initTabs(e);
+}
 
 export default init;
