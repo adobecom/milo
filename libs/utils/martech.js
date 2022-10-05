@@ -37,6 +37,10 @@ export default async function init(config, loadScript) {
     // TODO: Do we need to add diagnostic.page.aemimplementation
   };
 
+  window.digitalData ??= {};
+  window.digitalData.diagnostic ??= {};
+  window.digitalData.diagnostic.franklin = { implementation: 'milo' };
+
   await loadScript('https://www.adobe.com/marketingtech/main.standard.min.js');
   _satellite.track('pageload');
 }
