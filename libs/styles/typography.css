@@ -112,6 +112,34 @@
   text-decoration: none;
 }
 
+.con-button.fill {
+  color: #FFF;
+  background: #000;
+  border: 2px solid #000;
+}
+
+.con-button.fill:hover,
+.con-button.fill:active {
+  background: #000;
+  border-color: #000;
+}
+
+.dark .con-button.fill {
+  color: #000;
+  background: #FFF;
+  border: 2px solid #FFF;
+}
+
+.dark .con-button.fill:hover,
+.dark .con-button.fill:active {
+  background: #FFF;
+  border-color: #FFF;
+}
+
+.con-button.fill:hover {
+  text-decoration: none;
+}
+
 .con-button.outline {
   border: 2px solid #000;
   color: #000;

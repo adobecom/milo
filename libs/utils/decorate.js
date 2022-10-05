@@ -7,8 +7,9 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    // if(parent.)
+    let buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+    // if parent == em and first child is strong
+    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') buttonType = 'fill';
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
     parent.insertAdjacentElement('afterend', button);

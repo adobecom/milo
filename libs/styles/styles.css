@@ -134,23 +134,10 @@ img {
 .icon svg {
   height: 28px;
   width: auto;
-  fill: var(--text-color);
 }
 
 a .icon svg {
   height: 12px;
-}
-
-.dark .icon svg {
-  fill: white;
-}
-
-a:hover .icon svg {
-  fill: white;
-}
-
-.dark a:hover .icon svg {
-  fill: var(--text-color);
 }
 
 /* Not blocks */
