@@ -2,6 +2,31 @@ import { decorateLinkAnalytics } from './analytics.js';
 
 import { createTag, getConfig, } from '../utils/utils.js';
 
+export function decorateButtons(el, size) {
+  const buttons = el.querySelectorAll('em a, strong a');
+  if (buttons.length === 0) return;
+  buttons.forEach((button) => {
+    const parent = button.parentElement;
+    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+    // if(parent.)
+    button.classList.add('con-button', buttonType);
+    if (size) button.classList.add(size); /* button-L, button-XL */
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
+  });
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+}
+
+export function decorateIconArea(el) {
+  const icons = el.querySelectorAll('.icon');
+  icons.forEach((icon) => {
+    icon.parentElement.classList.add('icon-area');
+    if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
+  });
+}
+
 customElements.define("load-file", class extends HTMLElement {
   async connectedCallback(
     src = this.getAttribute("src"),
@@ -13,37 +38,13 @@ customElements.define("load-file", class extends HTMLElement {
   }
 });
 
-export function decorateButtons(el, size) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-L, button-XL */
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-}
-
-export function decorateIcons(el) {
-  const icons = el.querySelectorAll('.icon');
-  icons.forEach((icon) => {
-    icon.parentElement.classList.add('icon-area');
-    if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
-  });
-}
-
 function imageExists(url) {
   return new Promise(resolve => {
-    var img = new Image()
-    img.addEventListener('load', () => resolve(true))
-    img.addEventListener('error', () => resolve(false))
-    img.src = url
-  })
+    var img = new Image();
+    img.addEventListener('load', () => resolve(true));
+    img.addEventListener('error', () => resolve(false));
+    img.src = url;
+  });
 }
 
 export async function decorateIconsInBlock(el) {
@@ -77,7 +78,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIcons(el);
+  decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
   decorateIconsInBlock(el);
