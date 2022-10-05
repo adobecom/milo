@@ -12,6 +12,13 @@
   font-size: 14px;
   filter: drop-shadow(0 0 4px #000);
   z-index: 10000;
+  transition: height .2s ease, width .2s ease;
+}
+
+.con-finder.is-collapsed {
+  height: 36px;
+  width: 36px;
+  overflow: hidden;
 }
 
 .con-header {
@@ -20,7 +27,7 @@
   background: rgb(0 0 0 / 35%);
 }
 
-.con-header button {
+.con-header button.con-back {
   display: none;
   background-color: transparent;
   border: 0;
@@ -50,16 +57,55 @@
   top: 0;
 }
 
-.con-finder.allow-back .con-header button {
+.con-finder li p.block-title {
+  padding: 0;
+}
+
+.con-finder li button.preview-group {
+  text-indent: -1000px;
+  overflow: hidden;
+  background-color: transparent;
+  background-image: url('../img/spectrum-preview.svg');
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.con-finder.allow-back .con-header button.con-back {
   display: block;
+}
+
+.con-title {
+  display: flex;
+}
+
+.con-header .con-title .logo {
+    text-indent: -1000px;
+    overflow: hidden;
+    border: none;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 216 216'><defs><style>.cls-1{fill:%23f15a3a;}.cls-2{fill:%23c71f3d;}.cls-3{fill:%23ffc40c;}</style></defs><circle class='cls-1' cx='22.5' cy='108' r='22.5'/><circle class='cls-1' cx='193.5' cy='108' r='22.5'/><circle class='cls-2' cx='63' cy='27' r='27'/><circle class='cls-3' cx='162' cy='27' r='18'/><circle class='cls-2' cx='162' cy='189' r='27'/><circle class='cls-3' cx='63' cy='189' r='18'/></svg>");
+    background-repeat: no-repeat;
+    background-size: 18px;
+    width: 36px;
+    height: 36px;
+    background-position: center;
+}
+
+.con-header .con-title .logo:hover {
+  background: url('../img/collapse.svg');
+  background-size: 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.con-finder.is-collapsed .con-header .con-title .logo:hover {
+  background: url('../img/expand.svg');
+  background-size: 18px;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .con-finder p.heading {
   font-weight: 700;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 216 216'><defs><style>.cls-1{fill:%23f15a3a;}.cls-2{fill:%23c71f3d;}.cls-3{fill:%23ffc40c;}</style></defs><circle class='cls-1' cx='22.5' cy='108' r='22.5'/><circle class='cls-1' cx='193.5' cy='108' r='22.5'/><circle class='cls-2' cx='63' cy='27' r='27'/><circle class='cls-3' cx='162' cy='27' r='18'/><circle class='cls-2' cx='162' cy='189' r='27'/><circle class='cls-3' cx='63' cy='189' r='18'/></svg>");
-  background-repeat: no-repeat;
-  background-size: 18px;
-  background-position: 9px;
   padding: 0 36px;
 }
 
@@ -133,13 +179,18 @@
   background-color: rgb(255 255 255 / 5%);
 }
 
-.con-finder p {
+.con-finder .block-group {
+  background: rgb(0 0 0 / 51%);
+  font-weight: 700;
+}
+
+.con-finder p, .block-group {
   margin: 0;
   padding: 0 12px;
   line-height: 36px;
 }
 
-.con-finder li p {
+.con-finder li p, .block-group {
   line-height: 44px;
 }
 

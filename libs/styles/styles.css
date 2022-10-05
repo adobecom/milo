@@ -66,10 +66,6 @@ header + main {
   display: none;
 }
 
-.section-metadata {
-  display: none;
-}
-
 h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);

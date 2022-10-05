@@ -1,4 +1,4 @@
-// Decorate utils
+import { decorateLinkAnalytics } from './analytics.js';
 
 import { createTag, getConfig, } from '../utils/utils.js';
 
@@ -29,7 +29,7 @@ export function decorateButtons(el, size) {
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
-export function decorateIconArea(el) {
+export function decorateIcons(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
@@ -77,8 +77,9 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIconArea(el);
+  decorateIcons(el);
   decorateButtons(el);
+  decorateLinkAnalytics(el, headings);
   decorateIconsInBlock(el);
 }
 

@@ -51,6 +51,7 @@ function hasSchema(host) {
             // Change this for local development
             const domain = `https://${config.innerHost}`;
             const script = document.createElement('script');
+            script.type = 'module';
             script.onload = () => {
               const skEvent = new CustomEvent(
                 'hlx:library-loaded',

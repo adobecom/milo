@@ -46,6 +46,36 @@ describe('Utils', () => {
     });
   });
 
+  describe('PDF Viewer', () => {
+    it('pdf link with different text content opens in new window', () => {
+      const link = document.querySelector('a[href$="pdf"]');
+      utils.decorateAutoBlock(link);
+      expect(link.target).to.equal('_blank');
+    });
+  });
+
+  describe('Fragments', () => {
+    it('fully unwraps a fragment', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[0]);
+      expect(fragments[0].parentElement.nodeName).to.equal('DIV');
+    });
+
+    it('Does not unwrap when sibling content present', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[1]);
+      expect(fragments[1].parentElement.nodeName).to.equal('P');
+      expect(fragments[1].parentElement.textContent).to.contain('My sibling');
+    });
+
+    it('Does not unwrap when not in paragraph tag', () => {
+      const fragments = document.querySelectorAll('.link-block.fragment');
+      utils.decorateAutoBlock(fragments[1]);
+      expect(fragments[1].parentElement.nodeName).to.equal('P');
+      expect(fragments[1].parentElement.textContent).to.contain('My sibling');
+    });
+  });
+
   it('Loads a script', async () => {
     const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
     expect(script).to.exist;
@@ -65,7 +95,7 @@ describe('Utils', () => {
     try {
       await utils.loadScript('/test/utils/mocks/error.js');
     } catch (err) {
-      expect(err.message).to.equal('error loading script');
+      expect(err.message).to.equal('error loading script: http://localhost:2000/test/utils/mocks/error.js');
     }
   });
 

@@ -1,6 +1,19 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
+const fetchWithTimeout = async (resource, options = {}) => {
+  const { timeout = 5000 } = options;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal,
+  });
+  clearTimeout(id);
+  return response;
+};
+
 export const loadStrings = async (url) => {
   // TODO: Loc based loading
   if (!url) return {};
@@ -15,14 +28,13 @@ export const loadStrings = async (url) => {
   return convertToObj(json.data);
 };
 
-export const loadCaasFiles = () => {
+export const loadCaasFiles = async () => {
   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
 
   loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
-  return Promise.all([
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`),
-    loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`),
-  ]).then(() => loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`));
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -30,7 +42,7 @@ export const loadCaasTags = async (tagsUrl) => {
   if (tagsUrl) {
     const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
     try {
-      const resp = await fetch(url);
+      const resp = await fetchWithTimeout(url);
       if (resp.ok) {
         const json = await resp.json();
         return {

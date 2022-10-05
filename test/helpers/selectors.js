@@ -99,15 +99,15 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
     return choiceFound;
   };
 
-  for (let i = 0; i < choices.length; i++) {
+  choices.forEach(async (choice, i) => {
     const selectCheckbox = i === choices.length - 1;
     const choiceFound = await selectItem(choices[i], i, selectCheckbox);
     if (!choiceFound) {
       console.warn('tagSelectorModalChoose: Unable to find label:', choices[i]);
-      return;
     }
-  }
+  });
   modalEl.querySelector('.tagselect-modal-close').click();
+  await delay(50);
 };
 
 export const tagSelectorModalChoose = async (label, choices = []) => {

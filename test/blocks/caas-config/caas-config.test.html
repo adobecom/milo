@@ -8,6 +8,11 @@
         }
       }
     </script>
+    <!-- Enable for manual debugging so that it looks correct -->
+    <!-- <link rel="stylesheet" href="/libs/blocks/caas-config/caas-config.css">
+    <link rel="stylesheet" href="/libs/ui/controls/accordion.css">
+    <link rel="stylesheet" href="/libs/ui/controls/tagSelector.css">
+    <link rel="stylesheet" href="/libs/ui/controls/multifield.css"> -->
   </head>
 
   <body>
@@ -98,11 +103,10 @@
           ['Topic'],
           ['Country', 'Canada'],
           ['Country', 'China'],
-          ['Events', 'MAX', 'Track', 'Video'],
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn,caas:events/max/track/video&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000'
         expect(config).to.eql(expectedConfig);
       });
 
@@ -179,12 +183,7 @@
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-        tagUrlInput.value = 'not.the.right.url/tags';
-        tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-
-        const errorEl = configPanelEl.querySelector('.tool-error');
+        const errorEl = await waitForElement('.tool-error');
         expect(errorEl).to.not.be.null;
         expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
 

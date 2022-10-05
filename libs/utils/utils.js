@@ -2,13 +2,16 @@ const PROJECT_NAME = 'milo--adobecom';
 const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [
   '404',
+  'featured-story',
 ];
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'aside',
   'caas',
+  'caas-config',
   'card-metadata',
+  'carousel',
   'chart',
   'columns',
   'faas',
@@ -18,12 +21,15 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'manual-card',
   'marquee',
   'media',
   'merch',
   'modal',
+  'pdf-viewer',
   'quote',
   'section-metadata',
+  'tabs',
   'youtube',
   'z-pattern',
   'share',
@@ -36,6 +42,7 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments/' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
+  { 'pdf-viewer': '.pdf' },
 ];
 const ENVS = {
   local: { name: 'local' },
@@ -171,7 +178,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.removeEventListener('error', onScript);
 
     if (event.type === 'error') {
-      reject(new Error('error loading script'));
+      reject(new Error(`error loading script: ${script.src}`));
     } else if (event.type === 'load') {
       script.dataset.loaded = true;
       resolve(script);
@@ -221,7 +228,8 @@ export async function loadBlock(block) {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
-        if (getEnv() !== 'prod') {
+        const config = getConfig();
+        if (config.env.name !== 'prod') {
           block.dataset.failed = 'true';
           block.dataset.reason = `Failed loading ${name || ''} block.`;
         }
@@ -257,6 +265,20 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
+      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+        a.target = '_blank';
+        return false;
+      }
+      // Fragments
+      if (key === 'fragment' && url.hash === '') {
+        const { parentElement } = a;
+        const { nodeName, innerHTML } = parentElement;
+        const noText = innerHTML === a.outerHTML;
+        if (noText && nodeName === 'P') {
+          const div = createTag('div', null, a);
+          parentElement.parentElement.replaceChild(div, parentElement);
+        }
+      }
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -354,8 +376,8 @@ async function loadFooter() {
 function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   return [...el.querySelectorAll(selector)].map((section, idx) => {
-    decorateDefaults(section);
     const links = decorateLinks(section);
+    decorateDefaults(section);
     const blocks = decorateBlocks(section);
     section.className = 'section';
     section.dataset.status = 'decorated';
@@ -435,7 +457,6 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
-    loadPrivacy();
   }
 
   // Load everything that can be deferred until after all blocks load.
@@ -448,6 +469,7 @@ export async function loadArea(area = document) {
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
+      loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
         import('../features/interlinks.js').then((mod) => {
           resolve(mod);

@@ -4,12 +4,15 @@
   "version": "1.0.0",
   "description": "Website foundation technology.",
   "scripts": {
-    "test": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage",
+    "test": "wtr --config ./web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2000 --coverage --concurrent-browsers 4",
     "test:watch": "npm test -- --watch",
+    "test:file": "wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage",
     "libs": "hlx up --port=6456",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
-    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'"
+    "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'",
+    "build:htm-preact": "microbundle ./build/htm-preact.js -o ./libs/deps/htm-preact.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact.modern.mjs ./libs/deps/htm-preact.js",
+    "build:preact-debug": "microbundle ./build/htm-preact-debug.js -o ./libs/deps/htm-preact-debug.js -f modern --no-sourcemap --target web; mv ./libs/deps/htm-preact-debug.modern.mjs ./libs/deps/htm-preact-debug.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +24,11 @@
     "url": "https://github.com/adobecom/milo/issues"
   },
   "homepage": "https://github.com/adobecom/milo#readme",
+  "dependencies": {
+    "htm": "^3.1.1",
+    "preact": "^10.11.0",
+    "@preact/signals": "1.0.4"
+  },
   "devDependencies": {
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",
@@ -35,6 +43,7 @@
     "sinon": "13.0.1",
     "stylelint": "14.6.0",
     "stylelint-config-prettier": "9.0.3",
-    "stylelint-config-standard": "25.0.0"
+    "stylelint-config-standard": "25.0.0",
+    "microbundle": "0.15.1"
   }
 }
