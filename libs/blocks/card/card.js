@@ -1,5 +1,5 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle } from '../../utils/utils.js';
+import { loadStyle, getSectionMetadata } from '../../utils/utils.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -18,11 +18,8 @@ const getCardType = (styles) => {
 };
 
 const getUpFromSectionMetadata = (section) => {
-  const keyDivs = Array.from(section.querySelectorAll('.section-metadata > div > div:first-child'));
-  const styleDiv = keyDivs.find((keyDiv) => keyDiv.innerText.includes('style'));
-  const styleValues = styleDiv?.nextElementSibling?.textContent.toLowerCase();
-  const styles = styleValues?.split(', ').map((style) => style.replaceAll(' ', '-'));
-
+  const sectionMetadata = getSectionMetadata(section.querySelector('.section-metadata'));
+  const styles = sectionMetadata.style?.split(', ').map((style) => style.replaceAll(' ', '-'));
   return styles?.find((style) => style.includes('-up'));
 };
 
@@ -82,7 +79,6 @@ const addInner = (el, cardType, card) => {
 
   if (cardType === HALF_HEIGHT) {
     text?.remove();
-    // el.remove();
   }
 
   title?.classList.add(`consonant-${cardType}-title`);

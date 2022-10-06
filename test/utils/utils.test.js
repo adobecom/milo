@@ -196,4 +196,12 @@ describe('Utils', () => {
     });
     expect(io instanceof IntersectionObserver).to.be.true;
   });
+
+  it('gets section metadata', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<div id="section-metadata"><div><div>style</div><div>4 up, s spacing</div></div><div><div>background</div><div>#444</div></div></div>';
+    document.body.append(el);
+    const expected = { style: '4 up, s spacing', background: '#444' };
+    expect(utils.getSectionMetadata(document.querySelector('#section-metadata'))).to.eql(expected);
+  });
 });
