@@ -108,17 +108,21 @@
   }
 
   .table-of-contents .toc-container {
+    padding: 32px;
+    box-sizing: border-box;
+  }
+
+  .toc .table-of-contents .toc-container {
     margin-left: 0;
     max-width: 400px;
-    padding: 32px 0 32px 32px;
-    box-sizing: border-box;
+    padding-right: 0;
   }
 
   .table-of-contents .toc-list {
     flex-wrap: wrap;
   }
 
-  .table-of-contents .toc-item {
+  .toc .table-of-contents .toc-item {
     flex: 1 1 100%;
   }
 }
