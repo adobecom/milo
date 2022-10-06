@@ -5,25 +5,18 @@ import { createTag, getConfig, } from '../utils/utils.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => {
+  buttons.forEach((button, idx) => {
     const parent = button.parentElement;
     let buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') {
-      buttonType = 'fill';
-      button.innerHTML = button.children[0].innerHTML;
-    }
+    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') buttonType = 'fill';
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
-    parent.insertAdjacentElement('afterend', button);
-    // parent.remove();
-    // const actionArea = button.closest('p');
-    // actionArea.classList.add('action-area');
-    // actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    const actionArea = button.closest('p');
+    actionArea.classList.add('action-area');
+    if (idx === buttons.length - 1) {
+      button.closest('p')?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    }
   });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  actionArea.querySelectorAll('em, strong')?.forEach(elem => elem.remove());
 }
 
 export function decorateIconArea(el) {
@@ -85,7 +78,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIconArea(el);
+  // decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
   decorateIconsInBlock(el);
