@@ -8,16 +8,22 @@ export function decorateButtons(el, size) {
   buttons.forEach((button) => {
     const parent = button.parentElement;
     let buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    // if parent == em and first child is strong
-    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') buttonType = 'fill';
+    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') {
+      buttonType = 'fill';
+      button.innerHTML = button.children[0].innerHTML;
+    }
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
     parent.insertAdjacentElement('afterend', button);
-    parent.remove();
+    // parent.remove();
+    // const actionArea = button.closest('p');
+    // actionArea.classList.add('action-area');
+    // actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
   });
   const actionArea = buttons[0].closest('p');
   actionArea.classList.add('action-area');
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  actionArea.querySelectorAll('em, strong')?.forEach(elem => elem.remove());
 }
 
 export function decorateIconArea(el) {

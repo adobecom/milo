@@ -57,7 +57,7 @@
 }
 
 .con-button {
-  color: #FFF;
+  color: var(--color-white);
   border: 2px solid;
   background-color: transparent;
   border-radius: 16px;
@@ -93,11 +93,11 @@
 }
 
 .light .con-button {
-  color: #000;
+  color: var(--color-black);
 }
 
 .con-button.blue {
-  color: #FFF;
+  color: var(--color-white);
   background: var(--color-accent);
   border: 2px solid var(--color-accent);
 }
@@ -113,27 +113,28 @@
 }
 
 .con-button.fill {
-  color: #FFF;
-  background: #000;
-  border: 2px solid #000;
+  color: var(--color-white);
+  background: var(--text-color);
+  border: 2px solid var(--text-color);
 }
 
 .con-button.fill:hover,
 .con-button.fill:active {
-  background: #000;
-  border-color: #000;
+  background: var(--color-black);
+  border-color: var(--color-black);
 }
 
 .dark .con-button.fill {
-  color: #000;
-  background: #FFF;
-  border: 2px solid #FFF;
+  color: var(--text-color);
+  background: var(--color-white);
+  border-color: var(--color-white);
 }
 
 .dark .con-button.fill:hover,
 .dark .con-button.fill:active {
-  background: #FFF;
-  border-color: #FFF;
+  color: var(--color-black);
+  background: var(--color-white);
+  border-color: var(--color-white);
 }
 
 .con-button.fill:hover {
@@ -141,25 +142,45 @@
 }
 
 .con-button.outline {
-  border: 2px solid #000;
-  color: #000;
+  border: 2px solid var(--color-black);
+  color: var(--color-black);
 }
 
 .con-button.outline:hover {
-  background-color: #000;
-  color: #fff;
+  background-color: var(--color-black);
+  color: var(--color-white);
   text-decoration: none;
 }
 
 .dark .con-button.outline {
-  border: 2px solid #fff;
-  color: #fff;
+  border: 2px solid var(--color-white);
+  color: var(--color-white);
 }
 
 .dark .con-button.outline:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--color-white);
+  color: var(--color-black);
 }
+
+/* Icons */
+.con-button .icon {
+  margin-right: 4px;
+  display: inline-table;
+  vertical-align: middle;
+}
+
+.con-button .icon svg {
+  height: 12px;
+  width: auto;
+}
+
+.con-button.button-L .icon { margin-right: 6px; }
+
+.con-button.button-L .icon svg { height: 14px; }
+
+.con-button.button-XL .icon { margin-right: 8px; }
+
+.con-button.button-XL .icon svg { height: 16px; }
 
 /* mobile only */
 @media (max-width: 600px) {

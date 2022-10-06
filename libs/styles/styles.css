@@ -126,20 +126,6 @@ img {
   height: auto;
 }
 
-/* Icons */
-.icon {
- margin-right: 8px;
-}
-
-.icon svg {
-  height: 28px;
-  width: auto;
-}
-
-a .icon svg {
-  height: 12px;
-}
-
 /* Not blocks */
 div:not([class]) > div > div img[src^="./media_"] {
   width: 100%;
