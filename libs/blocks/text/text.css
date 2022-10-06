@@ -2,15 +2,15 @@
   padding: var(--spacing-xxl) 0;
   position: relative;
 }
-
 .text-block p {
-  margin-top: 0;
+  margin: 0 0 var(--spacing-s);
 }
 
 .text-block p.action-area {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .text-block p.action-area a {
@@ -19,15 +19,6 @@
 
 .text-block p.action-area a.con-button {
   flex: 0 0 auto;
-}
-
-.text-block a:not(.con-button) {
-  color: var(--link-color);
-  font-weight: 700;
-}
-
-.text-block a:not(.con-button):hover {
-  color: var(--link-hover-color);
 }
 
 .text-block .background {

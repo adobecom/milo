@@ -217,9 +217,9 @@
 
   .marquee .action-area {
     display: flex;
-    gap: var(--spacing-xs);
     flex-wrap: wrap;
     align-items: center;
+    gap: var(--spacing-xs);
   }
 
   .marquee .background .mobileOnly,
