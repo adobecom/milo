@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'modal',
+  'pdf-viewer',
   'quote',
   'section-metadata',
   'tabs',
@@ -41,6 +42,7 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments/' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
+  { 'pdf-viewer': '.pdf' },
 ];
 const ENVS = {
   local: { name: 'local' },
@@ -176,7 +178,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.removeEventListener('error', onScript);
 
     if (event.type === 'error') {
-      reject(new Error('error loading script'));
+      reject(new Error(`error loading script: ${script.src}`));
     } else if (event.type === 'load') {
       script.dataset.loaded = true;
       resolve(script);
@@ -263,6 +265,10 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
+      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+        a.target = '_blank';
+        return false;
+      }
       // Fragments
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
