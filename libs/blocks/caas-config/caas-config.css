@@ -28,6 +28,11 @@ dd.content .sort-options > .field {
   font-size: 12px;
 }
 
+.show-ids .cardid:hover {
+  background-color: #88be88;
+}
+
 .show-ids .consonant-DoubleWideCard .cardid {
   top: 12px;
 }
+
