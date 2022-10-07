@@ -101,6 +101,8 @@ const addFooter = (links, container) => {
 };
 
 const init = (el) => {
+  el.classList.add('loading');
+
   const section = el.closest('.section');
   const row = el.querySelector(':scope > div');
   const picture = el.querySelector('picture');
@@ -111,7 +113,15 @@ const init = (el) => {
   const base = miloLibs || codeRoot;
   let card = el;
 
-  loadStyle(`${base}/deps/caas.css`);
+  const styleLoaded = new Promise((resolve) => {
+    loadStyle(`${base}/deps/caas.css`, resolve);
+  });
+  styleLoaded
+    .then(() => {
+      document.querySelectorAll('.card.loading').forEach((card => card?.classList.remove('loading')));
+    })
+    .catch((err) => console.log(err));
+
   addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {
