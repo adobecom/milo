@@ -61,6 +61,7 @@ div.four-up .text-block .grid {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  gap: var(--spacing-xs);
 }
 
 .text-block.left .action-area,
@@ -71,10 +72,6 @@ div.four-up .text-block .grid {
 .text-block.right .action-area,
 .text-block.align-right .action-area {
   justify-content: flex-end;
-}
-
-.text-block .action-area a {
-  margin-right: var(--spacing-s);
 }
 
 /* Tablet */
