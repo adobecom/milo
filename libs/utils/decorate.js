@@ -1,5 +1,4 @@
 import { decorateLinkAnalytics } from './analytics.js';
-
 import { createTag, getConfig, } from '../utils/utils.js';
 
 export function decorateButtons(el, size) {
