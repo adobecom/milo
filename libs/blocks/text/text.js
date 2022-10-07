@@ -10,32 +10,44 @@
 * governing permissions and limitations under the License.
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateIcons, decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateLinkAnalytics } from '../../utils/analytics.js';
+import { createTag } from '../../utils/utils.js';
 
-/*
- * Text Block - v1.0
- */
+export function decorateText(el, size = 'medium') {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
+    headingEl.classList.add(`heading-${headingSize}`);
+    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+  };
+  headings.forEach((heading) => {
+    if (size === 'small') {
+      decorate(heading, 'S', 'S', 'S');
+    } else if (size === 'large') {
+      decorate(heading, 'L', 'L', 'L');
+    } else if (size === 'xlarge') {
+      decorate(heading, 'XL', 'XL', 'XL');
+    } else {
+      decorate(heading, 'M', 'M', 'M');
+    }
+  });
+  decorateIcons(el);
+  decorateButtons(el);
+  decorateLinkAnalytics(el, headings);
+}
 
 export default function init(el) {
-  const children = el.querySelectorAll(':scope > div');
-  const [background, ...cols] = children;
-  decorateBlockBg(el, background);
-
-  const container = document.createElement('div');
-  container.classList.add('foreground', 'container', 'grid');
+  el.classList.add('text-block');
+  const rows = el.querySelectorAll(':scope > div');
+  const container = createTag('div', { class: 'foreground container grid' });
+  if (rows.length > 1) decorateBlockBg(el, rows[0]);
+  const size = getBlockSize(el);
+  decorateText(el, size);
   el.appendChild(container);
-  el.classList.add('block');
-
-  cols.forEach((col, idx) => {
-    let headingClass = 'medium';
-    if (idx === 0 && (el.classList.contains('full-width'))) {
-      col.children[0].classList.add('full-width');
-      headingClass = el.classList.contains('large') ? 'large' : 'medium';
-    }
-    col.children[0].classList.add('text');
-    decorateBlockText(el, headingClass);
-    col.querySelector('a + a')?.closest('p').classList.add('action-area');
-    container.insertAdjacentElement('beforeend', col.children[0]);
-    col.remove();
+  const textRows = el.querySelectorAll(':scope > div:not([class])');
+  textRows.forEach((row, idx) => {
+    row.classList.add('text');
+    container.insertAdjacentElement('beforeend', row);
   });
 }
