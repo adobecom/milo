@@ -3,8 +3,9 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { waitForElement } from '../../helpers/waitfor.js';
 
-const { default: youtubeFunc } = await import('../../../libs/blocks/youtube/youtube.js');
+const { default: init } = await import('../../../libs/blocks/youtube/youtube.js');
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('youtube', () => {
@@ -12,8 +13,9 @@ describe('youtube', () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
     const youtube = document.querySelectorAll('a');
     youtube.forEach(async (link) => {
-      await youtubeFunc(link);
-      expect(document.querySelector('iframe')).to.exist;
+      init(link);
+      const iframe = await waitForElement('iframe');
+      expect(iframe).to.exist;
     });
   });
 });
