@@ -68,7 +68,7 @@ function getEnv() {
   const location = new URL(href);
   const query = location.searchParams.get('env');
 
-  if (query) { return ENVS.query; }
+  if (query) { return ENVS[query]; }
   if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
   if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
