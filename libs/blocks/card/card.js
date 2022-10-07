@@ -1,5 +1,5 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle, getSectionMetadata } from '../../utils/utils.js';
+import { loadStyle, getSectionMetadata, getConfig } from '../../utils/utils.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -107,10 +107,11 @@ const init = (el) => {
   const links = el.querySelectorAll('a');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
   let card = el;
 
-  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
+  loadStyle(`${base}/deps/caas.css`);
   addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {

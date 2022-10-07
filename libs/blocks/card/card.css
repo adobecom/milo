@@ -1,4 +1,8 @@
 /* stylelint-disable-next-line selector-class-pattern */
-.manual-card .consonant-ProductCard-title {
+.card .consonant-ProductCard-title {
   line-height: 1.375rem;
+}
+
+.card.loading {
+  visibility: hidden;
 }
