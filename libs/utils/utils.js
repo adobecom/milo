@@ -389,7 +389,7 @@ function decorateSections(el, isDoc) {
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off') {
-    const { default: martech } = await import('./martech.js');
+    const { default: martech } = await import('../martech/martech.js');
     martech(config, loadScript, getMetadata);
   }
 }
