@@ -12,7 +12,7 @@
 
 import { asyncForEach } from './utils.js';
 import getConfig from './config.js';
-import { PublicClientApplication } from './lib/msal-browser-2.14.2.js';
+import { PublicClientApplication } from './lib/msal-browser.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
