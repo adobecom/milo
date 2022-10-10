@@ -31,7 +31,7 @@ function hasSchema(host) {
     plugins: [
       {
         id: 'send-to-caas',
-        condition: (s) => s.isHelix() && s.isContent() && !window.location.pathname.endsWith('.json'),
+        condition: (s) => s.isHelix() && s.isProd() && !window.location.pathname.endsWith('.json'),
         button: {
           text: 'Send to CaaS',
           action: async (_, sk) => {
