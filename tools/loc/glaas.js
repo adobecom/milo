@@ -12,7 +12,7 @@
 
 import getConfig from './config.js';
 import { asyncForEach, getAltLanguage, getPathFromUrl, stripExtension } from './utils.js';
-import { getFiles, getSpFiles } from './sharepoint.js';
+import { copyFileAndUpdateMetadata, getFiles, getFiles1, getSpFiles } from './sharepoint.js';
 import { PROJECTS_ROOT_PATH } from './project.js';
 
 const LOCALSTORAGE_ITEM = 'glaas-auth-token';
@@ -341,21 +341,36 @@ async function executeAltLangFlow(project, langInfo, altLanguage, statusOnly) {
   }
 }
 
-async function sendToGLaaS(project, language) {
-  const skipTranslation = !project[language][0]?.skipLanguageTranslation;
-  if (skipTranslation) {
-    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
-    const files = await getFiles(project, language);
+async function sendToGLaaS(tasks, project, language) {
+  const altLangTasks = tasks.altLangOnly;
+  const translationTasks = tasks.translationOnly;
+  const translationAndAltLangTasks = tasks.translationAndAltLang;
+  if (translationTasks.length > 0) {
+    const files = await getFiles1(project, translationTasks);
     if (!files || files.length === 0) {
       throw new Error('No valid files found to send for translation');
     }
+    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
     await triggerGLaaSProject(gLaaSProjectName, language, files);
-  } else {
-    const altLanguage = getAltLanguage(project, language);
-    if (altLanguage) {
-      await executeAltLangFlow(project, { language, skipTranslation: true }, altLanguage);
-    }
   }
+  if (translationAndAltLangTasks.length > 0) {
+    const files = await getFiles1(project, translationAndAltLangTasks);
+    if (!files || files.length === 0) {
+      throw new Error('No valid files found to send for translation');
+    }
+    const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
+    await triggerGLaaSProject(gLaaSProjectName, language, files);
+    await asyncForEach(altLangTasks, async (altLangTask) => {
+      await executeAltLangFlow(
+        project,
+        { language, skipTranslation: true },
+        altLangTask.altLanguage,
+      );
+    });
+  }
+  await asyncForEach(altLangTasks, async (altLangTask) => {
+    await executeAltLangFlow(project, { language, skipTranslation: true }, altLangTask.altLanguage);
+  });
 }
 
 async function updateProject(project, callback) {
@@ -366,8 +381,10 @@ async function updateProject(project, callback) {
     const skipTranslation = project[language]?.length > 0
       && project[language][0].skipLanguageTranslation;
     const altLanguage = getAltLanguage(project, language);
-    if (skipTranslation && altLanguage) {
-      await executeAltLangFlow(project, { language, skipTranslation }, altLanguage, true);
+    if (skipTranslation) {
+      if (altLanguage) {
+        await executeAltLangFlow(project, { language, skipTranslation }, altLanguage, true);
+      }
     } else {
       const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
       const status = await getGLaaSTaskStatus(language, gLaaSProjectName);

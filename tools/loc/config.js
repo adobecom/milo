@@ -163,7 +163,7 @@ function getSharepointConfig(config) {
 }
 
 function getHelixAdminConfig() {
-  const adminServerURL = 'https://admin.hlx3.page';
+  const adminServerURL = 'https://admin.hlx.page';
   return {
     api: {
       status: { baseURI: `${adminServerURL}/status` },
@@ -209,9 +209,6 @@ async function getConfig() {
       },
       async getWorkflowForLocale(locale) {
         return getWorkflowForLocale(configJson, locale, decoratedLocales);
-      },
-      async getAltLangWorkflowForLocale(locale) {
-        return getAltLangWorkflowForLocale(configJson, locale, decoratedLocales);
       },
     };
   }

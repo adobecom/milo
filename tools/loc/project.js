@@ -77,8 +77,16 @@ function getProjectFolder(path) {
   return path.substring(0, path.lastIndexOf('.'));
 }
 
-function shouldBeTranslated(language, translationRow) {
-  return translationRow[language] && `${translationRow[language]}`.toLowerCase() === 'translate';
+function shouldGenerateEnglishCopy(action) {
+  return action && action.toLowerCase() === 'english copy';
+}
+
+function shouldBeProcessed(language, translationRow) {
+  return translationRow[language] && `${translationRow[language]}`;
+}
+
+function shouldRollout(action) {
+  return action && action.toLowerCase() === 'rollout';
 }
 
 function addToExistingOrCreate(projectDetail, key, task) {
@@ -125,24 +133,26 @@ async function addLanguageTasksToProject(projectDetail, projectFolder, locConfig
     const languageCode = localeConfig.languagecode;
     const altLanguageCode = localeConfig.altLanguagecode;
     const { language } = localeConfig;
-    if (languageCode === 'en' || shouldBeTranslated(language, translationTask)) {
+    if (languageCode === 'en' || shouldBeProcessed(language, translationTask)) {
+      const action = translationTask[language];
       const targetLivecopies = await locConfig.getLivecopiesForLanguage(languageCode);
       const targetLivecopyFolders = getTargetFolders(srcPath, projectFolder, targetLivecopies);
       const targetAltLangLocales = await locConfig.getAltLangLocales(languageCode);
       const targetAltLangFolders = getTargetFolders(srcPath, projectFolder, targetAltLangLocales);
+      const skipTranslation = languageCode === 'en' || shouldRollout(action);
       const task = {
         URL: urlToTranslate,
         language: languageCode,
         altlanguage: altLanguageCode,
         path: srcPath,
-        skipLanguageTranslation: languageCode === 'en',
+        skipLanguageTranslation: skipTranslation,
+        rolloutOnly: skipTranslation && !altLanguageCode,
+        englishCopy: shouldGenerateEnglishCopy(action),
         filePath: `${srcPath}.docx`,
         languagePath: `/langstore/${languageCode}${srcPath}`,
         languageFilePath: `/langstore/${languageCode}${srcPath}.docx`,
         altLanguagePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}` : '',
         altLanguageFilePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}.docx` : '',
-        tempLanguagePath: `${projectFolder}/${languageCode}${srcPath}`,
-        tempLanguageFilePath: `${projectFolder}/${languageCode}${srcPath}.docx`,
         livecopyFolders: targetLivecopyFolders,
         altLangFolders: targetAltLangFolders,
       };
@@ -186,7 +196,6 @@ async function init() {
         url: projectUrl,
         docs: {},
         name: projectName,
-        altLangName: `${projectName}-altLang`,
       };
       if (!projectFileJson) {
         return projectDetail;

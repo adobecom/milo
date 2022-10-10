@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+  <title>Localization Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<header>
+  <h1 class="container">Localization Tools</h1>
+</header>
+<main>
+  <div class="tools-list">
+    <div class="container">
+      <div id="getFragments" class="button-container">
+        <button type="button">Get Fragments</button>
+      </div>
+      <div id="copyToEn" class="button-container">
+        <button type="button">Copy to English Langstore</button>
+      </div>
+    </div>
+  </div>
+  <div class="tools-info">
+    <div id="fragments-container">
+    </div>
+  </div>
+</main>
+<script type="module">
+  import init from './tools.js';
+  init();
+</script>
+</body>
+</html>
