@@ -24,7 +24,7 @@ import {
   saveFile,
   connect as connectToSP,
   getSpViewUrl,
-  updateProjectWithSpStatus as updateSPStatus, copyFile,
+  updateProjectWithSpStatus as updateSPStatus, copyFile, getFiles, getFiles1,
 } from './sharepoint.js';
 import { init as initProject } from './project.js';
 import {
@@ -127,7 +127,7 @@ function getPersistButtons(task, language) {
   $saveButton.addEventListener('click', async () => { await save(task, language); });
   const buttons = [];
   if (fileInSharepoint) {
-    const $viewButton = createButton('Main');
+    const $viewButton = createButton('Primary');
     $viewButton.addEventListener('click', () => { window.open(task.sp.webUrl); });
     buttons.push($viewButton);
     if (task.altlanguage && task.altlangsp.status === 200) {
@@ -187,7 +187,25 @@ function getGLaaSStatus(config, language, url, hasSourceFile) {
     }
   } else if (gLaaSConfig.accessToken) {
     if (languageTask.sp) {
-      gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
+      if (languageTask.rolloutOnly) {
+        const persistButtons = getPersistButtons(languageTask, language);
+        if (persistButtons.length > 0) {
+          gLaaSStatus.canSaveAll = true;
+          gLaaSStatus.persistButtons = persistButtons;
+        } else {
+          gLaaSStatus.innerHtml = 'No File to Rollout';
+        }
+      } else if (languageTask.englishCopy) {
+        const persistButtons = getPersistButtons(languageTask, language);
+        if (persistButtons.length > 0) {
+          gLaaSStatus.canSaveAll = true;
+          gLaaSStatus.persistButtons = persistButtons;
+        } else {
+          gLaaSStatus.innerHtml = 'English Copy in Progress';
+        }
+      } else {
+        gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
+      }
     }
   }
   return gLaaSStatus;
@@ -201,8 +219,8 @@ async function initRollout(task) {
   loadingON(`Rollout to live-copy folders of ${task.languageFilePath} complete..`);
   if (task.altlanguage) {
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} in progress..`);
-    const failedRolloutPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
-    failedRollouts.push(failedRolloutPages);
+    const failedAltLangPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
+    failedRollouts.push(failedAltLangPages);
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} complete..`);
   }
   if (failedRollouts.length > 0) {
@@ -213,7 +231,7 @@ async function initRollout(task) {
 async function rolloutAll(language) {
   loadingON(`Rollout to target folders of ${language}`);
   await asyncForEach(projectDetail[language], async (task) => {
-    if (task.glaas) {
+    if (task.glaas || task.rolloutOnly) {
       await initRollout(task);
     }
   });
@@ -333,9 +351,44 @@ async function displayProjectDetail() {
 }
 
 async function sendForTranslation() {
+  const gLaaSTasks = { altLangOnly: [], translationOnly: [], translationAndAltLang: [] };
+  const englishCopyTasks = [];
+  const rolloutOnlyTasks = [];
   await asyncForEach(projectDetail.languages, async (language) => {
-    loadingON(`Creating ${language} handoff in GLaaS`);
-    await sendToGLaaS(projectDetail, language);
+    const tasks = projectDetail[language];
+    await asyncForEach(tasks, async (task) => {
+      if (task.englishCopy) {
+        englishCopyTasks.push(task);
+      } else if (task.rolloutOnly) {
+        rolloutOnlyTasks.push(task);
+      } else if (task.altlanguage) {
+        if (task.skipLanguageTranslation) {
+          gLaaSTasks.altLangOnly.push(task);
+        } else {
+          gLaaSTasks.translationAndAltLang.push(task);
+        }
+      } else {
+        gLaaSTasks.translationOnly.push(task);
+      }
+    });
+    if (englishCopyTasks.length > 0) {
+      const files = await getFiles1(projectDetail, englishCopyTasks);
+      if (!files || files.length === 0) {
+        throw new Error('No valid files found for English Copy');
+      }
+      await asyncForEach(englishCopyTasks, async (task) => {
+        const altLang = isAltLang(task, language);
+        const dest = `${getSavePath(task, altLang)}`.toLowerCase();
+        await asyncForEach(files, async (file) => {
+          await saveFile(file, dest);
+        });
+      });
+    }
+    if (gLaaSTasks.altLangOnly.length > 0 || gLaaSTasks.translationOnly.length > 0
+      || gLaaSTasks.translationAndAltLang.length > 0) {
+      loadingON(`Creating ${language} handoff in GLaaS`);
+      await sendToGLaaS(gLaaSTasks, projectDetail, language);
+    }
   });
   loadingON('Handoffs created in GLaaS. Updating the project with status from GLaaS...');
   await updateGLaaSStatus(projectDetail);
@@ -383,7 +436,7 @@ function getSavePath(task, altLang) {
 
 async function save(task, language, doRefresh = true) {
   const altLang = isAltLang(task, language);
-  if (task.skipLanguageTranslation && !altLang) {
+  if (task.rolloutOnly) {
     return;
   }
   const dest = `${getSavePath(task, altLang)}`.toLowerCase();

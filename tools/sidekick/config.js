@@ -94,6 +94,24 @@ function hasSchema(host) {
         },
       },
       {
+        id: 'locTools',
+        condition: (s) => s.isEditor() && s.location.href.includes('/:x'),
+        button: {
+          text: 'Localization Tools',
+          action: (_, sk) => {
+            const { config } = sk;
+            window.open(
+              `${
+                config.pluginHost ? config.pluginHost : `http://${config.innerHost}`
+              }/tools/loc/tools.html?sp=${encodeURIComponent(window.location.href)}&owner=${
+                config.owner
+              }&repo=${config.repo}&ref=${config.ref}`,
+              'loc-tools',
+            );
+          },
+        },
+      },
+      {
         id: 'rollout',
         condition: (s) => s.isEditor() && s.location.href.includes('/:w'),
         button: {
