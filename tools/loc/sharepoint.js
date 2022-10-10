@@ -179,9 +179,10 @@ async function getFile(project, url) {
   return undefined;
 }
 
-async function getFiles1(project, tasks) {
+async function getFiles(project, locale) {
+  validateConnection();
   const files = [];
-  await asyncForEach(tasks, async (task) => {
+  await asyncForEach(project[locale], async (task) => {
     const url = task.URL;
     const file = await getFile(project, url);
     if (file) {
@@ -190,12 +191,8 @@ async function getFiles1(project, tasks) {
       files.push(file);
     }
   });
-  return files;
-}
 
-async function getFiles(project, locale) {
-  validateConnection();
-  return getFiles1(project[locale]);
+  return files;
 }
 
 async function createFolder(folder) {
@@ -319,7 +316,7 @@ async function getFileMetadata(filePath) {
   options.method = 'GET';
   const itemFields = await fetch(`${sp.api.file.get.baseURI}${filePath}:/listItem/fields`, options);
   if (itemFields.ok) {
-    return itemFields.json();
+    return await itemFields.json();
   }
   if (itemFields.status === 404) {
     return { status: 404 };
@@ -383,10 +380,8 @@ async function copyFile(srcPath, destinationFolder, newName) {
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copyStatus = false;
   while (!copyStatus) {
-    // eslint-disable-next-line no-await-in-loop
     const status = await fetch(statusUrl);
     if (status.ok) {
-      // eslint-disable-next-line no-await-in-loop
       copyStatus = (await status.json()).status === 'completed';
     }
   }
@@ -458,7 +453,6 @@ export { connect,
   getAccessToken,
   getAuthorizedRequestOption,
   getFiles,
-  getFiles1,
   getFileVersionInfo,
   getFileMetadata,
   getSpFiles,
