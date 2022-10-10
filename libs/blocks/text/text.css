@@ -53,6 +53,7 @@ div.four-up .text-block .grid {
   z-index: -1;
 }
 
+.text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 .text-block [class^="heading"] { margin: var(--spacing-xs) 0; }
 .text-block p { margin: 0 0 var(--spacing-xs); }
 
