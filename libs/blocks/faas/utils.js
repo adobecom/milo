@@ -213,9 +213,10 @@ const afterYiiLoadedCallback = () => {
     }
   });
 
-  const divs = document.querySelectorAll('div');
+  const divs = document.querySelectorAll('.next div');
+  const nextSubmitArrow = document.querySelector('.submit.next input + div');
   divs.forEach((div) => {
-    if (!div.innerHTML) {
+    if (!div.innerHTML && div !== nextSubmitArrow) {
       div.remove();
     }
   });
@@ -276,6 +277,7 @@ export const makeFaasConfig = () => {
   /* c8 ignore stop */
 
   state = config;
+  return config;
 };
 
 export const initFaas = (config, targetEl) => {
