@@ -27,6 +27,10 @@ export default async function init(link) {
       const block = document.createElement('div');
       block.className = a.className;
       block.id = 'caas';
+      const modalDiv = document.createElement('div');
+      modalDiv.className = 'modalContainer';
+      a.insertAdjacentElement('afterend', modalDiv);
+
       a.insertAdjacentElement('afterend', block);
       a.remove();
 
