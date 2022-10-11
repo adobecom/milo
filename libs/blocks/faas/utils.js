@@ -8,6 +8,7 @@ import {
 } from '../../utils/utils.js';
 
 const { env, miloLibs, codeRoot } = getConfig();
+let state;
 
 export const getFaasHostSubDomain = (environment) => {
   const faasEnv = environment ?? env.name;
@@ -16,7 +17,7 @@ export const getFaasHostSubDomain = (environment) => {
     return '';
   }
   if (faasEnv === 'stage') {
-    return 'staging.';
+    return 'dev.';
   }
   if (faasEnv === 'dev') {
     return 'dev.';
@@ -68,9 +69,164 @@ export const defaultState = {
   e: {},
 };
 
-export const makeFaasConfig = (state) => {
+const afterYiiLoadedCallback = () => {
+  const wr = document.querySelector('.faas-form');
+  function editMessages(mutations) {
+    const firstmut = mutations[0].addedNodes;
+    const text = firstmut[firstmut.length - 1].nodeValue;
+    const sibs = mutations[0].target.parents('.checkbox').querySelector('.checkbox.error');
+    let i = 0;
+    do {
+      sibs[i].style.height = '4em';
+      sibs[i].querySelector('.errorMessage').innerHTML = text;
+      i += 1;
+    } while (sibs[i]);
+  }
+  const { multicampaignradiostyle } = state; // temp
+  function changeSelectionElement() {
+    if (multicampaignradiostyle) {
+      const inputs = wr.querySelectorAll('.checkboxlist input');
+      inputs.forEach((input) => {
+        if (input.type === 'checkbox') {
+          input.type = 'radio';
+        }
+      });
+    }
+  }
+
+  function hideDisplay(elms = []) {
+    $.each(elms, (i, elm) => {
+      elm.style.display = 'none';
+    });
+  }
+
+  function placeHolders() {
+    function iterator(els) {
+      $.each(els, (i, el) => {
+        const textHolder = $(el).siblings('label')[0];
+        const text = textHolder instanceof HTMLElement ? textHolder.textContent : '';
+        if (text !== '') {
+          el.setAttribute('placeholder', text);
+        }
+      });
+    }
+
+    iterator($('.faasform input[type="text"]'));
+    iterator($('.faasform textarea'));
+  }
+
+  function removeRequired() {
+    const requireds = $('span.required');
+    $.each(requireds, (i, req) => {
+      $(req).remove();
+    });
+  }
+
+  function requireNote() {
+    const notearr = $('p.note');
+    const RMTEXT = [
+      'Required fields',
+      'Povinná pole',
+      'Pflichtfelder',
+      'Skal udfyldes',
+      'Champs obligatoires',
+      'Pakolliset kentät',
+      'Campi obbligatori',
+      '必須フィールド',
+      'Verplichte velden',
+      'Obligatoriske felt',
+      'Campos obligatorios',
+      'Obligatoriska fält',
+      'Pola wymagane',
+      'Обязательные поля',
+      'Os campos obrigatórios',
+      '필수 입력란',
+      '为必填项',
+      '為必填項',
+      'Zorunlu alanlar',
+    ];
+    const validnote = $.each(notearr, (i, note) => {
+      const text = note.textContent;
+      const notematch = RMTEXT.indexOf(text);
+      if (notematch >= 0) {
+        return note;
+      }
+      return undefined;
+    });
+
+    return validnote;
+  }
+
+  function childListMutation(cb) {
+    return new MutationObserver((mutations) => {
+      cb(mutations, this);
+    });
+  }
+
+  function setMutationObserver(mutation, elms = []) {
+    $.each(elms, (i, elm) => {
+      mutation.observe(elm, { childList: true });
+    });
+  }
+
+  changeSelectionElement();
+  removeRequired();
+  placeHolders();
+
+  const errorMessages = $('.hash-window .checkbox .errorMessage');
+  const faasform = $('.faas-form');
+  const note = requireNote();
+
+  if (note) {
+    note.remove();
+  }
+
+  if (state.hidePrepopulated) {
+    const prepop = $('.prepopulated', wr);
+    hideDisplay(prepop);
+  }
+
+  $.each(faasform, (i, form) => {
+    $(form).on('change', () => {
+      const elements = $('span.required', form);
+      hideDisplay(elements);
+    });
+  });
+
+  $('.faas-form').on('submit', (event) => {
+    const firstError = event.target.querySelector('.error [name]');
+    const subNavEl = $('.Subnav-wrapper');
+    const elHeight = subNavEl && subNavEl[0] ? subNavEl[0].offsetHeight : 0;
+
+    if (firstError) {
+      const pageTop = document.body.getClientRects()[0].top;
+      const firstErrorTop = firstError.getClientRects()[0].top;
+      const relPostion = pageTop - firstErrorTop;
+
+      $(firstError).on('focus', (ev) => {
+        ev.preventDefault();
+
+        window.scrollTo(0, (Math.abs(relPostion) - (elHeight * 2.5)));
+      });
+
+      firstError.focus();
+    }
+  });
+
+  const divs = document.querySelectorAll('div');
+  divs.forEach((div) => {
+    if (!div.innerHTML) {
+      div.remove();
+    }
+  });
+
+  setMutationObserver(childListMutation(editMessages), errorMessages);
+};
+
+export const makeFaasConfig = () => {
   if (!state) {
-    return defaultState;
+    state = defaultState;
+    return state;
   }
   /* c8 ignore start */
   const config = {
@@ -100,154 +256,7 @@ export const makeFaasConfig = (state) => {
         94: state.pjs94,
       },
     },
-    e: {
-      afterYiiLoadedCallback: () => {
-        const wr = document.querySelector('.faas-form');
-        function editMessages(mutations) {
-          const firstmut = mutations[0].addedNodes;
-          const text = firstmut[firstmut.length - 1].nodeValue;
-          const sibs = mutations[0].target.parents('.checkbox').querySelector('.checkbox.error');
-          let i = 0;
-          do {
-            sibs[i].style.height = '4em';
-            sibs[i].querySelector('.errorMessage').innerHTML = text;
-            i += 1;
-          } while (sibs[i]);
-        }
-        const { multicampaignradiostyle } = state; // temp
-        function changeSelectionElement() {
-          if (multicampaignradiostyle) {
-            const inputs = wr.querySelectorAll('.checkboxlist input');
-            inputs.forEach((input) => {
-              if (input.type === 'checkbox') {
-                input.type = 'radio';
-              }
-            });
-          }
-        }
-
-        function hideDisplay(elms = []) {
-          $.each(elms, (i, elm) => {
-            elm.style.display = 'none';
-          });
-        }
-
-        function placeHolders() {
-          function iterator(els) {
-            $.each(els, (i, el) => {
-              const textHolder = $(el).siblings('label')[0];
-              const text = textHolder instanceof HTMLElement ? textHolder.textContent : '';
-              if (text !== '') {
-                el.setAttribute('placeholder', text);
-              }
-            });
-          }
-
-          iterator($('.faasform input[type="text"]'));
-          iterator($('.faasform textarea'));
-        }
-
-        function removeRequired() {
-          const requireds = $('span.required');
-          $.each(requireds, (i, req) => {
-            $(req).remove();
-          });
-        }
-
-        function requireNote() {
-          const notearr = $('p.note');
-          const RMTEXT = [
-            'Required fields',
-            'Povinná pole',
-            'Pflichtfelder',
-            'Skal udfyldes',
-            'Champs obligatoires',
-            'Pakolliset kentät',
-            'Campi obbligatori',
-            '必須フィールド',
-            'Verplichte velden',
-            'Obligatoriske felt',
-            'Campos obligatorios',
-            'Obligatoriska fält',
-            'Pola wymagane',
-            'Обязательные поля',
-            'Os campos obrigatórios',
-            '필수 입력란',
-            '为必填项',
-            '為必填項',
-            'Zorunlu alanlar',
-          ];
-          const validnote = $.each(notearr, (i, note) => {
-            const text = note.textContent;
-            const notematch = RMTEXT.indexOf(text);
-            if (notematch >= 0) {
-              return note;
-            }
-            return undefined;
-          });
-
-          return validnote;
-        }
-
-        function childListMutation(cb) {
-          return new MutationObserver((mutations) => {
-            cb(mutations, this);
-          });
-        }
-
-        function setMutationObserver(mutation, elms = []) {
-          $.each(elms, (i, elm) => {
-            mutation.observe(elm, { childList: true });
-          });
-        }
-
-        changeSelectionElement();
-        removeRequired();
-        placeHolders();
-
-        const errorMessages = $('.hash-window .checkbox .errorMessage');
-        const faasform = $('.faas-form');
-        const note = requireNote();
-
-        if (note) {
-          note.remove();
-        }
-
-        if (state.hidePrepopulated) {
-          const prepop = $('.prepopulated', wr);
-          hideDisplay(prepop);
-        }
-
-        $.each(faasform, (i, form) => {
-          $(form).on('change', () => {
-            const elements = $('span.required', form);
-            hideDisplay(elements);
-          });
-        });
-
-        $('.faas-form').on('submit', (event) => {
-          const firstError = event.target.querySelector('.error [name]');
-          const subNavEl = $('.Subnav-wrapper');
-          const elHeight = subNavEl && subNavEl[0] ? subNavEl[0].offsetHeight : 0;
-
-          if (firstError) {
-            const pageTop = document.body.getClientRects()[0].top;
-            const firstErrorTop = firstError.getClientRects()[0].top;
-            const relPostion = pageTop - firstErrorTop;
-
-            $(firstError).on('focus', (ev) => {
-              ev.preventDefault();
-
-              window.scrollTo(0, (Math.abs(relPostion) - (elHeight * 2.5)));
-            });
-
-            firstError.focus();
-          }
-        });
-
-        setMutationObserver(childListMutation(editMessages), errorMessages);
-      },
-    },
+    e: { afterYiiLoadedCallback },
   };
 
   // b2bpartners
@@ -266,12 +275,12 @@ export const makeFaasConfig = (state) => {
   }
   /* c8 ignore stop */
 
-  return config;
+  state = config;
 };
 
-export const initFaas = (state, targetEl) => {
-  if (!targetEl || !state) return null;
-
+export const initFaas = (config, targetEl) => {
+  if (!targetEl || !config) return null;
+  state = config;
   const appEl = targetEl.parentElement;
   const isNext = (state.pjs93 || state.p.js[93])?.toString() === '2847' && (state.pc5 || state.pc[5] === 'clearbit');
   const formWrapperEl = createTag('div', {
@@ -292,9 +301,11 @@ export const initFaas = (state, targetEl) => {
   const formEl = document.createElement('div');
   formEl.className = 'faas-form-wrapper';
   if (state.complete) {
+    state.e = { afterYiiLoadedCallback };
     $(formEl).faas(state);
   } else {
-    $(formEl).faas(makeFaasConfig(state));
+    makeFaasConfig();
+    $(formEl).faas(state);
   }
 
   formWrapperEl.append(formTitleWrapperEl, formEl);
