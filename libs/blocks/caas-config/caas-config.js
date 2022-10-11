@@ -757,6 +757,7 @@ const Configurator = ({ rootEl }) => {
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
         <div class="content-panel">
+          <div class="modalContainer"></div>
           <div id="caas" class="caas-preview"></div>
         </div>
       </div>
