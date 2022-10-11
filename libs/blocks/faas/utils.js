@@ -4,9 +4,10 @@ import {
   loadStyle,
   loadScript,
   getConfig,
+  createTag,
 } from '../../utils/utils.js';
 
-const { env } = getConfig();
+const { env, miloLibs, codeRoot } = getConfig();
 
 export const getFaasHostSubDomain = (environment) => {
   const faasEnv = environment ?? env.name;
@@ -23,15 +24,17 @@ export const getFaasHostSubDomain = (environment) => {
   return 'qa.';
 };
 
+const base = miloLibs || codeRoot;
+
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 if (env.name === 'local') {
-  faasCurrentJS = '/libs/deps/jquery.faas-current.js';
+  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
 }
 export const loadFaasFiles = () => {
-  loadStyle('/libs/blocks/faas/faas.css');
+  loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
-    loadScript('/libs/deps/jquery-3.6.0.min.js').then(() => loadScript(faasCurrentJS)),
+    loadScript(`${base}/deps/jquery-3.6.0.min.js`).then(() => loadScript(faasCurrentJS)),
   ]);
 };
 
@@ -270,26 +273,29 @@ export const initFaas = (state, targetEl) => {
   if (!targetEl || !state) return null;
 
   const appEl = targetEl.parentElement;
+  const isNext = (state.pjs93 || state.p.js[93])?.toString() === '2847' && (state.pc5 || state.pc[5] === 'clearbit');
+  const formWrapperEl = createTag('div', {
+    class: `block faas
+  ${state.style_backgroundTheme || 'white'}
+  ${state.style_layout || 'column1'}
+  ${state.isGate ? 'gated' : ''}
+  ${isNext ? 'next' : ''}`,
+  });
 
-  const formWrapperEl = document.createElement('div');
-  formWrapperEl.className = `block faas
-    ${state.style_backgroundTheme || 'white'}
-    ${state.style_layout || 'column1'}
-    ${state.isGate ? 'gated' : ''}`;
-
-  const formTitleWrapperEl = document.createElement('div');
-  formTitleWrapperEl.classList.add('faas-title');
-
+  const formTitleWrapperEl = createTag('div', { class: 'faas-title' });
   if (state.title) {
-    const formTitleEl = document.createElement('h2');
+    const formTitleEl = createTag('h2');
     formTitleEl.textContent = state.title;
     formTitleWrapperEl.append(formTitleEl);
   }
 
   const formEl = document.createElement('div');
   formEl.className = 'faas-form-wrapper';
-
-  $(formEl).faas(makeFaasConfig(state));
+  if (state.complete) {
+    $(formEl).faas(state);
+  } else {
+    $(formEl).faas(makeFaasConfig(state));
+  }
 
   formWrapperEl.append(formTitleWrapperEl, formEl);
   appEl.replaceChild(formWrapperEl, targetEl);
