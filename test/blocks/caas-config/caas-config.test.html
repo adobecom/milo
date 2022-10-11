@@ -8,10 +8,11 @@
         }
       }
     </script>
-    <link rel="stylesheet" href="/libs/blocks/caas-config/caas-config.css">
+    <!-- Enable for manual debugging so that it looks correct -->
+    <!-- <link rel="stylesheet" href="/libs/blocks/caas-config/caas-config.css">
     <link rel="stylesheet" href="/libs/ui/controls/accordion.css">
     <link rel="stylesheet" href="/libs/ui/controls/tagSelector.css">
-    <link rel="stylesheet" href="/libs/ui/controls/multifield.css">
+    <link rel="stylesheet" href="/libs/ui/controls/multifield.css"> -->
   </head>
 
   <body>
@@ -169,7 +170,7 @@
         const contentIdEl = await waitForElement('#contentId');
         contentIdEl.value = 'featured-card-id';
         contentIdEl.dispatchEvent(new Event('change'));
-        await delay(50);
+        await delay(150);
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
@@ -182,12 +183,7 @@
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-        tagUrlInput.value = 'not.the.right.url/tags';
-        tagUrlInput.dispatchEvent(new Event('change'));
-        await delay(50);
-
-        const errorEl = configPanelEl.querySelector('.tool-error');
+        const errorEl = await waitForElement('.tool-error');
         expect(errorEl).to.not.be.null;
         expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
 

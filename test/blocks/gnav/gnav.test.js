@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-expressions */
 /* global describe beforeEach afterEach it */
 
-import { readFile, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
+import { readFile, resetMouse, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { delay } from '../../helpers/waitfor.js';
 
 window.lana = { log: stub() };
 
@@ -12,10 +12,7 @@ document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 const mod = await import('../../../libs/blocks/gnav/gnav.js');
-const searchMod = await import('../../../libs/blocks/gnav/gnav-search.js');
 let gnav;
-const config = {};
-setConfig(config);
 
 describe('Gnav', () => {
   beforeEach(() => {
@@ -56,15 +53,28 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
     largeMenuBtn.click();
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
-    expect(largeMenu.querySelector('.section.last-link-blue')).to.exist;
+  });
+
+  it('nav menu close on scroll', async () => {
+    const largeMenu = document.querySelector('.gnav-navitem.section-menu');
+    const largeMenuBtn = largeMenu.querySelector(':scope > a');
+    await setViewport({ width: 1250, height: 640 });
+
+    largeMenuBtn.click();
+    expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
+    window.scrollTo(0, 400);
+    await delay(100);
+    expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
   });
 
   it('nav menu toggle test - 1', async () => {
     const largeMenuBtn = document.querySelector('.gnav-navitem.section-menu > a');
-    largeMenuBtn.focus();
-    await sendKeys({ press: 'Space' });
     const largeMenu = document.querySelector('.gnav-navitem.section-menu');
-    // expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
+    largeMenuBtn.focus();
+    await delay(100);
+    await sendKeys({ press: 'Space' });
+    await delay(100);
+    expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
   });
 
   it('nav menu toggle test - 2', async () => {
@@ -77,15 +87,11 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
     await sendMouse({
       type: 'click',
-      position: [700, 300],
+      position: [700, 1000],
       button: 'left',
     });
+    await delay(50);
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
-  });
-
-  // gnav-utils
-  it('createTag test', () => {
-    const tag = createTag('div', { class: 'test' }, document.createElement('div'));
-    expect(tag instanceof HTMLElement).to.be.true;
+    await resetMouse();
   });
 });

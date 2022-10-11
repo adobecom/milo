@@ -665,18 +665,24 @@ const getPanels = (tagsData) => [
   },
 ];
 
+/* c8 ignore next 15 */
 const addIdOverlays = () => {
   document.querySelectorAll('.consonant-Card').forEach((card) => {
     if (!card.querySelector('.cardid')) {
-      const idDiv = document.createElement('div');
-      idDiv.classList.add('cardid');
-      idDiv.innerText = card.id;
-      card.appendChild(idDiv);
+      const idBtn = document.createElement('button');
+      idBtn.classList.add('cardid');
+      idBtn.innerText = card.id;
+
+      idBtn.addEventListener('click', (e) => {
+        const id = e.target.textContent;
+        navigator.clipboard?.writeText(id);
+      });
+      card.appendChild(idBtn);
     }
   });
 };
 
-/* c8 ignore next 24 */
+/* c8 ignore next 7 */
 const idOverlayMO = () => {
   const mo = new MutationObserver(() => {
     setTimeout(() => addIdOverlays(), 500);
