@@ -254,7 +254,7 @@ export const getConfig = async (state, strs = {}) => {
         ','
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=2000${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: '',
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -406,6 +406,7 @@ export const defaultState = {
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionSize: '',
   container: '1200MaxWidth',
   country: 'caas:country/us',
   contentTypeTags: [],
