@@ -220,6 +220,8 @@ const afterYiiLoadedCallback = () => {
       div.remove();
     }
   });
+  const emailInput = document.querySelector('#Form40_1');
+  emailInput.setAttribute('required', 'required');
 
   setMutationObserver(childListMutation(editMessages), errorMessages);
 };
