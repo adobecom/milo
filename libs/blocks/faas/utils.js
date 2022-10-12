@@ -220,7 +220,7 @@ const afterYiiLoadedCallback = () => {
       div.remove();
     }
   });
-  const emailInput = document.querySelector('#Form40_1');
+  const emailInput = document.querySelector('.faas-form.next input:not([type=hidden])');
   emailInput.setAttribute('required', 'required');
 
   setMutationObserver(childListMutation(editMessages), errorMessages);
