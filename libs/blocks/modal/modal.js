@@ -26,7 +26,12 @@ function getDetails(el) {
 function closeModals(modals) {
   const qModals = modals || document.querySelectorAll('dialog[open]');
   if (qModals?.length) {
-    qModals.forEach((modal) => { modal.remove(); });
+    qModals.forEach((modal) => {
+      if (modal.nextElementSibling.classList.contains('modal-curtain')) {
+        modal.nextElementSibling.remove();
+      }
+      modal.remove();
+    });
     window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   }
 }
@@ -38,7 +43,8 @@ export async function getModal(el) {
   if (dialog) {
     if (!dialog.open) dialog.showModal();
   } else {
-    dialog = document.createElement('dialog');
+    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    dialog = document.createElement('div');
     dialog.className = 'dialog-modal';
     dialog.id = details.id;
 
@@ -49,9 +55,9 @@ export async function getModal(el) {
       e.preventDefault();
     });
 
-    dialog.addEventListener('click', (e) => {
+    curtain.addEventListener('click', (e) => {
       // on click outside of modal
-      if (e.target === dialog) {
+      if (e.target === curtain) {
         closeModals([dialog]);
       }
     });
@@ -68,6 +74,7 @@ export async function getModal(el) {
 
     dialog.append(linkBlock, close);
     document.body.append(dialog);
+    dialog.insertAdjacentElement('afterend', curtain);
     dialog.showModal();
   }
 
