@@ -89,6 +89,8 @@ const fixAlloyAnalytics = async () => {
 };
 
 export const initCaas = async (state, caasStrs, el) => {
+  window.dexter = window.dexter || {}; // required for caas modals
+
   const caasEl = el || document.getElementById('caas');
   if (!caasEl) return;
 
