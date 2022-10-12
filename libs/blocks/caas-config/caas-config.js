@@ -499,6 +499,7 @@ const AdvancedPanel = () => {
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
+    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Select}
       label="Fallback Endpoint"
@@ -757,6 +758,7 @@ const Configurator = ({ rootEl }) => {
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
         <div class="content-panel">
+          <div class="modalContainer"></div>
           <div id="caas" class="caas-preview"></div>
         </div>
       </div>

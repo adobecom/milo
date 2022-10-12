@@ -14,6 +14,14 @@
 
   const w = window;
 
+  function isCorpAdobeCom() {
+    const host = window.location.host;
+    if (host.length > 15 && host.substring(host.length - 15) === '.corp.adobe.com') {
+      return true;
+    }
+    return false;
+  }
+
   function getOptions(op) {
     const o = w.lana.options;
     function getOpt(key) {
@@ -48,9 +56,9 @@
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
-    const isCorpAdobeCom = window.location.href.indexOf('.corp.adobe.com') !== -1;
+    const isCorp = isCorpAdobeCom();
 
-    const endpoint = (isCorpAdobeCom || !o.useProd) ? o.endpointStage : o.endpoint;
+    const endpoint = (isCorp || !o.useProd) ? o.endpointStage : o.endpoint;
     const queryParams = [
       'm=' + encodeURIComponent(msg),
       'c=' + encodeURI(o.clientId),
