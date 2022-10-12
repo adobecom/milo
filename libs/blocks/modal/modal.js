@@ -63,11 +63,11 @@ export async function getModal(el) {
     const linkBlock = document.createElement('a');
     linkBlock.href = details.path;
 
-    // add close button first so that it is focused first
-    dialog.append(linkBlock, close);
-
     const { default: getFragment } = await import('../fragment/fragment.js');
     await getFragment(linkBlock, dialog);
+    
+    dialog.append(close, linkBlock);
+    close.focus();
 
     document.body.append(dialog);
     dialog.showModal();
