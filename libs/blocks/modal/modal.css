@@ -24,6 +24,7 @@ dialog button.dialog-close {
   right: 5px;
   top: 5px;
   width: 26px;
+  z-index: 1;
 }
 
 .dialog-close:focus-visible {
