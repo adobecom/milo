@@ -214,7 +214,7 @@ const afterYiiLoadedCallback = () => {
   });
 
   const divs = document.querySelectorAll('.next div');
-  const nextSubmitArrow = document.querySelector('.submit.next input + div');
+  const nextSubmitArrow = document.querySelector('#Form40_submit + div');
   divs.forEach((div) => {
     if (!div.innerHTML && div !== nextSubmitArrow) {
       div.remove();
