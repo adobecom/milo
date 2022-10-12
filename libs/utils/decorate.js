@@ -38,23 +38,23 @@ customElements.define("load-file", class extends HTMLElement {
 });
 
 function imageExists(url) {
-  return new Promise(resolve => {
-    var img = new Image();
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = url;
     img.addEventListener('load', () => resolve(true));
     img.addEventListener('error', () => resolve(false));
-    img.src = url;
   });
 }
 
 export async function decorateIconsInBlock(el) {
   const icons = el.querySelectorAll('span.icon');
-  icons?.forEach((i) => {
+  icons?.forEach(async (i) => {
     const iconName = i.classList[1].replace('icon-icon-', 'icon-');
     if(iconName) {
       const { miloLibs, codeRoot } = getConfig();
-      const base = miloLibs ? miloLibs : codeRoot;
-      const svgPath = `${base}/img/icons/${iconName}.svg`;
-      if(imageExists(svgPath)) {
+      const base = miloLibs ?? codeRoot;
+      const svgPath = `${base}/img/icons/${iconName}.svg`
+      if(await imageExists(svgPath)) {
         const loadFile = `<load-file replaceWith src="${svgPath}"></load-file>`;
         i.insertAdjacentHTML('afterbegin', loadFile);
       }
