@@ -17,7 +17,7 @@ export function decorateButtons(el, size) {
   });
 }
 
-export function decorateIcons(el) {
+export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
@@ -40,7 +40,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIcons(el);
+  decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
