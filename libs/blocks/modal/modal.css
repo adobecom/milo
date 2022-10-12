@@ -1,3 +1,8 @@
+:root {
+  /* Modal Colors */
+  --modal-focus-color: #109cde;
+}
+
 dialog {
   border: none;
   border-radius: 6px;
@@ -10,22 +15,20 @@ dialog::backdrop {
 }
 
 dialog button.dialog-close {
-  border: none;
+  border: 3px solid transparent;
   position: absolute;
-  top: 0;
-  right: 0;
   padding: 0;
-  width: 44px;
-  height: 44px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: none;
+  border-radius: 50%;
+  height: 26px;
+  right: 5px;
+  top: 5px;
+  width: 26px;
 }
 
-.dialog-close svg {
-  margin: 0 0 8px 8px;
+.dialog-close:focus-visible {
+  outline: 2px solid var(--modal-focus-color);
 }
 
 dialog > .fragment > .section > .content > *:first-child {
