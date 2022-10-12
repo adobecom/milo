@@ -69,7 +69,7 @@ export async function getModal(el) {
     dialog.append(close, linkBlock);
     document.body.append(dialog);
     dialog.showModal();
-    close.focus();
+    close.focus({focusVisible: true});
   }
 
   return dialog;
