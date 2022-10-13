@@ -38,6 +38,7 @@ customElements.define("load-file", class extends HTMLElement {
 });
 
 function imageExists(url) {
+  console.log('imageExists', url);
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = url;
@@ -77,7 +78,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  // decorateIconArea(el);
+  decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
   decorateIconsInBlock(el);
