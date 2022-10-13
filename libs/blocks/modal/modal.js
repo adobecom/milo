@@ -27,7 +27,7 @@ function closeModals(modals) {
   const qModals = modals || document.querySelectorAll('dialog[open]');
   if (qModals?.length) {
     qModals.forEach((modal) => {
-      if (modal.nextElementSibling.classList.contains('modal-curtain')) {
+      if (modal.nextElementSibling?.classList.contains('modal-curtain')) {
         modal.nextElementSibling.remove();
       }
       modal.remove();
@@ -62,21 +62,22 @@ export async function getModal(el) {
       }
     });
 
-    dialog.addEventListener('close', () => {
-      closeModals([dialog]);
+    dialog.addEventListener('keydown', (event) => {
+      if (event.keyCode === 27) {
+        closeModals([dialog]);
+      }
     });
 
     const linkBlock = document.createElement('a');
     linkBlock.href = details.path;
-    
+
     const { default: getFragment } = await import('../fragment/fragment.js');
     await getFragment(linkBlock, dialog);
-    
+
     dialog.append(close, linkBlock);
     document.body.append(dialog);
     dialog.insertAdjacentElement('afterend', curtain);
-    dialog.showModal();
-    close.focus({focusVisible: true});
+    close.focus({ focusVisible: true });
   }
 
   return dialog;
