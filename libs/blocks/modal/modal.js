@@ -24,7 +24,7 @@ function getDetails(el) {
 }
 
 function closeModals(modals) {
-  const qModals = modals || document.querySelectorAll('dialog[open]');
+  const qModals = modals || document.querySelectorAll('.dialog-modal');
   if (qModals?.length) {
     qModals.forEach((modal) => {
       if (modal.nextElementSibling?.classList.contains('modal-curtain')) {
@@ -39,46 +39,41 @@ function closeModals(modals) {
 export async function getModal(el) {
   const details = getDetails(el);
   if (!details) return null;
-  let dialog = document.querySelector(`#${details.id}`);
-  if (dialog) {
-    if (!dialog.open) dialog.showModal();
-  } else {
-    const curtain = createTag('div', { class: 'modal-curtain is-open' });
-    dialog = document.createElement('div');
-    dialog.className = 'dialog-modal';
-    dialog.id = details.id;
 
-    const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
+  const curtain = createTag('div', { class: 'modal-curtain is-open' });
+  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
+  const dialog = document.createElement('div');
+  dialog.className = 'dialog-modal';
+  dialog.id = details.id;
 
-    close.addEventListener('click', (e) => {
+  close.addEventListener('click', (e) => {
+    closeModals([dialog]);
+    e.preventDefault();
+  });
+
+  curtain.addEventListener('click', (e) => {
+    // on click outside of modal
+    if (e.target === curtain) {
       closeModals([dialog]);
-      e.preventDefault();
-    });
+    }
+  });
 
-    curtain.addEventListener('click', (e) => {
-      // on click outside of modal
-      if (e.target === curtain) {
-        closeModals([dialog]);
-      }
-    });
+  dialog.addEventListener('keydown', (event) => {
+    if (event.keyCode === 27) {
+      closeModals([dialog]);
+    }
+  });
 
-    dialog.addEventListener('keydown', (event) => {
-      if (event.keyCode === 27) {
-        closeModals([dialog]);
-      }
-    });
+  const linkBlock = document.createElement('a');
+  linkBlock.href = details.path;
 
-    const linkBlock = document.createElement('a');
-    linkBlock.href = details.path;
+  const { default: getFragment } = await import('../fragment/fragment.js');
+  await getFragment(linkBlock, dialog);
 
-    const { default: getFragment } = await import('../fragment/fragment.js');
-    await getFragment(linkBlock, dialog);
-
-    dialog.append(close, linkBlock);
-    document.body.append(dialog);
-    dialog.insertAdjacentElement('afterend', curtain);
-    close.focus({ focusVisible: true });
-  }
+  dialog.append(close, linkBlock);
+  document.body.append(dialog);
+  dialog.insertAdjacentElement('afterend', curtain);
+  close.focus({ focusVisible: true });
 
   return dialog;
 }
