@@ -482,7 +482,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
     body: JSON.stringify(caasProps),
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      draft: draftOnly,
+      draft: !!draftOnly,
       'caas-env': caasEnv,
     },
   };

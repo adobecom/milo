@@ -26,7 +26,7 @@ export default function init(el) {
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
   keyDivs.forEach((div) => {
     const valueDiv = div.nextElementSibling;
-    if (div.textContent === 'style') {
+    if (div.textContent === 'style' && valueDiv.textContent) {
       handleStyle(valueDiv, section);
     }
     if (div.textContent === 'background') {

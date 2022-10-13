@@ -30,6 +30,7 @@ const MILO_BLOCKS = [
   'quote',
   'section-metadata',
   'tabs',
+  'table-of-contents',
   'youtube',
   'z-pattern',
   'share',
@@ -67,7 +68,7 @@ function getEnv() {
   const location = new URL(href);
   const query = location.searchParams.get('env');
 
-  if (query) { return ENVS.query; }
+  if (query) { return ENVS[query]; }
   if (host.includes('localhost:')) return ENVS.local;
   /* c8 ignore start */
   if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
@@ -92,7 +93,7 @@ export const [setConfig, getConfig] = (() => {
   return [
     (conf) => {
       const { origin } = window.location;
-      config = { ...conf, env: getEnv() };
+      config = { env: getEnv(), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
