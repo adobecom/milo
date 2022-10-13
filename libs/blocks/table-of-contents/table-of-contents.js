@@ -79,9 +79,10 @@ export default function init(el) {
   const navUl = createTag('ul', { class: 'toc-list' });
 
   children.forEach((section) => {
+    const sectionTags = Array.from(section.querySelectorAll('p'));
     const sectionTitle = section.querySelector('strong');
     const link = section.querySelector('a');
-    const subtitle = section.querySelector('p:not(:has(*))');
+    const subtitle = sectionTags.find((element) => element.childElementCount === 0);
     const target = link ? findAnchorTarget(link.textContent) : null;
     const item = getItem(sectionTitle?.textContent, subtitle?.textContent, target);
     navUl.append(item);

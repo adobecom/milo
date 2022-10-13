@@ -64,6 +64,7 @@ export const loadCaasTags = async (tagsUrl) => {
   };
 };
 
+/* c8 ignore next 22 */
 const fixAlloyAnalytics = async () => {
   const sat = await window.__satelliteLoadedPromise;
   if (!sat || !window.alloy) return;
@@ -74,7 +75,6 @@ const fixAlloyAnalytics = async () => {
 
     const ogSLP = window.__satelliteLoadedPromise;
     window.__satelliteLoadedPromise = Promise.resolve({
-      /* c8 ignore next 9 */
       getVisitorId: () => ({
         getMarketingCloudVisitorID: () => mcgvid,
         getSupplementalDataID: () => '',
@@ -179,6 +179,7 @@ const alphaSort = (a, b) => {
   const itemB = b.label.toUpperCase();
   if (itemA < itemB) return -1;
   if (itemA > itemB) return 1;
+  /* c8 ignore next */
   return 0;
 };
 
@@ -254,7 +255,7 @@ export const getConfig = async (state, strs = {}) => {
         ','
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=2000${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: '',
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -406,6 +407,7 @@ export const defaultState = {
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionSize: '',
   container: '1200MaxWidth',
   country: 'caas:country/us',
   contentTypeTags: [],

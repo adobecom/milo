@@ -499,6 +499,7 @@ const AdvancedPanel = () => {
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
+    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Select}
       label="Fallback Endpoint"
@@ -735,6 +736,7 @@ const Configurator = ({ rootEl }) => {
   useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
       await initCaas(state, strings);
+      /* c8 ignore next 3 */
       if (state.showIds) {
         setTimeout(() => addIdOverlays(), 500);
       }
