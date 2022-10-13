@@ -64,7 +64,7 @@ function processMdast(nodes) {
 }
 
 async function simulatePreview(mdPath, retryAttempt = 1) {
-  const previewUrl = `https://admin.hlx3.page/preview/adobecom/milo/diffpoc${mdPath}`;
+  const previewUrl = `https://admin.hlx.page/preview/adobecom/milo/diffpoc${mdPath}`;
   const response = await fetch(
     `${previewUrl}`,
     { method: 'POST' },
@@ -72,6 +72,7 @@ async function simulatePreview(mdPath, retryAttempt = 1) {
   if (!response.ok && retryAttempt <= MAX_RETRIES) {
     await simulatePreview(mdPath, retryAttempt + 1);
   }
+  return response.json();
 }
 
 async function getMd(path) {

@@ -157,6 +157,12 @@ function getSharepointConfig(config) {
           payload: { folder: {} },
         },
       },
+      excel: {
+        update: {
+          baseURI,
+          method: 'POST',
+        },
+      },
       batch: { uri: `${GRAPH_API}/$batch` },
     },
   };

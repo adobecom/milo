@@ -24,7 +24,7 @@ import {
   saveFile,
   connect as connectToSP,
   getSpViewUrl,
-  updateProjectWithSpStatus as updateSPStatus, copyFile, getFiles, getFiles1,
+  updateProjectWithSpStatus as updateSPStatus, copyFile,
 } from './sharepoint.js';
 import { init as initProject } from './project.js';
 import {
@@ -34,6 +34,7 @@ import {
   updateProject as updateGLaaSStatus,
 } from './glaas.js';
 import { rollout } from './rollout.js';
+import updateFragments from './fragments.js';
 
 let projectDetail;
 const MAX_RETRIES = 5;
@@ -187,25 +188,7 @@ function getGLaaSStatus(config, language, url, hasSourceFile) {
     }
   } else if (gLaaSConfig.accessToken) {
     if (languageTask.sp) {
-      if (languageTask.rolloutOnly) {
-        const persistButtons = getPersistButtons(languageTask, language);
-        if (persistButtons.length > 0) {
-          gLaaSStatus.canSaveAll = true;
-          gLaaSStatus.persistButtons = persistButtons;
-        } else {
-          gLaaSStatus.innerHtml = 'No File to Rollout';
-        }
-      } else if (languageTask.englishCopy) {
-        const persistButtons = getPersistButtons(languageTask, language);
-        if (persistButtons.length > 0) {
-          gLaaSStatus.canSaveAll = true;
-          gLaaSStatus.persistButtons = persistButtons;
-        } else {
-          gLaaSStatus.innerHtml = 'English Copy in Progress';
-        }
-      } else {
-        gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
-      }
+      gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
     }
   }
   return gLaaSStatus;
@@ -219,8 +202,8 @@ async function initRollout(task) {
   loadingON(`Rollout to live-copy folders of ${task.languageFilePath} complete..`);
   if (task.altlanguage) {
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} in progress..`);
-    const failedAltLangPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
-    failedRollouts.push(failedAltLangPages);
+    const failedRolloutPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
+    failedRollouts.push(failedRolloutPages);
     loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} complete..`);
   }
   if (failedRollouts.length > 0) {
@@ -331,6 +314,7 @@ async function displayProjectDetail() {
 
   const sendPanel = document.getElementById('send');
   const copyToEnPanel = document.getElementById('copyToEn');
+  const updateFragmentsPanel = document.getElementById('updateFragments');
   const refreshPanel = document.getElementById('refresh');
   const reloadPanel = document.getElementById('reload');
   if (!taskFoundInGLaaS) {
@@ -339,56 +323,22 @@ async function displayProjectDetail() {
       sendPanel.classList.remove('hidden');
     }
     reloadPanel.classList.remove('hidden');
-    reloadPanel.classList.remove('hidden');
+    updateFragmentsPanel.classList.remove('hidden');
     copyToEnPanel.classList.remove('hidden');
     refreshPanel.classList.add('hidden');
   } else {
     sendPanel.classList.add('hidden');
     reloadPanel.classList.add('hidden');
+    updateFragmentsPanel.classList.add('hidden');
     copyToEnPanel.classList.add('hidden');
     refreshPanel.classList.remove('hidden');
   }
 }
 
 async function sendForTranslation() {
-  const gLaaSTasks = { altLangOnly: [], translationOnly: [], translationAndAltLang: [] };
-  const englishCopyTasks = [];
-  const rolloutOnlyTasks = [];
   await asyncForEach(projectDetail.languages, async (language) => {
-    const tasks = projectDetail[language];
-    await asyncForEach(tasks, async (task) => {
-      if (task.englishCopy) {
-        englishCopyTasks.push(task);
-      } else if (task.rolloutOnly) {
-        rolloutOnlyTasks.push(task);
-      } else if (task.altlanguage) {
-        if (task.skipLanguageTranslation) {
-          gLaaSTasks.altLangOnly.push(task);
-        } else {
-          gLaaSTasks.translationAndAltLang.push(task);
-        }
-      } else {
-        gLaaSTasks.translationOnly.push(task);
-      }
-    });
-    if (englishCopyTasks.length > 0) {
-      const files = await getFiles1(projectDetail, englishCopyTasks);
-      if (!files || files.length === 0) {
-        throw new Error('No valid files found for English Copy');
-      }
-      await asyncForEach(englishCopyTasks, async (task) => {
-        const altLang = isAltLang(task, language);
-        const dest = `${getSavePath(task, altLang)}`.toLowerCase();
-        await asyncForEach(files, async (file) => {
-          await saveFile(file, dest);
-        });
-      });
-    }
-    if (gLaaSTasks.altLangOnly.length > 0 || gLaaSTasks.translationOnly.length > 0
-      || gLaaSTasks.translationAndAltLang.length > 0) {
-      loadingON(`Creating ${language} handoff in GLaaS`);
-      await sendToGLaaS(gLaaSTasks, projectDetail, language);
-    }
+    loadingON(`Creating ${language} handoff in GLaaS`);
+    await sendToGLaaS(projectDetail, language);
   });
   loadingON('Handoffs created in GLaaS. Updating the project with status from GLaaS...');
   await updateGLaaSStatus(projectDetail);
@@ -436,7 +386,7 @@ function getSavePath(task, altLang) {
 
 async function save(task, language, doRefresh = true) {
   const altLang = isAltLang(task, language);
-  if (task.rolloutOnly) {
+  if (task.skipLanguageTranslation && !altLang) {
     return;
   }
   const dest = `${getSavePath(task, altLang)}`.toLowerCase();
@@ -484,12 +434,19 @@ async function copyFilesToLanguageEn() {
   loadingOFF();
 }
 
+async function triggerUpdateFragments() {
+  loadingON('Fetching and updating fragments..');
+  const status = await updateFragments();
+  loadingON(status);
+}
+
 function setListeners() {
   document.querySelector('#reload button').addEventListener('click', reloadProjectFile);
   document.querySelector('#copyToEn button').addEventListener('click', copyFilesToLanguageEn);
   document.querySelector('#send button').addEventListener('click', sendForTranslation);
   document.querySelector('#refresh button').addEventListener('click', refresh);
   document.querySelector('#loading').addEventListener('click', loadingOFF);
+  document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
 }
 
 async function getSafely(method, errMsg) {

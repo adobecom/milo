@@ -180,6 +180,7 @@ async function init() {
     url: projectUrl,
     path: projectPath,
     name: projectName,
+    excelPath: `${projectPath.substring(0, projectPath.lastIndexOf('/'))}/${projectName}`,
     sp: urlInfo.sp,
     owner: urlInfo.owner,
     repo: urlInfo.repo,
