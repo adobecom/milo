@@ -14,7 +14,7 @@
  * Marquee - v6.0
  */
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../utils/analytics.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');

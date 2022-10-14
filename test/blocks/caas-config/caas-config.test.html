@@ -130,7 +130,7 @@
         const targetInput = findByLabel('Target Activity', configPanelEl);
         targetInput.value = 'My Target Activity';
         targetInput.dispatchEvent(new Event('change'));
-        await delay(50)
+        await delay(150)
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
