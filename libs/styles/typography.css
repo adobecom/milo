@@ -163,24 +163,21 @@
 }
 
 /* Icons */
-.con-button .icon {
-  margin-right: 4px;
-  display: inline-table;
-  vertical-align: middle;
+span.icon {
+  margin-right: 8px;
+  display: inline-flex;
+  align-self: center;
 }
 
-.con-button .icon svg {
-  height: 12px;
+svg.icon-milo {
+  height: 1em;
   width: auto;
+  top: .125em;
+  position: relative;
 }
 
-.con-button.button-L .icon { margin-right: 6px; }
-
-.con-button.button-L .icon svg { height: 14px; }
-
-.con-button.button-XL .icon { margin-right: 8px; }
-
-.con-button.button-XL .icon svg { height: 16px; }
+.con-button.button-L span.icon { margin-right: 12px; }
+.con-button.button-XL span.icon { margin-right: 12px; }
 
 /* mobile only */
 @media (max-width: 600px) {

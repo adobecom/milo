@@ -26,6 +26,32 @@ export function decorateIconArea(el) {
   });
 }
 
+export async function getSVGsfromFile(path, selectors) {
+  if (!path) return null;
+  const resp = await fetch(path);
+  if (!resp.ok) return null;
+
+  const text = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'image/svg+xml');
+
+  if (!selectors) {
+    const svg = doc.querySelector('svg');
+    if (svg) return [{ svg }];
+    return null;
+  }
+
+  return selectors.map((selector) => {
+    const symbol = doc.querySelector(`#${selector}`);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    while (symbol.firstChild) svg.appendChild(symbol.firstChild);
+    [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
+    svg.classList.add('icon-milo', `icon-milo-${selector}`);
+    svg.removeAttribute('id');
+    return { svg, name: selector };
+  });
+}
+
 customElements.define("load-file", class extends HTMLElement {
   async connectedCallback(
     src = this.getAttribute("src"),
@@ -47,19 +73,35 @@ function imageExists(url) {
   });
 }
 
-export async function decorateIconsInBlock(el) {
+function getIconList(el) {
   const icons = el.querySelectorAll('span.icon');
+  let iconList = [];
   icons?.forEach(async (i) => {
-    const iconName = i.classList[1].replace('icon-icon-', 'icon-');
-    if(iconName) {
-      const { miloLibs, codeRoot } = getConfig();
-      const base = miloLibs ?? codeRoot;
-      const svgPath = `${base}/img/icons/${iconName}.svg`
-      if(await imageExists(svgPath)) {
-        const loadFile = `<load-file replaceWith src="${svgPath}"></load-file>`;
-        i.insertAdjacentHTML('afterbegin', loadFile);
+    const iconName = i.classList[1].replace('icon-milo-', '');
+    if (!iconName) return;
+    if (!iconList.includes(iconName)) iconList.push(iconName);
+  });
+  return iconList;
+}
+
+export async function decorateIconsInBlock(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+
+  const icons = el.querySelectorAll('span.icon');
+  const iconList = getIconList(el) || [];
+  const svgs = await getSVGsfromFile(`${base}/img/icons/icons.svg`, iconList);
+  if (!svgs) return;
+
+  icons?.forEach(async (i) => {
+    const iconName = i.classList[1].replace('icon-milo-', '');
+    const iconSvg = svgs.map((symbol) => {
+      if (symbol.name === iconName) {
+        return symbol.svg;
       }
-    }
+      return null;
+    });
+    i.insertAdjacentHTML('afterbegin', iconSvg[0].outerHTML);
   });
 }
 
