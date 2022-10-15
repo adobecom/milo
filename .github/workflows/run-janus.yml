@@ -1,0 +1,20 @@
+name: Automated Tests
+
+on:
+  pull_request:
+    types: [ labeled, opened, synchronize, reopened ]
+
+jobs:
+  action:
+    name: Running tests
+    if: contains(github.event.pull_request.labels.*.name, 'run-janus')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Run Janus
+        uses: adobecom/janus@main # Change if doing dev work
+        env:
+          labels: ${{ github.event.pull_request.labels }}
+          branch: ${{ github.event.pull_request.head.ref }}
