@@ -285,7 +285,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
   if (isPublishing()) return;
 
   setConfig({
-    host, project, branch, repo, owner, doc: document,
+    host: host || window.location.host, project, branch, repo, owner, doc: document,
   });
 
   setPublishingTrue();
