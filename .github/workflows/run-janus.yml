@@ -16,5 +16,5 @@ jobs:
       - name: Run Janus
         uses: adobecom/janus@labels # Change if doing dev work
         env:
-          labels: ${{ github.event.pull_request.labels }}
+          labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
           branch: ${{ github.event.pull_request.head.ref }}
