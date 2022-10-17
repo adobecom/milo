@@ -83,7 +83,7 @@ function getEnv(conf) {
    || host.includes('corp.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
-  return { ...conf.prod, consumer: conf.prod };
+  return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
 }
 
