@@ -14,6 +14,8 @@ const config = {
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
+const { getSVGsfromFile, decorateIconsInBlock } = await import('../../libs/utils/decorate.js');
+
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -196,4 +198,37 @@ describe('Utils', () => {
     });
     expect(io instanceof IntersectionObserver).to.be.true;
   });
+
+  describe('Icon support', () => {
+    it('Decorates an icon in a block', async () => {
+      const paragraph = document.createElement('p');
+      paragraph.innerHTML = '<span class="icon icon-milo-play"></span>';
+      await decorateIconsInBlock(paragraph);
+      const selector = paragraph.querySelector(':scope svg');
+      expect(selector).to.exist
+    });
+  });
+
+  describe('Get SVGs from a file', () => {
+    it('Dies gracefully when no path is given', async () => {
+      const val = await getSVGsfromFile();
+      expect(val).to.be.null;
+    });
+
+    it('Dies gracefully when a bad path is given', async () => {
+      const val = await getSVGsfromFile('/my/awesome/icon.svg');
+      expect(val).to.be.null;
+    });
+
+    it('Returns svg when a good path is given with out an icon list', async () => {
+      const val = await getSVGsfromFile('../../libs/img/icons/icons.svg');
+      expect(val.length).to.equal(1);
+    });
+
+    it('Returns svg when a good path is given and has icon list', async () => {
+      const val = await getSVGsfromFile('../../libs/img/icons/icons.svg', ['play']);
+      expect(val.length).to.equal(1);
+    });
+  });
+
 });

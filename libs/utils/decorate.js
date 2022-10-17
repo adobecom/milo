@@ -16,9 +16,6 @@ export function decorateButtons(el, size) {
       button.closest('p')?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
     }
   });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function decorateIconArea(el) {
@@ -41,6 +38,7 @@ export async function getSVGsfromFile(path, selectors) {
   if (!selectors) {
     const svg = doc.querySelector('svg');
     if (svg) return [{ svg }];
+    /* c8 ignore next */
     return null;
   }
 
@@ -52,27 +50,6 @@ export async function getSVGsfromFile(path, selectors) {
     svg.classList.add('icon-milo', `icon-milo-${selector}`);
     svg.removeAttribute('id');
     return { svg, name: selector };
-  });
-}
-
-customElements.define("load-file", class extends HTMLElement {
-  async connectedCallback(
-    src = this.getAttribute("src"),
-    shadowRoot = this.shadowRoot || this.attachShadow({mode:"open"})
-  ) {
-    shadowRoot.innerHTML = await (await fetch(src)).text()
-    shadowRoot.append(...this.querySelectorAll("[shadowRoot]"))
-    this.hasAttribute("replaceWith") && this.replaceWith(...shadowRoot.childNodes)
-  }
-});
-
-function imageExists(url) {
-  console.log('imageExists', url);
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = url;
-    img.addEventListener('load', () => resolve(true));
-    img.addEventListener('error', () => resolve(false));
   });
 }
 
@@ -138,6 +115,7 @@ export function decorateBlockBg(block, node) {
       node.children[1].classList.add(viewports[2]);
     } else {
       [...node.children].forEach( (e, i) => {
+        /* c8 ignore next */
         e.classList.add(viewports[i]);
       });
     }

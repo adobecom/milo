@@ -172,12 +172,12 @@ span.icon {
 svg.icon-milo {
   height: 1em;
   width: auto;
-  top: .125em;
+  top: .1em;
   position: relative;
 }
 
 .con-button.button-L span.icon { margin-right: 12px; }
-.con-button.button-XL span.icon { margin-right: 12px; }
+.con-button.button-XL span.icon { margin-right: 14px; }
 
 /* mobile only */
 @media (max-width: 600px) {
