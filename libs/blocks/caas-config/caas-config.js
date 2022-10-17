@@ -736,6 +736,7 @@ const Configurator = ({ rootEl }) => {
   useEffect(async () => {
     if (isCaasLoaded && strings !== undefined) {
       await initCaas(state, strings);
+      /* c8 ignore next 3 */
       if (state.showIds) {
         setTimeout(() => addIdOverlays(), 500);
       }

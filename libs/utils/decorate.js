@@ -1,4 +1,4 @@
-import { decorateLinkAnalytics } from './analytics.js';
+import { decorateLinkAnalytics } from '../martech/attributes.js';
 import { createTag, getConfig, } from '../utils/utils.js';
 
 export function decorateButtons(el, size) {
@@ -16,6 +16,9 @@ export function decorateButtons(el, size) {
       button.closest('p')?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
     }
   });
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function decorateIconArea(el) {
