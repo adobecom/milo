@@ -28,6 +28,7 @@ const MILO_BLOCKS = [
   'modal',
   'pdf-viewer',
   'quote',
+  'review',
   'section-metadata',
   'tabs',
   'table-of-contents',
