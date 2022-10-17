@@ -80,7 +80,7 @@ function decorateContent(el, type, size) {
 
 export default function init(el) {
   const foreground = decorateLayout(el);
-  const type = asideTypes?.find((asideType) => el?.className?.indexOf(asideType) !== -1);
-  const size = asideSizes?.find((asideSize) => el?.className?.indexOf(asideSize) !== -1) || (type === 'notification' ? 'large' : null);
+  const type = asideTypes.find((asideType) => el.className.indexOf(asideType) !== -1);
+  const size = asideSizes.find((asideSize) => el.className.indexOf(asideSize) !== -1) || (type === 'notification' ? 'large' : null);
   decorateContent(foreground, type, size);
 }
