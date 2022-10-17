@@ -69,6 +69,7 @@ export const defaultState = {
   e: {},
 };
 
+/* c8 ignore start */
 const afterYiiLoadedCallback = () => {
   const wr = document.querySelector('.faas-form');
   function editMessages(mutations) {
@@ -189,7 +190,7 @@ const afterYiiLoadedCallback = () => {
   $.each(faasform, (i, form) => {
     $(form).on('change', () => {
       const elements = $('span.required', form);
-      hideDisplay(elements);
+      hideDisplay(elementspdfLink);
     });
   });
 
@@ -225,58 +226,58 @@ const afterYiiLoadedCallback = () => {
 
   setMutationObserver(childListMutation(editMessages), errorMessages);
 };
+/* c8 ignore stop */
 
-export const makeFaasConfig = () => {
-  if (!state) {
+export const makeFaasConfig = (targetState) => {
+  if (!targetState) {
     state = defaultState;
     return state;
   }
-  /* c8 ignore start */
+
   const config = {
-    id: state.id,
-    l: state.l,
-    d: state.d,
-    as: state.as,
-    ar: state.ar,
+    id: targetState.id,
+    l: targetState.l,
+    d: targetState.d,
+    as: targetState.as,
+    ar: targetState.ar,
     pc: {
-      1: state.pc1 ? 'js' : '',
-      2: state.pc2 ? 'faas_submission' : '',
-      3: state.pc3 ? 'sfdc' : '',
-      4: state.pc4 ? 'demandbase' : '',
-      5: state.pc5 ? 'clearbit' : '',
+      1: targetState.pc1 ? 'js' : '',
+      2: targetState.pc2 ? 'faas_submission' : '',
+      3: targetState.pc3 ? 'sfdc' : '',
+      4: targetState.pc4 ? 'demandbase' : '',
+      5: targetState.pc5 ? 'clearbit' : '',
     },
     q: {},
     p: {
       js: {
-        36: state.pjs36,
-        39: state.pjs39,
+        36: targetState.pjs36,
+        39: targetState.pjs39,
         77: 1,
         78: 1,
         79: 1,
         90: 'FAAS',
-        92: state.pjs92,
-        93: state.pjs93,
-        94: state.pjs94,
+        92: targetState.pjs92,
+        93: targetState.pjs93,
+        94: targetState.pjs94,
       },
     },
     e: { afterYiiLoadedCallback },
   };
 
   // b2bpartners
-  if (state[149]) {
+  if (targetState[149]) {
     // eslint-disable-next-line prefer-destructuring
-    config.p.js[149] = state[149];
+    config.p.js[149] = targetState[149];
   }
   // last asset
-  if (state[172]) {
+  if (targetState[172]) {
     // eslint-disable-next-line prefer-destructuring
-    config.p.js[172] = state[172];
+    config.p.js[172] = targetState[172];
   }
   // Multiple Campaign Ids
-  if (state.q103) {
-    Object.assign(config.q, { 103: { c: state.q103 } });
+  if (targetState.q103) {
+    Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
-  /* c8 ignore stop */
 
   state = config;
   return config;
@@ -308,7 +309,7 @@ export const initFaas = (config, targetEl) => {
     state.e = { afterYiiLoadedCallback };
     $(formEl).faas(state);
   } else {
-    makeFaasConfig();
+    makeFaasConfig(config);
     $(formEl).faas(state);
   }
 
