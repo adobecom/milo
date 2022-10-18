@@ -119,59 +119,65 @@ async function getSpFiles(filePaths) {
   return Promise.all(spFileResponses.map((file) => file.json()));
 }
 
-function getEnFilePathToTaskMap(project) {
-  const enFilePathToTaskMap = new Map();
-  project.urls.forEach((u) => {
-    enFilePathToTaskMap.set(project.docs[u].filePath, project.docs[u]);
-  });
-  return enFilePathToTaskMap;
+function addOrAppendToMap(map, key, value) {
+  if (map.has(key)) {
+    map.get(key).push(value);
+  } else {
+    map.set(key, [value]);
+  }
 }
 
-function getLanguageFilePathToTaskMap(project) {
-  const languagePathToTaskMap = new Map();
+function addEnFilePathToTaskMap(project, filePathsToTasksMap) {
+  project.urls.forEach((u) => {
+    addOrAppendToMap(filePathsToTasksMap, project.docs[u].filePath, project.docs[u]);
+    addOrAppendToMap(filePathsToTasksMap, project.langstoredocs[u].filePath, project.langstoredocs[u]);
+  });
+}
+
+function addLanguageFilePathToTaskMap(project, filePathsToTasksMap) {
   project.languages.forEach((language) => {
     const currentLangTasks = project[language];
     currentLangTasks.forEach((task) => {
-      languagePathToTaskMap.set(task.languageFilePath, task);
+      addOrAppendToMap(filePathsToTasksMap, task.languageFilePath, task);
       if (task.altLangFolders.length > 0) {
-        languagePathToTaskMap.set(task.altLanguageFilePath, task);
+        addOrAppendToMap(filePathsToTasksMap, task.altLanguageFilePath, task);
       }
     });
   });
-  return languagePathToTaskMap;
 }
 
 async function updateProjectWithSpStatus(project, callback) {
   if (!project) {
     return;
   }
-  const enFilePathToTaskMap = getEnFilePathToTaskMap(project);
-  const languageFilePathToTaskMap = getLanguageFilePathToTaskMap(project);
-  const filePathsToTaskMap = new Map([...enFilePathToTaskMap, ...languageFilePathToTaskMap]);
-  const filePaths = [...filePathsToTaskMap.keys()];
+  const filePathsToTasksMap = new Map();
+  addEnFilePathToTaskMap(project, filePathsToTasksMap);
+  addLanguageFilePathToTaskMap(project, filePathsToTasksMap);
+  const filePaths = [...filePathsToTasksMap.keys()];
   const spBatchFiles = await getSpFiles(filePaths);
   spBatchFiles.forEach((spFiles) => {
     if (spFiles && spFiles.responses) {
       spFiles.responses.forEach((file) => {
         const filePath = filePaths[file.id];
         const spFileStatus = file.status;
-        const taskLinkedToFilePath = filePathsToTaskMap.get(filePath);
         const fileBody = spFileStatus === 200 ? file.body : {};
-        if (taskLinkedToFilePath.altlanguage && filePath.includes(`/${taskLinkedToFilePath.altlanguage.toLowerCase()}/`)) {
-          taskLinkedToFilePath.altlangsp = fileBody;
-          taskLinkedToFilePath.altlangsp.status = spFileStatus;
-        } else {
-          taskLinkedToFilePath.sp = spFileStatus === 200 ? file.body : {};
-          taskLinkedToFilePath.sp.status = spFileStatus;
-        }
+        const tasksLinkedToFilePath = filePathsToTasksMap.get(filePath);
+        tasksLinkedToFilePath.forEach((taskLinkedToFilePath) => {
+          if (taskLinkedToFilePath.altlanguage && filePath.includes(`/${taskLinkedToFilePath.altlanguage.toLowerCase()}/`)) {
+            taskLinkedToFilePath.altlangsp = fileBody;
+            taskLinkedToFilePath.altlangsp.status = spFileStatus;
+          } else {
+            taskLinkedToFilePath.sp = spFileStatus === 200 ? file.body : {};
+            taskLinkedToFilePath.sp.status = spFileStatus;
+          }
+        });
       });
     }
   });
   if (callback) await callback();
 }
 
-async function getFile(project, url) {
-  const doc = project.docs[url];
+async function getFile(doc) {
   if (doc && doc.sp && doc.sp.status === 200) {
     const response = await fetch(doc.sp['@microsoft.graph.downloadUrl']);
     return response.blob();
@@ -184,7 +190,7 @@ async function getFiles(project, locale) {
   const files = [];
   await asyncForEach(project[locale], async (task) => {
     const url = task.URL;
-    const file = await getFile(project, url);
+    const file = await getFile(project.langstoredocs[url]);
     if (file) {
       file.path = task.filePath;
       file.URL = url;
@@ -371,7 +377,8 @@ async function copyFile(srcPath, destinationFolder, newName) {
   options.method = sp.api.file.copy.method;
   const { baseURI } = sp.api.file.copy;
   const rootFolder = baseURI.split('/').pop();
-  const payload = { parentReference: { path: `${rootFolder}${destinationFolder}` } };
+
+  const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${rootFolder}${destinationFolder}` } };
   if (newName) {
     payload.name = newName;
   }
@@ -379,12 +386,14 @@ async function copyFile(srcPath, destinationFolder, newName) {
   const copyStatusInfo = await fetch(`${baseURI}${srcPath}:/copy`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copyStatus = false;
-  while (!copyStatus) {
+  let copyStatusJson = {};
+  while (!copyStatus && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
     const status = await fetch(statusUrl);
     if (status.ok) {
       // eslint-disable-next-line no-await-in-loop
-      copyStatus = (await status.json()).status === 'completed';
+      copyStatusJson = await status.json();
+      copyStatus = copyStatusJson.status === 'completed';
     }
   }
   return copyStatus;
@@ -472,6 +481,7 @@ export {
   copyFileAndUpdateMetadata,
   getAccessToken,
   getAuthorizedRequestOption,
+  getFile,
   getFiles,
   getFileVersionInfo,
   getFileMetadata,

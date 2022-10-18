@@ -67,8 +67,8 @@ function getHelixAdminApiUrl(urlInfo, apiBaseUri) {
 async function readProjectFile(projectWebUrl) {
   const resp = await fetch(projectWebUrl, { cache: 'no-store' });
   const json = await resp.json();
-  if (json && json.translation && json.translation.data) {
-    return json.translation.data;
+  if (json && json?.urls?.data) {
+    return json;
   }
   return undefined;
 }
@@ -109,6 +109,9 @@ function updateProjectDetailWithTask(projectDetail, task) {
   addToArrayIfNotPresent(projectDetail.languages, language);
   if (!projectDetail.docs[urlToTranslate]) {
     projectDetail.docs[urlToTranslate] = { filePath: task.filePath };
+  }
+  if (!projectDetail.langstoredocs[urlToTranslate]) {
+    projectDetail.langstoredocs[urlToTranslate] = { filePath: `/langstore/en${task.filePath}` };
   }
 }
 
@@ -196,14 +199,16 @@ async function init() {
         urls: [],
         url: projectUrl,
         docs: {},
+        langstoredocs: {},
         name: projectName,
       };
       if (!projectFileJson) {
         return projectDetail;
       }
       const projectFolder = getProjectFolder(projectPath);
-      await asyncForEach(projectFileJson, async (translationTask) => {
-        const urlToTranslate = translationTask.URL;
+      const urlRows = projectFileJson.urls.data;
+      await asyncForEach(urlRows, async (urlRow) => {
+        const urlToTranslate = urlRow.URL;
         if (!urlToTranslate) {
           return;
         }
@@ -211,7 +216,8 @@ async function init() {
           projectDetail,
           projectFolder,
           locConfig,
-          translationTask,
+          urlRow,
+
         );
       });
       // For Debugging.

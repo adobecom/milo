@@ -22,6 +22,7 @@ import {
 } from './utils.js';
 import {
   saveFile,
+  getFile,
   connect as connectToSP,
   getSpViewUrl,
   updateProjectWithSpStatus as updateSPStatus, copyFile,
@@ -86,8 +87,9 @@ async function createTableWithHeaders(config) {
   const $table = createTag('table');
   const $tr = createRow('header');
   $tr.appendChild(createHeaderColumn('URL'));
-  $tr.appendChild(createHeaderColumn('Source file'));
-  $tr.appendChild(createHeaderColumn('English Langstore file'));
+  $tr.appendChild(createHeaderColumn('Source File'));
+  $tr.appendChild(createHeaderColumn('En Langstore File'));
+  $tr.appendChild(createHeaderColumn('En Langstore Info'));
   await appendLanguages($tr, config, projectDetail.languages);
   $table.appendChild($tr);
   return $table;
@@ -97,19 +99,20 @@ function getAnchorHtml(url, text) {
   return `<a href="${url}" target="_new">${text}</a>`;
 }
 
-function getSharepointStatus(url) {
+function getSharepointStatus(doc) {
   let sharepointStatus = 'Connect to Sharepoint';
-  const doc = projectDetail.docs[url];
   let hasSourceFile = false;
+  let modificationInfo = 'N/A';
   if (doc && doc.sp) {
     if (doc.sp.status === 200) {
       sharepointStatus = `${doc.filePath}`;
       hasSourceFile = true;
+      modificationInfo = `By ${doc.sp?.lastModifiedBy?.user?.displayName} at ${doc.sp?.lastModifiedDateTime}`
     } else {
       sharepointStatus = 'Source file not found!';
     }
   }
-  return { hasSourceFile, msg: sharepointStatus };
+  return { hasSourceFile, msg: sharepointStatus, modificationInfo };
 }
 
 function fileAlreadySavedInSharepoint(task) {
@@ -228,6 +231,11 @@ async function getLinkedPagePath(pagePath) {
   return getAnchorHtml(spViewUrl, pagePath);
 }
 
+async function getLinkOrDisplayText(docStatus) {
+  const pathOrMsg = docStatus.msg;
+  return docStatus.hasSourceFile ? await getLinkedPagePath(pathOrMsg) : pathOrMsg;
+}
+
 async function displayProjectDetail() {
   if (!projectDetail) {
     return;
@@ -246,18 +254,17 @@ async function displayProjectDetail() {
     const $tr = createRow();
     const pageUrl = getAnchorHtml(url, getPathFromUrl(url));
     $tr.appendChild(createColumn(pageUrl));
-    const sharepointStatus = getSharepointStatus(url);
-    const pathOrMsg = sharepointStatus.msg;
-    const usEnLinkedPath = sharepointStatus.hasSourceFile
-      ? await getLinkedPagePath(pathOrMsg) : pathOrMsg;
-    $tr.appendChild(createColumn(usEnLinkedPath));
-    const langstoreEnLinkedPath = sharepointStatus.hasSourceFile
-      ? await getLinkedPagePath(`/langstore/en${pathOrMsg}`) : pathOrMsg;
-    $tr.appendChild(createColumn(langstoreEnLinkedPath));
+    const usEnDocStatus = getSharepointStatus(projectDetail.docs[url]);
+    const usEnDocDisplayText = await getLinkOrDisplayText(usEnDocStatus);
+    $tr.appendChild(createColumn(usEnDocDisplayText));
+    const langstoreDocStatus = getSharepointStatus(projectDetail.langstoredocs[url]);
+    const langstoreEnDisplayText = await getLinkOrDisplayText(langstoreDocStatus);
+    $tr.appendChild(createColumn(langstoreEnDisplayText));
+    $tr.appendChild(createColumn(langstoreDocStatus.modificationInfo));
     await asyncForEach(projectDetail.languages, async (language) => {
       let filesMissingInSharepoint = false;
       const $td = createTag('td');
-      const gLaaSStatus = getGLaaSStatus(config, language, url, sharepointStatus.hasSourceFile);
+      const gLaaSStatus = getGLaaSStatus(config, language, url, usEnDocStatus.hasSourceFile);
       if (gLaaSStatus.persistButtons) {
         gLaaSStatus.persistButtons.forEach((button) => $td.appendChild(button));
       } else {
@@ -424,14 +431,47 @@ async function saveAll(language) {
 }
 
 async function copyFilesToLanguageEn() {
+  const failedCopies = [];
+
+  function updateAndDisplayCopyStatus(copyStatus, srcPath) {
+    let copyDisplayText = `Copied ${srcPath} to languages/en`;
+    if (!copyStatus) {
+      copyDisplayText = `Failed to copy ${srcPath} to languages/en`;
+      failedCopies.push(srcPath);
+    }
+    loadingON(copyDisplayText);
+  }
+
   await asyncForEach(projectDetail.urls, async (url) => {
     const srcPath = `${getSharepointLocationFromUrl(url)}.docx`;
     loadingON(`Copying ${srcPath} to languages/en`);
-    const destinationFolder = `/langstore/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
-    await copyFile(srcPath, destinationFolder);
-    loadingON(`Copied ${srcPath} to languages/en`);
+    // Conflict behaviour replace for copy not supported in one drive, hence if file exists,
+    // then use saveFile.
+    if (projectDetail?.langstoredocs[url]?.sp?.status !== 200) {
+      const destinationFolder = `/langstore/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
+      const copyStatus = await copyFile(srcPath, destinationFolder);
+      updateAndDisplayCopyStatus(copyStatus, srcPath);
+    } else {
+      const file = await getFile(projectDetail.docs[url]);
+      let copyStatus = false;
+      if (file) {
+        try {
+          const destination  = projectDetail?.langstoredocs[url]?.filePath;
+          if (destination) {
+            const uploadedFile = await saveFile(file, destination);
+            if (uploadedFile) {
+              copyStatus = true;
+            }
+          }
+        } catch(error) {
+          // Do nothing.
+        }
+      }
+      updateAndDisplayCopyStatus(copyStatus, srcPath);
+    }
   });
-  loadingOFF();
+  failedCopies.length > 0 ? loadingON(`Failed to copy ${failedCopies} to languages/en`) : loadingOFF();
+  await refresh();
 }
 
 async function triggerUpdateFragments() {
