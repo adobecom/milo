@@ -18,7 +18,9 @@ import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const asideTypes = ['inline', 'notification'];
+const [INLINE, NOTIFICATION] = asideTypes;
 const asideSizes = ['extra-small', 'small', 'medium', 'large'];
+const [SIZE_XS, SIZE_S, SIZE_M, SIZE_L] = asideSizes;
 
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
@@ -39,48 +41,50 @@ function decorateContent(el, type, size) {
     let btnWrap = null;
     if (buttons[0] && !buttons[0].closest('p')) {
       btnWrap = document.createElement('p');
-      buttons.forEach((button) => btnWrap.append(button.parentElement));
+      btnWrap.append(...[...buttons].map((button) => button.parentElement));
     }
     const desc = createTag('p', null, text.innerHTML);
     text.innerHTML = '';
-    if (iconArea) text.append(iconArea);
-    text.append(desc);
-    if (btnWrap) text.append(btnWrap);
+    text.append(
+      iconArea || '',
+      desc,
+      btnWrap || '',
+    );
   }
   iconArea?.classList.add('icon-area');
   decorateButtons(el);
   const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
-  const isInline = type === 'inline';
-  const isNotification = type === 'notification';
-  let headingClass = 'heading-XL';
-  let bodyClass = 'body-S';
-  if (isNotification && (size === 'extra-small' || size === 'small')) {
-    headingClass = '';
+  const isInline = type === INLINE;
+  const isNotification = type === NOTIFICATION;
+  if (heading) {
+    let headingClass = 'heading-XL';
+    if (isNotification && (size === SIZE_XS || size === SIZE_S)) {
+      headingClass = '';
+    }
+    if ((isNotification && size === SIZE_M) || isInline) {
+      headingClass = 'heading-S';
+    }
+    if (isNotification && size === SIZE_L) {
+      headingClass = 'heading-L';
+    }
+    heading?.classList.add(headingClass);
+    const prevClasses = heading?.previousElementSibling?.classList;
+    if (prevClasses?.length === 0) prevClasses.add('detail-M');
   }
-  if ((isNotification && (size === 'extra-small' || size === 'small' || size === 'large')) || isInline) {
-    bodyClass = 'body-M';
-  }
-  if ((isNotification && size === 'medium') || isInline) {
-    headingClass = 'heading-S';
-  }
-  if (isNotification && size === 'large') {
-    headingClass = 'heading-L';
-  }
-  heading?.classList.add(headingClass);
+  const bodyClass = (isNotification && (size === SIZE_XS || size === SIZE_S || size === SIZE_L)) || isInline ? 'body-M' : 'body-S';
   const bodyCopy = heading?.nextElementSibling.classList.length === 0 ? heading.nextElementSibling : text?.querySelector('p:not([class])');
   bodyCopy?.classList.add(bodyClass);
   const body = createTag('div', { class: 'body-area' });
   bodyCopy.insertAdjacentElement('beforebegin', body);
   body.append(bodyCopy);
-  const prevClasses = heading?.previousElementSibling?.classList;
-  if (prevClasses?.length === 0) prevClasses.add('detail-M');
-  el.querySelector(':scope > div:not([class])')?.classList.add('image');
+  el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
 }
 
 export default function init(el) {
   const foreground = decorateLayout(el);
-  const type = asideTypes.find((asideType) => el.className.indexOf(asideType) !== -1);
-  const size = asideSizes.find((asideSize) => el.className.indexOf(asideSize) !== -1) || (type === 'notification' ? 'large' : null);
+  const type = asideTypes.find((asideType) => el.className.includes(asideType));
+  const size = asideSizes.find((asideSize) => el.className.includes(asideSize))
+    || (type === NOTIFICATION ? SIZE_L : null);
   decorateContent(foreground, type, size);
 }
