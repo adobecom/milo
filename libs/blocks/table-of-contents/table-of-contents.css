@@ -1,0 +1,134 @@
+.table-of-contents {
+  border: 1px solid #E8E8E8;
+  background-color: #FAFAFA;
+}
+
+.table-of-contents .toc-container {
+  flex: 1 1 auto;
+  padding: 24px;
+}
+
+.table-of-contents .toc-title {
+  font-size: 16px;
+  border-bottom: 1px solid #D0D0D0;
+  margin: 0;
+  padding-bottom: 16px;
+}
+
+.table-of-contents .toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin: 24px 0;
+  padding: 0;
+}
+
+.table-of-contents .toc-item {
+  min-width: 200px;
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  background-color: #FFFFFF;
+  border: 1px solid #4B4B4B;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.table-of-contents .toc-item:hover {
+  box-shadow: 2px 4px 5px #0000001A;
+  border: 1px solid #1473E6;
+}
+
+.table-of-contents .toc-item:focus-within {
+  border: 1px solid #1473E6;
+  background-color: #F5F9FD;
+}
+
+.table-of-contents .toc-link-text {
+  flex: 1 1 auto;
+}
+
+.table-of-contents .toc-link-text p {
+  margin: 0 0 6px;
+}
+
+.table-of-contents .toc-item a {
+  color: var(--text-color);
+  outline: none;
+}
+
+.table-of-contents .toc-item a:hover {
+  text-decoration: none;
+}
+
+.table-of-contents .toc-link-text p:last-child {
+  margin-bottom: 0;
+}
+
+.table-of-contents .section-title {
+  font-weight: bold;
+}
+
+.table-of-contents .section-description {
+  font-size: 14px;
+}
+
+
+.table-of-contents .toc-arrow {
+  align-self: center;
+  padding: 0 8px;
+}
+
+
+@media screen and (min-width: 600px) {
+  .table-of-contents .toc-list {
+    flex-flow: row wrap;
+  }
+
+  .table-of-contents .toc-item {
+    flex: 1 1 40%;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .section.toc {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .section.toc > div {
+    flex: 1 1 auto;
+  }
+
+  .section.toc .marquee .foreground.container {
+    margin-right: 0;
+    flex-wrap: wrap;
+    align-content: center;
+  }
+
+  .table-of-contents .toc-container {
+    padding: 32px;
+    box-sizing: border-box;
+  }
+
+  .toc .table-of-contents .toc-container {
+    margin-left: 0;
+    max-width: 400px;
+    padding-right: 0;
+  }
+
+  .table-of-contents .toc-list {
+    flex-wrap: wrap;
+  }
+
+  .toc .table-of-contents .toc-item {
+    flex: 1 1 100%;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  .section.toc .marquee .foreground.container {
+    width: calc(var(--grid-container-width) - 400px);
+  }
+}

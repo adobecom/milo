@@ -26,9 +26,12 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'modal',
+  'pdf-viewer',
   'quote',
+  'review',
   'section-metadata',
   'tabs',
+  'table-of-contents',
   'youtube',
   'z-pattern',
   'share',
@@ -41,15 +44,20 @@ const AUTO_BLOCKS = [
   { fragment: '/fragments/' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
+  { 'pdf-viewer': '.pdf' },
 ];
 const ENVS = {
-  local: { name: 'local' },
+  local: {
+    name: 'local',
+    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
+  },
   stage: {
     name: 'stage',
     ims: 'stg1',
     adobeIO: 'cc-collab-stage.adobe.io',
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
+    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
   },
   prod: {
     name: 'prod',
@@ -57,19 +65,25 @@ const ENVS = {
     adobeIO: 'cc-collab.adobe.io',
     adminconsole: 'adminconsole.adobe.com',
     account: 'account.adobe.com',
+    edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
   },
 };
 
-function getEnv() {
+function getEnv(conf) {
   const { host, href } = window.location;
   const location = new URL(href);
   const query = location.searchParams.get('env');
 
-  if (query) { return ENVS.query; }
-  if (host.includes('localhost:')) return ENVS.local;
+  if (query) return { ...ENVS[query], consumer: conf[query] };
+  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
-  if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
-  return ENVS.prod;
+  if (host.includes('hlx.page')
+   || host.includes('hlx.live')
+   || host.includes('stage.adobe')
+   || host.includes('corp.adobe')) {
+    return { ...ENVS.stage, consumer: conf.stage };
+  }
+  return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
 }
 
@@ -90,7 +104,7 @@ export const [setConfig, getConfig] = (() => {
   return [
     (conf) => {
       const { origin } = window.location;
-      config = { ...conf, env: getEnv() };
+      config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
@@ -176,7 +190,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.removeEventListener('error', onScript);
 
     if (event.type === 'error') {
-      reject(new Error('error loading script'));
+      reject(new Error(`error loading script: ${script.src}`));
     } else if (event.type === 'load') {
       script.dataset.loaded = true;
       resolve(script);
@@ -263,6 +277,10 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
+      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+        a.target = '_blank';
+        return false;
+      }
       // Fragments
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
@@ -383,7 +401,7 @@ function decorateSections(el, isDoc) {
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off') {
-    const { default: martech } = await import('./martech.js');
+    const { default: martech } = await import('../martech/martech.js');
     martech(config, loadScript, getMetadata);
   }
 }
@@ -416,7 +434,7 @@ function loadPrivacy() {
     },
   };
 
-  const env = getEnv().name === 'prod' ? '' : 'stage.';
+  const env = getConfig().env.name === 'prod' ? '' : 'stage.';
   loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 }
 
