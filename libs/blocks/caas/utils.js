@@ -226,6 +226,7 @@ const getFilterArray = async (state) => {
 };
 
 export const getConfig = async (state, strs = {}) => {
+  const URL_ENCODED_COMMA = "%2C";
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').pop() : 'en';
   const country = state.country ? state.country.split('/').pop() : 'us';
@@ -288,6 +289,7 @@ export const getConfig = async (state, strs = {}) => {
         pool: state.sortReservoirPool,
       },
     },
+    featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
@@ -414,7 +416,7 @@ export const defaultState = {
   disableBanners: false,
   draftDb: false,
   environment: '',
-  endpoint: 'www.adobe.com/chimera-api/collection',
+  endpoint: 'www.stage.adobe.com/chimera-api/collection',
   excludeTags: [],
   excludedCards: [],
   fallbackEndpoint: '',
