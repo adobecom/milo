@@ -64,6 +64,11 @@ function changeTabs(e) {
     .removeAttribute("hidden");
 }
 
+function stringKeyName(str) {
+  if (!str) return;
+  return str.trim().replace(' ', '-').toLowerCase();
+}
+
 let initCount = 0;
 const init = (e) => {
   const rows = e.querySelectorAll(':scope > div');
@@ -90,22 +95,24 @@ const init = (e) => {
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
-        id: `tab-${initCount}-${i}`,
+        id: `tab-${initCount}`,
         tabindex: (i > 0) ? '0' : '-1',
       }
       const tabBtn = createTag('button', tabBtnAttributes);
+      const tabName = stringKeyName(item.textContent);
       tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
-      tabBtn.setAttribute('aria-controls', `tab-panel-${initCount}-${i}`);
+      tabBtn.setAttribute('aria-controls', `tab-panel-${initCount}-${tabName}`);
+      // tabBtn.setAttribute('aria-name', `tab-panel-${initCount}-${tabName}`);
       tabBtn.innerText = item.textContent;
       tabListContainer.append(tabBtn);
 
       const tabContentAttributes = {
-        id: `tab-panel-${initCount}-${i}`,
+        id: `tab-panel-${initCount}-${tabName}`,
         role: 'tabpanel',
         tabindex: '0',
       }
       const tabListContent = createTag('div', tabContentAttributes);
-      tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${i}`);
+      tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${tabName}`);
       if(i > 0) tabListContent.setAttribute('hidden', '');
       tabContentContainer.append(tabListContent);
     });
@@ -116,25 +123,26 @@ const init = (e) => {
   const configRows = e.querySelectorAll(':scope > div:not([class])');
   const config = {};
   configRows?.forEach((row) => {
-    const rowKey = row.children[0].textContent.trim().replace(' ', '-').toLowerCase();
+    const rowKey = stringKeyName(row.children[0].textContent);
     const rowVal = row.children[1].textContent.trim();
     config[rowKey] = rowVal;
     row.remove();
   });
 
+  // Tab Sections
   const allSections = Array.from(document.querySelectorAll('div.section'));
   allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
     const metadata = sectionMetadata.querySelectorAll(':scope > div > div');
     if (metadata[0].textContent === 'tab') {
-      const metaValue = metadata[1].textContent.trim().replace(' ', '-').toLowerCase().slice(4,5);
+      const metaValue = stringKeyName(metadata[1].textContent);
       const section = sectionMetadata.closest('.section');
-      const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue - 1}`);
+      const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
       if (assocTabItem) assocTabItem.append(section);
     }
-    sectionMetadata.remove();
   });
+
   initCount++;
   initTabs(e);
 }
