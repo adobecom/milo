@@ -67,12 +67,10 @@ function getIconList(el) {
 export async function decorateIconsInBlock(el) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-
   const icons = el.querySelectorAll('span.icon');
   const iconList = getIconList(el) || [];
   const svgs = await getSVGsfromFile(`${base}/img/icons/icons.svg`, iconList);
   if (!svgs) return;
-
   icons?.forEach(async (i) => {
     const iconName = i.classList[1].replace('icon-milo-', '');
     const iconSvg = svgs.map((symbol) => {
