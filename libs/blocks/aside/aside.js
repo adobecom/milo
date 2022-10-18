@@ -59,9 +59,6 @@ function decorateContent(el, type, size) {
   const isNotification = type === NOTIFICATION;
   if (heading) {
     let headingClass = 'heading-XL';
-    if (isNotification && (size === SIZE_XS || size === SIZE_S)) {
-      headingClass = '';
-    }
     if ((isNotification && size === SIZE_M) || isInline) {
       headingClass = 'heading-S';
     }
