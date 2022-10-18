@@ -4,7 +4,7 @@
  */
 import { createTag } from '../../utils/utils.js';
 
-function initTabs(e) {
+function initTabs(e, initCount, config) {
   const tabs = e.querySelectorAll('[role="tab"]');
   const tabLists = e.querySelectorAll('[role="tablist"]');
   tabLists.forEach( tabList => {
@@ -29,6 +29,7 @@ function initTabs(e) {
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
+  if(config) applyConfigs(e, initCount, config);
 }
 
 const isElementInContainerView = (targetEl) => {
@@ -69,6 +70,14 @@ function stringKeyName(str) {
   return str.trim().replace(' ', '-').toLowerCase();
 }
 
+function applyConfigs(e, initCount, config) {
+  if(config['active-tab']) {
+    const id = `tab-${initCount}-${stringKeyName(config['active-tab'])}`;
+    const sel = document.getElementById(id);
+    sel.click();
+  }
+}
+
 let initCount = 0;
 const init = (e) => {
   const rows = e.querySelectorAll(':scope > div');
@@ -92,17 +101,16 @@ const init = (e) => {
   if (tabListItems) {
     let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
     tabListItems.forEach((item, i) => {
+      const tabName = stringKeyName(item.textContent);
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
-        id: `tab-${initCount}`,
+        id: `tab-${initCount}-${tabName}`,
         tabindex: (i > 0) ? '0' : '-1',
       }
       const tabBtn = createTag('button', tabBtnAttributes);
-      const tabName = stringKeyName(item.textContent);
       tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
       tabBtn.setAttribute('aria-controls', `tab-panel-${initCount}-${tabName}`);
-      // tabBtn.setAttribute('aria-name', `tab-panel-${initCount}-${tabName}`);
       tabBtn.innerText = item.textContent;
       tabListContainer.append(tabBtn);
 
@@ -142,9 +150,8 @@ const init = (e) => {
       if (assocTabItem) assocTabItem.append(section);
     }
   });
-
+  initTabs(e, initCount, config);
   initCount++;
-  initTabs(e);
 }
 
 export default init;
