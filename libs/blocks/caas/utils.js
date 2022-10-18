@@ -416,7 +416,7 @@ export const defaultState = {
   disableBanners: false,
   draftDb: false,
   environment: '',
-  endpoint: 'www.stage.adobe.com/chimera-api/collection',
+  endpoint: 'www.adobe.com/chimera-api/collection',
   excludeTags: [],
   excludedCards: [],
   fallbackEndpoint: '',
