@@ -4,7 +4,11 @@
  */
 import { createTag } from '../../utils/utils.js';
 
-function initTabs(e, initCount, config) {
+function getStringKeyName(str) {
+  return str.trim().replace(' ', '-').toLowerCase();
+}
+
+function initTabs(e, config) {
   const tabs = e.querySelectorAll('[role="tab"]');
   const tabLists = e.querySelectorAll('[role="tablist"]');
   tabLists.forEach( tabList => {
@@ -29,24 +33,8 @@ function initTabs(e, initCount, config) {
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
-  if(config) applyConfigs(e, initCount, config);
+  if(config) configTabs(config);
 }
-
-const isElementInContainerView = (targetEl) => {
-  const rect = targetEl.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || /* c8 ignore next */ document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || /* c8 ignore next */ document.documentElement.clientWidth)
-  );
-};
-
-const scrollTabIntoView = (e) => {
-  const isElInView = isElementInContainerView(e);
-  /* c8 ignore next */
-  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-};
 
 function changeTabs(e) {
   const target = e.target;
@@ -65,18 +53,29 @@ function changeTabs(e) {
     .removeAttribute("hidden");
 }
 
-function stringKeyName(str) {
-  if (!str) return;
-  return str.trim().replace(' ', '-').toLowerCase();
-}
-
-function applyConfigs(e, initCount, config) {
+function configTabs(config) {
   if(config['active-tab']) {
-    const id = `tab-${initCount}-${stringKeyName(config['active-tab'])}`;
+    const id = `tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
     const sel = document.getElementById(id);
-    sel.click();
+    if(sel) sel.click();
   }
 }
+
+const isElementInContainerView = (targetEl) => {
+  const rect = targetEl.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || /* c8 ignore next */ document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || /* c8 ignore next */ document.documentElement.clientWidth)
+  );
+};
+
+const scrollTabIntoView = (e) => {
+  const isElInView = isElementInContainerView(e);
+  /* c8 ignore next */
+  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+};
 
 let initCount = 0;
 const init = (e) => {
@@ -101,7 +100,7 @@ const init = (e) => {
   if (tabListItems) {
     let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
     tabListItems.forEach((item, i) => {
-      const tabName = stringKeyName(item.textContent);
+      const tabName = getStringKeyName(item.textContent);
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
@@ -128,14 +127,16 @@ const init = (e) => {
   }
 
   // Tab Config
+  const config = { 'tab-id': initCount };
   const configRows = e.querySelectorAll(':scope > div:not([class])');
-  const config = {};
-  configRows?.forEach((row) => {
-    const rowKey = stringKeyName(row.children[0].textContent);
-    const rowVal = row.children[1].textContent.trim();
-    config[rowKey] = rowVal;
-    row.remove();
-  });
+  if(configRows) {
+    configRows.forEach((row) => {
+      const rowKey = getStringKeyName(row.children[0].textContent);
+      const rowVal = row.children[1].textContent.trim();
+      config[rowKey] = rowVal;
+      row.remove();
+    });
+  }
 
   // Tab Sections
   const allSections = Array.from(document.querySelectorAll('div.section'));
@@ -144,13 +145,13 @@ const init = (e) => {
     if (!sectionMetadata) return;
     const metadata = sectionMetadata.querySelectorAll(':scope > div > div');
     if (metadata[0].textContent === 'tab') {
-      const metaValue = stringKeyName(metadata[1].textContent);
+      const metaValue = getStringKeyName(metadata[1].textContent);
       const section = sectionMetadata.closest('.section');
       const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
       if (assocTabItem) assocTabItem.append(section);
     }
   });
-  initTabs(e, initCount, config);
+  initTabs(e, config);
   initCount++;
 }
 
