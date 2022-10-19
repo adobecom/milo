@@ -1,4 +1,5 @@
 import { getConfig, createTag } from '../../utils/utils.js';
+import sampleRUM from '../../utils/samplerum.js';
 
 async function load404() {
   const { locale } = getConfig();
@@ -39,6 +40,8 @@ async function load404() {
 
   // appending other sections to main
   main.append(...doc.querySelectorAll('body > *'));
+
+  sampleRUM('404', { source: document.referrer, target: window.location.href });
 }
 
 (async function init() {

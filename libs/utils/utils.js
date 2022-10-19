@@ -421,6 +421,14 @@ export async function loadDeferred(area) {
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
+
+  const main = area.querySelector('main');
+  if (!main) return;
+
+  const { default: sampleRUM } = await import('./samplerum.js');
+  sampleRUM('lazy');
+  sampleRUM.observe(main.querySelectorAll('div[data-block-name]'));
+  sampleRUM.observe(main.querySelectorAll('picture > img'));
 }
 
 /**
@@ -483,6 +491,10 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
+
+      // Core Web Vitals RUM collection
+      import('./samplerum.js').then(({ default: sampleRUM }) => sampleRUM('cwv'));
+
       if (getMetadata('interlinks') === 'on') {
         import('../features/interlinks.js').then((mod) => {
           resolve(mod);
