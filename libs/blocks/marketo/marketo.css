@@ -1,0 +1,136 @@
+/* stylelint-disable selector-class-pattern */
+.marketo {
+  box-sizing: border-box;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 56px 40px;
+  background-color: #FAFAFA;
+  color: #535353;
+}
+
+.marketo .mktoForm .mktoFieldWrap {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.marketo .mktoForm .mktoAsterix {
+  float: right;
+}
+
+.marketo .mktoForm .mktoField {
+  width: 50%;
+  color: #959595;
+  padding: 11.25px;
+  border: 1px solid #A5A5A5;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.marketo .mktoForm {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.marketo .mktoForm select {
+  appearance: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-58 29 32 34' style='enable-background:new -58 29 32 34' xml:space='preserve'%3E%3Cpath d='m-56 43 6-12 6 12h-12zm12 6-6 12-6-12h12z' fill='%23535353'/%3E%3C/svg%3E") no-repeat 97% 50%;
+  background-size: 1em 1em;
+}
+
+.marketo .mktoForm .mktoClear {
+  display: none;
+}
+
+.marketo .mktoForm .mktoGutter {
+  /* display: none; */
+  flex: 1 1 auto;
+}
+
+.marketo .mktoForm .mktoHtmlText {
+  font-size: 14px;
+  font-weight: normal;
+  padding: 20px 0;
+}
+
+.marketo .mktoForm .mktoButtonWrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.marketo .mktoForm .mktoButtonRow {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.marketo .mktoForm .mktoButton {
+  appearance: button;
+  background-color: #2680eb;
+  border: 0;
+  border-radius: 24px;
+  color: #fff;
+  font-weight: 700;
+  padding: 7.5px 24px;
+  font-size: 16px;
+  width: initial;
+  box-shadow: none;
+  transition: background-color 125ms ease-out;
+  cursor: pointer;
+}
+
+.marketo .mktoForm .mktoButton:hover {
+  background-color: #1473e6;
+}
+
+.marketo .mktoForm .mktoField.mktoInvalid:not(:focus) {
+  border: 1px solid #C9252D;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E") no-repeat 95% 50%;
+  background-size: 19.5px;
+}
+
+.marketo .mktoForm .mktoError {
+  width: 50%;
+  margin-left: 50%;
+  font-size: 12px;
+  font-weight: normal;
+  color: #C9252D;
+}
+
+.dialog-modal .marketo {
+  max-width: 100%;
+  margin: 0;
+  padding: 56px 80px;
+}
+
+.dialog-modal .marketo .mktoForm {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  gap: 0 20px;
+  width: 100%;
+}
+
+.dialog-modal .marketo .marketo-description {
+  margin: 16px 0 40px;
+  text-align: center;
+}
+
+.dialog-modal .marketo .mktoFormRow {
+  width: 48%;
+}
+
+.dialog-modal .marketo .mktoFormRow:has(.mktoHtmlText) {
+  width: 100%;
+}
+
+.dialog-modal .marketo .mktoForm .mktoField {
+  width: 100%;
+}
+
+.dialog-modal .marketo .mktoForm label {
+  padding-bottom: 6px;
+}
