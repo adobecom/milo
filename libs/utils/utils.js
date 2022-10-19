@@ -456,10 +456,10 @@ export async function loadArea(area = document) {
   // Post section loading on document
   if (isDoc) {
     const { default: loadGeoRouting } = await import('../features/georouting.js');
-    loadGeoRouting(config);
+    loadGeoRouting(config, createTag);
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
-    loadFavIcon(createTag, getConfig(), getMetadata);
+    loadFavIcon(createTag, config, getMetadata);
   }
 
   // Load everything that can be deferred until after all blocks load.
