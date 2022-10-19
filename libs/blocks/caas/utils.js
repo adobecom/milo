@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
+const URL_ENCODED_COMMA = "%2C";
+
 const fetchWithTimeout = async (resource, options = {}) => {
   const { timeout = 5000 } = options;
 
@@ -226,7 +228,6 @@ const getFilterArray = async (state) => {
 };
 
 export const getConfig = async (state, strs = {}) => {
-  const URL_ENCODED_COMMA = "%2C";
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').pop() : 'en';
   const country = state.country ? state.country.split('/').pop() : 'us';
