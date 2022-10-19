@@ -16,8 +16,9 @@ describe('Card', () => {
 
   it('Adds one wrapper per section', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/half.html' });
-    init(document.querySelectorAll('.card')[0]);
-    init(document.querySelectorAll('.card')[1]);
+    const cards = document.querySelectorAll('.card');
+    init(cards[0]);
+    init(cards[1]);
     expect(document.querySelectorAll('.consonant-Wrapper').length).to.equal(1);
   });
 
