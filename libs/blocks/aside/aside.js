@@ -73,7 +73,7 @@ function decorateContent(el, type, size) {
   const bodyCopy = heading?.nextElementSibling.classList.length === 0 ? heading.nextElementSibling : text?.querySelector('p:not([class])');
   bodyCopy?.classList.add(bodyClass);
   const body = createTag('div', { class: 'body-area' });
-  bodyCopy.insertAdjacentElement('beforebegin', body);
+  bodyCopy?.insertAdjacentElement('beforebegin', body);
   body.append(bodyCopy);
   el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
 }
