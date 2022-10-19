@@ -127,14 +127,12 @@ const init = (el) => {
 
     if (link) {
       card = link;
-      el.prepend(link);
     } else {
       card = document.createElement('a');
       card.href = '';
-      el.prepend(card);
     }
 
-    // el.prepend(card);
+    el.prepend(card);
   }
 
   card.classList.add('consonant-Card', `consonant-${cardType}`);
