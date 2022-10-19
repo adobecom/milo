@@ -1,4 +1,4 @@
-name: Automated Tests
+name: Nala Tests
 
 on:
   pull_request:
@@ -6,15 +6,15 @@ on:
 
 jobs:
   action:
-    name: Running tests
-    if: contains(github.event.pull_request.labels.*.name, 'run-janus')
+    name: Running E2E & IT
+    if: contains(github.event.pull_request.labels.*.name, 'run-nala')
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-      - name: Run Janus
-        uses: adobecom/janus@main # Change if doing dev work
+      - name: Run Nala
+        uses: adobecom/nala@main # Change if doing dev work
         env:
           labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
           branch: ${{ github.event.pull_request.head.ref }}
