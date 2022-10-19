@@ -181,7 +181,8 @@ class Footer {
     if (!copyrightEl || !links) return null;
     const privacyWrapper = createTag('div', { class: 'footer-privacy' });
     const copyright = createTag('p', { class: 'footer-privacy-copyright' });
-    copyright.textContent = copyrightEl.textContent;
+    const year = new Date().getFullYear();
+    copyright.textContent = `Copyright © ${year} ${copyrightEl.textContent}`;
     privacyWrapper.append(copyright);
     const infoLinks = createTag('ul', { class: 'footer-privacy-links' });
     links.forEach((link) => {

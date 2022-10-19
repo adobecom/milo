@@ -68,6 +68,10 @@ Common styles for faas form Dexter's
   font-weight: 600;
 }
 
+.faas-form label .required {
+  display: none;
+}
+
 input[type="checkbox"] + label {
   width: 95%;
   font-weight: normal;
@@ -249,7 +253,14 @@ input[type="checkbox"] + label {
 
 /* next */
 .faas.next {
-  padding: 0;
+  padding: 48px;
+}
+
+.faas.next h2 {
+  font-size: var(--type-body-s-size);
+  margin: 0;
+  max-width: 100%;
+  text-align: left;
 }
 
 .faas.next .faas-form {
@@ -281,8 +292,8 @@ input[type="checkbox"] + label {
 
 .faas.next .faas-form .row.submit input + div {
   position: relative;
-  top: 7px;
-  left: -15px;
+  top: 20px;
+  left: -20px;
 }
 
 .faas.next .faas-form .row.submit input + div::after {
