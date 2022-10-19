@@ -748,6 +748,41 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   background-color: #FAFAFA;
 }
 
+/* PROFILE MULTI CLOUD SIGNIN */
+
+header .gnav-profile.gnav-navitem > a {
+  border-bottom: none;
+  padding-top: unset;
+}
+
+header .gnav-profile.gnav-navitem.has-Menu.is-open > a {
+  font-weight: unset;
+}
+
+.gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+  position: fixed;
+  margin-top: 57px;
+  padding: 34px 28px 40px;
+  z-index: 1;
+  left: unset;
+  right: 0;
+}
+
+.gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu ul > li:last-child {
+ border-top: 1px solid #e1e1e1;
+ padding-top: 4px;
+ margin-top: 4px;
+}
+
+header .gnav-profile.gnav-navitem ul a {
+  padding: 6px 12px;
+}
+
+header .gnav-profile.gnav-navitem.has-Menu.is-open:before,
+header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
+  content: unset;
+}
+
 /* END PROFILE */
 
 @media (min-width: 900px) {
@@ -824,6 +859,15 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
     gap: 40px;
   }
 
+  /* PROFILE MULTI CLOUD SIGNIN OVERRIDE */
+
+  header .gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu.small-Variant {
+    left: unset;
+    right: 0;
+  }
+
+  /* END PROFILE MULTI CLOUD SIGNIN OVERRIDE */
+
   header .gnav-navitem .small-Variant ul a,
   header .gnav-navitem .medium-Variant ul a {
     padding: 6px 12px;
@@ -855,7 +899,8 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
     display: none;
   }
 
-  .gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+  .gnav-navitem.has-Menu.is-open .gnav-navitem-menu,
+  .gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
     position: fixed;
     margin-top: 64px;
     padding: 0;

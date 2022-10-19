@@ -421,14 +421,29 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
+    const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
+
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
-    profileEl.append(signIn);
-    profileEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.adobeIMS.signIn();
-    });
+
+    if (profileDropDown) {
+      const id = `navmenu-${blockEl.className}`;
+
+      profileDropDown.id = id;
+      profileEl.classList.add('gnav-navitem', 'has-Menu');
+      profileEl.append(signIn);
+      profileEl.insertAdjacentElement('beforeend', profileDropDown);
+
+      this.decorateMenu(profileEl, signIn, profileDropDown);
+      this.setNavLinkAttributes(id, signIn);
+    } else {
+      profileEl.append(signIn);
+      profileEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.adobeIMS.signIn();
+      });
+    }
   };
 
   decorateBreadcrumbs = () => {
