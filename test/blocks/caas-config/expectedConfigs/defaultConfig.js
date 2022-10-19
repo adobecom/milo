@@ -30,6 +30,7 @@ const defaultConfig = {
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
   },
+  featuredCards: [""],
   filterPanel: {
     enabled: false,
     eventFilter: '',
