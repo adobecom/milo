@@ -22,7 +22,6 @@ describe('media', () => {
     });
     it('has a icon area', () => {
       const iconArea = medias[0].querySelector('.icon-area');
-      console.log(iconArea, medias[0]);
       expect(iconArea).to.exist;
     });
   });
