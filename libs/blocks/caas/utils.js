@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
-const URL_ENCODED_COMMA = "%2C";
+const URL_ENCODED_COMMA = '%2C';
 
 const fetchWithTimeout = async (resource, options = {}) => {
   const { timeout = 5000 } = options;
