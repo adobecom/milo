@@ -1,6 +1,6 @@
 
 import { decorateBlockBg, decorateIconArea, decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { decorateLinkAnalytics } from '../../utils/analytics.js';
+import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
 export function decorateText(el, size = 'medium') {
