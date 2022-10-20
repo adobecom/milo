@@ -176,7 +176,7 @@ class Gnav {
       if (menu.childElementCount > 0 || navBlock) {
         const id = `navmenu-${idx}`;
         menu.id = id;
-        navItem.classList.add('has-Menu');
+        navItem.classList.add('has-menu');
         this.setNavLinkAttributes(id, navLink);
       }
       // Small and medium menu types
@@ -431,7 +431,7 @@ class Gnav {
       const id = `navmenu-${blockEl.className}`;
 
       profileDropDown.id = id;
-      profileEl.classList.add('gnav-navitem', 'has-Menu');
+      profileEl.classList.add('gnav-navitem', 'has-menu');
       profileEl.append(signIn);
       profileEl.insertAdjacentElement('beforeend', profileDropDown);
 
@@ -515,7 +515,7 @@ class Gnav {
   toggleOnSpace = (e) => {
     if (e.code === 'Space') {
       e.preventDefault();
-      const parentEl = e.target.closest('.has-Menu');
+      const parentEl = e.target.closest('.has-menu');
       this.toggleMenu(parentEl);
     }
   };

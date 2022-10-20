@@ -1,3 +1,7 @@
+:root {
+  --border-color: #e1e1e1;
+}
+
 header {
   display: block;
 }
@@ -397,7 +401,7 @@ header .gnav-navitem > a:hover {
   background-color: #FAFAFA;
 }
 
-header .gnav-navitem.has-Menu > a:after {
+header .gnav-navitem.has-menu > a:after {
   display: flex;
   width: 5px;
   height: 5px;
@@ -415,7 +419,7 @@ header .gnav-navitem.has-Menu > a:after {
   margin-right: 3px;
 }
 
-header .gnav-navitem.has-Menu.is-open:before {
+header .gnav-navitem.has-menu.is-open:before {
   background: #969796;
   position: absolute;
   width: 2px;
@@ -427,7 +431,7 @@ header .gnav-navitem.has-Menu.is-open:before {
   z-index: 1;
 }
 
-header .gnav-navitem.has-Menu.is-open > a:after {
+header .gnav-navitem.has-menu.is-open > a:after {
   transform: rotate(-135deg);
 }
 
@@ -437,7 +441,7 @@ header .gnav-navitem-menu {
   background-color: #FAFAFA;
 }
 
-header .gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+header .gnav-navitem.has-menu.is-open .gnav-navitem-menu {
   display: block;
 }
 
@@ -447,13 +451,13 @@ header .gnav-navitem-menu ul {
   list-style: none;
 }
 
-header .gnav-navitem.has-Menu.is-open > a {
+header .gnav-navitem.has-menu.is-open > a {
   font-weight: 700;
   position: relative;
   border-bottom: none;
 }
 
-header .gnav-navitem.has-Menu.is-open > a:before {
+header .gnav-navitem.has-menu.is-open > a:before {
   content: '';
   position: absolute;
   left: 12px;
@@ -557,31 +561,31 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   padding-bottom: 5px;
 }
 
-.gnav-navitem.has-Menu.is-open .gnav-menu-container,
-.gnav-navitem.has-Menu.is-open .gnav-navitem-menu:scope > div {
+.gnav-navitem.has-menu.is-open .gnav-menu-container,
+.gnav-navitem.has-menu.is-open .gnav-navitem-menu:scope > div {
   display: flex;
   flex-flow: column wrap;
   padding: 0 24px;
 }
 
-.gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
   padding-top: 0;
   left: 0;
   right: 0;
 }
 
-.gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > ul {
+.gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > ul {
   margin: 0;
 }
 
-.gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > h5 {
+.gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > h5 {
   margin: 0;
   padding: 18px 0;
   line-height: 1;
 }
 
 
-.gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > p {
+.gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > p {
   margin-top: 10px;
 }
 
@@ -613,7 +617,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   padding: 12px;
 }
 
-.gnav-navitem.large-menu.gnav-navitem.has-Menu.is-open .link-group .link-block div {
+.gnav-navitem.large-menu.gnav-navitem.has-menu.is-open .link-group .link-block div {
   padding-left: 0;
   line-height: 1.3;
 }
@@ -677,7 +681,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   top: 56px;
   min-width: 320px;
   background: #FFF;
-  border: 1px solid #E1E1E1;
+  border: 1px solid var(--border-color);
   border-radius: 0 0 4px 4px;
   overflow: hidden;
 }
@@ -739,7 +743,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
 .gnav-profile-actions a {
   padding: 14px 20px;
   display: block;
-  border-top: 1px solid #E1E1E1;
+  border-top: 1px solid var(--border-color);
   box-sizing: border-box;
   color: #4b4b4b;
 }
@@ -755,11 +759,11 @@ header .gnav-profile.gnav-navitem > a {
   padding-top: unset;
 }
 
-header .gnav-profile.gnav-navitem.has-Menu.is-open > a {
+header .gnav-profile.gnav-navitem.has-menu.is-open > a {
   font-weight: unset;
 }
 
-.gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+.gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
   position: fixed;
   margin-top: 57px;
   padding: 34px 28px 40px;
@@ -768,8 +772,8 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a {
   right: 0;
 }
 
-.gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu ul > li:last-child {
- border-top: 1px solid #e1e1e1;
+.gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu ul > li:last-child {
+ border-top: 1px solid var(--border-color);
  padding-top: 4px;
  margin-top: 4px;
 }
@@ -778,8 +782,8 @@ header .gnav-profile.gnav-navitem ul a {
   padding: 6px 12px;
 }
 
-header .gnav-profile.gnav-navitem.has-Menu.is-open:before,
-header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
+header .gnav-profile.gnav-navitem.has-menu.is-open:before,
+header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
   content: unset;
 }
 
@@ -837,7 +841,7 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
     display: flex;
   }
 
-  header .gnav-navitem.has-Menu.is-open:before {
+  header .gnav-navitem.has-menu.is-open:before {
     display: none;
   }
 
@@ -850,9 +854,9 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
     border-right: 1px solid #EBEBEB;
   }
 
-  header .gnav-navitem.has-Menu.is-open .gnav-navitem-menu.small-Variant,
-  header .gnav-navitem.has-Menu.is-open .gnav-navitem-menu.medium-Variant {
-    padding: 34px 28px 40px 28px;
+  header .gnav-navitem.has-menu.is-open .gnav-navitem-menu.small-Variant,
+  header .gnav-navitem.has-menu.is-open .gnav-navitem-menu.medium-Variant {
+    padding: 24px 32px;
     position: absolute;
     display: flex;
     right: unset;
@@ -861,7 +865,7 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
 
   /* PROFILE MULTI CLOUD SIGNIN OVERRIDE */
 
-  header .gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu.small-Variant {
+  header .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu.small-Variant {
     left: unset;
     right: 0;
   }
@@ -882,11 +886,11 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
     padding: 20px;
   }
 
-  header .gnav-navitem.has-Menu.is-open > a {
+  header .gnav-navitem.has-menu.is-open > a {
     font-weight: unset;
   }
 
-  .gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > h5 {
+  .gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > h5 {
     margin: 0 12px;
     padding: 18px 0 6px 0;
   }
@@ -895,20 +899,20 @@ header .gnav-profile.gnav-navitem.has-Menu.is-open > a:before {
     padding-left: 20px;
   }
 
-  header .gnav-navitem.has-Menu.is-open > a:before {
+  header .gnav-navitem.has-menu.is-open > a:before {
     display: none;
   }
 
-  .gnav-navitem.has-Menu.is-open .gnav-navitem-menu,
-  .gnav-profile.gnav-navitem.has-Menu.is-open .gnav-navitem-menu {
+  .gnav-navitem.has-menu.is-open .gnav-navitem-menu,
+  .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
     position: fixed;
     margin-top: 64px;
     padding: 0;
     z-index: 1;
   }
 
-  .gnav-navitem.has-Menu.is-open .gnav-menu-container,
-  .gnav-navitem.has-Menu.is-open .gnav-navitem-menu.large-Variant:scope > div {
+  .gnav-navitem.has-menu.is-open .gnav-menu-container,
+  .gnav-navitem.has-menu.is-open .gnav-navitem-menu.large-Variant:scope > div {
       display: flex;
       flex-flow: row nowrap;
       justify-content: center;
