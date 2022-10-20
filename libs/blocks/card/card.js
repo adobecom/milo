@@ -33,6 +33,8 @@ const addWrapper = (el, section, cardType) => {
     return;
   }
 
+  const prevSib = el.previousElementSibling;
+  const nextSib = el.nextElementSibling;
   const upClass = getUpFromSectionMetadata(section);
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
@@ -40,8 +42,6 @@ const addWrapper = (el, section, cardType) => {
   const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
   const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
   const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
-  const prevSib = el.previousElementSibling;
-  const nextSib = el.nextElementSibling;
 
   if (prevSib) {
     prevSib.after(wrapper);
