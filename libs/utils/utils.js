@@ -415,20 +415,17 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area) {
+export async function loadDeferred(area, blocks) {
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
 
-  const main = area.querySelector('main');
-  if (!main) return;
-
   const { default: sampleRUM } = await import('./samplerum.js');
   sampleRUM('lazy');
-  sampleRUM.observe(main.querySelectorAll('div[data-block-name]'));
-  sampleRUM.observe(main.querySelectorAll('picture > img'));
+  sampleRUM.observe(blocks);
+  sampleRUM.observe(area.querySelectorAll('picture > img'));
 }
 
 /**
@@ -457,9 +454,12 @@ export async function loadArea(area = document) {
   }
 
   const sections = decorateSections(area, isDoc);
+
+  const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
+    areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
     // eslint-disable-next-line no-await-in-loop
@@ -481,7 +481,7 @@ export async function loadArea(area = document) {
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area);
+  await loadDeferred(area, areaBlocks);
 }
 
 /**

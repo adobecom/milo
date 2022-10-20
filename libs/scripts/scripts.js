@@ -28,6 +28,7 @@ const config = {
   locales,
   pdfViewerClientIdStage: '600a4521c23d4c7eb9c7b039bee534a0',
   pdfViewerClientIdProd: '3c0a5ddf2cc04d3198d9e48efc390fa9',
+  rumGenerationId: 'milo',
 };
 
 (async function loadLCPImage() {
@@ -36,6 +37,8 @@ const config = {
 }());
 
 (async function loadPage() {
+  window.hlx = window.hlx || {};
+  window.hlx.RUM_GENERATION = config.rumGenerationId;
   setConfig(config);
   await loadArea();
   loadDelayed();
