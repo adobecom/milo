@@ -1,5 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle, getSectionMetadata, getConfig, createTag } from '../../utils/utils.js';
+import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
+import { getSectionMetadata } from '../section-metadata/section-metadata.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
