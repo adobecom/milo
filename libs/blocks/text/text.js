@@ -1,5 +1,5 @@
 
-import { decorateBlockBg, decorateIconArea, decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateIconArea, decorateButtons, getBlockSize, setDataConBlockAttribute } from '../../utils/decorate.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -28,7 +28,7 @@ export function decorateText(el, size = 'medium') {
 }
 
 export default function init(el) {
-  el.setAttribute('data-util', 'block');
+  setDataConBlockAttribute(el);
   el.classList.add('text-block');
   const rows = el.querySelectorAll(':scope > div');
   const container = createTag('div', { class: 'foreground container grid' });

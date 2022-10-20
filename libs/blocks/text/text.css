@@ -7,44 +7,16 @@
 }
 
 .text-block p { margin: var(--spacing-xs) 0; }
+
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
+
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+
 .text-block p.action-area { margin-top: var(--spacing-s); }
+
 .text-block p:last-of-type { margin-bottom: 0; }
-
-/* Utils */
-/* Spacing */
-.text-block.xxl-spacing {
-  padding: var(--spacing-xxl) 0;
-}
-
-.text-block.xl-spacing {
-  padding: var(--spacing-xl) 0;
-}
-
-.text-block.l-spacing {
-  padding: var(--spacing-l) 0;
-}
-
-.text-block.s-spacing {
-  padding: var(--spacing-s) 0;
-}
-
-.text-block.xs-spacing {
-  padding: var(--spacing-xs) 0;
-}
-
-/* Align */
-.text-block.left,
-.text-block.align-left {
-  text-align: left;
-}
-
-.text-block.right,
-.text-block.align-right {
-  text-align: right;
-}
 
 /* two-up, three-up, four-up */
 div.two-up .text-block .grid,
@@ -100,4 +72,4 @@ div.four-up .text-block .grid {
   }
 
 }
-}
+

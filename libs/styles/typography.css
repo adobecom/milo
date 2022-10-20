@@ -133,6 +133,37 @@
   color: #000;
 }
 
+/* [data-con-block] - Opt in Shared utils */
+/* Spacing */
+[data-con-block].xxl-spacing {
+  padding: var(--spacing-xxl) 0;
+}
+
+[data-con-block].xl-spacing {
+  padding: var(--spacing-xl) 0;
+}
+
+[data-con-block].l-spacing {
+  padding: var(--spacing-l) 0;
+}
+
+[data-con-block].s-spacing {
+  padding: var(--spacing-s) 0;
+}
+
+[data-con-block].xs-spacing {
+  padding: var(--spacing-xs) 0;
+}
+
+/* Align */
+[data-con-block].left{
+  text-align: left;
+}
+
+[data-con-block].right{
+  text-align: right;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .con-button.button-justified-mobile {

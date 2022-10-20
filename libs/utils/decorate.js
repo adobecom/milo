@@ -45,6 +45,10 @@ export function decorateBlockText(el, size = 'small') {
   decorateLinkAnalytics(el, headings);
 }
 
+export function setDataConBlockAttribute(el, val = '') {
+  el.setAttribute('data-con-block', val);
+}
+
 export function decorateBlockBg(block, node) {
   node.classList.add('background');
   if (node.childElementCount > 1) {
