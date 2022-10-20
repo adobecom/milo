@@ -467,8 +467,8 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    const { default: loadGeoRouting } = await import('../features/georouting.js');
-    loadGeoRouting(config, createTag);
+    const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
+    loadGeoRouting(config, loadStyle, createTag);
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, config, getMetadata);

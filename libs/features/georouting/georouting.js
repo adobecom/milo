@@ -1,4 +1,4 @@
-const GeoRoutingCookieNames = {
+const GeoRoutingCookies = {
   international: 'international',
   georouting_presented: 'georouting_presented',
   storeregion: 'storeregion',
@@ -9,15 +9,6 @@ const getCookieValueByName = ((a) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${a}=`))
   ?.split('=')[1]);
-
-const isCookieSet = ((cookieName) => {
-  const cookie = getCookieValueByName(cookieName);
-  return !!cookie;
-});
-
-const expireGeoLocationCookies = (() => {
-  // TODO vhargrave - do I need to do this?
-});
 
 const jsonpGist = (url, callback) => {
   // Setup a unique name that can be called & destroyed
@@ -38,23 +29,16 @@ const jsonpGist = (url, callback) => {
   document.body.appendChild(script);
 };
 
-const getUserCountry = (async () => {
-  let country = '';
-
+const getUserCountryByIP = (async () => new Promise((resolve) => {
   // override user region if akamaiLocale is set in URL params
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const akamaiLocale = urlParams.get('akamaiLocale');
   if (akamaiLocale !== null) {
-    country = akamaiLocale;
-  } else {
-    await jsonpGist(geo2Link, (data) => {
-      country = data.country;
-    });
+    resolve(akamaiLocale);
   }
-
-  return country;
-});
+  jsonpGist(geo2Link, (data) => resolve(data.country));
+}));
 
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -76,16 +60,30 @@ function closeModals(modals) {
   }
 }
 
-const showModal = (async (userCountry, createTag, config) => {
+function trimLocaleFromCountryLocaleString(countryLocaleString) {
+  if (!countryLocaleString) return null;
+  const country = countryLocaleString.match('^[^_]*');
+  return country !== null ? country[0] : null;
+}
+
+const showModal = (async (userCountryByIP, config, loadStyle, createTag) => {
   const resp = await fetch(`${config.locale.contentRoot}/georouting.json`);
   if (!resp.ok) return;
 
   const json = await resp.json();
-  const localeText = json.data.filter((locale) => {
-    const country = locale.prefix.match('^[^_]*');
-    if (country === null || country.length === 0) return userCountry.toLowerCase() === 'us';
-    return country[0].toLowerCase() === userCountry.toLowerCase();
+  const localeTexts = json.data.filter((locale) => {
+    if (!locale.akamaiCodes) return false;
+    const localeAkamaiCodes = locale.akamaiCodes.split(',').map((ak) => ak.trim());
+    return localeAkamaiCodes.some((lak) => lak.toLowerCase() === userCountryByIP.toLowerCase());
   });
+  const continueText = json.data.filter((locale) => {
+    if (locale.prefix === undefined) return false;
+    return locale.prefix === config.locale.prefix;
+  });
+  localeTexts.push(...continueText);
+
+  const { miloLibs, codeRoot } = config;
+  loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
 
   const dialog = document.createElement('dialog');
   dialog.className = 'dialog-modal';
@@ -110,14 +108,12 @@ const showModal = (async (userCountry, createTag, config) => {
   });
 
   const georoutingContainer = createTag('div', { class: 'georouting-container' });
-  georoutingContainer.style.textAlign = 'center';
-  georoutingContainer.style.padding = '3em 2em 1.88em';
 
   const textContainer = createTag('div', { class: 'georouting-text-container' });
   const linkContainer = createTag('div', { class: 'georouting-link-container' });
-  localeText.forEach((l) => {
-    textContainer.append(createTag('p', { class: 'georouting-text' }, l.text));
-    linkContainer.append(createTag('a', { class: 'georouting-link' }, l.button));
+  localeTexts.forEach((l) => {
+    if (l.text) textContainer.append(createTag('p', { class: 'georouting-text' }, l.text));
+    if (l.button) linkContainer.append(createTag('a', { class: 'georouting-link' }, l.button));
   });
   georoutingContainer.append(worldIcon, textContainer, linkContainer);
 
@@ -127,14 +123,56 @@ const showModal = (async (userCountry, createTag, config) => {
   close.focus({ focusVisible: true });
 });
 
-export default async function loadGeoRouting(config, createTag) {
-  const userCountry = await getUserCountry();
-  const isUserCountrySameAsInUrl = userCountry === config.locale.prefix;
-  if (!isUserCountrySameAsInUrl && !isCookieSet(GeoRoutingCookieNames.georouting_presented)) {
-    console.log('Going to show the modal');
-    expireGeoLocationCookies();
-    showModal(userCountry, createTag, config);
-  } else {
-    // TODO vhargrave - figure out what to do here
+function isGoRoutingFeatureActive() {
+  return true;
+  // TODO vhargrave - implement
+}
+
+function isFallbackRoutingEnabled() {
+  // TODO vhargrave implement
+  return false;
+}
+
+function isLocalVersionOfPageAvailable() {
+  // TODO vhargrave implement
+  return true;
+}
+
+export default async function loadGeoRouting(config, loadStyle, createTag) {
+  if (!isGoRoutingFeatureActive()) {
+    return;
   }
+  if (getCookieValueByName(GeoRoutingCookies.georouting_presented)) {
+    return;
+  }
+
+  // get country either by IP or take akamaiLocale override from params
+  let userCountryByIP = '';
+  await getUserCountryByIP().then((country) => { userCountryByIP = country; });
+
+  // if there is no country in URL then default to USA
+  const userCountryByURL = trimLocaleFromCountryLocaleString(config.locale.prefix) || 'us';
+  const internationalCookieWithLocale = getCookieValueByName(GeoRoutingCookies.international);
+  const internationalCookie = trimLocaleFromCountryLocaleString(internationalCookieWithLocale);
+
+  const comparerArray = [userCountryByIP, userCountryByURL, internationalCookie];
+  const isDiscrepencyDetected = !comparerArray.every((c) => {
+    if (c) {
+      return c.toLowerCase() === comparerArray[0].toLowerCase();
+    }
+    return true;
+  });
+
+  console.log(comparerArray);
+
+  if (!isDiscrepencyDetected) {
+    document.cookie = `${GeoRoutingCookies.international}=${config.locale.prefix}`;
+    return;
+  }
+
+  if (isFallbackRoutingEnabled() && !isLocalVersionOfPageAvailable()) {
+    return;
+  }
+  console.log('Going to show the modal');
+  await showModal(userCountryByIP, config, loadStyle, createTag);
 }
