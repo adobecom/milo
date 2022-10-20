@@ -48,7 +48,7 @@ function getTable(block, name, path) {
   const table = document.createElement('table');
   table.setAttribute('border', 1);
   const headerRow = document.createElement('tr');
-  headerRow.innerHTML = `<th colspan="${maxCols}">${name}</th>`;
+  headerRow.append(createTag('th', { colspan: maxCols }, name));
   table.append(headerRow);
   rows.forEach((row) => {
     const tr = document.createElement('tr');
@@ -96,7 +96,7 @@ async function loadBlockList(paths, list) {
         name.textContent = getAuthorName(block) || getBlockName(block);
         const copy = document.createElement('button');
         copy.addEventListener('click', (e) => {
-          const table = getTable(block, name.textContent, blockGroup.value);
+          const table = getTable(block, getBlockName(block), blockGroup.value);
           e.target.classList.add('copied');
           setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
           const blob = new Blob([table], { type: 'text/html' });

@@ -40,14 +40,16 @@ describe('Faas', () => {
   });
 
   it('Make FaaS config', () => {
-    const config = makeFaasConfig(state);
-    expect(config.id).to.equal('42');
-    expect(config.l).to.equal('en_us');
-    expect(config.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
-    expect(config.as).to.equal(true);
-    expect(config.ar).to.equal(false);
-    expect(config.e.afterYiiLoadedCallback).to.exist;
     expect(makeFaasConfig()).to.equal(defaultState);
+    state[149] = 1;
+    state[172] = 'last asset';
+    const faasConfig = makeFaasConfig(state);
+    expect(faasConfig.id).to.equal('42');
+    expect(faasConfig.l).to.equal('en_us');
+    expect(faasConfig.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
+    expect(faasConfig.as).to.equal(true);
+    expect(faasConfig.ar).to.equal(false);
+    expect(faasConfig.e.afterYiiLoadedCallback).to.exist;
   });
 
   it('FaaS Initiation Error Case test', async () => {
@@ -60,6 +62,7 @@ describe('Faas', () => {
     state.style_backgroundTheme = '';
     state.style_layout = '';
     state.isGate = false;
+    state.complete = true;
     await initFaas(state, a);
     const faas = await waitForElement('.faas-form-wrapper');
     expect(faas).to.exist;
@@ -76,7 +79,7 @@ describe('Faas', () => {
 
   it('Test environment', () => {
     expect(getFaasHostSubDomain('prod')).to.equal('');
-    expect(getFaasHostSubDomain('stage')).to.equal('staging.');
+    expect(getFaasHostSubDomain('stage')).to.equal('dev.');
     expect(getFaasHostSubDomain('dev')).to.equal('dev.');
     expect(getFaasHostSubDomain()).to.equal('qa.');
   });

@@ -1,4 +1,4 @@
-import { decorateLinkAnalytics } from './analytics.js';
+import { decorateLinkAnalytics } from '../martech/attributes.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
