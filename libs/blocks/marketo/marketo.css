@@ -1,11 +1,16 @@
 /* stylelint-disable selector-class-pattern */
-.marketo {
+.marketo .marketo-form-wrapper {
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
   padding: 56px 40px;
   background-color: #FAFAFA;
   color: #535353;
+}
+
+.marketo .marketo-title {
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .marketo .mktoForm .mktoFieldWrap {
@@ -86,13 +91,27 @@
   background-color: #1473e6;
 }
 
-.marketo .mktoForm .mktoField.mktoInvalid:not(:focus) {
+.marketo .marketo-error {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin: 40px auto;
+  color: #C9252D;
+}
+
+.marketo .marketo-error.alert::after {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E");
+  vertical-align: middle;
+  margin: 0 16px;
+}
+
+.marketo .mktoForm.show-warnings .mktoField.mktoInvalid:not(:focus) {
   border: 1px solid #C9252D;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E") no-repeat 95% 50%;
   background-size: 19.5px;
 }
 
-.marketo .mktoForm .mktoError {
+.marketo .mktoForm.show-warnings .mktoError {
   width: 50%;
   margin-left: 50%;
   font-size: 12px;
@@ -100,10 +119,21 @@
   color: #C9252D;
 }
 
-.dialog-modal .marketo {
+.marketo .mktoForm.hide-errors .mktoError {
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+
+.dialog-modal .marketo .marketo-form-wrapper {
   max-width: 100%;
   margin: 0;
-  padding: 56px 80px;
+  padding: 56px 80px 80px;
 }
 
 .dialog-modal .marketo .mktoForm {
@@ -113,6 +143,12 @@
   gap: 0 20px;
   width: 100%;
 }
+
+.dialog-modal .marketo .marketo-title {
+  margin: 0;
+  text-align: center;
+}
+
 
 .dialog-modal .marketo .marketo-description {
   margin: 16px 0 40px;
@@ -133,4 +169,9 @@
 
 .dialog-modal .marketo .mktoForm label {
   padding-bottom: 6px;
+}
+
+.dialog-modal .marketo .mktoForm .mktoError {
+  width: 100%;
+  margin-left: 0;
 }
