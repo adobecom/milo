@@ -208,7 +208,9 @@ const afterYiiLoadedCallback = () => {
     const nextFirstInput = document.querySelector('.faas-form.next input:not([type=hidden])');
     if (nextFirstInput && !nextFirstInput.value) {
       nextFirstInput.parentElement.classList.add('error');
-      nextFirstInput.parentElement.querySelector('.errorMessage').textContent = 'Business email cannot be blank.';
+      if (!nextFirstInput.parentElement.querySelector('.errorMessage').textContent) {
+        nextFirstInput.parentElement.querySelector('.errorMessage').textContent = 'Business email cannot be blank.';
+      }
     }
     const firstError = event.target.querySelector('.error [name]');
     if (firstError) {
