@@ -106,10 +106,10 @@ const init = (e) => {
         class: btnClass,
         id: `tab-${initCount}-${tabName}`,
         tabindex: (i > 0) ? '0' : '-1',
-      }
+        'aria-selected': (i === 0) ? 'true' : 'false',
+        'aria-controls': `tab-panel-${initCount}-${tabName}`,
+      };
       const tabBtn = createTag('button', tabBtnAttributes);
-      tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
-      tabBtn.setAttribute('aria-controls', `tab-panel-${initCount}-${tabName}`);
       tabBtn.innerText = item.textContent;
       tabListContainer.append(tabBtn);
 
@@ -117,7 +117,8 @@ const init = (e) => {
         id: `tab-panel-${initCount}-${tabName}`,
         role: 'tabpanel',
         tabindex: '0',
-      }
+        'aria-labelledby': `tab-${initCount}-${tabName}`,
+      };
       const tabListContent = createTag('div', tabContentAttributes);
       tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${tabName}`);
       if(i > 0) tabListContent.setAttribute('hidden', '');
