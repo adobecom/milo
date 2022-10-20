@@ -33,25 +33,25 @@ const cleanStyleSheets = (form) => {
   });
 };
 
-const formSubmit = (form) => {
-  console.log('formSubmit', form);
-};
-
-const formValidate = (form) => {
-  console.log('formValidate', form);
-  form.submittable(false);
-};
-
-const loadForm = (form) => {
+const loadForm = (form, formData) => {
   console.log('loadForm', form);
   cleanStyleSheets(form);
+
+  if (formData['Hidden Fields']) {
+    const hiddenFields = {};
+    formData['Hidden Fields'].split(',').forEach((field) => {
+      const [key, value] = field.trim().split('=');
+      hiddenFields[key] = value;
+    });
+    form.addHiddenFields(hiddenFields);
+  }
 };
 
-const readyForm = (form) => {
+const readyForm = (error, form, formData) => {
   console.log('readyForm', form);
+  // Remove styles
   const $form = form.getFormElem();
 
-  // Remove styles
   $form.find('style').remove();
   $form.find('*').add($form).removeAttr('style');
 
@@ -59,7 +59,18 @@ const readyForm = (form) => {
 
   form.onValidate((success) => {
     console.log('onValidate', form, success);
-    formValidate(form);
+
+    form.submittable(false);
+    $form.removeClass('hide-errors');
+    $form.addClass('show-warnings');
+
+    if (!form.submittable() && formData['Error Message']) {
+      error.textContent = formData['Error Message'];
+      error.classList.add('alert');
+    } else {
+      error.textContent = '';
+      error.classList.remove('alert');
+    }
   });
 
   form.onSuccess(() => {
@@ -89,7 +100,7 @@ const readyForm = (form) => {
 const init = (el) => {
   const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
   const children = Array.from(el?.querySelectorAll(':scope > div'));
-  const config = {
+  const formData = {
     'Form ID': marketoFormID,
     'Base URL': marketoBaseURL,
     'Munchkin ID': marketoMunchkinID,
@@ -98,35 +109,39 @@ const init = (el) => {
   children.forEach((element) => {
     const key = element.children[0]?.textContent;
     const value = element.children[1]?.textContent;
-    if (key && value) { config[key] = value; }
+    if (key && value) { formData[key] = value; }
   });
 
-  const formID = config['Form ID'];
-  const marketoURL = config['Base URL'];
-  const munchkinID = config['Munchkin ID'];
+  const formID = formData['Form ID'];
+  const marketoURL = formData['Base URL'];
+  const munchkinID = formData['Munchkin ID'];
 
   loadScript(`https://${marketoURL}/js/forms2/js/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       const fragment = new DocumentFragment();
+      const error = createTag('p', { class: 'marketo-error', 'aria-live': 'polite' });
+      const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
 
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      if (config.Title) {
-        const title = createTag('h3', { class: 'marketo-title' }, config.Title);
-        fragment.append(title);
+      if (formData.Title) {
+        const title = createTag('h3', { class: 'marketo-title' }, formData.Title);
+        formWrapper.append(title);
       }
-      if (config.Description) {
-        const description = createTag('p', { class: 'marketo-description' }, config.Description);
-        fragment.append(description);
+      if (formData.Description) {
+        const description = createTag('p', { class: 'marketo-description' }, formData.Description);
+        formWrapper.append(description);
       }
 
-      const form = createTag('form', { ID: `mktoForm_${formID}` });
-      fragment.append(form);
+      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors' });
+      formWrapper.append(marketoForm);
+      fragment.append(error);
+      fragment.append(formWrapper);
       el.replaceChildren(fragment);
 
-      MktoForms2.loadForm(marketoURL, munchkinID, formID, loadForm);
-      MktoForms2.whenReady(readyForm);
+      MktoForms2.loadForm(marketoURL, munchkinID, formID, (form) => { loadForm(form, formData); });
+      MktoForms2.whenReady((form) => { readyForm(error, form, formData); });
     })
     .catch(() => {
       el.style.display = 'none';
