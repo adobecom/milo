@@ -84,7 +84,7 @@ const init = (e) => {
   if(!rows.length) return;
 
   // Tab Content
-  const tabContentContainer = createTag('div', {class: 'container'});
+  const tabContentContainer = createTag('div', {class: 'tabContent-container'});
   const tabContent = createTag('div', {class: 'tabContent'}, tabContentContainer);
   e.append(tabContent);
 
@@ -98,7 +98,7 @@ const init = (e) => {
   tabListContainer.classList.add('tabList-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
+    let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS';
     tabListItems.forEach((item, i) => {
       const tabName = getStringKeyName(item.textContent);
       const tabBtnAttributes = {
@@ -128,7 +128,8 @@ const init = (e) => {
 
   // Tab Config
   const config = { 'tab-id': initCount };
-  const configRows = e.querySelectorAll(':scope > div:not([class])');
+  var configRows = [].slice.call(rows);
+  configRows.splice(0, 1);
   if(configRows) {
     configRows.forEach((row) => {
       const rowKey = getStringKeyName(row.children[0].textContent);
