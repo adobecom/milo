@@ -126,25 +126,40 @@ class Footer {
   };
 
   decorateRegion = async () => {
-    const regionButton = this.body.querySelector('.region-selector a');
+    let regionButton = this.body.querySelector('.region-selector a');
     if (!regionButton) return null;
 
     const regionTextContent = regionButton.textContent;
     regionButton.textContent = '';
+    const regionContainer = createTag('div', { class: 'footer-region' });
+    const url = new URL(regionButton.href);
+    if (url.hash !== '') {
+      // if there is a hash, it is a modal-dialog
+      decorateAutoBlock(regionButton);
+      loadBlock(regionButton);
+    } else {
+      // if there is no hash, it is an inline-dialog
+      const inlineDialogContainer = regionButton.cloneNode(false);
+      regionButton = createTag('button', { type: 'button', 'aria-expanded': 'false' });
+      regionContainer.append(inlineDialogContainer);
+      decorateAutoBlock(inlineDialogContainer);
+      loadBlock(inlineDialogContainer);
+      regionButton.addEventListener('click', () => {
+        regionButton.classList.toggle('inline-dialog-active');
+        const ariaExpanded = regionButton.classList.contains('inline-dialog-active');
+        regionButton.setAttribute('aria-expanded', ariaExpanded);
+      });
+    }
     regionButton.className = 'footer-region-button';
     regionButton.setAttribute('aria-haspopup', true);
     regionButton.setAttribute('aria-label', regionTextContent);
     regionButton.setAttribute('role', 'button');
     regionButton.setAttribute('tabindex', 0);
-    decorateAutoBlock(regionButton);
-    loadBlock(regionButton);
-
-    const regionContainer = createTag('div', { class: 'footer-region' });
     const regionText = createTag('span', { class: 'footer-region-text' }, regionTextContent);
     regionButton.insertAdjacentHTML('afterbegin', GLOBE_IMG);
     regionButton.append(regionText);
     regionText.insertAdjacentHTML('afterend', SPECTRUM_CHEVRON);
-    regionContainer.append(regionButton);
+    regionContainer.prepend(regionButton);
     return regionContainer;
   };
 
