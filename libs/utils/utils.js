@@ -114,6 +114,10 @@ export const [setConfig, getConfig] = (() => {
       } else {
         config.locale.contentRoot = `${origin}${config.locale.prefix}`;
       }
+      if (config.rumGenerationId) {
+        window.hlx = window.hlx || {};
+        window.hlx.RUM_GENERATION = config.rumGenerationId;
+      }
       return config;
     },
     () => config,

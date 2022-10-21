@@ -129,6 +129,7 @@ const initHlxRUM = (rum) => {
     .substr(2, 14)}`;
   const random = Math.random();
   const isSelected = random * weight < 1;
+  window.hlx = window.hlx || {};
   window.hlx.rum = { weight, id, random, isSelected, sampleRUM: rum };
 };
 
@@ -145,7 +146,7 @@ const defer = (rum, fnname) => {
 function sampleRUM(checkpoint, data = {}) {
   try {
     if (!sampleRUM.initialized) { initSampleRUM(sampleRUM, checkpoint, data); }
-    if (!window.hlx.rum) { initHlxRUM(sampleRUM); }
+    if (!window.hlx?.rum) { initHlxRUM(sampleRUM); }
 
     defer(sampleRUM, 'observe');
     defer(sampleRUM, 'cwv');

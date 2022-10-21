@@ -37,8 +37,6 @@ const config = {
 }());
 
 (async function loadPage() {
-  window.hlx = window.hlx || {};
-  window.hlx.RUM_GENERATION = config.rumGenerationId;
   setConfig(config);
   await loadArea();
   loadDelayed();
