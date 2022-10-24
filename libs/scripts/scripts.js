@@ -91,11 +91,11 @@ const locales = {
   th_en: { ietf: 'en', tk: 'pps7abe.css' },
   in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
   th_th: { ietf: 'th', tk: 'aaz7dvd.css' },
-  cn: { ietf: 'zh-CN', tk: 'puu3xkp.js' },
-  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd.js' },
-  tw: { ietf: 'zh-TW', tk: 'jay0ecd.js' },
-  jp: { ietf: 'ja-JP', tk: 'dvg6awq.js' },
-  kr: { ietf: 'ko-KR', tk: 'qjs5sfm.js' }, 
+  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
+  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
+  tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
+  jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' }, 
 };
 
 const config = {
