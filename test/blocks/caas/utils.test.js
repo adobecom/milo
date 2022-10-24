@@ -155,6 +155,7 @@ describe('getConfig', () => {
         disableBanners: false,
         reservoir: { sample: 3, pool: 1000 },
       },
+      featuredCards: ['a', 'b'],
       filterPanel: {
         enabled: true,
         eventFilter: '',
