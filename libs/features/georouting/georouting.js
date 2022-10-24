@@ -66,22 +66,7 @@ function trimLocaleFromCountryLocaleString(countryLocaleString) {
   return country !== null ? country[0] : null;
 }
 
-const showModal = (async (userCountryByIP, config, loadStyle, createTag) => {
-  const resp = await fetch(`${config.locale.contentRoot}/georouting.json`);
-  if (!resp.ok) return;
-
-  const json = await resp.json();
-  const localeTexts = json.data.filter((locale) => {
-    if (!locale.akamaiCodes) return false;
-    const localeAkamaiCodes = locale.akamaiCodes.split(',').map((ak) => ak.trim());
-    return localeAkamaiCodes.some((lak) => lak.toLowerCase() === userCountryByIP.toLowerCase());
-  });
-  const continueText = json.data.filter((locale) => {
-    if (locale.prefix === undefined) return false;
-    return locale.prefix === config.locale.prefix;
-  });
-  localeTexts.push(...continueText);
-
+const showModal = (async (userCountryByIP, config, loadStyle, createTag, localeTexts) => {
   const { miloLibs, codeRoot } = config;
   loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
 
@@ -110,10 +95,10 @@ const showModal = (async (userCountryByIP, config, loadStyle, createTag) => {
   const georoutingContainer = createTag('div', { class: 'georouting-container' });
 
   const textContainer = createTag('div', { class: 'georouting-text-container' });
-  const linkContainer = createTag('div', { class: 'georouting-link-container' });
+  const linkContainer = createTag('div');
   localeTexts.forEach((l) => {
     if (l.text) textContainer.append(createTag('p', { class: 'georouting-text' }, l.text));
-    if (l.button) linkContainer.append(createTag('a', { class: 'georouting-link' }, l.button));
+    if (l.button) linkContainer.append(createTag('a', { class: 'georouting-link', href: l.targetUrl }, l.button));
   });
   georoutingContainer.append(worldIcon, textContainer, linkContainer);
 
@@ -173,6 +158,56 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
   if (isFallbackRoutingEnabled() && !isLocalVersionOfPageAvailable()) {
     return;
   }
+
+  const resp = await fetch(`${config.locale.contentRoot}/georouting.json`);
+  if (!resp.ok) return;
+  const json = await resp.json();
+  const localeTexts = json.data.filter((locale) => {
+    if (!locale.akamaiCodes) return false;
+    const localeAkamaiCodes = locale.akamaiCodes.split(',').map((ak) => ak.trim());
+    return localeAkamaiCodes
+      .some((lak) => lak.toLowerCase() === userCountryByIP.toLowerCase());
+  });
+
+  const targetUrlWithoutContentRoot = window.location.href.replace(config.locale.contentRoot, '');
+  const doesPageExistRequests = [];
+  localeTexts.forEach((l) => {
+    if (l.prefix && config.locales[l.prefix]) {
+      // set content root for locale
+      const locale = config.locales[l.prefix];
+      if (config.contentRoot) {
+        locale.contentRoot = `${origin}/${l.prefix}${config.contentRoot}`;
+      } else {
+        locale.contentRoot = `${origin}/${l.prefix}`;
+      }
+      // set target url for pages
+      const targetUrl = locale.contentRoot + targetUrlWithoutContentRoot;
+
+      // TODO vhargrave - check with chris if this is true. If not true remove if statement
+      // content roots always exist
+      // if target url is equal to content root don't send unnecessary head requests
+      if (locale.contentRoot === targetUrl || `${locale.contentRoot}/` === targetUrl) {
+        l.targetUrl = locale.contentRoot;
+        return;
+      }
+
+      const headRequest = fetch(targetUrl, { method: 'HEAD' })
+        .then((response) => {
+          l.targetUrl = response.ok ? targetUrl : locale.contentRoot;
+        });
+      doesPageExistRequests.push(headRequest);
+    }
+  });
+
+  if (doesPageExistRequests.length > 0) await Promise.all(doesPageExistRequests);
+
+  const continueLocaleText = json.data.filter((locale) => {
+    if (locale.prefix === undefined) return false;
+    return locale.prefix === config.locale.prefix;
+  });
+  if (continueLocaleText.length > 0) continueLocaleText[0].targetUrl = window.location.href;
+  localeTexts.push(...continueLocaleText);
+
   console.log('Going to show the modal');
-  await showModal(userCountryByIP, config, loadStyle, createTag);
+  await showModal(userCountryByIP, config, loadStyle, createTag, localeTexts);
 }
