@@ -211,6 +211,10 @@ picture.bg-img img {
     overflow: unset;
   }
 
+  header + main {
+    margin-top: 64px;
+  }
+
   header.has-breadcrumbs {
     min-height: 97px;
   }
