@@ -408,6 +408,7 @@ async function loadMartech(config) {
 }
 
 async function loadPostLCP(config) {
+  loadMartech(config);
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
   loadTemplate();
@@ -445,7 +446,6 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateHeader();
-    loadMartech(config);
   }
 
   const sections = decorateSections(area, isDoc);
