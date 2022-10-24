@@ -89,6 +89,7 @@
   padding: 0 8.3%;
   width: var(--grid-container-width);
   margin: 0 auto;
+  box-sizing: content-box;
 }
 
 .tabs div[role="tablist"] {

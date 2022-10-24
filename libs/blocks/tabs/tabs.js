@@ -116,6 +116,7 @@ const init = (e) => {
       const tabContentAttributes = {
         id: `tab-panel-${initCount}-${tabName}`,
         role: 'tabpanel',
+        class: 'tabpanel',
         tabindex: '0',
         'aria-labelledby': `tab-${initCount}-${tabName}`,
       };
