@@ -315,7 +315,7 @@ const TagsPanel = ({ tagsData }) => {
         name="intraTagLogic"
         options=${defaultOptions.intraTagLogicOptions}
       />
-      <${TagSelect} id="andTags" options=${allTags} label="Tags with overall AND logic" />
+      <${TagSelect} id="andTags" options=${allTags} label="Tags" />
     <//>
     <${MultiField}
       onChange=${onLogicTagChange('orLogicTags')}
@@ -324,7 +324,7 @@ const TagsPanel = ({ tagsData }) => {
       title="OR logic Tags"
       subTitle=""
     >
-      <${TagSelect} id="orTags" options=${allTags} label="Tags with overall OR logic"
+      <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
   `;
 };

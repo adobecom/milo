@@ -135,7 +135,7 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 
   let orQuery = orLogicTags
     .filter((tag) => tag.orTags.length)
-    .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+OR+')))
+    .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+AND+')))
     .join('+OR+');
 
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
@@ -145,7 +145,7 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 };
 
 const getSortOptions = (state, strs) => {
-  const defaultVals = {
+  const sortVals = {
     featured: 'Featured',
     dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
@@ -155,9 +155,14 @@ const getSortOptions = (state, strs) => {
     random: 'Random',
   };
 
-  return Object.entries(defaultVals).reduce((options, [key, defaultValue]) => {
+  return Object.entries(sortVals).reduce((options, [key, defaultValue]) => {
     const fullKey = `sort${key.charAt(0).toUpperCase() + key.slice(1)}`;
-    if (state[fullKey]) options.push({ label: strs[fullKey] || defaultValue, sort: key });
+    if (state[fullKey]) {
+      options.push({
+        label: strs[fullKey] || defaultValue,
+        sort: key,
+      });
+    }
     return options;
   }, []);
 };
@@ -187,6 +192,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
+  if (!tag) return null;
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
@@ -249,6 +255,7 @@ export const getConfig = async (state, strs = {}) => {
       },
       button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
+      // TODO: endpoint
       endpoint: `https://${
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
@@ -400,8 +407,8 @@ export const getConfig = async (state, strs = {}) => {
 };
 
 export const defaultState = {
-  analyticsTrackImpression: false,
   analyticsCollectionName: '',
+  analyticsTrackImpression: false,
   andLogicTags: [],
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
@@ -409,14 +416,14 @@ export const defaultState = {
   collectionBtnStyle: 'primary',
   collectionSize: '',
   container: '1200MaxWidth',
-  country: 'caas:country/us',
   contentTypeTags: [],
+  country: 'caas:country/us',
   disableBanners: false,
   draftDb: false,
-  environment: '',
   endpoint: 'www.adobe.com/chimera-api/collection',
-  excludeTags: [],
+  environment: '',
   excludedCards: [],
+  excludeTags: [],
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
@@ -434,8 +441,8 @@ export const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationUseTheme3: false,
   paginationType: 'none',
+  paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
@@ -445,11 +452,18 @@ export const defaultState = {
   showFilters: false,
   showSearch: false,
   showTotalResults: false,
+  sortDateAsc: false,
+  sortDateDesc: false,
   sortDefault: 'dateDesc',
   sortEnablePopup: false,
   sortEnableRandomSampling: false,
-  sortReservoirSample: 3,
+  sortEventSort: false,
+  sortFeatured: false,
+  sortRandom: false,
   sortReservoirPool: 1000,
+  sortReservoirSample: 3,
+  sortTitleAsc: false,
+  sortTitleDesc: false,
   source: ['hawks'],
   tagsUrl: 'www.adobe.com/chimera-api/tags',
   targetActivity: '',
