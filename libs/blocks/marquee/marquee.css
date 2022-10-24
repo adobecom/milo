@@ -250,8 +250,8 @@
     max-width: calc(50% - var(--grid-column-width));
   }
 
-  .marquee.split.three-quarter .foreground.container .text {
-    max-width: calc(75% - var(--grid-column-width));
+  .marquee.split.two-thirds .foreground.container .text {
+    max-width: calc(66.667% - var(--grid-column-width));
   }
 
   .marquee.split.one-third .foreground.container .text {
@@ -262,8 +262,8 @@
     max-width: none;
   }
 
-  .marquee.split.three-quarter .media.bleed {
-    width: calc(var(--grid-container-width) * 0.25 + (100vw - var(--grid-container-width)) / 2);
+  .marquee.split.two-thirds .media.bleed {
+    width: calc(var(--grid-container-width) * 0.333 + (100vw - var(--grid-container-width)) / 2);
   }
 
   .marquee.split.one-third .media.bleed {
@@ -380,11 +380,11 @@
   }
 
   .marquee.split .text {
-    padding: var(--spacing-xxl) 0;
+    padding: var(--spacing-xl) 0;
   }
 
   .marquee.split.small .text {
-    padding: var(--spacing-xl) 0;
+    padding: 48px 0;
   }
 
   .marquee .text,
