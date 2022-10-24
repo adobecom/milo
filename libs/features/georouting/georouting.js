@@ -60,12 +60,6 @@ function closeModals(modals) {
   }
 }
 
-function trimLocaleFromCountryLocaleString(countryLocaleString) {
-  if (!countryLocaleString) return null;
-  const country = countryLocaleString.match('^[^_]*');
-  return country !== null ? country[0] : null;
-}
-
 const showModal = (async (userCountryByIP, config, loadStyle, createTag, localeTexts) => {
   const { miloLibs, codeRoot } = config;
   loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
@@ -133,17 +127,28 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
 
   // get country either by IP or take akamaiLocale override from params
   let userCountryByIP = '';
-  await getUserCountryByIP().then((country) => { userCountryByIP = country; });
+  const getUserCountryByIPProm = getUserCountryByIP()
+    .then((country) => { userCountryByIP = country; });
+
+  let georoutingJsonResponse;
+  const getGeoroutingJSONProm = fetch(`${config.locale.contentRoot}/georouting.json`).then((response) => {
+    georoutingJsonResponse = response;
+  });
+  await Promise.all([getUserCountryByIPProm, getGeoroutingJSONProm]);
+  if (!georoutingJsonResponse.ok) return;
+  const georoutingJson = await georoutingJsonResponse.json();
 
   // if there is no country in URL then default to USA
-  const userCountryByURL = trimLocaleFromCountryLocaleString(config.locale.prefix) || 'us';
+  const potentialUserCountriesByURL = georoutingJson.data
+    .find((gj) => gj.prefix === config.locale.prefix)?.akamaiCodes.split(',').map((ak) => ak.trim());
   const internationalCookieWithLocale = getCookieValueByName(GeoRoutingCookies.international);
-  const internationalCookie = trimLocaleFromCountryLocaleString(internationalCookieWithLocale);
+  const potentialUserCountriesByCookie = georoutingJson.data
+    .find((gj) => gj.prefix === internationalCookieWithLocale)?.akamaiCodes.split(',').map((ak) => ak.trim());
 
-  const comparerArray = [userCountryByIP, userCountryByURL, internationalCookie];
+  const comparerArray = [potentialUserCountriesByURL, potentialUserCountriesByCookie];
   const isDiscrepencyDetected = !comparerArray.every((c) => {
-    if (c) {
-      return c.toLowerCase() === comparerArray[0].toLowerCase();
+    if (c && Array.isArray(c)) {
+      return c.some((a) => a.toLowerCase() === userCountryByIP.toLowerCase());
     }
     return true;
   });
@@ -159,10 +164,7 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
     return;
   }
 
-  const resp = await fetch(`${config.locale.contentRoot}/georouting.json`);
-  if (!resp.ok) return;
-  const json = await resp.json();
-  const localeTexts = json.data.filter((locale) => {
+  const localeTexts = georoutingJson.data.filter((locale) => {
     if (!locale.akamaiCodes) return false;
     const localeAkamaiCodes = locale.akamaiCodes.split(',').map((ak) => ak.trim());
     return localeAkamaiCodes
@@ -201,7 +203,7 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
 
   if (doesPageExistRequests.length > 0) await Promise.all(doesPageExistRequests);
 
-  const continueLocaleText = json.data.filter((locale) => {
+  const continueLocaleText = georoutingJson.data.filter((locale) => {
     if (locale.prefix === undefined) return false;
     return locale.prefix === config.locale.prefix;
   });
