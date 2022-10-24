@@ -654,6 +654,10 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   box-sizing: border-box;
 }
 
+.gnav-profile.has-menu {
+  min-width: 92.25px;
+}
+
 .gnav-profile .gnav-signin {
   display: flex;
   align-items: center;
@@ -774,8 +778,8 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a {
 
 .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu ul > li:last-child {
  border-top: 1px solid var(--border-color);
- padding-top: 4px;
- margin-top: 4px;
+ padding-top: 3px;
+ margin-top: 3px;
 }
 
 header .gnav-profile.gnav-navitem ul a {
@@ -856,7 +860,7 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
 
   header .gnav-navitem.has-menu.is-open .gnav-navitem-menu.small-Variant,
   header .gnav-navitem.has-menu.is-open .gnav-navitem-menu.medium-Variant {
-    padding: 24px 32px;
+    padding: 18px 20px;
     position: absolute;
     display: flex;
     right: unset;

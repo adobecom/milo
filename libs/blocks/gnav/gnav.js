@@ -388,6 +388,8 @@ class Gnav {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
     const profileEl = createTag('div', { class: 'gnav-profile' });
+    if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
+
     const { locale, imsClientId, env } = getConfig();
     if (!imsClientId) return null;
     window.adobeid = {
@@ -431,7 +433,7 @@ class Gnav {
       const id = `navmenu-${blockEl.className}`;
 
       profileDropDown.id = id;
-      profileEl.classList.add('gnav-navitem', 'has-menu');
+      profileEl.classList.add('gnav-navitem');
       profileEl.append(signIn);
       profileEl.insertAdjacentElement('beforeend', profileDropDown);
 
