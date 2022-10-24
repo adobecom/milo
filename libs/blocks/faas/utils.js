@@ -170,6 +170,15 @@ const afterYiiLoadedCallback = () => {
     });
   }
 
+  function removeExtraColumnDivForNext() {
+    const columnsDivs = document.querySelectorAll('.columns > .row.next > div');
+    columnsDivs.forEach((colDiv) => {
+      if (!colDiv.innerHTML) {
+        colDiv.remove();
+      }
+    });
+  }
+
   changeSelectionElement();
   removeRequired();
   placeHolders();
@@ -190,40 +199,25 @@ const afterYiiLoadedCallback = () => {
   $.each(faasform, (i, form) => {
     $(form).on('change', () => {
       const elements = $('span.required', form);
-      hideDisplay(elementspdfLink);
+      hideDisplay(elements);
     });
   });
 
   $('.faas-form').on('submit', (event) => {
+    removeExtraColumnDivForNext();
+    const nextFirstInput = document.querySelector('.faas-form.next input:not([type=hidden])');
+    if (nextFirstInput && !nextFirstInput.value) {
+      nextFirstInput.parentElement.classList.add('error');
+      if (!nextFirstInput.parentElement.querySelector('.errorMessage').textContent) {
+        nextFirstInput.parentElement.querySelector('.errorMessage').textContent = 'Business email cannot be blank.';
+      }
+    }
     const firstError = event.target.querySelector('.error [name]');
-    const subNavEl = $('.Subnav-wrapper');
-    const elHeight = subNavEl && subNavEl[0] ? subNavEl[0].offsetHeight : 0;
-
     if (firstError) {
-      const pageTop = document.body.getClientRects()[0].top;
-      const firstErrorTop = firstError.getClientRects()[0].top;
-      const relPostion = pageTop - firstErrorTop;
-
-      $(firstError).on('focus', (ev) => {
-        ev.preventDefault();
-
-        window.scrollTo(0, (Math.abs(relPostion) - (elHeight * 2.5)));
-      });
-
       firstError.focus();
     }
   });
-
-  const divs = document.querySelectorAll('.next div');
-  const nextSubmitArrow = document.querySelector('.submit.next input + div');
-  divs.forEach((div) => {
-    if (!div.innerHTML && div !== nextSubmitArrow) {
-      div.remove();
-    }
-  });
-  const emailInput = document.querySelector('.faas-form.next input:not([type=hidden])');
-  emailInput.setAttribute('required', 'required');
-
+  removeExtraColumnDivForNext();
   setMutationObserver(childListMutation(editMessages), errorMessages);
 };
 /* c8 ignore stop */
@@ -303,8 +297,7 @@ export const initFaas = (config, targetEl) => {
     formTitleWrapperEl.append(formTitleEl);
   }
 
-  const formEl = document.createElement('div');
-  formEl.className = 'faas-form-wrapper';
+  const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
     state.e = { afterYiiLoadedCallback };
     $(formEl).faas(state);

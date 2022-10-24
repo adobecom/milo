@@ -96,6 +96,10 @@
   order: 0;
 }
 
+.marquee.split.large .heading-XXL {
+  margin-bottom: var(--spacing-s);
+}
+
 .marquee .foreground {
   position: relative;
   padding: var(--spacing-xxl) 0;
@@ -175,7 +179,7 @@
 .marquee .action-area {
   display: flex;
   margin: 0;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-s);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -233,17 +237,38 @@
   }
 
   /* Split */
+  .marquee.split.one-third {
+    display: block;
+  }
+
   .marquee.split {
     display: flex;
     justify-content: center;
   }
 
   .marquee.split .foreground.container .text {
-    max-width: calc(50% - 32px);
+    max-width: calc(50% - var(--grid-column-width));
   }
 
-  .marquee.split.large .foreground.container .text {
-    max-width: calc(50% - 100px);
+  .marquee.split.three-quarter .foreground.container .text {
+    max-width: calc(75% - var(--grid-column-width));
+  }
+
+  .marquee.split.one-third .foreground.container .text {
+    max-width: none;
+  }
+
+  .marquee.split.one-third.large .foreground.container .text {
+    max-width: none;
+  }
+
+  .marquee.split.three-quarter .media.bleed {
+    width: calc(var(--grid-container-width) * 0.25 + (100vw - var(--grid-container-width)) / 2);
+  }
+
+  .marquee.split.one-third .media.bleed {
+    position: static;
+    width: 100%;
   }
 
   .marquee.split .media.bleed {
@@ -270,6 +295,26 @@
   .marquee.split.large .media video,
   .marquee.split .media video {
     max-height: initial;
+  }
+
+}
+
+@media screen and (min-width: 900px) {
+  .marquee.split.one-third {
+    display: flex;
+    justify-content: center;
+  }
+
+  .marquee.split.one-third .media.bleed {
+    position: absolute;
+    width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
+    right: 0;
+    height: 100%;
+  }
+
+  .marquee.split.one-third .foreground.container .text,
+  .marquee.split.one-third.large .foreground.container .text {
+    max-width: calc(33.333% - var(--grid-column-width));
   }
 
 }
@@ -334,6 +379,14 @@
     padding: var(--spacing-l) 0;
   }
 
+  .marquee.split .text {
+    padding: var(--spacing-xxl) 0;
+  }
+
+  .marquee.split.small .text {
+    padding: var(--spacing-xl) 0;
+  }
+
   .marquee .text,
   .marquee.small .text,
   .marquee.large .text {
@@ -365,6 +418,14 @@
 
   .marquee.large .supplemental-text {
     margin: var(--spacing-s) 0 0 0;
+  }
+
+  .marquee.split.large .heading-XXL {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .marquee.split.large p.action-area:last-of-type {
+    margin-bottom: 0;
   }
 }
 
