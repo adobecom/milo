@@ -237,15 +237,20 @@
   }
 
   /* Split */
+<<<<<<< HEAD
   .marquee.split.one-third {
     display: block;
   }
 
   .marquee.split {
+=======
+  .marquee.split:not(.one-third) {
+>>>>>>> 9eb9a00 (Added one-third layout)
     display: flex;
     justify-content: center;
   }
 
+<<<<<<< HEAD
   .marquee.split .foreground.container .text {
     max-width: calc(50% - var(--grid-column-width));
   }
@@ -269,9 +274,17 @@
   .marquee.split.one-third .media.bleed {
     position: static;
     width: 100%;
+=======
+  .marquee.split:not(.one-third) .foreground.container .text {
+    max-width: calc(50% - 32px);
   }
 
-  .marquee.split .media.bleed {
+  .marquee.split.large:not(.one-third) .foreground.container .text {
+    max-width: calc(50% - 100px);
+>>>>>>> 9eb9a00 (Added one-third layout)
+  }
+
+  .marquee.split:not(.one-third) .media.bleed {
     position: absolute;
     width: 50vw;
     right: 0;
@@ -307,14 +320,27 @@
 
   .marquee.split.one-third .media.bleed {
     position: absolute;
+<<<<<<< HEAD
     width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
+=======
+    width: 50vw;
+>>>>>>> 9eb9a00 (Added one-third layout)
     right: 0;
     height: 100%;
   }
 
+<<<<<<< HEAD
   .marquee.split.one-third .foreground.container .text,
   .marquee.split.one-third.large .foreground.container .text {
     max-width: calc(33.333% - var(--grid-column-width));
+=======
+  .marquee.split.one-third .foreground.container .text {
+    max-width: calc(33.333% - 53px);
+  }
+
+  .marquee.split.one-third .media.bleed {
+    width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
+>>>>>>> 9eb9a00 (Added one-third layout)
   }
 
 }
