@@ -21,9 +21,29 @@
 
 .tabs {
   position: relative;
-  margin: 16px 0 16px 0;
+  margin: 0;
   color: var(--tabs-active-text-color);
   background-color: var(--tabs-active-bg-color);
+}
+
+.tabs.xxl-spacing {
+  padding: var(--spacing-xxl) 0;
+}
+
+.tabs.xl-spacing {
+  padding: var(--spacing-xl) 0;
+}
+
+.tabs.l-spacing {
+  padding: var(--spacing-l) 0;
+}
+
+.tabs.s-spacing {
+  padding: var(--spacing-s) 0;
+}
+
+.tabs.xs-spacing {
+  padding: var(--spacing-xs) 0;
 }
 
 .tabs div[role="tablist"] {
@@ -66,8 +86,10 @@
 
 .tabs div[role="tablist"] .tabList-container {
   display: flex;
-  width: var(--grid-container-width);
   padding: 0 8.3%;
+  width: var(--grid-container-width);
+  margin: 0 auto;
+  box-sizing: content-box;
 }
 
 .tabs div[role="tablist"] {
@@ -80,15 +102,22 @@
   content: "";
   margin: auto;
 }
+
 .tabs.center div[role="tablist"] .tabList-container {
   width: auto;
   margin: 0;
 }
 
-/*role="tabpanel"*/
-.tabs .tabContent-container {
+.tabs .tabContent {
   padding: var(--spacing-s) 0;
   border-bottom: 1px solid var(--tabs-border-color)
+}
+
+/* contained tabs content */
+.tabs.contained .tabContent .tabContent-container,
+[role='tabpanel'] > .section > .content {
+  width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
 .tabs div[role="tablist"] button {
