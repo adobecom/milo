@@ -100,6 +100,13 @@ export function getLocale(locales) {
   return locale;
 }
 
+export const getConfigRoot = (config, prefix) => {
+  if (config.contentRoot) {
+    return `${origin}${prefix}${config.contentRoot}`;
+  }
+  return `${origin}${prefix}`;
+};
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -109,11 +116,7 @@ export const [setConfig, getConfig] = (() => {
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
-      if (config.contentRoot) {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
-      } else {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
-      }
+      config.locale.contentRoot = getConfigRoot(config, config.locale.prefix);
       return config;
     },
     () => config,
@@ -468,7 +471,7 @@ export async function loadArea(area = document) {
   // Post section loading on document
   if (isDoc) {
     const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-    loadGeoRouting(config, loadStyle, createTag);
+    loadGeoRouting(config, loadStyle, createTag, getConfigRoot);
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, config, getMetadata);

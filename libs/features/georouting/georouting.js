@@ -1,14 +1,27 @@
 const GeoRoutingCookies = {
   international: 'international',
   georouting_presented: 'georouting_presented',
-  storeregion: 'storeregion',
 };
 const geo2Link = 'https://geo2.adobe.com/json/';
+const GeoRoutingMetadata = {
+  georouting: 'georouting',
+  fallbackrouting: 'fallbackrouting',
+};
 
-const getCookieValueByName = ((a) => document.cookie
+const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+  </g>
+</svg>`;
+
+const WORLD_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iU19HbG9iZV8yNF9OQDJ4IiBoZWlnaHQ9IjQ4IiBpZD0iU19HbG9iZV8yNF9OXzJ4IiB3aWR0aD0iNDgiPjxkZWZzPjxzdHlsZT4uZmlsbHtmaWxsOiM3MDcwNzB9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik05LjUyNyAxOC4zNThjLTEuNC01LjA0OSAyLjIwNy03LjIyMyAxLjg1Mi0xMS41MzdBMjEuNDMgMjEuNDMgMCAwIDAgMi42NjcgMjRjMCAxMi4xNDkgMTAuNTkxIDE5LjM5IDE4LjA3MiAyMC45NzZhOS4yIDkuMiAwIDAgMCAxLjM5My4yMjFjMi42NjgtNi44LTIuMzY0LTE0LjM4NS01LjY4NC0xOS4zMjYtMi43NjUtNC4xMTMtNS4yNzgtMS41NzEtNi45MjEtNy41MTNaIi8+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik0xOS45IDUuNnMtLjQ4NS4wMjktLjYxOS4xNjNjLTEuMDE0IDEuMDEgMS43NzYgNi4xIDEuNjU2IDUuMzIyLjY2NC0zLjA1NiA0LjgxNi00LjIzNSA2LjA4OC0uMmE0Ljk4OSA0Ljk4OSAwIDAgMS0xLjExNyAzLjAyYy0xLjg4IDIuNDcyLTIuMjYyIDYuODcyLTMuMiA1Ljc0Ni04Ljc4Ny0zLjYtNy44MiAxLjE2MS00LjkzNiA0LjM0MyA0LjYxOCA1LjA5NCAyLjI3NS41MjIgOC4zMjMgMy4xODkgNC44NjQgMi4xNDUgMTAuNzE4IDIuNjUyIDkuMjg5IDQuMjctNC4zMjIgNC44OTQtMy40MTMgOC4xMzctMTEuMDU3IDEzLjg3Mi42MzctLjAxNyAyLjY2NS0uMjIgMy4wODItLjI4OGEyMS43IDIxLjcgMCAwIDAgMTcuODMzLTE5LjIgMy4yIDMuMiAwIDAgMS0xLjUzOS0uNDY5Yy0yLjE0Ny0uODE3LTMuOTg5IDEuOTY3LTQuMTUyLTUuNTUyYTcuNjg2IDcuNjg2IDAgMCAxIDIuMjIyLTUuMzMzIDQuMTA3IDQuMTA3IDAgMCAxIC45NzItLjQ2NSAyMi4zMDEgMjIuMzAxIDAgMCAwLS44MjYtMS4zNTdjLS4wNS4wMjYtLjA5NC4wNTktLjE0NS4wODMtMS42NjcuNzc4LTEuOSAxLjAwNy0yLjY2NyAwYTIuMSAyLjEgMCAwIDEgLjQ2MS0zLjEgMjEuMzEzIDIxLjMxMyAwIDAgMC0xNS41MzMtNi45NTdjMi43LjAzNyA1LjkyOSAyLjAzOSA0LjI4NCA1LjIzOS4yNDctLjUwOC01LjM2OS0xLjcyLTYuMTMzLTEuNzItMS4wMjkgMCAxLjg1My0zLjUxOSAxLjgxNC0zLjUxOWEyMS40MzkgMjEuNDM5IDAgMCAwLTguODIgMS45QzE2LjYzNyA1LjUyNiAxOS45IDUuNiAxOS45IDUuNloiLz48L3N2Zz4=';
+
+const getCookieValueByName = (a) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${a}=`))
-  ?.split('=')[1]);
+  ?.split('=')[1];
 
 const jsonpGist = (url, callback) => {
   // Setup a unique name that can be called & destroyed
@@ -29,7 +42,7 @@ const jsonpGist = (url, callback) => {
   document.body.appendChild(script);
 };
 
-const getUserCountryByIP = (async () => new Promise((resolve) => {
+const getUserCountryByIP = async () => new Promise((resolve) => {
   // override user region if akamaiLocale is set in URL params
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -38,19 +51,9 @@ const getUserCountryByIP = (async () => new Promise((resolve) => {
     resolve(akamaiLocale);
   }
   jsonpGist(geo2Link, (data) => resolve(data.country));
-}));
+});
 
-const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-  <g transform="translate(-10500 3403)">
-    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
-    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-  </g>
-</svg>`;
-
-const WORLD_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iU19HbG9iZV8yNF9OQDJ4IiBoZWlnaHQ9IjQ4IiBpZD0iU19HbG9iZV8yNF9OXzJ4IiB3aWR0aD0iNDgiPjxkZWZzPjxzdHlsZT4uZmlsbHtmaWxsOiM3MDcwNzB9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik05LjUyNyAxOC4zNThjLTEuNC01LjA0OSAyLjIwNy03LjIyMyAxLjg1Mi0xMS41MzdBMjEuNDMgMjEuNDMgMCAwIDAgMi42NjcgMjRjMCAxMi4xNDkgMTAuNTkxIDE5LjM5IDE4LjA3MiAyMC45NzZhOS4yIDkuMiAwIDAgMCAxLjM5My4yMjFjMi42NjgtNi44LTIuMzY0LTE0LjM4NS01LjY4NC0xOS4zMjYtMi43NjUtNC4xMTMtNS4yNzgtMS41NzEtNi45MjEtNy41MTNaIi8+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik0xOS45IDUuNnMtLjQ4NS4wMjktLjYxOS4xNjNjLTEuMDE0IDEuMDEgMS43NzYgNi4xIDEuNjU2IDUuMzIyLjY2NC0zLjA1NiA0LjgxNi00LjIzNSA2LjA4OC0uMmE0Ljk4OSA0Ljk4OSAwIDAgMS0xLjExNyAzLjAyYy0xLjg4IDIuNDcyLTIuMjYyIDYuODcyLTMuMiA1Ljc0Ni04Ljc4Ny0zLjYtNy44MiAxLjE2MS00LjkzNiA0LjM0MyA0LjYxOCA1LjA5NCAyLjI3NS41MjIgOC4zMjMgMy4xODkgNC44NjQgMi4xNDUgMTAuNzE4IDIuNjUyIDkuMjg5IDQuMjctNC4zMjIgNC44OTQtMy40MTMgOC4xMzctMTEuMDU3IDEzLjg3Mi42MzctLjAxNyAyLjY2NS0uMjIgMy4wODItLjI4OGEyMS43IDIxLjcgMCAwIDAgMTcuODMzLTE5LjIgMy4yIDMuMiAwIDAgMS0xLjUzOS0uNDY5Yy0yLjE0Ny0uODE3LTMuOTg5IDEuOTY3LTQuMTUyLTUuNTUyYTcuNjg2IDcuNjg2IDAgMCAxIDIuMjIyLTUuMzMzIDQuMTA3IDQuMTA3IDAgMCAxIC45NzItLjQ2NSAyMi4zMDEgMjIuMzAxIDAgMCAwLS44MjYtMS4zNTdjLS4wNS4wMjYtLjA5NC4wNTktLjE0NS4wODMtMS42NjcuNzc4LTEuOSAxLjAwNy0yLjY2NyAwYTIuMSAyLjEgMCAwIDEgLjQ2MS0zLjEgMjEuMzEzIDIxLjMxMyAwIDAgMC0xNS41MzMtNi45NTdjMi43LjAzNyA1LjkyOSAyLjAzOSA0LjI4NCA1LjIzOS4yNDctLjUwOC01LjM2OS0xLjcyLTYuMTMzLTEuNzItMS4wMjkgMCAxLjg1My0zLjUxOSAxLjgxNC0zLjUxOWEyMS40MzkgMjEuNDM5IDAgMCAwLTguODIgMS45QzE2LjYzNyA1LjUyNiAxOS45IDUuNiAxOS45IDUuNloiLz48L3N2Zz4=';
-
-function closeModals(modals) {
+const closeModals = (modals) => {
   const qModals = modals || document.querySelectorAll('dialog[open]');
   if (qModals?.length) {
     qModals.forEach((modal) => {
@@ -58,9 +61,21 @@ function closeModals(modals) {
     });
     window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   }
-}
+};
 
-const showModal = (async (userCountryByIP, config, loadStyle, createTag, localeTexts) => {
+const setInternationalCookie = (prefix) => {
+  const pre = prefix === '' ? 'us' : prefix;
+  document.cookie = `${GeoRoutingCookies.international}=${pre};path=/`;
+};
+
+const setGeoroutingCookies = (prefix) => {
+  document.cookie = `${GeoRoutingCookies.international}=${prefix};path=/`;
+  const inThirtyDaysTime = new Date().getTime() + 60 * 60 * 1000 * 24 * 30;
+  const expirationDateGeoRoutingPresentedCookie = new Date(inThirtyDaysTime).toUTCString();
+  document.cookie = `${GeoRoutingCookies.georouting_presented}=true;expires=${expirationDateGeoRoutingPresentedCookie};path=/`;
+};
+
+const showModal = async (userCountryByIP, config, loadStyle, createTag, localeTexts) => {
   const { miloLibs, codeRoot } = config;
   loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
 
@@ -89,10 +104,14 @@ const showModal = (async (userCountryByIP, config, loadStyle, createTag, localeT
   const georoutingContainer = createTag('div', { class: 'georouting-container' });
 
   const textContainer = createTag('div', { class: 'georouting-text-container' });
-  const linkContainer = createTag('div');
+  const linkContainer = document.createElement('div');
   localeTexts.forEach((l) => {
     if (l.text) textContainer.append(createTag('p', { class: 'georouting-text' }, l.text));
-    if (l.button) linkContainer.append(createTag('a', { class: 'georouting-link', href: l.targetUrl }, l.button));
+    const aTag = createTag('a', { class: 'georouting-link', href: l.targetUrl }, l.button);
+    aTag.addEventListener('click', () => {
+      setGeoroutingCookies(l.prefix);
+    });
+    if (l.button) linkContainer.append(aTag);
   });
   georoutingContainer.append(worldIcon, textContainer, linkContainer);
 
@@ -100,25 +119,36 @@ const showModal = (async (userCountryByIP, config, loadStyle, createTag, localeT
   document.body.append(dialog);
   dialog.showModal();
   close.focus({ focusVisible: true });
-});
+};
 
-function isGoRoutingFeatureActive() {
-  return true;
-  // TODO vhargrave - implement
-}
+const getMetadata = (name, doc) => {
+  const meta = doc.querySelector(`meta[name="${name}"]`);
+  return meta && meta.content;
+};
 
-function isFallbackRoutingEnabled() {
-  // TODO vhargrave implement
-  return false;
-}
+const fetchGeoroutingMetadata = async (config) => {
+  const url = `${config.locale.contentRoot}/georouting-metadata`;
+  const resp = await fetch(`${url}`);
+  const html = await resp.text();
+  if (!html) return null;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const geoRoutingMetadata = getMetadata(GeoRoutingMetadata.georouting, doc);
+    const fallbackRoutingMetadata = getMetadata(GeoRoutingMetadata.fallbackrouting, doc);
+    return {
+      isGeoRoutingFeatureActive: geoRoutingMetadata?.toLowerCase().trim() === 'on',
+      isFallbackRoutingEnabled: fallbackRoutingMetadata?.toLowerCase().trim() === 'on',
+    };
+  } catch (e) {
+    console.log('Could not get the metadata for the georouting:', e);
+  }
+  return null;
+};
 
-function isLocalVersionOfPageAvailable() {
-  // TODO vhargrave implement
-  return true;
-}
-
-export default async function loadGeoRouting(config, loadStyle, createTag) {
-  if (!isGoRoutingFeatureActive()) {
+export default async function loadGeoRouting(config, loadStyle, createTag, getConfigRoot) {
+  const georoutingMetadata = await fetchGeoroutingMetadata(config);
+  if (georoutingMetadata !== null && !georoutingMetadata.isGeoRoutingFeatureActive) {
     return;
   }
   if (getCookieValueByName(GeoRoutingCookies.georouting_presented)) {
@@ -128,7 +158,9 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
   // get country either by IP or take akamaiLocale override from params
   let userCountryByIP = '';
   const getUserCountryByIPProm = getUserCountryByIP()
-    .then((country) => { userCountryByIP = country; });
+    .then((country) => {
+      userCountryByIP = country;
+    });
 
   let georoutingJsonResponse;
   const getGeoroutingJSONProm = fetch(`${config.locale.contentRoot}/georouting.json`).then((response) => {
@@ -138,12 +170,16 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
   if (!georoutingJsonResponse.ok) return;
   const georoutingJson = await georoutingJsonResponse.json();
 
-  // if there is no country in URL then default to USA
+  // if there is no country in URL then it will later be treated as USA
   const potentialUserCountriesByURL = georoutingJson.data
     .find((gj) => gj.prefix === config.locale.prefix)?.akamaiCodes.split(',').map((ak) => ak.trim());
-  const internationalCookieWithLocale = getCookieValueByName(GeoRoutingCookies.international);
+
+  const internationalCookie = getCookieValueByName(GeoRoutingCookies.international);
+  // US prefix is always an empty string in the config object and in the delivered json.
+  // If cookie is therefore US convert it
+  const internationalCookieUSChecked = internationalCookie === 'us' ? '' : internationalCookie;
   const potentialUserCountriesByCookie = georoutingJson.data
-    .find((gj) => gj.prefix === internationalCookieWithLocale)?.akamaiCodes.split(',').map((ak) => ak.trim());
+    .find((gj) => gj.prefix === internationalCookieUSChecked)?.akamaiCodes.split(',').map((ak) => ak.trim());
 
   const comparerArray = [potentialUserCountriesByURL, potentialUserCountriesByCookie];
   const isDiscrepencyDetected = !comparerArray.every((c) => {
@@ -153,14 +189,8 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
     return true;
   });
 
-  console.log(comparerArray);
-
   if (!isDiscrepencyDetected) {
-    document.cookie = `${GeoRoutingCookies.international}=${config.locale.prefix}`;
-    return;
-  }
-
-  if (isFallbackRoutingEnabled() && !isLocalVersionOfPageAvailable()) {
+    setInternationalCookie(config.locale.prefix);
     return;
   }
 
@@ -177,25 +207,22 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
     if (l.prefix && config.locales[l.prefix]) {
       // set content root for locale
       const locale = config.locales[l.prefix];
-      if (config.contentRoot) {
-        locale.contentRoot = `${origin}/${l.prefix}${config.contentRoot}`;
-      } else {
-        locale.contentRoot = `${origin}/${l.prefix}`;
-      }
-      // set target url for pages
+      locale.contentRoot = `${getConfigRoot(config, `/${l.prefix}`)}`;
+      // set initial target url - used in the links in the georouting modal
       const targetUrl = locale.contentRoot + targetUrlWithoutContentRoot;
 
-      // TODO vhargrave - check with chris if this is true. If not true remove if statement
       // content roots always exist
       // if target url is equal to content root don't send unnecessary head requests
       if (locale.contentRoot === targetUrl || `${locale.contentRoot}/` === targetUrl) {
         l.targetUrl = locale.contentRoot;
+        l.isTargetURLSibling = true;
         return;
       }
 
       const headRequest = fetch(targetUrl, { method: 'HEAD' })
         .then((response) => {
           l.targetUrl = response.ok ? targetUrl : locale.contentRoot;
+          l.isTargetURLSibling = response.ok;
         });
       doesPageExistRequests.push(headRequest);
     }
@@ -203,13 +230,16 @@ export default async function loadGeoRouting(config, loadStyle, createTag) {
 
   if (doesPageExistRequests.length > 0) await Promise.all(doesPageExistRequests);
 
-  const continueLocaleText = georoutingJson.data.filter((locale) => {
-    if (locale.prefix === undefined) return false;
-    return locale.prefix === config.locale.prefix;
-  });
-  if (continueLocaleText.length > 0) continueLocaleText[0].targetUrl = window.location.href;
+  if (georoutingMetadata !== null
+    && !georoutingMetadata.isFallbackRoutingEnabled
+    && !localeTexts.some((d) => d.isTargetURLSibling)) {
+    return;
+  }
+
+  const continueLocaleText = georoutingJson.data
+    .filter((locale) => locale.prefix === config.locale.prefix);
+  if (continueLocaleText.length > 0) continueLocaleText[0].targetUrl = '#';
   localeTexts.push(...continueLocaleText);
 
-  console.log('Going to show the modal');
   await showModal(userCountryByIP, config, loadStyle, createTag, localeTexts);
 }
