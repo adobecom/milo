@@ -2,3 +2,133 @@
   background-color: #676767;
   color: white;
 }
+
+.paper {
+  /* background-color: pink; */
+  padding: 5em;
+}
+
+.summary-big-num .title {
+  font-size: 300%;
+  line-height: 150%;
+}
+
+.summary-big-num .num {
+  font-size: 200%;
+}
+
+
+.card {
+  background-color: grey;
+  padding: 3em;
+}
+
+.section-divider {
+  margin-bottom: 5em;
+}
+
+.grid-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  /* padding: 0;
+   margin: 0; */
+  list-style: none;
+}
+
+.flex-end {
+  justify-content: flex-end;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+.grid-item {
+  /* margin: auto;
+  text-align: 'center'; */
+  /* background: tomato;
+  padding: 5px;
+  width: 200px;
+  height: 150px;
+  margin-top: 10px;
+  line-height: 150px;
+  color: white;
+  font-weight: bold;
+  font-size: 3em; */
+  /* margin: auto; */
+  text-align: center;
+  flex-basis: 10%;
+}
+
+.feature-row-head {
+  font-weight: bold;
+}
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.blue {
+  color: #25a1fc;
+}
+
+.red {
+  color: #ff6850;
+}
+
+.green {
+  color: #69c973;
+}
+
+.yellow {
+  color : #ffb400;
+}
+
+.button {
+  cursor: pointer;
+  padding: 10px;
+  text-align: center;
+  display: inline-block;
+  border:none;
+  background-color: pink;
+  color: black;
+  border-radius: 15px;
+}
+
+.detail-rows-table {
+  border: 1px solid white;
+  border-collapse: collapse;
+  border-spacing: 10px;
+  width: 1600px;
+}
+
+.detail-rows-cell {
+  border: 1px solid white;
+  padding: 10px;
+  font-size: 80%;
+}
+
+.centered {
+  text-align: center;
+}
+
+.detail-rows-row:nth-child(odd) {
+  background-color: #cc7979;
+}
+
+.loader-text {
+  font-weight: lighter;
+  font-size: 300%;
+}
+
+.loader-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  list-style: none;
+  align-items: center;
+  position: relative;
+  height: 400px;
+}
