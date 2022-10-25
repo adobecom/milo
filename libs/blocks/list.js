@@ -8,7 +8,6 @@ const blocks = [
   'how-to',
   'modal',
   'marquee',
-  'section-metadata',
   'review',
 ];
 
