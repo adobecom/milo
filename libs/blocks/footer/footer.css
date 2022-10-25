@@ -166,6 +166,10 @@ footer .footer-region a {
   display: block;
 }
 
+.footer-social-icon svg {
+  color: #808080;
+}
+
 .footer-social-icon:hover {
   opacity: 0.8;
 }
