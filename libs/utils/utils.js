@@ -21,6 +21,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'marketo',
   'card',
   'marquee',
   'media',
