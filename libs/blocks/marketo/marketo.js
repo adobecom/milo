@@ -16,30 +16,34 @@
 
 import { loadScript, createTag, getConfig } from '../../utils/utils.js';
 
+const DESTINATION_URL = 'Destination URL';
+const HIDDEN_FIELDS = 'Hidden Fields';
+const BASE_URL = 'Base URL';
+const FORM_ID = 'Form ID';
+const MUNCHKIN_ID = 'Munchkin ID';
+
 /* Marketo adds default styles that we want to remove */
-const cleanStyleSheets = (form) => {
-  const { styleSheets = [] } = document;
+const cleanStyleSheets = (baseURL) => {
+  const { styleSheets } = document;
 
   [...styleSheets].forEach((sheet) => {
-    const { href = '' } = sheet;
-    const fromMarketo = /marketo.com/.test(href);
-    const sheetScope = sheet.ownerNode || sheet.owningElement;
-    const formIsParent = sheetScope === form.getFormElem()[0];
-
-    if (fromMarketo || formIsParent) {
-      console.log('cleanStyleSheets', sheet);
+    if (sheet.href?.includes(baseURL)) {
       sheet.disabled = true;
     }
   });
 };
 
 const loadForm = (form, formData) => {
-  console.log('loadForm', form);
-  cleanStyleSheets(form);
+  if (!form) return;
+  const formEl = form.getFormElem().get(0);
 
-  if (formData['Hidden Fields']) {
+  formEl.querySelectorAll('style').forEach((e) => { e.disabled = true; });
+  formEl.parentElement.querySelectorAll('*[style]').forEach((e) => e.removeAttribute('style'));
+  cleanStyleSheets(formData[BASE_URL]);
+
+  if (formData[HIDDEN_FIELDS]) {
     const hiddenFields = {};
-    formData['Hidden Fields'].split(',').forEach((field) => {
+    formData[HIDDEN_FIELDS].split(',').forEach((field) => {
       const [key, value] = field.trim().split('=');
       hiddenFields[key] = value;
     });
@@ -47,63 +51,58 @@ const loadForm = (form, formData) => {
   }
 };
 
+export const formValidate = (form, success, error, errorMessage) => {
+  const formEl = form.getFormElem().get(0);
+  formEl.classList.remove('hide-errors');
+  formEl.classList.add('show-warnings');
+
+  if (!success && errorMessage) {
+    error.textContent = errorMessage;
+    error.classList.add('alert');
+  } else {
+    error.textContent = '';
+    error.classList.remove('alert');
+  }
+};
+
+export const formSuccess = (form, redirectUrl) => {
+  const formEl = form.getFormElem().get(0);
+  const parentModal = formEl.closest('.dialog-modal');
+  const mktoSubmit = new Event('mktoSubmit');
+
+  window.dispatchEvent(mktoSubmit);
+  window.mktoSubmitted = true;
+
+  /* c8 ignore next 5 */
+  if (parentModal && !redirectUrl) {
+    const closeButton = parentModal.querySelector('.dialog-close');
+    closeButton.click();
+    return false;
+  }
+  /* c8 ignore next 4 */
+  if (redirectUrl) {
+    window.location.href = redirectUrl;
+    return false;
+  }
+
+  return true;
+};
+
 const readyForm = (error, form, formData) => {
-  console.log('readyForm', form);
-  // Remove styles
-  const $form = form.getFormElem();
+  const redirectUrl = formData[DESTINATION_URL];
+  const errorMessage = formData['Error Message'];
 
-  $form.find('style').remove();
-  $form.find('*').add($form).removeAttr('style');
-
-  const redirectUrl = '';
-
-  form.onValidate((success) => {
-    console.log('onValidate', form, success);
-
-    form.submittable(false);
-    $form.removeClass('hide-errors');
-    $form.addClass('show-warnings');
-
-    if (!form.submittable() && formData['Error Message']) {
-      error.textContent = formData['Error Message'];
-      error.classList.add('alert');
-    } else {
-      error.textContent = '';
-      error.classList.remove('alert');
-    }
-  });
-
-  form.onSuccess(() => {
-    console.log('onSuccess', form);
-    const mktoSubmit = new Event('mktoSubmit');
-    const parentModal = form.closest('.modal');
-
-    // Dispatch event for listeners
-    window.dispatchEvent(mktoSubmit);
-    window.mktoSubmitted = true;
-
-    // Check for form in modal, and set close button
-    if (parentModal) {
-      const closeButton = parentModal.querySelector('.dialog-close');
-      closeButton.click();
-    }
-    // Modal .dialog-close
-    if (redirectUrl) {
-      window.location.href = redirectUrl;
-      return false;
-    }
-
-    return true;
-  });
+  form.onValidate((success) => formValidate(form, success, error, errorMessage));
+  form.onSuccess(() => formSuccess(form, redirectUrl));
 };
 
 const init = (el) => {
   const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
   const children = Array.from(el?.querySelectorAll(':scope > div'));
   const formData = {
-    'Form ID': marketoFormID,
-    'Base URL': marketoBaseURL,
-    'Munchkin ID': marketoMunchkinID,
+    [FORM_ID]: marketoFormID,
+    [BASE_URL]: marketoBaseURL,
+    [MUNCHKIN_ID]: marketoMunchkinID,
   };
 
   children.forEach((element) => {
@@ -112,11 +111,16 @@ const init = (el) => {
     if (key && value) { formData[key] = value; }
   });
 
-  const formID = formData['Form ID'];
-  const marketoURL = formData['Base URL'];
-  const munchkinID = formData['Munchkin ID'];
+  const formID = formData[FORM_ID];
+  const baseURL = formData[BASE_URL];
+  const munchkinID = formData[MUNCHKIN_ID];
 
-  loadScript(`https://${marketoURL}/js/forms2/js/forms2.min.js`)
+  if (!formID || !baseURL) {
+    el.style.display = 'none';
+    return;
+  }
+
+  loadScript(`https:${baseURL}/js/forms2/js/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       const fragment = new DocumentFragment();
@@ -140,10 +144,11 @@ const init = (el) => {
       fragment.append(formWrapper);
       el.replaceChildren(fragment);
 
-      MktoForms2.loadForm(marketoURL, munchkinID, formID, (form) => { loadForm(form, formData); });
+      MktoForms2.loadForm(baseURL, munchkinID, formID, (form) => { loadForm(form, formData); });
       MktoForms2.whenReady((form) => { readyForm(error, form, formData); });
     })
     .catch(() => {
+      /* c8 ignore next */
       el.style.display = 'none';
     });
 };

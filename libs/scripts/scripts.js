@@ -105,8 +105,8 @@ const config = {
   pdfViewerClientIdStage: '600a4521c23d4c7eb9c7b039bee534a0',
   pdfViewerClientIdProd: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   marketoBaseURL: '//app-aba.marketo.com',
-  marketoMunchkinID: '345-TTI-184',
   marketoFormID: '1761',
+  marketoMunchkinID: '345-TTI-184',
 };
 
 (async function loadLCPImage() {

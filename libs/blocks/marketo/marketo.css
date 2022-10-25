@@ -1,16 +1,34 @@
+:root {
+  --button-accent: #0265DC;
+  --button-accent-hover: #0054B6;
+  --button-accent-down: #004491;
+  --button-accent-focus: #2F55B6;
+  --button-accent-focus-ring: #147AF3;
+}
+
 /* stylelint-disable selector-class-pattern */
 .marketo .marketo-form-wrapper {
   box-sizing: border-box;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 56px 40px;
+  max-width: 600px;
+  min-height: 200px;
+  margin: 56px auto;
+  padding: 44px 40px;
   background-color: #FAFAFA;
-  color: #535353;
 }
 
 .marketo .marketo-title {
   font-size: 28px;
   font-weight: bold;
+}
+
+.marketo .mktoForm {
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%!important;
+}
+
+.marketo .mktoForm .mktoFormCol {
+  float: none;
 }
 
 .marketo .mktoForm .mktoFieldWrap {
@@ -22,22 +40,40 @@
   padding: 12px 0;
 }
 
+.marketo .mktoForm .mktoLabel {
+  color: #535353;
+  padding-bottom: 6px;
+  width: auto!important;
+}
+
 .marketo .mktoForm .mktoAsterix {
   float: right;
+  color: #535353;
 }
 
 .marketo .mktoForm .mktoField {
-  width: 50%;
-  color: #959595;
+  width: 100%!important;
   padding: 11.25px;
+  font-size: 16px;
+  background-color: var(--color-white);
   border: 1px solid #A5A5A5;
   border-radius: 4px;
   box-sizing: border-box;
+  box-shadow: none;
 }
 
-.marketo .mktoForm {
-  font-size: 16px;
-  font-weight: bold;
+.marketo .mktoForm .mktoField.mktoInvalid {
+  border: 1px solid #A5A5A5;
+}
+
+.marketo .mktoForm .mktoField::placeholder {
+  font-weight: normal;
+  color: #222;
+}
+
+.marketo .mktoForm .mktoField:focus-visible {
+  outline: 0;
+  box-shadow: inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
 }
 
 .marketo .mktoForm select {
@@ -51,14 +87,23 @@
 }
 
 .marketo .mktoForm .mktoGutter {
-  /* display: none; */
   flex: 1 1 auto;
+  width: auto!important;
 }
 
 .marketo .mktoForm .mktoHtmlText {
   font-size: 14px;
   font-weight: normal;
+  color: #535353;
+}
+
+.marketo .mktoForm .mktoHtmlText:has(span) {
   padding: 20px 0;
+}
+
+.marketo .mktoForm .mktoHtmlText a {
+  color: #0265DC;
+  text-decoration: underline;
 }
 
 .marketo .mktoForm .mktoButtonWrap {
@@ -74,13 +119,14 @@
 
 .marketo .mktoForm .mktoButton {
   appearance: button;
-  background-color: #2680eb;
-  border: 0;
+  background: var(--button-accent);
+  border: 2px solid var(--button-accent);
   border-radius: 24px;
-  color: #fff;
+  color: var(--color-white);
   font-weight: 700;
-  padding: 7.5px 24px;
+  padding: 0 24px;
   font-size: 16px;
+  line-height: 32px;
   width: initial;
   box-shadow: none;
   transition: background-color 125ms ease-out;
@@ -88,7 +134,19 @@
 }
 
 .marketo .mktoForm .mktoButton:hover {
-  background-color: #1473e6;
+  background: var(--button-accent-hover);
+  border-color: var(--button-accent-hover);
+}
+
+.marketo .mktoForm .mktoButton:active {
+  background: var(--button-accent-down);
+  border-color: var(--button-accent-down);
+}
+
+.marketo .mktoForm .mktoButton:focus-visible {
+  background: var(--button-accent-focus);
+  border: 2px solid var(--color-white);
+  outline: 2px solid var(--button-accent-focus-ring);
 }
 
 .marketo .marketo-error {
@@ -112,8 +170,7 @@
 }
 
 .marketo .mktoForm.show-warnings .mktoError {
-  width: 50%;
-  margin-left: 50%;
+  width: 100%;
   font-size: 12px;
   font-weight: normal;
   color: #C9252D;
@@ -130,9 +187,13 @@
   position: absolute;
 }
 
-.dialog-modal .marketo .marketo-form-wrapper {
-  max-width: 100%;
+.dialog-modal .marketo {
   margin: 0;
+}
+
+.dialog-modal .marketo .marketo-form-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
   padding: 56px 80px 80px;
 }
 
@@ -149,9 +210,9 @@
   text-align: center;
 }
 
-
 .dialog-modal .marketo .marketo-description {
   margin: 16px 0 40px;
+  font-size: 16px;
   text-align: center;
 }
 
@@ -164,7 +225,7 @@
 }
 
 .dialog-modal .marketo .mktoForm .mktoField {
-  width: 100%;
+  width: 100%!important;
 }
 
 .dialog-modal .marketo .mktoForm label {
@@ -174,4 +235,29 @@
 .dialog-modal .marketo .mktoForm .mktoError {
   width: 100%;
   margin-left: 0;
+}
+
+@media screen and (min-width: 768px) {
+  .marketo .marketo-form-wrapper {
+    margin: 40px auto 80px;
+  }
+
+  .marketo .mktoForm .mktoField {
+    width: 50%!important;
+  }
+
+  .marketo .mktoForm .mktoLabel {
+    padding-bottom: 0;
+  }
+
+  .marketo .mktoForm.show-warnings .mktoError {
+    width: 50%;
+    margin-left: 50%;
+  }
+}
+
+@media screen and (min-width: 1440px) {
+  .marketo .marketo-form-wrapper {
+    margin: 40px auto;
+  }
 }
