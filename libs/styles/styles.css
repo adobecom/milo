@@ -204,11 +204,19 @@ picture.bg-img img {
   width: 100%;
 }
 
+.milo-card-section {
+  visibility: hidden;
+}
+
 @media (min-width: 900px) {
   header {
     min-height: 64px;
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
+  }
+
+  header + main {
+    margin-top: 64px;
   }
 
   header.has-breadcrumbs {

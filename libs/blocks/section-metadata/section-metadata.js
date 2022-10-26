@@ -20,6 +20,18 @@ function handleStyle(div, section) {
   }
 }
 
+export const getSectionMetadata = (el) => {
+  if (!el) return {};
+  const metadata = {};
+  el.childNodes.forEach((node) => {
+    const key = node.children?.[0]?.textContent?.toLowerCase();
+    if (!key) return;
+    const val = node.children?.[1]?.textContent?.toLowerCase();
+    metadata[key] = val;
+  });
+  return metadata;
+};
+
 export default function init(el) {
   const section = el.closest('.section');
   if (!section) return;

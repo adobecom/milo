@@ -8,6 +8,10 @@ header {
   height: 100vh;
 }
 
+.home h1,.home h2,.home h3,.home h4,.home h5,.home h6,.home p,.home span {
+    line-height: initial;
+}
+
 .home.engage {
   background: #2C2C2C;
   color: #FFF;
