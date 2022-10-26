@@ -14,4 +14,4 @@ sitemaps:
         source: /fr/blog/query-index.json
         destination: /fr/blog/sitemap.xml
         hreflang: fr
-        alternate: /{path}
+        alternate: /fr/{path}
