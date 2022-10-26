@@ -278,6 +278,15 @@
     height: 100%;
   }
 
+  .marquee.split.right .media.bleed {
+    right: auto;
+    left: 0;
+  }
+
+  .marquee.split.right .foreground.container {
+    justify-content: flex-end;
+  }
+
   .marquee.split .media.bleed picture,
   .marquee.split .media.bleed video {
     height: 100%;
