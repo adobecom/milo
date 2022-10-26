@@ -85,6 +85,11 @@
   max-height: 360px;
 }
 
+.marquee.split .foreground,
+.marquee.small.split .foreground {
+  padding: var(--spacing-m) 0;
+}
+
 .marquee.split.small .foreground {
   order: 1;
 }
@@ -246,6 +251,11 @@
     justify-content: center;
   }
 
+  .marquee.split .foreground.container {
+    flex-direction: row;
+    padding: var(--spacing-xl) 0;
+  }
+
   .marquee.split .foreground.container .text {
     max-width: calc(50% - var(--grid-column-width));
   }
@@ -369,7 +379,8 @@
     justify-content: initial;
   }
 
-  .marquee.small .foreground {
+  .marquee.small .foreground,
+  .marquee.split .foreground.container {
     padding: 0;
   }
 
