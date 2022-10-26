@@ -109,6 +109,8 @@ export const [setConfig, getConfig] = (() => {
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
+      config.direction = (new Intl.Locale(config.locale.ietf)).textInfo.direction;
+      document.documentElement.setAttribute('dir',config.direction);
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
       } else {
