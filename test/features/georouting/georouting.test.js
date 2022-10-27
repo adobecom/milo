@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 
@@ -7,11 +5,6 @@ import { expect } from '@esm-bundle/chai';
 const { default: init, getMetadata, getCookieValueByName, GeoRoutingMetadata, GeoRoutingCookies } = await import('../../../libs/features/georouting/georouting.js');
 const { locales } = await import('../../../libs/scripts/locales.js');
 const { createTag } = await import('../../../libs/utils/utils.js');
-
-const getMetaHTML = (georouting, fallbackrouting) => {
-  return `<meta name="georouting" content="${georouting}">
-<meta name="fallbackrouting" content="${fallbackrouting}">`
-}
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 
@@ -33,8 +26,8 @@ const mockGeoroutingJson = {
     },
     {
       "prefix": "ch_it",
-      "text": "",
-      "button": "",
+      "text": "Se stai visitando Adobe.com da un’area geografica diversa dagli Stati Uniti, accedi al sito del tuo paese per informazioni più pertinenti su prezzi, promozioni ed eventi in corso.",
+      "button": "Continua in Svizzera",
       "akamaiCodes": "CH"
     },
     {
@@ -51,14 +44,15 @@ const mockGeoroutingJson = {
     }
   ]
 }
-
-const ogURLSearchParamGet = URLSearchParams.get;
-const mockUserIP = (country = 'US') => {
-  URLSearchParams.get = stub().withArgs('akamaiLocale').returns(country)
+const getMetaHTML = (georouting, fallbackrouting) => {
+  return `<meta name="georouting" content="${georouting}">
+<meta name="fallbackrouting" content="${fallbackrouting}">`
 }
-const restoreURLSearchParamGet = () => {
-  URLSearchParams.get = ogURLSearchParamGet;
-};
+
+let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
+const setUserCountryFromIP = (country = 'CH') => {
+  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country)
+}
 
 const ogFetch = window.fetch;
 window.fetch = stub();
@@ -92,13 +86,16 @@ const mockGetConfigRoot = (config, prefix) => {
 
 describe('GeoRouting', () => {
   before(() => {
-    mockUserIP();
+    setUserCountryFromIP();
     stubFetchForGeorouting();
   });
   after(() => {
-    restoreURLSearchParamGet();
+    stubURLSearchParamsGet.reset()
     restoreFetch()
   });
+  afterEach(() => {
+    document.cookie = `${GeoRoutingCookies.international}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
+  })
   it('Does read metadata from html properly', async () => {
     // prepare
     const georoutingMet = getMetadata(GeoRoutingMetadata.georouting, document);
@@ -161,7 +158,7 @@ describe('GeoRouting', () => {
     document.cookie = `${GeoRoutingCookies.georouting_presented}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
   });
 
-  it('Does create a modal if georouting_presented cookie is set', async () => {
+  it('Does create a modal if georouting_presented cookie is not set', async () => {
     // prepare
     document.cookie = `${GeoRoutingCookies.georouting_presented}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
     stubFetchForMetadata('on', 'off');
@@ -171,5 +168,73 @@ describe('GeoRouting', () => {
     expect(modal).to.not.be.null;
     // cleanup
     modal.dispatchEvent(new Event('close'));
+  });
+
+  it('Does create a modal if detected country from IP is CH and url prefix is US', async () => {
+    // prepare
+    stubFetchForMetadata('on', 'off');
+    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    // cleanup
+    modal.dispatchEvent(new Event('close'));
+  });
+
+  it('Will set international cookie if no discrepancy detected', async () => {
+    // prepare
+    setUserCountryFromIP('US');
+    stubFetchForMetadata('on', 'off');
+    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    // assert
+    const internationalCookie = getCookieValueByName(GeoRoutingCookies.international)
+    expect(internationalCookie).to.equal('us');
+  });
+
+  it('If international cookie is us it is compared correctly', async () => {
+    // prepare
+    setUserCountryFromIP('US');
+    document.cookie = `${GeoRoutingCookies.international}=us;path=/`;
+    stubFetchForMetadata('on', 'off');
+    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.be.null;
+    //cleanup
+    setUserCountryFromIP();
+  });
+
+  it('Maps international cookie and locale from URL to countries correctly', async () => {
+    // prepare
+
+  });
+
+  it.only('If aiming for US page but IP in Switzerland shows CH links and US continue', async () => {
+    // prepare
+    stubFetchForMetadata('on', 'off');
+    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const links = modal.querySelectorAll('.georouting-link');
+    expect(links).to.not.be.null;
+    expect(links.length).to.be.equal(4);
+    // cleanup
+    modal.dispatchEvent(new Event('close'));
+  });
+
+  it('If aiming for PA page but IP in Switzerland shows CH links and Palestine continue', async () => {
+    // prepare
+
+  });
+
+  it('If aiming for US page but IP is from an unknown country only show US continue', async () => {
+    // prepare
+
+  });
+
+  it('Sets international and georouting_presented cookies on link click in modal', async () => {
+    // prepare
+
   });
 });
