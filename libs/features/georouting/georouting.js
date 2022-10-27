@@ -3,10 +3,6 @@ export const GeoRoutingCookies = {
   georouting_presented: 'georouting_presented',
 };
 const geo2Link = 'https://geo2.adobe.com/json/';
-export const GeoRoutingMetadata = {
-  georouting: 'georouting',
-  fallbackrouting: 'fallbackrouting',
-};
 
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -23,12 +19,14 @@ export const getCookieValueByName = (a) => document.cookie
   .find((row) => row.startsWith(`${a}=`))
   ?.split('=')[1];
 
-let jsonpGist = (url, callback) => {
+const jsonpGist = (url, callback) => {
   // Setup a unique name that can be called & destroyed
   const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
 
   // Create the script tag
   const script = document.createElement('script');
+
+  // TODO: Should be more modern and use URLParams
   script.src = `${url}${(url.indexOf('?') >= 0 ? '&' : '?')}callback=${callbackName}`;
 
   // Define the function that the script will call
@@ -75,7 +73,7 @@ const setGeoroutingCookies = (prefix) => {
   document.cookie = `${GeoRoutingCookies.georouting_presented}=true;expires=${expirationDateGeoRoutingPresentedCookie};path=/`;
 };
 
-const showModal = async (userCountryByIP, config, loadStyle, createTag, localeTexts) => {
+const showModal = async (config, loadStyle, createTag, localeTexts) => {
   const { miloLibs, codeRoot } = config;
   loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
 
@@ -121,21 +119,15 @@ const showModal = async (userCountryByIP, config, loadStyle, createTag, localeTe
   close.focus({ focusVisible: true });
 };
 
-export const getMetadata = (name, doc) => {
-  const meta = doc.querySelector(`meta[name="${name}"]`);
-  return meta && meta.content;
-};
-
-const fetchGeoroutingMetadata = async (config) => {
+const fetchGeoroutingMetadata = async (config, getMetadata) => {
   const url = `${config.locale.contentRoot}/georouting-metadata`;
   const resp = await fetch(`${url}`);
   const html = await resp.text();
   if (!html) return null;
   try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const geoRoutingMetadata = getMetadata(GeoRoutingMetadata.georouting, doc);
-    const fallbackRoutingMetadata = getMetadata(GeoRoutingMetadata.fallbackrouting, doc);
+    // TODO: Fallback to consumer config
+    const geoRoutingMetadata = getMetadata('georouting');
+    const fallbackRoutingMetadata = getMetadata('fallbackrouting');
     return {
       isGeoRoutingFeatureActive: geoRoutingMetadata?.toLowerCase().trim() === 'on',
       isFallbackRoutingEnabled: fallbackRoutingMetadata?.toLowerCase().trim() === 'on',
@@ -146,8 +138,8 @@ const fetchGeoroutingMetadata = async (config) => {
   return null;
 };
 
-export default async function loadGeoRouting(config, loadStyle, createTag, getConfigRoot) {
-  const georoutingMetadata = await fetchGeoroutingMetadata(config);
+export default async function loadGeoRouting(config, loadStyle, createTag, getConfigRoot, getMetadata) {
+  const georoutingMetadata = await fetchGeoroutingMetadata(config, getMetadata);
   if (georoutingMetadata !== null && !georoutingMetadata.isGeoRoutingFeatureActive) {
     return;
   }
