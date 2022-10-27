@@ -13,14 +13,13 @@
 /*
  * Marketo Form
  */
-
 import { loadScript, createTag, getConfig } from '../../utils/utils.js';
 
-const DESTINATION_URL = 'Destination URL';
-const HIDDEN_FIELDS = 'Hidden Fields';
-const BASE_URL = 'Base URL';
-const FORM_ID = 'Form ID';
-const MUNCHKIN_ID = 'Munchkin ID';
+const DESTINATION_URL = 'destination url';
+const HIDDEN_FIELDS = 'hidden fields';
+const BASE_URL = 'base url';
+const FORM_ID = 'form id';
+const MUNCHKIN_ID = 'munchkin id';
 
 /* Marketo adds default styles that we want to remove */
 const cleanStyleSheets = (baseURL) => {
@@ -98,7 +97,7 @@ const readyForm = (error, form, formData) => {
 
 const init = (el) => {
   const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
-  const children = Array.from(el?.querySelectorAll(':scope > div'));
+  const children = Array.from(el.querySelectorAll(':scope > div'));
   const formData = {
     [FORM_ID]: marketoFormID,
     [BASE_URL]: marketoBaseURL,
@@ -106,7 +105,7 @@ const init = (el) => {
   };
 
   children.forEach((element) => {
-    const key = element.children[0]?.textContent;
+    const key = element.children[0]?.textContent.toLowerCase();
     const value = element.children[1]?.textContent;
     if (key && value) { formData[key] = value; }
   });
@@ -129,19 +128,18 @@ const init = (el) => {
 
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      if (formData.Title) {
-        const title = createTag('h3', { class: 'marketo-title' }, formData.Title);
+      if (formData.title) {
+        const title = createTag('h3', { class: 'marketo-title' }, formData.title);
         formWrapper.append(title);
       }
-      if (formData.Description) {
-        const description = createTag('p', { class: 'marketo-description' }, formData.Description);
+      if (formData.description) {
+        const description = createTag('p', { class: 'marketo-description' }, formData.description);
         formWrapper.append(description);
       }
 
       const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors' });
       formWrapper.append(marketoForm);
-      fragment.append(error);
-      fragment.append(formWrapper);
+      fragment.append(error, formWrapper);
       el.replaceChildren(fragment);
 
       MktoForms2.loadForm(baseURL, munchkinID, formID, (form) => { loadForm(form, formData); });
