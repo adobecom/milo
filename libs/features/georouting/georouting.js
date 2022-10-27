@@ -49,8 +49,9 @@ const getUserCountryByIP = async () => new Promise((resolve) => {
   const akamaiLocale = urlParams.get('akamaiLocale');
   if (akamaiLocale !== null) {
     resolve(akamaiLocale);
+  } else {
+    jsonpGist(geo2Link, (data) => resolve(data.country));
   }
-  jsonpGist(geo2Link, (data) => resolve(data.country));
 });
 
 const closeModals = (modals) => {
