@@ -7,6 +7,7 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
+  'article-feed',
   'aside',
   'caas',
   'caas-config',
@@ -91,12 +92,12 @@ function getEnv(conf) {
 // find out current locale based on pathname and existing locales object from config.
 export function getLocale(locales) {
   if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: 'en' };
   }
   const { pathname } = window.location;
   const split = pathname.split('/');
   const locale = locales[split[1]] || locales[''];
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
+  locale.prefix = locale.ietf === 'en-US' ? 'en' : `/${split[1]}`;
   return locale;
 }
 
@@ -567,4 +568,29 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   }, options);
   io.observe(el);
   return io;
+}
+
+export const getLocaleIetf = () => getConfig().locale?.ieft;
+
+/**
+ * Returns the language dependent root path
+ * @returns {string} The computed root path
+ */
+export const getRootPath = () => getConfig().locale?.prefix;
+
+/**
+ * fetches the string variables.
+ * @returns {object} localized variables
+ */
+
+export async function fetchPlaceholders() {
+  if (!window.placeholders) {
+    const resp = await fetch(`${getRootPath()}/placeholders.json`);
+    const json = await resp.json();
+    window.placeholders = {};
+    json.data.forEach((placeholder) => {
+      window.placeholders[placeholder.Key] = placeholder.Text;
+    });
+  }
+  return window.placeholders;
 }
