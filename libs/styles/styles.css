@@ -204,6 +204,10 @@ picture.bg-img img {
   width: 100%;
 }
 
+.milo-card-section {
+  visibility: hidden;
+}
+
 @media (min-width: 900px) {
   header {
     min-height: 64px;
