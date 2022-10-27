@@ -3,7 +3,7 @@
 
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { delay, waitForElement } from '../../helpers/waitfor.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import init, { formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
 
