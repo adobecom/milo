@@ -1,9 +1,9 @@
-const GeoRoutingCookies = {
+export const GeoRoutingCookies = {
   international: 'international',
   georouting_presented: 'georouting_presented',
 };
 const geo2Link = 'https://geo2.adobe.com/json/';
-const GeoRoutingMetadata = {
+export const GeoRoutingMetadata = {
   georouting: 'georouting',
   fallbackrouting: 'fallbackrouting',
 };
@@ -121,7 +121,7 @@ const showModal = async (userCountryByIP, config, loadStyle, createTag, localeTe
   close.focus({ focusVisible: true });
 };
 
-const getMetadata = (name, doc) => {
+export const getMetadata = (name, doc) => {
   const meta = doc.querySelector(`meta[name="${name}"]`);
   return meta && meta.content;
 };
@@ -193,7 +193,6 @@ export default async function loadGeoRouting(config, loadStyle, createTag, getCo
     setInternationalCookie(config.locale.prefix);
     return;
   }
-
   const localeTexts = georoutingJson.data.filter((locale) => {
     if (!locale.akamaiCodes) return false;
     const localeAkamaiCodes = locale.akamaiCodes.split(',').map((ak) => ak.trim());
