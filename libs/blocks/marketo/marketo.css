@@ -4,6 +4,7 @@
   --button-accent-down: #004491;
   --button-accent-focus: #2F55B6;
   --button-accent-focus-ring: #147AF3;
+  --marketo-form-text: #535353;
 }
 
 /* stylelint-disable selector-class-pattern */
@@ -41,14 +42,14 @@
 }
 
 .marketo .mktoForm .mktoLabel {
-  color: #535353;
+  color: var(--marketo-form-text);
   padding-bottom: 6px;
   width: auto!important;
 }
 
 .marketo .mktoForm .mktoAsterix {
   float: right;
-  color: #535353;
+  color: var(--marketo-form-text);
 }
 
 .marketo .mktoForm .mktoField {
@@ -94,7 +95,7 @@
 .marketo .mktoForm .mktoHtmlText {
   font-size: 14px;
   font-weight: normal;
-  color: #535353;
+  color: var(--marketo-form-text);
 }
 
 .marketo .mktoForm .mktoHtmlText:has(span) {
@@ -237,7 +238,20 @@
   margin-left: 0;
 }
 
-@media screen and (min-width: 768px) {
+.columns .marketo .mktoForm .mktoField {
+  width: 100%!important;
+}
+
+.columns .marketo .mktoForm .mktoLabel {
+  padding-bottom: 6px;
+}
+
+.columns .marketo .mktoForm.show-warnings .mktoError {
+  width: 100%;
+  margin-left: 0;
+}
+
+@media screen and (min-width: 600px) {
   .marketo .marketo-form-wrapper {
     margin: 40px auto 80px;
   }
@@ -256,8 +270,29 @@
   }
 }
 
+@media screen and (min-width: 900px) {
+  .columns .marketo .mktoForm .mktoField {
+    width: 50%!important;
+  }
+
+  .columns .marketo .mktoForm .mktoLabel {
+    padding-bottom: 0;
+  }
+
+  .columns .marketo .mktoForm.show-warnings .mktoError {
+    width: 50%;
+    margin-left: 50%;
+  }
+}
+
 @media screen and (min-width: 1440px) {
   .marketo .marketo-form-wrapper {
     margin: 40px auto;
   }
+}
+
+/* Required for successive loading without timeouts */
+/* stylelint-disable-next-line selector-id-pattern */
+#mktoStyleLoaded {
+  background-color: #123456
 }
