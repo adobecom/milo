@@ -429,7 +429,7 @@ class Gnav {
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
 
-    const signInEl = dropDown ? dropDown.querySelector('li:last-of-type a') : profileEl;
+    const signInEl = dropDown?.querySelector('li:last-of-type a') || profileEl;
 
     if (dropDown) {
       const id = `navmenu-${blockEl.className}`;
