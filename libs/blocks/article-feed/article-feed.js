@@ -2,7 +2,7 @@ import {
   fetchPlaceholders,
   getLocaleIetf,
   getRootPath,
-  emptyDiv
+  emptyDiv,
 } from '../../utils/utils.js';
 
 /**
@@ -605,9 +605,9 @@ function buildFilter(type, tax, ph, block, config) {
   return container;
 }
 
-async function filterArticles(config, feed, limit, offset) {
-  const result = [];
+const isInList = (list, val) => { list && list.map((t) => t.toLowerCase()).includes(val); };
 
+async function filterArticles(config, feed, limit, offset) {
   /* filter posts by category, tag and author */
   const FILTER_NAMES = ['tags', 'topics', 'selectedProducts', 'selectedIndustries', 'author', 'category', 'exclude'];
 
@@ -626,36 +626,38 @@ async function filterArticles(config, feed, limit, offset) {
     const indexChunk = index.data.slice(feed.cursor);
 
     const beforeFiltering = new Date();
+
+    const KEYWORDS = ['exclude', 'tags', 'topics'];
+    const SELECTED = ['selectedProducts', 'selectedIndustries'];
+
     /* filter and ignore if already in result */
     const feedChunk = indexChunk.filter((article) => {
+      const taxonomy = getArticleTaxonomy(article);
+
       const matchedAll = Object.keys(filters).every((key) => {
-        if (key === 'exclude' || key === 'tags' || key === 'topics') {
-          const taxonomy = getArticleTaxonomy(article);
-          const matchedFilter = filters[key].some((val) => (taxonomy.allTopics
-            && taxonomy.allTopics.map((t) => t.toLowerCase()).includes(val)));
+        if (KEYWORDS.includes(key)) {
+          const matchedFilter = filters[key].some((val) => (isInList(taxonomy?.allTopics, val)));
           return key === 'exclude' ? !matchedFilter : matchedFilter;
         }
-        if (key === 'selectedProducts' || key === 'selectedIndustries') {
-          const tax = getArticleTaxonomy(article);
+        if (SELECTED.includes(key)) {
           if (filters.selectedProducts && filters.selectedIndustries) {
             // match product && industry
-            const matchProduct = filters.selectedProducts.some((val) => (tax.allTopics
-              && tax.allTopics.map((t) => t.toLowerCase()).includes(val)));
-            const matchIndustry = filters.selectedIndustries.some((val) => (tax.allTopics
-              && tax.allTopics.map((t) => t.toLowerCase()).includes(val)));
+            const matchProduct = filters.selectedProducts.some((val) => (isInList(taxonomy?.allTopics, val)));
+            const matchIndustry = filters.selectedIndustries.some((val) => (isInList(taxonomy?.allTopics, val)));
             return matchProduct && matchIndustry;
           }
-          const matchedFilter = filters[key].some((val) => (tax.allTopics
-            && tax.allTopics.map((t) => t.toLowerCase()).includes(val)));
+          const matchedFilter = filters[key].some((val) => isInList(taxonomy.allTopics, val));
           return matchedFilter;
         }
-        const matchedFilter = filters[key].some((val) => (article[key]
-          && article[key].toLowerCase().includes(val)));
+        const matchedFilter = filters[key].some((val) => isInList([article[key]], val));
         return matchedFilter;
       });
-      return (matchedAll && !result.includes(article) && !isCardOnPage(article));
+
+      return (matchedAll && !isCardOnPage(article));
     });
+
     stamp(`chunk measurements - loading: ${beforeFiltering - beforeLoading}ms filtering: ${new Date() - beforeFiltering}ms`);
+    
     feed.cursor = index.data.length;
     feed.complete = index.complete;
     feed.data = [...feed.data, ...feedChunk];
@@ -682,11 +684,11 @@ async function decorateArticleFeed(
   config,
   offset = 0,
   feed = { data: [], complete: false, cursor: 0 },
-  limit = 12
+  limit = 12,
 ) {
   let articleCards = articleFeedEl.querySelector('.article-cards');
 
-  if(!articleCards) {
+  if (!articleCards) {
     articleCards = generateArticleCards();
     articleFeedEl.append(articleCards);
   }
