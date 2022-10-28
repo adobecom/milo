@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 const WORLD_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iU19HbG9iZV8yNF9OQDJ4IiBoZWlnaHQ9IjQ4IiBpZD0iU19HbG9iZV8yNF9OXzJ4IiB3aWR0aD0iNDgiPjxkZWZzPjxzdHlsZT4uZmlsbHtmaWxsOiM3MDcwNzB9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik05LjUyNyAxOC4zNThjLTEuNC01LjA0OSAyLjIwNy03LjIyMyAxLjg1Mi0xMS41MzdBMjEuNDMgMjEuNDMgMCAwIDAgMi42NjcgMjRjMCAxMi4xNDkgMTAuNTkxIDE5LjM5IDE4LjA3MiAyMC45NzZhOS4yIDkuMiAwIDAgMCAxLjM5My4yMjFjMi42NjgtNi44LTIuMzY0LTE0LjM4NS01LjY4NC0xOS4zMjYtMi43NjUtNC4xMTMtNS4yNzgtMS41NzEtNi45MjEtNy41MTNaIi8+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik0xOS45IDUuNnMtLjQ4NS4wMjktLjYxOS4xNjNjLTEuMDE0IDEuMDEgMS43NzYgNi4xIDEuNjU2IDUuMzIyLjY2NC0zLjA1NiA0LjgxNi00LjIzNSA2LjA4OC0uMmE0Ljk4OSA0Ljk4OSAwIDAgMS0xLjExNyAzLjAyYy0xLjg4IDIuNDcyLTIuMjYyIDYuODcyLTMuMiA1Ljc0Ni04Ljc4Ny0zLjYtNy44MiAxLjE2MS00LjkzNiA0LjM0MyA0LjYxOCA1LjA5NCAyLjI3NS41MjIgOC4zMjMgMy4xODkgNC44NjQgMi4xNDUgMTAuNzE4IDIuNjUyIDkuMjg5IDQuMjctNC4zMjIgNC44OTQtMy40MTMgOC4xMzctMTEuMDU3IDEzLjg3Mi42MzctLjAxNyAyLjY2NS0uMjIgMy4wODItLjI4OGEyMS43IDIxLjcgMCAwIDAgMTcuODMzLTE5LjIgMy4yIDMuMiAwIDAgMS0xLjUzOS0uNDY5Yy0yLjE0Ny0uODE3LTMuOTg5IDEuOTY3LTQuMTUyLTUuNTUyYTcuNjg2IDcuNjg2IDAgMCAxIDIuMjIyLTUuMzMzIDQuMTA3IDQuMTA3IDAgMCAxIC45NzItLjQ2NSAyMi4zMDEgMjIuMzAxIDAgMCAwLS44MjYtMS4zNTdjLS4wNS4wMjYtLjA5NC4wNTktLjE0NS4wODMtMS42NjcuNzc4LTEuOSAxLjAwNy0yLjY2NyAwYTIuMSAyLjEgMCAwIDEgLjQ2MS0zLjEgMjEuMzEzIDIxLjMxMyAwIDAgMC0xNS41MzMtNi45NTdjMi43LjAzNyA1LjkyOSAyLjAzOSA0LjI4NCA1LjIzOS4yNDctLjUwOC01LjM2OS0xLjcyLTYuMTMzLTEuNzItMS4wMjkgMCAxLjg1My0zLjUxOSAxLjgxNC0zLjUxOWEyMS40MzkgMjEuNDM5IDAgMCAwLTguODIgMS45QzE2LjYzNyA1LjUyNiAxOS45IDUuNiAxOS45IDUuNloiLz48L3N2Zz4=';
 
 const getCookie = (name) => document.cookie
@@ -47,18 +46,24 @@ async function getAvailableLocales(locales, config, getMetadata) {
   const path = window.location.href.replace(contentRoot, '');
 
   const availableLocales = [];
+  const pageExistsRequests = [];
   for (const locale of locales) {
     const localePath = `/${locale.prefix}/${path}`;
-    // eslint-disable-next-line no-await-in-loop
-    const resp = await fetch(localePath, { method: 'HEAD' });
-    if (resp.ok) {
-      locale.url = `${origin}/${locale.prefix}${config.contentRoot}${path}`;
-      availableLocales.push(locale);
-    } else if (fallback) {
-      locale.url = `${origin}/${locale.prefix}${config.contentRoot}`;
-      availableLocales.push(locale);
-    }
+
+    availableLocales.push(locale);
+    const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
+      if (resp.ok) {
+        const loc = availableLocales.find(a => a.prefix === locale.prefix);
+        loc.url = `${origin}/${locale.prefix}${config.contentRoot}${path}`;
+      } else if (fallback) {
+        const loc = availableLocales.find(a => a.prefix === locale.prefix);
+        loc.url = `${origin}/${locale.prefix}${config.contentRoot}`;
+      }
+    });
+    pageExistsRequests.push(pageExistsRequest);
   }
+  if (pageExistsRequests.length > 0) await Promise.all(pageExistsRequests);
+
   return availableLocales;
 }
 
@@ -84,36 +89,36 @@ function buildLinks(locales, config, createTag) {
     wrapper.append(para);
     link.addEventListener('click', () => {
       const prefix = locale.prefix || 'us';
+      document.cookie = `international=${prefix};path=/`;
     });
   });
   fragment.append(wrapper);
   return fragment;
 }
 
+function getCodes(data) {
+  return data.akamaiCodes.split(',').map((a) => a.toLowerCase().trim())
+}
+
 function getMatches(data, suppliedCode) {
   return data.reduce((rdx, locale) => {
-    const localeCodes = locale.akamaiCodes.split(', ');
-    const foundCode = localeCodes.find((code) => code.toLowerCase() === suppliedCode);
+    const localeCodes = getCodes(locale);
+    const foundCode = localeCodes.some((code) => code === suppliedCode);
     if (foundCode) rdx.push(locale);
     return rdx;
   }, []);
 }
 
-async function getDetails(pageCode, detectedCode, config, createTag, getMetadata) {
-  const { contentRoot } = config;
-  const resp = await fetch(`${contentRoot}georouting.json`);
-  if (!resp.ok) return null;
-  const json = await resp.json();
-  const localeMatches = getMatches(json.data, detectedCode);
+async function getDetails(currentPage, localeMatches, config, createTag, getMetadata) {
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
 
   if (availableLocales) {
-    const currentPage = getMatches(json.data, pageCode)[0];
     currentPage.url = '#';
+    const worldIcon = createTag('img', { src: WORLD_ICON });
     const text = buildText([...availableLocales, currentPage], config, createTag);
     const links = buildLinks([...availableLocales, currentPage], config, createTag);
     const detailsFragment = new DocumentFragment();
-    detailsFragment.append(text, links);
+    detailsFragment.append(worldIcon, text, links);
     return detailsFragment;
   }
   return null;
@@ -124,26 +129,44 @@ async function showModal(details) {
   getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details });
 }
 
-export default async function loadGeoRouting(config, createTag, getMetadata) {
+async function loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle) {
+  const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
+  if (details) {
+    const { miloLibs, codeRoot } = config;
+    loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
+    showModal(details);
+  }
+}
+
+export default async function loadGeoRouting(config, createTag, getMetadata, loadStyle) {
   const { locale } = config;
+  console.log(config);
 
-  // Get page code
-  const pageCode = locale.prefix === '' ? 'us' : locale.prefix.substring(1);
+  const urlLocale = locale.prefix.replace('/', '');
+  const cookieInter = getCookie('international');
+  const cookieLocale = cookieInter === 'us' ? '' : cookieInter;
 
-  // Get cookie code
-  const cookieCode = getCookie('international');
+  const { contentRoot } = config;
+  const resp = await fetch(`${contentRoot}georouting.json`);
+  if (!resp.ok) return;
+  const json =  await resp.json();
 
-  // Show modal when page and cookie disagree
-  if (cookieCode && pageCode !== cookieCode) {
-    const details = await getDetails(pageCode, cookieCode, config, createTag, getMetadata);
-    if (details) { showModal(details); }
+  const urlGeoData = json.data.find(d => d.prefix === urlLocale);
+  if (!urlGeoData) return;
+
+  if (cookieLocale || cookieLocale === '') {
+    // Show modal when url and cookie disagree
+    if (urlLocale !== cookieLocale) {
+      const localeMatches = json.data.filter(d => d.prefix === cookieLocale)
+      await loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle);
+    }
     return;
   }
 
-  // Show modal when page and akamai disagree
+  // Show modal when derived countries from url locale and akamai disagree
   const akamaiCode = await getAkamaiCode();
-  if (akamaiCode && pageCode !== akamaiCode) {
-    const details = await getDetails(pageCode, akamaiCode, config, createTag, getMetadata);
-    if (details) { showModal(details); }
+  if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
+    const localeMatches = getMatches(json.data, akamaiCode);
+    await loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle);
   }
 }
