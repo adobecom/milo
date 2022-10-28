@@ -1,7 +1,7 @@
-import { 
+import {
   fetchPlaceholders,
-  getLocaleIetf, 
-  getRootPath 
+  getLocaleIetf,
+  getRootPath,
 } from '../../utils/utils.js';
 
 /**
@@ -10,7 +10,7 @@ import {
  *  - add this
  *  - add days between 1/1/1900 and 1/1/1970
  *  - add one more day for Excel's leap year bug
- * 
+ *
  * @param {number} date The date to format
  * @returns {string} The formatted date
  */
@@ -20,17 +20,17 @@ function calculateExcelDate(date) {
 
 // Safari won't accept '-' as a date separator
 function replaceSeparator(date) {
-  date.replace(/-/g, '/')
+  date.replace(/-/g, '/');
 }
 
 /**
  * Format date to locale.
- * 
+ *
  * @param {number} date The date to format
  * @returns {string} The formatted card date
  */
 export function formatCardLocaleDate(date) {
-  let jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
+  const jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
   const dateLocale = getLocaleIetf();
 
   let dateString = new Date(jsDate).toLocaleDateString(dateLocale, {
@@ -55,13 +55,11 @@ export function formatCardLocaleDate(date) {
  * @returns {string} A link tag as a string
  */
 export function getLinkForTopic(topic, path) {
-  const titleSubs = {
-    'Transformation digitale': 'Transformation numérique',
-  };
-  
-  const catLink = taxonomy?.get(topic).map(tax => tax?.link ?? "#");
+  const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  if(catLink === '#') {
+  const catLink = taxonomy?.get(topic).map((tax) => tax?.link ?? '#');
+
+  if (catLink === '#') {
     console.warn(`Trying to get a link for an unknown topic: ${topic} ${path ? `on page ${path}` : '(current page)'}`);
   }
 
@@ -129,7 +127,7 @@ function computeTaxonomyFromTopics(topics, path) {
     const visibleTopics = [];
     // if taxonomy loaded, we can compute more
     topics.forEach((tag) => {
-      taxonomy.get(tag).map(tax => {
+      taxonomy.get(tag).map((tax) => {
         if (tax) {
           if (!tax.skipMeta) {
             allTopics.push(tag);
@@ -150,36 +148,36 @@ function computeTaxonomyFromTopics(topics, path) {
         } else {
           debug(`Unknown topic in tags list: ${tag} ${path ? `on page ${path}` : '(current page)'}`);
         }
-      })
-      
+      });
     });
 
     return {
-      category, 
-      topics, 
-      visibleTopics, 
-      allTopics
+      category,
+      topics,
+      visibleTopics,
+      allTopics,
     };
   }
 
   return {
     category,
-    topics
+    topics,
   };
 }
-
 
 /**
  * Loads (i.e. sets on object) the taxonomy properties for the given article.
  * @param {Object} article The article to enhance with the taxonomy data
  */
 function loadArticleTaxonomy(article) {
-  if(article.allTopics) {
-    return;
+  const clonedArticle = { ...article };
+
+  if (clonedArticle.allTopics) {
+    return clonedArticle;
   }
 
   // for now, we can only compute the category
-  const { tags, path } = article;
+  const { tags, path } = clonedArticle;
 
   if (tags) {
     const topics = tags
@@ -190,22 +188,24 @@ function loadArticleTaxonomy(article) {
 
     const articleTax = computeTaxonomyFromTopics(topics, path);
 
-    article.category = articleTax.category;
+    clonedArticle.category = articleTax.category;
 
     // topics = tags as an array
-    article.topics = topics;
+    clonedArticle.topics = topics;
 
     // visibleTopics = visible topics including parents
-    article.visibleTopics = articleTax.allVisibleTopics;
+    clonedArticle.visibleTopics = articleTax.allVisibleTopics;
 
     // allTopics = all topics including parents
-    article.allTopics = articleTax.allTopics;
+    clonedArticle.allTopics = articleTax.allTopics;
   } else {
-    article.category = 'News';
-    article.topics = [];
-    article.visibleTopics = [];
-    article.allTopics = [];
+    clonedArticle.category = 'News';
+    clonedArticle.topics = [];
+    clonedArticle.visibleTopics = [];
+    clonedArticle.allTopics = [];
   }
+
+  return clonedArticle;
 }
 
 /**
@@ -273,20 +273,14 @@ export function stamp(message) {
  * @returns The taxonomy object
  */
 export function getArticleTaxonomy(article) {
-  if (!article.allTopics) {
-    loadArticleTaxonomy(article);
-  }
-
   const {
     category,
     topics,
     visibleTopics,
     allTopics,
-  } = article;
+  } = article.allTopics ? article : loadArticleTaxonomy(article);
 
-  return {
-    category, topics, visibleTopics, allTopics,
-  };
+  return { category, topics, visibleTopics, allTopics };
 }
 
 /**
@@ -295,9 +289,7 @@ export function getArticleTaxonomy(article) {
  * @returns card Generated card
  */
 export function buildArticleCard(article, type = 'article', eager = false) {
-  const {
-    title, description, image, imageAlt, date,
-  } = article;
+  const { title, description, image, imageAlt, date } = article;
 
   const path = article.path.split('.')[0];
 
@@ -540,7 +532,7 @@ function buildFilterOption(itemName, type) {
 }
 
 function buildFilter(type, tax, ph, block, config) {
-  const container = document.createElement('div');
+  const container = emptyDiv();
   container.classList.add('filter');
 
   const button = document.createElement('a');
@@ -552,7 +544,7 @@ function buildFilter(type, tax, ph, block, config) {
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
 
-  const dropdown = document.createElement('div');
+  const dropdown = emptyDiv();
   dropdown.classList.add('filter-dropdown');
   dropdown.setAttribute('aria-labelledby', `${type}-filter-button`);
   dropdown.setAttribute('role', 'menu');
@@ -560,7 +552,7 @@ function buildFilter(type, tax, ph, block, config) {
   const SEARCH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
     <path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path>
   </svg>`;
-  const searchBar = document.createElement('div');
+  const searchBar = emptyDiv();
   searchBar.classList.add('filter-search');
   searchBar.insertAdjacentHTML('afterbegin', SEARCH_ICON);
   const searchField = document.createElement('input');
@@ -585,7 +577,7 @@ function buildFilter(type, tax, ph, block, config) {
     }
   });
 
-  const footer = document.createElement('div');
+  const footer = emptyDiv();
   footer.classList.add('filter-dropdown-footer');
 
   const resetBtn = document.createElement('a');
@@ -669,28 +661,38 @@ async function filterArticles(config, feed, limit, offset) {
   }
 }
 
-
-async function decorateArticleFeed(articleFeedEl, config, offset = 0,
-  feed = { data: [], complete: false, cursor: 0 }) {
-  let articleCards = articleFeedEl.querySelector('.article-cards');
-  if (!articleCards) {
-    articleCards = document.createElement('div');
-    articleCards.className = 'article-cards';
-    articleFeedEl.appendChild(articleCards);
-  }
-  // display spinner
-  const placeholders = await fetchPlaceholders();
-  const emptyDiv = document.createElement('div');
-  emptyDiv.classList.add('article-cards-empty');
-  const spinner = document.createElement('div');
+async function generateSpinner(containerClass) {
+  const emptyDiv = emptyDiv();
+  emptyDiv.classList.add(containerClass);
+  const spinner = emptyDiv();
   spinner.classList.add('spinner');
   emptyDiv.append(spinner);
   articleCards.append(emptyDiv);
+}
+
+async function generateArticleCards() {
+  const articleCards = emptyDiv();
+  articleCards.className = 'article-cards';
+  return articleCards;
+}
+
+async function decorateArticleFeed(
+  articleFeedEl,
+  config,
+  offset = 0,
+  feed = { data: [], complete: false, cursor: 0 },
+) {
+  const articleCards = articleFeedEl.querySelector('.article-cards') ?? generateArticleCards();
+
+  // display spinner
+  generateSpinner('article-cards-empty');
 
   const limit = 12;
   const pageEnd = offset + limit;
   await filterArticles(config, feed, limit, offset);
   const articles = feed.data;
+
+  const placeholders = await fetchPlaceholders();
   if (articles.length) {
     // results were found
     emptyDiv.remove();
@@ -737,14 +739,14 @@ async function decorateFeedFilter(articleFeedEl, config) {
   const taxonomy = getTaxonomy();
   const parent = document.querySelector('.article-feed-container');
 
-  const curtain = document.createElement('div');
+  const curtain = emptyDiv();
   curtain.classList.add('filter-curtain', 'hide');
   document.querySelector('main').append(curtain);
 
   // FILTER CONTAINER
-  const filterContainer = document.createElement('div');
+  const filterContainer = emptyDiv();
   filterContainer.classList.add('filter-container');
-  const filterWrapper = document.createElement('div');
+  const filterWrapper = emptyDiv();
 
   const filterText = document.createElement('p');
   filterText.classList.add('filter-text');
@@ -759,9 +761,9 @@ async function decorateFeedFilter(articleFeedEl, config) {
   parent.parentElement.insertBefore(filterContainer, parent);
 
   // SELECTED CONTAINER
-  const selectedContainer = document.createElement('div');
+  const selectedContainer = emptyDiv();
   selectedContainer.classList.add('selected-container', 'hide');
-  const selectedWrapper = document.createElement('div');
+  const selectedWrapper = emptyDiv();
 
   const selectedText = document.createElement('p');
   selectedText.classList.add('selected-text');
@@ -773,8 +775,10 @@ async function decorateFeedFilter(articleFeedEl, config) {
   const clearBtn = document.createElement('a');
   clearBtn.classList.add('button', 'small', 'clear');
   clearBtn.textContent = placeholders['clear-all'];
-  clearBtn.addEventListener('click',
-    (e) => clearFilters(e, articleFeedEl, config));
+  clearBtn.addEventListener(
+    'click',
+    (e) => clearFilters(e, articleFeedEl, config),
+  );
 
   selectedWrapper.append(selectedText, selectedCategories, clearBtn);
   selectedContainer.append(selectedWrapper);

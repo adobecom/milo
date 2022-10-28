@@ -578,6 +578,8 @@ export const getLocaleIetf = () => getConfig().locale?.ieft;
  */
 export const getRootPath = () => getConfig().locale?.prefix;
 
+export const emptyDiv = () => document.createElement('div');
+
 /**
  * fetches the string variables.
  * @returns {object} localized variables
