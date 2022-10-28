@@ -2,6 +2,7 @@ import {
   fetchPlaceholders,
   getLocaleIetf,
   getRootPath,
+  emptyDiv
 } from '../../utils/utils.js';
 
 /**
@@ -608,15 +609,15 @@ async function filterArticles(config, feed, limit, offset) {
   const result = [];
 
   /* filter posts by category, tag and author */
-  const filters = {};
-  Object.keys(config).forEach((key) => {
-    const filterNames = ['tags', 'topics', 'selectedProducts', 'selectedIndustries', 'author', 'category', 'exclude'];
-    if (filterNames.includes(key)) {
-      const vals = config[key];
-      const v = vals.split(',');
-      filters[key] = v.map((e) => e.toLowerCase().trim());
+  const FILTER_NAMES = ['tags', 'topics', 'selectedProducts', 'selectedIndustries', 'author', 'category', 'exclude'];
+
+  const filters = Object.keys(config).reduce((prev, key) => {
+    if (FILTER_NAMES.includes(key)) {
+      prev[key] = config[key].split(',').map((e) => e.toLowerCase().trim());
     }
-  });
+
+    return prev;
+  }, {});
 
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
@@ -629,9 +630,9 @@ async function filterArticles(config, feed, limit, offset) {
     const feedChunk = indexChunk.filter((article) => {
       const matchedAll = Object.keys(filters).every((key) => {
         if (key === 'exclude' || key === 'tags' || key === 'topics') {
-          const tax = getArticleTaxonomy(article);
-          const matchedFilter = filters[key].some((val) => (tax.allTopics
-            && tax.allTopics.map((t) => t.toLowerCase()).includes(val)));
+          const taxonomy = getArticleTaxonomy(article);
+          const matchedFilter = filters[key].some((val) => (taxonomy.allTopics
+            && taxonomy.allTopics.map((t) => t.toLowerCase()).includes(val)));
           return key === 'exclude' ? !matchedFilter : matchedFilter;
         }
         if (key === 'selectedProducts' || key === 'selectedIndustries') {
@@ -661,16 +662,16 @@ async function filterArticles(config, feed, limit, offset) {
   }
 }
 
-async function generateSpinner(containerClass) {
-  const emptyDiv = emptyDiv();
-  emptyDiv.classList.add(containerClass);
+function generateSpinner(containerClass) {
+  const container = emptyDiv();
+  container.classList.add(containerClass);
   const spinner = emptyDiv();
   spinner.classList.add('spinner');
-  emptyDiv.append(spinner);
-  articleCards.append(emptyDiv);
+  container.append(spinner);
+  return container;
 }
 
-async function generateArticleCards() {
+function generateArticleCards() {
   const articleCards = emptyDiv();
   articleCards.className = 'article-cards';
   return articleCards;
@@ -681,13 +682,19 @@ async function decorateArticleFeed(
   config,
   offset = 0,
   feed = { data: [], complete: false, cursor: 0 },
+  limit = 12
 ) {
-  const articleCards = articleFeedEl.querySelector('.article-cards') ?? generateArticleCards();
+  let articleCards = articleFeedEl.querySelector('.article-cards');
+
+  if(!articleCards) {
+    articleCards = generateArticleCards();
+    articleFeedEl.append(articleCards);
+  }
 
   // display spinner
-  generateSpinner('article-cards-empty');
+  const spinner = generateSpinner('article-cards-empty');
+  articleCards.append(spinner);
 
-  const limit = 12;
   const pageEnd = offset + limit;
   await filterArticles(config, feed, limit, offset);
   const articles = feed.data;
@@ -695,7 +702,7 @@ async function decorateArticleFeed(
   const placeholders = await fetchPlaceholders();
   if (articles.length) {
     // results were found
-    emptyDiv.remove();
+    spinner.remove();
   } else if (config.selectedProducts || config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();
