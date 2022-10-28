@@ -472,7 +472,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (getMetadata('georouting') === 'on' || config.georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
+      loadGeoRouting(config, createTag, getMetadata, loadStyle);
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
