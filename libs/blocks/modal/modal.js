@@ -36,15 +36,32 @@ function closeModals(modals) {
   }
 }
 
-export async function getModal(el) {
+function handleCustomModal(custom, dialog) {
+  dialog.id = custom.id;
+  dialog.classList.add(custom.class);
+  return custom.content;
+}
+
+async function handleAnchorModal(el, dialog) {
   const details = getDetails(el);
   if (!details) return null;
 
+  dialog.id = details.id;
+
+  const linkBlock = document.createElement('a');
+  linkBlock.href = details.path;
+
+  const { default: getFragment } = await import('../fragment/fragment.js');
+  await getFragment(linkBlock, dialog);
+
+  return linkBlock;
+}
+
+export async function getModal(el, custom) {
   const curtain = createTag('div', { class: 'modal-curtain is-open' });
   const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
   const dialog = document.createElement('div');
   dialog.className = 'dialog-modal';
-  dialog.id = details.id;
 
   close.addEventListener('click', (e) => {
     closeModals([dialog]);
@@ -64,13 +81,9 @@ export async function getModal(el) {
     }
   });
 
-  const linkBlock = document.createElement('a');
-  linkBlock.href = details.path;
+  const content = el ? handleAnchorModal(el, dialog) : handleCustomModal(custom, dialog);
 
-  const { default: getFragment } = await import('../fragment/fragment.js');
-  await getFragment(linkBlock, dialog);
-
-  dialog.append(close, linkBlock);
+  dialog.append(close, content);
   document.body.append(dialog);
   dialog.insertAdjacentElement('afterend', curtain);
   close.focus({ focusVisible: true });

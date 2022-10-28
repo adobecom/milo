@@ -100,10 +100,9 @@ export function getLocale(locales) {
   return locale;
 }
 
-export const getConfigRoot = (config, prefix) => {
-  if (config.contentRoot) {
-    return `${origin}${prefix}${config.contentRoot}`;
-  }
+export const getContentRoot = (config) => {
+  const { prefix } = config.locale;
+  if (config.contentRoot) return `${origin}${prefix}${config.contentRoot}`;
   return `${origin}${prefix}`;
 };
 
@@ -114,9 +113,10 @@ export const [setConfig, getConfig] = (() => {
       const { origin } = window.location;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.contentRoot ??= '/';
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
-      config.locale.contentRoot = getConfigRoot(config, config.locale.prefix);
+      config.locale.contentRoot = getContentRoot(config);
       return config;
     },
     () => config,
@@ -470,8 +470,10 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-    loadGeoRouting(config, loadStyle, createTag, getConfigRoot);
+    if (getMetadata('georouting') === 'on' || config.georouting === 'on') {
+      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
+      loadGeoRouting(config, createTag, getMetadata);
+    }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, config, getMetadata);
