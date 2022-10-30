@@ -23,11 +23,18 @@ const MUNCHKIN_ID = 'munchkin id';
 
 /* Marketo adds default styles that we want to remove */
 const cleanStyleSheets = (baseURL) => {
-  const { styleSheets } = document;
+  const { styleSheets, head } = document;
 
   [...styleSheets].forEach((sheet) => {
     if (sheet.href?.includes(baseURL)) {
       sheet.disabled = true;
+    }
+  });
+
+  // Removing Custom CSS from Marketo.
+  head.querySelectorAll('style').forEach((s) => {
+    if (s.textContent.includes('mkto')) {
+      s.remove();
     }
   });
 };

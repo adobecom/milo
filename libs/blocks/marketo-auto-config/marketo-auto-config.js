@@ -25,6 +25,20 @@ const defaultState = {
   hidden_fields: '',
 };
 
+const renameKeys = (obj, newKeys) => {
+  const keyValues = Object.keys(obj).map((key) => {
+    const newKey = newKeys[key] || key;
+    return { [newKey]: obj[key] };
+  });
+  return Object.assign({}, ...keyValues);
+};
+
+const stateReform = (state) => {
+  const newKeys = {};
+  Object.keys(state).forEach(((k) => { newKeys[k] = k.replace('_', ' '); }));
+  return renameKeys(state, newKeys);
+};
+
 const getInitialState = () => {
   const hashConfig = getHashConfig();
   if (hashConfig) return hashConfig;
@@ -90,7 +104,7 @@ const CopyBtn = () => {
 
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+    return `${url}#${utf8ToB64(JSON.stringify(stateReform(state)))}`;
   };
 
   const copyConfig = () => {
@@ -165,20 +179,6 @@ const FieldsPanel = () => html`
   <${Input} label="Destination URL*" prop="destination_url" />
   <${Input} label="Hidden Fields (Optional)" prop="hidden_fields" />
 `;
-
-function renameKeys(obj, newKeys) {
-  const keyValues = Object.keys(obj).map((key) => {
-    const newKey = newKeys[key] || key;
-    return { [newKey]: obj[key] };
-  });
-  return Object.assign({}, ...keyValues);
-}
-
-const stateReform = (state) => {
-  const newKeys = {};
-  Object.keys(state).forEach(((k) => { newKeys[k] = k.replace('_', ' '); }));
-  return renameKeys(state, newKeys);
-};
 
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
