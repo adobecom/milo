@@ -39,6 +39,12 @@ const stateReform = (state) => {
   return renameKeys(state, newKeys);
 };
 
+const stateReformUndo = (state) => {
+  const newKeys = {};
+  Object.keys(state).forEach(((k) => { newKeys[k] = k.replace(' ', '_'); }));
+  return renameKeys(state, newKeys);
+};
+
 const getInitialState = () => {
   const hashConfig = getHashConfig();
   if (hashConfig) return hashConfig;
@@ -54,7 +60,7 @@ const getInitialState = () => {
   return null;
 };
 const saveStateToLocalStorage = (state) => {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  localStorage.setItem(LS_KEY, JSON.stringify(stateReformUndo(state)));
 };
 
 const reducer = (state, action) => {
