@@ -95,21 +95,7 @@ const readyForm = (error, form, formData) => {
   form.onSuccess(() => formSuccess(form, redirectUrl));
 };
 
-const init = (el) => {
-  const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
-  const children = Array.from(el.querySelectorAll(':scope > div'));
-  const formData = {
-    [FORM_ID]: marketoFormID,
-    [BASE_URL]: marketoBaseURL,
-    [MUNCHKIN_ID]: marketoMunchkinID,
-  };
-
-  children.forEach((element) => {
-    const key = element.children[0]?.textContent.toLowerCase();
-    const value = element.children[1]?.textContent;
-    if (key && value) { formData[key] = value; }
-  });
-
+export const loadMarketoForm = (el, formData) => {
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
@@ -149,6 +135,24 @@ const init = (el) => {
       /* c8 ignore next */
       el.style.display = 'none';
     });
+};
+
+const init = (el) => {
+  const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
+  const children = Array.from(el.querySelectorAll(':scope > div'));
+  const formData = {
+    [FORM_ID]: marketoFormID,
+    [BASE_URL]: marketoBaseURL,
+    [MUNCHKIN_ID]: marketoMunchkinID,
+  };
+
+  children.forEach((element) => {
+    const key = element.children[0]?.textContent.toLowerCase();
+    const value = element.children[1]?.textContent;
+    if (key && value) { formData[key] = value; }
+  });
+
+  loadMarketoForm(el, formData);
 };
 
 export default init;

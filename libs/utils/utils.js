@@ -37,12 +37,14 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'marketo-auto',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
+  { 'marketo-auto': '/tools/marketo-form-link'},
   { fragment: '/fragments/' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
