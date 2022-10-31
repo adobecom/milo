@@ -450,7 +450,7 @@ class Gnav {
   };
 
   setBreadcrumbSEO = () => {
-    const breadcrumb = this.el.querySelector('.breadcrumbs');
+    const breadcrumb = this.el.querySelector('.breadcrumbs');//
     if (breadcrumb) {
       const isSeo = breadcrumb.classList.contains('seo');
       if (isSeo) {
