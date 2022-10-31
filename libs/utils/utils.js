@@ -110,8 +110,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        config.locale.direction = (new Intl.Locale(config.locale.ietf)).textInfo.direction;
-        document.documentElement.setAttribute('dir',config.locale.direction);  
+        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);  
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
