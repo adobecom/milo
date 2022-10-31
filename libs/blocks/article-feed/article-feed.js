@@ -5,6 +5,8 @@ import {
   emptyDiv,
 } from '../../utils/utils.js';
 
+let taxonomy;
+
 /**
  * number case, coming from Excel
  * 1/1/1900 is day 1 in Excel, so:
@@ -61,6 +63,7 @@ export function getLinkForTopic(topic, path) {
   const catLink = taxonomy?.get(topic).map((tax) => tax?.link ?? '#');
 
   if (catLink === '#') {
+    // eslint-disable-next-line no-console
     console.warn(`Trying to get a link for an unknown topic: ${topic} ${path ? `on page ${path}` : '(current page)'}`);
   }
 
@@ -108,8 +111,6 @@ export function createOptimizedPicture(src, alt = '', eager = false, breakpoints
   return picture;
 }
 
-let taxonomy;
-
 /**
  * For the given list of topics, returns the corresponding computed taxonomy:
  * - category: main topic
@@ -124,32 +125,50 @@ function computeTaxonomyFromTopics(topics, path) {
   const category = topics?.length > 0 ? topics[0] : 'news';
 
   if (taxonomy) {
+    // if taxonomy loaded, we can compute more
+    const taxonomyTags = topics.reduce(
+      (map, tag) => {
+        map[tag] = taxonomy.get(tag);
+        return map;
+      },
+      {},
+    );
+
     const allTopics = [];
     const visibleTopics = [];
-    // if taxonomy loaded, we can compute more
-    topics.forEach((tag) => {
-      taxonomy.get(tag).map((tax) => {
-        if (tax) {
-          if (!tax.skipMeta) {
-            allTopics.push(tag);
-            if (tax.isUFT) {
-              visibleTopics.push(tag);
-            }
-            const parents = taxonomy.getParents(tag);
-            if (parents) {
-              parents.forEach((parent) => {
-                const ptax = taxonomy.get(parent);
-                if (!allTopics.includes(parent)) {
-                  allTopics.push(parent);
-                  if (ptax.isUFT) visibleTopics.push(parent);
-                }
-              });
-            }
-          }
-        } else {
-          debug(`Unknown topic in tags list: ${tag} ${path ? `on page ${path}` : '(current page)'}`);
-        }
-      });
+    const parentTaxonomy = [];
+
+    taxonomyTags.forEach((tag, tax) => {
+      if (!tax) {
+        // eslint-disable-next-line no-console
+        console.warn(`Unknown topic in tags list: ${tag} ${path ? `on page ${path}` : '(current page)'}`);
+        return;
+      }
+
+      if (tax.skipMeta) { return; }
+
+      allTopics.push(tag);
+
+      if (tax.isUFT) {
+        visibleTopics.push(tag);
+      }
+
+      const parents = taxonomy.getParents(tag);
+      if (parents) {
+        parentTaxonomy.push(parents);
+      }
+    });
+
+    parentTaxonomy.forEach((parent) => {
+      const ptax = taxonomy.get(parent);
+
+      if (allTopics.includes(parent)) { return; }
+
+      allTopics.push(parent);
+
+      if (ptax.isUFT) {
+        visibleTopics.push(parent);
+      }
     });
 
     return {
@@ -226,41 +245,32 @@ export function toClassName(name) {
  * @returns {object} The block config
  */
 export function readBlockConfig(block) {
-  const config = {};
-  block.querySelectorAll(':scope>div').forEach((row) => {
+  return block.querySelectorAll(':scope>div').reduce((config, row) => {
     if (row.children) {
       const cols = [...row.children];
       if (cols[1]) {
         const valueEl = cols[1];
         const name = toClassName(cols[0].textContent);
-        let value = '';
         if (valueEl.querySelector('a')) {
           const aArr = [...valueEl.querySelectorAll('a')];
           if (aArr.length === 1) {
-            value = aArr[0].href;
+            config[name] = aArr[0].href;
           } else {
-            value = aArr.map((a) => a.href);
+            config[name] = aArr.map((a) => a.href);
           }
         } else if (valueEl.querySelector('p')) {
           const pArr = [...valueEl.querySelectorAll('p')];
           if (pArr.length === 1) {
-            value = pArr[0].textContent;
+            config[name] = pArr[0].textContent;
           } else {
-            value = pArr.map((p) => p.textContent);
+            config[name] = pArr.map((p) => p.textContent);
           }
-        } else value = row.children[1].textContent;
-        config[name] = value;
+        } else config[name] = row.children[1].textContent;
       }
     }
-  });
 
-  return config;
-}
-
-export function stamp(message) {
-  if (window.name.includes('performance')) {
-    debug(`${new Date() - performance.timing.navigationStart}:${message}`);
-  }
+    return config;
+  }, {});
 }
 
 /**
@@ -331,8 +341,8 @@ export async function fetchBlogArticleIndex() {
   };
   if (window.blogIndex.complete) return (window.blogIndex);
   const index = window.blogIndex;
-  const resp = await fetch(`${getRootPath()}/query-index.json?limit=${pageSize}&offset=${index.offset}`);
-  const json = await resp.json();
+  const json = await fetch(`${getRootPath()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
+    .then((response) => response.json());
   const complete = (json.limit + json.offset) === json.total;
   json.data.forEach((post) => {
     index.data.push(post);
@@ -340,7 +350,7 @@ export async function fetchBlogArticleIndex() {
   });
   index.complete = complete;
   index.offset = json.offset + pageSize;
-  return (index);
+  return index;
 }
 
 function isCardOnPage(article) {
@@ -605,7 +615,7 @@ function buildFilter(type, tax, ph, block, config) {
   return container;
 }
 
-const isInList = (list, val) => { list && list.map((t) => t.toLowerCase()).includes(val); };
+const isInList = (list, val) => list && list.map((t) => t.toLowerCase()).includes(val);
 
 async function filterArticles(config, feed, limit, offset) {
   /* filter posts by category, tag and author */
@@ -642,8 +652,10 @@ async function filterArticles(config, feed, limit, offset) {
         if (SELECTED.includes(key)) {
           if (filters.selectedProducts && filters.selectedIndustries) {
             // match product && industry
-            const matchProduct = filters.selectedProducts.some((val) => (isInList(taxonomy?.allTopics, val)));
-            const matchIndustry = filters.selectedIndustries.some((val) => (isInList(taxonomy?.allTopics, val)));
+            const matchProduct = filters.selectedProducts
+              .some((val) => (isInList(taxonomy?.allTopics, val)));
+            const matchIndustry = filters.selectedIndustries
+              .some((val) => (isInList(taxonomy?.allTopics, val)));
             return matchProduct && matchIndustry;
           }
           const matchedFilter = filters[key].some((val) => isInList(taxonomy.allTopics, val));
@@ -657,7 +669,7 @@ async function filterArticles(config, feed, limit, offset) {
     });
 
     stamp(`chunk measurements - loading: ${beforeFiltering - beforeLoading}ms filtering: ${new Date() - beforeFiltering}ms`);
-    
+
     feed.cursor = index.data.length;
     feed.complete = index.complete;
     feed.data = [...feed.data, ...feedChunk];
@@ -798,7 +810,7 @@ export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
   articleFeed.innerHTML = '';
   if (config.filters) {
-    decorateFeedFilter(block, config);
+    decorateFeedFilter(articleFeed, config);
   }
   decorateArticleFeed(articleFeed, config);
 }

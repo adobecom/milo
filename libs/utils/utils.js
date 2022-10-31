@@ -596,3 +596,10 @@ export async function fetchPlaceholders() {
   }
   return window.placeholders;
 }
+
+export function stamp(message) {
+  if (window.name.includes('performance')) {
+    // eslint-disable-next-line no-console
+    console.warn(`${new Date() - performance.timeOrigin}:${message}`);
+  }
+}
