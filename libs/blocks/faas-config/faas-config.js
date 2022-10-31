@@ -68,7 +68,6 @@ const CopyBtn = () => {
   const [errorMessage, setErrorMessage] = useState('Failed to Copy.');
   const [showConfigUrl, setShowConfigUrl] = useState(false);
 
-
   // debug
   const [configUrl, setConfigUrl] = useState('');
 
@@ -358,6 +357,10 @@ const PrepopulationPanel = () => html`
 const StylePanel = () => html`
   <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{ white: 'White', dark: 'Dark' }}" />
   <${Select} label="Layout" prop="style_layout" options="${{ column1: '1 Column', column2: '2 Columns' }}" />
+  <${Select} label="Title Size" prop="title_size" options="${{
+  h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P',
+}}" />
+  <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
 const Configurator = ({ rootEl }) => {
