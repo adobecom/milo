@@ -263,13 +263,6 @@ input[type="checkbox"] + label {
   padding: 48px;
 }
 
-.faas.next h2 {
-  font-size: var(--type-body-s-size);
-  margin: 0;
-  max-width: 100%;
-  text-align: left;
-}
-
 .faas.next .faas-form {
   display: flex;
   flex-wrap: wrap;
