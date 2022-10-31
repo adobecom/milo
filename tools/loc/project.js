@@ -9,12 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { asyncForEach, getSharepointLocationFromUrl } from './utils.js';
+import { getDocPathFromUrl } from './utils.js';
 import getConfig from './config.js';
+import { getSpFiles } from './sharepoint.js';
 
 const PROJECTS_ROOT_PATH = '/drafts/localization/projects/';
 
 let project;
+
+const PROJECT_STATUS = {
+  CONNECT_TO_GLAAS: 'Connect To GLaaS',
+  YET_TO_START: 'NOT STARTED',
+  CREATED: 'CREATED',
+  IN_PROGRESS: 'IN PROGRESS',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+};
 
 function getUrlInfo() {
   const location = new URL(document.location.href);
@@ -73,105 +83,189 @@ async function readProjectFile(projectWebUrl) {
   return undefined;
 }
 
-function getProjectFolder(path) {
-  return path.substring(0, path.lastIndexOf('.'));
+function getArrayFromString(string, split) {
+  return string && string.includes(split)
+    ? string.split(split).filter((str) => str.trim().length > 0) : [];
 }
 
-function shouldGenerateEnglishCopy(action) {
-  return action && action.toLowerCase() === 'english copy';
-}
-
-function shouldBeProcessed(language, translationRow) {
-  return translationRow[language] && `${translationRow[language]}`;
-}
-
-function shouldRollout(action) {
-  return action && action.toLowerCase() === 'rollout';
-}
-
-function addToExistingOrCreate(projectDetail, key, task) {
-  projectDetail[key] = projectDetail[key] || [];
-  projectDetail[key].push(task);
-}
-
-function addToArrayIfNotPresent(array, toAdd) {
-  if (array.indexOf(toAdd) === -1) {
-    array.push(toAdd);
+function addOrAppendToMap(map, key, value) {
+  if (map.has(key)) {
+    map.get(key).push(value);
+  } else {
+    map.set(key, [value]);
   }
 }
 
-function updateProjectDetailWithTask(projectDetail, task) {
-  const urlToTranslate = task.URL;
-  const { language } = task;
-  // addToExistingOrCreate(projectDetail, urlToTranslate, task);
-  addToExistingOrCreate(projectDetail, language, task);
-  addToArrayIfNotPresent(projectDetail.urls, urlToTranslate);
-  addToArrayIfNotPresent(projectDetail.languages, language);
-  if (!projectDetail.docs[urlToTranslate]) {
-    projectDetail.docs[urlToTranslate] = { filePath: task.filePath };
-  }
-  if (!projectDetail.langstoredocs[urlToTranslate]) {
-    projectDetail.langstoredocs[urlToTranslate] = { filePath: `/langstore/en${task.filePath}` };
-  }
-}
+function getSubprojectsInfo(projectJson, config, urls, filePathToReferencePosition) {
+  let projectStarted = false;
+  const projectLanguages = projectJson?.languages?.data;
+  const allLanguageInfo = config.locales;
+  const activeLanguagesMap = new Map();
+  projectLanguages
+    .filter((language) => language.Action)
+    .forEach((activeLanguage) => {
+      activeLanguagesMap.set(activeLanguage.Language, activeLanguage);
+    });
+  const translationProjects = new Map();
+  const englishCopyProjects = new Map();
+  const rolloutProjects = new Map();
 
-function getTargetFolders(srcPath, projectFolder, targetLocales) {
-  const targetFolders = [];
-  if (!targetLocales) {
-    return targetFolders;
-  }
-  const targetLocalesArray = targetLocales.split(',');
-  // eslint-disable-next-line no-restricted-syntax
-  for (const targetLocale of targetLocalesArray) {
-    targetFolders.push(`/${targetLocale}${srcPath.substring(0, srcPath.lastIndexOf('/'))}`);
-  }
-  return targetFolders;
-}
+  function addUrls(langInfo, key) {
+    const urlsMap = new Map();
 
-async function addLanguageTasksToProject(projectDetail, projectFolder, locConfig, translationTask) {
-  const localesConfig = locConfig.locales;
-  const urlToTranslate = translationTask.URL;
-  const srcPath = getSharepointLocationFromUrl(urlToTranslate);
-  await asyncForEach(localesConfig, async (localeConfig) => {
-    const languageCode = localeConfig.languagecode;
-    const altLanguageCode = localeConfig.altLanguagecode;
-    const { language } = localeConfig;
-    if (languageCode === 'en' || shouldBeProcessed(language, translationTask)) {
-      const action = translationTask[language];
-      const targetLivecopies = await locConfig.getLivecopiesForLanguage(languageCode);
-      const targetLivecopyFolders = getTargetFolders(srcPath, projectFolder, targetLivecopies);
-      const targetAltLangLocales = await locConfig.getAltLangLocales(languageCode);
-      const targetAltLangFolders = getTargetFolders(srcPath, projectFolder, targetAltLangLocales);
-      const skipTranslation = languageCode === 'en' || shouldRollout(action);
-      const task = {
-        URL: urlToTranslate,
-        language: languageCode,
-        altlanguage: altLanguageCode,
-        path: srcPath,
-        skipLanguageTranslation: skipTranslation,
-        rolloutOnly: skipTranslation && !altLanguageCode,
-        englishCopy: shouldGenerateEnglishCopy(action),
-        filePath: `${srcPath}.docx`,
-        languagePath: `/langstore/${languageCode}${srcPath}`,
-        languageFilePath: `/langstore/${languageCode}${srcPath}.docx`,
-        altLanguagePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}` : '',
-        altLanguageFilePath: altLanguageCode ? `/langstore/${altLanguageCode.toLowerCase()}${srcPath}.docx` : '',
-        livecopyFolders: targetLivecopyFolders,
-        altLangFolders: targetAltLangFolders,
+    function getFolders(locales, srcDocPath) {
+      return locales.map((locale) => `/${locale}${srcDocPath.substring(0, srcDocPath.lastIndexOf('/'))}`);
+    }
+
+    function getLangFilePath(language, srcDocPath) {
+      return `/langstore/${language.toLowerCase()}${srcDocPath}`;
+    }
+
+    function getStatus(langFilePath) {
+      let status = PROJECT_STATUS.YET_TO_START;
+      if (langInfo.status !== PROJECT_STATUS.YET_TO_START) {
+        status = langInfo.failedPages.includes(langFilePath)
+          ? PROJECT_STATUS.FAILED : langInfo.status;
+      }
+      return status;
+    }
+
+    function getUrlLangInfo(langDetail, srcDocPath) {
+      const langFilePath = getLangFilePath(langDetail.language, srcDocPath);
+      return {
+        languageFilePath: getLangFilePath(langDetail.language, srcDocPath),
+        livecopyFolders: getFolders(langDetail.livecopies, srcDocPath),
+        status: getStatus(langFilePath),
       };
-      updateProjectDetailWithTask(projectDetail, task);
+    }
+
+    urls.forEach((urlInfo, url) => {
+      const srcDocPath = urlInfo.doc.filePath;
+      const { language } = langInfo;
+      const urlLangInfo = {
+        langInfo: {
+          srcDocPath,
+          ...getUrlLangInfo(langInfo, srcDocPath, 'langInfo'),
+        },
+      };
+      addOrAppendToMap(
+        filePathToReferencePosition,
+        urlLangInfo.langInfo.languageFilePath,
+        `${key}|${language}|urls|${url}|langInfo`,
+      );
+      if (langInfo?.altLangInfo) {
+        const { altLangInfo } = langInfo;
+        urlLangInfo.altLangInfo = { ...getUrlLangInfo(altLangInfo, srcDocPath, 'altLangInfo') };
+        addOrAppendToMap(
+          filePathToReferencePosition,
+          urlLangInfo.altLangInfo.languageFilePath,
+          `${key}|${language}|urls|${url}|altLangInfo`,
+        );
+      }
+      urlsMap.set(url, urlLangInfo);
+    });
+    langInfo.urls = urlsMap;
+  }
+
+  function getSelectedLivecopies(allLivecopies, livecopiesSelectedForRollout) {
+    return allLivecopies
+      .filter((livecopy) => livecopiesSelectedForRollout.includes(livecopy));
+  }
+
+  function getLanguageStatusMap() {
+    const languageStatusMap = new Map();
+    const languageStatusRows = projectJson?.status?.data;
+    if (!languageStatusRows) {
+      return languageStatusMap;
+    }
+    languageStatusRows.forEach((languageStatusRow) => {
+      if (languageStatusRow?.Language) {
+        languageStatusMap.set(languageStatusRow.Language, languageStatusRow);
+      }
+    });
+    return languageStatusMap;
+  }
+
+  function isInvalidWorkflow(workflow) {
+    return !workflow || !workflow?.product
+      || !workflow?.project || !workflow?.workflowName;
+  }
+  function getTasksAPI(workflow) {
+    if (isInvalidWorkflow(workflow)) {
+      // eslint-disable-next-line no-console
+      console.error('Workflow information not available in config.');
+    }
+    const { glaas } = config;
+    return glaas.tasksApi(workflow);
+  }
+
+  const languageStatusMap = getLanguageStatusMap();
+  allLanguageInfo.forEach((languageInfo) => {
+    const { languagecode } = languageInfo;
+    const { language } = languageInfo;
+    const { altLanguagecode } = languageInfo;
+    const livecopies = config.getLivecopiesForLanguage(languagecode);
+    const livecopiesArray = getArrayFromString(livecopies, ',');
+    if (activeLanguagesMap.has(language)) {
+      const activeLanguage = activeLanguagesMap.get(language);
+      const selectedRolloutLocalesArray = getArrayFromString(activeLanguage.Locales, '\n');
+      const persistedStatus = languageStatusMap.get(languagecode);
+      const workflowDetail = config.getWorkflowForLanguage(languagecode, activeLanguage?.Workflow);
+      const langInfo = {
+        language: languagecode,
+        languageDisplayName: language,
+        rolloutLocales: selectedRolloutLocalesArray,
+        status: PROJECT_STATUS.YET_TO_START,
+        failureMessage: '',
+        failedPages: [],
+        workflowDetail,
+        livecopies: getSelectedLivecopies(livecopiesArray, selectedRolloutLocalesArray),
+        glaasTasksAPI: language !== 'en' ? getTasksAPI(workflowDetail) : {},
+      };
+      if (persistedStatus) {
+        projectStarted = true;
+        langInfo.status = persistedStatus.Status;
+        langInfo.failureMessage = persistedStatus.FailureMessage;
+        langInfo.failedPages = getArrayFromString(persistedStatus?.FailedPages);
+      }
+      if (altLanguagecode) {
+        const altLangLocales = config.getLivecopiesForLanguage(altLanguagecode);
+        const altLangLocalesArray = getArrayFromString(altLangLocales, ',');
+        const altLangWorkflowDetail = config.getWorkflowForLanguage(altLanguagecode);
+        langInfo.altLangInfo = {
+          language: altLanguagecode,
+          workflowDetail: altLangWorkflowDetail,
+          livecopies: getSelectedLivecopies(altLangLocalesArray, selectedRolloutLocalesArray),
+          glaasTasksAPI: config.glaas.tasksApi(altLangWorkflowDetail),
+        };
+      }
+      const action = activeLanguage?.Action.toLowerCase();
+      if (action === 'translate') {
+        translationProjects.set(languagecode, langInfo);
+        addUrls(langInfo, 'translationProjects');
+      } else if (action === 'english copy') {
+        englishCopyProjects.set(languagecode, langInfo);
+        addUrls(langInfo, 'englishCopyProjects');
+      } else if (action === 'rollout') {
+        rolloutProjects.set(languagecode, langInfo);
+        addUrls(langInfo, 'rolloutProjects');
+      }
     }
   });
+  return {
+    projectStarted,
+    subprojects: { translationProjects, englishCopyProjects, rolloutProjects },
+  };
 }
 
 async function init() {
   if (project) return project;
-  const locConfig = await getConfig();
+  const config = await getConfig();
   const urlInfo = getUrlInfo();
   if (!urlInfo.isValid()) {
     throw new Error('Invalid Url Parameters that point to project file');
   }
-  const hlxAdminStatusUrl = getHelixAdminApiUrl(urlInfo, locConfig.admin.api.status.baseURI);
+  const hlxAdminStatusUrl = getHelixAdminApiUrl(urlInfo, config.admin.api.status.baseURI);
   const projectFileStatus = await getProjectFileStatus(hlxAdminStatusUrl, urlInfo.sp);
   if (!projectFileStatus || !projectFileStatus?.webPath) {
     throw new Error('Project File does not have valid web path');
@@ -189,38 +283,42 @@ async function init() {
     repo: urlInfo.repo,
     ref: urlInfo.ref,
     purge() {
-      const hlxAdminPreviewUrl = getHelixAdminApiUrl(urlInfo, locConfig.admin.api.preview.baseURI);
+      const hlxAdminPreviewUrl = getHelixAdminApiUrl(urlInfo, config.admin.api.preview.baseURI);
       return fetch(`${hlxAdminPreviewUrl}${projectPath}`, { method: 'POST' });
     },
     async detail() {
       const projectFileJson = await readProjectFile(projectUrl);
-      const projectDetail = {
-        languages: [],
-        urls: [],
-        url: projectUrl,
-        docs: {},
-        langstoredocs: {},
-        name: projectName,
-      };
       if (!projectFileJson) {
-        return projectDetail;
+        return {};
       }
-      const projectFolder = getProjectFolder(projectPath);
       const urlRows = projectFileJson.urls.data;
-      await asyncForEach(urlRows, async (urlRow) => {
-        const urlToTranslate = urlRow.URL;
-        if (!urlToTranslate) {
-          return;
-        }
-        await addLanguageTasksToProject(
-          projectDetail,
-          projectFolder,
-          locConfig,
-          urlRow,
-
-        );
+      const urls = new Map();
+      const filePathToRefPosition = new Map();
+      urlRows.forEach((urlRow) => {
+        const url = urlRow.URL;
+        const docPath = getDocPathFromUrl(url);
+        const langstorePath = `/langstore/en${docPath}`;
+        urls.set(url, {
+          doc: { filePath: docPath },
+          langstoreDoc: { filePath: langstorePath },
+        });
+        addOrAppendToMap(filePathToRefPosition, docPath, `urls|${url}|doc`);
+        addOrAppendToMap(filePathToRefPosition, langstorePath, `urls|${url}|langstoreDoc`);
       });
-      // For Debugging.
+      const subprojectInfo = getSubprojectsInfo(
+        projectFileJson,
+        config,
+        urls,
+        filePathToRefPosition,
+      );
+      const projectDetail = {
+        projectStarted: subprojectInfo.projectStarted,
+        url: projectUrl,
+        name: projectName,
+        urls,
+        filePathsToReferencePositions: filePathToRefPosition,
+        ...(subprojectInfo.subprojects),
+      };
       window.projectDetail = projectDetail;
       return projectDetail;
     },
@@ -229,5 +327,36 @@ async function init() {
   return project;
 }
 
+async function updateProjectWithDocs(projectDetail, callback) {
+  if (!projectDetail || !projectDetail?.filePathsToReferencePositions) {
+    return;
+  }
+  const { filePathsToReferencePositions } = projectDetail;
+  const filePaths = [...filePathsToReferencePositions.keys()];
+  const spBatchFiles = await getSpFiles(filePaths);
+  spBatchFiles.forEach((spFiles) => {
+    if (spFiles && spFiles.responses) {
+      spFiles.responses.forEach((file) => {
+        const filePath = filePaths[file.id];
+        const spFileStatus = file.status;
+        const fileBody = spFileStatus === 200 ? file.body : {};
+        const referencePositions = filePathsToReferencePositions.get(filePath);
+        referencePositions.forEach((referencePosition) => {
+          const keys = referencePosition.split('|');
+          if (keys && keys.length > 0) {
+            let position = projectDetail;
+            keys.forEach((key) => {
+              position = position[key] || position.get(key);
+            });
+            position.sp = fileBody;
+            position.sp.status = spFileStatus;
+          }
+        });
+      });
+    }
+  });
+  if (callback) await callback();
+}
+
 // eslint-disable-next-line import/prefer-default-export
-export { init, PROJECTS_ROOT_PATH };
+export { init, updateProjectWithDocs, PROJECT_STATUS, PROJECTS_ROOT_PATH };

@@ -13,13 +13,6 @@ const status = document.getElementById('status');
 const loading = document.getElementById('loading');
 const STATUS_LEVELS = ['level-0', 'level-4'];
 
-export async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    await callback(array[index], index, array);
-  }
-}
-
 export function createTag(name, attrs) {
   const el = document.createElement(name);
   if (typeof attrs === 'object') {
@@ -47,21 +40,11 @@ export function loadingOFF() {
   loading.classList.add('hidden');
 }
 
-export function isAltLang(task, language) {
-  return task.altlanguage === language;
-}
-
-export function getAltLanguage(project, language) {
-  const tasks = project[language];
-  const task = tasks.length > 0 ? tasks[0] : undefined;
-  return task && task?.altlanguage ? task.altlanguage : undefined;
-}
-
 export function stripExtension(path) {
   return path.substring(0, path.lastIndexOf('.'));
 }
 
-export function getSharepointLocationFromUrl(url) {
+export function getDocPathFromUrl(url) {
   let path = getPathFromUrl(url);
   if (!path) {
     return undefined;
@@ -71,5 +54,5 @@ export function getSharepointLocationFromUrl(url) {
   } else if (path.endsWith('.html')) {
     path = path.slice(0, -5);
   }
-  return path;
+  return `${path}.docx`;
 }

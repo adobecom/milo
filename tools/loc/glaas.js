@@ -11,8 +11,8 @@
  */
 
 import getConfig from './config.js';
-import { asyncForEach, getAltLanguage, getPathFromUrl, stripExtension } from './utils.js';
-import { getFiles, getSpFiles } from './sharepoint.js';
+import { getPathFromUrl, stripExtension } from './utils.js';
+import { getSpFiles } from './sharepoint.js';
 import { PROJECTS_ROOT_PATH } from './project.js';
 
 const LOCALSTORAGE_ITEM = 'glaas-auth-token';
@@ -98,28 +98,27 @@ async function connect(callback) {
   }
 }
 
-async function getGLaaSTaskStatus(language, gLaaSProjectName) {
+async function getGLaaSTaskStatus(tasksAPI, gLaaSProjectName) {
   const { glaas } = await getConfig();
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/json');
   headers.append('Accept', 'application/json');
-  return fetch(`${glaas.url}${((glaas.localeApi(language))).tasks.get.baseURI}/${gLaaSProjectName}`, {
+  return fetch(`${glaas.url}${tasksAPI.tasks.get.baseURI}/${gLaaSProjectName}`, {
     method: 'GET',
     headers,
   });
 }
 
-function createGLaaSTask(glaas, language, gLaaSProjectName) {
-  const localeAPI = glaas.localeApi(language);
+function createGLaaSTask(glaas, tasksAPI, language, gLaaSProjectName) {
   const payload = {
-    ...localeAPI.tasks.create.payload,
+    ...tasksAPI.tasks.create.payload,
     name: gLaaSProjectName,
     targetLocales: [language],
   };
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/json');
   headers.append('Accept', 'application/json');
-  return fetch(`${glaas.url}${localeAPI.tasks.create.uri}`, {
+  return fetch(`${glaas.url}${tasksAPI.tasks.create.uri}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),
@@ -138,10 +137,10 @@ function getAssetNameFromPath(path) {
   return path.replace(/\//gm, '_');
 }
 
-async function getAssetFromGLaaS(language, assetPath) {
+async function getAssetFromGLaaS(tasksAPI, assetPath) {
   const { glaas } = await getConfig();
   const response = await fetch(
-    `${glaas.url}${(glaas.localeApi(language)).tasks.assets.baseURI}/${assetPath}`,
+    `${glaas.url}${tasksAPI.tasks.assets.baseURI}/${assetPath}`,
     { headers: getAuthorizationHeaders(glaas) },
   );
 
@@ -151,32 +150,33 @@ async function getAssetFromGLaaS(language, assetPath) {
   throw new Error(`Cannot download the file from GLaaS: ${assetPath}`);
 }
 
-async function addAssetsToCreatedTask(glaas, language, files, gLaaSProjectName) {
+async function addAssetsToCreatedTask(glaas, glaasProjectInfo, files) {
   const formData = new FormData();
-  files.forEach((file, index) => {
+  files.forEach((fileInfo, index) => {
+    const file = fileInfo.blob || fileInfo;
     const filePath = file.path;
     const assetName = getAssetNameFromPath(filePath);
     formData.append(`file${index > 0 ? index : ''}`, file, assetName);
     formData.append(`asset${index > 0 ? index : ''}`, new Blob([JSON.stringify({
       assetName,
-      metadata: { 'source-preview-url': `${stripExtension(filePath)}?taskName=${gLaaSProjectName}&locale=${language}` },
+      metadata: { 'source-preview-url': `${stripExtension(filePath)}?taskName=${glaasProjectInfo.gLaaSProjectName}&locale=${glaasProjectInfo.language}` },
     })], { type: 'application/json; charset=utf-8' }), '_asset_metadata_');
   });
 
-  return fetch(`${glaas.url}${(glaas.localeApi(language)).tasks.assets.baseURI}/${gLaaSProjectName}/assets?targetLanguages=${language}`, {
+  return fetch(`${glaas.url}${glaasProjectInfo.tasksAPI.tasks.assets.baseURI}/${glaasProjectInfo.gLaaSProjectName}/assets?targetLanguages=${glaasProjectInfo.language}`, {
     method: 'POST',
     headers: getAuthorizationHeaders(glaas),
     body: formData,
   });
 }
 
-function markTaskAsCreated(glaas, language, gLaaSProjectName) {
+function markTaskAsCreated(glaas, projectInfo) {
   const data = new URLSearchParams();
   data.append('newStatus', 'CREATED');
   const headers = getAuthorizationHeaders(glaas);
   headers.append('Content-Type', 'application/x-www-form-urlencoded');
   headers.append('Accept', 'application/json');
-  return fetch(`${glaas.url}${(glaas.localeApi(language)).tasks.updateStatus.baseURI}/${gLaaSProjectName}/${language}/updateStatus`, {
+  return fetch(`${glaas.url}${projectInfo.tasksAPI.tasks.updateStatus.baseURI}/${projectInfo.gLaaSProjectName}/${projectInfo.language}/updateStatus`, {
     method: 'POST',
     headers,
     body: data,
@@ -188,12 +188,20 @@ async function taskHasNoAssets(taskStatus) {
   return statusJson && statusJson[0] && statusJson[0]?.assets?.length === 0;
 }
 
-async function triggerGLaaSProject(name, language, files) {
+async function triggerGLaaSProject(projectInfo, files) {
   const { glaas } = await getConfig();
-  const createdGLaaSTask = await createGLaaSTask(glaas, language, name);
+  const createdGLaaSTask = await createGLaaSTask(
+    glaas,
+    projectInfo.tasksAPI,
+    projectInfo.language,
+    projectInfo.gLaaSProjectName,
+  );
   let emptyTaskExists = false;
   if (createdGLaaSTask.status === 409) {
-    const existingTask = await getGLaaSTaskStatus(language, name);
+    const existingTask = await getGLaaSTaskStatus(
+      projectInfo.tasksAPI,
+      projectInfo.gLaaSProjectName,
+    );
     if (await taskHasNoAssets(existingTask)) {
       emptyTaskExists = true;
     }
@@ -201,21 +209,21 @@ async function triggerGLaaSProject(name, language, files) {
   if (!createdGLaaSTask.ok && !emptyTaskExists) {
     throw new Error('Cannot create the GLaaS task');
   }
-  const addedAssets = await addAssetsToCreatedTask(glaas, language, files, name);
+  const addedAssets = await addAssetsToCreatedTask(glaas, projectInfo, files);
   if (!addedAssets.ok) {
     throw new Error('Cannot add assets to created GLaaS Task');
   }
-  const taskStatus = await markTaskAsCreated(glaas, language, name);
+  const taskStatus = await markTaskAsCreated(glaas, projectInfo);
   if (!taskStatus.ok) {
     throw new Error('Cannot update GLaaS task as newly created.');
   }
 }
 
-async function getFilesFromSpToSendForAltLang(tasks) {
+async function getFilesFromSpToSendForAltLang(urls) {
   const langstoreFilePaths = [];
   const filesToBeSentForAltLang = [];
-  tasks.forEach((task) => {
-    langstoreFilePaths.push(task.languageFilePath);
+  urls.forEach((urlInfo) => {
+    langstoreFilePaths.push(urlInfo.langInfo.languageFilePath);
   });
   const spBatchFiles = await getSpFiles(langstoreFilePaths);
   spBatchFiles.forEach((spFiles) => {
@@ -235,72 +243,116 @@ async function getFilesFromSpToSendForAltLang(tasks) {
     }
   });
   const fileBlobsToBeSentForAltLang = [];
-  await asyncForEach(filesToBeSentForAltLang, async (file) => {
-    const response = await fetch(file['@microsoft.graph.downloadUrl']);
-    const fileBlob = await response.blob();
-    fileBlob.path = file.path;
-    fileBlobsToBeSentForAltLang.push(fileBlob);
-  });
+  await Promise.all(filesToBeSentForAltLang.map(async (file) => {
+    try {
+      const response = await fetch(file['@microsoft.graph.downloadUrl']);
+      const fileBlob = await response.blob();
+      fileBlob.path = file.path;
+      fileBlobsToBeSentForAltLang.push(fileBlob);
+    } catch (error) {
+      // Do nothing
+    }
+  }));
   return fileBlobsToBeSentForAltLang;
+}
+
+async function getTranslatedFileFromGLaaS(langInfo, asset) {
+  const fileInfo = {};
+  try {
+    const assetPath = getGLaaSAssetPathFromAsset(langInfo, asset);
+    const filePath = getPathFromAssetName(asset.name);
+    const file = await getAssetFromGLaaS(langInfo.tasksAPI, assetPath);
+    file.path = `/langstore/${langInfo.language}${filePath}`;
+    fileInfo.success = true;
+    fileInfo.file = file;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log(`Could not get file from GLaaS ${error.message}`);
+    fileInfo.success = false;
+  }
+  return fileInfo;
 }
 
 async function getTranslatedFilesFromGLaaS(langInfo) {
   const fileBlobsToBeSentForAltLang = [];
   const gLaaSStatus = langInfo.statusInfo;
-  await asyncForEach(gLaaSStatus.assets, async (asset) => {
-    const assetPath = getGLaaSAssetPathFromAsset(langInfo, asset);
-    const filePath = getPathFromAssetName(asset.name);
-    const file = await getAssetFromGLaaS(langInfo.language, assetPath);
-    file.path = `/langstore/${langInfo.language}${filePath}`;
-    fileBlobsToBeSentForAltLang.push(file);
+  const filesFromGLaaS = await Promise.all(
+    gLaaSStatus.assets.map(
+      (asset) => getTranslatedFileFromGLaaS(langInfo, asset),
+    ),
+  );
+  filesFromGLaaS.forEach((fileInfo) => {
+    if (fileInfo.success) {
+      fileBlobsToBeSentForAltLang.push(fileInfo.file);
+    }
   });
   return fileBlobsToBeSentForAltLang;
 }
 
-async function updateAltLangContent(project, langInfo, altLangProjectName, altLangCode) {
-  const tasks = project[langInfo.language];
+async function updateAltLangContent(project, langInfo, altLangProjectName, altLangInfo) {
+  const subProject = project.translationProjects.get(langInfo.language);
+  const files = subProject.urls;
   const fileBlobsToBeSentForAltLang = await (langInfo.statusInfo
-    ? getTranslatedFilesFromGLaaS(langInfo) : getFilesFromSpToSendForAltLang(tasks));
+    ? getTranslatedFilesFromGLaaS(langInfo) : getFilesFromSpToSendForAltLang(files));
   if (fileBlobsToBeSentForAltLang.length === 0) {
     return altLangProjectName;
   }
-  await triggerGLaaSProject(altLangProjectName, altLangCode, fileBlobsToBeSentForAltLang);
+  await triggerGLaaSProject({
+    gLaaSProjectName: altLangProjectName,
+    language: altLangInfo.language,
+    tasksAPI: altLangInfo.glaasTasksAPI,
+  }, fileBlobsToBeSentForAltLang);
   return altLangProjectName;
 }
 
-async function getAltLangTaskStatus(project, altLanguage) {
-  const altLangGLaaSProjectName = `${computeGLaaSProjectName(project.url, project.name, altLanguage)}`;
-  const altLangStatus = await getGLaaSTaskStatus(altLanguage, altLangGLaaSProjectName);
+async function getAltLangTaskStatus(project, altLangInfo) {
+  const altLangGLaaSProjectName = `${computeGLaaSProjectName(project.url, project.name, altLangInfo.language)}`;
+  const altLangStatus = await getGLaaSTaskStatus(
+    altLangInfo.glaasTasksAPI,
+    altLangGLaaSProjectName,
+  );
   return { taskName: altLangGLaaSProjectName, taskStatus: altLangStatus };
 }
 
-async function getOrCreateAltLangTask(project, langInfo, altLanguage) {
-  const altLangStatus = await getAltLangTaskStatus(project, altLanguage);
+async function getOrCreateAltLangTask(project, langInfo, altLangInfo) {
+  const altLangStatus = await getAltLangTaskStatus(project, altLangInfo);
   if (altLangStatus.taskStatus.status === 404 || await taskHasNoAssets(altLangStatus.taskStatus)) {
-    await updateAltLangContent(project, langInfo, altLangStatus.taskName, altLanguage);
+    await updateAltLangContent(project, langInfo, altLangStatus.taskName, altLangInfo);
   }
-  return getAltLangTaskStatus(project, altLanguage);
+  return getAltLangTaskStatus(project, altLangInfo);
 }
 
-function updateAssetStatusForTask(languageTask, langInfo, defaultStatus) {
+function updateAssetStatusForTask(languageTask, filePathsToPositions, langInfo, defaultStatus) {
   if (languageTask.length === 0) {
     return;
   }
   langInfo.statusInfo.assets.forEach((asset) => {
     let path = getPathFromAssetName(asset.name);
     if (langInfo.pathModifier) {
-      path = langInfo.pathModifier(languageTask[0].language, path);
+      path = langInfo.pathModifier(languageTask.language, path);
     }
-    const task = languageTask.find((t) => t.filePath === path);
-    if (!task) {
-      return;
+    const isAltLang = languageTask?.altLangInfo?.language === langInfo.language;
+    const positionPrefix = 'urls|';
+    const positions = filePathsToPositions.get(path)
+      .filter((position) => position.startsWith(positionPrefix));
+    if (positions.length === 1) {
+      const position = positions[0];
+      const positionSuffix = position.endsWith('|langstoreDoc') ? '|langstoreDoc' : '|doc';
+      const url = position.substring(
+        position.indexOf(positionPrefix) + positionPrefix.length,
+        position.indexOf(positionSuffix),
+      );
+      const task = languageTask.urls.get(url);
+      if (!task) {
+        return;
+      }
+      const toBeUpdated = isAltLang ? task.altLangInfo : task.langInfo;
+      toBeUpdated.glaas = toBeUpdated.glaas || {};
+      const assetStatus = asset.status !== 'DRAFT' ? asset.status : defaultStatus;
+      const assetPath = getGLaaSAssetPathFromAsset(langInfo, asset);
+      toBeUpdated.status = assetStatus;
+      toBeUpdated.glaas.assetPath = assetPath;
     }
-    task.glaas = task.glaas || {};
-    const assetStatus = asset.status !== 'DRAFT' ? asset.status : defaultStatus;
-    const assetPath = getGLaaSAssetPathFromAsset(langInfo, asset);
-    task.glaas[langInfo.statusResultProps.status] = assetStatus;
-    task.glaas[langInfo.statusResultProps.assetPath] = assetPath;
-    task.glaas[langInfo.statusResultProps.combinedStatus] = defaultStatus;
   });
 }
 
@@ -311,94 +363,116 @@ function removeLangstorePrefix(language, path) {
 function updateProjectWithTaskStatus(project, langInfo, altLangInfo) {
   const taskStatus = altLangInfo ? altLangInfo?.statusInfo?.status : langInfo?.statusInfo?.status;
   const defaultStatus = taskStatus === 'CREATED' ? 'IN PROGRESS' : taskStatus;
-  const languageTask = project[langInfo.language];
+  const languageTask = project.translationProjects.get(langInfo.language);
+  const filePathsToPositions = project.filePathsToReferencePositions;
+  languageTask.status = defaultStatus;
   if (langInfo?.statusInfo) {
-    updateAssetStatusForTask(languageTask, langInfo, defaultStatus);
+    updateAssetStatusForTask(languageTask, filePathsToPositions, langInfo, defaultStatus);
   }
   if (altLangInfo) {
     altLangInfo.pathModifier = removeLangstorePrefix;
-    updateAssetStatusForTask(languageTask, altLangInfo, defaultStatus);
+    updateAssetStatusForTask(languageTask, filePathsToPositions, altLangInfo, defaultStatus);
   }
 }
 
-async function executeAltLangFlow(project, langInfo, altLanguage, statusOnly) {
+async function executeAltLangFlow(project, langInfo, altLangInfo, statusOnly) {
+  const altLanguage = altLangInfo.language;
   const altLangTaskInfo = statusOnly
-    ? await getAltLangTaskStatus(project, altLanguage)
-    : await getOrCreateAltLangTask(project, langInfo, altLanguage);
+    ? await getAltLangTaskStatus(project, altLangInfo)
+    : await getOrCreateAltLangTask(project, langInfo, altLangInfo);
   const altLangStatusJson = await altLangTaskInfo.taskStatus.json();
   if (altLangStatusJson && altLangStatusJson[0] && altLangStatusJson[0]?.assets?.length > 0) {
     const altLangTaskStatusInfo = altLangStatusJson[0];
-    const altLangInfo = {
+    const altLangGLaaSProjectInfo = {
       language: altLanguage,
       gLaaSProjectName: altLangTaskInfo.taskName,
       statusInfo: altLangTaskStatusInfo,
-      statusResultProps: { status: 'altLangStatus', assetPath: 'altLangAssetPath', combinedStatus: 'altLangCombinedStatus' },
     };
-    updateProjectWithTaskStatus(project, langInfo, altLangInfo);
+    updateProjectWithTaskStatus(project, langInfo, altLangGLaaSProjectInfo);
   } else {
     // eslint-disable-next-line no-console
-    console.error(`Could not find assets in ${altLangTaskInfo.taskName}...`);
+    console.error(`Could not find assets in ${altLangTaskInfo?.taskName}...`);
+    throw new Error(`Could not find assets in ${altLangTaskInfo?.taskName}`);
   }
 }
 
-async function sendToGLaaS(project, language) {
-  const skipTranslation = !project[language][0]?.skipLanguageTranslation;
-  if (skipTranslation) {
+async function sendToGLaaS(project, subproject, files) {
+  const { language } = subproject;
+  const isNotEnglish = language !== 'en';
+  const tasksAPI = subproject.glaasTasksAPI;
+  if (isNotEnglish) {
     const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
-    const files = await getFiles(project, language);
-    if (!files || files.length === 0) {
-      throw new Error('No valid files found to send for translation');
-    }
-    await triggerGLaaSProject(gLaaSProjectName, language, files);
+    await triggerGLaaSProject({ gLaaSProjectName, language, tasksAPI }, files);
   } else {
-    const altLanguage = getAltLanguage(project, language);
+    const altLanguage = subproject?.altLangInfo?.language;
     if (altLanguage) {
-      await executeAltLangFlow(project, { language, skipTranslation: true }, altLanguage);
+      await executeAltLangFlow(
+        project,
+        { language, skipTranslation: true, tasksAPI },
+        subproject.altLangInfo,
+      );
     }
   }
+}
+
+async function updateSubProject(project, subproject) {
+  const language = subproject[0];
+  const projectInfo = subproject[1];
+  const updateStatus = { updated: true, language };
+
+  function updateErrorStatus(errorMessage) {
+    // eslint-disable-next-line no-console
+    console.error(errorMessage);
+    updateStatus.updated = false;
+    updateStatus.errorMsg = errorMessage;
+  }
+
+  try {
+    const isEnglish = language === 'en';
+    const altLanguage = projectInfo?.altLangInfo?.language;
+    if (isEnglish && altLanguage) {
+      await executeAltLangFlow(project, { language, isEnglish }, projectInfo.altLangInfo, true);
+    } else {
+      const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
+      const status = await getGLaaSTaskStatus(projectInfo.glaasTasksAPI, gLaaSProjectName);
+      const statusJson = await status.json();
+      if (statusJson && statusJson[0] && statusJson[0]?.assets?.length > 0) {
+        project.projectStarted = true;
+        const langInfo = {
+          language,
+          gLaaSProjectName,
+          statusInfo: statusJson[0],
+          tasksAPI: projectInfo.glaasTasksAPI,
+        };
+        const isGLaaSProjectCompleted = statusJson[0].status === 'COMPLETED';
+        if (isGLaaSProjectCompleted && altLanguage) {
+          await executeAltLangFlow(project, langInfo, projectInfo.altLangInfo);
+        } else {
+          updateProjectWithTaskStatus(project, langInfo);
+        }
+      } else {
+        updateErrorStatus(`Could not find assets in ${gLaaSProjectName}...`);
+      }
+    }
+  } catch (error) {
+    updateErrorStatus(`Error occurred when trying to update project with GLaaS Info ${error.message}`);
+  }
+  return updateStatus;
 }
 
 async function updateProject(project, callback) {
   if (!project) {
     return;
   }
-  await asyncForEach(project.languages, async (language) => {
-    const skipTranslation = project[language]?.length > 0
-      && project[language][0].skipLanguageTranslation;
-    const altLanguage = getAltLanguage(project, language);
-    if (skipTranslation && altLanguage) {
-      await executeAltLangFlow(project, { language, skipTranslation }, altLanguage, true);
-    } else {
-      const gLaaSProjectName = computeGLaaSProjectName(project.url, project.name, language);
-      const status = await getGLaaSTaskStatus(language, gLaaSProjectName);
-      const statusJson = await status.json();
-      if (statusJson && statusJson[0] && statusJson[0]?.assets?.length > 0) {
-        const langInfo = {
-          language,
-          gLaaSProjectName,
-          statusInfo: statusJson[0],
-          statusResultProps: { status: 'status', assetPath: 'assetPath', combinedStatus: 'combinedStatus' },
-        };
-        const isGLaaSProjectCompleted = statusJson[0].status === 'COMPLETED';
-        if (isGLaaSProjectCompleted && altLanguage) {
-          await executeAltLangFlow(project, langInfo, altLanguage);
-        } else {
-          updateProjectWithTaskStatus(project, langInfo);
-        }
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(`Could not find assets in ${gLaaSProjectName}...`);
-      }
-    }
-  });
-
+  await Promise.all(
+    [...project.translationProjects].map((subproject) => updateSubProject(project, subproject)),
+  );
   if (callback) await callback();
 }
 
-async function getFile(task, language) {
-  const assetPath = task.altlanguage === language
-    ? task.glaas.altLangAssetPath : task.glaas.assetPath;
-  return getAssetFromGLaaS(language, assetPath);
-}
-
-export { sendToGLaaS, updateAltLangContent, getGLaaSTaskStatus, updateProject, connect, getFile };
+export {
+  sendToGLaaS,
+  updateProject,
+  connect,
+  getAssetFromGLaaS,
+};

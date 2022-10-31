@@ -1,5 +1,6 @@
 import { init as getProjectFile } from './project.js';
 import { connect as connectToSp, updateExcelTable } from './sharepoint.js';
+import { loadingON } from './utils.js';
 
 const fragmentPath = '/fragments/';
 
@@ -80,20 +81,22 @@ async function persistFragments(fragments, excelPath) {
 }
 
 async function refreshProjectJson(projectFile, fragments, attempts = 0) {
+  loadingON('Reloading Project JSON...');
   let isJsonUpdated = false;
-  const maxAttempts = 5;
+  const maxAttempts = 2;
   await projectFile.purge();
   const projectJson = await fetchUrl(projectFile.path, 'json');
   const urls = projectJson?.value?.translation?.data;
   if (!urls || !urls.map((url) => url.URL).includes(...fragments)) {
     if (attempts < maxAttempts) {
+      loadingON(`Failed to reload Project JSON... Trying until max attempts ${maxAttempts}`);
       // eslint-disable-next-line no-console
       console.log('Json not updated. Trying again until max attempts');
       const currentAttempt = attempts + 1;
       await refreshProjectJson(projectFile, fragments, currentAttempt);
     } else {
       // eslint-disable-next-line no-console
-      console.log('Json not updated.. Please check');
+      console.log('Failed to reload Project JSON.. Please reload manually');
     }
   } else {
     isJsonUpdated = true;
@@ -105,10 +108,11 @@ async function updateFragments() {
   let status = 'No Fragments found';
   const projectFile = await getProjectFile();
   const projectDetail = await projectFile.detail();
-  const { urls } = projectDetail;
-  urls.push('https://loc--milo--adobecom.hlx.page/drafts/bhagwath/loc/nonexistent');
+  let { urls } = projectDetail;
+  urls = [...urls.keys()];
   const urlHtmls = await fetchUrls(urls);
   const fragments = [];
+  loadingON('Finding Fragments...');
   urlHtmls.forEach((urlHtml) => {
     if (urlHtml.status !== 'error') {
       const fragmentsInUrl = getFragmentLinksFromUrlHtml(urlHtml);
@@ -120,14 +124,17 @@ async function updateFragments() {
     }
   });
   if (fragments.length > 0) {
+    loadingON('Found Fragments...');
     await connectToSp();
+    loadingON('Saving Fragments into project excel...');
     const persisted = await persistFragments(fragments, projectFile.excelPath);
     if (persisted) {
+      loadingON('Successfully persisted Fragments into project excel...');
       const isProjectJsonRefreshed = await refreshProjectJson(projectFile, fragments);
       if (isProjectJsonRefreshed) {
         status = 'Fragments found, updated and project json refreshed';
       } else {
-        status = 'Fragments found, updated but project json refresh failed. Please preview project manually so json is updated';
+        status = 'Fragments found, updated but project json refresh failed. Please preview project manually or use reload button so json is updated';
       }
     } else {
       status = 'Fragments found, but failed to update excel. Please try again';

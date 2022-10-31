@@ -5,12 +5,12 @@ import { docx2md } from './helix/docx2md.bundle.js';
 import {
   connect as connectToSP,
   copyFileAndUpdateMetadata,
-  getFileVersionInfo,
   getFileMetadata,
+  getFileVersionInfo,
   getVersionOfFile,
   saveFileAndUpdateMetadata,
 } from './sharepoint.js';
-import { asyncForEach, loadingON, stripExtension } from './utils.js';
+import { loadingON, stripExtension } from './utils.js';
 
 let types = new Set();
 let hashToContentMap = new Map();
@@ -268,8 +268,9 @@ async function safeGetVersionOfFile(filePath, version) {
   let versionFile;
   try {
     versionFile = await getVersionOfFile(filePath, version);
-   /* c8 ignore next */
-  } catch (e) {}
+  } catch (error) {
+    // Do nothing
+  }
   return versionFile;
 }
 
@@ -277,55 +278,73 @@ async function rollout(filePath, targetFolders) {
   await connectToSP();
   const filePathWithoutExtension = stripExtension(filePath);
   const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
-  const failedRolloutPages = [];
-  await asyncForEach(targetFolders, async (targetFolder) => {
+
+  async function rolloutPerFolder(targetFolder) {
     let languagePrevMd;
     const livecopyFilePath = `${targetFolder}/${fileName}`;
-    loadingON(`Rollout to ${livecopyFilePath} started`);
-    const fileMetadata = await getFileMetadata(livecopyFilePath);
-    const isfileNotFound = fileMetadata.status && fileMetadata.status === 404;
-    const languagePrevVersion = fileMetadata.RolloutVersion;
-    const languageCurrentVersion = await getFileVersionInfo(filePath);
-    if (isfileNotFound || noRegionalChanges(fileMetadata)) {
-      // just copy since regional document does not exist
-      await copyFileAndUpdateMetadata(filePath, targetFolder);
-      loadingON(`Rollout to ${livecopyFilePath} complete`);
-    } else if (!languagePrevVersion) {
-      // Cannot merge since we don't have rollout version info.
-      // eslint-disable-next-line no-console
-      loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
-    } else if (languageCurrentVersion === languagePrevVersion) {
-      languagePrevMd = await getMd(filePathWithoutExtension);
-    } else {
-      const languageBaseFile = await safeGetVersionOfFile(filePath, languagePrevVersion);
-      if (languageBaseFile) {
-        languagePrevMd = await docx2md(languageBaseFile, {});
+    const status = { success: true, path: livecopyFilePath };
+
+    function udpateErrorStatus(errorMessage) {
+      status.success = false;
+      status.errorMsg = errorMessage;
+      loadingON(errorMessage);
+    }
+
+    try {
+      loadingON(`Rollout to ${livecopyFilePath} started`);
+      const fileMetadata = await getFileMetadata(livecopyFilePath);
+      const isfileNotFound = fileMetadata.status && fileMetadata.status === 404;
+      const languagePrevVersion = fileMetadata.RolloutVersion;
+      const languageCurrentVersion = await getFileVersionInfo(filePath);
+      if (isfileNotFound || noRegionalChanges(fileMetadata)) {
+        // just copy since regional document does not exist
+        await copyFileAndUpdateMetadata(filePath, targetFolder);
+        loadingON(`Rollout to ${livecopyFilePath} complete`);
+      } else if (!languagePrevVersion) {
+        // Cannot merge since we don't have rollout version info.
+        // eslint-disable-next-line no-console
+        loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
+      } else if (languageCurrentVersion === languagePrevVersion) {
+        languagePrevMd = await getMd(filePathWithoutExtension);
+      } else {
+        const languageBaseFile = await safeGetVersionOfFile(filePath, languagePrevVersion);
+        if (languageBaseFile) {
+          languagePrevMd = await docx2md(languageBaseFile, {});
+        }
       }
+      if (languagePrevMd != null) {
+        const languagePrev = await getMdastFromMd(languagePrevMd);
+        const languageBaseProcessed = await getProcessedMdast(languagePrev);
+        const languageCurrent = await getMdast(filePathWithoutExtension);
+        const languageCurrentProcessed = await getProcessedMdast(languageCurrent);
+        const languageBaseToCurrentChanges = getChanges(
+          languageBaseProcessed,
+          languageCurrentProcessed,
+        );
+        const livecopy = await getMdast(`${targetFolder}/${fileName.substring(0, fileName.lastIndexOf('.'))}`);
+        const livecopyProcessed = await getProcessedMdast(livecopy);
+        const languageBaseToRegionChanges = getChanges(languageBaseProcessed, livecopyProcessed);
+        const livecopyMergedMdast = getMergedMdast(
+          languageBaseToCurrentChanges,
+          languageBaseToRegionChanges,
+        );
+        await persist(filePath, livecopyMergedMdast, livecopyFilePath);
+        loadingON(`Rollout to ${livecopyFilePath} complete`);
+      } else {
+        udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
+      }
+    } catch (error) {
+      udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
     }
-    if (languagePrevMd != null) {
-      const languagePrev = await getMdastFromMd(languagePrevMd);
-      const languageBaseProcessed = await getProcessedMdast(languagePrev);
-      const languageCurrent = await getMdast(filePathWithoutExtension);
-      const languageCurrentProcessed = await getProcessedMdast(languageCurrent);
-      const languageBaseToCurrentChanges = getChanges(
-        languageBaseProcessed,
-        languageCurrentProcessed,
-      );
-      const livecopy = await getMdast(`${targetFolder}/${fileName.substring(0, fileName.lastIndexOf('.'))}`);
-      const livecopyProcessed = await getProcessedMdast(livecopy);
-      const languageBaseToRegionChanges = getChanges(languageBaseProcessed, livecopyProcessed);
-      const livecopyMergedMdast = getMergedMdast(
-        languageBaseToCurrentChanges,
-        languageBaseToRegionChanges,
-      );
-      await persist(filePath, livecopyMergedMdast, livecopyFilePath);
-      loadingON(`Rollout to ${livecopyFilePath} complete`);
-    } else {
-      failedRolloutPages.push(livecopyFilePath);
-      loadingON(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
-    }
-  });
-  return failedRolloutPages;
+    return status;
+  }
+
+  const rolloutStatuses = await Promise.all(
+    targetFolders.map((targetFolder) => rolloutPerFolder(targetFolder)),
+  );
+  return rolloutStatuses
+    .filter(({ success }) => !success)
+    .map(({ path }) => path);
 }
 
 async function process(folderPath) {

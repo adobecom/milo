@@ -28,7 +28,7 @@ function getLocalesConfig(config) {
   return config.locales.data;
 }
 
-async function getDecoratedLocalesConfig(localesConfig) {
+function getDecoratedLocalesConfig(localesConfig) {
   const decoratedLocalesConfig = {};
   localesConfig.forEach((localeConfig) => {
     decoratedLocalesConfig[localeConfig.languagecode] = {
@@ -50,21 +50,13 @@ function getWorkflowsConfig(config) {
   return workflows;
 }
 
-function getWorkflowForLocale(workflowsConfig, locale, decoratedLocales) {
+function getWorkflowForLanguage(workflowsConfig, locale, decoratedLocales, customWorkflow) {
   const localeConfig = decoratedLocales[locale];
-  const workflow = localeConfig?.workflow ? localeConfig.workflow : DEFAULT_WORKFLOW;
+  const workflow = customWorkflow
+    || (localeConfig?.workflow ? localeConfig.workflow : DEFAULT_WORKFLOW);
   return {
     name: workflow,
     ...workflowsConfig[workflow],
-  };
-}
-
-function getAltLangWorkflowForLocale(workflowsConfig, locale, decoratedLocales) {
-  const localeConfig = decoratedLocales[locale];
-  const { altlangWorkflow } = localeConfig;
-  return {
-    name: altlangWorkflow,
-    ...workflowsConfig[altlangWorkflow],
   };
 }
 
@@ -73,10 +65,10 @@ function getGLaaSRedirectURI() {
   return encodeURI(`${location.origin}/tools/loc/glaas.html`);
 }
 
-function getGLaaSAPIDetails(workflow) {
+function getGLaaSAPIDetails(workflow, previewServer) {
   const { product, project, workflowName } = workflow;
   const baseURI = `/api/l10n/v1.1/tasks/${product}/${project}`;
-  const previewURL = (new URL(document.location.href)).origin;
+  const previewURL = previewServer || (new URL(document.location.href)).origin;
   return {
     create: {
       uri: `${baseURI}/create`,
@@ -93,18 +85,16 @@ function getGLaaSAPIDetails(workflow) {
   };
 }
 
-async function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
+function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
+  const gLaaSConfig = config.glaas.data[0];
   return {
-    ...config.glaas.data[0],
+    ...gLaaSConfig,
     workflows: workflowsConfig,
     authorizeURI: '/api/common/sweb/oauth/authorize',
     redirectURI: getGLaaSRedirectURI(),
     accessToken: null,
     api: { session: { check: { uri: '/api/common/v1.0/checkSession' } } },
-    localeApi: (language) => {
-      const workflow = getWorkflowForLocale(workflowsConfig, language, decoratedLocales);
-      return { tasks: getGLaaSAPIDetails(workflow) };
-    },
+    tasksApi: (workflow) => ({ tasks: getGLaaSAPIDetails(workflow, gLaaSConfig?.previewServer) }),
   };
 }
 
@@ -180,42 +170,31 @@ function getHelixAdminConfig() {
 }
 
 async function getConfig() {
-  const location = new URL(document.location.href);
-  function getParam(name) { return location.searchParams.get(name); }
-
-  const sub = location.hostname.split('.').shift().split('--');
-
-  const owner = getParam('owner') || sub[2];
-  const repo = getParam('repo') || sub[1];
-  const ref = getParam('ref') || sub[0];
-  const configPath = `https://${ref}--${repo}--${owner}.hlx.page${LOC_CONFIG}`;
-
+  function getParam(location, name) { return location.searchParams.get(name); }
   if (!decoratedConfig) {
+    const location = new URL(document.location.href);
+    const sub = location.hostname.split('.').shift().split('--');
+
+    const owner = getParam('owner') || sub[2];
+    const repo = getParam('repo') || sub[1];
+    const ref = getParam('ref') || sub[0];
+    const configPath = `https://${ref}--${repo}--${owner}.hlx.page${LOC_CONFIG}`;
     const configJson = await fetchConfigJson(configPath);
-    const locales = await getLocalesConfig(configJson);
-    const decoratedLocales = await getDecoratedLocalesConfig(locales);
+    const locales = getLocalesConfig(configJson);
+    const decoratedLocales = getDecoratedLocalesConfig(locales);
     const workflowsConfig = getWorkflowsConfig(configJson);
     decoratedConfig = {
       locales,
       decoratedLocales,
-      glaas: await getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
+      glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
       sp: getSharepointConfig(configJson),
       admin: getHelixAdminConfig(),
-      async getLivecopiesForLanguage(language) {
+      getLivecopiesForLanguage(language) {
         const localeConfig = decoratedLocales[language];
         return localeConfig?.livecopies ? localeConfig.livecopies : null;
       },
-      async getAltLangLocales(language) {
-        const localeConfig = decoratedLocales[language];
-        const altLangCode = localeConfig.altLanguagecode;
-        if (altLangCode) {
-          const altLangConfig = decoratedLocales[altLangCode];
-          return altLangConfig?.livecopies ? altLangConfig.livecopies : null;
-        }
-        return null;
-      },
-      async getWorkflowForLocale(locale) {
-        return getWorkflowForLocale(configJson, locale, decoratedLocales);
+      getWorkflowForLanguage(language, customWorkflow) {
+        return getWorkflowForLanguage(workflowsConfig, language, decoratedLocales, customWorkflow);
       },
     };
   }

@@ -13,9 +13,8 @@
 
 import getConfig from './config.js';
 import {
-  asyncForEach,
   createTag,
-  getPathFromUrl, getSharepointLocationFromUrl, isAltLang,
+  getPathFromUrl,
   loadingOFF,
   loadingON,
   setStatus,
@@ -25,30 +24,30 @@ import {
   getFile,
   connect as connectToSP,
   getSpViewUrl,
-  updateProjectWithSpStatus as updateSPStatus, copyFile,
+  copyFile, updateExcelTable,
 } from './sharepoint.js';
-import { init as initProject } from './project.js';
+import { init as initProject, PROJECT_STATUS, updateProjectWithDocs } from './project.js';
 import {
   connect as connectToGLaaS,
   sendToGLaaS,
-  getFile as getFileFromGLaaS,
   updateProject as updateGLaaSStatus,
+  getAssetFromGLaaS,
 } from './glaas.js';
 import { rollout } from './rollout.js';
 import updateFragments from './fragments.js';
 
 let projectDetail;
+let project;
 const MAX_RETRIES = 5;
-const GLAAS_COMPLTETE_STATUS = 'COMPLETED';
 
 function setError(msg, error) {
-  // TODO UI
+  document.getElementById('loading').classList.remove('hidden');
   setStatus(msg, 'level-0');
   // eslint-disable-next-line no-console
   console.error(msg, error);
 }
 
-function setProjectUrl(project) {
+function setProjectUrl() {
   const projectName = project.name.replace(/\.[^/.]+$/, '').replaceAll('_', ' ');
   document.getElementById('project-url').innerHTML = `<a href="${project.sp}">${projectName}</a>`;
 }
@@ -75,11 +74,12 @@ function createHeaderColumn(innerHtml) {
   return createColumn(innerHtml, 'header');
 }
 
-async function appendLanguages($tr, config, locales) {
-  await asyncForEach(locales, async (locale) => {
-    const gLaaSWorkflow = await config.getWorkflowForLocale(locale);
-    const localeAndGLaaSWF = `${locale} (${gLaaSWorkflow.name})`;
-    $tr.appendChild(createHeaderColumn(localeAndGLaaSWF));
+async function appendLanguages($tr, config, projects, customSuffix) {
+  projects.forEach((projectInfo, language) => {
+    const workflowName = customSuffix || projectInfo?.workflowDetail?.name;
+    if (workflowName) {
+      $tr.appendChild(createHeaderColumn(`${language} (${workflowName})`));
+    }
   });
 }
 
@@ -90,7 +90,9 @@ async function createTableWithHeaders(config) {
   $tr.appendChild(createHeaderColumn('Source File'));
   $tr.appendChild(createHeaderColumn('En Langstore File'));
   $tr.appendChild(createHeaderColumn('En Langstore Info'));
-  await appendLanguages($tr, config, projectDetail.languages);
+  await appendLanguages($tr, config, projectDetail.englishCopyProjects, 'English Copy');
+  await appendLanguages($tr, config, projectDetail.rolloutProjects, 'Rollout');
+  await appendLanguages($tr, config, projectDetail.translationProjects);
   $table.appendChild($tr);
   return $table;
 }
@@ -107,16 +109,12 @@ function getSharepointStatus(doc) {
     if (doc.sp.status === 200) {
       sharepointStatus = `${doc.filePath}`;
       hasSourceFile = true;
-      modificationInfo = `By ${doc.sp?.lastModifiedBy?.user?.displayName} at ${doc.sp?.lastModifiedDateTime}`
+      modificationInfo = `By ${doc.sp?.lastModifiedBy?.user?.displayName} at ${doc.sp?.lastModifiedDateTime}`;
     } else {
       sharepointStatus = 'Source file not found!';
     }
   }
   return { hasSourceFile, msg: sharepointStatus, modificationInfo };
-}
-
-function fileAlreadySavedInSharepoint(task) {
-  return task.sp.status === 200;
 }
 
 function createButton(innerHtml) {
@@ -125,115 +123,112 @@ function createButton(innerHtml) {
   return $button;
 }
 
-function getPersistButtons(task, language) {
-  const fileInSharepoint = fileAlreadySavedInSharepoint(task);
-  const $saveButton = createButton(fileInSharepoint ? 'Overwrite' : 'Save');
-  $saveButton.addEventListener('click', async () => { await save(task, language); });
-  const buttons = [];
-  if (fileInSharepoint) {
-    const $viewButton = createButton('Primary');
-    $viewButton.addEventListener('click', () => { window.open(task.sp.webUrl); });
-    buttons.push($viewButton);
-    if (task.altlanguage && task.altlangsp.status === 200) {
-      const $viewAltLangButton = createButton('AltLang');
-      $viewAltLangButton.addEventListener('click', () => { window.open(task.altlangsp.webUrl); });
-      buttons.push($viewAltLangButton);
-    }
-    const $rolloutButton = createButton('Rollout');
-    $rolloutButton.addEventListener('click', async () => {
-      loadingON(`Rollout to target folders of ${task.languageFilePath} in progress..`);
-      await initRollout(task);
-      loadingON(`Rollout ${task.languageFilePath} completed`);
-    });
-    loadingOFF();
-    return buttons;
+function getStatus(subproject, url) {
+  const status = { innerHtml: '', viewButtons: [] };
+  if (!subproject) {
+    return status;
   }
-  return buttons;
-}
+  const pageInfo = subproject.urls.get(url);
 
-function getGLaaSStatus(config, language, url, hasSourceFile) {
-  const gLaaSStatus = { innerHtml: 'N/A', taskFoundInGLaaS: false, canSaveAll: false };
-  const languageTask = projectDetail[language].find((task) => task.URL === url);
-  if (!languageTask) {
-    return gLaaSStatus;
-  }
-  gLaaSStatus.innerHtml = 'Connect to GLaaS first';
-  const gLaaSConfig = config.glaas;
-  const gLaaSStatusObject = languageTask?.glaas;
-  const altLang = languageTask.altlanguage;
-  const regularStatusInGLaaS = gLaaSStatusObject?.status;
-  if (regularStatusInGLaaS) {
-    gLaaSStatus.taskFoundInGLaaS = true;
-    if (!altLang) {
-      gLaaSStatus.innerHtml = `${regularStatusInGLaaS}`;
-      if (regularStatusInGLaaS === GLAAS_COMPLTETE_STATUS && languageTask.sp) {
-        gLaaSStatus.canSaveAll = gLaaSStatusObject?.combinedStatus === GLAAS_COMPLTETE_STATUS;
-        gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
+  function updateStatus(langInfo, prepend) {
+    if (subproject.failedPages.includes(langInfo.languageFilePath)) {
+      status.innerHtml += `${prepend} Failed<br/>`;
+      return;
+    }
+    const langStatus = langInfo.status;
+    if (langStatus === PROJECT_STATUS.COMPLETED) {
+      status.innerHtml += `${prepend}<br/>${PROJECT_STATUS.COMPLETED}<br/>`;
+      if (langInfo?.sp?.status === 200) {
+        const viewButton = createButton(prepend || 'Primary');
+        viewButton.addEventListener('click', () => window.open(langInfo.sp.webUrl));
+        status.viewButtons.push(viewButton);
       }
     } else {
-      const altLangStatusInGLaaS = gLaaSStatusObject.altLangStatus ? gLaaSStatusObject.altLangStatus : 'PENDING';
-      const bothComplete = regularStatusInGLaaS === GLAAS_COMPLTETE_STATUS
-        && altLangStatusInGLaaS === GLAAS_COMPLTETE_STATUS;
-      gLaaSStatus.innerHtml = bothComplete ? GLAAS_COMPLTETE_STATUS : `Translation<br/>${regularStatusInGLaaS}<br/> AltLang<br/> ${altLangStatusInGLaaS}`;
-      if (bothComplete && languageTask.sp && languageTask?.altlangsp) {
-        gLaaSStatus.canSaveAll = gLaaSStatusObject?.combinedStatus === GLAAS_COMPLTETE_STATUS
-          && gLaaSStatusObject?.altLangCombinedStatus === GLAAS_COMPLTETE_STATUS;
-        gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
-      }
-    }
-  } else if (gLaaSStatusObject && languageTask.skipLanguageTranslation && altLang) {
-    gLaaSStatus.taskFoundInGLaaS = true;
-    const altLangStatusInGLaaS = gLaaSStatusObject.altLangStatus ? gLaaSStatusObject.altLangStatus : 'PENDING';
-    gLaaSStatus.innerHtml = altLangStatusInGLaaS;
-    if (altLangStatusInGLaaS === GLAAS_COMPLTETE_STATUS) {
-      gLaaSStatus.canSaveAll = gLaaSStatusObject?.altLangCombinedStatus === GLAAS_COMPLTETE_STATUS;
-      gLaaSStatus.persistButtons = getPersistButtons(languageTask, language);
-    }
-  } else if (gLaaSConfig.accessToken) {
-    if (languageTask.sp) {
-      gLaaSStatus.innerHtml = hasSourceFile ? 'Ready for translation' : 'No source';
+      const innerHtmlPrefix = langStatus === PROJECT_STATUS.YET_TO_START ? '' : prepend;
+      status.innerHtml += `${innerHtmlPrefix} ${langStatus}<br/>`;
     }
   }
-  return gLaaSStatus;
+  let prepend = true;
+  if (subproject.language !== 'en') {
+    prepend = pageInfo.langInfo.status === PROJECT_STATUS.COMPLETED;
+    updateStatus(pageInfo.langInfo, prepend ? 'Primary' : '');
+  }
+  if (pageInfo?.altLangInfo && prepend) {
+    updateStatus(pageInfo.altLangInfo, 'AltLang');
+    if (status.viewButtons.length === 1 && subproject.language !== 'en') {
+      status.viewButtons = [];
+    }
+  }
+
+  return status;
 }
 
-async function initRollout(task) {
+async function initRollout(task, language) {
+  const status = { success: false, language, errorMsg: '' };
   const failedRollouts = [];
-  loadingON(`Rollout live-copy folders of ${task.languageFilePath} complete..`);
-  const failedRolloutPages = await rollout(task.languageFilePath, task.livecopyFolders);
-  failedRollouts.push(failedRolloutPages);
-  loadingON(`Rollout to live-copy folders of ${task.languageFilePath} complete..`);
-  if (task.altlanguage) {
-    loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} in progress..`);
-    const failedRolloutPages = await rollout(task.altLanguageFilePath, task.altLangFolders);
-    failedRollouts.push(failedRolloutPages);
-    loadingON(`Rollout to alt-lang folders of ${task.altLanguageFilePath} complete..`);
-  }
-  if (failedRollouts.length > 0) {
-    loadingON(`Rollout complete. Failed for following - ${failedRollouts}`);
-  }
-}
 
-async function rolloutAll(language) {
-  loadingON(`Rollout to target folders of ${language}`);
-  await asyncForEach(projectDetail[language], async (task) => {
-    if (task.glaas || task.rolloutOnly) {
-      await initRollout(task);
+  async function executeRollout(langInfo) {
+    const { languageFilePath } = langInfo;
+    loadingON(`Rollout live-copy folders of ${languageFilePath} in progress..`);
+    const failedRolloutPages = await rollout(languageFilePath, langInfo.livecopyFolders);
+    failedRollouts.push(...failedRolloutPages);
+    loadingON(`Rollout to live-copy folders of ${languageFilePath} complete..`);
+  }
+  try {
+    await executeRollout(task.langInfo);
+    if (task?.altLangInfo) {
+      await executeRollout(task.altLangInfo);
     }
-  });
+    status.success = true;
+    if (failedRollouts.length > 0) {
+      loadingON(`Rollout complete. Failed for following - ${failedRollouts}`);
+    }
+  } catch (error) {
+    status.errorMsg = error.message;
+  }
+  status.failedRollouts = failedRollouts;
+  return status;
+}
+
+async function rolloutAll(projectInfo) {
+  const { language } = projectInfo;
+  let failedRollouts = [];
+  loadingON(`Rollout to target folders of ${language}`);
+  if (projectInfo.status === PROJECT_STATUS.COMPLETED) {
+    const rolloutStatuses = await Promise.all(
+      [...projectInfo.urls].map((taskArray) => initRollout(taskArray[1], language)),
+    );
+    failedRollouts = rolloutStatuses.filter(
+      (status) => !status.success || status.failedRollouts.length > 0,
+    ).map(
+      (status) => (failedRollouts.length > 0 ? failedRollouts : [status.errorMsg]),
+    );
+  }
   loadingON(`Rollout to target folders of ${language} complete`);
-  loadingOFF();
-  await refresh();
+  if (failedRollouts.length > 0) {
+    loadingON(`Rollout failed for ${failedRollouts}`);
+  }
 }
 
-async function getLinkedPagePath(pagePath) {
-  const spViewUrl = await getSpViewUrl(pagePath);
-  return getAnchorHtml(spViewUrl, pagePath);
+function getLinkedPagePath(spShareUrl, pagePath) {
+  return getAnchorHtml(spShareUrl.replace('<relativePath>', pagePath), pagePath);
 }
 
-async function getLinkOrDisplayText(docStatus) {
+function getLinkOrDisplayText(spViewUrl, docStatus) {
   const pathOrMsg = docStatus.msg;
-  return docStatus.hasSourceFile ? await getLinkedPagePath(pathOrMsg) : pathOrMsg;
+  return docStatus.hasSourceFile ? getLinkedPagePath(spViewUrl, pathOrMsg) : pathOrMsg;
+}
+
+function showButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.remove('hidden');
+  });
+}
+
+function hideButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.add('hidden');
+  });
 }
 
 async function displayProjectDetail() {
@@ -242,116 +237,269 @@ async function displayProjectDetail() {
   }
   const config = await getConfig();
   const container = getProjectDetailContainer();
+  const subprojects = new Map([
+    ...projectDetail.englishCopyProjects,
+    ...projectDetail.rolloutProjects,
+    ...projectDetail.translationProjects,
+  ]);
   const $table = await createTableWithHeaders(config);
+  let metdataColumns = 4;
 
   const connectedToGLaaS = config.glaas.accessToken;
-  let taskFoundInGLaaS = false;
-  let showCombinedPersistRow = false;
-  const combinedSavePerLanguage = new Map();
-  const hideCombinedRolloutPerLanguage = new Map();
+  const spViewUrl = await getSpViewUrl();
 
-  await asyncForEach(projectDetail.urls, async (url) => {
+  function displayPageStatuses(url, projects, langstoreDocExists, row) {
+    projects.forEach((projectInfo) => {
+      const $td = createTag('td');
+      if (!langstoreDocExists) {
+        $td.innerHTML = 'No Source';
+      } else {
+        const status = getStatus(projectInfo, url);
+        if (status?.viewButtons.length > 0) {
+          status.viewButtons.forEach((button) => $td.appendChild(button));
+        } else {
+          $td.innerHTML = status.innerHtml;
+        }
+      }
+      row.appendChild($td);
+    });
+  }
+
+  function displayProjectStatuses(projects, row) {
+    projects.forEach((projectInfo) => {
+      if (projectInfo.status === PROJECT_STATUS.COMPLETED) {
+        const $td = createTag('td');
+        const $saveAllButton = createButton('Save');
+        $saveAllButton.addEventListener('click', () => saveAll(projectInfo));
+        $td.appendChild($saveAllButton);
+        const $rolloutAllButton = createButton('Rollout');
+        $rolloutAllButton.addEventListener('click', () => {
+          rolloutAll(projectInfo);
+        });
+        $td.appendChild($rolloutAllButton);
+        row.appendChild($td);
+      } else {
+        row.appendChild(createColumn());
+      }
+    });
+  }
+  projectDetail.urls.forEach((urlInfo, url) => {
     const $tr = createRow();
     const pageUrl = getAnchorHtml(url, getPathFromUrl(url));
     $tr.appendChild(createColumn(pageUrl));
-    const usEnDocStatus = getSharepointStatus(projectDetail.docs[url]);
-    const usEnDocDisplayText = await getLinkOrDisplayText(usEnDocStatus);
+    const usEnDocStatus = getSharepointStatus(urlInfo.doc);
+    const usEnDocDisplayText = getLinkOrDisplayText(spViewUrl, usEnDocStatus);
     $tr.appendChild(createColumn(usEnDocDisplayText));
-    const langstoreDocStatus = getSharepointStatus(projectDetail.langstoredocs[url]);
-    const langstoreEnDisplayText = await getLinkOrDisplayText(langstoreDocStatus);
+    const langstoreDocStatus = getSharepointStatus(urlInfo.langstoreDoc);
+    const langstoreEnDisplayText = getLinkOrDisplayText(spViewUrl, langstoreDocStatus);
+    const langstoreDocExists = langstoreDocStatus.hasSourceFile;
     $tr.appendChild(createColumn(langstoreEnDisplayText));
     $tr.appendChild(createColumn(langstoreDocStatus.modificationInfo));
-    await asyncForEach(projectDetail.languages, async (language) => {
-      let filesMissingInSharepoint = false;
-      const $td = createTag('td');
-      const gLaaSStatus = getGLaaSStatus(config, language, url, usEnDocStatus.hasSourceFile);
-      if (gLaaSStatus.persistButtons) {
-        gLaaSStatus.persistButtons.forEach((button) => $td.appendChild(button));
-      } else {
-        $td.innerHTML = gLaaSStatus.innerHtml;
-      }
-      if (gLaaSStatus.taskFoundInGLaaS) {
-        taskFoundInGLaaS = gLaaSStatus.taskFoundInGLaaS;
-      }
-      if (gLaaSStatus.canSaveAll) {
-        showCombinedPersistRow = true;
-        combinedSavePerLanguage.set(language, gLaaSStatus.canSaveAll);
-        filesMissingInSharepoint = gLaaSStatus.persistButtons.length === 0;
-        if (filesMissingInSharepoint) {
-          hideCombinedRolloutPerLanguage.set(language, true);
-        }
-      }
-      $tr.appendChild($td);
-    });
-
+    displayPageStatuses(url, subprojects, langstoreDocExists, $tr);
     $table.appendChild($tr);
   });
 
-  if (showCombinedPersistRow) {
-    const finalRow = createRow();
+  const finalRow = createRow();
+  while (metdataColumns > 0) {
     finalRow.appendChild(createColumn());
-    finalRow.appendChild(createColumn());
-    finalRow.appendChild(createColumn());
+    metdataColumns -= 1;
+  }
+  displayProjectStatuses(subprojects, finalRow);
+  $table.appendChild(finalRow);
+  container.appendChild($table);
+  let hideIds = ['send', 'reload', 'updateFragments', 'copyToEn'];
+  let showIds = projectDetail.translationProjects.size > 0 ? ['refresh'] : [];
+  const { projectStarted } = projectDetail;
+  if (!projectStarted) {
+    showIds = ['reload', 'updateFragments', 'copyToEn'];
+    hideIds = ['refresh'];
+    if (connectedToGLaaS) {
+      showIds.push('send');
+    }
+  }
+  showButtons(showIds);
+  hideButtons(hideIds);
+}
 
-    projectDetail.languages.forEach((language) => {
-      if (combinedSavePerLanguage.get(language)) {
-        const $td = createTag('td');
-        const $saveAllButton = createButton('Save');
-        $saveAllButton.addEventListener('click', () => {
-          saveAll(language);
-        });
-        $td.appendChild($saveAllButton);
-        if (!hideCombinedRolloutPerLanguage.get(language)) {
-          const $rolloutAllButton = createButton('Rollout');
-          $rolloutAllButton.addEventListener('click', () => {
-            rolloutAll(language);
-          });
-          $td.appendChild($rolloutAllButton);
-        }
-        finalRow.appendChild($td);
-      } else {
-        finalRow.appendChild(createColumn());
+async function createEnglishCopies(file, targetFolders) {
+  return Promise.all(targetFolders.map((targetFolder) => saveFile(file.blob, file.path.replace('/langstore/en/', `/langstore/${targetFolder}/`))));
+}
+
+function handleRolloutProjects() {
+  function updateStatus(projectInfo, langInfo) {
+    if (langInfo?.sp?.status !== 200) {
+      projectInfo.failedPages.push(langInfo.languageFilePath);
+      const failureMsg = `Page Not found ${langInfo.languageFilePath}<br/>`;
+      projectInfo.failureMessage += failureMsg;
+      langInfo.status = PROJECT_STATUS.FAILED;
+      langInfo.failureMessage = failureMsg;
+      projectInfo.status = PROJECT_STATUS.FAILED;
+    } else {
+      langInfo.status = PROJECT_STATUS.COMPLETED;
+    }
+  }
+  projectDetail.rolloutProjects.forEach((projectInfo) => {
+    projectInfo.urls.forEach((urlInfo) => {
+      const { langInfo } = urlInfo;
+      updateStatus(projectInfo, langInfo);
+      if (urlInfo?.altLangInfo) {
+        const { altLangInfo } = urlInfo;
+        updateStatus(projectInfo, altLangInfo);
       }
     });
-
-    $table.appendChild(finalRow);
-  }
-
-  container.appendChild($table);
-
-  const sendPanel = document.getElementById('send');
-  const copyToEnPanel = document.getElementById('copyToEn');
-  const updateFragmentsPanel = document.getElementById('updateFragments');
-  const refreshPanel = document.getElementById('refresh');
-  const reloadPanel = document.getElementById('reload');
-  if (!taskFoundInGLaaS) {
-    // show the send button only if task has not been found in GLaaS
-    if (connectedToGLaaS) {
-      sendPanel.classList.remove('hidden');
+    if (projectInfo.status !== PROJECT_STATUS.FAILED) {
+      projectInfo.status = PROJECT_STATUS.COMPLETED;
     }
-    reloadPanel.classList.remove('hidden');
-    updateFragmentsPanel.classList.remove('hidden');
-    copyToEnPanel.classList.remove('hidden');
-    refreshPanel.classList.add('hidden');
-  } else {
-    sendPanel.classList.add('hidden');
-    reloadPanel.classList.add('hidden');
-    updateFragmentsPanel.classList.add('hidden');
-    copyToEnPanel.classList.add('hidden');
-    refreshPanel.classList.remove('hidden');
+  });
+}
+
+async function handleEnglishCopyProjects(langstoreEnFiles) {
+  loadingON('Starting English Copy Projects');
+  const targetLanguages = [];
+  projectDetail.englishCopyProjects.forEach((projectInfo) => {
+    targetLanguages.push(projectInfo.language);
+    if (projectInfo?.altLangInfo?.language) {
+      targetLanguages.push(projectInfo.altLangInfo.language);
+    }
+  });
+  const englishCopiesStatus = await Promise.all(
+    langstoreEnFiles.map((file) => createEnglishCopies(file, targetLanguages)),
+  );
+  const failedPagesStatus = englishCopiesStatus
+    .filter(({ success }) => !success);
+  const failedPages = failedPagesStatus.length > 0
+    ? failedPagesStatus.map(({ path }) => path) : [];
+
+  function updateStatus(urlLangInfo, projectInfo) {
+    let status = PROJECT_STATUS.COMPLETED;
+    const currentLangPath = urlLangInfo.languageFilePath;
+    if (failedPages.includes(currentLangPath)) {
+      status = PROJECT_STATUS.FAILED;
+      projectInfo.status = PROJECT_STATUS.FAILED;
+      projectInfo.failedPages.push(currentLangPath);
+      projectInfo.failureMessage += `Could not save English Copy for ${currentLangPath}<br/>`;
+    }
+    urlLangInfo.status = status;
+  }
+  const statusValues = [];
+  projectDetail.englishCopyProjects.forEach((projectInfo) => {
+    loadingON(`Updating status for project ${projectInfo.language}...`);
+    projectInfo.urls.forEach((urlInfo) => {
+      updateStatus(urlInfo.langInfo, projectInfo);
+      if (urlInfo?.altLangInfo) {
+        updateStatus(urlInfo.altLangInfo, projectInfo);
+      }
+    });
+    if (projectInfo.status !== PROJECT_STATUS.FAILED) {
+      projectInfo.status = PROJECT_STATUS.COMPLETED;
+    }
+    statusValues.push(
+      [projectInfo.language, projectInfo.status, projectInfo.status, projectInfo.status,
+        projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
+    );
+    loadingON(`Updated status for project ${projectInfo.language}...`);
+  });
+  loadingON('Update excel with english copy statues...');
+  await updateExcelTable(project.excelPath, 'Status', statusValues);
+  loadingON('Updated excel with english copy statues...');
+  loadingON('Refreshing project Json...');
+  await project.purge();
+}
+
+async function getFileBlob(docInfo) {
+  const doc = docInfo.langstoreDoc;
+  const { url } = docInfo;
+  const file = { path: doc.filePath };
+  try {
+    if (doc && doc?.sp?.status === 200) {
+      const response = await fetch(doc.sp['@microsoft.graph.downloadUrl']);
+      const blob = await response.blob();
+      blob.path = doc.filePath;
+      blob.URL = url;
+      file.blob = blob;
+      return file;
+    }
+  } catch (error) {
+    file.errorMsg = error.message;
+  }
+  return file;
+}
+
+async function getLangstoreFileBlobs() {
+  const langstoreFileBlobs = {
+    files: [],
+    failedFiles: [],
+  };
+  const langstoreFilesInfo = [];
+  projectDetail.urls.forEach((urlInfo, url) => {
+    langstoreFilesInfo.push({ langstoreDoc: urlInfo.langstoreDoc, url });
+  });
+  const fileBlobs = await Promise.all(langstoreFilesInfo.map(
+    (langstoreFileInfo) => getFileBlob(langstoreFileInfo),
+  ));
+  fileBlobs.forEach((fileblob) => {
+    if (fileblob?.errorMsg) {
+      langstoreFileBlobs.failedFiles.push(fileblob);
+    } else {
+      langstoreFileBlobs.files.push(fileblob);
+    }
+  });
+  return langstoreFileBlobs;
+}
+
+async function handleTranslationProject(projectInfo, language, files) {
+  loadingON(`Creating ${language} handoff in GLaaS`);
+  try {
+    await sendToGLaaS(projectDetail, projectInfo, files);
+    return { type: 'gLaaS', success: true, language };
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log(`Failed to send to GLaaS ${error.message}`);
+    return { type: 'gLaaS', success: false, errorMsg: error.message, language };
   }
 }
 
-async function sendForTranslation() {
-  await asyncForEach(projectDetail.languages, async (language) => {
-    loadingON(`Creating ${language} handoff in GLaaS`);
-    await sendToGLaaS(projectDetail, language);
-  });
-  loadingON('Handoffs created in GLaaS. Updating the project with status from GLaaS...');
-  await updateGLaaSStatus(projectDetail);
-  loadingON('Status updated! Updating UI.');
-  await displayProjectDetail();
-  loadingOFF();
+async function handleTranslationProjects(files) {
+  await Promise.all(
+    [...projectDetail.translationProjects].map(
+      (translationProjectsArray) => handleTranslationProject(
+        translationProjectsArray[1],
+        translationProjectsArray[0],
+        files,
+      ),
+    ),
+  );
+}
+
+async function startProject() {
+  try {
+    if (projectDetail?.rolloutProjects.size > 0) {
+      handleRolloutProjects();
+      projectDetail.projectStarted = true;
+    }
+    if ((projectDetail?.englishCopyProjects.size > 0)
+      || (projectDetail?.translationProjects.size > 0)) {
+      const langstoreEnDocs = await getLangstoreFileBlobs();
+      if (langstoreEnDocs.failedFiles.length > 0) {
+        projectDetail.projectStarted = false;
+        loadingON(`Project Not Started. Langstore Pages Missing ${langstoreEnDocs.failedFiles.map((failedFile) => failedFile.path)}`);
+        return;
+      }
+      if (projectDetail?.englishCopyProjects.size > 0) {
+        await handleEnglishCopyProjects(langstoreEnDocs.files);
+      }
+      if (projectDetail?.translationProjects.size > 0) {
+        await handleTranslationProjects(langstoreEnDocs.files);
+      }
+    }
+    loadingON('Subprojects started.. Updating Statuses...');
+    await updateGLaaSStatus(projectDetail);
+    loadingON('Status updated! Updating UI.');
+    await displayProjectDetail();
+    loadingOFF();
+  } catch (error) {
+    loadingON(`Error occurred when starting the project ${error.message}`);
+  }
 }
 
 async function fetchProjectFile(url, retryAttempt) {
@@ -374,7 +522,9 @@ async function reloadProjectFile() {
 
 async function refresh() {
   loadingON('Update Sharepoint Status...');
-  await updateSPStatus(projectDetail);
+  await updateProjectWithDocs(projectDetail);
+  loadingON('Update Rollout Projects...');
+  await handleRolloutProjects();
   loadingON('Updating GLaaS Status...');
   await updateGLaaSStatus(projectDetail);
   loadingON('Status updated! Updating UI.');
@@ -382,96 +532,109 @@ async function refresh() {
   loadingOFF();
 }
 
-function fileExistsInSharepoint(task, altLang) {
-  const sp = altLang ? task.altlangsp : task.sp;
-  return sp && sp.status === 200;
+function fileExistsInSharepoint(taskLangInfo) {
+  return taskLangInfo?.sp?.status === 200;
 }
 
-function getSavePath(task, altLang) {
-  return altLang ? task.altLanguageFilePath : task.languageFilePath;
-}
-
-async function save(task, language, doRefresh = true) {
-  const altLang = isAltLang(task, language);
-  if (task.skipLanguageTranslation && !altLang) {
-    return;
-  }
-  const dest = `${getSavePath(task, altLang)}`.toLowerCase();
-  if (fileExistsInSharepoint(task, altLang)) {
-    // eslint-disable-next-line no-alert
-    const confirm = window.confirm(`File ${dest} exists already. Are you sure you want to overwrite the current production version ?`);
-    if (!confirm) return;
-  }
-  loadingON(`Downloading ${dest} file from GLaaS`);
+async function save(taskLangInfo, glaasTaskAPI) {
   try {
-    const file = await getFileFromGLaaS(task, language);
+    const dest = taskLangInfo.languageFilePath.toLowerCase();
+    if (fileExistsInSharepoint(taskLangInfo)) {
+      // eslint-disable-next-line no-alert
+      const confirm = window.confirm(`File ${dest} exists already. Are you sure you want to overwrite the current version ?`);
+      if (!confirm) return;
+    }
+    loadingON(`Downloading ${dest} file from GLaaS`);
+    const file = await getAssetFromGLaaS(glaasTaskAPI, taskLangInfo.glaas.assetPath);
     loadingON(`Saving ${dest} file to Sharepoint`);
     await saveFile(file, dest);
     loadingON(`File ${dest} is now in Sharepoint`);
-    if (doRefresh) {
-      loadingOFF();
-      await refresh();
-    }
   } catch (err) {
     setError('Could not save the file.', err);
   }
 }
 
-async function saveAll(language) {
-  await asyncForEach(projectDetail[language], async (task) => {
-    if (task.glaas) {
-      await save(task, language, false);
-      if (task.altlanguage && task.glaas.altLangStatus) {
-        await save(task, task.altlanguage, false);
+async function saveAll(projectInfo) {
+  async function saveTask(task) {
+    try {
+      let primaryFileSaved = projectInfo.language === 'en';
+      if (task?.langInfo?.glaas?.assetPath) {
+        await save(task.langInfo, projectInfo?.glaasTasksAPI);
+        primaryFileSaved = true;
       }
+      if (primaryFileSaved && projectInfo?.altLangInfo?.language
+        && task?.altLangInfo?.glaas?.assetPath) {
+        await save(
+          task.altLangInfo,
+          projectInfo.altLangInfo?.glaasTasksAPI,
+        );
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(`Error occurred when trying to save file ${error.message}`);
     }
-  });
+  }
+
+  await Promise.all([...projectInfo.urls].map((taskArray) => saveTask(taskArray[1])));
   loadingOFF();
   await refresh();
 }
 
-async function copyFilesToLanguageEn() {
-  const failedCopies = [];
-
+async function copyFilesToLangstoreEn() {
   function updateAndDisplayCopyStatus(copyStatus, srcPath) {
     let copyDisplayText = `Copied ${srcPath} to languages/en`;
     if (!copyStatus) {
       copyDisplayText = `Failed to copy ${srcPath} to languages/en`;
-      failedCopies.push(srcPath);
     }
     loadingON(copyDisplayText);
   }
 
-  await asyncForEach(projectDetail.urls, async (url) => {
-    const srcPath = `${getSharepointLocationFromUrl(url)}.docx`;
-    loadingON(`Copying ${srcPath} to languages/en`);
-    // Conflict behaviour replace for copy not supported in one drive, hence if file exists,
-    // then use saveFile.
-    if (projectDetail?.langstoredocs[url]?.sp?.status !== 200) {
-      const destinationFolder = `/langstore/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
-      const copyStatus = await copyFile(srcPath, destinationFolder);
-      updateAndDisplayCopyStatus(copyStatus, srcPath);
-    } else {
-      const file = await getFile(projectDetail.docs[url]);
-      let copyStatus = false;
-      if (file) {
-        try {
-          const destination  = projectDetail?.langstoredocs[url]?.filePath;
+  async function copyFileToLangstore(urlInfo) {
+    const status = { success: false };
+    try {
+      const srcPath = urlInfo?.doc?.filePath;
+      loadingON(`Copying ${srcPath} to languages/en`);
+      // Conflict behaviour replace for copy not supported in one drive, hence if file exists,
+      // then use saveFile.
+      let copySuccess = false;
+      if (urlInfo?.langstoreDoc?.sp?.status !== 200) {
+        const destinationFolder = `/langstore/en${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
+        copySuccess = await copyFile(srcPath, destinationFolder);
+        updateAndDisplayCopyStatus(copySuccess, srcPath);
+      } else {
+        const file = await getFile(urlInfo.doc);
+        if (file) {
+          const destination = urlInfo?.langstoreDoc?.filePath;
           if (destination) {
-            const uploadedFile = await saveFile(file, destination);
-            if (uploadedFile) {
-              copyStatus = true;
+            const saveStatus = await saveFile(file, destination);
+            if (saveStatus.success) {
+              copySuccess = true;
             }
           }
-        } catch(error) {
-          // Do nothing.
         }
+        updateAndDisplayCopyStatus(copySuccess, srcPath);
       }
-      updateAndDisplayCopyStatus(copyStatus, srcPath);
+      status.success = copySuccess;
+      status.srcPath = srcPath;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(`Error occurred when trying to copy to langstore ${error.message}`);
     }
-  });
-  failedCopies.length > 0 ? loadingON(`Failed to copy ${failedCopies} to languages/en`) : loadingOFF();
-  await refresh();
+    return status;
+  }
+
+  const copyStatuses = await Promise.all(
+    [...projectDetail.urls].map(((valueArray) => copyFileToLangstore(valueArray[1]))),
+  );
+  const failedCopies = copyStatuses
+    .filter((status) => !status.success)
+    .map((status) => status?.srcPath || 'Path Info Not available');
+  if (failedCopies.length > 0) {
+    loadingON(`Failed to copy ${failedCopies} to languages/en`);
+  } else {
+    loadingOFF();
+    await refresh();
+  }
 }
 
 async function triggerUpdateFragments() {
@@ -482,61 +645,62 @@ async function triggerUpdateFragments() {
 
 function setListeners() {
   document.querySelector('#reload button').addEventListener('click', reloadProjectFile);
-  document.querySelector('#copyToEn button').addEventListener('click', copyFilesToLanguageEn);
-  document.querySelector('#send button').addEventListener('click', sendForTranslation);
+  document.querySelector('#copyToEn button').addEventListener('click', copyFilesToLangstoreEn);
+  document.querySelector('#send button').addEventListener('click', startProject);
   document.querySelector('#refresh button').addEventListener('click', refresh);
   document.querySelector('#loading').addEventListener('click', loadingOFF);
   document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
 }
 
-async function getSafely(method, errMsg) {
-  let info;
-  try {
-    info = await method();
-  } catch (err) {
-    setError(errMsg, err);
-  }
-  return info;
-}
-
 async function init() {
-  setListeners();
-  loadingON('Fetching Localization Config...');
-  const config = await getSafely(getConfig, 'Something is wrong with the Localization Configuration');
-  if (!config) {
-    return;
-  }
-  loadingON('Localization Config loaded');
-  loadingON('Fetching Project Config...');
-  const project = await getSafely(initProject, 'Could not read the project file');
-  if (!project) {
-    return;
-  }
-  loadingON(`Fetching project details for ${project.url}`);
-  setProjectUrl(project);
-  projectDetail = await project.detail();
-  loadingON('Project Details loaded');
-  await displayProjectDetail();
-  loadingON('Connecting now to Sharepoint...');
-  await connectToSP(async () => {
-    loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
-    await updateSPStatus(projectDetail, async () => {
-      loadingON('Status updated! Updating UI.');
-      await displayProjectDetail();
-      loadingOFF();
+  try {
+    setListeners();
+    loadingON('Fetching Localization Config...');
+    const config = await getConfig();
+    if (!config) {
+      return;
+    }
+    loadingON('Localization Config loaded');
+    loadingON('Fetching Project Config...');
+    project = await initProject();
+    loadingON('Refreshing Project Config...');
+    await project.purge();
+    loadingON('Fetching Project Config after refresh...');
+    await fetchProjectFile(project.url, 1);
+    project = await initProject();
+    if (!project) {
+      return;
+    }
+    loadingON(`Fetching project details for ${project.url}`);
+    setProjectUrl();
+    projectDetail = await project.detail();
+    loadingON('Project Details loaded');
+    await displayProjectDetail();
+    loadingON('Connecting now to Sharepoint...');
+    await connectToSP(async () => {
+      loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
+      await updateProjectWithDocs(projectDetail, async () => {
+        loadingON('Update Rollout Projects...');
+        await handleRolloutProjects();
+        loadingON('Status updated! Updating UI.');
+        await displayProjectDetail();
+        loadingOFF();
+      });
     });
-  });
-  loadingON('Connecting now to GLaaS...');
-  await connectToGLaaS(async () => {
-    loadingON('Connected to GLaaS! Updating the GLaaS Status...');
-    await updateGLaaSStatus(projectDetail, async () => {
-      loadingON('Status updated! Updating UI.');
-      await displayProjectDetail();
-      loadingOFF();
+    loadingON('Connecting now to GLaaS...');
+    await connectToGLaaS(async () => {
+      loadingON('Connected to GLaaS! Updating the GLaaS Status...');
+      await updateGLaaSStatus(projectDetail, async () => {
+        loadingON('Status updated! Updating UI.');
+        await displayProjectDetail();
+        loadingOFF();
+      });
     });
-  });
-  loadingON('App loaded.');
-  loadingOFF();
+    loadingON('App loaded.');
+    loadingOFF();
+  } catch (error) {
+    loadingON(`Error occurred when initializing the project ${error.message}`);
+  }
 }
 
 export default init;
