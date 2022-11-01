@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-const HEADERS = Object.freeze({
+const TAXONOMY_FIELDS = Object.freeze({
   level1: Symbol('Level 1'),
   level2: Symbol('Level 2'),
   level3: Symbol('Level 3'),
@@ -19,6 +19,12 @@ const HEADERS = Object.freeze({
   type: Symbol('Type'),
   excludeFromMetadata: Symbol('ExcludeFromMetadata'),
 });
+
+const LEVEL_INDEX = {
+  level1: 1,
+  level2: 2,
+  level3: 3,
+};
 
 const NO_INTERLINKS = Object.freeze(Symbol('no-interlinks'));
 
@@ -41,6 +47,96 @@ const generateUri = (name) => name
   .replace(/\./gm, '') // remove dots
   .replace(/--+/g, '-'); // remove multiple dashes
 
+const removeLineBreaks = (topic) => (topic?.replace(/\n/gm, ' ').trim());
+const isProduct = (cat) => cat && cat.toLowerCase() === PRODUCTS;
+const varToString = (varObj) => Object.keys(varObj)[0];
+
+const findItem = (topic, category, taxonomy) => [...topic].reduce((t) => {
+  if (!category && !taxonomy.products[t] && !isProduct(category)) {
+    return taxonomy.topics[t];
+  } if (isProduct(category)) {
+    return taxonomy.products[t];
+  }
+  return taxonomy.topics[t];
+});
+
+async function fetchTaxonomy(target) {
+  return fetch(target).then((response) => response.json()?.data);
+}
+
+function parseTaxonomyJson(data, root) {
+  return data?.reduce((taxonomy, row) => {
+    const level3 = removeLineBreaks(row[TAXONOMY_FIELDS.level3]);
+    const level2 = removeLineBreaks(row[TAXONOMY_FIELDS.level2]);
+    const level1 = removeLineBreaks(row[TAXONOMY_FIELDS.level1]);
+
+    // eslint-disable-next-line no-nested-ternary
+    const level = level3 ? LEVEL_INDEX[varToString(level3)]
+      : (level2 ? LEVEL_INDEX[varToString(level2)]
+        : LEVEL_INDEX[varToString(level1)]);
+
+    const name = level3 || level2 || level1;
+
+    const category = row[TAXONOMY_FIELDS.type]?.trim().toLowerCase() || INTERNALS;
+
+    // skip duplicates
+    if (!isProduct(category) && taxonomy.topics[name]) return taxonomy;
+    if (isProduct(category) && taxonomy.products[name]) return taxonomy;
+
+    const link = [...row[TAXONOMY_FIELDS.link]].reduce((_url) => {
+      if (_url) {
+        const u = new URL(_url);
+        const current = new URL(window.location.href);
+        return `${current.origin}${u.pathname}`;
+      }
+
+      return `${root}/${generateUri(name)}`;
+    }, null);
+
+    const hidden = !!row[TAXONOMY_FIELDS.hidden]?.trim();
+    const skipMeta = !!row[TAXONOMY_FIELDS.excludeFromMetadata]?.trim();
+
+    const item = {
+      name,
+      level,
+      link,
+      category,
+      hidden,
+      skipMeta,
+    };
+
+    if (isProduct(category)) {
+      taxonomy.products[name] = item;
+    } else {
+      taxonomy.topics[name] = item;
+    }
+
+    if (!taxonomy.categories[item.category]) {
+      taxonomy.categories[item.category] = [];
+    }
+
+    if (taxonomy.categories[item.category].indexOf(name) === -1) {
+      taxonomy.categories[item.category].push(item.name);
+    }
+
+    const children = isProduct(category) ? taxonomy.productChildren : taxonomy.topicChildren;
+
+    if (level3 && !children[level2]) {
+      children[level2] = [];
+    } else if (level3 && children[level2].indexOf(level3) === -1) {
+      children[level2].push(level3);
+    }
+
+    if (level2 && !children[level1]) {
+      children[level1] = [];
+    } else if (level2 && children[level1].indexOf(level2) === -1) {
+      children[level1].push(level2);
+    }
+
+    return taxonomy;
+  }, {});
+}
+
 /**
  * Returns the taxonomy object
  * @param {string} lang Language of the taxonomy
@@ -49,117 +145,11 @@ const generateUri = (name) => name
  */
 export default async (lang, url) => {
   const root = `/${lang}/topics`;
+  const target = url || `${root}/taxonomy.json`;
 
-  const escapeTopic = (topic) => (topic ? topic.replace(/\n/gm, ' ').trim() : null);
-  const isProduct = (cat) => cat && cat.toLowerCase() === PRODUCTS;
-
-  const target = url ?? `${root}/taxonomy.json`;
-
-  return fetch(target)
-    .then((response) => response.json())
-    .then((json) => {
-      const data = {
-        topics: {},
-        products: {},
-        categories: {},
-        topicChildren: {},
-        productChildren: {},
-      };
-
-      if (json?.data?.length > 0) {
-        let level; let level1; let level2; let
-          level3;
-
-        json.data.forEach((row) => {
-          level = 3;
-          level3 = escapeTopic(row[HEADERS.level3] !== '' ? row[HEADERS.level3] : null);
-          if (!level3) {
-            level = 2;
-            level2 = escapeTopic(row[HEADERS.level2] !== '' ? row[HEADERS.level2] : null);
-            if (!level2) {
-              level = 1;
-              level1 = escapeTopic(row[HEADERS.level1]);
-            }
-          }
-
-          const name = level3 ?? level2 ?? level1;
-
-          const category = row[HEADERS.type] ? row[HEADERS.type].trim().toLowerCase() : INTERNALS;
-
-          // skip duplicates
-          if (!isProduct(category) && data.topics[name]) return;
-          if (isProduct(category) && data.products[name]) return;
-
-          let link = row[HEADERS.link] !== '' ? row[HEADERS.link] : null;
-          if (link) {
-            const u = new URL(link);
-            const current = new URL(window.location.href);
-            link = `${current.origin}${u.pathname}`;
-          } else {
-            link = `${root}/${generateUri(name)}`;
-          }
-
-          const item = {
-            name,
-            level,
-            level1,
-            level2,
-            level3,
-            link,
-            category,
-            hidden: row[HEADERS.hidden] ? row[HEADERS.hidden].trim() !== '' : false,
-            skipMeta: row[HEADERS.excludeFromMetadata] ? row[HEADERS.excludeFromMetadata].trim() !== '' : false,
-          };
-
-          if (!isProduct(category)) {
-            data.topics[name] = item;
-          } else {
-            data.products[name] = item;
-          }
-
-          if (!data.categories[item.category]) {
-            data.categories[item.category] = [];
-          }
-
-          if (data.categories[item.category].indexOf(name) === -1) {
-            data.categories[item.category].push(item.name);
-          }
-
-          const children = isProduct(category) ? data.productChildren : data.topicChildren;
-          if (level3) {
-            if (!children[level2]) {
-              children[level2] = [];
-            }
-            if (children[level2].indexOf(level3) === -1) {
-              children[level2].push(level3);
-            }
-          }
-
-          if (level2) {
-            if (!children[level1]) {
-              children[level1] = [];
-            }
-            if (children[level1].indexOf(level2) === -1) {
-              children[level1].push(level2);
-            }
-          }
-        });
-      }
-
-      const findItem = (topic, cat) => {
-        let t;
-        if (!cat) {
-          t = data.products[topic];
-          if (!isProduct(cat) && !t) {
-            t = data.topics[topic];
-          }
-        } else if (isProduct(cat)) {
-          t = data.products[topic];
-        } else {
-          t = data.topics[topic];
-        }
-        return t;
-      };
+  return fetchTaxonomy(target)
+    .then((data) => {
+      const taxonomy = parseTaxonomyJson(data, root);
 
       return {
         CATEGORIES,
@@ -169,10 +159,10 @@ export default async (lang, url) => {
         NO_INTERLINKS,
 
         lookup(topic) {
-          // might be a product (product would have priori)
+        // might be a product (product would have priori)
           let t = this.get(topic, PRODUCTS);
           if (!t) {
-            // might be a product without the leading Adobe
+          // might be a product without the leading Adobe
             t = this.get(topic.replace('Adobe ', ''), PRODUCTS);
             if (!t) {
               t = this.get(topic);
@@ -182,7 +172,7 @@ export default async (lang, url) => {
         },
 
         get(topic, cat) {
-          // take first one of the list
+        // take first one of the list
           const t = findItem(topic, cat);
 
           if (!t) { return null; }
@@ -200,7 +190,7 @@ export default async (lang, url) => {
         },
 
         isUFT(topic, cat) {
-          const t = findItem(topic, cat);
+          const t = findItem(topic, cat, taxonomy);
           return t && !t.hidden;
         },
 
@@ -233,12 +223,12 @@ export default async (lang, url) => {
         },
 
         getChildren(topic, cat) {
-          const children = isProduct(cat) ? data.productChildren : data.topicChildren;
+          const children = isProduct(cat) ? taxonomy.productChildren : taxonomy.topicChildren;
           return children[topic] ?? [];
         },
 
         getCategory(cat) {
-          return data.categories[cat.toLowerCase()] ?? [];
+          return taxonomy.categories[cat.toLowerCase()] ?? [];
         },
 
         getCategoryTitle(cat) {
