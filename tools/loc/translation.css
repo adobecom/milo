@@ -145,3 +145,12 @@ tr:last-child button {
   color: #FFF;
   font-weight: 700;
 }
+
+tr > th:first-child, tr > td:first-child {
+  padding-left: 24px;
+}
+
+.project-detail {
+  overflow-x: scroll;
+  margin-bottom: 128px;
+}

@@ -22,21 +22,18 @@ function getParsedHtml(htmlString) {
 }
 
 function getBlockName(node) {
-  /*const blockNameNodeStructures = [
-    ['gtBody', 'gtRow', 'gtCell', 'paragraph', 'text'],
-    ['gtHead', 'gtRow', 'gtCell', 'paragraph', 'text'],
-  ];
-  let blockNameNode = node;*/
-  if (node.type === 'html') {
+  if (node.type === 'gridTable') {
+    let blockNameNode = node;
     try {
-      const html = getParsedHtml(node.value);
-      const block = html.getElementsByTagName('table')[0];
-      if (block) {
-        const fullyQualifiedBlockName = block.getElementsByTagName('tr')[0].textContent;
+      while (blockNameNode.type !== 'text' && blockNameNode?.children.length > 0) {
+        blockNameNode = blockNameNode.children[0];
+      }
+      const fullyQualifiedBlockName = blockNameNode.value;
+      if (fullyQualifiedBlockName) {
         const blockClass = fullyQualifiedBlockName.indexOf('(');
         let blockName = fullyQualifiedBlockName;
         if (blockClass !== -1) {
-          blockName = fullyQualifiedBlockName.substring(0, fullyQualifiedBlockName.indexOf('(')).trim();
+          blockName = fullyQualifiedBlockName.substring(0, blockClass).trim();
         }
         return blockName.toLowerCase().trim();
       }
