@@ -3,6 +3,7 @@ import {
   getLocaleIetf,
   getRootPath,
   emptyDiv,
+  stamp,
 } from '../../utils/utils.js';
 
 let taxonomy;
@@ -245,7 +246,7 @@ export function toClassName(name) {
  * @returns {object} The block config
  */
 export function readBlockConfig(block) {
-  return block.querySelectorAll(':scope>div').reduce((config, row) => {
+  return [...block.querySelectorAll(':scope>div')].reduce((config, row) => {
     if (row.children) {
       const cols = [...row.children];
       if (cols[1]) {
