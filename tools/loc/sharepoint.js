@@ -264,11 +264,12 @@ async function getFileVersionInfo(filePath) {
   throw new Error(`Could not get file version ${filePath}`);
 }
 
-async function updateFile(dest, metadata) {
+async function updateFile(dest, metadata, customMetadata = {}) {
   validateConnection();
   const payload = {
     RolloutVersion: metadata.rolloutVersion,
     Rollout: metadata.rolloutTime,
+    ...customMetadata,
   };
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption({
@@ -285,7 +286,8 @@ async function updateFile(dest, metadata) {
 async function getMetadata(srcPath, file) {
   const metadata = {};
   if (file) {
-    metadata.rolloutTime = file.lastModifiedDateTime;
+    metadata.rolloutTime = file?.uploadedFileJson?.lastModifiedDateTime
+      || file?.lastModifiedDateTime;
     metadata.rolloutVersion = await getFileVersionInfo(srcPath);
   }
   return metadata;
@@ -369,10 +371,10 @@ async function saveFile(file, dest) {
   return { success: false, path: dest };
 }
 
-async function saveFileAndUpdateMetadata(srcPath, file, dest) {
+async function saveFileAndUpdateMetadata(srcPath, file, dest, customMetadata = {}) {
   const uploadedFile = await saveFile(file, dest);
   if (uploadedFile) {
-    await updateFile(dest, await getMetadata(srcPath, uploadedFile));
+    await updateFile(dest, await getMetadata(srcPath, uploadedFile), customMetadata);
     return uploadedFile;
   }
   throw new Error(`Could not upload file ${dest}`);

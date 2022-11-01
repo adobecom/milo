@@ -1,5 +1,5 @@
 import parseMarkdown from './helix/parseMarkdown.bundle.js';
-import { mdast2docx, sanitizeHtml } from './helix/mdast2docx.bundle.js';
+import { mdast2docx } from './helix/mdast2docx.bundle.js';
 import { docx2md } from './helix/docx2md.bundle.js';
 
 import {
@@ -95,15 +95,13 @@ async function getMdast(path) {
 
 // eslint-disable-next-line no-unused-vars
 async function getProcessedMdastFromPath(path) {
-  let mdast = await getMdast(path);
-  mdast = await sanitizeHtml(mdast);
+  const mdast = await getMdast(path);
   const nodes = mdast.children || [];
   return processMdast(nodes);
 }
 
 async function getProcessedMdast(mdast) {
-  const mdastWithBlocks = await sanitizeHtml(mdast);
-  const nodes = mdastWithBlocks.children || [];
+  const nodes = mdast.children || [];
   return processMdast(nodes);
 }
 
@@ -121,7 +119,7 @@ function display(id, toBeDisplayed) {
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
-    await saveFileAndUpdateMetadata(srcPath, docx, dstPath);
+    await saveFileAndUpdateMetadata(srcPath, docx, dstPath, { RolloutStatus: 'Merged' });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('Failed to save file', error);
@@ -258,10 +256,10 @@ function getMergedMdast(left, right) {
 }
 
 function noRegionalChanges(fileMetadata) {
-  const lastModified = new Date(fileMetadata.lastModifiedDateTime);
+  const lastModified = new Date(fileMetadata.Modified);
   const lastRollout = new Date(fileMetadata.Rollout);
   const diffBetweenRolloutAndModification = Math.abs(lastRollout - lastModified) / 1000;
-  return diffBetweenRolloutAndModification < 10 ;
+  return diffBetweenRolloutAndModification < 10;
 }
 
 async function safeGetVersionOfFile(filePath, version) {
@@ -274,7 +272,8 @@ async function safeGetVersionOfFile(filePath, version) {
   return versionFile;
 }
 
-async function rollout(filePath, targetFolders) {
+async function rollout(file, targetFolders) {
+  const filePath = file.path;
   await connectToSP();
   const filePathWithoutExtension = stripExtension(filePath);
   const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
@@ -293,14 +292,26 @@ async function rollout(filePath, targetFolders) {
     try {
       loadingON(`Rollout to ${livecopyFilePath} started`);
       const fileMetadata = await getFileMetadata(livecopyFilePath);
-      const isfileNotFound = fileMetadata.status && fileMetadata.status === 404;
+      const isfileNotFound = fileMetadata?.status === 404;
       const languagePrevVersion = fileMetadata.RolloutVersion;
+      const previouslyMerged = fileMetadata.RolloutStatus;
       const languageCurrentVersion = await getFileVersionInfo(filePath);
-      if (isfileNotFound || noRegionalChanges(fileMetadata)) {
+      if (isfileNotFound) {
         // just copy since regional document does not exist
         await copyFileAndUpdateMetadata(filePath, targetFolder);
         loadingON(`Rollout to ${livecopyFilePath} complete`);
-      } else if (!languagePrevVersion) {
+        return status;
+      }
+      if (noRegionalChanges(fileMetadata) && !previouslyMerged) {
+        await saveFileAndUpdateMetadata(
+          filePath,
+          file.blob,
+          livecopyFilePath,
+        );
+        loadingON(`Rollout to ${livecopyFilePath} complete`);
+        return status;
+      }
+      if (!languagePrevVersion) {
         // Cannot merge since we don't have rollout version info.
         // eslint-disable-next-line no-console
         loadingON(`Cannot rollout to ${livecopyFilePath} since last rollout version info is unavailable`);
@@ -347,55 +358,4 @@ async function rollout(filePath, targetFolders) {
     .map(({ path }) => path);
 }
 
-async function process(folderPath) {
-  reset();
-  await connectToSP();
-  let languagePrevMd;
-  const languagePrevVersion = await getFileMetadata(`${folderPath}/region/loc.docx`);
-  const languageCurrentVersion = await getFileVersionInfo(`${folderPath}/language/loc.docx`);
-  if (!languagePrevVersion) {
-    // Cannot merge since we don't have rollout version info.
-    // eslint-disable-next-line no-console
-    console.log('Cannot rollout since last rollout version info is unavailable');
-  } else if (languagePrevVersion === '0.0') {
-    // just copy since regional document does not exist
-    await copyFileAndUpdateMetadata(`${folderPath}/language/loc.docx`, `${folderPath}/region`);
-  } else if (languageCurrentVersion === languagePrevVersion) {
-    languagePrevMd = await getMd(`${folderPath}/language/loc`);
-  } else {
-    const languageBaseFile = await getVersionOfFile(`${folderPath}/language/loc.docx`, languagePrevVersion);
-    languagePrevMd = await docx2md(languageBaseFile, {});
-  }
-  const languagePrev = await getMdastFromMd(languagePrevMd);
-  const languageBaseProcessed = await getProcessedMdast(languagePrev);
-  display('languagePrev', languageBaseProcessed);
-  const languageCurrent = await getMdast(`${folderPath}/language/loc`);
-  const languageCurrentProcessed = await getProcessedMdast(languageCurrent);
-  display('languageCurrent', languageCurrentProcessed);
-  const languageBaseToCurrentChanges = getChanges(
-    languageBaseProcessed,
-    languageCurrentProcessed,
-  );
-  display('languageDiff', languageBaseToCurrentChanges);
-  const region = await getMdast(`${folderPath}/region-v2`);
-  const regionProcessed = await getProcessedMdast(region);
-  display('region', regionProcessed);
-  const languageBaseToRegionChanges = getChanges(languageBaseProcessed, regionProcessed);
-  display('regionDiff', languageBaseToRegionChanges);
-  const regionMergedMdast = getMergedMdast(
-    languageBaseToCurrentChanges,
-    languageBaseToRegionChanges,
-  );
-  display('regionMerged', regionMergedMdast);
-  await persist(`${folderPath}/language/loc.docx`, regionMergedMdast, `${folderPath}/Region.docx`);
-}
-
-async function init() {
-  document.getElementById('merge').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const folderPath = document.getElementById('folderPath').value;
-    process(folderPath);
-  });
-}
-
-export { init, rollout };
+export default rollout;

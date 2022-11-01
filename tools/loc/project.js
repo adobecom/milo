@@ -168,8 +168,8 @@ function getSubprojectsInfo(projectJson, config, urls, filePathToReferencePositi
   }
 
   function getSelectedLivecopies(allLivecopies, livecopiesSelectedForRollout) {
-    return allLivecopies
-      .filter((livecopy) => livecopiesSelectedForRollout.includes(livecopy));
+    return livecopiesSelectedForRollout.length > 0 ? allLivecopies
+      .filter((livecopy) => livecopiesSelectedForRollout.includes(livecopy)) : allLivecopies;
   }
 
   function getLanguageStatusMap() {

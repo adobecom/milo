@@ -33,7 +33,7 @@ import {
   updateProject as updateGLaaSStatus,
   getAssetFromGLaaS,
 } from './glaas.js';
-import { rollout } from './rollout.js';
+import rollout from './rollout.js';
 import updateFragments from './fragments.js';
 
 let projectDetail;
@@ -131,8 +131,9 @@ function getStatus(subproject, url) {
   const pageInfo = subproject.urls.get(url);
 
   function updateStatus(langInfo, prepend) {
+    const failureMessage = langInfo?.failureMessage ? langInfo.failureMessage : '';
     if (subproject.failedPages.includes(langInfo.languageFilePath)) {
-      status.innerHtml += `${prepend} Failed<br/>`;
+      status.innerHtml += `${prepend} Failed <br/>${failureMessage}<br/>`;
       return;
     }
     const langStatus = langInfo.status;
@@ -145,7 +146,7 @@ function getStatus(subproject, url) {
       }
     } else {
       const innerHtmlPrefix = langStatus === PROJECT_STATUS.YET_TO_START ? '' : prepend;
-      status.innerHtml += `${innerHtmlPrefix} ${langStatus}<br/>`;
+      status.innerHtml += `${innerHtmlPrefix} ${langStatus} ${failureMessage}<br/>`;
     }
   }
   let prepend = true;
@@ -169,8 +170,13 @@ async function initRollout(task, language) {
 
   async function executeRollout(langInfo) {
     const { languageFilePath } = langInfo;
+    const fileBlob = await getFile(langInfo);
+    if (!fileBlob) {
+      throw new Error(`File not found ${languageFilePath}`);
+    }
+    const file = { path: languageFilePath, blob: fileBlob };
     loadingON(`Rollout live-copy folders of ${languageFilePath} in progress..`);
-    const failedRolloutPages = await rollout(languageFilePath, langInfo.livecopyFolders);
+    const failedRolloutPages = await rollout(file, langInfo.livecopyFolders);
     failedRollouts.push(...failedRolloutPages);
     loadingON(`Rollout to live-copy folders of ${languageFilePath} complete..`);
   }
@@ -181,7 +187,7 @@ async function initRollout(task, language) {
     }
     status.success = true;
     if (failedRollouts.length > 0) {
-      loadingON(`Rollout complete. Failed for following - ${failedRollouts}`);
+      loadingON(`Rollout in progress. Failed for following - ${failedRollouts}`);
     }
   } catch (error) {
     status.errorMsg = error.message;
@@ -201,12 +207,12 @@ async function rolloutAll(projectInfo) {
     failedRollouts = rolloutStatuses.filter(
       (status) => !status.success || status.failedRollouts.length > 0,
     ).map(
-      (status) => (failedRollouts.length > 0 ? failedRollouts : [status.errorMsg]),
+      (status) => (status.failedRollouts.length > 0 ? status.failedRollouts : [status.errorMsg]),
     );
   }
   loadingON(`Rollout to target folders of ${language} complete`);
   if (failedRollouts.length > 0) {
-    loadingON(`Rollout failed for ${failedRollouts}`);
+    loadingON(`Rollout failed for <br/> ${failedRollouts.flat(1).join('<br/>')}`);
   }
 }
 
