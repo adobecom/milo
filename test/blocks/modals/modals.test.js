@@ -11,7 +11,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('Modals', () => {
   it('Doesnt load modals on page load with no hash', async () => {
     window.location.hash = '';
-    const modal = document.querySelector('dialog');
+    const modal = document.querySelector('.dialog-modal');
     expect(modal).to.be.null;
   });
 
@@ -27,7 +27,7 @@ describe('Modals', () => {
   it('Closes a modal on button click', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    const close = document.querySelector('dialog button');
+    const close = document.querySelector('.dialog-modal button');
     close.click();
     await waitForRemoval('#milo');
     expect(window.location.hash).to.be.empty;
@@ -37,7 +37,7 @@ describe('Modals', () => {
   it('Closes a modal on click outside modal', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    const close = document.querySelector('dialog');
+    const close = document.querySelector('.modal-curtain');
     close.click();
     await waitForRemoval('#milo');
     expect(window.location.hash).to.be.empty;
@@ -68,7 +68,7 @@ describe('Modals', () => {
   it('Doesnt open a modal', async () => {
     window.location.hash = '#notthere';
     await delay(50);
-    expect(document.querySelector('dialog')).to.be.null;
+    expect(document.querySelector('.dialog-modal')).to.be.null;
     window.location.hash = '';
   });
 

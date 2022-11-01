@@ -21,16 +21,18 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
-  'manual-card',
+  'card',
   'marquee',
   'media',
   'merch',
   'modal',
   'pdf-viewer',
   'quote',
+  'review',
   'section-metadata',
   'tabs',
   'table-of-contents',
+  'text',
   'youtube',
   'z-pattern',
   'share',
@@ -82,7 +84,7 @@ function getEnv(conf) {
    || host.includes('corp.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
-  return { ...conf.prod, consumer: conf.prod };
+  return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
 }
 
@@ -406,6 +408,7 @@ async function loadMartech(config) {
 }
 
 async function loadPostLCP(config) {
+  loadMartech(config);
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
   loadTemplate();
@@ -443,7 +446,6 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateHeader();
-    loadMartech(config);
   }
 
   const sections = decorateSections(area, isDoc);
