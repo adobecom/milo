@@ -67,6 +67,8 @@ export const defaultState = {
     },
   },
   e: {},
+  title_align: 'center',
+  title_size: 'h3',
 };
 
 /* c8 ignore start */
@@ -290,9 +292,9 @@ export const initFaas = (config, targetEl) => {
   ${isNext ? 'next' : ''}`,
   });
 
-  const formTitleWrapperEl = createTag('div', { class: 'faas-title' });
+  const formTitleWrapperEl = createTag('div', { class: `faas-title text-${state.title_align || 'center'}` });
   if (state.title) {
-    const formTitleEl = createTag('h2');
+    const formTitleEl = createTag(state.title_size || 'h3');
     formTitleEl.textContent = state.title;
     formTitleWrapperEl.append(formTitleEl);
   }
