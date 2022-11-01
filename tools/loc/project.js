@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getDocPathFromUrl } from './utils.js';
+import { getDocPathFromUrl, getUrlInfo } from './utils.js';
 import getConfig from './config.js';
 import { getSpFiles } from './sharepoint.js';
 
@@ -25,30 +25,6 @@ const PROJECT_STATUS = {
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
 };
-
-function getUrlInfo() {
-  const location = new URL(document.location.href);
-  function getParam(name) {
-    return location.searchParams.get(name);
-  }
-
-  const sub = location.hostname.split('.').shift().split('--');
-
-  const sp = getParam('referrer');
-  const owner = getParam('owner') || sub[2];
-  const repo = getParam('repo') || sub[1];
-  const ref = getParam('ref') || sub[0];
-  return {
-    sp,
-    owner,
-    repo,
-    ref,
-    origin: `https://${ref}--${repo}--${owner}.hlx.page`,
-    isValid() {
-      return sp && owner && repo && ref;
-    },
-  };
-}
 
 async function getProjectFileStatus(helixAdminApiUrl, sharepointProjectPath) {
   let projectFileStatusJson;
@@ -84,8 +60,7 @@ async function readProjectFile(projectWebUrl) {
 }
 
 function getArrayFromString(string, split) {
-  return string && string.includes(split)
-    ? string.split(split).filter((str) => str.trim().length > 0) : [];
+  return string ? string.split(split).filter((str) => str.trim().length > 0) : [];
 }
 
 function addOrAppendToMap(map, key, value) {

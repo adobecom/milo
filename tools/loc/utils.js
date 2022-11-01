@@ -56,3 +56,24 @@ export function getDocPathFromUrl(url) {
   }
   return `${path}.docx`;
 }
+
+export function getUrlInfo() {
+  const location = new URL(document.location.href);
+  function getParam(name) {
+    return location.searchParams.get(name);
+  }
+  const sp = getParam('sp');
+  const owner = getParam('owner');
+  const repo = getParam('repo');
+  const ref = getParam('ref');
+  return {
+    sp,
+    owner,
+    repo,
+    ref,
+    origin: `https://${ref}--${repo}--${owner}.hlx.page`,
+    isValid() {
+      return sp && owner && repo && ref;
+    },
+  };
+}

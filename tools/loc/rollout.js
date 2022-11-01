@@ -10,17 +10,23 @@ import {
   getVersionOfFile,
   saveFileAndUpdateMetadata,
 } from './sharepoint.js';
-import { loadingON, stripExtension } from './utils.js';
+import { getUrlInfo, loadingON, stripExtension } from './utils.js';
 
 let types = new Set();
 let hashToContentMap = new Map();
 const MAX_RETRIES = 5;
+let urlInfo;
 
 function getParsedHtml(htmlString) {
   return new DOMParser().parseFromString(htmlString, 'text/html');
 }
 
 function getBlockName(node) {
+  /*const blockNameNodeStructures = [
+    ['gtBody', 'gtRow', 'gtCell', 'paragraph', 'text'],
+    ['gtHead', 'gtRow', 'gtCell', 'paragraph', 'text'],
+  ];
+  let blockNameNode = node;*/
   if (node.type === 'html') {
     try {
       const html = getParsedHtml(node.value);
@@ -64,7 +70,7 @@ function processMdast(nodes) {
 }
 
 async function simulatePreview(mdPath, retryAttempt = 1) {
-  const previewUrl = `https://admin.hlx.page/preview/adobecom/milo/diffpoc${mdPath}`;
+  const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${urlInfo.repo}/${urlInfo.ref}${mdPath}`;
   const response = await fetch(
     `${previewUrl}`,
     { method: 'POST' },
@@ -311,6 +317,7 @@ async function rollout(file, targetFolders) {
         loadingON(`Rollout to ${livecopyFilePath} complete`);
         return status;
       }
+      urlInfo = getUrlInfo();
       if (!languagePrevVersion) {
         // Cannot merge since we don't have rollout version info.
         // eslint-disable-next-line no-console
