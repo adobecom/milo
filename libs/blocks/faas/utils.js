@@ -294,7 +294,6 @@ export const initFaas = (config, targetEl) => {
 
   const formTitleWrapperEl = createTag('div', { class: `faas-title text-${state.title_align}` });
   if (state.title) {
-    console.log(state);
     const formTitleEl = createTag(state.title_size);
     formTitleEl.textContent = state.title;
     formTitleWrapperEl.append(formTitleEl);
