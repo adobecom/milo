@@ -13,6 +13,8 @@ export async function getSVGsfromFile(path, selectors) {
     const svg = doc.querySelector('svg');
     if (svg) return [{ svg }];
     return null;
+  } else if (!(selectors instanceof Array)) {
+    selectors = [selectors];
   }
 
   return selectors.map((selector) => {
