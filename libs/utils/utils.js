@@ -110,7 +110,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);  
+        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
@@ -419,6 +419,8 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  const { loadIcons } = await import('./decorate.js');
+  loadIcons();
 }
 
 export async function loadDeferred(area) {

@@ -14,7 +14,7 @@ const config = {
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
-const { getSVGsfromFile, decorateIconsInBlock } = await import('../../libs/utils/decorate.js');
+const { getSVGsfromFile, loadIcons } = await import('../../libs/utils/decorate.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -200,12 +200,12 @@ describe('Utils', () => {
   });
 
   describe('Icon support', () => {
-    it('Decorates an icon in a block', async () => {
+    it('Load icons', async () => {
       const paragraph = document.createElement('p');
       paragraph.innerHTML = '<span class="icon icon-milo-play"></span>';
-      await decorateIconsInBlock(paragraph);
+      await loadIcons(paragraph);
       const selector = paragraph.querySelector(':scope svg');
-      expect(selector).to.exist
+      expect(selector).to.exist;
     });
   });
 
@@ -220,14 +220,9 @@ describe('Utils', () => {
       expect(val).to.be.null;
     });
 
-    it('Returns svg when a good path is given with out an icon list', async () => {
+    it('Returns svg when a good path is given', async () => {
       const val = await getSVGsfromFile('../../libs/img/icons/icons.svg');
-      expect(val.length).to.equal(1);
-    });
-
-    it('Returns svg when a good path is given and has icon list', async () => {
-      const val = await getSVGsfromFile('../../libs/img/icons/icons.svg', ['play']);
-      expect(val.length).to.equal(1);
+      expect(Object.keys(val).length > 0).to.equal(true);
     });
   });
 

@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { decorateButtons, decorateIconsInBlock, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const decorateVideo = (container) => {
@@ -103,7 +103,6 @@ export default function init(el) {
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);
   extendButtonsClass(text);
-  decorateIconsInBlock(text);
   if (el.classList.contains('split')) {
     if (foreground && media) {
       media.classList.add('bleed');
