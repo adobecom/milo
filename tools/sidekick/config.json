@@ -1,0 +1,12 @@
+{
+  "project": "Milo",
+  "plugins": [
+    {
+      "title": "Send to CaaS",
+      "id": "sendtocaas",
+      "environments": ["preview", "live", "prod"],
+      "event": "send-to-caas",
+      "excludePaths": ["/tools/caas", "*.json"]
+    }
+  ]
+}
