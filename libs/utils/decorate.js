@@ -11,9 +11,11 @@ export function decorateButtons(el, size) {
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
     const actionArea = button.closest('p');
-    actionArea?.classList.add('action-area');
-    if (idx === buttons.length - 1) {
-      button.closest('p')?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    if(actionArea) {
+      actionArea.classList.add('action-area');
+      if (idx === buttons.length - 1) {
+        actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+      }
     }
   });
 }
