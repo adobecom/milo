@@ -10,6 +10,7 @@
 .aside .detail-M {
   text-transform: uppercase;
   font-weight: 700;
+  margin-bottom: var(--spacing-xs);
 }
 
 .aside p {
@@ -82,7 +83,8 @@
 }
 
 .aside .foreground.container .text .heading-XL {
-  margin: var(--spacing-xs) 0;
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
 }
 
 .aside .foreground.container .text .body-S {
@@ -102,8 +104,15 @@
 }
 
 .aside .foreground.container .image {
+  display: flex;
   margin-top: 32px;
   margin-bottom: var(--spacing-xxxl);
+  justify-content: center;
+}
+
+.aside .foreground.container .image video {
+  object-fit: contain;
+  width: 100%;
 }
 
 .aside .foreground.container img {
@@ -269,14 +278,14 @@
   justify-content: center;
 }
 
-.aside.notification .foreground.container .text > * {
+.aside.notification .foreground.container .text>* {
   display: flex;
   align-items: center;
   flex: 0 1 auto;
 }
 
 .aside.notification .foreground.container .text[data-align=center],
-.aside.notification .foreground.container .text[data-align=center] > * {
+.aside.notification .foreground.container .text[data-align=center]>* {
   justify-content: center;
 }
 
@@ -356,7 +365,7 @@
 }
 
 .aside.notification.small .foreground.container .text[data-align=center],
-.aside.notification.small .foreground.container .text[data-align=center] > * {
+.aside.notification.small .foreground.container .text[data-align=center]>* {
   justify-content: flex-start;
 }
 
@@ -391,7 +400,6 @@
   .aside .foreground.container .image {
     margin: 0;
     flex: 0 0 50%;
-    display: block;
     max-width: 302px;
     padding-left: 16px;
   }
@@ -426,8 +434,8 @@
     object-fit: cover;
     object-position: center top;
   }
-  
-  .aside.split.right .background img,
+
+  .aside.right .background img,
   .aside.split.half .background img {
     object-position: left top;
   }
@@ -464,11 +472,11 @@
     flex: 0 0 41.72%;
   }
 
-  .aside.split.right .foreground.container {
+  .aside.right .foreground.container {
     flex-direction: row-reverse;
   }
 
-  .aside.split.right .background img {
+  .aside.right .background img {
     left: 0;
   }
 
@@ -509,7 +517,7 @@
     order: unset;
   }
 
-  .aside.notification .foreground.container .text + .image {
+  .aside.notification .foreground.container .text+.image {
     margin-left: var(--spacing-s);
     margin-right: 0;
   }
@@ -558,7 +566,8 @@
   }
 
   .aside .foreground.container .text .heading-XL {
-    margin: var(--spacing-xs) 0;
+    margin: 0;
+    margin-bottom: var(--spacing-xs);
   }
 
   .aside.simple .foreground.container .text {
@@ -616,7 +625,7 @@
     margin-right: var(--spacing-l);
   }
 
-  .aside.notification .foreground.container .text + .image {
+  .aside.notification .foreground.container .text+.image {
     margin-left: var(--spacing-l);
     margin-right: 0;
   }
@@ -632,7 +641,7 @@
   }
 
   .aside.notification.small .foreground.container .text[data-align=center],
-  .aside.notification.small .foreground.container .text[data-align=center] > * {
+  .aside.notification.small .foreground.container .text[data-align=center]>* {
     justify-content: center;
   }
 
@@ -644,7 +653,7 @@
     margin-right: var(--spacing-m);
   }
 
-  .aside.notification.medium .foreground.container .text + .image {
+  .aside.notification.medium .foreground.container .text+.image {
     margin-left: var(--spacing-m);
     margin-right: 0;
   }

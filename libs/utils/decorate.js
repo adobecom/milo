@@ -16,6 +16,17 @@ export function decorateButtons(el, size) {
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
+export function decorateVideo(el, parentClass = 'video') {
+  const link = el.querySelector('a[href$=".mp4"]');
+  if (!link) return;
+  const parent = link.parentElement;
+  parent.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  link.remove();
+  parent.classList.add(parentClass);
+};
+
 export function decorateIcons(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
@@ -52,7 +63,7 @@ export function decorateBlockBg(block, node) {
       node.children[0].classList.add(viewports[0], viewports[1]);
       node.children[1].classList.add(viewports[2]);
     } else {
-      [...node.children].forEach( (e, i) => {
+      [...node.children].forEach((e, i) => {
         e.classList.add(viewports[i]);
       });
     }
