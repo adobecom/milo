@@ -70,9 +70,13 @@ export async function loadIcons(el = document) {
   const miloIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
   if (!miloIcons) return;
   const icons = el.querySelectorAll('span.icon');
-  icons?.forEach(async (i) => {
-    const iconName = i.classList[1].replace('icon-milo-', '');
+  icons.forEach(async (i) => {
+    const iconName = i.classList[1].startsWith('icon-milo-') ? i.classList[1].replace('icon-milo-', '') : i.classList[1].replace('icon-', '');
     if (iconName === miloIcons[iconName].id) {
+      if (i.parentElement.childNodes.length > 1 && i.parentElement.childNodes[1] === i) {
+        i.classList.add('margin-left');
+        if (i.parentElement.childNodes.length === 2) i.classList.add('margin-right-0');
+      }
       i.insertAdjacentHTML('afterbegin', miloIcons[iconName].outerHTML);
     }
   });

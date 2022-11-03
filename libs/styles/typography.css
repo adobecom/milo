@@ -57,7 +57,7 @@
 }
 
 .con-button {
-  color: var(--color-white);
+  color: #FFF;
   border: 2px solid;
   background-color: transparent;
   border-radius: 16px;
@@ -93,11 +93,11 @@
 }
 
 .light .con-button {
-  color: var(--color-black);
+  color: #000;
 }
 
 .con-button.blue {
-  color: var(--color-white);
+  color: #FFF;
   background: var(--color-accent);
   border: 2px solid var(--color-accent);
 }
@@ -113,28 +113,28 @@
 }
 
 .con-button.fill {
-  color: var(--color-white);
+  color: #fff;
   background: var(--text-color);
   border: 2px solid var(--text-color);
 }
 
 .con-button.fill:hover,
 .con-button.fill:active {
-  background: var(--color-black);
-  border-color: var(--color-black);
+  background: #000;
+  border-color: #000;
 }
 
 .dark .con-button.fill {
   color: var(--text-color);
-  background: var(--color-white);
-  border-color: var(--color-white);
+  background: #fff;
+  border-color: #fff;
 }
 
 .dark .con-button.fill:hover,
 .dark .con-button.fill:active {
-  color: var(--color-black);
-  background: var(--color-white);
-  border-color: var(--color-white);
+  color: #000;
+  background: #fff;
+  border-color: #fff;
 }
 
 .con-button.fill:hover {
@@ -142,32 +142,28 @@
 }
 
 .con-button.outline {
-  border: 2px solid var(--color-black);
-  color: var(--color-black);
+  border: 2px solid #000;
+  color: #000;
 }
 
 .con-button.outline:hover {
-  background-color: var(--color-black);
-  color: var(--color-white);
+  background-color: #000;
+  color: #fff;
   text-decoration: none;
 }
 
 .dark .con-button.outline {
-  border: 2px solid var(--color-white);
-  color: var(--color-white);
+  border: 2px solid #fff;
+  color: #fff;
 }
 
 .dark .con-button.outline:hover {
-  background-color: var(--color-white);
-  color: var(--color-black);
+  background-color: #fff;
+  color: #000;
 }
 
-/* Icons */
-span.icon {
-  margin-right: 8px;
-  display: inline-flex;
-  align-self: center;
-}
+span.icon.margin-left { margin-left: 8px; }
+span.icon.margin-right-0 { margin-right: 0; }
 
 svg.icon-milo {
   height: 1em;
@@ -179,6 +175,10 @@ svg.icon-milo {
 
 .con-button.button-L span.icon { margin-right: 12px; }
 .con-button.button-XL span.icon { margin-right: 14px; }
+.con-button.button-L span.icon.margin-left { margin-left: 12px; }
+.con-button.button-XL span.icon.margin-left { margin-left: 14px; }
+.con-button.button-L span.icon.margin-right-0 { margin-right: 0; }
+.con-button.button-XL span.icon.margin-right-0 { margin-right: 0; }
 
 /* mobile only */
 @media (max-width: 600px) {
