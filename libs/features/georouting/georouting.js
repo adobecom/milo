@@ -141,7 +141,6 @@ async function loadDetailsAndModal(urlGeoData, localeMatches, config, createTag,
 
 export default async function loadGeoRouting(config, createTag, getMetadata, loadStyle) {
   const { locale } = config;
-  console.log(config);
 
   const urlLocale = locale.prefix.replace('/', '');
   const cookieInter = getCookie('international');
