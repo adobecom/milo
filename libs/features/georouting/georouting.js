@@ -48,16 +48,17 @@ async function getAvailableLocales(locales, config, getMetadata) {
   const availableLocales = [];
   const pagesExist = [];
   for (const locale of locales) {
-    const localePath = locale.prefix ? `/${locale.prefix}/${path}` : `/${path}`;
+    const prefix = locale.prefix ? `/${locale.prefix}` : '';
+    const localePath = `${prefix}/${path}`;
 
     availableLocales.push(locale);
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
         const loc = availableLocales.find(a => a.prefix === locale.prefix);
-        loc.url = `${origin}/${locale.prefix}${config.contentRoot}${path}`;
+        loc.url = `${origin}${prefix}${config.contentRoot}${path}`;
       } else if (fallback) {
         const loc = availableLocales.find(a => a.prefix === locale.prefix);
-        loc.url = `${origin}/${locale.prefix}${config.contentRoot}`;
+        loc.url = `${origin}${prefix}${config.contentRoot}`;
       }
     });
     pagesExist.push(pageExistsRequest);
