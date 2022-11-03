@@ -94,4 +94,39 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
     await resetMouse();
   });
+
+  it('renders breadcrumbs LD+JSON in the head for SEO)', async () => {
+    const script = document.querySelector('script[type="application/ld+json"]');
+    const actual = JSON.parse(script.innerHTML);
+    const expected = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [{
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'http://localhost:2000/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Drafts',
+        item: 'http://localhost:2000/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Marquee',
+      }],
+    };
+    expect(actual).to.deep.equal(expected);
+  });
+
+  it('does NOT render breadcrumbs LD+JSON in the head for SEO)', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-breadcrumb-seo-disabled.html' });
+    const script = document.querySelector('script[type="application/ld+json"]');
+    expect(script).to.be.null;
+    // reset <head>
+    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+  });
 });

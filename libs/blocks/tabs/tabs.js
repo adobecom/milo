@@ -5,7 +5,7 @@
 import { createTag } from '../../utils/utils.js';
 
 function getStringKeyName(str) {
-  return str.trim().replace(' ', '-').toLowerCase();
+  return str.trim().replaceAll(' ', '-').toLowerCase();
 }
 
 function initTabs(e, config) {
