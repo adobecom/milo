@@ -585,7 +585,7 @@ const setupSidekickListeners = (() => {
 
     const sk = getSidekick();
     if (sk) {
-      sk.addEventListener('send-to-caas', sendToCaasListener);
+      sk.addEventListener('custom:send-to-caas', sendToCaasListener);
     } else {
       document.addEventListener('sidekick-ready', () => {
         setTimeout(() => {

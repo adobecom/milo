@@ -4,9 +4,9 @@
     {
       "title": "Send to CaaS",
       "id": "sendtocaas",
-      "environments": ["preview", "live", "prod"],
+      "environments": ["dev","preview", "live", "prod"],
       "event": "send-to-caas",
-      "excludePaths": ["/tools/caas", "*.json"]
+      "excludePaths": ["/tools/caas**", "*.json"]
     }
   ]
 }

@@ -317,6 +317,14 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
   }
 };
 
+// Support for manifest v2 - Delete once everyone is migrated to v3
+document.addEventListener('send-to-caas', async (e) => {
+  // eslint-disable-next-line import/no-cycle
+  const { loadScript, loadStyle } = await import('../../libs/utils/utils.js');
+  const { host, project, branch, repo, owner } = e.detail;
+  sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
+});
+
 export {
   loadTingleModalFiles,
   sendToCaaS,
