@@ -649,9 +649,14 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   display: flex;
   justify-content: center;
   position: relative;
-  min-width: 62.25px;
   padding: 0 12px;
   box-sizing: border-box;
+}
+
+.gnav-profile,
+.gnav.has-apps .gnav-profile.has-menu,
+.gnav-profile.has-menu.signed-in {
+  min-width: 62.25px;
 }
 
 .gnav-profile.has-menu {
@@ -793,6 +798,34 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
 
 /* END PROFILE */
 
+/* APP LAUNCHER */
+.gnav.has-apps .app-launcher.has-menu {
+  min-width: 38px;
+}
+
+header .app-launcher button.gnav-applications-button {
+  overflow: hidden;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 6px 0 2px;
+  align-items: center;
+}
+
+header .app-launcher button svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.5;
+}
+
+header .app-launcher button:hover svg {
+  opacity: 1;
+} 
+
+header .app-launcher {
+  display: none;
+}
+
 @media (min-width: 900px) {
   header .gnav-wrapper {
     height: unset;
@@ -810,6 +843,11 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
     grid-template-columns: auto 1fr auto auto auto;
     grid-template-rows: 63px;
     margin: 0 auto;
+  }
+
+  header .gnav-wrapper nav.gnav.has-apps {
+    grid-template-areas: 'brand navlist profile apps logo';
+    grid-template-columns: auto 1fr auto auto auto auto;
   }
 
   .gnav-wrapper nav.gnav::before {
@@ -834,6 +872,7 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
     grid-template-rows: unset;
     grid-template-areas: 'content';
     overflow: unset;
+    max-width: 1107.75px;
   }
 
   header .gnav-mainnav {
@@ -875,6 +914,57 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
   }
 
   /* END PROFILE MULTI CLOUD SIGNIN OVERRIDE */
+
+  /* APP LAUNCHER */
+
+  header .app-launcher {
+    box-sizing: border-box;
+    display: flex;
+    grid-area: apps;
+    justify-content: center;
+    position: relative;
+    padding: 0 12px 0 0;
+  }
+
+  header .gnav-navitem.has-menu.is-open .gnav-navitem-menu.app-menu {
+    display: flex;
+    position: absolute;
+    left: unset;
+    right: 0;
+    border-radius: 0 0 4px 4px;
+    border-left-color: #cacaca;
+    border-right-color: #cacaca;
+    border-bottom-color: #cacaca;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+    width: 334px;
+  }
+
+  header .app-launcher .apps {
+    display: flex;
+    flex-flow: row wrap;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  header .app-launcher .apps > li {
+    width: 33.3333%;
+    max-width: 33.3333%;
+    flex: 1 1 auto;
+    min-height: auto;
+  }
+
+  header .app-launcher .apps li > a {
+    display: flex;
+    flex-flow: column;
+    white-space: unset;
+    text-align: center;
+  }
+
+  header .app-launcher .apps li > a img {
+    width: 48px;
+  }
+
+  /* END APP LAUNCHER */
 
   header .gnav-navitem .small-Variant ul a,
   header .gnav-navitem .medium-Variant ul a {
@@ -1042,6 +1132,11 @@ header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
     position: absolute;
     top: 100%;
   }
+
+  /* APPLICATIONS */
+  /* header .app-launcher {
+    grid-area: apps;
+  } */
 }
 
 @media (min-width: 1200px) {

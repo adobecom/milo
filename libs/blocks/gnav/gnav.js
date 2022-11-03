@@ -383,6 +383,29 @@ class Gnav {
     return searchBar;
   };
 
+  decorateAppsMenu = async (appLauncherBlock, profileEl) => {
+    if (!appLauncherBlock) return;
+
+    const appLauncher = await import('./gnav-appLauncher.js');
+    const appsLink = appLauncherBlock.querySelector('a');
+    appsLink.href = makeRelative(appsLink.href, true);
+
+    const path = appsLink.href;
+    const promise = fetch(`${path}.plain.html`);
+    promise.then(async (resp) => {
+      if (resp.status === 200) {
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const list = doc.querySelectorAll('body > div > ul > li');
+
+        // App Launcher Code
+        appLauncher.default(profileEl, appLauncherBlock, html, list, this.toggleMenu);
+      }
+      return undefined;
+    });
+  };
+
   /* c8 ignore start */
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
@@ -412,8 +435,11 @@ class Gnav {
       const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
 
       if (ioResp.status === 200) {
+        // profileEl.classList.add('signed-in');
+        const appLauncherBlock = this.body.querySelector('.app-launcher');
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        this.decorateAppsMenu(appLauncherBlock, profileEl);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }
@@ -423,29 +449,54 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
-    const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    // const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    // const signIn = blockEl.querySelector('a');
+
+    // signIn.classList.add('gnav-signin');
+    // signIn.setAttribute('daa-ll', 'Sign In');
+
+    // if (profileDropDown) {
+    //   const id = `navmenu-${blockEl.className}`;
+
+    //   profileDropDown.id = id;
+    //   profileEl.classList.add('gnav-navitem');
+    //   profileEl.append(signIn);
+    //   profileEl.insertAdjacentElement('beforeend', profileDropDown);
+
+    //   this.decorateMenu(profileEl, signIn, profileDropDown);
+    //   this.setNavLinkAttributes(id, signIn);
+    // } else {
+    //   profileEl.append(signIn);
+    //   profileEl.addEventListener('click', (e) => {
+    //     e.preventDefault();
+    //     window.adobeIMS.signIn();
+    //   });
+    // }
+
+    // UPDATED
+    const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
 
-    if (profileDropDown) {
+    const signInEl = dropDown ? dropDown.querySelector('li:last-of-type a') : profileEl;
+
+    if (dropDown) {
       const id = `navmenu-${blockEl.className}`;
 
-      profileDropDown.id = id;
+      dropDown.id = id;
       profileEl.classList.add('gnav-navitem');
-      profileEl.append(signIn);
-      profileEl.insertAdjacentElement('beforeend', profileDropDown);
+      profileEl.insertAdjacentElement('beforeend', dropDown);
 
-      this.decorateMenu(profileEl, signIn, profileDropDown);
+      this.decorateMenu(profileEl, signIn, dropDown);
       this.setNavLinkAttributes(id, signIn);
-    } else {
-      profileEl.append(signIn);
-      profileEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.adobeIMS.signIn();
-      });
     }
+    signInEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.adobeIMS.signIn();
+    });
+    profileEl.append(signIn);
   };
 
   decorateBreadcrumbs = () => {
