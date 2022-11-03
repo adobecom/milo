@@ -46,9 +46,9 @@ async function getAvailableLocales(locales, config, getMetadata) {
   const path = window.location.href.replace(contentRoot, '');
 
   const availableLocales = [];
-  const pageExistsRequests = [];
+  const pagesExist = [];
   for (const locale of locales) {
-    const localePath = `/${locale.prefix}/${path}`;
+    const localePath = locale.prefix ? `/${locale.prefix}/${path}` : `/${path}`;
 
     availableLocales.push(locale);
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
@@ -60,9 +60,9 @@ async function getAvailableLocales(locales, config, getMetadata) {
         loc.url = `${origin}/${locale.prefix}${config.contentRoot}`;
       }
     });
-    pageExistsRequests.push(pageExistsRequest);
+    pagesExist.push(pageExistsRequest);
   }
-  if (pageExistsRequests.length > 0) await Promise.all(pageExistsRequests);
+  if (pagesExist.length > 0) await Promise.all(pagesExist);
 
   return availableLocales;
 }
@@ -156,7 +156,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
 
   if (cookieLocale || cookieLocale === '') {
     // Show modal when url and cookie disagree
-    if (urlLocale !== cookieLocale) {
+    if (urlLocale.split('_')[0] !== cookieLocale.split('_')[0]) {
       const localeMatches = json.data.filter(d => d.prefix === cookieLocale)
       await loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle);
     }
