@@ -5,11 +5,12 @@ import { createTag } from '../../utils/utils.js';
 
 export function decorateText(el, size = 'medium') {
   decorateButtons(el);
-  decorateIconArea(el);
+  const isInset = el.classList.contains('inset');
+  if (!isInset) decorateIconArea(el);
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const decorate = (headingEl, headingSize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+    if (!isInset) headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
   };
   headings.forEach((heading) => {
     if (size === 'small') {

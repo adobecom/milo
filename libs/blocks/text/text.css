@@ -16,7 +16,7 @@
 
 .text-block p.action-area { margin-top: var(--spacing-s); }
 
-.text-block p:last-of-type { margin-bottom: 0; }
+.text-block div > *:last-child { margin-bottom: 0; }
 
 /* two-up, three-up, four-up */
 div.two-up .text-block .grid,
@@ -52,6 +52,25 @@ div.four-up .text-block .grid {
   justify-content: flex-end;
 }
 
+/* Inset */
+.inset.text-block .text {
+  padding-left: var(--spacing-l);
+  border-left: 2px solid #ccc;
+}
+.inset.text-block .text ul,
+.inset.text-block .text ol {
+  list-style: inside;
+  padding-left: 0;
+}
+
+/*.inset.text-block .container [class^="heading-"] {*/
+/*  margin-top: var(--spacing-xl);*/
+/*}*/
+
+/*.inset.text-block .container [class^="heading-"]:first-of-type {*/
+/*  margin-top: 0;*/
+/*}*/
+
 /* Tablet */
 @media screen and (min-width: 600px) {
 
@@ -59,6 +78,7 @@ div.four-up .text-block .grid {
 
 /* Desktop */
 @media screen and (min-width: 1200px) {
+  
   .text-block .container {
     max-width: calc(var(--grid-column-width) * 8);
   }
