@@ -116,6 +116,11 @@ export const [setConfig, getConfig] = (() => {
       config.contentRoot ??= '/';
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
+      try {
+        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+      } catch (e) {
+        console.log("Invalid or missing locale:",e)
+      }
       config.locale.contentRoot = getContentRoot(config);
       return config;
     },
