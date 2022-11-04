@@ -26,6 +26,7 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'modal',
+  'modal-metadata',
   'pdf-viewer',
   'quote',
   'review',
@@ -414,9 +415,9 @@ async function loadMartech(config) {
 
 async function loadPostLCP(config) {
   loadMartech(config);
+  await loadTemplate();
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
-  loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 }
@@ -573,3 +574,9 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   io.observe(el);
   return io;
 }
+
+
+// setTimeout(() => {
+//   const event = new CustomEvent('modal:open', { detail: { name: 'extension-modal' } });
+//   window.dispatchEvent(event);
+// }, 1000);

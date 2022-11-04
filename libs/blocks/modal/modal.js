@@ -9,7 +9,8 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 
 function getDetails(el) {
-  const details = { id: window.location.hash.replace('#', '') };
+  const id = el.dataset.eventModal || window.location.hash.replace('#', '');
+  const details = { id };
   const a = el || document.querySelector(`a[data-modal-hash="${window.location.hash}"]`);
   if (a) {
     details.path = a.dataset.modalPath;
@@ -36,11 +37,10 @@ function closeModals(modals) {
   }
 }
 
-export async function getModal(el) {
-  const details = getDetails(el);
+export async function getModal(el, name) {
+  const details = getDetails(el, name);
   if (!details) return null;
 
-  const curtain = createTag('div', { class: 'modal-curtain is-open' });
   const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
   const dialog = document.createElement('div');
   dialog.className = 'dialog-modal';
@@ -51,13 +51,6 @@ export async function getModal(el) {
     e.preventDefault();
   });
 
-  curtain.addEventListener('click', (e) => {
-    // on click outside of modal
-    if (e.target === curtain) {
-      closeModals([dialog]);
-    }
-  });
-
   dialog.addEventListener('keydown', (event) => {
     if (event.keyCode === 27) {
       closeModals([dialog]);
@@ -66,13 +59,24 @@ export async function getModal(el) {
 
   const linkBlock = document.createElement('a');
   linkBlock.href = details.path;
+  dialog.append(close, linkBlock);
 
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(linkBlock, dialog);
 
-  dialog.append(close, linkBlock);
   document.body.append(dialog);
-  dialog.insertAdjacentElement('afterend', curtain);
+
+  if (!dialog.classList.contains('backdrop-off')) {
+    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    dialog.insertAdjacentElement('afterend', curtain);
+    curtain.addEventListener('click', (e) => {
+      // on click outside of modal
+      if (e.target === curtain) {
+        closeModals([dialog]);
+      }
+    });
+  }
+
   close.focus({ focusVisible: true });
 
   return dialog;
@@ -85,6 +89,14 @@ export default function init(el) {
   }
   return null;
 }
+
+window.addEventListener('modal:open', (e) => {
+  const { name } = e.detail;
+  const el = document.querySelector(`a[data-modal-hash="#${name}"]`);
+  if (!el) return;
+  el.dataset.eventModal = name;
+  getModal(el);
+});
 
 // First import will cause this side effect (on purpose)
 window.addEventListener('hashchange', () => {

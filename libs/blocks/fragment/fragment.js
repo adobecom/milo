@@ -44,14 +44,15 @@ export default async function init(a, parent) {
 
       updateFragMap(fragment, a, relHref);
 
-      await loadArea(fragment);
-
       if (parent) {
         a.remove();
         parent.append(fragment);
       } else if (a.parentElement) {
         a.parentElement.replaceChild(fragment, a);
       }
+
+      await loadArea(fragment);
+
     } else {
       window.lana.log('Could not make fragment');
     }
