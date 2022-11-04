@@ -40,32 +40,32 @@ const getAkamaiCode = () => new Promise((resolve) => {
 
 // Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales, config, getMetadata) {
-  const fallback = getMetadata('fallbackrouting') === 'on' || config.fallbackRouting === 'on';
+  const fallbackMeta = getMetadata('fallbackrouting');
+  const fallback = fallbackMeta ? fallbackMeta === 'on' : config.fallbackRouting === 'on';
 
   const { contentRoot } = config.locale;
   const path = window.location.href.replace(contentRoot, '');
 
   const availableLocales = [];
   const pagesExist = [];
-  for (const locale of locales) {
+  for (const [index, locale] of locales.entries()) {
     const prefix = locale.prefix ? `/${locale.prefix}` : '';
     const localePath = `${prefix}/${path}`;
 
-    availableLocales.push(locale);
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
-        const loc = availableLocales.find(a => a.prefix === locale.prefix);
-        loc.url = `${origin}${prefix}${config.contentRoot}${path}`;
+        locale.url = `${origin}${prefix}${config.contentRoot}${path}`;
+        availableLocales[index] = locale;
       } else if (fallback) {
-        const loc = availableLocales.find(a => a.prefix === locale.prefix);
-        loc.url = `${origin}${prefix}${config.contentRoot}`;
+        locale.url = `${origin}${prefix}${config.contentRoot}`;
+        availableLocales[index] = locale;
       }
     });
     pagesExist.push(pageExistsRequest);
   }
   if (pagesExist.length > 0) await Promise.all(pagesExist);
 
-  return availableLocales;
+  return availableLocales.filter(a => !!a);
 }
 
 function buildText(locales, config, createTag) {
@@ -113,7 +113,7 @@ function getMatches(data, suppliedCode) {
 async function getDetails(currentPage, localeMatches, config, createTag, getMetadata) {
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
 
-  if (availableLocales) {
+  if (availableLocales && availableLocales.length > 0) {
     currentPage.url = '#';
     const worldIcon = createTag('img', { src: WORLD_ICON });
     const text = buildText([...availableLocales, currentPage], config, createTag);
