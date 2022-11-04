@@ -1,5 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { loadStyle } from '../../utils/utils.js';
+import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
+import { getSectionMetadata } from '../section-metadata/section-metadata.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -17,24 +18,35 @@ const getCardType = (styles) => {
   return cardTypes[authoredType] || HALF;
 };
 
+const getUpFromSectionMetadata = (section) => {
+  const sectionMetadata = getSectionMetadata(section.querySelector('.section-metadata'));
+  const styles = sectionMetadata.style?.split(', ').map((style) => style.replaceAll(' ', '-'));
+  return styles?.find((style) => style.includes('-up'));
+};
+
 const addWrapper = (el, section, cardType) => {
-  const { classList } = section;
   const gridCl = 'consonant-CardsGrid';
+  const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
 
-  if (!classList.contains('consonant-Wrapper')) {
-    const up = Array.from(classList).find((style) => style.includes('-up'))?.replace('-', '') || '3up';
-    const innerWrapper = `<div class="consonant-Wrapper-inner">
-      <div class="consonant-Wrapper-collection">
-        <div class="${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}">
-        </div>
-      </div>
-    </div>`;
+  if (prevGrid) return;
 
-    classList.add('consonant-Wrapper', 'consonant-Wrapper--1200MaxWidth');
-    section.insertAdjacentHTML('afterbegin', innerWrapper);
+  const upClass = getUpFromSectionMetadata(section);
+  const up = upClass?.replace('-', '') || '3up';
+  const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
+  const grid = createTag('div', { class: gridClass });
+  const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
+  const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
+  const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
+  const cards = section.querySelectorAll('.card');
+  const prevSib = cards[0].previousElementSibling;
+
+  grid.append(...cards);
+
+  if (prevSib) {
+    prevSib.after(wrapper);
+  } else {
+    section.prepend(wrapper);
   }
-
-  section.querySelector(`.${gridCl}`).append(el);
 };
 
 const addBackgroundImg = (picture, cardType, card) => {
@@ -71,7 +83,6 @@ const addInner = (el, cardType, card) => {
 
   if (cardType === HALF_HEIGHT) {
     text?.remove();
-    el.remove();
   }
 
   title?.classList.add(`consonant-${cardType}-title`);
@@ -94,25 +105,32 @@ const addFooter = (links, container) => {
 };
 
 const init = (el) => {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/deps/caas.css`);
+
   const section = el.closest('.section');
+  section.classList.add('milo-card-section');
   const row = el.querySelector(':scope > div');
   const picture = el.querySelector('picture');
   const links = el.querySelectorAll('a');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
   let card = el;
 
-  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
   addWrapper(el, section, cardType);
 
   if (cardType === HALF_HEIGHT) {
-    card = document.createElement('a');
-    card.href = links[0]?.href || '';
-    card.className = el.className;
+    const [link] = links;
 
-    el.insertAdjacentElement('beforebegin', card);
-    links[0]?.parentElement?.remove();
+    if (link) {
+      card = link;
+    } else {
+      card = document.createElement('a');
+      card.href = '';
+    }
+
+    el.prepend(card);
   }
 
   card.classList.add('consonant-Card', `consonant-${cardType}`);

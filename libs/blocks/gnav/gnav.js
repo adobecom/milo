@@ -84,6 +84,7 @@ class Gnav {
 
     const wrapper = createTag('div', { class: 'gnav-wrapper' }, nav);
 
+    this.setBreadcrumbSEO();
     const breadcrumbs = this.decorateBreadcrumbs();
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
@@ -176,7 +177,7 @@ class Gnav {
       if (menu.childElementCount > 0 || navBlock) {
         const id = `navmenu-${idx}`;
         menu.id = id;
-        navItem.classList.add('has-Menu');
+        navItem.classList.add('has-menu');
         this.setNavLinkAttributes(id, navLink);
       }
       // Small and medium menu types
@@ -388,6 +389,8 @@ class Gnav {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
     const profileEl = createTag('div', { class: 'gnav-profile' });
+    if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
+
     const { locale, imsClientId, env } = getConfig();
     if (!imsClientId) return null;
     window.adobeid = {
@@ -421,14 +424,51 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
+    const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
+
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
-    profileEl.append(signIn);
-    profileEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.adobeIMS.signIn();
-    });
+
+    if (profileDropDown) {
+      const id = `navmenu-${blockEl.className}`;
+
+      profileDropDown.id = id;
+      profileEl.classList.add('gnav-navitem');
+      profileEl.append(signIn);
+      profileEl.insertAdjacentElement('beforeend', profileDropDown);
+
+      this.decorateMenu(profileEl, signIn, profileDropDown);
+      this.setNavLinkAttributes(id, signIn);
+    } else {
+      profileEl.append(signIn);
+      profileEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.adobeIMS.signIn();
+      });
+    }
+  };
+
+  setBreadcrumbSEO = () => {
+    const breadcrumb = this.el.querySelector('.breadcrumbs');
+    if (breadcrumb) {
+      const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
+      if (seoEnabled) {
+        const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
+        const items = breadcrumb.querySelectorAll('ul > li');
+        items.forEach((item, idx) => {
+          const link = item.querySelector('a');
+          breadcrumbSEO.itemListElement.push({
+            '@type': 'ListItem',
+            position: idx + 1,
+            name: link ? link.innerHTML : item.innerHTML,
+            item: link?.href,
+          });
+        });
+        const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
+        document.head.append(script);
+      }
+    }
   };
 
   decorateBreadcrumbs = () => {
@@ -500,7 +540,7 @@ class Gnav {
   toggleOnSpace = (e) => {
     if (e.code === 'Space') {
       e.preventDefault();
-      const parentEl = e.target.closest('.has-Menu');
+      const parentEl = e.target.closest('.has-menu');
       this.toggleMenu(parentEl);
     }
   };

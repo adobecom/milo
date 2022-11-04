@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
+const URL_ENCODED_COMMA = '%2C';
+
 const fetchWithTimeout = async (resource, options = {}) => {
   const { timeout = 5000 } = options;
 
@@ -295,6 +297,7 @@ export const getConfig = async (state, strs = {}) => {
         pool: state.sortReservoirPool,
       },
     },
+    featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
@@ -414,10 +417,12 @@ export const defaultState = {
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionName: '',
   collectionSize: '',
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
+  doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
   endpoint: 'www.adobe.com/chimera-api/collection',
