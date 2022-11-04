@@ -130,16 +130,7 @@ async function showModal(details) {
   getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details });
 }
 
-async function loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle) {
-  const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
-  if (details) {
-    const { miloLibs, codeRoot } = config;
-    loadStyle(`${miloLibs || codeRoot}/features/georouting/georouting.css`);
-    showModal(details);
-  }
-}
-
-export default async function loadGeoRouting(config, createTag, getMetadata, loadStyle) {
+export default async function loadGeoRouting(config, createTag, getMetadata) {
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
@@ -158,7 +149,8 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== cookieLocale.split('_')[0]) {
       const localeMatches = json.data.filter(d => d.prefix === cookieLocale)
-      await loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle);
+      const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
+      if (details) { showModal(details); }
     }
     return;
   }
@@ -167,6 +159,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
   const akamaiCode = await getAkamaiCode();
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.data, akamaiCode);
-    await loadDetailsAndModal(urlGeoData, localeMatches, config, createTag, getMetadata, loadStyle);
+    const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
+    if (details) { showModal(details); }
   }
 }

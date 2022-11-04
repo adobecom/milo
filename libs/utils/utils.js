@@ -478,7 +478,7 @@ export async function loadArea(area = document) {
     const geoMeta = getMetadata('georouting');
     if (geoMeta ? geoMeta === 'on' : config.georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata, loadStyle);
+      loadGeoRouting(config, createTag, getMetadata);
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');

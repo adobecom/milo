@@ -66,6 +66,30 @@
   margin: 12px;
 }
 
+.locale-modal{
+  text-align: center;
+  padding: 3rem 2rem 1.88rem;
+}
+
+.locale-modal .text-wrapper {
+  padding-top: 1.875rem;
+}
+
+.locale-modal p {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  margin-bottom: 1ex;
+}
+
+.locale-modal a {
+  font-size: .875rem;
+  display: block;
+  font-weight: 500;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
 .region-selector > div > p,
 .region-selector > div > ul li {
   line-height: 1.7;
