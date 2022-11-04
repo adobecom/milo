@@ -440,6 +440,21 @@ function loadPrivacy() {
   loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 }
 
+function initSidekick() {
+  const initPlugins = async () => {
+    const { default: init } = await import('./sidekick.js');
+    init({ loadScript, loadStyle });
+  };
+
+  if (document.querySelector('helix-sidekick')) {
+    initPlugins();
+  } else {
+    document.addEventListener('sidekick-ready', () => {
+      initPlugins();
+    });
+  }
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -470,6 +485,7 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    initSidekick();
   }
 
   // Load everything that can be deferred until after all blocks load.
@@ -568,34 +584,3 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   io.observe(el);
   return io;
 }
-
-const setupSidekickListeners = (() => {
-  let listenersLoaded = false;
-
-  const sendToCaasListener = async (e) => {
-    const { host, project, ref: branch, repo, owner } = e.detail.data.config;
-    const { sendToCaaS } = await import('../../tools/send-to-caas/send-to-caas.js');
-    sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
-  };
-
-  const getSidekick = () => document.querySelector('helix-sidekick');
-
-  return () => {
-    if (listenersLoaded) return;
-
-    const sk = getSidekick();
-    if (sk) {
-      sk.addEventListener('custom:send-to-caas', sendToCaasListener);
-    } else {
-      document.addEventListener('sidekick-ready', () => {
-        setTimeout(() => {
-          getSidekick()
-            .addEventListener('custom:send-to-caas', sendToCaasListener);
-        }, 100);
-      }, { once: true });
-    }
-    listenersLoaded = true;
-  };
-})();
-
-setupSidekickListeners();
