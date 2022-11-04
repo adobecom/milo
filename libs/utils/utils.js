@@ -579,4 +579,4 @@ export function createIntersectionObserver({ el, callback, once = true, options 
 setTimeout(() => {
   const event = new CustomEvent('modal:open', { detail: { name: 'extension-modal' } });
   window.dispatchEvent(event);
-}, 1000);
+}, 2000);
