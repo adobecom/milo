@@ -1,12 +1,11 @@
 import {
   fetchPlaceholders,
   getLocaleIetf,
-  getRootPath,
+  getPrefix,
   emptyDiv,
   stamp,
+  getTaxonomyModule,
 } from '../../utils/utils.js';
-
-let taxonomy;
 
 /**
  * number case, coming from Excel
@@ -61,7 +60,7 @@ export function formatCardLocaleDate(date) {
 export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = taxonomy?.get(topic).map((tax) => tax?.link ?? '#');
+  const catLink = [getTaxonomyModule().get(topic)].map((tax) => tax?.link ?? '#');
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
@@ -125,11 +124,11 @@ function computeTaxonomyFromTopics(topics, path) {
   // no topics: default to a randomly choosen category
   const category = topics?.length > 0 ? topics[0] : 'news';
 
-  if (taxonomy) {
+  if (getTaxonomyModule()) {
     // if taxonomy loaded, we can compute more
     const taxonomyTags = topics.reduce(
       (map, tag) => {
-        map[tag] = taxonomy.get(tag);
+        map[tag] = getTaxonomyModule().get(tag);
         return map;
       },
       {},
@@ -139,7 +138,7 @@ function computeTaxonomyFromTopics(topics, path) {
     const visibleTopics = [];
     const parentTaxonomy = [];
 
-    taxonomyTags.forEach((tag, tax) => {
+    Object.entries(taxonomyTags).forEach(([tag, tax]) => {
       if (!tax) {
         // eslint-disable-next-line no-console
         console.warn(`Unknown topic in tags list: ${tag} ${path ? `on page ${path}` : '(current page)'}`);
@@ -154,14 +153,14 @@ function computeTaxonomyFromTopics(topics, path) {
         visibleTopics.push(tag);
       }
 
-      const parents = taxonomy.getParents(tag);
-      if (parents) {
+      const parents = getTaxonomyModule().getParents(tag);
+      if (parents?.length) {
         parentTaxonomy.push(parents);
       }
     });
 
     parentTaxonomy.forEach((parent) => {
-      const ptax = taxonomy.get(parent);
+      const ptax = getTaxonomyModule().get(parent);
 
       if (allTopics.includes(parent)) { return; }
 
@@ -342,7 +341,7 @@ export async function fetchBlogArticleIndex() {
   };
   if (window.blogIndex.complete) return (window.blogIndex);
   const index = window.blogIndex;
-  const json = await fetch(`${getRootPath()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
+  const json = await fetch(`/${getPrefix()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
     .then((response) => response.json());
   const complete = (json.limit + json.offset) === json.total;
   json.data.forEach((post) => {
@@ -601,7 +600,7 @@ function buildFilter(type, tax, ph, block, config) {
   applyBtn.classList.add('button', 'small', 'apply');
   applyBtn.textContent = ph.apply;
   applyBtn.addEventListener('click', () => {
-    sampleRUM('apply-topic-filter');
+    // sampleRUM('apply-topic-filter');
     delete config.selectedProducts;
     delete config.selectedIndustries;
     closeCurtain();
@@ -643,23 +642,25 @@ async function filterArticles(config, feed, limit, offset) {
 
     /* filter and ignore if already in result */
     const feedChunk = indexChunk.filter((article) => {
-      const taxonomy = getArticleTaxonomy(article);
+      const articleTaxonomy = getArticleTaxonomy(article);
 
       const matchedAll = Object.keys(filters).every((key) => {
         if (KEYWORDS.includes(key)) {
-          const matchedFilter = filters[key].some((val) => (isInList(taxonomy?.allTopics, val)));
+          const matchedFilter = filters[key]
+            .some((val) => (isInList(articleTaxonomy?.allTopics, val)));
           return key === 'exclude' ? !matchedFilter : matchedFilter;
         }
         if (SELECTED.includes(key)) {
           if (filters.selectedProducts && filters.selectedIndustries) {
             // match product && industry
             const matchProduct = filters.selectedProducts
-              .some((val) => (isInList(taxonomy?.allTopics, val)));
+              .some((val) => (isInList(articleTaxonomy?.allTopics, val)));
             const matchIndustry = filters.selectedIndustries
-              .some((val) => (isInList(taxonomy?.allTopics, val)));
+              .some((val) => (isInList(articleTaxonomy?.allTopics, val)));
             return matchProduct && matchIndustry;
           }
-          const matchedFilter = filters[key].some((val) => isInList(taxonomy.allTopics, val));
+          const matchedFilter = filters[key]
+            .some((val) => isInList(articleTaxonomy.allTopics, val));
           return matchedFilter;
         }
         const matchedFilter = filters[key].some((val) => isInList([article[key]], val));
@@ -758,7 +759,7 @@ async function decorateArticleFeed(
 
 async function decorateFeedFilter(articleFeedEl, config) {
   const placeholders = await fetchPlaceholders();
-  const taxonomy = getTaxonomy();
+  const taxonomy = getTaxonomyModule();
   const parent = document.querySelector('.article-feed-container');
 
   const curtain = emptyDiv();
