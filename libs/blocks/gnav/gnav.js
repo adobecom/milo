@@ -383,7 +383,8 @@ class Gnav {
     return searchBar;
   };
 
-  decorateAppsMenu = async (appLauncherBlock, profileEl) => {
+  decorateAppsMenu = async (profileEl) => {
+    const appLauncherBlock = this.body.querySelector('.app-launcher');
     if (!appLauncherBlock) return;
 
     const appLauncher = await import('./gnav-appLauncher.js');
@@ -397,10 +398,9 @@ class Gnav {
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
-        const list = doc.querySelectorAll('body > div > ul > li');
+        const appList = doc.querySelectorAll('body > div > ul > li');
 
-        // App Launcher Code
-        appLauncher.default(profileEl, appLauncherBlock, html, list, this.toggleMenu);
+        appLauncher.default(profileEl, appList, this.toggleMenu);
       }
       return undefined;
     });
@@ -435,11 +435,9 @@ class Gnav {
       const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
 
       if (ioResp.status === 200) {
-        // profileEl.classList.add('signed-in');
-        const appLauncherBlock = this.body.querySelector('.app-launcher');
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
-        this.decorateAppsMenu(appLauncherBlock, profileEl);
+        this.decorateAppsMenu(profileEl);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }
@@ -449,31 +447,7 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
-    // const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
-    // const signIn = blockEl.querySelector('a');
-
-    // signIn.classList.add('gnav-signin');
-    // signIn.setAttribute('daa-ll', 'Sign In');
-
-    // if (profileDropDown) {
-    //   const id = `navmenu-${blockEl.className}`;
-
-    //   profileDropDown.id = id;
-    //   profileEl.classList.add('gnav-navitem');
-    //   profileEl.append(signIn);
-    //   profileEl.insertAdjacentElement('beforeend', profileDropDown);
-
-    //   this.decorateMenu(profileEl, signIn, profileDropDown);
-    //   this.setNavLinkAttributes(id, signIn);
-    // } else {
-    //   profileEl.append(signIn);
-    //   profileEl.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     window.adobeIMS.signIn();
-    //   });
-    // }
-
-    // UPDATED
+    // UPDATED SIGNIN
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
 
