@@ -22,11 +22,10 @@ export const loadStrings = async (url) => {
   const resp = await fetch(url);
   if (!resp.ok) return {};
   const json = await resp.json();
-  const convertToObj = (data) =>
-    data.reduce((obj, { key, val }) => {
-      obj[key] = val;
-      return obj;
-    }, {});
+  const convertToObj = (data) => data.reduce((obj, { key, val }) => {
+    obj[key] = val;
+    return obj;
+  }, {});
   return convertToObj(json.data);
 };
 
@@ -82,32 +81,13 @@ const fixAlloyAnalytics = async () => {
         getSupplementalDataID: () => '',
         getAudienceManagerBlob: () => '',
         getAudienceManagerLocationHint: () => {
+          // eslint-disable-next-line no-return-assign
           setTimeout(() => (window.__satelliteLoadedPromise = ogSLP), 1);
           return mboxMCGLH;
         },
       }),
     });
   }
-};
-
-export const initCaas = async (state, caasStrs, el) => {
-  window.dexter = window.dexter || {}; // required for caas modals
-
-  const caasEl = el || document.getElementById('caas');
-  if (!caasEl) return;
-
-  const appEl = caasEl.parentElement;
-  caasEl.remove();
-
-  const newEl = document.createElement('div');
-  newEl.id = 'caas';
-  newEl.className = 'caas-preview';
-  appEl.append(newEl);
-
-  const config = await getConfig(state, caasStrs);
-  await fixAlloyAnalytics();
-
-  new ConsonantCardCollection(config, newEl);
 };
 
 const getTags = (() => {
@@ -122,7 +102,7 @@ const getTags = (() => {
 
 const getContentIdStr = (cardStr, card) => {
   if (card.contentId) {
-    cardStr = cardStr.length ? `${cardStr}%2C${card.contentId}` : card.contentId;
+    return cardStr.length ? `${cardStr}%2C${card.contentId}` : card.contentId;
   }
   return cardStr;
 };
@@ -239,8 +219,8 @@ export const getConfig = async (state, strs = {}) => {
   const country = state.country ? state.country.split('/').pop() : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
-  const targetActivity =
-    state.targetEnabled && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  const targetActivity = state.targetEnabled
+    && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -257,11 +237,10 @@ export const getConfig = async (state, strs = {}) => {
       },
       button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
-      // TODO: endpoint
       endpoint: `https://${
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
-        ','
+        ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
@@ -275,9 +254,8 @@ export const getConfig = async (state, strs = {}) => {
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
-        onErrorDescription:
-          strs.onErrorDesc ||
-          'Please try reloading the page or try coming back to the page another time.',
+        onErrorDescription: strs.onErrorDesc
+          || 'Please try reloading the page or try coming back to the page another time.',
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
@@ -407,6 +385,27 @@ export const getConfig = async (state, strs = {}) => {
     target: { enabled: state.targetEnabled || '' },
   };
   return config;
+};
+
+export const initCaas = async (state, caasStrs, el) => {
+  window.dexter = window.dexter || {}; // required for caas modals
+
+  const caasEl = el || document.getElementById('caas');
+  if (!caasEl) return;
+
+  const appEl = caasEl.parentElement;
+  caasEl.remove();
+
+  const newEl = document.createElement('div');
+  newEl.id = 'caas';
+  newEl.className = 'caas-preview';
+  appEl.append(newEl);
+
+  const config = await getConfig(state, caasStrs);
+  await fixAlloyAnalytics();
+
+  // eslint-disable-next-line no-new, no-undef
+  new ConsonantCardCollection(config, newEl);
 };
 
 export const defaultState = {
