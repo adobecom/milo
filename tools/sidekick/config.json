@@ -26,7 +26,7 @@
     {
       "title": "Check Schema",
       "id": "checkschema",
-      "environments": ["preview", "prod"],
+      "environments": ["prod"],
       "event": "check-schema",
       "excludePaths": ["/tools**", "*.json"]
     }
