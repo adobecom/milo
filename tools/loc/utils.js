@@ -12,6 +12,8 @@
 const status = document.getElementById('status');
 const loading = document.getElementById('loading');
 const STATUS_LEVELS = ['level-0', 'level-4'];
+const MAX_RETRIES = 5;
+let urlInfo;
 
 export function createTag(name, attrs) {
   const el = document.createElement(name);
@@ -58,6 +60,9 @@ export function getDocPathFromUrl(url) {
 }
 
 export function getUrlInfo() {
+  if (urlInfo) {
+    return urlInfo;
+  }
   const location = new URL(document.location.href);
   function getParam(name) {
     return location.searchParams.get(name);
@@ -66,7 +71,7 @@ export function getUrlInfo() {
   const owner = getParam('owner');
   const repo = getParam('repo');
   const ref = getParam('ref');
-  return {
+  urlInfo = {
     sp,
     owner,
     repo,
@@ -76,4 +81,24 @@ export function getUrlInfo() {
       return sp && owner && repo && ref;
     },
   };
+  return urlInfo;
+}
+
+export async function simulatePreview(path, retryAttempt = 1) {
+  const previewStatus = { success: true, path };
+  try {
+    getUrlInfo();
+    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${urlInfo.repo}/${urlInfo.ref}${path}`;
+    const response = await fetch(
+      `${previewUrl}`,
+      { method: 'POST' },
+    );
+    if (!response.ok && retryAttempt <= MAX_RETRIES) {
+      await simulatePreview(path, retryAttempt + 1);
+    }
+    previewStatus.responseJson = await response.json();
+  } catch (error) {
+    previewStatus.success = false;
+  }
+  return previewStatus;
 }

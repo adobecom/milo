@@ -382,6 +382,7 @@ async function executeAltLangFlow(project, langInfo, altLangInfo, statusOnly) {
     : await getOrCreateAltLangTask(project, langInfo, altLangInfo);
   const altLangStatusJson = await altLangTaskInfo.taskStatus.json();
   if (altLangStatusJson && altLangStatusJson[0] && altLangStatusJson[0]?.assets?.length > 0) {
+    project.projectStarted = true;
     const altLangTaskStatusInfo = altLangStatusJson[0];
     const altLangGLaaSProjectInfo = {
       language: altLanguage,

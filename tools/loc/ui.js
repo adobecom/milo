@@ -17,7 +17,7 @@ import {
   getPathFromUrl,
   loadingOFF,
   loadingON,
-  setStatus,
+  setStatus, simulatePreview, stripExtension,
 } from './utils.js';
 import {
   saveFile,
@@ -622,6 +622,7 @@ async function copyFilesToLangstoreEn() {
       }
       status.success = copySuccess;
       status.srcPath = srcPath;
+      status.dstPath = `/langstore/en${srcPath}`;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(`Error occurred when trying to copy to langstore ${error.message}`);
@@ -632,11 +633,23 @@ async function copyFilesToLangstoreEn() {
   const copyStatuses = await Promise.all(
     [...projectDetail.urls].map(((valueArray) => copyFileToLangstore(valueArray[1]))),
   );
+  loadingON('Previewing for copied files... ');
+  const previewStatuses = await Promise.all(
+    copyStatuses
+      .filter((status) => status.success)
+      .map((status) => simulatePreview(stripExtension(status.dstPath))),
+  );
+  loadingON('Completed Preview for copied files... ');
   const failedCopies = copyStatuses
     .filter((status) => !status.success)
     .map((status) => status?.srcPath || 'Path Info Not available');
-  if (failedCopies.length > 0) {
-    loadingON(`Failed to copy ${failedCopies} to languages/en`);
+  const failedPreviews = previewStatuses
+    .filter((status) => !status.success)
+    .map((status) => status.path);
+  if (failedCopies.length > 0 || failedPreviews.length > 0) {
+    let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to languages/en` : '';
+    failureMessage = failedPreviews.length > 0 ? `${failureMessage} Failed to preview ${failedPreviews}. Kindly manually preview these files before starting the project` : '';
+    loadingON(failureMessage);
   } else {
     loadingOFF();
     await refresh();

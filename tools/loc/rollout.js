@@ -10,22 +10,18 @@ import {
   getVersionOfFile,
   saveFileAndUpdateMetadata,
 } from './sharepoint.js';
-import { getUrlInfo, loadingON, stripExtension } from './utils.js';
+import { getUrlInfo, loadingON, simulatePreview, stripExtension } from './utils.js';
 
-let types = new Set();
-let hashToContentMap = new Map();
-const MAX_RETRIES = 5;
+const types = new Set();
+const hashToContentMap = new Map();
 let urlInfo;
-
-function getParsedHtml(htmlString) {
-  return new DOMParser().parseFromString(htmlString, 'text/html');
-}
 
 function getBlockName(node) {
   if (node.type === 'gridTable') {
     let blockNameNode = node;
     try {
       while (blockNameNode.type !== 'text' && blockNameNode?.children.length > 0) {
+        // eslint-disable-next-line prefer-destructuring
         blockNameNode = blockNameNode.children[0];
       }
       const fullyQualifiedBlockName = blockNameNode.value;
@@ -53,8 +49,7 @@ function processMdast(nodes) {
   const hashToIndex = new Map();
   const arrayWithTypeAndHash = [];
   let index = 0;
-  // eslint-disable-next-line no-restricted-syntax
-  for (const node of nodes) {
+  nodes.forEach((node) => {
     const nodeType = getNodeType(node);
     types.add(nodeType);
     const hash = objectHash.sha1(node);
@@ -62,20 +57,8 @@ function processMdast(nodes) {
     hashToIndex.set(hash, index);
     hashToContentMap.set(hash, node);
     index += 1;
-  }
+  });
   return { hashToIndex, arrayWithTypeAndHash };
-}
-
-async function simulatePreview(mdPath, retryAttempt = 1) {
-  const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${urlInfo.repo}/${urlInfo.ref}${mdPath}`;
-  const response = await fetch(
-    `${previewUrl}`,
-    { method: 'POST' },
-  );
-  if (!response.ok && retryAttempt <= MAX_RETRIES) {
-    await simulatePreview(mdPath, retryAttempt + 1);
-  }
-  return response.json();
 }
 
 async function getMd(path) {
@@ -108,18 +91,6 @@ async function getProcessedMdast(mdast) {
   return processMdast(nodes);
 }
 
-function display(id, toBeDisplayed) {
-  function replacer(key, value) {
-    if (value instanceof Map) {
-      return { value: Array.from(value.entries()) }; // or with spread: value: [...value]
-    }
-    return value;
-  }
-
-  const container = document.getElementById(id);
-  container.innerText = JSON.stringify(toBeDisplayed, replacer, 2);
-}
-
 async function persistDoc(srcPath, docx, dstPath) {
   try {
     await saveFileAndUpdateMetadata(srcPath, docx, dstPath, { RolloutStatus: 'Merged' });
@@ -139,15 +110,6 @@ async function persist(srcPath, mdast, dstPath) {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-function notPresentInChangesMap(elements, changesMap) {
-  let notPresentInChanges = true;
-  elements.forEach((element) => {
-    notPresentInChanges = !changesMap.has(element.hash) && notPresentInChangesMap;
-  });
-  return notPresentInChanges;
-}
-
 function updateChangesMap(changesMap, key, value) {
   if (!changesMap.has(key)) {
     changesMap.set(key, value);
@@ -164,8 +126,7 @@ function getChanges(left, right) {
   const changesMap = new Map();
   const editSet = new Set();
   let rightPointer = 0;
-  // eslint-disable-next-line no-plusplus
-  for (let leftPointer = 0; leftPointer <= leftLimit; leftPointer++) {
+  for (let leftPointer = 0; leftPointer <= leftLimit; leftPointer += 1) {
     const leftElement = leftArray[leftPointer];
     if (leftPointer <= rightLimit) {
       rightPointer = leftPointer;
@@ -188,19 +149,13 @@ function getChanges(left, right) {
       updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
     }
   }
-  // eslint-disable-next-line no-plusplus
-  for (let pointer = 0; pointer <= rightLimit; pointer++) {
+  for (let pointer = 0; pointer <= rightLimit; pointer += 1) {
     const rightElement = rightArray[pointer];
     if (!changesMap.has(rightElement.hash) && !editSet.has(rightElement.hash)) {
       changesMap.set(rightElement.hash, { op: 'added' });
     }
   }
   return changesMap;
-}
-
-function reset() {
-  types = new Set();
-  hashToContentMap = new Map();
 }
 
 function updateMergedMdast(mergedMdast, node, author) {
@@ -220,8 +175,7 @@ function getMergedMdast(left, right) {
   // eslint-disable-next-line no-restricted-syntax
   for (const [rightHash, rightOpInfo] of right) {
     if (left.has(rightHash)) {
-      // eslint-disable-next-line no-plusplus
-      for (leftPointer; leftPointer < leftArray.length; leftPointer++) {
+      for (leftPointer; leftPointer < leftArray.length; leftPointer += 1) {
         const leftArrayElement = leftArray[leftPointer];
         const leftHash = leftArrayElement[0];
         const leftOpInfo = leftArrayElement[1];
