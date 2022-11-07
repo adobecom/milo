@@ -2,11 +2,12 @@ import {
   fetchPlaceholders,
   getLocaleIetf,
   getPrefix,
-  emptyDiv,
   stamp,
   getTaxonomyModule,
   loadTaxonomy,
 } from './helpers.js';
+
+import { createTag } from '../../utils/utils.js';
 
 /**
  * number case, coming from Excel
@@ -544,8 +545,7 @@ function buildFilterOption(itemName, type) {
 }
 
 function buildFilter(type, tax, ph, block, config) {
-  const container = emptyDiv();
-  container.classList.add('filter');
+  const container = createTag('div', { class: 'filter' });
 
   const button = document.createElement('a');
   button.classList.add('filter-button');
@@ -556,16 +556,14 @@ function buildFilter(type, tax, ph, block, config) {
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
 
-  const dropdown = emptyDiv();
-  dropdown.classList.add('filter-dropdown');
+  const dropdown = createTag('div', { class: 'filter-dropdown' });
   dropdown.setAttribute('aria-labelledby', `${type}-filter-button`);
   dropdown.setAttribute('role', 'menu');
 
   const SEARCH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
     <path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path>
   </svg>`;
-  const searchBar = emptyDiv();
-  searchBar.classList.add('filter-search');
+  const searchBar = createTag('div', { class: 'filter-search' });
   searchBar.insertAdjacentHTML('afterbegin', SEARCH_ICON);
   const searchField = document.createElement('input');
   searchField.setAttribute('id', `${type}-filter-search`);
@@ -589,8 +587,7 @@ function buildFilter(type, tax, ph, block, config) {
     }
   });
 
-  const footer = emptyDiv();
-  footer.classList.add('filter-dropdown-footer');
+  const footer = createTag('div', { class: 'filter-dropdown-footer' });
 
   const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
@@ -679,21 +676,6 @@ async function filterArticles(config, feed, limit, offset) {
   }
 }
 
-function generateSpinner(containerClass) {
-  const container = emptyDiv();
-  container.classList.add(containerClass);
-  const spinner = emptyDiv();
-  spinner.classList.add('spinner');
-  container.append(spinner);
-  return container;
-}
-
-function generateArticleCards() {
-  const articleCards = emptyDiv();
-  articleCards.className = 'article-cards';
-  return articleCards;
-}
-
 async function decorateArticleFeed(
   articleFeedEl,
   config,
@@ -704,13 +686,16 @@ async function decorateArticleFeed(
   let articleCards = articleFeedEl.querySelector('.article-cards');
 
   if (!articleCards) {
-    articleCards = generateArticleCards();
+    articleCards = createTag('div', { class: 'article-cards' });
     articleFeedEl.append(articleCards);
   }
 
+  const container = createTag('div', { class: 'article-cards-empty' });
+
   // display spinner
-  const spinner = generateSpinner('article-cards-empty');
-  articleCards.append(spinner);
+  const spinner = createTag('div', { class: 'spinner' });
+  container.append(spinner);
+  articleCards.append(container);
 
   const pageEnd = offset + limit;
   await filterArticles(config, feed, limit, offset);
@@ -728,13 +713,13 @@ async function decorateArticleFeed(
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
     userHelp.textContent = placeholders['user-help'];
-    emptyDiv.append(noMatches, userHelp);
+    container.append(noMatches, userHelp);
   } else {
     // no results were found
     spinner.remove();
     const noResults = document.createElement('p');
     noResults.innerHTML = `<strong>${placeholders['no-results']}</strong>`;
-    emptyDiv.append(noResults);
+    container.append(noResults);
   }
   const max = pageEnd > articles.length ? articles.length : pageEnd;
   for (let i = offset; i < max; i += 1) {
@@ -763,14 +748,12 @@ async function decorateFeedFilter(articleFeedEl, config) {
   const taxonomy = getTaxonomyModule();
   const parent = document.querySelector('.article-feed-container');
 
-  const curtain = emptyDiv();
-  curtain.classList.add('filter-curtain', 'hide');
+  const curtain = createTag('div', { class: 'filter-curtain hide' });
   document.querySelector('main').append(curtain);
 
   // FILTER CONTAINER
-  const filterContainer = emptyDiv();
-  filterContainer.classList.add('filter-container');
-  const filterWrapper = emptyDiv();
+  const filterContainer = createTag('div', { class: 'filter-container' });
+  const filterWrapper = createTag('div');
 
   const filterText = document.createElement('p');
   filterText.classList.add('filter-text');
@@ -785,9 +768,8 @@ async function decorateFeedFilter(articleFeedEl, config) {
   parent.parentElement.insertBefore(filterContainer, parent);
 
   // SELECTED CONTAINER
-  const selectedContainer = emptyDiv();
-  selectedContainer.classList.add('selected-container', 'hide');
-  const selectedWrapper = emptyDiv();
+  const selectedContainer = createTag('div', { class: 'selected-container hide' });
+  const selectedWrapper = createTag('div');
 
   const selectedText = document.createElement('p');
   selectedText.classList.add('selected-text');
