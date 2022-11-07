@@ -242,6 +242,9 @@ async function displayProjectDetail() {
     return;
   }
   const config = await getConfig();
+  if (!config) {
+    return;
+  }
   const container = getProjectDetailContainer();
   const subprojects = new Map([
     ...projectDetail.englishCopyProjects,

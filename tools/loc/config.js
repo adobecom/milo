@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 /* global */
+import { getUrlInfo } from './utils.js';
+
 const LOC_CONFIG = '/drafts/localization/configs/config-v3.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
@@ -170,33 +172,29 @@ function getHelixAdminConfig() {
 }
 
 async function getConfig() {
-  function getParam(location, name) { return location.searchParams.get(name); }
   if (!decoratedConfig) {
-    const location = new URL(document.location.href);
-    const sub = location.hostname.split('.').shift().split('--');
-
-    const owner = getParam('owner') || sub[2];
-    const repo = getParam('repo') || sub[1];
-    const ref = getParam('ref') || sub[0];
-    const configPath = `https://${ref}--${repo}--${owner}.hlx.page${LOC_CONFIG}`;
-    const configJson = await fetchConfigJson(configPath);
-    const locales = getLocalesConfig(configJson);
-    const decoratedLocales = getDecoratedLocalesConfig(locales);
-    const workflowsConfig = getWorkflowsConfig(configJson);
-    decoratedConfig = {
-      locales,
-      decoratedLocales,
-      glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
-      sp: getSharepointConfig(configJson),
-      admin: getHelixAdminConfig(),
-      getLivecopiesForLanguage(language) {
-        const localeConfig = decoratedLocales[language];
-        return localeConfig?.livecopies ? localeConfig.livecopies : null;
-      },
-      getWorkflowForLanguage(language, customWorkflow) {
-        return getWorkflowForLanguage(workflowsConfig, language, decoratedLocales, customWorkflow);
-      },
-    };
+    const urlInfo = getUrlInfo();
+    if (urlInfo.isValid()) {
+      const configPath = `${urlInfo.origin}${LOC_CONFIG}`;
+      const configJson = await fetchConfigJson(configPath);
+      const locales = getLocalesConfig(configJson);
+      const decoratedLocales = getDecoratedLocalesConfig(locales);
+      const workflowsConfig = getWorkflowsConfig(configJson);
+      decoratedConfig = {
+        locales,
+        decoratedLocales,
+        glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
+        sp: getSharepointConfig(configJson),
+        admin: getHelixAdminConfig(),
+        getLivecopiesForLanguage(language) {
+          const localeConfig = decoratedLocales[language];
+          return localeConfig?.livecopies ? localeConfig.livecopies : null;
+        },
+        getWorkflowForLanguage(language, customWorkflow) {
+          return getWorkflowForLanguage(workflowsConfig, language, decoratedLocales, customWorkflow);
+        },
+      };
+    }
   }
   return decoratedConfig;
 }
