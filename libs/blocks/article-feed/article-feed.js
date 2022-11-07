@@ -5,7 +5,8 @@ import {
   emptyDiv,
   stamp,
   getTaxonomyModule,
-} from '../../utils/utils.js';
+  loadTaxonomy,
+} from './helpers.js';
 
 /**
  * number case, coming from Excel
@@ -808,9 +809,12 @@ async function decorateFeedFilter(articleFeedEl, config) {
   parent.parentElement.insertBefore(selectedContainer, parent);
 }
 
+const clearBlock = (block) => { block.innerHTML = ''; };
+
 export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
-  articleFeed.innerHTML = '';
+  clearBlock(articleFeed);
+  await loadTaxonomy();
   if (config.filters) {
     decorateFeedFilter(articleFeed, config);
   }

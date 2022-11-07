@@ -14,7 +14,6 @@ import {
   loadArea,
   loadDelayed,
   setConfig,
-  loadTaxonomy,
 } from '../utils/utils.js';
 
 const locales = {
@@ -115,6 +114,5 @@ const config = {
 (async function loadPage() {
   setConfig(config);
   await loadArea();
-  await loadTaxonomy();
   loadDelayed();
 }());
