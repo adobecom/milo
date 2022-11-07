@@ -200,6 +200,7 @@ function getSubprojectsInfo(projectJson, config, urls, filePathToReferencePositi
       if (persistedStatus) {
         projectStarted = true;
         langInfo.status = persistedStatus.Status;
+        langInfo.savedStatus = persistedStatus.SavedStatus;
         langInfo.failureMessage = persistedStatus.FailureMessage;
         langInfo.failedPages = getArrayFromString(persistedStatus?.FailedPages);
       }
@@ -302,7 +303,7 @@ async function init() {
   return project;
 }
 
-async function updateProjectWithDocs(projectDetail, callback) {
+async function updateProjectWithDocs(projectDetail) {
   if (!projectDetail || !projectDetail?.filePathsToReferencePositions) {
     return;
   }
@@ -330,7 +331,6 @@ async function updateProjectWithDocs(projectDetail, callback) {
       });
     }
   });
-  if (callback) await callback();
 }
 
 // eslint-disable-next-line import/prefer-default-export

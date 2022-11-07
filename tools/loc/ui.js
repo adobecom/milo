@@ -278,9 +278,11 @@ async function displayProjectDetail() {
     projects.forEach((projectInfo) => {
       if (projectInfo.status === PROJECT_STATUS.COMPLETED) {
         const $td = createTag('td');
-        const $saveAllButton = createButton('Save');
-        $saveAllButton.addEventListener('click', () => saveAll(projectInfo));
-        $td.appendChild($saveAllButton);
+        if (!(projectInfo?.savedStatus)) {
+          const $saveAllButton = createButton('Save');
+          $saveAllButton.addEventListener('click', () => saveAll(projectInfo));
+          $td.appendChild($saveAllButton);
+        }
         const $rolloutAllButton = createButton('Rollout');
         $rolloutAllButton.addEventListener('click', () => {
           rolloutAll(projectInfo);
@@ -358,6 +360,7 @@ function handleRolloutProjects() {
     });
     if (projectInfo.status !== PROJECT_STATUS.FAILED) {
       projectInfo.status = PROJECT_STATUS.COMPLETED;
+      projectInfo.savedStatus = PROJECT_STATUS.COMPLETED;
     }
   });
 }
@@ -379,7 +382,7 @@ async function handleEnglishCopyProjects(langstoreEnFiles) {
   const failedPages = failedPagesStatus.length > 0
     ? failedPagesStatus.map(({ path }) => path) : [];
 
-  function updateStatus(urlLangInfo, projectInfo) {
+  function updateStatus(urlLangInfo, projectInfo, type = 'primary') {
     let status = PROJECT_STATUS.COMPLETED;
     const currentLangPath = urlLangInfo.languageFilePath;
     if (failedPages.includes(currentLangPath)) {
@@ -396,11 +399,12 @@ async function handleEnglishCopyProjects(langstoreEnFiles) {
     projectInfo.urls.forEach((urlInfo) => {
       updateStatus(urlInfo.langInfo, projectInfo);
       if (urlInfo?.altLangInfo) {
-        updateStatus(urlInfo.altLangInfo, projectInfo);
+        updateStatus(urlInfo.altLangInfo, projectInfo, 'altLang');
       }
     });
     if (projectInfo.status !== PROJECT_STATUS.FAILED) {
       projectInfo.status = PROJECT_STATUS.COMPLETED;
+      projectInfo.savedStatus = PROJECT_STATUS.COMPLETED;
     }
     statusValues.push(
       [projectInfo.language, projectInfo.status, projectInfo.status, projectInfo.status,
@@ -682,7 +686,7 @@ async function init() {
     if (!config) {
       return;
     }
-    loadingON('Localization Config loaded');
+    loadingON('Localization Config loaded...');
     loadingON('Fetching Project Config...');
     project = await initProject();
     loadingON('Refreshing Project Config...');
@@ -691,34 +695,37 @@ async function init() {
     await fetchProjectFile(project.url, 1);
     project = await initProject();
     if (!project) {
+      loadingON('Could load project file...');
       return;
     }
     loadingON(`Fetching project details for ${project.url}`);
     setProjectUrl();
     projectDetail = await project.detail();
-    loadingON('Project Details loaded');
-    await displayProjectDetail();
+    loadingON('Project Details loaded...');
     loadingON('Connecting now to Sharepoint...');
-    await connectToSP(async () => {
-      loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
-      await updateProjectWithDocs(projectDetail, async () => {
-        loadingON('Update Rollout Projects...');
-        await handleRolloutProjects();
-        loadingON('Status updated! Updating UI.');
-        await displayProjectDetail();
-        loadingOFF();
+    const connectedToSp = await connectToSP();
+    if (!connectedToSp) {
+      loadingON('Could not connect to sharepoint...');
+      return;
+    }
+    loadingON('Connected to Sharepoint! Updating the Sharepoint Status...');
+    await updateProjectWithDocs(projectDetail);
+    loadingON('Update Rollout Projects...');
+    await handleRolloutProjects();
+    if (projectDetail?.translationProjects.size > 0) {
+      loadingON('Connecting now to GLaaS...');
+      await connectToGLaaS(async () => {
+        loadingON('Connected to GLaaS! Updating the GLaaS Status...');
+        await updateGLaaSStatus(projectDetail, async () => {
+          loadingON('Status updated! Updating UI..');
+          await displayProjectDetail();
+          loadingOFF();
+        });
       });
-    });
-    loadingON('Connecting now to GLaaS...');
-    await connectToGLaaS(async () => {
-      loadingON('Connected to GLaaS! Updating the GLaaS Status...');
-      await updateGLaaSStatus(projectDetail, async () => {
-        loadingON('Status updated! Updating UI.');
-        await displayProjectDetail();
-        loadingOFF();
-      });
-    });
-    loadingON('App loaded.');
+    } else {
+      await displayProjectDetail();
+    }
+    loadingON('App loaded..');
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the project ${error.message}`);

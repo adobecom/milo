@@ -125,7 +125,10 @@ async function updateFragments() {
   });
   if (fragments.length > 0) {
     loadingON('Found Fragments...');
-    await connectToSp();
+    const connectedToSp = await connectToSp();
+    if (!connectedToSp) {
+      status = 'Could not connect to sharepoint';
+    }
     loadingON('Saving Fragments into project excel...');
     const persisted = await persistFragments(fragments, projectFile.excelPath);
     if (persisted) {

@@ -16,7 +16,8 @@ const BATCH_REQUEST_LIMIT = 20;
 
 const getAccessToken = () => accessToken;
 
-async function connect(callback) {
+async function connect() {
+  let connected = false;
   const { sp } = await getConfig();
   const publicClientApplication = new msal.PublicClientApplication(sp.clientApp);
   let account = publicClientApplication.getAllAccounts()[0];
@@ -28,11 +29,10 @@ async function connect(callback) {
     scopes: ['files.readwrite', 'sites.readwrite.all'],
     account,
   };
-
   try {
     const res = await publicClientApplication.acquireTokenSilent(accessTokenRequest);
     accessToken = res.accessToken;
-    if (callback) await callback();
+    connected = true;
   } catch (error) {
     // Acquire token silent failure, and send an interactive request
     if (error.name === 'InteractionRequiredAuthError') {
@@ -40,12 +40,13 @@ async function connect(callback) {
         const res = await publicClientApplication.acquireTokenPopup(accessTokenRequest);
         // Acquire token interactive success
         accessToken = res.accessToken;
-        if (callback) await callback();
+        connected = true;
       } catch (err) {
         throw new Error(`Cannot connect to Sharepoint: ${err.message}`);
       }
     }
   }
+  return connected;
 }
 
 function validateConnection() {
