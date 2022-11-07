@@ -92,12 +92,12 @@ function getEnv(conf) {
 // find out current locale based on pathname and existing locales object from config.
 export function getLocale(locales) {
   if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: 'en' };
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
   const { pathname } = window.location;
   const split = pathname.split('/');
   const locale = locales[split[1]] || locales[''];
-  locale.prefix = locale.ietf === 'en-US' ? 'en' : `/${split[1]}`;
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
   return locale;
 }
 
