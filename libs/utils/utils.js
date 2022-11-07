@@ -110,7 +110,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);  
+        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
@@ -421,12 +421,48 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
+function setPageSEO(type) {
+  switch (type) {
+    case 'NewsArticle':
+      setNewsArticleSEO();
+  }
+}
+
+export function setNewsArticleSEO() {
+  const authors = getMetadata('author')?.split('|').map((value) => {
+    value = value.trim();
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return {
+        '@type': 'Person',
+        url: value,
+      };
+    } else {
+      return {
+        '@type': 'Person',
+        name: value,
+      };
+    }
+  });
+  const articleSEO = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headLine: getMetadata('og:title'),
+    image: getMetadata('og:image'),
+    datePublished: getMetadata('published'),
+    dateModified: getMetadata('modified'),
+    author: authors,
+  };
+  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(articleSEO));
+  document.head.append(script);
+}
+
 export async function loadDeferred(area) {
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
+  setPageSEO(getMetadata('seo-type'));
 }
 
 /**
