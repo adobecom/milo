@@ -162,9 +162,6 @@
   color: #000;
 }
 
-span.icon.margin-left { margin-left: 8px; }
-span.icon.margin-right-0 { margin-right: 0; }
-
 svg.icon-milo {
   height: 1em;
   width: auto;
@@ -173,12 +170,13 @@ svg.icon-milo {
   overflow: visible;
 }
 
-.con-button.button-L span.icon { margin-right: 12px; }
-.con-button.button-XL span.icon { margin-right: 14px; }
+span.icon.margin-right { margin-right: 8px; }
+
+span.icon.margin-left { margin-left: 8px; }
+
 .con-button.button-L span.icon.margin-left { margin-left: 12px; }
+
 .con-button.button-XL span.icon.margin-left { margin-left: 14px; }
-.con-button.button-L span.icon.margin-right-0 { margin-right: 0; }
-.con-button.button-XL span.icon.margin-right-0 { margin-right: 0; }
 
 /* mobile only */
 @media (max-width: 600px) {

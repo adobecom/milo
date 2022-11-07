@@ -47,23 +47,6 @@ export async function getSVGsfromFile(path) {
   return miloIcons;
 }
 
-// export async function decorateIconsInBlock(el) {
-//   const { miloLibs, codeRoot } = getConfig();
-//   const base = miloLibs || codeRoot;
-//   console.log(Object.keys(ICONS))
-//   if (Object.keys(ICONS).length === 0)
-//     await getSVGsfromFile(`${base}/img/icons/icons.svg`);
-//   if (!ICONS)
-//     return;
-//   const icons = el.querySelectorAll('span.icon');
-//   icons?.forEach(async (i) => {
-//     const iconName = i.classList[1].replace('icon-milo-', '');
-//     if (iconName === ICONS[iconName].id) {
-//       i.insertAdjacentHTML('afterbegin', ICONS[iconName].outerHTML);
-//     }
-//   });
-// }
-
 export async function loadIcons(el = document) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
@@ -72,13 +55,19 @@ export async function loadIcons(el = document) {
   const icons = el.querySelectorAll('span.icon');
   icons.forEach(async (i) => {
     const iconName = i.classList[1].startsWith('icon-milo-') ? i.classList[1].replace('icon-milo-', '') : i.classList[1].replace('icon-', '');
-    if (iconName === miloIcons[iconName].id) {
-      if (i.parentElement.childNodes.length > 1 && i.parentElement.childNodes[1] === i) {
+    console.log('miloIcons', iconName, miloIcons[iconName]);
+    if (!miloIcons[iconName]) return;
+    const parent = i.parentElement;
+    if ( parent.childNodes.length > 1 ) {
+      if( parent.lastChild === i ) {
         i.classList.add('margin-left');
-        if (i.parentElement.childNodes.length === 2) i.classList.add('margin-right-0');
+      }else if ( parent.firstChild === i ) {
+        i.classList.add('margin-right');
+      }else {
+        i.classList.add('margin-left', 'margin-right');
       }
-      i.insertAdjacentHTML('afterbegin', miloIcons[iconName].outerHTML);
     }
+    i.insertAdjacentHTML('afterbegin', miloIcons[iconName].outerHTML);
   });
 }
 
