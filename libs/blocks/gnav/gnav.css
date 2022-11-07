@@ -654,10 +654,6 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   box-sizing: border-box;
 }
 
-.gnav-profile.has-menu {
-  min-width: 92.25px;
-}
-
 .gnav-profile .gnav-signin {
   display: flex;
   align-items: center;

@@ -12,14 +12,13 @@
 
 import { asyncForEach } from './utils.js';
 import getConfig from './config.js';
-import { PublicClientApplication } from './lib/msal-browser.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
 
 async function connect(callback) {
   const { sp } = await getConfig();
-  const publicClientApplication = new PublicClientApplication(sp.clientApp);
+  const publicClientApplication = new msal.PublicClientApplication(sp.clientApp);
   await publicClientApplication.loginPopup(sp.login);
   const account = publicClientApplication.getAllAccounts()[0];
   const accessTokenRequest = {

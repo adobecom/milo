@@ -184,7 +184,7 @@ const loadFromLS = () => {
     try {
       setConfig(JSON.parse(ls));
       /* c8 ignore next */
-    } catch (e) {}
+    } catch (e) { /* do nothing */ }
   }
 
   const config = getConfig();
