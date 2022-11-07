@@ -22,7 +22,7 @@ function decorateLayout(el) {
     decorateBlockBg(el, children[0]);
   }
   const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container', 'grid');
+  foreground.classList.add('foreground');
   el.appendChild(foreground);
   return foreground;
 }
@@ -48,7 +48,7 @@ function decorateContent(row, isVertical) {
 export default function init(el) {
   const foreground = decorateLayout(el);
   const rows = el.querySelectorAll(':scope > div:not([class])');
-  const isVertical = el.classList.contains('vertical');
+  const isVertical = el.classList.contains('vertical') || el.classList.contains('centered');
   [...rows].forEach(row => {
     decorateContent(row, isVertical);
     foreground.insertAdjacentElement('beforeEnd', row.children[0]);

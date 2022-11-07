@@ -20,6 +20,14 @@ function handleStyle(div, section) {
   }
 }
 
+function handleGrid(div, section) {
+  const value = div.textContent.toLowerCase();
+  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+  if (section) {
+    section.classList.add(...styles);
+  }
+}
+
 export const getSectionMetadata = (el) => {
   if (!el) return {};
   const metadata = {};
@@ -43,6 +51,9 @@ export default function init(el) {
     }
     if (div.textContent === 'background') {
       handleBackground(valueDiv, section);
+    }
+    if (div.textContent === 'grid' && valueDiv.textContent) {
+      handleGrid(valueDiv, section);
     }
   });
 }
