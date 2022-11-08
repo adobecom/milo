@@ -181,7 +181,7 @@
 }
 
 .section .fill-row {
-  grid-column: auto / span 12;
+  grid-column: 1 /-1;
 }
 
 @media screen and (min-width: 1200px) {
