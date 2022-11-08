@@ -58,56 +58,58 @@ function computeTaxonomyFromTopics(taxonomy, topics, path) {
 }
 
 export async function loadTaxonomy() {
-  taxonomyModule = await taxonomyLibrary.default(getConfig().locale?.prefix);
-  if (taxonomyModule) {
-    // taxonomy loaded, post loading adjustments
-    // fix the links which have been created before the taxonomy has been loaded
-    // (pre lcp or in lcp block).
-    document.querySelectorAll('[data-topic-link]').forEach((a) => {
-      const topic = a.dataset.topicLink;
-      const tax = taxonomyModule.get(topic);
-      if (tax) {
-        a.href = tax.link;
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn(`Trying to get a link for an unknown topic: ${topic} (current page)`);
-        a.href = '#';
-      }
-      delete a.dataset.topicLink;
-    });
-
-    // adjust meta article:tag
-
-    const currentTags = getMetadata('article:tag', true) || [];
-    const articleTax = computeTaxonomyFromTopics(taxonomyModule, currentTags);
-
-    const allTopics = articleTax.allTopics || [];
-    allTopics.forEach((topic) => {
-      if (!currentTags.includes(topic)) {
-        // computed topic (parent...) is not in meta -> add it
-        const newMetaTag = document.createElement('meta');
-        newMetaTag.setAttribute('property', 'article:tag');
-        newMetaTag.setAttribute('content', topic);
-        document.head.append(newMetaTag);
-      }
-    });
-
-    currentTags.forEach((tag) => {
-      const tax = taxonomyModule.get(tag);
-      if (tax && tax.skipMeta) {
-        // if skipMeta, remove from meta "article:tag"
-        const meta = document.querySelector(`[property="article:tag"][content="${tag}"]`);
-        if (meta) {
-          meta.remove();
+  taxonomyLibrary.default(getConfig().locale?.prefix).then((_taxonomyModule) => {
+    taxonomyModule = _taxonomyModule;
+    if (taxonomyModule) {
+      // taxonomy loaded, post loading adjustments
+      // fix the links which have been created before the taxonomy has been loaded
+      // (pre lcp or in lcp block).
+      document.querySelectorAll('[data-topic-link]').forEach((a) => {
+        const topic = a.dataset.topicLink;
+        const tax = taxonomyModule.get(topic);
+        if (tax) {
+          a.href = tax.link;
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn(`Trying to get a link for an unknown topic: ${topic} (current page)`);
+          a.href = '#';
         }
-        // but add as meta with name
-        const newMetaTag = document.createElement('meta');
-        newMetaTag.setAttribute('name', tag);
-        newMetaTag.setAttribute('content', 'true');
-        document.head.append(newMetaTag);
-      }
-    });
-  }
+        delete a.dataset.topicLink;
+      });
+
+      // adjust meta article:tag
+
+      const currentTags = getMetadata('article:tag', true) || [];
+      const articleTax = computeTaxonomyFromTopics(taxonomyModule, currentTags);
+
+      const allTopics = articleTax.allTopics || [];
+      allTopics.forEach((topic) => {
+        if (!currentTags.includes(topic)) {
+          // computed topic (parent...) is not in meta -> add it
+          const newMetaTag = document.createElement('meta');
+          newMetaTag.setAttribute('property', 'article:tag');
+          newMetaTag.setAttribute('content', topic);
+          document.head.append(newMetaTag);
+        }
+      });
+
+      currentTags.forEach((tag) => {
+        const tax = taxonomyModule.get(tag);
+        if (tax && tax.skipMeta) {
+          // if skipMeta, remove from meta "article:tag"
+          const meta = document.querySelector(`[property="article:tag"][content="${tag}"]`);
+          if (meta) {
+            meta.remove();
+          }
+          // but add as meta with name
+          const newMetaTag = document.createElement('meta');
+          newMetaTag.setAttribute('name', tag);
+          newMetaTag.setAttribute('content', 'true');
+          document.head.append(newMetaTag);
+        }
+      });
+    }
+  });
 }
 
 export const getLocaleIetf = () => getConfig().locale?.ietf;
@@ -125,12 +127,12 @@ export const getPrefix = () => (getConfig().locale?.prefix ? `/${getConfig().loc
 
 export async function fetchPlaceholders() {
   if (!window.placeholders) {
-    const resp = await fetch(`${getPrefix()}/placeholders.json`);
-    const json = await resp.json();
     window.placeholders = {};
-    json.data.forEach((placeholder) => {
-      window.placeholders[placeholder.Key] = placeholder.Text;
-    });
+    fetch(`${getPrefix()}/placeholders.json`)
+      .then((response) => response.json())
+      .then((json) => json.data.forEach((placeholder) => {
+        window.placeholders[placeholder.Key] = placeholder.Text;
+      }));
   }
   return window.placeholders;
 }

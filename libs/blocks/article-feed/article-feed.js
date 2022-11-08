@@ -341,18 +341,23 @@ export async function fetchBlogArticleIndex() {
     offset: 0,
     complete: false,
   };
+
   if (window.blogIndex.complete) return (window.blogIndex);
+
   const index = window.blogIndex;
-  const json = await fetch(`${getPrefix()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
-    .then((response) => response.json());
-  const complete = (json.limit + json.offset) === json.total;
-  json.data.forEach((post) => {
-    index.data.push(post);
-    index.byPath[post.path.split('.')[0]] = post;
-  });
-  index.complete = complete;
-  index.offset = json.offset + pageSize;
-  return index;
+  return fetch(`${getPrefix()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
+    .then((response) => response.json())
+    .then((json) => {
+      const complete = (json.limit + json.offset) === json.total;
+      json.data.forEach((post) => {
+        index.data.push(post);
+        index.byPath[post.path.split('.')[0]] = post;
+      });
+      index.complete = complete;
+      index.offset = json.offset + pageSize;
+
+      return index;
+    });
 }
 
 function isCardOnPage(article) {
@@ -679,6 +684,7 @@ async function filterArticles(config, feed, limit, offset) {
 async function decorateArticleFeed(
   articleFeedEl,
   config,
+  placeholders,
   offset = 0,
   feed = { data: [], complete: false, cursor: 0 },
   limit = 12,
@@ -701,7 +707,6 @@ async function decorateArticleFeed(
   await filterArticles(config, feed, limit, offset);
   const articles = feed.data;
 
-  const placeholders = await fetchPlaceholders();
   if (articles.length) {
     // results were found
     spinner.remove();
@@ -727,7 +732,6 @@ async function decorateArticleFeed(
     const card = buildArticleCard(article);
     articleCards.append(card);
   }
-
   if (articles.length > pageEnd || !feed.complete) {
     const loadMore = document.createElement('a');
     loadMore.className = 'load-more button small primary light';
@@ -737,14 +741,13 @@ async function decorateArticleFeed(
     loadMore.addEventListener('click', (event) => {
       event.preventDefault();
       loadMore.remove();
-      decorateArticleFeed(articleFeedEl, config, pageEnd, feed);
+      decorateArticleFeed(articleFeedEl, config, placeholders, pageEnd, feed);
     });
   }
   articleFeedEl.classList.add('appear');
 }
 
-async function decorateFeedFilter(articleFeedEl, config) {
-  const placeholders = await fetchPlaceholders();
+async function decorateFeedFilter(articleFeedEl, config, placeholders) {
   const taxonomy = getTaxonomyModule();
   const parent = document.querySelector('.article-feed-container');
 
@@ -796,9 +799,12 @@ const clearBlock = (block) => { block.innerHTML = ''; };
 export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
   clearBlock(articleFeed);
-  await loadTaxonomy();
-  if (config.filters) {
-    decorateFeedFilter(articleFeed, config);
-  }
-  decorateArticleFeed(articleFeed, config);
+  loadTaxonomy();
+  fetchPlaceholders()
+    .then((placeholders) => {
+      if (config.filters) {
+        decorateFeedFilter(articleFeed, config, placeholders);
+      }
+      decorateArticleFeed(articleFeed, config, placeholders);
+    });
 }
