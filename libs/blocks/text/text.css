@@ -18,7 +18,7 @@
 
 .text-block div > *:last-child { margin-bottom: 0; }
 
-div[class*="-up"] .text-block div > *:last-child { margin-bottom: var(--spacing-s); }
+div[class*="-up"] .text-block > div > *:last-child { margin-bottom: var(--spacing-s); }
 
 /* two-up, three-up, four-up */
 div.two-up .text-block .grid,
