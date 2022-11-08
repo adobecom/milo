@@ -186,7 +186,7 @@
 
 @media screen and (min-width: 1200px) {
 
-  .section.grid {
+  .section.grid:not(.auto-cols) {
     grid-template-columns: repeat(12, 1fr);
   }
 

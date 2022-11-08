@@ -12,19 +12,14 @@ function handleBackground(div, section) {
   }
 }
 
-function handleStyle(div, section) {
+function handleStyle(div, section, keyDivs) {
+  const configs = [...keyDivs].map(div => (div.textContent.toLowerCase())).join(' ');
   const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   if (section) {
+    if (configs.includes('grid')) styles = [...styles, 'grid'];
+    if (!configs.includes('columns')) styles = [...styles, 'auto-cols'];
     section.classList.add(...styles);
-  }
-}
-
-function handleGrid(div, section) {
-  const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
-  if (section) {
-    section.classList.add('grid', ...styles);
   }
 }
 
@@ -35,6 +30,7 @@ function handleColumns(value, values, section) {
   if (offset) upConfig = { ...upConfig, ...{ 'two': 5, 2: 5 } };
   const up = values.find(i => i.includes('up'));
   const colSpan = upConfig[up.replace(' up', '')];
+  // allowing block level overrides by setting the section up-class
   const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
   return { up, columns: [colSpan], offset };
@@ -73,13 +69,13 @@ export default function init(el) {
     const keyDiv = div.textContent.toLowerCase();
     const valueDiv = div.nextElementSibling;
     if (keyDiv === 'style' && valueDiv.textContent) {
-      handleStyle(valueDiv, section);
+      handleStyle(valueDiv, section, keyDivs);
     }
     if (keyDiv === 'background') {
       handleBackground(valueDiv, section);
     }
     if (keyDiv === 'grid' && valueDiv.textContent) {
-      handleGrid(valueDiv, section);
+      handleStyle(valueDiv, section, keyDivs);
     }
     if (keyDiv === 'columns' && valueDiv.textContent) {
       handleGridColumns(valueDiv, section);
