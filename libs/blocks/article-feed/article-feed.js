@@ -6,7 +6,7 @@ import {
   loadTaxonomy,
   getArticleTaxonomy,
   buildArticleCard,
-} from './helpers.js';
+} from './article-helpers.js';
 
 import { createTag } from '../../utils/utils.js';
 
