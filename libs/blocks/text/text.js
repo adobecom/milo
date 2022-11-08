@@ -41,7 +41,7 @@ export function decorateText(el, size = 'medium') {
     emptyPs.forEach((p) => { p.classList.add(`body-M`) });
   }
   const actionArea = el.querySelectorAll('.action-area');
-  if (size && size === 'small') actionArea.forEach((area) => { area.classList.add('body-S'); });
+  if (size && size === 'small') actionArea.forEach((area) => { area.classList.add('body-XS'); });
   decorateLinkAnalytics(el, headings);
 }
 
