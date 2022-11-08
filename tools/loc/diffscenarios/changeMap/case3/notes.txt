@@ -1,0 +1,29 @@
+Langmaster-Base Langmaster-v1 Region-v1
+para            para*         para*
+columns         list          columns
+                para
+
+Langmaster-Base <-> Langmaster-v1                                     Langmaster-Base <-> Region-V1
+v1hash(para*) - added                                                 basehash(para) - edited
+basehash(columns) - deleted                                           basehash(columns) - nochange
+v1hash(list) - added
+v1hash(para) [=basehash(para)] - added
+
+Start (Langmaster-Base <-> Region-V1) - changelist
+Until you find baseHash correspondance in (Langmaster-Base <-> Langmaster-v1) - keep adding (Langmaster-Base <-> Langmaster-v1) to new document
+
+
+Merge Result (1)
+v1hash(para*) L
+v1hash(list)  L
+basehash(para) R
+basehash(columns) R
+
+para* (L)
+list (L)
+para* (R)
+columns (R)
+
+
+
+
