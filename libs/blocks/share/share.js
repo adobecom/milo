@@ -19,8 +19,8 @@ export async function getSVGsfromFile(path, selectors) {
 
   return selectors.map((selector) => {
     const symbol = doc.querySelector(`#${selector}`);
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     if (!symbol) return null;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     while (symbol.firstChild) svg.appendChild(symbol.firstChild);
     [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
     svg.classList.add('icon');
