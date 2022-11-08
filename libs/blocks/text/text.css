@@ -21,11 +21,11 @@
 div[class*="-up"] .text-block > div > *:last-child { margin-bottom: var(--spacing-s); }
 
 /* two-up, three-up, four-up */
-div.two-up .text-block .grid,
-div.three-up .text-block .grid,
-div.four-up .text-block .grid {
-  gap: var(--spacing-m);
-}
+/*div.two-up .text-block .grid,*/
+/*div.three-up .text-block .grid,*/
+/*div.four-up .text-block .grid {*/
+/*  gap: var(--spacing-m);*/
+/*}*/
 
 .text-block .background {
   bottom: 0;
@@ -35,6 +35,32 @@ div.four-up .text-block .grid {
   top: 0;
   z-index: -1;
 }
+
+.grid .text-block.xs-spacing.has-bg .foreground {
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+}
+
+.grid .text-block.s-spacing.has-bg .foreground {
+  padding-left: var(--spacing-s);
+  padding-right: var(--spacing-s);
+}
+
+.grid .text-block.m-spacing.has-bg .foreground {
+  padding-left: var(--spacing-m);
+  padding-right: var(--spacing-m);
+}
+
+.grid .text-block.l-spacing.has-bg .foreground {
+  padding-left: var(--spacing-l);
+  padding-right: var(--spacing-l);
+}
+
+.grid .text-block.xl-spacing.has-bg .foreground {
+  padding-left: var(--spacing-xl);
+  padding-right: var(--spacing-xl);
+}
+
 
 .text-block .action-area {
   display: flex;
@@ -75,17 +101,18 @@ div.four-up .text-block .grid {
 /* Desktop */
 @media screen and (min-width: 1200px) {
 
-  .text-block .container {
+  .text-block.contained .foreground {
     max-width: calc(var(--grid-column-width) * 8);
   }
-  .two-up .text-block .container {
-    max-width: calc(var(--grid-column-width) * 10);
-  }
 
-  .three-up .text-block .container,
-  .four-up .text-block .container {
-    max-width: var(--grid-container-width);;
-  }
+  /*.two-up .text-block .container {*/
+  /*  max-width: calc(var(--grid-column-width) * 10);*/
+  /*}*/
+
+  /*.three-up .text-block .container,*/
+  /*.four-up .text-block .container {*/
+  /*  max-width: var(--grid-container-width);;*/
+  /*}*/
 
 }
 

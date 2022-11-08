@@ -49,8 +49,12 @@ export default function init(el) {
   setDataConBlockAttribute(el);
   el.classList.add('text-block');
   const rows = el.querySelectorAll(':scope > div');
-  const container = createTag('div', { class: 'foreground container grid' });
-  if (rows.length > 1) decorateBlockBg(el, rows[0]);
+  const classList = ['foreground']; if (el.classList.contains('contained')) classList.push('container');
+  const container = createTag('div', { class: classList });
+  if (rows.length > 1) {
+    decorateBlockBg(el, rows[0]);
+    el.classList.add('has-bg');
+  }
   const size = getBlockSize(el);
   decorateText(el, size);
   el.appendChild(container);
