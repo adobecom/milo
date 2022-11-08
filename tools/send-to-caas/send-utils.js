@@ -1,5 +1,4 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { loadScript } from '../../libs/utils/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -252,7 +251,7 @@ const getBadges = (p) => {
   return badges;
 };
 
-const getImsToken = async () => {
+const getImsToken = async (loadScript) => {
   window.adobeid = {
     client_id: IMS_CLIENT_ID,
     environment: 'prod',

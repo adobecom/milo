@@ -72,7 +72,7 @@ const locales = {
   bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
   ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
   ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'en', tk: 'aaz7dvd.css' }, 
+  il_he: { ietf: 'en', tk: 'aaz7dvd.css' },
   ae_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
   mena_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
   sa_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
@@ -84,7 +84,7 @@ const locales = {
   id_en: { ietf: 'en', tk: 'pps7abe.css' },
   my_ms: { ietf: 'ms', tk: 'sxj4tvo.css' },
   my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  nz: { ietf: 'en-GB', tk: 'pps7abe.css' },   
+  nz: { ietf: 'en-GB', tk: 'pps7abe.css' },
   ph_en: { ietf: 'en', tk: 'pps7abe.css' },
   ph_fil: { ietf: 'en-US', tk: 'ict8rmp.css' },
   sg: { ietf: 'en-SG', tk: 'pps7abe.css' },
@@ -95,7 +95,7 @@ const locales = {
   hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
   jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
-  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' }, 
+  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
 };
 
 const config = {
