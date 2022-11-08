@@ -116,7 +116,7 @@ export const getLocaleIetf = () => getConfig().locale?.ietf;
  * Returns the language dependent root path
  * @returns {string} The computed root path
  */
-export const getPrefix = () => getConfig().locale?.prefix;
+export const getPrefix = () => (getConfig().locale?.prefix ? `/${getConfig().locale?.prefix}` : '');
 
 /**
  * fetches the string variables.
@@ -125,7 +125,7 @@ export const getPrefix = () => getConfig().locale?.prefix;
 
 export async function fetchPlaceholders() {
   if (!window.placeholders) {
-    const resp = await fetch(`/${getPrefix()}/placeholders.json`);
+    const resp = await fetch(`${getPrefix()}/placeholders.json`);
     const json = await resp.json();
     window.placeholders = {};
     json.data.forEach((placeholder) => {
