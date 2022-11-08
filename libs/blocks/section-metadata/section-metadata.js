@@ -28,32 +28,27 @@ function handleGrid(div, section) {
   }
 }
 
-function handleUps(value, values, section) {
-  if (!value.includes('up')) return { up: null, columns: values };
+function handleColumns(value, values, section) {
+  if (!value.includes('up')) return { up: null, columns: values, offset: null };
   let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
+  const offset = value.includes('offset') ? values.find(val => val.includes('offset')).replaceAll(' ', '-') : null;
+  if (offset) upConfig = { ...upConfig, ...{ 'two': 5, 2: 5 } };
   const up = values.find(i => i.includes('up'));
-  const offset = value.includes('offset');
-  if (offset) {
-    upConfig[2] = 5;
-    upConfig['two'] = 5;
-  }
   const colSpan = upConfig[up.replace(' up', '')];
   const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
-  return { up, columns: [colSpan] };
+  return { up, columns: [colSpan], offset };
 }
 
-function handleGridCols(div, section) {
+function handleGridColumns(div, section) {
   const value = div.textContent.toLowerCase();
   const values = value.split(', ');
-  const children = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
-  if (children.length) {
-    const { up, columns } = handleUps(value, values, section);
-    const getCol = i => columns[i] ? columns[i] : columns[0];
-    const offset = up && value.includes('offset') ? values.find(i => i.includes('offset')).replaceAll(' ', '-') : null;
-    children.forEach((child, i) => {
-      child.classList.add(`col-${getCol(i)}`);
-      if (up && offset && i % parseInt(up.replace(' up', '')) == 0) child.classList.add(offset);
+  const gridCols = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
+  if (gridCols.length) {
+    const { up, columns, offset } = handleColumns(value, values, section);
+    gridCols.forEach((col, i) => {
+      col.classList.add(`col-${columns[i] ?? columns[0]}`);
+      if (up && offset && i % parseInt(up.replace(' up', '')) == 0) col.classList.add(offset);
     });
   }
 }
@@ -87,7 +82,7 @@ export default function init(el) {
       handleGrid(valueDiv, section);
     }
     if (keyDiv === 'columns' && valueDiv.textContent) {
-      handleGridCols(valueDiv, section);
+      handleGridColumns(valueDiv, section);
     }
   });
 }

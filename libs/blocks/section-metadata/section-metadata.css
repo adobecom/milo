@@ -181,7 +181,7 @@
 }
 
 .section .fill-row {
-  grid-column: 1 / -1;
+  grid-column: 1 /-1;
 }
 
 @media screen and (min-width: 1200px) {
@@ -238,12 +238,9 @@
     grid-column: auto / span 12;
   }
 
+  .section.grid .offset,
   .section.grid .offset-1 {
     grid-column-start: 2;
-  }
-
-  .section.grid .offset-2 {
-    grid-column-start: 3;
   }
 
   /* .section.two-up {
