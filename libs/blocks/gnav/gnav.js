@@ -384,6 +384,30 @@ class Gnav {
     return searchBar;
   };
 
+  decorateAppsMenu = async (profileEl, gnav) => {
+    const appLauncherBlock = this.body.querySelector('.app-launcher');
+    if (!appLauncherBlock) return;
+    
+    gnav.classList.add('has-apps');
+    const appLauncher = await import('./gnav-appLauncher.js');
+    const appsLink = appLauncherBlock.querySelector('a');
+    appsLink.href = makeRelative(appsLink.href, true);
+
+    const path = appsLink.href;
+    const promise = fetch(`${path}.plain.html`);
+    promise.then(async (resp) => {
+      if (resp.status === 200) {
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const appList = doc.querySelectorAll('body > div > ul > li');
+
+        appLauncher.default(profileEl, appList, this.toggleMenu);
+      }
+      return undefined;
+    });
+  };
+
   /* c8 ignore start */
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
@@ -413,8 +437,11 @@ class Gnav {
       const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
 
       if (ioResp.status === 200) {
+        const gnav = profileEl.parentElement;
+        gnav.classList.add('signed-in');
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        this.decorateAppsMenu(profileEl, gnav);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }
