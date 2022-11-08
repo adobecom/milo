@@ -429,30 +429,20 @@ function setPageSEO(type) {
 }
 
 export function setNewsArticleSEO() {
-  const authors = getMetadata('author')?.split('|').map((value) => {
-    value = value.trim();
-    if (value.startsWith('http://') || value.startsWith('https://')) {
-      return {
-        '@type': 'Person',
-        url: value,
-      };
-    } else {
-      return {
-        '@type': 'Person',
-        name: value,
-      };
-    }
-  });
-  const articleSEO = {
+  const newsArticle = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headLine: getMetadata('og:title'),
     image: getMetadata('og:image'),
     datePublished: getMetadata('published'),
     dateModified: getMetadata('modified'),
-    author: authors,
+    author: {
+      '@type': 'Person',
+      name: getMetadata('authorname'),
+      url: getMetadata('authorurl'),
+    },
   };
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(articleSEO));
+  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(newsArticle));
   document.head.append(script);
 }
 
@@ -462,7 +452,7 @@ export async function loadDeferred(area) {
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
-  setPageSEO(getMetadata('seo-type'));
+  setPageSEO(getMetadata('richresultstype'));
 }
 
 /**
