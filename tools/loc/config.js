@@ -12,7 +12,7 @@
 /* global */
 import { getUrlInfo } from './utils.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config-v3.json';
+const LOC_CONFIG = '/drafts/localization/configs/config.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 
@@ -21,7 +21,7 @@ let decoratedConfig;
 async function fetchConfigJson(configPath) {
   const configResponse = await fetch(configPath);
   if (!configResponse.ok) {
-    throw new Error('Config not found!');
+    throw new Error('Config not found!!');
   }
   return configResponse.json();
 }

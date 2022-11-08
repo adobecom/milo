@@ -91,15 +91,25 @@ function getEnv(conf) {
 }
 
 // find out current locale based on pathname and existing locales object from config.
+export function getLocaleFromPath(locales, path) {
+  const split = path.split('/');
+  const localeString = split[1];
+  const locale = locales[localeString] || locales[''];
+  if (localeString === 'langstore') {
+    locale.prefix = split.length >= 3 ? `/${localeString}/${split[2]}` : '';
+    return locale;
+  }
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  return locale;
+}
+
+// find out current locale based on pathname and existing locales object from config.
 export function getLocale(locales) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
   const { pathname } = window.location;
-  const split = pathname.split('/');
-  const locale = locales[split[1]] || locales[''];
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
-  return locale;
+  return getLocaleFromPath(locales, pathname);
 }
 
 export const [setConfig, getConfig] = (() => {

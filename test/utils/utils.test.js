@@ -181,6 +181,29 @@ describe('Utils', () => {
     expect(utils.getLocale().ietf).to.equal('en-US');
   });
 
+  it('getLocaleFromPath for different paths', () => {
+    const locales = {
+      '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+      langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+      be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
+    };
+
+    function validateLocale(path, expectedOutput) {
+      const locale = utils.getLocaleFromPath(locales, path);
+      expect(locale.prefix).to.equal(expectedOutput.prefix);
+      expect(locale.ietf).to.equal(expectedOutput.ietf);
+      expect(locale.tk).to.equal(expectedOutput.tk);
+    }
+
+    validateLocale('/', { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' });
+    validateLocale('/page', { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' });
+    validateLocale('/be_fr', { prefix: '/be_fr', ietf: 'fr-BE', tk: 'vrk5vyv.css' });
+    validateLocale('/be_fr/page', { prefix: '/be_fr', ietf: 'fr-BE', tk: 'vrk5vyv.css' });
+    validateLocale('/langstore', { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' });
+    validateLocale('/langstore/lv', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
+    validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
+  });
+
   it('creates an IntersectionObserver', (done) => {
     const block = document.createElement('div');
     block.id = 'myblock';

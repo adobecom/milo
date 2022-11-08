@@ -589,7 +589,7 @@ async function fetchGnav(url) {
 export default async function init(header) {
   const { locale, imsClientId } = getConfig();
   const name = imsClientId ? `|${imsClientId}` : '';
-  const url = getMetadata('gnav-source') || `${locale.prefix}/gnav`;
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
   try {
