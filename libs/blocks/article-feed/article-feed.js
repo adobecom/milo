@@ -709,7 +709,7 @@ async function decorateArticleFeed(
 
   if (articles.length) {
     // results were found
-    spinner.remove();
+    container.remove();
   } else if (config.selectedProducts || config.selectedIndustries) {
     // no user filtered results were found
     spinner.remove();

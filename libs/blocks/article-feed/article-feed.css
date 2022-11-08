@@ -317,6 +317,7 @@ element {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  height: 100vh;
 }
 
 .article-feed .article-cards-empty p {
