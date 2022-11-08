@@ -11,7 +11,7 @@ function handleBackground(bg, section) {
   }
 }
 
-function handleStyle(value, section) {
+export function handleStyle(value, section) {
   const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   section.classList.add(...styles);
 }

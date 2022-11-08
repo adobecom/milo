@@ -9,7 +9,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 
 function getDetails(el) {
-  const id = el.dataset.eventModal || window.location.hash.replace('#', '');
+  const id = window.location.hash.replace('#', '') || el.dataset.eventModal;
   const details = { id };
   const a = el || document.querySelector(`a[data-modal-hash="${window.location.hash}"]`);
   if (a) {
