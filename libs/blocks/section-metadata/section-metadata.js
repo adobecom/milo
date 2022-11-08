@@ -20,6 +20,44 @@ function handleStyle(div, section) {
   }
 }
 
+function handleGrid(div, section) {
+  const value = div.textContent.toLowerCase();
+  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+  if (section) {
+    section.classList.add('grid', ...styles);
+  }
+}
+
+function handleUps(value, values, section) {
+  if (!value.includes('up')) return { up: null, columns: values };
+  let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
+  const up = values.find(i => i.includes('up'));
+  const offset = value.includes('offset');
+  if (offset) {
+    upConfig[2] = 5;
+    upConfig['two'] = 5;
+  }
+  const colSpan = upConfig[up.replace(' up', '')];
+  const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
+  section.classList.add(`${sectionClass[1]}-up`);
+  return { up, columns: [colSpan] };
+}
+
+function handleGridCols(div, section) {
+  const value = div.textContent.toLowerCase();
+  const values = value.split(', ');
+  const children = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
+  if (children.length) {
+    const { up, columns } = handleUps(value, values, section);
+    const getCol = i => columns[i] ? columns[i] : columns[0];
+    const offset = up && value.includes('offset') ? values.find(i => i.includes('offset')).replaceAll(' ', '-') : null;
+    children.forEach((child, i) => {
+      child.classList.add(`col-${getCol(i)}`);
+      if (up && offset && i % parseInt(up.replace(' up', '')) == 0) child.classList.add(offset);
+    });
+  }
+}
+
 export const getSectionMetadata = (el) => {
   if (!el) return {};
   const metadata = {};
@@ -37,15 +75,19 @@ export default function init(el) {
   if (!section) return;
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
   keyDivs.forEach((div) => {
+    const keyDiv = div.textContent.toLowerCase();
     const valueDiv = div.nextElementSibling;
-    if (div.textContent === 'style' && valueDiv.textContent) {
+    if (keyDiv === 'style' && valueDiv.textContent) {
       handleStyle(valueDiv, section);
     }
-    if (div.textContent === 'background') {
+    if (keyDiv === 'background') {
       handleBackground(valueDiv, section);
     }
-    if (div.textContent === 'grid' && valueDiv.textContent) {
-      handleStyle(valueDiv, section);
+    if (keyDiv === 'grid' && valueDiv.textContent) {
+      handleGrid(valueDiv, section);
+    }
+    if (keyDiv === 'columns' && valueDiv.textContent) {
+      handleGridCols(valueDiv, section);
     }
   });
 }
