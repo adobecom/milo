@@ -29,18 +29,15 @@ function handleGrid(div, section) {
 }
 
 function handleUps(value, values, section) {
-  if (!value.includes('up')) return { up: null, columns: values };
+  if (!value.includes('up')) return { up: null, columns: values, offset: null };
+  const offset = value.includes('offset') ? values.find(val => val.includes('offset')).replaceAll(' ', '-') : null;
   let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
+  if (offset) upConfig = { ...upConfig, ...{ 'two': 5, 2: 5 } };
   const up = values.find(i => i.includes('up'));
-  const offset = value.includes('offset');
-  if (offset) {
-    upConfig[2] = 5;
-    upConfig['two'] = 5;
-  }
   const colSpan = upConfig[up.replace(' up', '')];
   const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
-  return { up, columns: [colSpan] };
+  return { up, columns: [colSpan], offset };
 }
 
 function handleGridCols(div, section) {
@@ -48,11 +45,9 @@ function handleGridCols(div, section) {
   const values = value.split(', ');
   const children = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
   if (children.length) {
-    const { up, columns } = handleUps(value, values, section);
-    const getCol = i => columns[i] ? columns[i] : columns[0];
-    const offset = up && value.includes('offset') ? values.find(i => i.includes('offset')).replaceAll(' ', '-') : null;
+    const { up, columns, offset } = handleUps(value, values, section);
     children.forEach((child, i) => {
-      child.classList.add(`col-${getCol(i)}`);
+      child.classList.add(`col-${columns[i] ?? columns[0]}`);
       if (up && offset && i % parseInt(up.replace(' up', '')) == 0) child.classList.add(offset);
     });
   }
