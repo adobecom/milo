@@ -9,10 +9,10 @@
   ],
   "plugins": [
     {
-      "id": "translate",
-      "title": "Translate",
+      "id": "localize",
+      "title": "Localize",
       "environments": [ "edit" ],
-      "url": "/tools/translation/index.html",
+      "url": "/tools/loc/index.html",
       "passReferrer": true,
       "include_paths": [ "**.xlsx**" ]
     },
