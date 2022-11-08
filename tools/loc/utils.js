@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-const status = document.getElementById('status');
 const loading = document.getElementById('loading');
 const STATUS_LEVELS = ['level-0', 'level-4'];
 const MAX_RETRIES = 5;
@@ -28,6 +27,7 @@ export function getPathFromUrl(url) {
 }
 
 export function setStatus(msg, level = 'level-4') {
+  const status = document.getElementById('status');
   status.classList.remove(STATUS_LEVELS.filter((l) => l !== level));
   status.classList.add(level);
   status.innerHTML = msg;
