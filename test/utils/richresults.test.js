@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { loadArea } from '../../libs/utils/utils.js';
+import { loadArea } from '../../libs/utils/utils.js'; //
 
 describe('Rich Results', () => {
   beforeEach(async () => {
