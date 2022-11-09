@@ -21,33 +21,16 @@ function handleStyle(div, section, customs = []) {
   }
 }
 
-function colsAutoOffset(cols) {
-  let offsets = {};
-  const total = cols.reduce((a, b) => parseInt(a) + parseInt(b), 0);
-  if (total > 12) {
-    let rowSum = 0, rowStart = 0;
-    cols.forEach((col, idx, arr) => {
-      const sum = rowSum + parseInt(col, 10);
-      if (sum < 12) rowSum = sum;
-      else if (sum == 12) rowSum = 0, rowStart = idx + 1;
-      else if (sum > 12) rowSum = parseInt(col, 10), rowStart = idx;
-      if (sum > 12 || sum < 12 && idx === arr.length - 1) offsets[rowStart] = (12 - rowSum) / 2;
-    });
-  } else if (total < 12) {
-    offsets[0] = (12 - total) / 2;
-  }
-  return offsets;
-}
-
-function handleColumns(value, values, section) {
-  if (!value.includes('up')) return { columns: values, offsets: colsAutoOffset(values) };
+function handleColumns(value, values) {
+  if (!value.includes('up')) return { columns: values, offset: null, upClass: null };
   const ups = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
   const up = values.find(i => i.includes('up'));
   const colSpan = ups[up.replace(' up', '')];
-  const sectionClass = Object.keys(ups).filter(key => ups[key] === colSpan);
-  section.classList.add(`${sectionClass[1]}-up`);
-  const spans = Array(parseInt(sectionClass[0])).fill(colSpan);
-  return { columns: [colSpan], offsets: colsAutoOffset(spans) };
+  return {
+    upClass: `${Object.keys(ups).filter(key => ups[key] === colSpan)[1]}-up`,
+    columns: [colSpan],
+    offset: colSpan == 2 ? 5 : null
+  };
 }
 
 function handleGridColumns(div, section) {
@@ -55,10 +38,11 @@ function handleGridColumns(div, section) {
   const values = value.split(', ');
   const gridItems = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
   if (gridItems.length) {
-    const { columns, offsets } = handleColumns(value, values, section);
+    const { columns, offset, upClass } = handleColumns(value, values);
+    if (upClass) section.classList.add([upClass]);
     gridItems.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
-      if (offsets[i]) col.classList.add(`offset-${offsets[i]}`);
+      if (offset && i % offset == 0) col.classList.add(`offset-desktop`);
     });
   }
 }

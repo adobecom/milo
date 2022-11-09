@@ -102,12 +102,6 @@
   line-height: 21px;
 }
 
-@media screen and (max-width: 600px) {
-  .section.grid.five-up {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-}
-
 @media screen and (min-width: 600px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
