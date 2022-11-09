@@ -513,6 +513,7 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
+    if (getMetadata('richresults')) import('../features/richresults.js');
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
