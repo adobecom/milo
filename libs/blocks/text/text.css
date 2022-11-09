@@ -101,9 +101,17 @@ div[class*="-up"] .text-block > div > *:last-child { margin-bottom: var(--spacin
 /* Desktop */
 @media screen and (min-width: 1200px) {
 
-  .text-block.contained .foreground {
-    max-width: calc(var(--grid-column-width) * 8);
-  }
+  .span-1 .foreground.container { max-width: calc(var(--grid-column-width) * 1); }
+  .span-2 .foreground.container { max-width: calc(var(--grid-column-width) * 2); }
+  .span-3 .foreground.container { max-width: calc(var(--grid-column-width) * 3); }
+  .span-4 .foreground.container { max-width: calc(var(--grid-column-width) * 4); }
+  .span-5 .foreground.container { max-width: calc(var(--grid-column-width) * 5); }
+  .span-6 .foreground.container { max-width: calc(var(--grid-column-width) * 6); }
+  .span-7 .foreground.container { max-width: calc(var(--grid-column-width) * 7); }
+  .span-8 .foreground.container { max-width: calc(var(--grid-column-width) * 8); }
+  .span-9 .foreground.container { max-width: calc(var(--grid-column-width) * 9); }
+  .span-10 .foreground.container { max-width: calc(var(--grid-column-width) * 10); }
+  .span-11 .foreground.container { max-width: calc(var(--grid-column-width) * 11); }
 
   /*.two-up .text-block .container {*/
   /*  max-width: calc(var(--grid-column-width) * 10);*/
