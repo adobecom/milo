@@ -424,29 +424,29 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
-    const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
 
-    if (profileDropDown) {
+    const signInEl = dropDown?.querySelector('li:last-of-type a') || profileEl;
+
+    if (dropDown) {
       const id = `navmenu-${blockEl.className}`;
 
-      profileDropDown.id = id;
+      dropDown.id = id;
       profileEl.classList.add('gnav-navitem');
-      profileEl.append(signIn);
-      profileEl.insertAdjacentElement('beforeend', profileDropDown);
+      profileEl.insertAdjacentElement('beforeend', dropDown);
 
-      this.decorateMenu(profileEl, signIn, profileDropDown);
+      this.decorateMenu(profileEl, signIn, dropDown);
       this.setNavLinkAttributes(id, signIn);
-    } else {
-      profileEl.append(signIn);
-      profileEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.adobeIMS.signIn();
-      });
     }
+    signInEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.adobeIMS.signIn();
+    });
+    profileEl.append(signIn);
   };
 
   setBreadcrumbSEO = () => {

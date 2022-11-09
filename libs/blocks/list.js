@@ -7,7 +7,6 @@ const blocks = [
   'fragment',
   'how-to',
   'modal',
-  'marquee',
   'review',
 ];
 
