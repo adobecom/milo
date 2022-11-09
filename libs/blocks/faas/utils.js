@@ -224,6 +224,33 @@ const afterYiiLoadedCallback = () => {
 };
 /* c8 ignore stop */
 
+const afterSubmitCallback = () => {
+  // Adobe Analytics Sandbox
+  const firstName = document.getElementById('Form79_8');
+  const lastName = document.getElementById('Form79_9');
+  const email = document.getElementById('Form79_1');
+  const country = document.getElementById('Form79_14');
+
+  // ToDo: Fix why the request is getting canceled
+  fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
+    method: 'POST',
+    body: JSON.stringify({
+      first_name: firstName.value,
+      last_name: lastName.value,
+      email: email.value,
+      university: 'none',
+      country: country.value
+    })
+  })
+  .then((response) => response.json())
+  .then((data) => {
+    console.log('Success:', data);
+  })
+  .catch((error) => {
+    console.error('AA Sandbox Error:', error);
+  })
+};
+
 export const makeFaasConfig = (targetState) => {
   if (!targetState) {
     state = defaultState;
@@ -257,7 +284,10 @@ export const makeFaasConfig = (targetState) => {
         94: targetState.pjs94,
       },
     },
-    e: { afterYiiLoadedCallback },
+    e: { 
+      afterYiiLoadedCallback, 
+      afterSubmitCallback,
+    }
   };
 
   // b2bpartners
@@ -301,7 +331,7 @@ export const initFaas = (config, targetEl) => {
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
-    state.e = { afterYiiLoadedCallback };
+    state.e = { afterYiiLoadedCallback, afterSubmitCallback };
     $(formEl).faas(state);
   } else {
     makeFaasConfig(config);
