@@ -90,7 +90,7 @@ export default function init(el) {
       handleBackground(valueDiv, section);
     }
     if (keyDiv === 'grid') {
-      let styles = ['grid'];
+      const styles = ['grid'];
       if (!keys.includes('columns')) styles.push('auto-cols');
       handleStyle(valueDiv, section, styles);
     }
