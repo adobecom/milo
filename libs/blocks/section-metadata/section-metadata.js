@@ -12,30 +12,30 @@ function handleBackground(div, section) {
   }
 }
 
-function handleStyle(div, section, keyDivs) {
-  const configs = [...keyDivs].map(div => (div.textContent.toLowerCase())).join(' ');
-  const value = div.textContent.toLowerCase();
-  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+function handleStyle(div, section, customs = []) {
+  const value = div.textContent?.toLowerCase();
+  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-')).filter(i => i !== '');
   if (section) {
-    if (configs.includes('grid')) styles = [...styles, 'grid'];
-    if (!configs.includes('columns')) styles = [...styles, 'auto-cols'];
-    section.classList.add(...styles);
+    if (customs.length) styles = [...styles, ...customs];
+    section.classList.add(...styles.filter(i => i !== ''));
   }
 }
 
 function colsAutoOffset(cols) {
-  let offsets = [];
+  let offsets = {};
   const total = cols.reduce((a, b) => parseInt(a) + parseInt(b), 0);
   if (total > 12) {
-    let rowSum = 0, startIndex = 0;
-    cols.forEach((col, index, array) => {
+    let rowSum = 0, rowStart = 0;
+    cols.forEach((col, idx, arr) => {
       const sum = rowSum + parseInt(col, 10);
       if (sum < 12) rowSum = sum;
-      else if (sum == 12) rowSum = 0, startIndex = index + 1;
-      else if (sum > 12) rowSum = parseInt(col, 10), startIndex = index;
-      if (sum > 12 || sum < 12 && index === array.length - 1) offsets.push(startIndex);
+      else if (sum == 12) rowSum = 0, rowStart = idx + 1;
+      else if (sum > 12) rowSum = parseInt(col, 10), rowStart = idx;
+      if (sum > 12 || sum < 12 && idx === arr.length - 1) offsets[rowStart] = (12 - rowSum) / 2;
     });
-  } else if (total < 12) offsets.push(0);
+  } else if (total < 12) {
+    offsets[0] = (12 - total) / 2;
+  }
   return offsets;
 }
 
@@ -58,7 +58,7 @@ function handleGridColumns(div, section) {
     const { columns, offsets } = handleColumns(value, values, section);
     gridItems.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
-      if (offsets?.includes(i)) col.classList.add('offset');
+      if (offsets[i]) col.classList.add(`offset-${offsets[i]}`);
     });
   }
 }
@@ -79,17 +79,20 @@ export default function init(el) {
   const section = el.closest('.section');
   if (!section) return;
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
+  const keys = [...keyDivs].map(div => (div.textContent.toLowerCase())).join(' ');
   keyDivs.forEach((div) => {
     const keyDiv = div.textContent.toLowerCase();
     const valueDiv = div.nextElementSibling;
     if (keyDiv === 'style' && valueDiv.textContent) {
-      handleStyle(valueDiv, section, keyDivs);
+      handleStyle(valueDiv, section);
     }
     if (keyDiv === 'background') {
       handleBackground(valueDiv, section);
     }
-    if (keyDiv === 'grid' && valueDiv.textContent) {
-      handleStyle(valueDiv, section, keyDivs);
+    if (keyDiv === 'grid') {
+      let styles = ['grid'];
+      if (!keys.includes('columns')) styles.push('auto-cols');
+      handleStyle(valueDiv, section, styles);
     }
     if (keyDiv === 'columns' && valueDiv.textContent) {
       handleGridColumns(valueDiv, section);

@@ -253,8 +253,24 @@
     grid-column: auto / span 12;
   }
 
-  .section.grid .offset {
+  .section.grid .offset-1 {
     grid-column-start: 2;
+  }
+
+  .section.grid .offset-2 {
+    grid-column-start: 3;
+  }
+
+  .section.grid .offset-3 {
+    grid-column-start: 4;
+  }
+
+  .section.grid .offset-4 {
+    grid-column-start: 5;
+  }
+
+  .section.grid .offset-5 {
+    grid-column-start: 6;
   }
 
 }
