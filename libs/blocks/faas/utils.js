@@ -11,7 +11,8 @@ const { env, miloLibs, codeRoot } = getConfig();
 let state;
 
 export const getFaasHostSubDomain = (environment) => {
-  const faasEnv = environment ?? env.name;
+  // const faasEnv = environment ?? env.name;
+  const faasEnv = 'dev';
   // TODO: prod should be updated as '' when QA is done from FAAS team.
   if (faasEnv === 'prod') {
     return '';
@@ -29,9 +30,9 @@ const base = miloLibs || codeRoot;
 
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-if (env.name === 'local') {
-  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
-}
+// if (env.name === 'local') {
+//   faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
+// }
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
@@ -226,29 +227,31 @@ const afterYiiLoadedCallback = () => {
 
 const afterSubmitCallback = () => {
   // Adobe Analytics Sandbox
-  const firstName = document.getElementById('Form79_8');
-  const lastName = document.getElementById('Form79_9');
-  const email = document.getElementById('Form79_1');
-  const country = document.getElementById('Form79_14');
+  if (window.location.search?.includes('faas-post-submit=aa-sandbox')) {
+    const firstName = document.querySelector('.FaaS-8 input');
+    const lastName = document.querySelector('.FaaS-9 input');
+    const email = document.querySelector('.FaaS-1 input');
+    const country = document.querySelector('.FaaS-14 select');
 
-  // ToDo: Fix why the request is getting canceled
-  fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
-    method: 'POST',
-    body: JSON.stringify({
-      first_name: firstName.value,
-      last_name: lastName.value,
-      email: email.value,
-      university: 'none',
-      country: country.value
+    // ToDo: Fix why the request is getting canceled
+    fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
+      method: 'POST',
+      body: JSON.stringify({
+        first_name: firstName.value,
+        last_name: lastName.value,
+        email: email.value,
+        university: 'none',
+        country: country.value
+      })
     })
-  })
-  .then((response) => response.json())
-  .then((data) => {
-    console.log('Success:', data);
-  })
-  .catch((error) => {
-    console.error('AA Sandbox Error:', error);
-  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('AA Sandbox Error:', error);
+    })
+  }
 };
 
 export const makeFaasConfig = (targetState) => {
