@@ -23,17 +23,19 @@ function handleStyle(div, section, keyDivs) {
   }
 }
 
+function colsOffset(cols) {
+  return cols.reduce((a, b) => parseInt(a) + parseInt(b), 0) == 12 ? null : cols.length;
+}
+
 function handleColumns(value, values, section) {
-  if (!value.includes('up')) return { up: null, columns: values, offset: null };
+  if (!value.includes('up')) return { columns: values, offset: colsOffset(values) };
   let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
-  const offset = value.includes('offset') ? values.find(val => val.includes('offset')).replaceAll(' ', '-') : null;
-  if (offset) upConfig = { ...upConfig, ...{ 'two': 5, 2: 5 } };
   const up = values.find(i => i.includes('up'));
   const colSpan = upConfig[up.replace(' up', '')];
-  // allowing block level overrides by setting the section up-class
   const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
-  return { up, columns: [colSpan], offset };
+  const spans = Array(parseInt(sectionClass[0])).fill(colSpan);
+  return { columns: [colSpan], offset: colsOffset(spans) };
 }
 
 function handleGridColumns(div, section) {
@@ -41,10 +43,10 @@ function handleGridColumns(div, section) {
   const values = value.split(', ');
   const gridCols = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
   if (gridCols.length) {
-    const { up, columns, offset } = handleColumns(value, values, section);
+    const { columns, offset } = handleColumns(value, values, section);
     gridCols.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
-      if (up && offset && i % parseInt(up.replace(' up', '')) == 0) col.classList.add(offset);
+      if (offset && i % offset == 0) col.classList.add('offset');
     });
   }
 }
