@@ -428,11 +428,6 @@ export async function loadDeferred(area) {
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
-  const type = getMetadata('richresults');
-  if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-    const { addRichResults } = await import('../features/richresults.js');
-    addRichResults(type, { createTag, getMetadata });
-  }
 }
 
 /**
@@ -493,7 +488,11 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    if (getMetadata('richresults')) import('../features/richresults.js');
+    const type = getMetadata('richresults');
+    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+      const { addRichResults } = await import('../features/richresults.js');
+      addRichResults(type, { createTag, getMetadata });
+    }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
