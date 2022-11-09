@@ -69,6 +69,7 @@ const ENVS = {
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
   },
 };
+const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -421,38 +422,17 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-function setPageSEO(type) {
-  switch (type) {
-    case 'NewsArticle':
-      setNewsArticleSEO();
-  }
-}
-
-export function setNewsArticleSEO() {
-  const newsArticle = {
-    '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
-    headLine: getMetadata('og:title'),
-    image: getMetadata('og:image'),
-    datePublished: getMetadata('published'),
-    dateModified: getMetadata('modified'),
-    author: {
-      '@type': 'Person',
-      name: getMetadata('authorname'),
-      url: getMetadata('authorurl'),
-    },
-  };
-  const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(newsArticle));
-  document.head.append(script);
-}
-
 export async function loadDeferred(area) {
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
-  setPageSEO(getMetadata('richresultstype'));
+  const type = getMetadata('richresults');
+  if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+    const { addRichResults } = await import('../features/richresults.js');
+    addRichResults(type, { createTag, getMetadata });
+  }
 }
 
 /**
