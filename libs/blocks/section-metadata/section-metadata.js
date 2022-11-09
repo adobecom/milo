@@ -24,28 +24,34 @@ function handleStyle(div, section, keyDivs) {
 }
 
 function colsAutoOffset(cols) {
-  let offset = cols.length;
+  let offsets = [];
   const total = cols.reduce((a, b) => parseInt(a) + parseInt(b), 0);
   if (total > 12) {
-    let i = 0;
-    for (const col of cols) {
-      const addCol = i + parseInt(col);
-      if (addCol < 12) i = addCol;
-      else offset = cols.indexOf(col) + 1;
-    }
-  }
-  return total == 12 ? null : offset;
+    let rowSum = 0, startIndex = 0;
+    cols.forEach((col, index, array) => {
+      const sum = rowSum + parseInt(col, 10);
+      if (sum < 12) {
+        rowSum = sum;
+        if (index === array.length - 1) offsets.push(startIndex);
+      } else if (sum > 12) {
+        offsets.push(startIndex);
+        rowSum = 0;
+        startIndex = index;
+      }
+    });
+  } else if (total < 12) offsets.push(0);
+  return offsets;
 }
 
 function handleColumns(value, values, section) {
-  if (!value.includes('up')) return { columns: values, offset: colsAutoOffset(values) };
+  if (!value.includes('up')) return { columns: values, offsets: colsAutoOffset(values) };
   let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
   const up = values.find(i => i.includes('up'));
   const colSpan = upConfig[up.replace(' up', '')];
   const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
   const spans = Array(parseInt(sectionClass[0])).fill(colSpan);
-  return { columns: [colSpan], offset: colsAutoOffset(spans) };
+  return { columns: [colSpan], offsets: colsAutoOffset(spans) };
 }
 
 function handleGridColumns(div, section) {
@@ -53,10 +59,10 @@ function handleGridColumns(div, section) {
   const values = value.split(', ');
   const gridCols = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
   if (gridCols.length) {
-    const { columns, offset } = handleColumns(value, values, section);
+    const { columns, offsets } = handleColumns(value, values, section);
     gridCols.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
-      if (offset && i % offset == 0) col.classList.add('offset');
+      if (offsets?.includes(i)) col.classList.add('offset');
     });
   }
 }

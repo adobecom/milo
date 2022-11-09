@@ -257,20 +257,4 @@
     grid-column-start: 2;
   }
 
-  /* .section.two-up {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .section.three-up {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .section.four-up {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .section.five-up {
-    grid-template-columns: repeat(5, 1fr);
-  } */
-
 }
