@@ -12,43 +12,53 @@ function handleBackground(div, section) {
   }
 }
 
-function handleStyle(div, section) {
-  const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+function handleStyle(div, section, customs = []) {
+  const value = div.textContent?.toLowerCase();
+  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-')).filter(i => i !== '');
   if (section) {
-    section.classList.add(...styles);
+    if (customs.length) styles = [...styles, ...customs];
+    section.classList.add(...styles.filter(i => i !== ''));
   }
 }
 
-function handleGrid(div, section) {
-  const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
-  if (section) {
-    section.classList.add('grid', ...styles);
+function colsAutoOffset(cols) {
+  let offsets = {};
+  const total = cols.reduce((a, b) => parseInt(a) + parseInt(b), 0);
+  if (total > 12) {
+    let rowSum = 0, rowStart = 0;
+    cols.forEach((col, idx, arr) => {
+      const sum = rowSum + parseInt(col, 10);
+      if (sum < 12) rowSum = sum;
+      else if (sum == 12) rowSum = 0, rowStart = idx + 1;
+      else if (sum > 12) rowSum = parseInt(col, 10), rowStart = idx;
+      if (sum > 12 || sum < 12 && idx === arr.length - 1) offsets[rowStart] = (12 - rowSum) / 2;
+    });
+  } else if (total < 12) {
+    offsets[0] = (12 - total) / 2;
   }
+  return offsets;
 }
 
 function handleColumns(value, values, section) {
-  if (!value.includes('up')) return { up: null, columns: values, offset: null };
-  let upConfig = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
-  const offset = value.includes('offset') ? values.find(val => val.includes('offset')).replaceAll(' ', '-') : null;
-  if (offset) upConfig = { ...upConfig, ...{ 'two': 5, 2: 5 } };
+  if (!value.includes('up')) return { columns: values, offsets: colsAutoOffset(values) };
+  const ups = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
   const up = values.find(i => i.includes('up'));
-  const colSpan = upConfig[up.replace(' up', '')];
-  const sectionClass = Object.keys(upConfig).filter(key => upConfig[key] === colSpan);
+  const colSpan = ups[up.replace(' up', '')];
+  const sectionClass = Object.keys(ups).filter(key => ups[key] === colSpan);
   section.classList.add(`${sectionClass[1]}-up`);
-  return { up, columns: [colSpan], offset };
+  const spans = Array(parseInt(sectionClass[0])).fill(colSpan);
+  return { columns: [colSpan], offsets: colsAutoOffset(spans) };
 }
 
 function handleGridColumns(div, section) {
   const value = div.textContent.toLowerCase();
   const values = value.split(', ');
-  const gridCols = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
-  if (gridCols.length) {
-    const { up, columns, offset } = handleColumns(value, values, section);
-    gridCols.forEach((col, i) => {
+  const gridItems = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
+  if (gridItems.length) {
+    const { columns, offsets } = handleColumns(value, values, section);
+    gridItems.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
-      if (up && offset && i % parseInt(up.replace(' up', '')) == 0) col.classList.add(offset);
+      if (offsets[i]) col.classList.add(`offset-${offsets[i]}`);
     });
   }
 }
@@ -69,6 +79,7 @@ export default function init(el) {
   const section = el.closest('.section');
   if (!section) return;
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
+  const keys = [...keyDivs].map(div => (div.textContent.toLowerCase())).join(' ');
   keyDivs.forEach((div) => {
     const keyDiv = div.textContent.toLowerCase();
     const valueDiv = div.nextElementSibling;
@@ -78,8 +89,10 @@ export default function init(el) {
     if (keyDiv === 'background') {
       handleBackground(valueDiv, section);
     }
-    if (keyDiv === 'grid' && valueDiv.textContent) {
-      handleGrid(valueDiv, section);
+    if (keyDiv === 'grid') {
+      let styles = ['grid'];
+      if (!keys.includes('columns')) styles.push('auto-cols');
+      handleStyle(valueDiv, section, styles);
     }
     if (keyDiv === 'columns' && valueDiv.textContent) {
       handleGridColumns(valueDiv, section);
