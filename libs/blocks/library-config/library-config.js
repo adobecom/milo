@@ -54,7 +54,7 @@ function getTable(block, name, path) {
 }
 
 async function loadBlockList(paths, list) {
-  paths.forEach(async (path) => {
+  for (const path of paths) {
     const resp = await fetch(path);
     if (!resp.ok) return;
     const json = await resp.json();
@@ -94,7 +94,7 @@ async function loadBlockList(paths, list) {
         list.append(item);
       });
     }
-  });
+  };
 }
 
 function stub(list) {
