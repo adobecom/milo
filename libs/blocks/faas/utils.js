@@ -243,10 +243,6 @@ const beforeSubmitCallback = () => {
         country: country.value
       })
     })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success:', data);
-    })
     .catch((error) => {
       console.error('AA Sandbox Error:', error);
     });
