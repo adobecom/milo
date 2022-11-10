@@ -14,17 +14,17 @@ function handleBackground(div, section) {
 
 function handleStyle(div, section, customs = []) {
   const value = div.textContent?.toLowerCase();
-  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-')).filter(i => i !== '');
+  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   if (section) {
     if (customs.length) styles = [...styles, ...customs];
     section.classList.add(...styles.filter(i => i !== ''));
   }
 }
 
-function handleColumns(value, values) {
-  if (!value.includes('up')) return { columns: values, offset: null, upClass: null };
+function handleColumns(gridCols) {
+  const up = gridCols.find(i => i.includes('up'));
+  if (!up) return { columns: gridCols, offset: null, upClass: null };
   const ups = { 'two': 6, 'three': 4, 'four': 3, 'five': 2, 2: 6, 3: 4, 4: 3, 5: 2 };
-  const up = values.find(i => i.includes('up'));
   const colSpan = ups[up.replace(' up', '')];
   return {
     upClass: `${Object.keys(ups).filter(key => ups[key] === colSpan)[1]}-up`,
@@ -35,10 +35,10 @@ function handleColumns(value, values) {
 
 function handleGridColumns(div, section) {
   const value = div.textContent.toLowerCase();
-  const values = value.split(', ');
+  const colsConfig = value.split(', ');
   const gridItems = [...section.children].filter(c => !c.classList.contains('section-metadata') && !c.classList.contains('fill-row'));
   if (gridItems.length) {
-    const { columns, offset, upClass } = handleColumns(value, values);
+    const { columns, offset, upClass } = handleColumns(colsConfig);
     if (upClass) section.classList.add([upClass]);
     gridItems.forEach((col, i) => {
       col.classList.add(`col-${columns[i] ?? columns[0]}`);
@@ -63,7 +63,7 @@ export default function init(el) {
   const section = el.closest('.section');
   if (!section) return;
   const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
-  const keys = [...keyDivs].map(div => (div.textContent.toLowerCase())).join(' ');
+  const hasColumns = [...keyDivs].some((div) => div.textContent.toLowerCase() === 'columns');
   keyDivs.forEach((div) => {
     const keyDiv = div.textContent.toLowerCase();
     const valueDiv = div.nextElementSibling;
@@ -75,7 +75,7 @@ export default function init(el) {
     }
     if (keyDiv === 'grid') {
       const styles = ['grid'];
-      if (!keys.includes('columns')) styles.push('auto-cols');
+      if (!hasColumns) styles.push('auto-cols');
       handleStyle(valueDiv, section, styles);
     }
     if (keyDiv === 'columns' && valueDiv.textContent) {
