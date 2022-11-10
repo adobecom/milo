@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateButtons, decorateVideo } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const asideTypes = ['inline', 'notification'];
