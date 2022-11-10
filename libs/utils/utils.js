@@ -90,13 +90,12 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-// find out current locale based on pathname and existing locales object from config.
 export function getLocaleFromPath(locales, path) {
   const split = path.split('/');
   const localeString = split[1];
   const locale = locales[localeString] || locales[''];
   if (localeString === 'langstore') {
-    locale.prefix = split.length >= 3 ? `/${localeString}/${split[2]}` : '';
+    locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
   locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;

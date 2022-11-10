@@ -21,7 +21,7 @@ let decoratedConfig;
 async function fetchConfigJson(configPath) {
   const configResponse = await fetch(configPath);
   if (!configResponse.ok) {
-    throw new Error('Config not found!!');
+    throw new Error('Config not found!');
   }
   return configResponse.json();
 }

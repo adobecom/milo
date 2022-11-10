@@ -199,7 +199,6 @@ describe('Utils', () => {
     validateLocale('/page', { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' });
     validateLocale('/be_fr', { prefix: '/be_fr', ietf: 'fr-BE', tk: 'vrk5vyv.css' });
     validateLocale('/be_fr/page', { prefix: '/be_fr', ietf: 'fr-BE', tk: 'vrk5vyv.css' });
-    validateLocale('/langstore', { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' });
     validateLocale('/langstore/lv', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
   });
