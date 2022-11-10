@@ -172,52 +172,48 @@
 
 /* Align */
 [data-con-block].left{ text-align: left; }
-
 [data-con-block].right{ text-align: right; }
 
 /* Max width util */
-[data-con-block].max-width-100 .container { max-width: 100px; }
-[data-con-block].max-width-200 .container { max-width: 200px; }
-[data-con-block].max-width-300 .container { max-width: 300px; }
-[data-con-block].max-width-400 .container { max-width: 400px; }
-[data-con-block].max-width-500 .container { max-width: 500px; }
-[data-con-block].max-width-600 .container { max-width: 600px; }
-[data-con-block].max-width-700 .container { max-width: 700px; }
-[data-con-block].max-width-800 .container { max-width: 800px; }
-[data-con-block].max-width-900 .container { max-width: 900px; }
-[data-con-block].max-width-1000 .container { max-width: 1000px; }
-[data-con-block].max-width-1100 .container { max-width: 1100px; }
-[data-con-block].max-width-1200 .container { max-width: 1200px; }
+[data-con-block].span-1 .container { max-width: 100px; }
+[data-con-block].span-2 .container { max-width: 200px; }
+[data-con-block].span-3 .container { max-width: 300px; }
+[data-con-block].span-4 .container { max-width: 400px; }
+[data-con-block].span-5 .container { max-width: 500px; }
+[data-con-block].span-6 .container { max-width: 600px; }
+[data-con-block].span-7 .container { max-width: 700px; }
+[data-con-block].span-8 .container { max-width: 800px; }
+[data-con-block].span-9 .container { max-width: 900px; }
+[data-con-block].span-10 .container { max-width: 1000px; }
+[data-con-block].span-11 .container { max-width: 1100px; }
 
 /* Tablet up */
 @media screen and (min-width: 600px) {
-  [data-con-block].max-width-100-tablet .container { max-width: 100px; }
-  [data-con-block].max-width-200-tablet .container { max-width: 200px; }
-  [data-con-block].max-width-300-tablet .container { max-width: 300px; }
-  [data-con-block].max-width-400-tablet .container { max-width: 400px; }
-  [data-con-block].max-width-500-tablet .container { max-width: 500px; }
-  [data-con-block].max-width-600-tablet .container { max-width: 600px; }
-  [data-con-block].max-width-700-tablet .container { max-width: 700px; }
-  [data-con-block].max-width-800-tablet .container { max-width: 800px; }
-  [data-con-block].max-width-900-tablet .container { max-width: 900px; }
-  [data-con-block].max-width-1000-tablet .container { max-width: 1000px; }
-  [data-con-block].max-width-1100-tablet .container { max-width: 1100px; }
-  [data-con-block].max-width-1200-tablet .container { max-width: 1200px; }
+  [data-con-block].span-1-tablet .container { max-width: 100px; }
+  [data-con-block].span-2-tablet .container { max-width: 200px; }
+  [data-con-block].span-3-tablet .container { max-width: 300px; }
+  [data-con-block].span-4-tablet .container { max-width: 400px; }
+  [data-con-block].span-5-tablet .container { max-width: 500px; }
+  [data-con-block].span-6-tablet .container { max-width: 600px; }
+  [data-con-block].span-7-tablet .container { max-width: 700px; }
+  [data-con-block].span-8-tablet .container { max-width: 800px; }
+  [data-con-block].span-9-tablet .container { max-width: 900px; }
+  [data-con-block].span-10-tablet .container { max-width: 1000px; }
+  [data-con-block].span-11-tablet .container { max-width: 1100px; }
 }
 
 /* Desktop up */
 @media (min-width: 1200px) {
-  [data-con-block].max-width-100-desktop .container { max-width: 100px; }
-  [data-con-block].max-width-200-desktop .container { max-width: 200px; }
-  [data-con-block].max-width-300-desktop .container { max-width: 300px; }
-  [data-con-block].max-width-400-desktop .container { max-width: 400px; }
-  [data-con-block].max-width-500-desktop .container { max-width: 500px; }
-  [data-con-block].max-width-600-desktop .container { max-width: 600px; }
-  [data-con-block].max-width-700-desktop .container { max-width: 700px; }
-  [data-con-block].max-width-800-desktop .container { max-width: 800px; }
-  [data-con-block].max-width-900-desktop .container { max-width: 900px; }
-  [data-con-block].max-width-1000-desktop .container { max-width: 1000px; }
-  [data-con-block].max-width-1100-desktop .container { max-width: 1100px; }
-  [data-con-block].max-width-1200-desktop .container { max-width: 1200px; }
+  [data-con-block].span-1-desktop .container { max-width: 100px; }
+  [data-con-block].span-2-desktop .container { max-width: 200px; }
+  [data-con-block].span-3-desktop .container { max-width: 300px; }
+  [data-con-block].span-4-desktop .container { max-width: 400px; }
+  [data-con-block].span-5-desktop .container { max-width: 500px; }
+  [data-con-block].span-6-desktop .container { max-width: 600px; }
+  [data-con-block].span-7-desktop .container { max-width: 700px; }
+  [data-con-block].span-8-desktop .container { max-width: 800px; }
+  [data-con-block].span-9-desktop .container { max-width: 900px; }
+  [data-con-block].span-10-desktop .container { max-width: 1000px; }
+  [data-con-block].span-11-desktop .container { max-width: 1100px; }
 }
 

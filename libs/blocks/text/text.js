@@ -52,9 +52,8 @@ export default function init(el) {
   let classList = 'foreground';
   if (el.classList.contains('contained')) {
     classList = classList + ' container';
-    // const spanClass = el.classList.contains('span-8', 'span-10');
-    // if (spanClass) classList = classList + spanClass;
   };
+
   const container = createTag('div', { class: classList });
   if (rows.length > 1) {
     decorateBlockBg(el, rows[0]);
