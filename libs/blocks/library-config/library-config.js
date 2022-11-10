@@ -129,9 +129,17 @@ async function loadList(type, list) {
 export default function init(el) {
   const librarEls = el.querySelectorAll('a');
 
-  const paths = [...librarEls].map((lib) => { return lib.href; });
+  const blockPaths = [...librarEls].map((lib) => { return lib.href; });
 
-  const libraries = [ { text: 'Blocks', paths } ];
+  const { searchParams: sp } = new URL(window.location.href);
+  const additionalBlockLibs = sp.getAll('blocks')
+    .map((lib) => {
+      if (lib.startsWith('http')) return lib;
+      return `https://${lib}.hlx.page/docs/library/blocks.json`;
+    });
+  blockPaths.push(...additionalBlockLibs);
+
+  const libraries = [ { text: 'Blocks', paths: blockPaths } ];
 
   el.querySelector('div').remove();
 
