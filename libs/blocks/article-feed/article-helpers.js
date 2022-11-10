@@ -205,23 +205,6 @@ export function formatCardLocaleDate(date) {
 }
 
 /**
- * fetches the string variables.
- * @returns {object} localized variables
- */
-
-export async function fetchPlaceholders() {
-  if (!window.placeholders) {
-    window.placeholders = {};
-    fetch(`${getPrefix()}/placeholders.json`)
-      .then((response) => response.json())
-      .then((json) => json.data.forEach((placeholder) => {
-        window.placeholders[placeholder.Key] = placeholder.Text;
-      }));
-  }
-  return window.placeholders;
-}
-
-/**
  * Returns a picture element with webp and fallbacks
  * @param {string} src The image URL
  * @param {boolean} eager load image eager
