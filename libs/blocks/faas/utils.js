@@ -11,8 +11,7 @@ const { env, miloLibs, codeRoot } = getConfig();
 let state;
 
 export const getFaasHostSubDomain = (environment) => {
-  // const faasEnv = environment ?? env.name;
-  const faasEnv = 'dev';
+  const faasEnv = environment ?? env.name;
   // TODO: prod should be updated as '' when QA is done from FAAS team.
   if (faasEnv === 'prod') {
     return '';
@@ -30,9 +29,9 @@ const base = miloLibs || codeRoot;
 
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
 let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-// if (env.name === 'local') {
-//   faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
-// }
+if (env.name === 'local') {
+  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
+}
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
@@ -225,7 +224,8 @@ const afterYiiLoadedCallback = () => {
 };
 /* c8 ignore stop */
 
-const afterSubmitCallback = () => {
+/* c8 ignore start */
+const beforeSubmitCallback = () => {
   // Adobe Analytics Sandbox
   if (window.location.search?.includes('faas-post-submit=aa-sandbox')) {
     const firstName = document.querySelector('.FaaS-8 input');
@@ -233,7 +233,6 @@ const afterSubmitCallback = () => {
     const email = document.querySelector('.FaaS-1 input');
     const country = document.querySelector('.FaaS-14 select');
 
-    // ToDo: Fix why the request is getting canceled
     fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
       method: 'POST',
       body: JSON.stringify({
@@ -250,9 +249,10 @@ const afterSubmitCallback = () => {
     })
     .catch((error) => {
       console.error('AA Sandbox Error:', error);
-    })
+    });
   }
 };
+/* c8 ignore stop */
 
 export const makeFaasConfig = (targetState) => {
   if (!targetState) {
@@ -289,7 +289,7 @@ export const makeFaasConfig = (targetState) => {
     },
     e: { 
       afterYiiLoadedCallback, 
-      afterSubmitCallback,
+      beforeSubmitCallback,
     }
   };
 
@@ -334,7 +334,7 @@ export const initFaas = (config, targetEl) => {
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
-    state.e = { afterYiiLoadedCallback, afterSubmitCallback };
+    state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
     makeFaasConfig(config);
