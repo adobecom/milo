@@ -8,9 +8,9 @@ import {
 } from './article-helpers.js';
 
 import { createTag, getConfig } from '../../utils/utils.js';
-import PLACEHOLDERS from '../../features/placeholders.js';
+import { replaceKey } from '../../features/placeholders.js';
 
-const replacePlaceholder = async (key) => PLACEHOLDERS.keyReplace(key, getConfig());
+const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
 /**
  * Sanitizes a name for use as class name.

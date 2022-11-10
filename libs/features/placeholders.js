@@ -1,43 +1,30 @@
-const PLACEHOLDERS = (function get() {
-  const placeholdersMap = {};
-  let isFetching = false;
+const placeholders = {};
+let fetched = false;
 
-  async function fetchPlaceholders(config) {
-    isFetching = true;
-    const path = `${config.locale.contentRoot}/placeholders.json`;
-    return fetch(path).then(async (response) => {
-      isFetching = false;
-      const json = response.ok ? await response.json() : { data: [] };
-      json.data.forEach((item) => {
-        placeholdersMap[item.key] = item.value;
-      });
-      Promise.resolve(placeholdersMap);
-    });
-  }
+const fetchPlaceholders = (config) => new Promise(async (resolve) => {
+  if (fetched) { resolve(placeholders); return; }
+  const path = `${config.locale.contentRoot}/placeholders.json`;
+  const resp = await fetch(path);
+  const json = resp.ok ? await resp.json() : { data: [] };
+  json.data.forEach(item => {
+    placeholders[item.key] = item.value;
+  });
+  fetched = true;
+  resolve(placeholders);
+});
 
-  async function getPlaceholders(config) {
-    if (Object.keys(placeholdersMap).length === 0 && !isFetching) {
-      await fetchPlaceholders(config);
-    }
+function findPlaceholder(placeholders, key) {
+  return placeholders[key] || key.replaceAll('-', ' ');
+}
 
-    return Promise.resolve(placeholdersMap);
-  }
-
-  function findPlaceholder(placeholders, key) {
-    return placeholders[key] || key.replaceAll('-', ' ');
-  }
-
-  async function regExReplace(config, regex, html) {
-    const placeholders = await getPlaceholders(config);
-    return html.replaceAll(regex, (_, key) => findPlaceholder(placeholders, key));
-  }
-
-  async function keyReplace(key, config) {
-    const placeholders = await getPlaceholders(config);
+export async function replaceText(config, regex, text) {
+  const placeholders = await fetchPlaceholders(config);
+  return text.replaceAll(regex, (_, key) => {
     return findPlaceholder(placeholders, key);
-  }
+  });
+}
 
-  return { findPlaceholder, regExReplace, keyReplace };
-}());
-
-export default PLACEHOLDERS;
+export async function replaceKey(key, config) {
+  const placeholders = await fetchPlaceholders(config);
+  return findPlaceholder(placeholders, key);
+}
