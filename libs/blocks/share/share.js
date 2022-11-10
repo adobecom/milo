@@ -13,10 +13,13 @@ export async function getSVGsfromFile(path, selectors) {
     const svg = doc.querySelector('svg');
     if (svg) return [{ svg }];
     return null;
+  } else if (!(selectors instanceof Array)) {
+    selectors = [selectors];
   }
 
   return selectors.map((selector) => {
     const symbol = doc.querySelector(`#${selector}`);
+    if (!symbol) return null;
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     while (symbol.firstChild) svg.appendChild(symbol.firstChild);
     [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));

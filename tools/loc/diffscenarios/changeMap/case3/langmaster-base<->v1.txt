@@ -1,0 +1,62 @@
+{
+  "dataType": "Map",
+  "value": [
+    ["e99613456e0b85ce5e8ecd78b8e804b0c2559caf", { "op": "added" }],
+    ["7825c452610d21ca7bc869199f3102f13f631fe6", { "op": "deleted" } ]
+    ["ee2b478bbcdc7972a416b3b3319e4fe8f8666555", { "op": "added" } ]
+    ["84cb1fd9b2e89354092f6db14cdef9da62facdf4", { "op": "added" } ]
+}
+
+Hash To Content Info
+[
+    [
+        "84cb1fd9b2e89354092f6db14cdef9da62facdf4",
+        {
+            "type": "paragraph",
+            "children": [
+                {
+                    "type": "text",
+                    "value": "No Change"
+                }
+            ]
+        }
+    ],
+    [
+        "7825c452610d21ca7bc869199f3102f13f631fe6",
+        {
+            "type": "html",
+            "value": "<table>\n  <tr>\n    <td colspan=\"2\">Columns (contained)</td>\n  </tr>\n  <tr>\n    <td>Column 1</td>\n    <td>Column 2</td>\n  </tr>\n</table>"
+        }
+    ],
+    [
+        "e99613456e0b85ce5e8ecd78b8e804b0c2559caf",
+        {
+            "type": "paragraph",
+            "children": [
+                {
+                    "type": "text",
+                    "value": "Edited"
+                }
+            ]
+        }
+    ],
+    [
+        "ee2b478bbcdc7972a416b3b3319e4fe8f8666555",
+        {
+            "type": "html",
+            "value": "<table>\n  <tr>\n    <td colspan=\"2\">List</td>\n  </tr>\n  <tr>\n    <td>List 1</td>\n    <td>List 2</td>\n  </tr>\n</table>"
+        }
+    ],
+    [
+        "f893058b5cb47c2d7fd49c1243c457390591e3a8",
+        {
+            "type": "paragraph",
+            "children": [
+                {
+                    "type": "text",
+                    "value": "No Change*"
+                }
+            ]
+        }
+    ]
+]

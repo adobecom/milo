@@ -19,11 +19,18 @@ Common styles for faas form Dexter's
   display: none;
 }
 
-.faas h2 {
-  max-width: 460px;
-  font-size: 24px;
-  margin: 0 auto 1.25em;
+.faas-title {
+  margin-bottom: 1.25em;
+}
+
+.faas-title.text-center {
   text-align: center;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.faas-title.text-right {
+  text-align: right;
 }
 
 .faas-form .row {
@@ -256,13 +263,6 @@ input[type="checkbox"] + label {
   padding: 48px;
 }
 
-.faas.next h2 {
-  font-size: var(--type-body-s-size);
-  margin: 0;
-  max-width: 100%;
-  text-align: left;
-}
-
 .faas.next .faas-form {
   display: flex;
   flex-wrap: wrap;
@@ -349,14 +349,6 @@ input[type="checkbox"] + label {
   margin: 0 auto;
 }
 
-.dialog-modal .faas h2 {
-  font-size: 20px;
-  text-align: left;
-  margin: 0 auto 1em;
-  padding: 0 15px;
-  max-width: 620px;
-}
-
 .dialog-modal .faas .faas-form .row:not(.submit):not(.checkbox) {
   padding-bottom: .5rem;
   flex-direction: column;
@@ -382,10 +374,6 @@ input[type="checkbox"] + label {
 
 /* for mobile */
 @media (max-width:799.99px) {
-  .faas h2 {
-    font-size: 20px;
-  }
-
   .faas-form label,
   .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
   .faas-form select,
