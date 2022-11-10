@@ -133,11 +133,10 @@ async function showModal(details) {
 }
 
 export default async function loadGeoRouting(config, createTag, getMetadata) {
-  debugger;
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const storedInter = sessionStorage.getItem("international");
+  const storedInter = sessionStorage.getItem("international") || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const { contentRoot } = config;
