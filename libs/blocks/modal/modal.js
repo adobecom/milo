@@ -81,7 +81,7 @@ export async function getModal(el, custom) {
     }
   });
 
-  const content = el ? handleAnchorModal(el, dialog) : handleCustomModal(custom, dialog);
+  const content = custom ? handleCustomModal(custom, dialog) : handleAnchorModal(el, dialog);
 
   dialog.append(close, content);
   document.body.append(dialog);

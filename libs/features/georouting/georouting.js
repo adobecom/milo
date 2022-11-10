@@ -90,7 +90,9 @@ function buildLinks(locales, config, createTag) {
     wrapper.append(para);
     link.addEventListener('click', () => {
       const prefix = locale.prefix || 'us';
+      // set cookie so legacy code on adobecom still works properly.
       document.cookie = `international=${prefix};path=/`;
+      sessionStorage.setItem("international", prefix);
     });
   });
   fragment.append(wrapper);
@@ -131,11 +133,12 @@ async function showModal(details) {
 }
 
 export default async function loadGeoRouting(config, createTag, getMetadata) {
+  debugger;
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const cookieInter = getCookie('international');
-  const cookieLocale = cookieInter === 'us' ? '' : cookieInter;
+  const storedInter = sessionStorage.getItem("international");
+  const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const { contentRoot } = config;
   const resp = await fetch(`${contentRoot}georouting.json`);
@@ -145,10 +148,10 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   const urlGeoData = json.data.find(d => d.prefix === urlLocale);
   if (!urlGeoData) return;
 
-  if (cookieLocale || cookieLocale === '') {
+  if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
-    if (urlLocale.split('_')[0] !== cookieLocale.split('_')[0]) {
-      const localeMatches = json.data.filter(d => d.prefix === cookieLocale)
+    if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
+      const localeMatches = json.data.filter(d => d.prefix === storedLocale)
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
       if (details) { showModal(details); }
     }
