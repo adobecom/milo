@@ -3,7 +3,7 @@ export default function init({ loadScript, loadStyle }) {
   // manifest v3
   const sendToCaasListener = async (e) => {
     const { host, project, ref: branch, repo, owner } = e.detail.data.config;
-    const { sendToCaaS } = await import('../../tools/send-to-caas/send-to-caas.js');
+    const { sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/send-to-caas.js');
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   };
 
