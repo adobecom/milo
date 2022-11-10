@@ -1,5 +1,4 @@
 import {
-  fetchPlaceholders,
   getPrefix,
   stamp,
   getTaxonomyModule,
@@ -8,7 +7,10 @@ import {
   buildArticleCard,
 } from './article-helpers.js';
 
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import PLACEHOLDERS from '../../features/placeholders.js';
+
+const replacePlaceholder = async (key) => PLACEHOLDERS.keyReplace(key, getConfig());
 
 /**
  * Sanitizes a name for use as class name.
@@ -275,7 +277,7 @@ function buildFilterOption(itemName, type) {
   return option;
 }
 
-function buildFilter(type, tax, ph, block, config) {
+async function buildFilter(type, tax, block, config) {
   const container = createTag('div', { class: 'filter' });
 
   const button = document.createElement('a');
@@ -298,8 +300,8 @@ function buildFilter(type, tax, ph, block, config) {
   searchBar.insertAdjacentHTML('afterbegin', SEARCH_ICON);
   const searchField = document.createElement('input');
   searchField.setAttribute('id', `${type}-filter-search`);
-  searchField.setAttribute('aria-label', ph.search);
-  searchField.setAttribute('placeholder', ph.search);
+  searchField.setAttribute('aria-label', await replacePlaceholder('search'));
+  searchField.setAttribute('placeholder', await replacePlaceholder('search'));
   searchBar.append(searchField);
 
   const options = document.createElement('ul');
@@ -322,12 +324,12 @@ function buildFilter(type, tax, ph, block, config) {
 
   const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
-  resetBtn.textContent = ph.reset;
+  resetBtn.textContent = await replacePlaceholder('reset');
   resetBtn.addEventListener('click', clearFilters);
 
   const applyBtn = document.createElement('a');
   applyBtn.classList.add('button', 'small', 'apply');
-  applyBtn.textContent = ph.apply;
+  applyBtn.textContent = await replacePlaceholder('apply');
   applyBtn.addEventListener('click', () => {
     // sampleRUM('apply-topic-filter');
     delete config.selectedProducts;
@@ -410,7 +412,6 @@ async function filterArticles(config, feed, limit, offset) {
 async function decorateArticleFeed(
   articleFeedEl,
   config,
-  placeholders,
   offset = 0,
   feed = { data: [], complete: false, cursor: 0 },
   limit = 12,
@@ -440,16 +441,16 @@ async function decorateArticleFeed(
     // no user filtered results were found
     spinner.remove();
     const noMatches = document.createElement('p');
-    noMatches.innerHTML = `<strong>${placeholders['no-matches']}</strong>`;
+    noMatches.innerHTML = `<strong>${await replacePlaceholder('no-matches')}</strong>`;
     const userHelp = document.createElement('p');
     userHelp.classList.add('article-cards-empty-filtered');
-    userHelp.textContent = placeholders['user-help'];
+    userHelp.textContent = await replacePlaceholder('user-help');
     container.append(noMatches, userHelp);
   } else {
     // no results were found
     spinner.remove();
     const noResults = document.createElement('p');
-    noResults.innerHTML = `<strong>${placeholders['no-results']}</strong>`;
+    noResults.innerHTML = `<strong>${await replacePlaceholder('no-results')}</strong>`;
     container.append(noResults);
   }
   const max = pageEnd > articles.length ? articles.length : pageEnd;
@@ -462,18 +463,18 @@ async function decorateArticleFeed(
     const loadMore = document.createElement('a');
     loadMore.className = 'load-more button small primary light';
     loadMore.href = '#';
-    loadMore.textContent = placeholders['load-more'];
+    loadMore.textContent = await replacePlaceholder('load-more');
     articleFeedEl.append(loadMore);
     loadMore.addEventListener('click', (event) => {
       event.preventDefault();
       loadMore.remove();
-      decorateArticleFeed(articleFeedEl, config, placeholders, pageEnd, feed);
+      decorateArticleFeed(articleFeedEl, config, pageEnd, feed);
     });
   }
   articleFeedEl.classList.add('appear');
 }
 
-async function decorateFeedFilter(articleFeedEl, config, placeholders) {
+async function decorateFeedFilter(articleFeedEl, config) {
   const taxonomy = getTaxonomyModule();
   const parent = document.querySelector('.article-feed-container');
 
@@ -486,10 +487,10 @@ async function decorateFeedFilter(articleFeedEl, config, placeholders) {
 
   const filterText = document.createElement('p');
   filterText.classList.add('filter-text');
-  filterText.textContent = placeholders.filters;
+  filterText.textContent = await replacePlaceholder('filters');
 
-  const productsDropdown = buildFilter('products', taxonomy, placeholders, articleFeedEl, config);
-  const industriesDropdown = buildFilter('industries', taxonomy, placeholders, articleFeedEl, config);
+  const productsDropdown = buildFilter('products', taxonomy, articleFeedEl, config);
+  const industriesDropdown = buildFilter('industries', taxonomy, articleFeedEl, config);
 
   filterWrapper.append(filterText, productsDropdown, industriesDropdown);
   filterContainer.append(filterWrapper);
@@ -502,14 +503,14 @@ async function decorateFeedFilter(articleFeedEl, config, placeholders) {
 
   const selectedText = document.createElement('p');
   selectedText.classList.add('selected-text');
-  selectedText.textContent = placeholders['showing-articles-for'];
+  selectedText.textContent = await replacePlaceholder('showing-articles-for');
 
   const selectedCategories = document.createElement('span');
   selectedCategories.classList.add('selected-filters');
 
   const clearBtn = document.createElement('a');
   clearBtn.classList.add('button', 'small', 'clear');
-  clearBtn.textContent = placeholders['clear-all'];
+  clearBtn.textContent = await replacePlaceholder('clear-all');
   clearBtn.addEventListener(
     'click',
     (e) => clearFilters(e, articleFeedEl, config),
@@ -526,11 +527,8 @@ export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
   clearBlock(articleFeed);
   loadTaxonomy();
-  fetchPlaceholders()
-    .then((placeholders) => {
-      if (config.filters) {
-        decorateFeedFilter(articleFeed, config, placeholders);
-      }
-      decorateArticleFeed(articleFeed, config, placeholders);
-    });
+  if (config.filters) {
+    decorateFeedFilter(articleFeed, config);
+  }
+  decorateArticleFeed(articleFeed, config);
 }
