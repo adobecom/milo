@@ -12,6 +12,13 @@ import { replaceKey } from '../../features/placeholders.js';
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
+const blogIndex = {
+  data: [],
+  byPath: {},
+  offset: 0,
+  complete: false,
+};
+
 /**
  * Sanitizes a name for use as class name.
  * @param {*} name The unsanitized name
@@ -63,28 +70,21 @@ export function readBlockConfig(block) {
  */
 export async function fetchBlogArticleIndex() {
   const pageSize = 500;
-  window.blogIndex = window.blogIndex || {
-    data: [],
-    byPath: {},
-    offset: 0,
-    complete: false,
-  };
 
-  if (window.blogIndex.complete) return (window.blogIndex);
+  if (blogIndex.complete) return (blogIndex);
 
-  const index = window.blogIndex;
-  return fetch(`${getPrefix()}/query-index.json?limit=${pageSize}&offset=${index.offset}`)
+  return fetch(`${getPrefix()}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
     .then((response) => response.json())
     .then((json) => {
       const complete = (json.limit + json.offset) === json.total;
       json.data.forEach((post) => {
-        index.data.push(post);
-        index.byPath[post.path.split('.')[0]] = post;
+        blogIndex.data.push(post);
+        blogIndex.byPath[post.path.split('.')[0]] = post;
       });
-      index.complete = complete;
-      index.offset = json.offset + pageSize;
+      blogIndex.complete = complete;
+      blogIndex.offset = json.offset + pageSize;
 
-      return index;
+      return blogIndex;
     });
 }
 
