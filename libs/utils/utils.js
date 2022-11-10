@@ -69,6 +69,7 @@ const ENVS = {
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
   },
 };
+const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -487,7 +488,11 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    if (getMetadata('richresults')) import('../features/richresults.js');
+    const type = getMetadata('richresults');
+    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+      const { addRichResults } = await import('../features/richresults.js');
+      addRichResults(type, { createTag, getMetadata });
+    }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
