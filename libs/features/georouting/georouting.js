@@ -1,8 +1,5 @@
 // The flow chart for the georouting can be found here:
 // https://wiki.corp.adobe.com/display/WP4/GeoRouting
-
-import {getMetadata} from "../../utils/utils.js";
-
 const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
