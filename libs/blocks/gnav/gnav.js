@@ -450,25 +450,23 @@ class Gnav {
   };
 
   setBreadcrumbSEO = () => {
+    const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
+    if (!seoEnabled) return;
     const breadcrumb = this.el.querySelector('.breadcrumbs');
-    if (breadcrumb) {
-      const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
-      if (seoEnabled) {
-        const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
-        const items = breadcrumb.querySelectorAll('ul > li');
-        items.forEach((item, idx) => {
-          const link = item.querySelector('a');
-          breadcrumbSEO.itemListElement.push({
-            '@type': 'ListItem',
-            position: idx + 1,
-            name: link ? link.innerHTML : item.innerHTML,
-            item: link?.href,
-          });
-        });
-        const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
-        document.head.append(script);
-      }
-    }
+    if (!breadcrumb) return;
+    const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
+    const items = breadcrumb.querySelectorAll('ul > li');
+    items.forEach((item, idx) => {
+      const link = item.querySelector('a');
+      breadcrumbSEO.itemListElement.push({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: link ? link.innerHTML : item.innerHTML,
+        item: link?.href,
+      });
+    });
+    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
+    document.head.append(script);
   };
 
   decorateBreadcrumbs = () => {

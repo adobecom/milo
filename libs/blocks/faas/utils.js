@@ -224,6 +224,32 @@ const afterYiiLoadedCallback = () => {
 };
 /* c8 ignore stop */
 
+/* c8 ignore start */
+const beforeSubmitCallback = () => {
+  // Adobe Analytics Sandbox
+  if (window.location.search?.includes('faas-post-submit=aa-sandbox')) {
+    const firstName = document.querySelector('.FaaS-8 input');
+    const lastName = document.querySelector('.FaaS-9 input');
+    const email = document.querySelector('.FaaS-1 input');
+    const country = document.querySelector('.FaaS-14 select');
+
+    fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
+      method: 'POST',
+      body: JSON.stringify({
+        first_name: firstName.value,
+        last_name: lastName.value,
+        email: email.value,
+        university: 'none',
+        country: country.value
+      })
+    })
+    .catch((error) => {
+      console.error('AA Sandbox Error:', error);
+    });
+  }
+};
+/* c8 ignore stop */
+
 export const makeFaasConfig = (targetState) => {
   if (!targetState) {
     state = defaultState;
@@ -257,7 +283,10 @@ export const makeFaasConfig = (targetState) => {
         94: targetState.pjs94,
       },
     },
-    e: { afterYiiLoadedCallback },
+    e: { 
+      afterYiiLoadedCallback, 
+      beforeSubmitCallback,
+    }
   };
 
   // b2bpartners
@@ -301,7 +330,7 @@ export const initFaas = (config, targetEl) => {
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
-    state.e = { afterYiiLoadedCallback };
+    state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
     makeFaasConfig(config);
