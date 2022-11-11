@@ -29,140 +29,135 @@
   min-height: 700px;
 }
 
-.icon-block .foreground.container {
-  padding-top: var(--spacing-xxxl);
+.icon-block .foreground {
   position: relative;
   text-align: center;
 }
 
-.icon-block .foreground.container .text {
+.icon-block .foreground .text {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
   width: 100%;
-  margin-bottom: var(--spacing-xxxl);
 }
 
-.icon-block .foreground.container .icon-area {
+.icon-block .foreground .icon-area {
   margin: 0 auto var(--spacing-xs) auto;
   height: 80px;
   max-width: 234px;
   overflow: hidden;
 }
 
-.icon-block .foreground.container .icon-area img {
+.icon-block .foreground .icon-area img {
   height: 80px;
   width: auto;
 }
 
-.icon-block .foreground.container .text>* {
+.icon-block .foreground .text>* {
   width: 100%;
 }
 
-.icon-block .foreground.container .text .heading-XL,
-.icon-block .foreground.container .text .heading-S {
+.icon-block .foreground .text .heading-XL,
+.icon-block .foreground .text .heading-S {
   margin: var(--spacing-xs) 0;
 }
 
-.icon-block .foreground.container .text .body-M {
+.icon-block .foreground .text .body-M {
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block .foreground.container .text .action-area {
+.icon-block .foreground .text .action-area {
   margin-bottom: 0;
 }
 
-.icon-block .foreground.container .text .action-area>a {
+.icon-block .foreground .text .action-area>a {
   margin-right: var(--spacing-s);
   white-space: nowrap;
 }
 
-.icon-block .foreground.container .text .action-area>a:last-child {
+.icon-block .foreground .text .action-area>a:last-child {
   margin: 0;
 }
 
-.icon-block .foreground.container div {
+.icon-block .foreground div {
   flex: 1 1 auto;
 }
 
-.icon-block.vertical .foreground.container {
+.icon-block.vertical .foreground {
   text-align: left;
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block.vertical .foreground.container .text {
+.icon-block.vertical .foreground .text {
   margin-bottom: var(--spacing-xxl);
 }
 
-.icon-block.vertical .foreground.container .icon-area {
+.icon-block.vertical .foreground .icon-area {
   margin: 0;
   margin-bottom: var(--spacing-xxs);
 }
 
-.icon-block.vertical .foreground.container .text .action-area>a:not(.con-button) {
+.icon-block.vertical .foreground .text .action-area>a:not(.con-button) {
   font-size: 14px;
   line-height: 21px;
 }
 
 @media screen and (min-width: 600px) {
-  .icon-block .foreground.container .icon-area {
+  .icon-block .foreground .icon-area {
     max-width: 234px;
   }
 
-  .icon-block.vertical .foreground.container {
+  .icon-block.vertical .foreground {
     gap: 32px;
   }
 
-  .icon-block.vertical.three-up .foreground.container .text:last-child {
+  .three-up .icon-block.vertical .foreground .text:last-child {
     padding-right: 53%;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .icon-block .foreground.container {
-    padding: var(--spacing-xxxl) 0;
-  }
-
-  .icon-block .foreground.container .text {
+  .icon-block .foreground .text {
     margin: 0 auto;
   }
 
-  .icon-block:not(.vertical) .foreground.container {
+  .icon-block:not(.vertical) .foreground {
     max-width: 800px;
+    margin: 0 auto;
   }
 
-  .icon-block .foreground.container .icon-area {
+  .icon-block .foreground .icon-area {
     max-width: 400px;
   }
 
-  .icon-block.vertical .foreground.container {
+  .icon-block.vertical .foreground {
     flex-wrap: nowrap;
     margin-bottom: 0;
   }
 
-  .icon-block.vertical .foreground.container .text {
+  .icon-block.vertical .foreground .text {
     flex-grow: 1;
     flex-basis: 0;
     margin-bottom: 0;
   }
 
-  .icon-block.vertical .foreground.container.two-up {
+  .two-up .icon-block.vertical .foreground {
     max-width: 1000px;
   }
 
-  .icon-block.vertical .foreground.container.three-up .text:last-child {
+  .three-up .icon-block.vertical .foreground .text:last-child {
     padding-right: 0;
   }
 
-  .icon-block.vertical .foreground.container.two-up .icon-area {
+  .two-up .icon-block.vertical .foreground .icon-area {
     max-width: 400px;
   }
 
-  .icon-block.vertical .foreground.container.three-up .icon-area {
+  .three-up .icon-block.vertical .foreground .icon-area {
     max-width: 300px;
   }
 
-  .icon-block.vertical.four-up .foreground.container.four-up .icon-area {
+  .four-up .icon-block.vertical .foreground .icon-area {
     max-width: 276px;
   }
 }

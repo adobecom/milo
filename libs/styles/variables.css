@@ -1,5 +1,3 @@
-
-
 :root {
   /* Colors */
   --link-color: #035fe6;
@@ -95,6 +93,11 @@
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
+  --grid-12-width: var(--grid-container-width);
+  --grid-10-width: calc(var(--grid-column-width) * 10);
+  --grid-8-width: calc(var(--grid-column-width) * 8);
+  --grid-6-width: calc(var(--grid-column-width) * 6);
+
 }
 
 :root:lang(ko-KR) {

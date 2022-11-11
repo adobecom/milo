@@ -72,25 +72,49 @@
   border-bottom: 1px solid #d8d8d8;
 }
 
-.section.two-up .grid,
-.section.three-up .grid,
-.section.four-up .grid {
+.section.grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
+  padding-left: calc((100vw - var(--grid-12-width)) / 2);
+  padding-right: calc((100vw - var(--grid-12-width)) / 2);
+  gap: var(--spacing-s);
+}
+
+.section .fill-row {
+  grid-column: 1 /-1;
 }
 
 @media screen and (min-width: 1200px) {
 
-  .section.two-up .grid {
+  .section.grid.span-10-desktop {
+    padding-left: calc((100vw - var(--grid-10-width)) / 2);
+    padding-right: calc((100vw - var(--grid-10-width)) / 2);
+  }
+
+  .section.grid.span-8-desktop {
+    padding-left: calc((100vw - var(--grid-8-width)) / 2);
+    padding-right: calc((100vw - var(--grid-8-width)) / 2);
+  }
+
+  .section.grid.span-6-desktop {
+    padding-left: calc((100vw - var(--grid-6-width)) / 2);
+    padding-right: calc((100vw - var(--grid-6-width)) / 2);
+  }
+
+  .section.grid.two-up {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .section.three-up .grid {
+  .section.grid.three-up {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .section.four-up .grid {
+  .section.grid.four-up {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .section.grid.five-up {
+    grid-template-columns: repeat(5, 1fr);
   }
 
 }
