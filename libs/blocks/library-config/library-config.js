@@ -2,6 +2,8 @@
 
 import { createTag } from '../../utils/utils.js';
 
+const OPENED = 'opened';
+
 function createCopy(blob) {
   const data = [new ClipboardItem({ [blob.type]: blob })];
   navigator.clipboard.write(data);
@@ -53,24 +55,52 @@ function getTable(block, name, path) {
   return table.outerHTML;
 }
 
+function alphaInsert(list, el, textSelector) {
+  const listItems = list.querySelectorAll(':scope > li');
+  const title = el.querySelector(textSelector).innerText?.toLowerCase();
+  let inserted = false;
+  [...listItems].every((li) => {
+    if (title < li.querySelector(textSelector).innerText?.toLowerCase()) {
+      li.insertAdjacentElement('beforebegin', el);
+      inserted = true;
+      return false;
+    }
+    return true;
+  })
+  if (!inserted) {
+    list.insertAdjacentElement('beforeend', el);
+  }
+}
+
 async function loadBlockList(paths, list) {
   for (const path of paths) {
     const resp = await fetch(path);
     if (!resp.ok) return;
     const json = await resp.json();
-    // eslint-disable-next-line no-restricted-syntax
-    for (const blockGroup of json.data) {
+    // forEach doesn't wait for block to finish before firing next, but in this case we want that
+    // so block libs are loaded in parallel
+    json.data.forEach(async (blockGroup) => {
       const titleText = createTag('p', { class: 'block-title' }, blockGroup.key);
       const title = createTag('li', { class: 'block-group' }, titleText);
       const previewButton = createTag('button', { class: 'preview-group' }, 'Preview');
       title.append(previewButton);
-      list.append(title);
+
 
       previewButton.addEventListener('click', () => {
         window.open(blockGroup.value, '_blockpreview');
       });
 
-      // eslint-disable-next-line no-await-in-loop
+      title.addEventListener('click', (e) => {
+        if (e.target.classList.contains('preview-group')
+          || !e.target.classList.contains('block-title')) return;
+
+        if (title.classList.contains(OPENED)) {
+          title.classList.remove(OPENED);
+        } else {
+          title.classList.add(OPENED);
+        }
+      });
+
       const pageResp = await fetch(`${blockGroup.value}.plain.html`);
       if (!pageResp.ok) return;
       // eslint-disable-next-line no-await-in-loop
@@ -91,9 +121,11 @@ async function loadBlockList(paths, list) {
           createCopy(blob);
         });
         item.append(name, copy);
-        list.append(item);
+        title.append(item);
       });
-    }
+
+      alphaInsert(list, title, '.block-title');
+    });
   };
 }
 
