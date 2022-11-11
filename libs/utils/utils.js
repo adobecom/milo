@@ -102,12 +102,6 @@ export function getLocale(locales) {
   return locale;
 }
 
-export const getContentRoot = (config) => {
-  const { prefix } = config.locale;
-  if (config.contentRoot) return `${origin}${prefix}${config.contentRoot}`;
-  return `${origin}${prefix}`;
-};
-
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -115,7 +109,6 @@ export const [setConfig, getConfig] = (() => {
       const { origin } = window.location;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
-      config.contentRoot ??= '/';
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
@@ -123,7 +116,7 @@ export const [setConfig, getConfig] = (() => {
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
-      config.locale.contentRoot = getContentRoot(config);
+      config.locale.contentRoot = `${origin}${config.locale.prefix}`;
       return config;
     },
     () => config,

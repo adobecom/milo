@@ -1,4 +1,5 @@
-const WORLD_ICON = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iU19HbG9iZV8yNF9OQDJ4IiBoZWlnaHQ9IjQ4IiBpZD0iU19HbG9iZV8yNF9OXzJ4IiB3aWR0aD0iNDgiPjxkZWZzPjxzdHlsZT4uZmlsbHtmaWxsOiM3MDcwNzB9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik05LjUyNyAxOC4zNThjLTEuNC01LjA0OSAyLjIwNy03LjIyMyAxLjg1Mi0xMS41MzdBMjEuNDMgMjEuNDMgMCAwIDAgMi42NjcgMjRjMCAxMi4xNDkgMTAuNTkxIDE5LjM5IDE4LjA3MiAyMC45NzZhOS4yIDkuMiAwIDAgMCAxLjM5My4yMjFjMi42NjgtNi44LTIuMzY0LTE0LjM4NS01LjY4NC0xOS4zMjYtMi43NjUtNC4xMTMtNS4yNzgtMS41NzEtNi45MjEtNy41MTNaIi8+PHBhdGggY2xhc3M9ImZpbGwiIGQ9Ik0xOS45IDUuNnMtLjQ4NS4wMjktLjYxOS4xNjNjLTEuMDE0IDEuMDEgMS43NzYgNi4xIDEuNjU2IDUuMzIyLjY2NC0zLjA1NiA0LjgxNi00LjIzNSA2LjA4OC0uMmE0Ljk4OSA0Ljk4OSAwIDAgMS0xLjExNyAzLjAyYy0xLjg4IDIuNDcyLTIuMjYyIDYuODcyLTMuMiA1Ljc0Ni04Ljc4Ny0zLjYtNy44MiAxLjE2MS00LjkzNiA0LjM0MyA0LjYxOCA1LjA5NCAyLjI3NS41MjIgOC4zMjMgMy4xODkgNC44NjQgMi4xNDUgMTAuNzE4IDIuNjUyIDkuMjg5IDQuMjctNC4zMjIgNC44OTQtMy40MTMgOC4xMzctMTEuMDU3IDEzLjg3Mi42MzctLjAxNyAyLjY2NS0uMjIgMy4wODItLjI4OGEyMS43IDIxLjcgMCAwIDAgMTcuODMzLTE5LjIgMy4yIDMuMiAwIDAgMS0xLjUzOS0uNDY5Yy0yLjE0Ny0uODE3LTMuOTg5IDEuOTY3LTQuMTUyLTUuNTUyYTcuNjg2IDcuNjg2IDAgMCAxIDIuMjIyLTUuMzMzIDQuMTA3IDQuMTA3IDAgMCAxIC45NzItLjQ2NSAyMi4zMDEgMjIuMzAxIDAgMCAwLS44MjYtMS4zNTdjLS4wNS4wMjYtLjA5NC4wNTktLjE0NS4wODMtMS42NjcuNzc4LTEuOSAxLjAwNy0yLjY2NyAwYTIuMSAyLjEgMCAwIDEgLjQ2MS0zLjEgMjEuMzEzIDIxLjMxMyAwIDAgMC0xNS41MzMtNi45NTdjMi43LjAzNyA1LjkyOSAyLjAzOSA0LjI4NCA1LjIzOS4yNDctLjUwOC01LjM2OS0xLjcyLTYuMTMzLTEuNzItMS4wMjkgMCAxLjg1My0zLjUxOSAxLjgxNC0zLjUxOWEyMS40MzkgMjEuNDM5IDAgMCAwLTguODIgMS45QzE2LjYzNyA1LjUyNiAxOS45IDUuNiAxOS45IDUuNloiLz48L3N2Zz4=';
+// The flow chart for the georouting can be found here:
+// https://wiki.corp.adobe.com/display/WP4/GeoRouting
 
 const getCookie = (name) => document.cookie
   .split('; ')
@@ -50,14 +51,14 @@ async function getAvailableLocales(locales, config, getMetadata) {
   const pagesExist = [];
   for (const [index, locale] of locales.entries()) {
     const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localePath = `${prefix}/${path}`;
+    const localePath = `${prefix}${path}`;
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
-        locale.url = `${origin}${prefix}${config.contentRoot}${path}`;
+        locale.url = `${origin}${prefix}${path}`;
         availableLocales[index] = locale;
       } else if (fallback) {
-        locale.url = `${origin}${prefix}${config.contentRoot}`;
+        locale.url = `${origin}${prefix}`;
         availableLocales[index] = locale;
       }
     });
@@ -117,7 +118,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
 
   if (availableLocales && availableLocales.length > 0) {
     currentPage.url = '#';
-    const worldIcon = createTag('img', { src: WORLD_ICON });
+    const worldIcon = createTag('img', { src: '../../../img/icons/Smock_GlobeOutline_18_N.svg', class: 'world-icon' });
     const text = buildText([...availableLocales, currentPage], config, createTag);
     const links = buildLinks([...availableLocales, currentPage], config, createTag);
     const detailsFragment = new DocumentFragment();
@@ -139,8 +140,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   const storedInter = sessionStorage.getItem("international") || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
-  const { contentRoot } = config;
-  const resp = await fetch(`${contentRoot}georouting.json`);
+  const resp = await fetch(`${origin}/georouting.json`);
   if (!resp.ok) return;
   const json =  await resp.json();
 

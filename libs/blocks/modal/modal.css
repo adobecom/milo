@@ -90,6 +90,10 @@
   cursor: pointer;
 }
 
+.locale-modal .world-icon {
+  width: 3.429rem;
+}
+
 .region-selector > div > p,
 .region-selector > div > ul li {
   line-height: 1.7;
