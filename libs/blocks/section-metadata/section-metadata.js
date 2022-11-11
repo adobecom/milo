@@ -12,12 +12,11 @@ function handleBackground(div, section) {
   }
 }
 
-function handleStyle(div, section, customs = []) {
+function handleStyle(div, section) {
   const value = div.textContent.toLowerCase();
   let styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   if (section) {
-    if (customs) styles = [...styles, ...customs];
-    section.classList.add(...styles.filter(i => i !== ''));
+    section.classList.add(...styles);
   }
 }
 
@@ -41,9 +40,6 @@ export default function init(el) {
     const valueDiv = div.nextElementSibling;
     if (div.textContent === 'style' && valueDiv.textContent) {
       handleStyle(valueDiv, section);
-    }
-    if (div.textContent === 'grid') {
-      handleStyle(valueDiv, section, ['grid']);
     }
     if (div.textContent === 'background') {
       handleBackground(valueDiv, section);
