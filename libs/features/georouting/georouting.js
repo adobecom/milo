@@ -1,6 +1,8 @@
 // The flow chart for the georouting can be found here:
 // https://wiki.corp.adobe.com/display/WP4/GeoRouting
 
+import {getMetadata} from "../../utils/utils.js";
+
 const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -41,8 +43,7 @@ const getAkamaiCode = () => new Promise((resolve) => {
 
 // Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales, config, getMetadata) {
-  const fallbackMeta = getMetadata('fallbackrouting');
-  const fallback = fallbackMeta ? fallbackMeta === 'on' : config.fallbackRouting === 'on';
+  const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
   const { contentRoot } = config.locale;
   const path = window.location.href.replace(contentRoot, '');
@@ -57,7 +58,7 @@ async function getAvailableLocales(locales, config, getMetadata) {
       if (resp.ok) {
         locale.url = `${origin}${prefix}${path}`;
         availableLocales[index] = locale;
-      } else if (fallback) {
+      } else if (fallback !== 'off') {
         locale.url = `${origin}${prefix}`;
         availableLocales[index] = locale;
       }
