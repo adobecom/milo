@@ -14,7 +14,7 @@ function handleBackground(div, section) {
 
 function handleStyle(div, section) {
   const value = div.textContent.toLowerCase();
-  let styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
   if (section) {
     section.classList.add(...styles);
   }
