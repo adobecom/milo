@@ -167,6 +167,7 @@
 
 .aside.split .foreground.container {
   width: 100%;
+  z-index: 1;
 }
 
 .aside.split.dark .foreground.container .text {
