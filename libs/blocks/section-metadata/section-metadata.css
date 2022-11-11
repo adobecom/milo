@@ -75,8 +75,7 @@
 .section.two-up,
 .section.three-up,
 .section.four-up,
-.section.five-up,
-.section.auto-grid {
+.section.five-up {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
   padding-left: calc((100vw - var(--grid-12-width)) / 2);
