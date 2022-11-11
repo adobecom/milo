@@ -1,14 +1,9 @@
-import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-
 import { expect } from '@esm-bundle/chai';
-const { default: init, getCookie, GeoRoutingCookies } = await import('../../../libs/features/georouting/georouting.js');
-const { locales } = await import('../../../libs/scripts/locales.js');
-const { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
+const { default: init, getCookie } = await import('../../../libs/features/georouting/georouting.js');
+let { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
 
-document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-
-const mockConfig = { locales: locales, locale: { contentRoot: window.location.href, prefix: '' } };
+const mockConfig = { locales: {ar: {}, ca: {}, '': {}, africa: {}, ch_de: {}, ch_fr: {}, ch_it: {}, au: {} }, locale: { contentRoot: window.location.href, prefix: '' } };
 
 const mockGeoroutingJson = {
   data: [
@@ -44,10 +39,6 @@ const mockGeoroutingJson = {
     }
   ]
 }
-const getMetaHTML = (georouting, fallbackrouting) => {
-  return `<meta name="georouting" content="${georouting}">
-<meta name="fallbackrouting" content="${fallbackrouting}">`
-}
 
 let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
 const setUserCountryFromIP = (country = 'CH') => {
@@ -57,7 +48,7 @@ const setUserCountryFromIP = (country = 'CH') => {
 const ogFetch = window.fetch;
 window.fetch = stub();
 const stubFetchForGeorouting = () => {
-  window.fetch.withArgs(`${mockConfig.locale.contentRoot}/georouting.json`).returns(
+  window.fetch.withArgs(`${origin}/georouting.json`).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
@@ -65,24 +56,29 @@ const stubFetchForGeorouting = () => {
       });
     }),
   );
+  mockGeoroutingJson.data.forEach((d) => {
+    const prefix = d.prefix ? `/${d.prefix}` : '';
+    window.fetch.withArgs(`${prefix}`, { method: 'HEAD' }).returns(
+      new Promise((resolve) => {
+        resolve({
+          ok: true
+        });
+      }),
+    );
+  })
+
 };
-const stubFetchForMetadata = (georouting, fallbackrouting) => {
-  window.fetch.withArgs(`${mockConfig.locale.contentRoot}/georouting-metadata`).returns(
-    new Promise((resolve) => {
-      resolve({
-        ok: true,
-        text: () => getMetaHTML(georouting, fallbackrouting),
-      });
-    }),
-  );
+const stubFallbackMetadata = (fallbackrouting) => {
+  getMetadata = stub();
+  getMetadata.withArgs('fallbackrouting').returns(fallbackrouting)
 };
 const restoreFetch = () => {
   window.fetch = ogFetch;
 };
-
-const mockGetConfigRoot = (config, prefix) => {
-  return `${config.locale.contentRoot}/${prefix}`;
+const closeModal = () => {
+  document.querySelector('.dialog-modal')?.querySelector('.dialog-close').dispatchEvent(new Event('click'));
 }
+
 
 describe('GeoRouting', () => {
   before(() => {
@@ -96,11 +92,12 @@ describe('GeoRouting', () => {
   afterEach(() => {
     document.cookie = `international=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
     sessionStorage.removeItem('international')
+    closeModal();
   })
 
   it('Will read undefined if attempting to read unset cookie', async () => {
     // prepare
-    const cookieName = 'test';
+    const cookieName = 'test123';
     const testcookie = getCookie(cookieName);
     // assert
     expect(testcookie).to.be.undefined
@@ -113,79 +110,23 @@ describe('GeoRouting', () => {
     const testcookie = getCookie(cookieName);
     // assert
     expect(testcookie).to.be.equal('test')
-  });
-
-  it('Does not create a modal if GeoRouting feature is off', async () => {
-    // prepare
-    stubFetchForMetadata('off', 'off');
-    await init(config, createTag, getMetadata);
-    const modal = document.querySelector('.dialog-modal');
-    // assert
-    expect(modal).to.be.null;
-  });
-
-  it.only('Does create a modal if GeoRouting feature is on', async () => {
-    // prepare
-    stubFetchForMetadata('on', 'off');
-    await init(config, createTag, getMetadata);
-    const modal = document.querySelector('.dialog-modal');
-    // assert
-    expect(modal).to.not.be.null;
     // cleanup
-    modal.dispatchEvent(new Event('close'));
-  });
-
-  it('Does not create a modal if georouting_presented cookie is set', async () => {
-    // prepare
-    document.cookie = `${GeoRoutingCookies.georouting_presented}=test`
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
-    const modal = document.querySelector('.dialog-modal');
-    // assert
-    expect(modal).to.be.null;
-    // cleanup
-    document.cookie = `${GeoRoutingCookies.georouting_presented}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
-  });
-
-  it('Does create a modal if georouting_presented cookie is not set', async () => {
-    // prepare
-    document.cookie = `${GeoRoutingCookies.georouting_presented}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
-    const modal = document.querySelector('.dialog-modal');
-    // assert
-    expect(modal).to.not.be.null;
-    // cleanup
-    modal.dispatchEvent(new Event('close'));
+    document.cookie = `test=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
   });
 
   it('Does create a modal if detected country from IP is CH and url prefix is US', async () => {
     // prepare
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
-    // cleanup
-    modal.dispatchEvent(new Event('close'));
-  });
-
-  it('Will set international cookie if no discrepancy detected', async () => {
-    // prepare
-    setUserCountryFromIP('US');
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
-    // assert
-    const internationalCookie = getCookie(GeoRoutingCookies.international)
-    expect(internationalCookie).to.equal('us');
   });
 
   it('If international cookie is us it is compared correctly', async () => {
     // prepare
     setUserCountryFromIP('US');
     document.cookie = `international=us;path=/`;
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
@@ -198,22 +139,21 @@ describe('GeoRouting', () => {
 
   });
 
-  it.only('If aiming for US page but IP in Switzerland shows CH links and US continue', async () => {
+  it('If aiming for US page but IP in Switzerland shows CH links and US continue', async () => {
     // prepare
-    stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    await init(mockConfig, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
+    closeModal();
     expect(modal).to.not.be.null;
-    const links = modal.querySelectorAll('.georouting-link');
+    const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links.length).to.be.equal(4);
-    // cleanup
-    modal.dispatchEvent(new Event('close'));
   });
 
   it('If aiming for PA page but IP in Switzerland shows CH links and Palestine continue', async () => {
     // prepare
+
 
   });
 

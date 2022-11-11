@@ -1,6 +1,6 @@
 // The flow chart for the georouting can be found here:
 // https://wiki.corp.adobe.com/display/WP4/GeoRouting
-const getCookie = (name) => document.cookie
+export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
@@ -79,6 +79,13 @@ function buildText(locales, config, createTag) {
   return fragment;
 }
 
+function setStorage(prefix) {
+  const modPrefix = prefix || 'us';
+  // set cookie so legacy code on adobecom still works properly.
+  document.cookie = `international=${modPrefix};path=/`;
+  sessionStorage.setItem("international", modPrefix);
+}
+
 function buildLinks(locales, config, createTag) {
   const fragment = new DocumentFragment();
   const wrapper = createTag('div', { class: 'link-wrapper' });
@@ -88,10 +95,7 @@ function buildLinks(locales, config, createTag) {
     const para = createTag('p', { class: 'locale-link-wrapper' }, link);
     wrapper.append(para);
     link.addEventListener('click', () => {
-      const prefix = locale.prefix || 'us';
-      // set cookie so legacy code on adobecom still works properly.
-      document.cookie = `international=${prefix};path=/`;
-      sessionStorage.setItem("international", prefix);
+      setStorage(locale.prefix)
     });
   });
   fragment.append(wrapper);
@@ -128,7 +132,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
 
 async function showModal(details) {
   const { getModal } = await import('../../blocks/modal/modal.js');
-  getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details });
+  return getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details });
 }
 
 export default async function loadGeoRouting(config, createTag, getMetadata) {
@@ -150,7 +154,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.data.filter(d => d.prefix === storedLocale)
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
-      if (details) { showModal(details); }
+      if (details) { await showModal(details); }
     }
     return;
   }
@@ -160,6 +164,8 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.data, akamaiCode);
     const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
-    if (details) { showModal(details); }
+    if (details) { await showModal(details); }
+    return;
   }
+  setStorage(locale.prefix);
 }
