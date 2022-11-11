@@ -33,6 +33,10 @@
   background-color: #1E1E1E;
 }
 
+.aside.light {
+  background-color: #f5f5f5;
+}
+
 .aside.dark h1,
 .aside.dark h2,
 .aside.dark h3,
@@ -43,7 +47,8 @@
   color: white;
 }
 
-.aside .background {
+.aside .background,
+.aside.split .split-image {
   overflow: hidden;
   position: absolute;
   left: 0;
@@ -56,6 +61,7 @@
   height: 100%;
 }
 
+.aside .split-image img,
 .aside .background img {
   object-fit: cover;
   min-height: 700px;
@@ -149,11 +155,10 @@
 
 .aside.split {
   flex-direction: column;
-  background-color: #1E1E1E;
 }
 
-.aside.split.light {
-  background-color: white;
+.aside.split.dark {
+  background-color: #1E1E1E;
 }
 
 .aside.split.large {
@@ -164,7 +169,7 @@
   width: 100%;
 }
 
-.aside.split .foreground.container .text {
+.aside.split.dark .foreground.container .text {
   color: white;
 }
 
@@ -180,7 +185,7 @@
   background-color: transparent;
 }
 
-.aside.split .background img {
+.aside.split .split-image img {
   position: relative;
   min-height: 270px;
 }
@@ -422,11 +427,12 @@
     flex-direction: column;
   }
 
-  .aside.split .background {
+  .aside.split .split-image {
     position: absolute;
+    top: 0;
   }
 
-  .aside.split .background img {
+  .aside.split .split-image img {
     width: 60.5vw;
     max-width: 1396px;
     position: absolute;
@@ -436,7 +442,7 @@
   }
 
   .aside.right .background img,
-  .aside.split.half .background img {
+  .aside.split.half .split-image img {
     object-position: left top;
   }
 
@@ -449,7 +455,6 @@
   }
 
   .aside.split .foreground.container .text {
-    color: white;
     flex: 0 0 212px;
     padding: var(--spacing-xxl) 0;
     max-width: 100%;
@@ -463,7 +468,7 @@
     padding: 0;
   }
 
-  .aside.split.half .background img {
+  .aside.split.half .split-image img {
     width: 50vw;
     max-width: 1396px;
   }
@@ -476,7 +481,7 @@
     flex-direction: row-reverse;
   }
 
-  .aside.right .background img {
+  .aside.right .split-image img {
     left: 0;
   }
 

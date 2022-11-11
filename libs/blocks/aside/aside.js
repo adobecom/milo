@@ -17,8 +17,8 @@
 import { decorateBlockBg, decorateVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const asideTypes = ['inline', 'notification'];
-const [INLINE, NOTIFICATION] = asideTypes;
+const asideTypes = ['inline', 'notification', 'split'];
+const [INLINE, NOTIFICATION, SPLIT] = asideTypes;
 const asideSizes = ['extra-small', 'small', 'medium', 'large'];
 const [SIZE_XS, SIZE_S, SIZE_M, SIZE_L] = asideSizes;
 
@@ -95,8 +95,15 @@ function decorateContent(el, type, size) {
   const body = createTag('div', { class: 'body-area' });
   bodyCopy?.insertAdjacentElement('beforebegin', body);
   body.append(bodyCopy);
-
-  el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
+  if (type === SPLIT) {
+    const splitBg = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+    if (splitBg) {
+      splitBg.classList.add('split-image');
+      el.parentElement.appendChild(splitBg);
+    }
+  } else {
+    el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
+  }
   decorateVideo(el, 'image');
   decorateLinks(el);
 }
