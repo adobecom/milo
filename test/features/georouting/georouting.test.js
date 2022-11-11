@@ -2,9 +2,9 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 
 import { expect } from '@esm-bundle/chai';
-const { default: init, getMetadata, getCookieValueByName, GeoRoutingMetadata, GeoRoutingCookies } = await import('../../../libs/features/georouting/georouting.js');
+const { default: init, getCookie, GeoRoutingCookies } = await import('../../../libs/features/georouting/georouting.js');
 const { locales } = await import('../../../libs/scripts/locales.js');
-const { createTag } = await import('../../../libs/utils/utils.js');
+const { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 
@@ -94,23 +94,14 @@ describe('GeoRouting', () => {
     restoreFetch()
   });
   afterEach(() => {
-    document.cookie = `${GeoRoutingCookies.international}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
+    document.cookie = `international=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
+    sessionStorage.removeItem('international')
   })
-  it('Does read metadata from html properly', async () => {
-    // prepare
-    const georoutingMet = getMetadata(GeoRoutingMetadata.georouting, document);
-    const fallbackRoutingMet = getMetadata(GeoRoutingMetadata.fallbackrouting, document);
-    const noneMet = getMetadata('none', document);
-    // assert
-    expect(georoutingMet).to.be.equal('on');
-    expect(fallbackRoutingMet).to.be.equal('on');
-    expect(noneMet).to.be.null;
-  });
 
   it('Will read undefined if attempting to read unset cookie', async () => {
     // prepare
     const cookieName = 'test';
-    const testcookie = getCookieValueByName(cookieName);
+    const testcookie = getCookie(cookieName);
     // assert
     expect(testcookie).to.be.undefined
   });
@@ -119,26 +110,24 @@ describe('GeoRouting', () => {
     // prepare
     const cookieName = 'test';
     document.cookie = `${cookieName}=test`
-    const testcookie = getCookieValueByName(cookieName);
+    const testcookie = getCookie(cookieName);
     // assert
     expect(testcookie).to.be.equal('test')
-    // cleanup
-    document.cookie = `${cookieName}=; expires= Thu, 01 Jan 1970 00:00:00 GMT`
   });
 
   it('Does not create a modal if GeoRouting feature is off', async () => {
     // prepare
     stubFetchForMetadata('off', 'off');
-    await init(mockConfig, stub(), stub(), stub());
+    await init(config, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.be.null;
   });
 
-  it('Does create a modal if GeoRouting feature is on', async () => {
+  it.only('Does create a modal if GeoRouting feature is on', async () => {
     // prepare
     stubFetchForMetadata('on', 'off');
-    await init(mockConfig, stub(), createTag, mockGetConfigRoot);
+    await init(config, createTag, getMetadata);
     const modal = document.querySelector('.dialog-modal');
     // assert
     expect(modal).to.not.be.null;
@@ -187,14 +176,14 @@ describe('GeoRouting', () => {
     stubFetchForMetadata('on', 'off');
     await init(mockConfig, stub(), createTag, mockGetConfigRoot);
     // assert
-    const internationalCookie = getCookieValueByName(GeoRoutingCookies.international)
+    const internationalCookie = getCookie(GeoRoutingCookies.international)
     expect(internationalCookie).to.equal('us');
   });
 
   it('If international cookie is us it is compared correctly', async () => {
     // prepare
     setUserCountryFromIP('US');
-    document.cookie = `${GeoRoutingCookies.international}=us;path=/`;
+    document.cookie = `international=us;path=/`;
     stubFetchForMetadata('on', 'off');
     await init(mockConfig, stub(), createTag, mockGetConfigRoot);
     const modal = document.querySelector('.dialog-modal');
