@@ -303,7 +303,7 @@ const RequiredPanel = () => {
           setFieldMultiCampStyle(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
         }
       });
-      if (!isMultipleCampaign) {
+      if (!isMultipleCampaign && formId !== '63') {
         setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
       }
       // eslint-disable-next-line no-use-before-define
