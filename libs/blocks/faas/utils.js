@@ -22,6 +22,9 @@ export const getFaasHostSubDomain = (environment) => {
   if (faasEnv === 'dev') {
     return 'dev.';
   }
+  if (faasEnv === 'qa') {
+    return 'qa.';
+  }
   return 'qa.';
 };
 
