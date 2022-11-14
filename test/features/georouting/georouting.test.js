@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 const { default: init, getCookie } = await import('../../../libs/features/georouting/georouting.js');
 let { createTag, getMetadata } = await import('../../../libs/utils/utils.js');
 
-const mockConfig = { locales: {ar: {}, ca: {}, '': {}, africa: {}, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {} }, locale: { contentRoot: window.location.href, prefix: '' } };
+const mockConfig = { locales: { '': {}, africa: {}, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {} }, locale: { contentRoot: window.location.href, prefix: '' } };
 
 const mockGeoroutingJson = {
   data: [
