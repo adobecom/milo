@@ -301,6 +301,10 @@ class Gnav {
       if (resp.status === 200) {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
+        const links = menu.querySelectorAll('a');
+        links.forEach((link) => {
+          decorateSVG(link);
+        });
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
