@@ -68,6 +68,10 @@
   text-align: center;
 }
 
+.section.center[class*='-up'] {
+  justify-items: center;
+}
+
 .section.divider {
   border-bottom: 1px solid #d8d8d8;
 }
@@ -83,12 +87,7 @@
   padding-right: var(--grid-margins-12);
 }
 
-.section .fill-row {
-  grid-column: 1 /-1;
-}
-
 @media screen and (min-width: 1200px) {
-
   .section.grid-width-10 {
     padding-left: var(--grid-margins-10);
     padding-right: var(--grid-margins-10);

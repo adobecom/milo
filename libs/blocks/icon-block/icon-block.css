@@ -102,6 +102,10 @@
   line-height: 21px;
 }
 
+.section[class*='-up'] .full-width {
+  grid-column: 1 /-1;
+}
+
 @media screen and (min-width: 600px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
@@ -121,6 +125,7 @@
     margin: 0 auto;
   }
 
+  .icon-block:not(.centered) .foreground,
   .icon-block:not(.vertical) .foreground {
     max-width: 800px;
     margin: 0 auto;
