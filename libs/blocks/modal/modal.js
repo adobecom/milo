@@ -63,6 +63,9 @@ export async function getModal(el, custom) {
   const dialog = document.createElement('div');
   dialog.className = 'dialog-modal';
 
+  const content = custom ? handleCustomModal(custom, dialog) : await handleAnchorModal(el, dialog);
+  if (!content) return;
+
   close.addEventListener('click', (e) => {
     closeModals([dialog]);
     e.preventDefault();
@@ -80,9 +83,6 @@ export async function getModal(el, custom) {
       closeModals([dialog]);
     }
   });
-
-  const content = custom ? handleCustomModal(custom, dialog) : await handleAnchorModal(el, dialog);
-  if (!content) return;
 
   dialog.append(close, content);
   document.body.append(dialog);

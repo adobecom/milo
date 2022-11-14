@@ -9,7 +9,6 @@ const geo2jsonp = (callback) => {
   // Setup a unique name that can be called & destroyed
   const callbackName = `jsonp_${Math.round(100000 * Math.random())}`;
 
-  // Create the script tag
   const script = document.createElement('script');
   script.src = `https://geo2.adobe.com/json/?callback=${callbackName}`;
 
@@ -20,7 +19,6 @@ const geo2jsonp = (callback) => {
     callback(data);
   };
 
-  // Append to the document
   document.body.appendChild(script);
 };
 
@@ -105,8 +103,7 @@ function getCodes(data) {
 function getMatches(data, suppliedCode) {
   return data.reduce((rdx, locale) => {
     const localeCodes = getCodes(locale);
-    const foundCode = localeCodes.some((code) => code === suppliedCode);
-    if (foundCode) rdx.push(locale);
+    if (localeCodes.some((code) => code === suppliedCode)) rdx.push(locale);
     return rdx;
   }, []);
 }
@@ -135,7 +132,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const storedInter = sessionStorage.getItem("international") || getCookie('international');
+  const storedInter = sessionStorage.getItem('international') || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const resp = await fetch(`${origin}/georouting.json`);
