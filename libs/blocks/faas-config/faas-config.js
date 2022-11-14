@@ -83,7 +83,7 @@ const CopyBtn = () => {
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if (!input.value) {
+      if (!input.value && input.id !== '149') {
         inputValuesFilled = false;
         if (requiredPanelExpandButton) {
           requiredPanelExpandButton.click();
@@ -279,7 +279,7 @@ const RequiredPanel = () => {
         // b2bpartners
         if (d.question.id === '149') {
           setField149(html`
-          <${Input} label="Name(s) of B2B Partner(s)"
+          <${Input} label="Name(s) of B2B Partners (Optional)"
           prop="${d.question.id}"
           placeholder="Comma separated list e.g. Microsoft, SAP" />`);
         }
