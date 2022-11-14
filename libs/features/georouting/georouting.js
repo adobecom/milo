@@ -79,13 +79,6 @@ function buildText(locales, config, createTag) {
   return fragment;
 }
 
-function setStorage(prefix) {
-  const modPrefix = prefix || 'us';
-  // set cookie so legacy code on adobecom still works properly.
-  document.cookie = `international=${modPrefix};path=/`;
-  sessionStorage.setItem("international", modPrefix);
-}
-
 function buildLinks(locales, config, createTag) {
   const fragment = new DocumentFragment();
   const wrapper = createTag('div', { class: 'link-wrapper' });
@@ -95,7 +88,10 @@ function buildLinks(locales, config, createTag) {
     const para = createTag('p', { class: 'locale-link-wrapper' }, link);
     wrapper.append(para);
     link.addEventListener('click', () => {
-      setStorage(locale.prefix)
+      const modPrefix = locale.prefix || 'us';
+      // set cookie so legacy code on adobecom still works properly.
+      document.cookie = `international=${modPrefix};path=/`;
+      sessionStorage.setItem("international", modPrefix);
     });
   });
   fragment.append(wrapper);
@@ -165,7 +161,5 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
     const localeMatches = getMatches(json.data, akamaiCode);
     const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
     if (details) { await showModal(details); }
-    return;
   }
-  setStorage(locale.prefix);
 }

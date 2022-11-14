@@ -302,6 +302,23 @@ describe('GeoRouting', () => {
     stubHeadRequestToReturnVal('/ch_it', true);
   });
 
+  it('Will show fallback links if fallbackrouting is on and page exist request fails', async () => {
+    // prepare
+    stubHeadRequestToReturnVal('/ch_it', false);
+    await init(mockConfig, createTag, getMetadata);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const text = modal.querySelectorAll('.locale-text');
+    expect(text).to.not.be.null;
+    expect(text.length).to.be.equal(4);
+    const links = modal.querySelectorAll('a');
+    expect(links).to.not.be.null;
+    expect(links.length).to.be.equal(4);
+    // cleanup
+    stubHeadRequestToReturnVal('/ch_it', true);
+  });
+
   it('Will not display modal if no single link was found and if fallback routing is off', async () => {
     // prepare
     stubFallbackMetadata('off');
