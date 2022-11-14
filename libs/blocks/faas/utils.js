@@ -342,7 +342,6 @@ export const initFaas = (config, targetEl) => {
     $(formEl).faas(state);
   } else {
     state = makeFaasConfig(config);
-    console.log('beforeLoad', state);
     $(formEl).faas(state);
   }
 
