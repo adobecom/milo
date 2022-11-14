@@ -79,8 +79,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
   gap: var(--spacing-m);
-  padding-left: var(--grid-margin-12);
-  padding-right: var(--grid-margin-12);
+  padding-left: var(--grid-margins-12);
+  padding-right: var(--grid-margins-12);
 }
 
 .section .fill-row {
@@ -89,19 +89,19 @@
 
 @media screen and (min-width: 1200px) {
 
-  .section.grid-margin-10 {
-    padding-left: var(--grid-margin-10);
-    padding-right: var(--grid-margin-10);
+  .section.grid-width-10 {
+    padding-left: var(--grid-margins-10);
+    padding-right: var(--grid-margins-10);
   }
 
-  .section.grid-margin-8 {
-    padding-left: var(--grid-margin-8);
-    padding-right: var(--grid-margin-8);
+  .section.grid-width-8 {
+    padding-left: var(--grid-margins-8);
+    padding-right: var(--grid-margins-8);
   }
 
-  .section.grid-margin-6 {
-    padding-left: var(--grid-margin-6);
-    padding-right: var(--grid-margin-6);
+  .section.grid-width-6 {
+    padding-left: var(--grid-margins-6);
+    padding-right: var(--grid-margins-6);
   }
 
   .section.two-up {
