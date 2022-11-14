@@ -86,7 +86,7 @@ const locales = {
   my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
   nz: { ietf: 'en-GB', tk: 'pps7abe.css' },
   ph_en: { ietf: 'en', tk: 'pps7abe.css' },
-  ph_fil: { ietf: 'en-US', tk: 'ict8rmp.css' },
+  ph_fil: { ietf: 'fil-PH', tk: 'ict8rmp.css' },
   sg: { ietf: 'en-SG', tk: 'pps7abe.css' },
   th_en: { ietf: 'en', tk: 'pps7abe.css' },
   in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
@@ -96,6 +96,8 @@ const locales = {
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
   jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
+  // Langstore Support.
+  langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
 };
 
 const config = {

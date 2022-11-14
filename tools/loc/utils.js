@@ -67,12 +67,13 @@ export function getUrlInfo() {
   function getParam(name) {
     return location.searchParams.get(name);
   }
-  const sub = location.hostname.split('.').shift().split('--');
+  const projectName = getParam('project');
+  const sub = projectName ? projectName.split('--') : [];
 
   const sp = getParam('referrer');
-  const owner = getParam('owner') || sub[2];
-  const repo = getParam('repo') || sub[1];
-  const ref = getParam('ref') || sub[0];
+  const owner = getParam('owner') || sub[1];
+  const repo = getParam('repo') || sub[0];
+  const ref = getParam('ref') || 'main';
 
   urlInfo = {
     sp,
