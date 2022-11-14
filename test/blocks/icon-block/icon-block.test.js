@@ -22,7 +22,7 @@ describe('icon blocks', () => {
           });
 
           it('has a heading', () => {
-            const heading = blk.querySelector(isVertical ? '.heading-S' : '.heading-XL');
+            const heading = blk.querySelector(isColumn ? '.heading-S' : '.heading-XL');
             expect(heading).to.exist;
           });
 
