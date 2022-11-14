@@ -78,9 +78,9 @@
 .section.five-up {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
-  padding-left: calc((100vw - var(--grid-12-width)) / 2);
-  padding-right: calc((100vw - var(--grid-12-width)) / 2);
   gap: var(--spacing-m);
+  padding-left: var(--grid-margin-12);
+  padding-right: var(--grid-margin-12);
 }
 
 .section .fill-row {
@@ -89,19 +89,19 @@
 
 @media screen and (min-width: 1200px) {
 
-  .section.span-10-desktop {
-    padding-left: calc((100vw - var(--grid-10-width)) / 2);
-    padding-right: calc((100vw - var(--grid-10-width)) / 2);
+  .section.grid-margin-10 {
+    padding-left: var(--grid-margin-10);
+    padding-right: var(--grid-margin-10);
   }
 
-  .section.span-8-desktop {
-    padding-left: calc((100vw - var(--grid-8-width)) / 2);
-    padding-right: calc((100vw - var(--grid-8-width)) / 2);
+  .section.grid-margin-8 {
+    padding-left: var(--grid-margin-8);
+    padding-right: var(--grid-margin-8);
   }
 
-  .section.span-6-desktop {
-    padding-left: calc((100vw - var(--grid-6-width)) / 2);
-    padding-right: calc((100vw - var(--grid-6-width)) / 2);
+  .section.grid-margin-6 {
+    padding-left: var(--grid-margin-6);
+    padding-right: var(--grid-margin-6);
   }
 
   .section.two-up {
