@@ -27,7 +27,7 @@ const locales = {
   la: { ietf: 'es-LA', tk: 'oln4yqj.css' },
   mx: { ietf: 'es-MX', tk: 'oln4yqj.css' },
   pe: { ietf: 'es-PE', tk: 'oln4yqj.css' },
-  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  '': { ietf: 'en-US', tk: 'aaz7dvd.css' },
   // EMEA
   africa: { ietf: 'en', tk: 'pps7abe.css' },
   be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
@@ -97,7 +97,7 @@ const locales = {
   jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
   // Langstore Support.
-  langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  langstore: { ietf: 'en-US', tk: 'aaz7dvd.css' },
 };
 
 const config = {
