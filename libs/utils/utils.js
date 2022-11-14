@@ -390,6 +390,15 @@ function decorateHeader() {
   }
 }
 
+async function decoratePlaceholders(area, config) {
+  const el = area.documentElement || area;
+  const regex = /{{(.*?)}}/g;
+  const found = regex.test(el.innerHTML);
+  if (!found) return;
+  const { replaceText } = await import('../features/placeholders.js');
+  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+}
+
 async function loadFooter() {
   const footer = document.querySelector('footer');
   if (!footer) return;
@@ -474,6 +483,8 @@ function initSidekick() {
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
+
+  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateHeader();
