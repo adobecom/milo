@@ -11,8 +11,8 @@ describe('icon blocks', () => {
   const blocks = document.querySelectorAll('.icon-block');
   blocks.forEach(block => {
     init(block);
-    const isVertical = block.classList.contains('vertical');
-    describe(`icon block ${isVertical ? "vertical" : "full-width"}`, () => {
+    const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');
+    describe(`icon block ${isColumn ? "column" : "full-width"}`, () => {
       const children = block.querySelectorAll('.text');
       if (children.length) {
         children.forEach(blk => {
