@@ -287,8 +287,7 @@ async function updateFile(dest, metadata, customMetadata = {}) {
 async function getMetadata(srcPath, file) {
   const metadata = {};
   if (file) {
-    metadata.rolloutTime = file?.uploadedFileJson?.lastModifiedDateTime
-      || file?.lastModifiedDateTime;
+    metadata.rolloutTime = new Date().toISOString();
     metadata.rolloutVersion = await getFileVersionInfo(srcPath);
   }
   return metadata;
