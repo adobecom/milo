@@ -82,6 +82,7 @@ export async function getModal(el, custom) {
   });
 
   const content = custom ? handleCustomModal(custom, dialog) : await handleAnchorModal(el, dialog);
+  if (!content) return;
 
   dialog.append(close, content);
   document.body.append(dialog);
