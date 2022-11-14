@@ -93,7 +93,7 @@ function parseTaxonomyJson(data, root) {
         return `${current.origin}${u.pathname}`;
       }
 
-      return `${root}/${generateUri(name)}`;
+      return `${generateUri(root)}/${generateUri(name)}`;
     }, null);
 
     const hidden = !!row[TAXONOMY_FIELDS.hidden]?.trim();
@@ -148,16 +148,16 @@ function parseTaxonomyJson(data, root) {
 
 /**
  * Returns the taxonomy object
- * @param {string} lang Language of the taxonomy
- * @param {*} url URL to use to load the taxonomy
+ * @param {string} config Environment's configurations
+ * @param {*} route path to display topics. Defaults to {contentRoot}
+ * @param {*} target URL to use to load the taxonomy. Defaults to {contentRoot}/taxonomy.json
  * @returns {object} The taxonomy object
  */
-export default async (lang, url) => {
-  const prefix = lang ? `/${lang}` : '';
-  const root = `${prefix}/topics`;
-  const target = url || `${root}/taxonomy.json`;
+export default async (config, route, target) => {
+  const root = route || config.locale.contentRoot;
+  const path = target || `${config.locale.contentRoot}/taxonomy.json`;
 
-  return fetchTaxonomy(target)
+  return fetchTaxonomy(path)
     .then((json) => {
       const taxonomy = parseTaxonomyJson(json.data, root);
 

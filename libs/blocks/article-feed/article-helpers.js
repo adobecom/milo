@@ -126,7 +126,7 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyLibrary.default(getConfig().locale?.prefix).then((_taxonomyModule) => {
+  taxonomyLibrary.default(getConfig(), '/topics').then((_taxonomyModule) => {
     taxonomyModule = _taxonomyModule;
     if (taxonomyModule) {
       // taxonomy loaded, post loading adjustments
