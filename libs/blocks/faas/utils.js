@@ -8,7 +8,7 @@ import {
 } from '../../utils/utils.js';
 
 const { env, miloLibs, codeRoot } = getConfig();
-let state;
+let state = {};
 
 export const getFaasHostSubDomain = (environment) => {
   const faasEnv = environment ?? env.name;
@@ -21,6 +21,9 @@ export const getFaasHostSubDomain = (environment) => {
   }
   if (faasEnv === 'dev') {
     return 'dev.';
+  }
+  if (faasEnv === 'qa') {
+    return 'qa.';
   }
   return 'qa.';
 };
@@ -69,6 +72,10 @@ export const defaultState = {
   e: {},
   title_align: 'center',
   title_size: 'h3',
+  pc1: true,
+  pc2: true,
+  pc3: true,
+  pc4: true,
 };
 
 /* c8 ignore start */
@@ -272,15 +279,16 @@ export const makeFaasConfig = (targetState) => {
     q: {},
     p: {
       js: {
-        36: targetState.pjs36,
-        39: targetState.pjs39,
+        36: targetState.pjs36 || defaultState.p.js[36],
+        39: targetState.pjs39 || defaultState.p.js[39],
         77: 1,
         78: 1,
         79: 1,
         90: 'FAAS',
-        92: targetState.pjs92,
-        93: targetState.pjs93,
-        94: targetState.pjs94,
+        92: targetState.pjs92 || defaultState.p.js[92],
+        93: targetState.pjs93 || defaultState.p.js[93],
+        94: targetState.pjs94 || defaultState.p.js[94],
+        149: '',
       },
     },
     e: { 
@@ -304,7 +312,6 @@ export const makeFaasConfig = (targetState) => {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
 
-  state = config;
   return config;
 };
 
@@ -329,11 +336,12 @@ export const initFaas = (config, targetEl) => {
   }
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
+
   if (state.complete) {
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
-    makeFaasConfig(config);
+    state = makeFaasConfig(config);
     $(formEl).faas(state);
   }
 
