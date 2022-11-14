@@ -1,24 +1,11 @@
 .con-finder {
-  position: fixed;
   width: 360px;
-  background: #303030;
   height: 360px;
-  border-radius: 4px;
-  left: 24px;
-  bottom: 24px;
+  background: #303030;
   color: #FFF;
   overflow: hidden;
   font-family: adobe-clean, 'Trebuchet MS', sans-serif;
   font-size: 14px;
-  filter: drop-shadow(0 0 4px #000);
-  z-index: 10000;
-  transition: height .2s ease, width .2s ease;
-}
-
-.con-finder.is-collapsed {
-  height: 36px;
-  width: 36px;
-  overflow: hidden;
 }
 
 .con-header {
@@ -31,7 +18,7 @@
   display: none;
   background-color: transparent;
   border: 0;
-  background-image: url('../img/spectrum-back.svg');
+  background-image: url('../../ui/img/spectrum-back.svg');
   background-repeat: no-repeat;
   background-position: 50%;
   width: 44px;
@@ -46,7 +33,7 @@
 .con-finder .con-container li button {
   border: none;
   background-color: transparent;
-  background-image: url('../img/spectrum-copy.svg');
+  background-image: url('../../ui/img/spectrum-copy.svg');
   background-position: 50%;
   background-repeat: no-repeat;
   width: 44px;
@@ -65,7 +52,7 @@
   text-indent: -1000px;
   overflow: hidden;
   background-color: transparent;
-  background-image: url('../img/spectrum-preview.svg');
+  background-image: url('../../ui/img/spectrum-preview.svg');
   background-position: 50%;
   background-repeat: no-repeat;
 }
@@ -90,18 +77,8 @@
     background-position: center;
 }
 
-.con-header .con-title .logo:hover {
-  background: url('../img/collapse.svg');
-  background-size: 18px;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.con-finder.is-collapsed .con-header .con-title .logo:hover {
-  background: url('../img/expand.svg');
-  background-size: 18px;
-  background-repeat: no-repeat;
-  background-position: center;
+.con-header .con-title .con-title-text {
+  padding: 0;
 }
 
 .con-finder p.heading {

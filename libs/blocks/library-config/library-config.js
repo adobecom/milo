@@ -2,21 +2,9 @@
 
 import { createTag } from '../../utils/utils.js';
 
-let domain;
-let libraries;
-
 function createCopy(blob) {
   const data = [new ClipboardItem({ [blob.type]: blob })];
   navigator.clipboard.write(data);
-}
-
-function loadStyle(href) {
-  if (!document.head.querySelector(`link[href="${href}"]`)) {
-    const link = document.createElement('link');
-    link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('href', href);
-    document.head.appendChild(link);
-  }
 }
 
 function getAuthorName(block) {
@@ -66,7 +54,7 @@ function getTable(block, name, path) {
 }
 
 async function loadBlockList(paths, list) {
-  paths.forEach(async (path) => {
+  for (const path of paths) {
     const resp = await fetch(path);
     if (!resp.ok) return;
     const json = await resp.json();
@@ -106,7 +94,7 @@ async function loadBlockList(paths, list) {
         list.append(item);
       });
     }
-  });
+  };
 }
 
 function stub(list) {
@@ -138,19 +126,30 @@ async function loadList(type, list) {
   }
 }
 
-function loadLibraries() {
-  if (!libraries) return;
-  loadStyle(`${domain}/libs/ui/library/library.css`);
+export default function init(el) {
+  const librarEls = el.querySelectorAll('a');
+
+  const blockPaths = [...librarEls].map((lib) => { return lib.href; });
+
+  const { searchParams: sp } = new URL(window.location.href);
+  const additionalBlockLibs = sp.getAll('blocks')
+    .map((lib) => {
+      if (lib.startsWith('http')) return lib;
+      return `https://${lib}.hlx.page/docs/library/blocks.json`;
+    });
+  blockPaths.push(...additionalBlockLibs);
+
+  const libraries = [ { text: 'Blocks', paths: blockPaths } ];
+
+  el.querySelector('div').remove();
+
   const finder = document.createElement('div');
   finder.className = 'con-finder';
 
-  const button = createTag('button', { class: 'logo' }, 'Close');
-  button.addEventListener('click', () => {
-    finder.classList.toggle('is-collapsed');
-  });
+  const span = createTag('span', { class: 'logo' }, 'Close');
 
-  const title = createTag('div', { class: 'con-title' }, button);
-  title.append(createTag('p', { class: 'headering' }, 'Library'));
+  const title = createTag('div', { class: 'con-title' }, span);
+  title.append(createTag('p', { class: 'con-title-text' }, 'Library'));
   const header = createTag('div', { class: 'con-header' }, title);
 
   const back = document.createElement('button');
@@ -189,11 +188,5 @@ function loadLibraries() {
       loadList(libraries[type], list);
     });
   });
-  document.body.append(finder);
+  el.append(finder);
 }
-
-document.addEventListener('hlx:library-loaded', (e) => {
-  domain = e.detail.domain;
-  libraries = e.detail.libraries;
-  loadLibraries();
-});

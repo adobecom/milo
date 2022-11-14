@@ -111,11 +111,11 @@ const [getCaasTags, loadCaasTags] = (() => {
         if (resp.ok) {
           const json = await resp.json();
           tags = json.namespaces.caas.tags;
+          return;
         }
       } catch (e) {
         // ignore
       }
-
       const { default: caasTags } = await import('../../libs/blocks/caas-config/caas-tags.js');
       tags = caasTags.namespaces.caas.tags;
     }];

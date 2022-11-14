@@ -1,0 +1,7 @@
+body {
+  background-color: aquamarine;
+}
+
+main > .section > .content {
+  max-width: 100%;
+}

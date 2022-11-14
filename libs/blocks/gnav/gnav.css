@@ -328,6 +328,10 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   margin: 0;
 }
 
+.gnav-search-results > ul:empty {
+  display: none;
+}
+
 .gnav-search-results > ul li {
   font-size: 14px;
     line-height: 1;
