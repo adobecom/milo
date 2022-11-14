@@ -9,6 +9,7 @@ export default {
       '**/deps/**',
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
+      '**/blocks/library-config/**',
       '**/hooks/**',
     ],
   },

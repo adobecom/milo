@@ -1,0 +1,43 @@
+{
+  "project": "Milo",
+  "host": "milo.adobe.com",
+  "libraries": [
+    {
+      "text": "Blocks",
+      "paths": ["https://main--milo--adobecom.hlx.page/docs/library/blocks.json"]
+    }
+  ],
+  "plugins": [
+    {
+      "id": "localize",
+      "title": "Localize",
+      "environments": [ "edit" ],
+      "url": "/tools/loc/index.html?project=milo--adobecom",
+      "passReferrer": true,
+      "includePaths": [ "**.xlsx**" ]
+    },
+    {
+      "title": "Send to CaaS",
+      "id": "sendtocaas",
+      "environments": ["dev","preview", "live", "prod"],
+      "event": "send-to-caas",
+      "excludePaths": ["/tools/caas**", "*.json"]
+    },
+    {
+      "title": "Check Schema",
+      "id": "checkschema",
+      "environments": ["prod"],
+      "event": "check-schema",
+      "excludePaths": ["/tools**", "*.json"]
+    },
+    {
+      "id": "library",
+      "title": "Library",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 398px; width: 360px;",
+      "url": "/tools/library?martech=off",
+      "includePaths": [ "**.docx**" ]
+    }
+  ]
+}
