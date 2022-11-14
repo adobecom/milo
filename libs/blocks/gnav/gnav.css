@@ -1,5 +1,6 @@
 :root {
   --border-color: #e1e1e1;
+  --apps-border-color: #cacaca;
 }
 
 header {
@@ -650,7 +651,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
 /* PROFILE */
 
 .gnav:not(.signed-in) .gnav-profile {
-  min-width: 92.25px;
+  min-width: 5.766rem;
 }
 
 .gnav-profile,
@@ -938,9 +939,9 @@ header .app-launcher {
     left: unset;
     right: 0;
     border-radius: 0 0 4px 4px;
-    border-left-color: #cacaca;
-    border-right-color: #cacaca;
-    border-bottom-color: #cacaca;
+    border-left-color: var(--apps-border-color);
+    border-right-color: var(--apps-border-color);
+    border-bottom-color: var(--apps-border-color);
     box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
     width: 334px;
   }

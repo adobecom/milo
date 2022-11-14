@@ -404,7 +404,6 @@ class Gnav {
 
         appLauncher.default(profileEl, appList, this.toggleMenu);
       }
-      return undefined;
     });
   };
 
@@ -437,7 +436,7 @@ class Gnav {
       const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
 
       if (ioResp.status === 200) {
-        const gnav = profileEl.parentElement;
+        const gnav = profileEl.closest('.gnav');
         gnav.classList.add('signed-in');
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
