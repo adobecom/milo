@@ -84,6 +84,7 @@ class Gnav {
 
     const wrapper = createTag('div', { class: 'gnav-wrapper' }, nav);
 
+    this.setBreadcrumbSEO();
     const breadcrumbs = this.decorateBreadcrumbs();
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
@@ -300,6 +301,10 @@ class Gnav {
       if (resp.status === 200) {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
+        const links = menu.querySelectorAll('a');
+        links.forEach((link) => {
+          decorateSVG(link);
+        });
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
@@ -423,29 +428,49 @@ class Gnav {
   };
 
   decorateSignIn = (blockEl, profileEl) => {
-    const profileDropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
 
-    if (profileDropDown) {
+    const signInEl = dropDown?.querySelector('li:last-of-type a') || profileEl;
+
+    if (dropDown) {
       const id = `navmenu-${blockEl.className}`;
 
-      profileDropDown.id = id;
+      dropDown.id = id;
       profileEl.classList.add('gnav-navitem');
-      profileEl.append(signIn);
-      profileEl.insertAdjacentElement('beforeend', profileDropDown);
+      profileEl.insertAdjacentElement('beforeend', dropDown);
 
-      this.decorateMenu(profileEl, signIn, profileDropDown);
+      this.decorateMenu(profileEl, signIn, dropDown);
       this.setNavLinkAttributes(id, signIn);
-    } else {
-      profileEl.append(signIn);
-      profileEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.adobeIMS.signIn();
-      });
     }
+    signInEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.adobeIMS.signIn();
+    });
+    profileEl.append(signIn);
+  };
+
+  setBreadcrumbSEO = () => {
+    const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
+    if (!seoEnabled) return;
+    const breadcrumb = this.el.querySelector('.breadcrumbs');
+    if (!breadcrumb) return;
+    const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
+    const items = breadcrumb.querySelectorAll('ul > li');
+    items.forEach((item, idx) => {
+      const link = item.querySelector('a');
+      breadcrumbSEO.itemListElement.push({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: link ? link.innerHTML : item.innerHTML,
+        item: link?.href,
+      });
+    });
+    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
+    document.head.append(script);
   };
 
   decorateBreadcrumbs = () => {
@@ -568,7 +593,7 @@ async function fetchGnav(url) {
 export default async function init(header) {
   const { locale, imsClientId } = getConfig();
   const name = imsClientId ? `|${imsClientId}` : '';
-  const url = getMetadata('gnav-source') || `${locale.prefix}/gnav`;
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
   try {

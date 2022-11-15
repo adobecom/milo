@@ -28,27 +28,24 @@ const addWrapper = (el, section, cardType) => {
   const gridCl = 'consonant-CardsGrid';
   const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
 
-  if (prevGrid) {
-    prevGrid.append(el);
-    return;
-  }
+  if (prevGrid) return;
 
-  const prevSib = el.previousElementSibling;
-  const nextSib = el.nextElementSibling;
   const upClass = getUpFromSectionMetadata(section);
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
-  const grid = createTag('div', { class: gridClass }, el);
+  const grid = createTag('div', { class: gridClass });
   const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
   const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
   const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
+  const cards = section.querySelectorAll('.card');
+  const prevSib = cards[0].previousElementSibling;
+
+  grid.append(...cards);
 
   if (prevSib) {
     prevSib.after(wrapper);
-  } else if (nextSib) {
-    nextSib.before(wrapper);
   } else {
-    section.append(wrapper);
+    section.prepend(wrapper);
   }
 };
 

@@ -328,6 +328,10 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   margin: 0;
 }
 
+.gnav-search-results > ul:empty {
+  display: none;
+}
+
 .gnav-search-results > ul li {
   font-size: 14px;
     line-height: 1;
@@ -484,7 +488,7 @@ header .gnav-navitem-menu a:hover:not(.con-button) {
 }
 
 .gnav .gnav-promo.card {
-  min-width: 260px;
+  width: 260px;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -652,10 +656,6 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   min-width: 62.25px;
   padding: 0 12px;
   box-sizing: border-box;
-}
-
-.gnav-profile.has-menu {
-  min-width: 92.25px;
 }
 
 .gnav-profile .gnav-signin {
