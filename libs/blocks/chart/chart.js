@@ -624,9 +624,8 @@ const init = (el) => {
         observer.observe(el);
       }
 
-      const chartTypeAria = await replaceKey(`${chartType}-chart`, config) || `${chartType.replace('-', ' ')} chart`;
       const title = children[0]?.textContent.trim() || children[1]?.textContent.trim();
-      chartWrapper.setAttribute('aria-label', `${chartTypeAria}: ${title}`);
+      chartWrapper.setAttribute('aria-label', `${await replaceKey(`${chartType}-chart`, config)}: ${title}`);
 
       window.addEventListener('resize', throttle(
         1000,
