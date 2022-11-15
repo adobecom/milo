@@ -65,7 +65,7 @@ export default async function decorate(el) {
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
 
-  const heading = await replaceKey('share-this-page', getConfig());
+  const heading = await replaceKey('share-this-page', config);
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
   el.append(createTag('p', null, capitalize(heading)));
   const container = createTag('p', { class: 'icon-container' });
