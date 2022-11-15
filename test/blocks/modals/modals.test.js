@@ -91,4 +91,14 @@ describe('Modals', () => {
     window.location.hash = '';
     await waitForRemoval('#milo');
   });
+
+  it('Opens modal on event', async () => {
+    const testCallback = () => {
+      getModal(document.getElementById('milo-modal-link'));
+      const modal = document.querySelector(`a[data-modal-hash="#milo"]`);
+      expect(modal).to.exist;
+      window.removeEventListener('modal:open');
+    };
+    window.addEventListener('modal:open', testCallback);
+  });
 });
