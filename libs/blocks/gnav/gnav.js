@@ -4,7 +4,6 @@ import {
   createTag,
   decorateSVG,
   getConfig,
-  getBlockClasses,
   getMetadata,
   loadScript,
   makeRelative,
@@ -30,6 +29,14 @@ const debounce = (func, timeout = 300) => {
     timer = setTimeout(async () => func.apply(this, args), timeout);
   };
 };
+
+function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
+}
 
 class Gnav {
   constructor(body, el) {
