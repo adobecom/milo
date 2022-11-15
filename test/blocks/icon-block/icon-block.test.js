@@ -12,7 +12,7 @@ describe('icon blocks', () => {
   blocks.forEach(block => {
     init(block);
     const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');
-    describe(`icon block ${isColumn ? "column" : "full-width"}`, () => {
+    describe(`icon block ${isColumn ? 'column' : 'full-width'}`, () => {
       const children = block.querySelectorAll('.text');
       if (children.length) {
         children.forEach(blk => {

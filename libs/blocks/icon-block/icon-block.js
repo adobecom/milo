@@ -15,14 +15,14 @@
 */
 
 import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 function decorateLayout(el) {
   const children = el.querySelectorAll(':scope > div');
   if (children.length > 1 && children[0].childNodes.length) {
     decorateBlockBg(el, children[0]);
   }
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground');
+  const foreground = createTag('div', { class: 'foreground' });
   el.appendChild(foreground);
   return foreground;
 }
