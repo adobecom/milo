@@ -76,6 +76,38 @@
   border-bottom: 1px solid #d8d8d8;
 }
 
+.section.no-gap {
+  gap: 0;
+}
+
+.section.xxs-gap {
+  gap: var(--spacing-xxs);
+}
+
+.section.xs-gap {
+  gap: var(--spacing-xs);
+}
+
+.section.s-gap {
+  gap: var(--spacing-s);
+}
+
+.section.l-gap {
+  gap: var(--spacing-l);
+}
+
+.section.xl-gap {
+  gap: var(--spacing-xl)
+}
+
+.section.xxl-gap {
+  gap: var(--spacing-xxl);
+}
+
+.section.xxxl-gap {
+  gap: var(--spacing-xxxl);
+}
+
 .section.two-up,
 .section.three-up,
 .section.four-up,
