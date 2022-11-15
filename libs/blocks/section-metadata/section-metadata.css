@@ -68,224 +68,87 @@
   text-align: center;
 }
 
+.section.center[class*='-up'] {
+  justify-items: center;
+}
+
 .section.divider {
   border-bottom: 1px solid #d8d8d8;
 }
 
-.section.grid.xxs-gap {
+.section[class*='-up'].no-gap {
+  gap: 0;
+}
+
+.section[class*='-up'].xxs-gap {
   gap: var(--spacing-xxs);
 }
 
-.section.grid.xs-gap {
+.section[class*='-up'].xs-gap {
   gap: var(--spacing-xs);
 }
 
-.section.grid.s-gap {
+.section[class*='-up'].s-gap {
   gap: var(--spacing-s);
 }
 
-.section.grid.m-gap {
-  gap: var(--spacing-m);
-}
-
-.section.grid.l-gap {
+.section[class*='-up'].l-gap {
   gap: var(--spacing-l);
 }
 
-.section.grid.xl-gap {
-  gap: var(--spacing-xl);
+.section[class*='-up'].xl-gap {
+  gap: var(--spacing-xl)
 }
 
-.section.grid.xxl-gap {
+.section[class*='-up'].xxl-gap {
   gap: var(--spacing-xxl);
 }
 
-.section.grid.xxxl-gap {
+.section[class*='-up'].xxxl-gap {
   gap: var(--spacing-xxxl);
 }
 
-.section.grid.xxs-col-gap {
-  column-gap: var(--spacing-xxs);
-}
-
-.section.grid.xs-col-gap {
-  column-gap: var(--spacing-xs);
-}
-
-.section.grid.s-col-gap {
-  column-gap: var(--spacing-s);
-}
-
-.section.grid.m-col-gap {
-  column-gap: var(--spacing-m);
-}
-
-.section.grid.l-col-gap {
-  column-gap: var(--spacing-l);
-}
-
-.section.grid.xl-col-gap {
-  column-gap: var(--spacing-xl);
-}
-
-.section.grid.xxl-col-gap {
-  column-gap: var(--spacing-xxl);
-}
-
-.section.grid.xxxl-col-gap {
-  column-gap: var(--spacing-xxxl);
-}
-
-.section.grid.xxs-row-gap {
-  row-gap: var(--spacing-xxs);
-}
-
-.section.grid.xs-row-gap {
-  row-gap: var(--spacing-xs);
-}
-
-.section.grid.s-row-gap {
-  row-gap: var(--spacing-s);
-}
-
-.section.grid.m-row-gap {
-  row-gap: var(--spacing-m);
-}
-
-.section.grid.l-row-gap {
-  row-gap: var(--spacing-l);
-}
-
-.section.grid.xl-row-gap {
-  row-gap: var(--spacing-xl);
-}
-
-.section.grid.xxl-row-gap {
-  row-gap: var(--spacing-xxl);
-}
-
-.section.grid.xxxl-row-gap {
-  row-gap: var(--spacing-xxxl);
-}
-
-.section.grid {
+.section.two-up,
+.section.three-up,
+.section.four-up,
+.section.five-up {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
-  padding-left: calc((100vw - var(--grid-12-width)) / 2);
-  padding-right: calc((100vw - var(--grid-12-width)) / 2);
-}
-
-.section.grid.span-10 {
-  padding-left: calc((100vw - var(--grid-10-width)) / 2);
-  padding-right: calc((100vw - var(--grid-10-width)) / 2);
-}
-
-.section.grid.span-8 {
-  padding-left: calc((100vw - var(--grid-8-width)) / 2);
-  padding-right: calc((100vw - var(--grid-8-width)) / 2);
-}
-
-.section.grid.span-6 {
-  padding-left: calc((100vw - var(--grid-6-width)) / 2);
-  padding-right: calc((100vw - var(--grid-6-width)) / 2);
-}
-
-.section.grid>.content {
-  margin: 0;
-  max-width: 100%;
-}
-
-.section .fill-row {
-  grid-column: 1 /-1;
+  gap: var(--spacing-m);
+  padding-left: var(--grid-margins-width);
+  padding-right: var(--grid-margins-width);
 }
 
 @media screen and (min-width: 1200px) {
-
-  .section.grid.span-10 {
-    padding-left: calc((100vw - var(--grid-10-width)) / 2);
-    padding-right: calc((100vw - var(--grid-10-width)) / 2);
+  .section.grid-width-10 {
+    padding-left: var(--grid-margins-width-10);
+    padding-right: var(--grid-margins-width-10);
   }
 
-  .section.grid.span-8 {
-    padding-left: calc((100vw - var(--grid-8-width)) / 2);
-    padding-right: calc((100vw - var(--grid-8-width)) / 2);
+  .section.grid-width-8 {
+    padding-left: var(--grid-margins-width-8);
+    padding-right: var(--grid-margins-width-8);
   }
 
-  .section.grid.span-6 {
-    padding-left: calc((100vw - var(--grid-6-width)) / 2);
-    padding-right: calc((100vw - var(--grid-6-width)) / 2);
+  .section.grid-width-6 {
+    padding-left: var(--grid-margins-width-6);
+    padding-right: var(--grid-margins-width-6);
   }
 
-  .section.grid:not(.auto-cols) {
-    grid-template-columns: repeat(12, 1fr);
+  .section.two-up {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .section.grid .col-1 {
-    grid-column: auto / span 1;
+  .section.three-up {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .section.grid .col-2 {
-    grid-column: auto / span 2;
+  .section.four-up {
+    grid-template-columns: repeat(4, 1fr);
   }
 
-  .section.grid .col-3 {
-    grid-column: auto / span 3;
-  }
-
-  .section.grid .col-4 {
-    grid-column: auto / span 4;
-  }
-
-  .section.grid .col-5 {
-    grid-column: auto / span 5;
-  }
-
-  .section.grid .col-6 {
-    grid-column: auto / span 6;
-  }
-
-  .section.grid .col-7 {
-    grid-column: auto / span 7;
-  }
-
-  .section.grid .col-8 {
-    grid-column: auto / span 8;
-  }
-
-  .section.grid .col-9 {
-    grid-column: auto / span 9;
-  }
-
-  .section.grid .col-10 {
-    grid-column: auto / span 10;
-  }
-
-  .section.grid .col-11 {
-    grid-column: auto / span 11;
-  }
-
-  .section.grid .col-12 {
-    grid-column: auto / span 12;
-  }
-
-  .section.grid .offset-1 {
-    grid-column-start: 2;
-  }
-
-  .section.grid .offset-2 {
-    grid-column-start: 3;
-  }
-
-  .section.grid .offset-3 {
-    grid-column-start: 4;
-  }
-
-  .section.grid .offset-4 {
-    grid-column-start: 5;
-  }
-
-  .section.grid .offset-5 {
-    grid-column-start: 6;
+  .section.five-up {
+    grid-template-columns: repeat(5, 1fr);
   }
 
 }

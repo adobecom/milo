@@ -93,10 +93,10 @@
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
-  --grid-12-width: var(--grid-container-width);
-  --grid-10-width: calc(var(--grid-column-width) * 10);
-  --grid-8-width: calc(var(--grid-column-width) * 8);
-  --grid-6-width: calc(var(--grid-column-width) * 6);
+  --grid-margins-width: calc((100vw - var(--grid-container-width)) / 2);
+  --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
+  --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
+  --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
 }
 
 :root:lang(ko-KR) {

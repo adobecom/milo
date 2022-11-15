@@ -102,10 +102,8 @@
   line-height: 21px;
 }
 
-@media screen and (max-width: 600px) {
-  .section.grid.five-up {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
+.section[class*='-up'] .full-width {
+  grid-column: 1 /-1;
 }
 
 @media screen and (min-width: 600px) {
@@ -127,6 +125,7 @@
     margin: 0 auto;
   }
 
+  .icon-block:not(.centered) .foreground,
   .icon-block:not(.vertical) .foreground {
     max-width: 800px;
     margin: 0 auto;
