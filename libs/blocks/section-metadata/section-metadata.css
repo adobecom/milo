@@ -76,35 +76,35 @@
   border-bottom: 1px solid #d8d8d8;
 }
 
-.section.no-gap {
+.section[class*='-up'].no-gap {
   gap: 0;
 }
 
-.section.xxs-gap {
+.section[class*='-up'].xxs-gap {
   gap: var(--spacing-xxs);
 }
 
-.section.xs-gap {
+.section[class*='-up'].xs-gap {
   gap: var(--spacing-xs);
 }
 
-.section.s-gap {
+.section[class*='-up'].s-gap {
   gap: var(--spacing-s);
 }
 
-.section.l-gap {
+.section[class*='-up'].l-gap {
   gap: var(--spacing-l);
 }
 
-.section.xl-gap {
+.section[class*='-up'].xl-gap {
   gap: var(--spacing-xl)
 }
 
-.section.xxl-gap {
+.section[class*='-up'].xxl-gap {
   gap: var(--spacing-xxl);
 }
 
-.section.xxxl-gap {
+.section[class*='-up'].xxxl-gap {
   gap: var(--spacing-xxxl);
 }
 
