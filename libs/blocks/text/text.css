@@ -1,13 +1,9 @@
 .text-block {
   position: relative;
   text-align: center;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
 }
 
-.text-block p { margin: var(--spacing-xs) 0; }
-
+.text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
@@ -29,49 +25,33 @@
   z-index: -1;
 }
 
-.grid .text-block.xs-spacing.has-bg .foreground {
-  padding-left: var(--spacing-xs);
-  padding-right: var(--spacing-xs);
+.text-block .foreground {
+  max-width: calc(var(--grid-column-width) * 12);
+  margin: 0 auto;
 }
-
-.grid .text-block.s-spacing.has-bg .foreground {
-  padding-left: var(--spacing-s);
-  padding-right: var(--spacing-s);
-}
-
-.grid .text-block.m-spacing.has-bg .foreground {
-  padding-left: var(--spacing-m);
-  padding-right: var(--spacing-m);
-}
-
-.grid .text-block.l-spacing.has-bg .foreground {
-  padding-left: var(--spacing-l);
-  padding-right: var(--spacing-l);
-}
-
-.grid .text-block.xl-spacing.has-bg .foreground {
-  padding-left: var(--spacing-xl);
-  padding-right: var(--spacing-xl);
-}
-
 
 .text-block .action-area {
+  margin-top: var(--spacing-s);
   display: flex;
+  gap: var(--spacing-m);
   flex-wrap: wrap;
-  align-items: center;
   justify-content: center;
-  gap: var(--spacing-s);
 }
 
-.text-block.left .action-area,
-.text-block.align-left .action-area {
-  justify-content: flex-start;
+/* Alignment */
+.text-block.left {
+  text-align: initial;
+  align-items: start;
 }
 
-.text-block.right .action-area,
-.text-block.align-right .action-area {
-  justify-content: flex-end;
+.text-block.left .action-area { justify-content: start; }
+
+.text-block.right {
+  text-align: right;
+  align-items: end;
 }
+
+.text-block.right .action-area { justify-content: end; }
 
 /* Inset */
 .inset.text-block .text {
@@ -87,5 +67,8 @@
 }
 
 /* Desktop */
-@media screen and (min-width: 1200px) { }
-
+@media screen and (min-width: 1200px) {
+  .text-block .foreground {
+    max-width: calc(var(--grid-column-width) * 8);
+  }
+}

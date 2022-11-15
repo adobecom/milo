@@ -3,18 +3,17 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
-  buttons.forEach((button, idx) => {
+  buttons.forEach((button) => {
     const parent = button.parentElement;
-    let buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') buttonType = 'fill';
+    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
-    const actionArea = button.closest('p');
-    actionArea?.classList.add('action-area');
-    if (idx === buttons.length - 1) {
-      button.closest('p')?.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-    }
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
   });
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
 export function decorateIconArea(el) {
@@ -28,18 +27,27 @@ export function decorateIconArea(el) {
 export function decorateBlockText(el, size = 'small') {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
-    headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
+  const decorateText = (headingEl, sizes) => {
+    headingEl.classList.add(`heading-${sizes[0]}`);
+    headingEl.nextElementSibling?.classList.add(`body-${sizes[1]}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${sizes[2]}`);
   };
-  if (size === 'small') {
-    decorate(heading, 'XS', 'S', 'M');
-  } else if (size === 'large') {
-    decorate(heading, 'XL', 'M', 'L');
-  } else {
-    decorate(heading, 'M', 'S', 'M');
+  let sizes;
+  switch(size) {
+    case 'small':
+      sizes = ['XS', 'S', 'M'];
+      break;
+    case 'large':
+      sizes = ['XL', 'M', 'L'];
+      break;
+    case 'xlarge':
+      sizes = ['XXL', 'M', 'L'];
+      break;
+    case 'medium':
+    default:
+      sizes = ['M', 'S', 'M'];
   }
+  decorateText(heading, sizes);
   decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
