@@ -7,6 +7,7 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
+  'article-feed',
   'aside',
   'caas',
   'caas-config',
@@ -81,9 +82,9 @@ function getEnv(conf) {
   if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
-   || host.includes('hlx.live')
-   || host.includes('stage.adobe')
-   || host.includes('corp.adobe')) {
+    || host.includes('hlx.live')
+    || host.includes('stage.adobe')
+    || host.includes('corp.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
