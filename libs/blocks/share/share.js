@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 export async function getSVGsfromFile(path, selectors) {
   if (!path) return null;
@@ -58,15 +59,15 @@ function getDetails(name, url) {
 export default async function decorate(el) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
   el.querySelector('div').remove();
-  el.append(createTag('p', null, 'Share this page:'));
-
   const url = encodeURIComponent(window.location.href);
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
 
+  const heading = await replaceKey('share-this-page', getConfig());
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  el.append(createTag('p', null, capitalize(heading) + ':'));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach((svg) => {
     const details = getDetails(svg.name, url);
