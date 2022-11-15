@@ -13,6 +13,10 @@ export default function init({ loadScript, loadStyle }) {
     const resultsUrl = 'https://search.google.com/test/rich-results?url=';
     window.open(`${resultsUrl}${encodeURIComponent(window.location.href)}`, 'check-schema');
   };
+  const preflightListener = async (e) => {
+    const { preflight } = await import('../../tools/preflight/preflight.js');
+    await preflight();
+   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
   document.addEventListener('send-to-caas', async (e) => {
@@ -26,4 +30,6 @@ export default function init({ loadScript, loadStyle }) {
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
+  sk.addEventListener('custom:pre-flight', preflightListener);
+
 }
