@@ -301,6 +301,10 @@ class Gnav {
       if (resp.status === 200) {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
+        const links = menu.querySelectorAll('a');
+        links.forEach((link) => {
+          decorateSVG(link);
+        });
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
@@ -450,25 +454,23 @@ class Gnav {
   };
 
   setBreadcrumbSEO = () => {
+    const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
+    if (!seoEnabled) return;
     const breadcrumb = this.el.querySelector('.breadcrumbs');
-    if (breadcrumb) {
-      const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
-      if (seoEnabled) {
-        const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
-        const items = breadcrumb.querySelectorAll('ul > li');
-        items.forEach((item, idx) => {
-          const link = item.querySelector('a');
-          breadcrumbSEO.itemListElement.push({
-            '@type': 'ListItem',
-            position: idx + 1,
-            name: link ? link.innerHTML : item.innerHTML,
-            item: link?.href,
-          });
-        });
-        const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
-        document.head.append(script);
-      }
-    }
+    if (!breadcrumb) return;
+    const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
+    const items = breadcrumb.querySelectorAll('ul > li');
+    items.forEach((item, idx) => {
+      const link = item.querySelector('a');
+      breadcrumbSEO.itemListElement.push({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: link ? link.innerHTML : item.innerHTML,
+        item: link?.href,
+      });
+    });
+    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
+    document.head.append(script);
   };
 
   decorateBreadcrumbs = () => {
@@ -591,7 +593,7 @@ async function fetchGnav(url) {
 export default async function init(header) {
   const { locale, imsClientId } = getConfig();
   const name = imsClientId ? `|${imsClientId}` : '';
-  const url = getMetadata('gnav-source') || `${locale.prefix}/gnav`;
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
   try {

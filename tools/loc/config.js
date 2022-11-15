@@ -12,7 +12,7 @@
 /* global */
 import { getUrlInfo } from './utils.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config-v3.json';
+const LOC_CONFIG = '/drafts/localization/configs/config.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 

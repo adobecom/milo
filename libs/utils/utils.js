@@ -7,6 +7,7 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
+  'article-feed',
   'aside',
   'caas',
   'caas-config',
@@ -21,6 +22,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'marketo',
   'card',
   'marquee',
   'media',
@@ -69,6 +71,7 @@ const ENVS = {
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
   },
 };
+const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -79,13 +82,25 @@ function getEnv(conf) {
   if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
-   || host.includes('hlx.live')
-   || host.includes('stage.adobe')
-   || host.includes('corp.adobe')) {
+    || host.includes('hlx.live')
+    || host.includes('stage.adobe')
+    || host.includes('corp.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
+}
+
+export function getLocaleFromPath(locales, path) {
+  const split = path.split('/');
+  const localeString = split[1];
+  const locale = locales[localeString] || locales[''];
+  if (localeString === 'langstore') {
+    locale.prefix = `/${localeString}/${split[2]}`;
+    return locale;
+  }
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  return locale;
 }
 
 // find out current locale based on pathname and existing locales object from config.
@@ -94,10 +109,7 @@ export function getLocale(locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
   const { pathname } = window.location;
-  const split = pathname.split('/');
-  const locale = locales[split[1]] || locales[''];
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
-  return locale;
+  return getLocaleFromPath(locales, pathname);
 }
 
 export const [setConfig, getConfig] = (() => {
@@ -110,7 +122,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);  
+        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
@@ -379,6 +391,15 @@ function decorateHeader() {
   }
 }
 
+async function decoratePlaceholders(area, config) {
+  const el = area.documentElement || area;
+  const regex = /{{(.*?)}}/g;
+  const found = regex.test(el.innerHTML);
+  if (!found) return;
+  const { replaceText } = await import('../features/placeholders.js');
+  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+}
+
 async function loadFooter() {
   const footer = document.querySelector('footer');
   if (!footer) return;
@@ -406,7 +427,7 @@ function decorateSections(el, isDoc) {
 
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
-  if (query !== 'off') {
+  if (query !== 'off' && getMetadata('martech') !== 'off') {
     const { default: martech } = await import('../martech/martech.js');
     martech(config, loadScript, getMetadata);
   }
@@ -464,6 +485,8 @@ export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
+  await decoratePlaceholders(area, config);
+
   if (isDoc) {
     decorateHeader();
   }
@@ -487,6 +510,11 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
+    const type = getMetadata('richresults');
+    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+      const { addRichResults } = await import('../features/richresults.js');
+      addRichResults(type, { createTag, getMetadata });
+    }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);

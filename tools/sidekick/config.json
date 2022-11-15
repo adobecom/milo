@@ -12,9 +12,9 @@
       "id": "localize",
       "title": "Localize",
       "environments": [ "edit" ],
-      "url": "/tools/loc/index.html",
+      "url": "/tools/loc/index.html?project=milo--adobecom",
       "passReferrer": true,
-      "include_paths": [ "**.xlsx**" ]
+      "includePaths": [ "**.xlsx**" ]
     },
     {
       "title": "Send to CaaS",
@@ -29,6 +29,15 @@
       "environments": ["prod"],
       "event": "check-schema",
       "excludePaths": ["/tools**", "*.json"]
+    },
+    {
+      "id": "library",
+      "title": "Library",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 398px; width: 360px;",
+      "url": "/tools/library",
+      "includePaths": [ "**.docx**" ]
     }
   ]
 }
