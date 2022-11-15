@@ -177,6 +177,12 @@ describe('Utils', () => {
     expect(document.querySelector('footer')).to.not.exist;
   });
 
+  it('Decorates placeholder', () => {
+    const paragraphs = [...document.querySelectorAll('p')];
+    const lastPara = paragraphs.pop();
+    expect(lastPara.textContent).to.equal('nothing to see here');
+  });
+
   it('getLocale default return', () => {
     expect(utils.getLocale().ietf).to.equal('en-US');
   });
