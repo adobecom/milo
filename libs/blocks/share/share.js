@@ -57,8 +57,8 @@ function getDetails(name, url) {
 }
 
 export default async function decorate(el) {
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot;
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
   el.querySelector('div').remove();
   const url = encodeURIComponent(window.location.href);
