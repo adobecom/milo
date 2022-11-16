@@ -146,6 +146,8 @@ function parseTaxonomyJson(data, root) {
   });
 }
 
+const formatPath = (str) => str?.replace(/^\/+/g, '').replace(/\/+$/, '');
+
 /**
  * Returns the taxonomy object
  * @param {string} config Environment's configurations
@@ -154,7 +156,9 @@ function parseTaxonomyJson(data, root) {
  * @returns {object} The taxonomy object
  */
 export default async (config, route, target) => {
-  const root = route || config.locale.contentRoot;
+  const root = route
+        ? `${config.locale.contentRoot}/${formatPath(route)}` 
+        : config.locale.contentRoot;
   const path = target || `${config.locale.contentRoot}/taxonomy.json`;
 
   return fetchTaxonomy(path)
