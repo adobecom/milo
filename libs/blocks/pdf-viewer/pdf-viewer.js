@@ -2,7 +2,25 @@ import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 
 const API_SOURCE_URL = 'https://documentcloud.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
-const { env } = getConfig();
+const CLIENT_ID_LIVE = '96e41871f28349e08b3562747a72dc75';
+
+export const getPdfConfig = () => {
+  const { env } = getConfig();
+  const { host, href } = window.location;
+  const location = new URL(href);
+  const query = location.searchParams.get('env');
+  let clientId = env.consumer?.pdfViewerClientId;
+  let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+
+  if (host.includes('hlx.live') || query === 'live') {
+    /* c8 ignore next */
+    clientId ??= CLIENT_ID_LIVE;
+  } else {
+    clientId ??= env.pdfViewerClientId;
+  }
+
+  return { clientId, reportSuiteId };
+};
 
 const init = async (a) => {
   const url = a?.href;
@@ -19,20 +37,15 @@ const init = async (a) => {
 
   await loadScript(API_SOURCE_URL);
   const fileName = decodeURI(url?.split('/').pop());
-
-  console.log({
-    clientId: env.consumer?.pdfViewerClientId || env.pdfViewerClientId,
-    divId: `${PDF_RENDER_DIV_ID}_${idSuffix}`,
-    reportSuiteId: env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite,
-  });
+  const { clientId, reportSuiteId } = getPdfConfig();
 
   /* c8 ignore next 16 */
   const handleViewSdkReady = () => {
     const adobeDCView = new AdobeDC.View(
       {
-        clientId: env.consumer?.pdfViewerClientId || env.pdfViewerClientId,
+        clientId,
         divId: `${PDF_RENDER_DIV_ID}_${idSuffix}`,
-        reportSuiteId: env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite,
+        reportSuiteId,
       },
     );
     adobeDCView.previewFile(
