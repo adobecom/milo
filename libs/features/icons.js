@@ -2,8 +2,10 @@ let fetchedIcons;
 let fetched = false;
 
 async function getSVGsfromFile(path) {
+  /* c8 ignore next */
   if (!path) return null;
   const resp = await fetch(path);
+  /* c8 ignore next */
   if (!resp.ok) return null;
   const miloIcons = {};
   const text = await resp.text();
@@ -22,9 +24,11 @@ async function getSVGsfromFile(path) {
 
 // eslint-disable-next-line no-async-promise-executor
 export const fetchIcons = (config) => new Promise(async (resolve) => {
+  /* c8 ignore next */
   if (fetched) { resolve(fetchedIcons); return; }
   const { miloLibs, codeRoot } = config;
   const base = miloLibs || codeRoot;
+  console.log(config);
   fetchedIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
   fetched = true;
   resolve(fetchedIcons);
@@ -32,9 +36,11 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 
 export default async function loadIcons(domIcons, config) {
   const icons = await fetchIcons(config);
+  /* c8 ignore next */
   if (!icons) return;
   domIcons.forEach(async (i) => {
     const svg = i.querySelector('svg');
+    /* c8 ignore next */
     if (svg) return;
     const iconName = i.classList[1].replace('icon-', '');
     if (!icons[iconName]) return;

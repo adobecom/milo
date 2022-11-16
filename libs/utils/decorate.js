@@ -3,19 +3,24 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
-  buttons.forEach((button, idx) => {
+  buttons.forEach((button) => {
     const parent = button.parentElement;
-    let buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    if (buttonType === 'outline' && button.firstChild.nodeName === 'STRONG') buttonType = 'fill';
+    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
     button.classList.add('con-button', buttonType);
     if (size) button.classList.add(size); /* button-L, button-XL */
-    const actionArea = button.closest('p');
-    if (actionArea) {
-      actionArea.classList.add('action-area');
-      if (idx === buttons.length - 1) {
-        actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-      }
-    }
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
+  });
+  const actionArea = buttons[0].closest('p');
+  actionArea.classList.add('action-area');
+  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+}
+
+export function decorateButtonsGroup(el) {
+  const icons = el.querySelectorAll('.icon');
+  icons.forEach((icon) => {
+    icon.parentElement.classList.add('icon-area');
+    if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
   });
 }
 
@@ -34,6 +39,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
+  decorateButtonsGroup(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
