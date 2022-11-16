@@ -224,5 +224,4 @@ describe('Utils', () => {
     });
     expect(io instanceof IntersectionObserver).to.be.true;
   });
-
 });

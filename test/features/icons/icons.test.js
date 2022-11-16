@@ -52,7 +52,7 @@ describe('Icon Suppprt', () => {
 // describe('Icon support', () => {
 //   it('Load icons', async () => {
 //     const paragraph = document.createElement('p');
-//     paragraph.innerHTML = '<span class="icon icon-milo-play"></span>';
+//     paragraph.innerHTML = '<span class="icon icon-play"></span>';
 //     await loadIcons(paragraph);
 //     const selector = paragraph.querySelector(':scope svg');
 //     expect(selector).to.exist;
