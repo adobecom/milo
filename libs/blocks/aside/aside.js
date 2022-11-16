@@ -14,11 +14,11 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const asideTypes = ['inline', 'notification'];
-const [INLINE, NOTIFICATION] = asideTypes;
+const asideTypes = ['inline', 'notification', 'split'];
+const [INLINE, NOTIFICATION, SPLIT] = asideTypes;
 const asideSizes = ['extra-small', 'small', 'medium', 'large'];
 const [SIZE_XS, SIZE_S, SIZE_M, SIZE_L] = asideSizes;
 
@@ -28,6 +28,27 @@ function decorateLayout(el) {
   foreground.classList.add('foreground', 'container');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   return foreground;
+}
+
+function decorateLinks(el) {
+  const links = el.querySelectorAll('a');
+  if (links.length === 0) return;
+  const actionLinks = [...links].filter(link => link.closest('div')?.classList.contains('text'));
+  const actions = document.createElement('div');
+  actions.classList.add('action-area');
+  actionLinks.forEach(link => {
+    let parent = link.parentElement;
+    if (parent.nodeName === 'P') link.classList.add('body-S');
+    else {
+      const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+      link.classList.add('con-button', buttonType);
+      parent = link.closest('p');
+    }
+    actions.insertAdjacentElement('beforeend', link);
+    parent?.remove();
+  });
+  const content = el.querySelector('.text');
+  content?.insertAdjacentElement('beforeend', actions);
 }
 
 function decorateContent(el, type, size) {
@@ -52,7 +73,6 @@ function decorateContent(el, type, size) {
     );
   }
   iconArea?.classList.add('icon-area');
-  decorateButtons(el);
   const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
   const isInline = type === INLINE;
@@ -75,7 +95,17 @@ function decorateContent(el, type, size) {
   const body = createTag('div', { class: 'body-area' });
   bodyCopy?.insertAdjacentElement('beforebegin', body);
   body.append(bodyCopy);
-  el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
+  if (type === SPLIT) {
+    const splitBg = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+    if (splitBg) {
+      splitBg.classList.add('split-image');
+      el.parentElement.appendChild(splitBg);
+    }
+  } else {
+    el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
+  }
+  decorateVideo(el, 'image');
+  decorateLinks(el);
 }
 
 export default function init(el) {
