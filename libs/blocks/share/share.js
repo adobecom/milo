@@ -66,7 +66,7 @@ export default async function decorate(el) {
   if (!svgs) return;
 
   const heading = await replaceKey('share-this-page', config);
-  const toSentenceCase = (str) => str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   el.append(createTag('p', null, toSentenceCase(heading)));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach((svg) => {
