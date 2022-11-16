@@ -108,5 +108,13 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
+    if (media?.lastChild.textContent && !media?.lastChild.textContent.match(/^\s+$/g)) {
+      const mediaCredit = document.createElement('div');
+      mediaCredit.classList.add('media-credit', 'container');
+      mediaCredit.innerHTML = `<p class="body-S">${media.lastChild.textContent}</p>`;
+      el.appendChild(mediaCredit);
+      el.classList.add('has-credit');
+      media.lastChild.remove();
+    }
   }
 }
