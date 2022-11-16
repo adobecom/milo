@@ -47,8 +47,11 @@
   color: white;
 }
 
-.aside .background,
-.aside.split .split-image {
+.aside.split picture {
+  display: flex;
+}
+
+.aside .background {
   overflow: hidden;
   position: absolute;
   left: 0;
@@ -422,6 +425,15 @@
     margin-bottom: 0;
     max-width: 318px;
     padding-right: 0;
+  }
+
+  .aside.split .split-image {
+    overflow: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
   }
 
   .aside.split.large {
