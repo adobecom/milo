@@ -392,6 +392,7 @@ function decorateHeader() {
 
 async function decorateIcons(area, config) {
   const domIcons = area.querySelectorAll('span.icon');
+  console.log('decorateIcons()', domIcons)
   if (domIcons.length === 0) return;
   const { default: loadIcons } = await import('../features/icons.js');
   loadIcons(domIcons, config);

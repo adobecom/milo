@@ -28,7 +28,6 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   if (fetched) { resolve(fetchedIcons); return; }
   const { miloLibs, codeRoot } = config;
   const base = miloLibs || codeRoot;
-  console.log(config);
   fetchedIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
   fetched = true;
   resolve(fetchedIcons);
