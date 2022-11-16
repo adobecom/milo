@@ -1,17 +1,17 @@
 const subBlocks = [
-  'gnav-brand',
   'adobe-logo',
-  'link-group',
-  'large-menu',
-  'search',
-  'profile',
   'breadcrumbs',
+  'gnav-brand',
   'gnav-promo',
+  'large-menu',
+  'link-group',
+  'profile',
   'region-selector',
+  'search',
   'social'
 ]
 
-export function showFallback(block) {
+export function showError(block, name) {
   const isSubBlock = [...block.classList].some(r=> subBlocks.indexOf(r) >= 0)
   if (!isSubBlock) {
     block.dataset.failed = 'true';

@@ -260,8 +260,8 @@ export async function loadBlock(block) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
-          const { showFallback } = await import('../blocks/fallback/fallback.js');
-          showFallback(block);
+          const { showError } = await import('../blocks/fallback/fallback.js');
+          showError(block, name);
         }
       }
       resolve();
