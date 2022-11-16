@@ -35,22 +35,13 @@ describe('tabs', () => {
     const unSelectedBtn = allTabs[0].querySelector('div[role="tablist"] button[aria-selected="false"]');
     const unSelectedBtn1 = allTabs[1].querySelector('div[role="tablist"] button[aria-selected="false"]');
     unSelectedBtn.focus();
-    await sendKeys({
-      down: 'ArrowRight',
-    });
-    await sendKeys({
-      press: 'Enter',
-    });
+    await sendKeys({ down: 'ArrowRight' });
+    await sendKeys({ press: 'Enter' });
     expect(unSelectedBtn.ariaSelected).to.equal('true');
 
     unSelectedBtn1.focus();
-    await sendKeys({
-      down: 'ArrowLeft',
-    });
-    await sendKeys({
-      press: 'Space',
-    });
+    await sendKeys({ down: 'ArrowLeft' });
+    await sendKeys({ press: 'Space' });
     expect(unSelectedBtn1.ariaSelected).to.equal('false');
   });
-
 });

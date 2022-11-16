@@ -22,7 +22,7 @@ export function updateObj(obj, defaultObj) {
   return obj;
 }
 
-export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+export function createIntersectionObserver({ el, callback }) {
   // fire immediately
   callback(el, { target: el });
 }

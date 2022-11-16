@@ -82,8 +82,8 @@ describe('loadStrings', () => {
   });
 
   it('should fetch data from the given url', async () => {
-    const strings = await loadStrings('http://my.test.url');
-    expect(strings).to.eql(strings);
+    const loadedStrings = await loadStrings('http://my.test.url');
+    expect(loadedStrings).to.eql(strings);
   });
 });
 
@@ -292,4 +292,3 @@ describe('getConfig', () => {
     });
   });
 });
-

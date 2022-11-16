@@ -6,13 +6,13 @@ const { default: init } = await import('../../../libs/blocks/icon-block/icon-blo
 
 describe('icon blocks', () => {
   const blocks = document.querySelectorAll('.icon-block');
-  blocks.forEach(block => {
+  blocks.forEach((block) => {
     init(block);
     const isVertical = block.classList.contains('vertical');
-    describe(`icon block ${isVertical ? "vertical" : "full-width"}`, () => {
+    describe(`icon block ${isVertical ? 'vertical' : 'full-width'}`, () => {
       const children = block.querySelectorAll('.text');
       if (children.length) {
-        children.forEach(blk => {
+        children.forEach((blk) => {
           it('has an icon', () => {
             const icon = blk.querySelector('.icon-area');
             expect(icon).to.exist;
@@ -29,6 +29,6 @@ describe('icon blocks', () => {
           });
         });
       }
-    })
+    });
   });
-})
+});

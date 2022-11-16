@@ -28,9 +28,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);
@@ -69,9 +69,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);
@@ -97,9 +97,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);

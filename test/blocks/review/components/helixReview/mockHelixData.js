@@ -1,53 +1,46 @@
 import { stub } from 'sinon';
 
-const stubedFetch = stub(window, 'fetch');
-const HELIX_REVIEW_URL = '/data/review';
-const data = [
-  {
-    total: 100,
-    rating: 4,
-    average: 4
-  }
-];
+stub(window, 'fetch');
 
-function jsonOk (body) {
+const data = [{
+  total: 100,
+  rating: 4,
+  average: 4,
+}];
+
+function jsonOk(body) {
   const mockResponse = new window.Response(JSON.stringify(body), {
     status: 200,
-    headers: {
-      'Content-type': 'application/json'
-    }
+    headers: { 'Content-type': 'application/json' },
   });
 
   return Promise.resolve(mockResponse);
 }
 
-function jsonError (status, body) {
+function jsonError(status, body) {
   const mockResponse = new window.Response(JSON.stringify(body), {
     status: 500,
     ok: false,
-    headers: {
-      'Content-type': 'application/json'
-    }
+    headers: { 'Content-type': 'application/json' },
   });
 
   return Promise.reject(mockResponse);
 }
 
 export const stubFetch = () => {
-  window.fetch.returns(jsonOk({
-    data: JSON.stringify(data)
-  }));
+  const resp = jsonOk({ data: JSON.stringify(data) });
+  window.fetch.returns(resp);
 };
 
 export const stubFetchError = () => {
-  window.fetch.returns(jsonError({
+  const resp = jsonError({
     status: 500,
-    data: JSON.stringify(data)
-  }));
-}
+    data: JSON.stringify(data),
+  });
+  window.fetch.returns(resp);
+};
 
 export const stubEmptyResponse = () => {
-  window.fetch.returns(jsonOk({
-    data: JSON.stringify([])
-  }));
-}
+  const resp = jsonOk({ data: JSON.stringify([]) });
+  window.fetch.returns(resp);
+};

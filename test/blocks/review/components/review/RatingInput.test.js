@@ -1,5 +1,4 @@
 import { expect } from '@esm-bundle/chai';
-// import { fireEvent, render, screen } from '@testing-library/preact';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../../../helpers/waitfor.js';
 
@@ -25,13 +24,13 @@ describe('RatingInput', () => {
   it('should display rating Input', async (done) => {
     done();
     const ratingInputElement = await waitForElement('.hlx-Review-ratingFields');
-    expect(ratingElement).to.exist;
+    expect(ratingInputElement).to.exist;
   });
 
   it('should test keypress event', async (done) => {
     done();
     const ratingInputElement = await waitForElement(
-      '.hlx-Review-ratingFields input'
+      '.hlx-Review-ratingFields input',
     );
     expect(ratingInputElement.classList.contains('has-keyboard-focus')).to.be
       .true;

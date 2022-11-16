@@ -5,6 +5,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/quote/quote.js');
 const quotes = document.querySelectorAll('.quote');
 
+/* eslint-disable-next-line no-restricted-syntax */
 for await (const quote of quotes) {
   await init(quote);
 }

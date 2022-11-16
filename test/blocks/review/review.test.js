@@ -6,12 +6,8 @@ import init from '../../../libs/blocks/review/review.js';
 describe('Review Comp', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    window.localStorage.setItem('/data/review', JSON.stringify({'rating': 5}));
-    window.s_adobe = {
-      visitor: {
-        getMarketingCloudVisitorID: () => { return 'abcd'; }
-      }
-    };
+    window.localStorage.setItem('/data/review', JSON.stringify({ rating: 5 }));
+    window.s_adobe = { visitor: { getMarketingCloudVisitorID: () => 'abcd' } };
   });
 
   it('could be initialized', async () => {
@@ -22,9 +18,7 @@ describe('Review Comp', () => {
   });
 
   it('could be initialized (with all missing fields)', async () => {
-    document.body.innerHTML = await readFile({
-      path: './mocks/missing-fields.html',
-    });
+    document.body.innerHTML = await readFile({ path: './mocks/missing-fields.html' });
     const div = document.querySelector('.review');
     await init(div);
 

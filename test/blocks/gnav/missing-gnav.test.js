@@ -1,7 +1,7 @@
-import { readFile, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
+import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
@@ -30,6 +30,4 @@ describe('Fragments', () => {
     expect(gnav).to.be.null;
     expect(console.log.args[0][0]).to.equal('Could not create global navigation:');
   });
-
-
 });

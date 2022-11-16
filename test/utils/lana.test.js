@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import '../../../libs/utils/lana.js';
+import '../../libs/utils/lana.js';
 
 const defaultTestOptions = {
   clientId: 'testClientId',
@@ -30,7 +30,7 @@ describe('LANA', () => {
   beforeEach(() => {
     xhr = sinon.useFakeXMLHttpRequest();
     xhrRequests = [];
-    xhr.onCreate = function (req) {
+    xhr.onCreate = function oncreate(req) {
       xhrRequests.push(req);
     };
 
@@ -57,7 +57,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=myClientId&s=100&t=e'
+      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=myClientId&s=100&t=e',
     );
   });
 
@@ -67,30 +67,30 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://lana.adobeio.com/?m=Promise%20Rejection&c=testClientId&s=100&t=i'
+        'https://lana.adobeio.com/?m=Promise%20Rejection&c=testClientId&s=100&t=i',
       );
       done();
     };
     window.addEventListener('unhandledrejection', testCallback);
+    /* eslint-disable-next-line prefer-promise-reject-errors */
     Promise.reject('Promise Rejection');
   });
 
   it('Will truncate the message', () => {
     const longMsg = 'm'.repeat(2100);
-    const expectedMsg = 'm'.repeat(2000) + '%3Ctrunc%3E';
+    const expectedMsg = `${'m'.repeat(2000)}%3Ctrunc%3E`;
     window.lana.log(longMsg);
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://lana.adobeio.com/?m=' + expectedMsg + '&c=testClientId&s=100&t=e'
+      `https://lana.adobeio.com/?m=${expectedMsg}&c=testClientId&s=100&t=e`,
     );
   });
 
   it('Consoles data when debug mode is enabled', (done) => {
     window.lana.debug = true;
     window.lana.log('Test debug log message', { clientId: 'debugClientId' });
-    const serverResponse =
-      'client=debugClientId,type=e,sample=1,user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36,referer=undefined,ip=23.56.175.228,message=Test debug log message';
+    const serverResponse = 'client=debugClientId,type=e,sample=1,user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36,referer=undefined,ip=23.56.175.228,message=Test debug log message';
     xhrRequests[0].respond(200, { 'Content-Type': 'text/html' }, serverResponse);
 
     setTimeout(() => {
@@ -148,7 +148,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore'
+      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore',
     );
   });
 });

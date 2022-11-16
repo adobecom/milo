@@ -1,5 +1,4 @@
 import { expect } from '@esm-bundle/chai';
-// import { fireEvent, render, screen } from '@testing-library/preact';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../../../helpers/waitfor.js';
 

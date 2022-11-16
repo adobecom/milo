@@ -1,6 +1,5 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
 import { waitForElement } from '../helpers/waitfor.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
