@@ -66,8 +66,8 @@ export default async function decorate(el) {
   if (!svgs) return;
 
   const heading = await replaceKey('share-this-page', config);
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-  el.append(createTag('p', null, capitalize(heading)));
+  const toSentenceCase = (str) => str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
+  el.append(createTag('p', null, toSentenceCase(heading)));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach((svg) => {
     const details = getDetails(svg.name, url);
