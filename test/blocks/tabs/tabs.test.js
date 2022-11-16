@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 

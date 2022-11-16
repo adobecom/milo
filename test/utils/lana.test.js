@@ -1,5 +1,3 @@
-/* global describe beforeEach afterEach it window.lana */
-
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import '../../../libs/utils/lana.js';

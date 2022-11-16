@@ -1,4 +1,3 @@
-/* global describe beforeEach afterEach it */
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { defaultState, getConfig, loadStrings } from '../../../libs/blocks/caas/utils.js';

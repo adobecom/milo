@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import interlink from '../../../libs/features/interlinks.js';

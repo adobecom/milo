@@ -1,5 +1,3 @@
-/* global describe it */
-
 import { expect } from '@esm-bundle/chai';
 import getUuid from '../../../libs/utils/getUuid.js';
 import { isValidUuid } from '../../../libs/utils/utils.js';

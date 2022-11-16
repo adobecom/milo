@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { expect } from '@esm-bundle/chai';
 import Tree from '../../../libs/utils/tree.js';
 

@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { waitForElement } from '../../helpers/waitfor.js';

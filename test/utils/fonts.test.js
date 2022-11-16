@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global it */
 import { expect } from '@esm-bundle/chai';
 import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 

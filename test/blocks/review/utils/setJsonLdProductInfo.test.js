@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
 import { expect } from '@esm-bundle/chai';
 import setJsonLdProductInfo from '../../../../libs/blocks/review/utils/setJsonLdProductInfo.js';
 
