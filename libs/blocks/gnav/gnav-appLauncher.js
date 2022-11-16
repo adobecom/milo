@@ -43,6 +43,7 @@ function decorateAppsMenu(profileEl, appsDom, toggle) {
   appsDropDown.append(appsUl);
   appdNavItem.append(appButton, appsDropDown);
   profileEl.after(appdNavItem);
+  return appdNavItem;
 }
 
 function updateGnav(profileEl) {
@@ -52,22 +53,19 @@ function updateGnav(profileEl) {
   gnav.classList.add('has-apps');
 }
 
-export default function getApps(profileEl, appLauncherBlock, toggle) {
+export default async function getApps(profileEl, appLauncherBlock, toggle) {
   updateGnav(profileEl);
 
   const appsLink = appLauncherBlock.querySelector('a');
   appsLink.href = makeRelative(appsLink.href, true);
   
   const path = appsLink.href;
-  const promise = fetch(`${path}.plain.html`);
-  promise.then(async (resp) => {
-    if (resp.status === 200) {
-      const html = await resp.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const appsDom = doc.querySelectorAll('body > div > ul > li');
+  const resp = await fetch(`${path}.plain.html`);
+  if (!resp.ok) return null;
 
-      decorateAppsMenu(profileEl, appsDom, toggle);
-    }
-  });
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const appsDom = doc.querySelectorAll('body > div > ul > li');
+  return decorateAppsMenu(profileEl, appsDom, toggle);
 }
