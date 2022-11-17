@@ -27,7 +27,7 @@ export function decorateIconArea(el) {
 export function decorateBlockText(el, size = 'small') {
   const blockTypeSizes = {
     media: {
-      //: [heading, detail, body]
+      //name: [heading, detail, body]
       small: ['XS', 'M', 'S'],
       medium: ['M', 'M', 'S'],
       large: ['XL', 'L', 'M'],
@@ -38,23 +38,18 @@ export function decorateBlockText(el, size = 'small') {
       medium: ['L', 'M', 'M'],
       large: ['XL', 'L', 'M'],
       xlarge: ['XXL', 'XL', 'L'],
-    },
-    norm: {
-      small: ['S', 'S', 'S'],
-      medium: ['M', 'M', 'M'],
-      large: ['L', 'L', 'L'],
-      xlarge: ['XL', 'XL', 'XL'],
     }
   };
-  const sizeType = el.classList.contains('text') ? blockTypeSizes.text[size] : blockTypeSizes.media[size];
-  const decorateText = (headingEl, sizes) => {
+  const sizeType = el.classList.contains('text-block') ? blockTypeSizes.text[size] : blockTypeSizes.media[size];
+  const decorateHeading = (headingEl, sizes) => {
     headingEl.classList.add(`heading-${sizes[0]}`);
     headingEl.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
-    headingEl.nextElementSibling?.classList.add(`body-${sizes[2]}`);
+    const emptyPs = headingEl.parentElement.querySelectorAll(':scope > p:not([class])');
+    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizeType[2]}`); });
   };
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  if (heading) decorateText(heading, sizeType);
+  if (heading) decorateHeading(heading, sizeType);
   decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
