@@ -389,8 +389,8 @@ class Gnav {
     const appLauncherBlock = this.body.querySelector('.app-launcher');
     if (!appLauncherBlock) return;
 
-    const appLauncher = await import('./gnav-appLauncher.js');
-    appLauncher.default(profileEl, appLauncherBlock, this.toggleMenu);
+    const { default: appLauncher } = await import('./gnav-appLauncher.js');
+    appLauncher(profileEl, appLauncherBlock, this.toggleMenu);
   };
   
   decorateProfile = () => {

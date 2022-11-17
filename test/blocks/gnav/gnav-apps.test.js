@@ -18,16 +18,14 @@ describe('App Launcher', () => {
     expect(appLauncherBlock).to.exist;
   });
 
-  it('Signed-in with apps menu', async () => {
+  it('Gnav with apps menu', async () => {
     const nav = document.body.querySelector('nav');
     const profile = document.body.querySelector('.gnav-profile');
     const appLauncherBlock = document.body.querySelector('.app-launcher');
     
     await getApps(profile, appLauncherBlock, toggle);
     
-    const signedIn = nav.classList.contains('signed-in');
     const hasApps = nav.classList.contains('has-apps');
-    expect(signedIn).to.be.true;
     expect(hasApps).to.be.true;
   });
 
