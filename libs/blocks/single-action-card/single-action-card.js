@@ -17,8 +17,7 @@
 import { createTag } from '../../utils/utils.js';
 
 function decorateLayout(el) {
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container');
+  const foreground = createTag('div', { class: 'foreground' });
   el.appendChild(foreground);
   return foreground;
 }
@@ -52,11 +51,7 @@ function decorateContent(block) {
 
 export default function init(el) {
   const foreground = decorateLayout(el);
-  const blocks = el.querySelectorAll(':scope > div:not([class])');
-  if (blocks.length > 1) foreground.classList.add('grid');
-  [...blocks].forEach(block => {
-    decorateContent(block);
-    foreground.insertAdjacentElement('beforeEnd', block.children[0]);
-    block.remove();
-  });
+  const block = el.querySelector(':scope > div:not([class])');
+  decorateContent(block);
+  foreground.insertAdjacentElement('beforeEnd', block);
 }

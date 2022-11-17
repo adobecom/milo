@@ -29,116 +29,202 @@
   min-height: 700px;
 }
 
-.single-action-card .foreground.container .card-block {
+.single-action-card .foreground {
+  gap: var(--spacing-m);
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.two-up .single-action-card .foreground,
+.three-up .single-action-card .foreground {
+  max-width: 100%;
+  margin: 0;
+}
+
+.single-action-card .foreground .card-block {
   position: relative;
   display: flex;
   flex-direction: row;
-  gap: 24px;
   text-align: left;
   align-items: center;
   background-color: white;
   border: 1px solid #D5D5D5;
   border-radius: 4px;
   max-height: 132px;
+  gap: 24px;
+  width: 99%;
+  overflow: hidden;
 }
 
-.single-action-card .foreground.container .card-block .card-content {
-  padding-right: 24px;
+.single-action-card .foreground .card-block .card-content {
+  padding-right: var(--spacing-s);
 }
 
-.single-action-card .foreground.container .card-block .card-image {
+.single-action-card .foreground .card-block .card-image {
   height: 132px;
   flex: 1 0 90px;
 }
 
-.single-action-card .foreground.container .card-block .card-image img {
+.single-action-card .foreground .card-block .card-image img {
   object-fit: cover;
   height: 100%;
 }
 
-.single-action-card.tile .foreground.container .card-block .card-image {
+.single-action-card.tile .foreground .card-block .card-image {
   height: 132px;
   flex: 1 0 85px;
   display: flex;
   align-items: center;
 }
 
-.single-action-card.tile .foreground.container .card-block .card-image picture {
+.single-action-card.tile .foreground .card-block .card-image picture {
   height: 53px;
 }
 
-.single-action-card.tile .foreground.container .card-block .card-image img {
+.single-action-card.tile .foreground .card-block .card-image img {
+  width: 52px;
   height: 53px;
-  width: 53px;
-  margin-left: 32px;
+  object-fit: contain;
+  margin-left: var(--spacing-m);
 }
 
-.single-action-card .foreground.container.grid {
-  gap: 32px;
-}
-
-.single-action-card .foreground.container.grid .card-block .card-image {
+.single-action-card .foreground .card-block .card-image {
   flex: 1 0 90px;
 }
 
-.single-action-card.tile .foreground.container.grid .card-block .card-image {
+.single-action-card.tile .foreground .card-block .card-image {
   flex: 1 0 85px;
 }
 
-.single-action-card.tile .foreground.container.grid .card-block .card-image img {
-  margin-left: 32px;
+.single-action-card.tile .foreground .card-block .card-image img {
+  margin-left: var(--spacing-m);
 }
 
 @media screen and (min-width: 600px) {
-  .single-action-card .foreground.container .card-block {
-    gap: 32px;
+  .single-action-card .foreground .card-block {
+    gap: var(--spacing-m);
   }
 
-  .single-action-card .foreground.container .card-block .card-image {
+  .single-action-card .foreground .card-block .card-image {
     flex: 1 0 191px;
   }
 
-  .single-action-card.tile .foreground.container .card-block .card-image {
+  .single-action-card.tile .foreground .card-block .card-content {
+    padding-right: var(--spacing-m);
+  }
+
+  .single-action-card.tile .foreground .card-block .card-image {
     flex: 1 0 121px;
   }
 
-  .single-action-card.tile .foreground.container .card-block .card-image picture {
+  .single-action-card.tile .foreground .card-block .card-image picture {
     height: 73px;
   }
 
-  .single-action-card.tile .foreground.container .card-block .card-image img {
+  .single-action-card.tile .foreground .card-block .card-image img {
+    width: 72px;
     height: 73px;
-    width: 73px;
     margin-left: 48px;
   }
 
-  .single-action-card .foreground.container.grid .card-block .card-image {
+  .two-up .single-action-card.tile .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .two-up .single-action-card .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .two-up .single-action-card .foreground .card-block .card-image {
     flex: 1 0 91px;
   }
 
-  .single-action-card.tile .foreground.container.grid .card-block .card-image {
+  .two-up .single-action-card.tile .foreground .card-block .card-image {
     flex: 1 0 96px;
+  }
+
+  .two-up .single-action-card.tile .foreground .card-block .card-image img {
+    width: 64px;
+    height: 62px;
+    margin-left: var(--spacing-m);
+  }
+
+  .two-up .single-action-card.tile .foreground .card-block .card-image picture {
+    height: 62px;
+  }
+
+  .three-up .single-action-card .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .three-up .single-action-card .foreground .card-block .card-image {
+    flex: 1 0 90px;
+  }
+
+  .three-up .single-action-card.tile .foreground .card-block .card-image {
+    flex: 1 0 90px;
+  }
+
+  .three-up .single-action-card.tile .foreground .card-block .card-image img {
+    margin-left: 24px;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .single-action-card .foreground.container {
+  .single-action-card .foreground {
     max-width: 600px;
+    margin: 0 auto;
   }
-  
-  .single-action-card .foreground.container .card-block .card-image {
+
+  .single-action-card .foreground .card-block .card-content {
+    padding-right: var(--spacing-m);
+  }
+
+  .two-up .single-action-card .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .three-up .single-action-card .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .single-action-card .foreground .card-block .card-image {
     flex: 1 0 180px;
   }
-  
-  .single-action-card .foreground.container.grid {
-    max-width: 800px;
+
+  .single-action-card.tile .foreground .card-block .card-image {
+    flex: 1 0 121px;
   }
-  
-  .single-action-card .foreground.container.grid .card-block .card-image {
+
+  .two-up .single-action-card .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .two-up .single-action-card .foreground .card-block .card-image {
     flex: 1 0 115px;
   }
 
-  .single-action-card.tile .foreground.container.grid .card-block .card-image {
+  .two-up .single-action-card.tile .foreground .card-block .card-image {
     flex: 1 0 105px;
+  }
+
+  .two-up .single-action-card.tile .foreground .card-block .card-image img {
+    margin-left: 32px;
+  }
+
+  .three-up .single-action-card .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .three-up .single-action-card .foreground .card-block .card-image {
+    flex: 1 0 90px;
+  }
+
+  .three-up .single-action-card.tile .foreground .card-block .card-image {
+    flex: 1 0 90px;
+  }
+
+  .three-up .single-action-card.tile .foreground .card-block .card-image img {
+    margin-left: 24px;
   }
 }
