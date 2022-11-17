@@ -120,6 +120,7 @@ main > .section[class*='-up'] > .content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
   gap: var(--spacing-m);
+  align-items: start;
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
 }

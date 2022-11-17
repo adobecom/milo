@@ -17,15 +17,11 @@ export default function init(el) {
     row.classList.add('foreground');
   });
   let helperClasses = [];
-  if (el.classList.contains('full-width')) {
-    helperClasses.push('center');
-  }
-  if (el.classList.contains('intro')) {
-    helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
-  }else if (el.classList.contains('full-width')) {
-    helperClasses.push('xxl-spacing');
-  }else if (el.classList.contains('vertical')) {
-    // helperClasses.push('m-spacing');
+  if (el.classList.contains('full-width')) helperClasses.push('center', 'xxl-spacing');
+  if (el.classList.contains('intro')) helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
+  if (el.classList.contains('vertical')) {
+    const elAction = el.querySelector('.action-area');
+    if (elAction) elAction.classList.add('body-S');
   }
   el.classList.add(...helperClasses);
 }

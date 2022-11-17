@@ -37,8 +37,9 @@
 .text-block .action-area {
   margin-top: var(--spacing-s);
   display: flex;
-  gap: var(--spacing-m);
+  gap: var(--spacing-s);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* Alignment */
@@ -55,6 +56,11 @@
 }
 
 .text-block.right .action-area { justify-content: end; }
+
+/* Vertical */
+.vertical.text-block .foreground {
+  padding-bottom: var(--spacing-m);
+}
 
 /* Inset */
 .inset.text-block .text {
