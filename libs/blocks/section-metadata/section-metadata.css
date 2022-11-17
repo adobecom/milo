@@ -68,12 +68,17 @@
   text-align: center;
 }
 
+.section.divider {
+  border-bottom: 1px solid #d8d8d8;
+}
+
 .section.center[class*='-up'] {
   justify-items: center;
 }
 
-.section.divider {
-  border-bottom: 1px solid #d8d8d8;
+main > .section[class*='-up'] > .content {
+  max-width: initial;
+  margin: 0;
 }
 
 .section[class*='-up'].no-gap {

@@ -16,6 +16,16 @@ export default function init(el) {
   rows.forEach((row) => {
     row.classList.add('foreground');
   });
-  if (el.classList.contains('full-width') || el.classList.contains('vertical')) el.classList.add('xxl-spacing');
-  if (el.classList.contains('intro')) el.classList.add('xxl-spacing-top', 'xl-spacing-bottom');
+  let helperClasses = [];
+  if (el.classList.contains('full-width')) {
+    helperClasses.push('center');
+  }
+  if (el.classList.contains('intro')) {
+    helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
+  }else if (el.classList.contains('full-width')) {
+    helperClasses.push('xxl-spacing');
+  }else if (el.classList.contains('vertical')) {
+    // helperClasses.push('m-spacing');
+  }
+  el.classList.add(...helperClasses);
 }

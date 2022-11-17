@@ -1,6 +1,5 @@
 .text-block {
   position: relative;
-  text-align: center;
 }
 
 .text-block p,
@@ -26,8 +25,13 @@
 }
 
 .text-block .foreground {
-  max-width: calc(var(--grid-column-width) * 12);
+  max-width: var(--grid-container-width);
   margin: 0 auto;
+}
+
+[class*=up] .text-block .foreground {
+  max-width: none;
+  margin: 0;
 }
 
 .text-block .action-area {
@@ -35,16 +39,15 @@
   display: flex;
   gap: var(--spacing-m);
   flex-wrap: wrap;
-  justify-content: center;
 }
 
 /* Alignment */
-.text-block.left {
-  text-align: initial;
-  align-items: start;
+.text-block.center {
+  text-align: center;
+  align-items: center;
 }
 
-.text-block.left .action-area { justify-content: start; }
+.text-block.center .action-area { justify-content: center; }
 
 .text-block.right {
   text-align: right;
@@ -68,7 +71,7 @@
 
 /* Desktop */
 @media screen and (min-width: 1200px) {
-  .text-block .foreground {
+  .text-block.full-width .foreground {
     max-width: calc(var(--grid-column-width) * 8);
   }
 }
