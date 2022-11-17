@@ -4,7 +4,11 @@
  */
 import { createTag } from '../../utils/utils.js';
 
-function initTabs(e) {
+function getStringKeyName(str) {
+  return str.trim().replaceAll(' ', '-').toLowerCase();
+}
+
+function initTabs(e, config) {
   const tabs = e.querySelectorAll('[role="tab"]');
   const tabLists = e.querySelectorAll('[role="tablist"]');
   tabLists.forEach( tabList => {
@@ -29,23 +33,8 @@ function initTabs(e) {
   tabs.forEach(tab => {
     tab.addEventListener("click", changeTabs);
   });
+  if(config) configTabs(config);
 }
-
-const isElementInContainerView = (targetEl) => {
-  const rect = targetEl.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || /* c8 ignore next */ document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || /* c8 ignore next */ document.documentElement.clientWidth)
-  );
-};
-
-const scrollTabIntoView = (e) => {
-  const isElInView = isElementInContainerView(e);
-  /* c8 ignore next */
-  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-};
 
 function changeTabs(e) {
   const target = e.target;
@@ -64,52 +53,109 @@ function changeTabs(e) {
     .removeAttribute("hidden");
 }
 
+function configTabs(config) {
+  if(config['active-tab']) {
+    const id = `tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
+    const sel = document.getElementById(id);
+    if(sel) sel.click();
+  }
+}
+
+const isElementInContainerView = (targetEl) => {
+  const rect = targetEl.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || /* c8 ignore next */ document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || /* c8 ignore next */ document.documentElement.clientWidth)
+  );
+};
+
+const scrollTabIntoView = (e) => {
+  const isElInView = isElementInContainerView(e);
+  /* c8 ignore next */
+  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+};
+
 let initCount = 0;
-const init = (element) => {
-  const rows = element.querySelectorAll(':scope > div');
+const init = (e) => {
+  const rows = e.querySelectorAll(':scope > div');
   /* c8 ignore next */
   if(!rows.length) return;
-  const tabList = createTag('div', {role: 'tablist'});
-  const tabListContainer = createTag('div', {class: 'tabList-container container'});
-  const containerWrapper = createTag('div', {class: 'container'});
-  const tabContentContainer = createTag('div', {class: 'tabContent-container'}, containerWrapper);
-  let btnClass = [...element.classList].includes('quiet') ? 'heading-XS' : 'heading-XS'; // tabList size
-  let singleColRows = 0;
-  rows.forEach((row) => { if (row.childElementCount === 1) singleColRows += 1; });
-  if (singleColRows) {
-    const rowHeadler = rows[0].querySelector('h1, h2, h3, h4, h5, h6');
-    rows[0].classList.add('tab-headline', 'container');
-    tabList.setAttribute('aria-label', rowHeadler.textContent);
+
+  // Tab Content
+  const tabContentContainer = createTag('div', {class: 'tabContent-container'});
+  const tabContent = createTag('div', {class: 'tabContent'}, tabContentContainer);
+  e.append(tabContent);
+
+  // Tab List
+  const tabList = rows[0];
+  const tabId = `tabs-${initCount}`;
+  e.id = tabId;
+  tabList.classList.add('tabList');
+  tabList.setAttribute('role', 'tablist');
+  const tabListContainer = tabList.querySelector(':scope > div');
+  tabListContainer.classList.add('tabList-container');
+  const tabListItems = rows[0].querySelectorAll(':scope li');
+  if (tabListItems) {
+    let btnClass = [...e.classList].includes('quiet') ? 'heading-XS' : 'heading-XS';
+    tabListItems.forEach((item, i) => {
+      const tabName = getStringKeyName(item.textContent);
+      const tabBtnAttributes = {
+        role: 'tab',
+        class: btnClass,
+        id: `tab-${initCount}-${tabName}`,
+        tabindex: (i > 0) ? '0' : '-1',
+        'aria-selected': (i === 0) ? 'true' : 'false',
+        'aria-controls': `tab-panel-${initCount}-${tabName}`,
+      };
+      const tabBtn = createTag('button', tabBtnAttributes);
+      tabBtn.innerText = item.textContent;
+      tabListContainer.append(tabBtn);
+
+      const tabContentAttributes = {
+        id: `tab-panel-${initCount}-${tabName}`,
+        role: 'tabpanel',
+        class: 'tabpanel',
+        tabindex: '0',
+        'aria-labelledby': `tab-${initCount}-${tabName}`,
+      };
+      const tabListContent = createTag('div', tabContentAttributes);
+      tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${tabName}`);
+      if(i > 0) tabListContent.setAttribute('hidden', '');
+      tabContentContainer.append(tabListContent);
+    });
+    tabListItems[0].parentElement.remove();
   }
-  const tabRows = element.querySelectorAll(':scope > div:not([class])');
-  tabRows.forEach((row, i) => {
-    const rowTitle = row.querySelector(':scope > div:nth-child(1)');
-    const tabBtnAttributes = {
-      role: 'tab',
-      class: btnClass,
-      id: `tab-${initCount}-${i}`,
-      tabindex: (i > 0) ? '0' : '-1',
+
+  // Tab Config
+  const config = { 'tab-id': initCount };
+  var configRows = [].slice.call(rows);
+  configRows.splice(0, 1);
+  if(configRows) {
+    configRows.forEach((row) => {
+      const rowKey = getStringKeyName(row.children[0].textContent);
+      const rowVal = row.children[1].textContent.trim();
+      config[rowKey] = rowVal;
+      row.remove();
+    });
+  }
+
+  // Tab Sections
+  const allSections = Array.from(document.querySelectorAll('div.section'));
+  allSections.forEach((e, i) => {
+    const sectionMetadata = e.querySelector(':scope > .section-metadata');
+    if (!sectionMetadata) return;
+    const metadata = sectionMetadata.querySelectorAll(':scope > div > div');
+    if (metadata[0].textContent === 'tab') {
+      const metaValue = getStringKeyName(metadata[1].textContent);
+      const section = sectionMetadata.closest('.section');
+      const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
+      if (assocTabItem) assocTabItem.append(section);
     }
-    const tabBtn = createTag('button', tabBtnAttributes);
-    tabBtn.setAttribute('aria-selected', (i === 0) ? 'true' : 'false');
-    tabBtn.setAttribute('aria-controls', `panel-${initCount}-${i}`);
-    tabBtn.innerText = rowTitle.textContent;
-    tabListContainer.append(tabBtn);
-    const rowContent = row.querySelector(':scope > div:nth-child(2)');
-    const rowContentParent = rowContent.innerText !== '' ? rowContent.parentNode : createTag('div', {}, `<div data-failed="true">Data failed</label>`);
-    rowContentParent.id = `panel-${initCount}-${i}`;
-    rowContentParent.setAttribute('role', 'tabpanel');
-    rowContentParent.setAttribute('tabindex', '0');
-    rowContentParent.setAttribute('aria-labelledby', `tab-${initCount}-${i}`);
-    if(i > 0) rowContentParent.setAttribute('hidden', '');
-    containerWrapper.append(rowContentParent);
-    rowTitle.remove();
   });
-  tabList.append(tabListContainer);
-  element.append(tabList);
-  element.append(tabContentContainer);
+  initTabs(e, config);
   initCount++;
-  initTabs(element);
-};
+}
 
 export default init;

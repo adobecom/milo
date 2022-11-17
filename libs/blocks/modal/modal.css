@@ -1,39 +1,69 @@
-dialog {
-  border: none;
+:root {
+  --modal-focus-color: #109cde;
+}
+
+.dialog-modal {
+  background: #fff;
   border-radius: 6px;
-  padding: 0;
+  margin: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: calc((100% - 6px) - 2em);
+  max-height: calc((100% - 6px) - 2em);
+  height: fit-content;
   width: 100%;
+  user-select: text;
+  visibility: visible;
+  overflow: auto;
+  z-index: 102;
 }
 
-dialog::backdrop {
-  background: rgb(50 50 50 / 80%);
-}
-
-dialog button.dialog-close {
-  border: none;
-  position: absolute;
+.modal-curtain.is-open {
+  position: fixed;
   top: 0;
   right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgb(50 50 50 / 80%);
+  z-index: 101;
+}
+
+.dialog-modal button.dialog-close {
+  border: 3px solid transparent;
+  position: absolute;
   padding: 0;
-  width: 44px;
-  height: 44px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: none;
+  border-radius: 50%;
+  height: 26px;
+  right: 5px;
+  top: 5px;
+  width: 26px;
+  z-index: 1;
 }
 
-.dialog-close svg {
-  margin: 0 0 8px 8px;
+.dialog-close:focus-visible {
+  outline: 2px solid var(--modal-focus-color);
 }
 
-dialog > .fragment > .section > .content > *:first-child {
+.dialog-modal > .fragment > .section > .content > *:last-child {
+  margin-bottom: 0;
+}
+
+.dialog-modal > .fragment > .section > .content > *:first-child:not(h1, h2, h3, h4, h5, h6) {
   margin-top: 0;
 }
 
-dialog > .fragment > .section > .content > *:last-child {
-  margin-bottom: 0;
+.dialog-modal > .fragment > .section > .content > h1,
+.dialog-modal > .fragment > .section > .content > h2,
+.dialog-modal > .fragment > .section > .content > h3,
+.dialog-modal > .fragment > .section > .content > h4,
+.dialog-modal > .fragment > .section > .content > h5,
+.dialog-modal > .fragment > .section > .content > h6 {
+  margin: 12px;
 }
 
 .region-selector > div > p,
@@ -59,7 +89,7 @@ dialog > .fragment > .section > .content > *:last-child {
   font-size: 24px;
 }
 
-dialog > .fragment > .section.region-selector-text > .content > p:last-of-type {
+.dialog-modal > .fragment > .section.region-selector-text > .content > p:last-of-type {
   margin-bottom: 0;
 }
 
@@ -84,7 +114,7 @@ dialog > .fragment > .section.region-selector-text > .content > p:last-of-type {
 }
 
 @media (min-width: 600px) {
-  dialog {
+  .dialog-modal {
     max-width: 80vw;
   }
 
@@ -98,7 +128,7 @@ dialog > .fragment > .section.region-selector-text > .content > p:last-of-type {
     column-count: 5;
   }
 
-  dialog#langnav {
+  .dialog-modal#langnav {
     width: 1200px;
     max-width: calc((100% - 6px) - 2em);
   } 

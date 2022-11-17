@@ -5,7 +5,7 @@ const defaultConfig = {
     button: { style: 'primary' },
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
     totalCardsToShow: 10,
     cardStyle: 'half-height',
@@ -30,6 +30,9 @@ const defaultConfig = {
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
   },
+  featuredCards: [
+    ''
+  ],
   filterPanel: {
     enabled: false,
     eventFilter: '',

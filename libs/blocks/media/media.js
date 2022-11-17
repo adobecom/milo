@@ -15,7 +15,7 @@
  */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../utils/analytics.js';
+import { decorateBlockAnalytics } from '../../martech/attributes.js';
 
 export default function init(el) {
   decorateBlockAnalytics(el);

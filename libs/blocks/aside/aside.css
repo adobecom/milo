@@ -28,6 +28,20 @@
   min-height: 700px;
 }
 
+.aside.dark {
+  background-color: #1E1E1E;
+}
+
+.aside.dark h1,
+.aside.dark h2,
+.aside.dark h3,
+.aside.dark h4,
+.aside.dark h5,
+.aside.dark h6,
+.aside.dark p {
+  color: white;
+}
+
 .aside .background {
   overflow: hidden;
   position: absolute;
@@ -126,6 +140,11 @@
 
 .aside.split {
   flex-direction: column;
+  background-color: #1E1E1E;
+}
+
+.aside.split.light {
+  background-color: white;
 }
 
 .aside.split.large {
@@ -140,9 +159,12 @@
   color: white;
 }
 
+.aside.split.light .foreground.container .text {
+  color: var(--text-color);
+}
+
 .aside.split .background {
   position: relative;
-  background-color: #1E1E1E;
 }
 
 .aside.split.large .background {
@@ -155,7 +177,6 @@
 }
 
 .aside.split .foreground.container {
-  background-color: #1E1E1E;
   max-width: 100%;
 }
 
@@ -220,6 +241,145 @@
   margin-top: 24px;
 }
 
+.aside.notification {
+  min-height: 0;
+}
+
+.aside.notification .foreground.container {
+  padding-top: var(--spacing-s);
+  padding-bottom: var(--spacing-s);
+  box-sizing: border-box;
+}
+
+.aside.notification .foreground.container .image {
+  max-width: 75px;
+  margin-top: 0;
+  margin-bottom: var(--spacing-xs);
+  order: -1;
+}
+
+.aside.notification .foreground.container img {
+  display: block;
+}
+
+.aside.notification .foreground.container .text {
+  max-width: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  justify-content: center;
+}
+
+.aside.notification .foreground.container .text > * {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+}
+
+.aside.notification .foreground.container .text[data-align=center],
+.aside.notification .foreground.container .text[data-align=center] > * {
+  justify-content: center;
+}
+
+.aside.notification .foreground.container .text[data-align=center] p {
+  text-align: center;
+}
+
+.aside.notification .foreground.container .text .action-area {
+  margin-top: var(--spacing-s);
+}
+
+.aside.notification .foreground.container .text a {
+  white-space: nowrap;
+}
+
+.aside.notification .foreground.container .text a:not(.con-button) {
+  width: auto;
+  margin-left: 5px;
+}
+
+.aside.notification .foreground.container .text .action-area>a {
+  margin-right: 0;
+}
+
+.aside.notification .foreground.container .text .body-area a {
+  text-decoration: underline;
+}
+
+.aside.notification .foreground.container .text .body-area a:first-of-type {
+  color: var(--text-color);
+  font-weight: normal;
+}
+
+.aside.notification.dark .foreground.container .text .body-area a:first-of-type {
+  color: white;
+}
+
+.aside.notification .foreground.container .text .heading-L {
+  margin-bottom: var(--spacing-xxs);
+}
+
+.aside.notification .foreground.container .text .body-S {
+  margin-bottom: 0;
+}
+
+.aside.notification .foreground.container .icon-area {
+  height: auto;
+  max-width: none;
+  margin-bottom: var(--spacing-xs);
+}
+
+.aside.notification .foreground.container .icon-area img {
+  height: 40px;
+}
+
+.aside.notification.extra-small .foreground.container {
+  min-height: 50px;
+  padding-top: var(--spacing-xs);
+  padding-bottom: var(--spacing-xs);
+}
+
+.aside.notification.extra-small .foreground.container .text {
+  flex-wrap: nowrap;
+}
+
+.aside.notification.extra-small .foreground.container .text .body-M,
+.aside.notification.small .foreground.container .text .body-M {
+  font-weight: bold;
+}
+
+.aside.notification.small {
+  min-height: 88px;
+}
+
+.aside.notification.small .foreground.container .text {
+  flex-direction: column;
+}
+
+.aside.notification.small .foreground.container .text[data-align=center],
+.aside.notification.small .foreground.container .text[data-align=center] > * {
+  justify-content: flex-start;
+}
+
+.aside.notification.small .foreground.container .text[data-align=center] p {
+  text-align: left;
+}
+
+.aside.notification.small .foreground.container .body-area {
+  width: auto;
+}
+
+.aside.notification.medium {
+  min-height: 160px;
+}
+
+.aside.notification.medium .foreground.container .text {
+  flex-direction: column;
+}
+
+.aside.notification.medium .foreground.container .text .heading-S {
+  margin-bottom: var(--spacing-xxs);
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     justify-content: space-between;
@@ -252,11 +412,9 @@
 
   .aside.split.large {
     flex-direction: column;
-    background-color: #1E1E1E;
   }
 
   .aside.split .background {
-    background-color: #1E1E1E;
     position: absolute;
   }
 
@@ -337,6 +495,44 @@
     flex: 0 0 calc(60% - 16px);
     max-width: none;
   }
+
+  .aside.notification .foreground.container {
+    flex-direction: row;
+  }
+
+  .aside.notification .foreground.container .image {
+    width: 30%;
+    max-width: 188px;
+    margin-right: var(--spacing-s);
+    margin-left: 0;
+    margin-bottom: 0;
+    order: unset;
+  }
+
+  .aside.notification .foreground.container .text + .image {
+    margin-left: var(--spacing-s);
+    margin-right: 0;
+  }
+
+  .aside.notification .foreground.container .text {
+    padding-right: 0;
+  }
+
+  .aside.notification .foreground.container .icon-area {
+    width: auto;
+    margin-right: var(--spacing-xs);
+    margin-bottom: 0;
+  }
+
+  .aside.notification.small .foreground.container .text {
+    flex-flow: row nowrap;
+  }
+
+  .aside.notification.small .foreground.container .text .action-area {
+    width: auto;
+    margin-top: 0;
+    margin-left: var(--spacing-s);
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -404,5 +600,52 @@
 
   .aside.inline .foreground.container .text {
     flex: 0 0 calc(64% - 16px);
+  }
+
+  .aside.notification {
+    min-height: 250px;
+  }
+
+  .aside.notification .foreground.container {
+    min-height: 0;
+  }
+
+  .aside.notification .foreground.container .image {
+    width: 20%;
+    max-width: 168px;
+    margin-right: var(--spacing-l);
+  }
+
+  .aside.notification .foreground.container .text + .image {
+    margin-left: var(--spacing-l);
+    margin-right: 0;
+  }
+
+  .aside.notification.extra-small,
+  .aside.notification.small,
+  .aside.notification.medium {
+    min-height: auto;
+  }
+
+  .aside.notification.small .foreground.container .text {
+    justify-content: flex-start;
+  }
+
+  .aside.notification.small .foreground.container .text[data-align=center],
+  .aside.notification.small .foreground.container .text[data-align=center] > * {
+    justify-content: center;
+  }
+
+  .aside.notification.small .foreground.container .text[data-align=center] p {
+    text-align: center;
+  }
+
+  .aside.notification.medium .foreground.container .image {
+    margin-right: var(--spacing-m);
+  }
+
+  .aside.notification.medium .foreground.container .text + .image {
+    margin-left: var(--spacing-m);
+    margin-right: 0;
   }
 }
