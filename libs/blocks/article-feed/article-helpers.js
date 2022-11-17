@@ -187,6 +187,7 @@ export async function loadTaxonomy() {
  * @returns {string} The formatted card date
  */
 export function formatCardLocaleDate(date) {
+  if (!date) return '';
   const jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
   const dateLocale = getConfig().locale?.ietf;
 
