@@ -8,6 +8,7 @@ import {
   formatExcelDate,
 } from './utils.js';
 import getTheme from './chartLightTheme.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 export const SMALL = 'small';
 export const MEDIUM = 'medium';
@@ -590,12 +591,12 @@ const init = (el) => {
     return;
   }
 
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot;
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
 
   // Must use chained promise. Await will cause loading issues
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
-    .then((values) => {
+    .then(async (values) => {
       const json = values[0];
       const data = chartData(json);
 
@@ -622,6 +623,9 @@ const init = (el) => {
         );
         observer.observe(el);
       }
+
+      const title = children[0]?.textContent.trim() || children[1]?.textContent.trim();
+      chartWrapper.setAttribute('aria-label', `${await replaceKey(`${chartType}-chart`, config)}: ${title}`);
 
       window.addEventListener('resize', throttle(
         1000,

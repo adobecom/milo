@@ -16,7 +16,7 @@ export function decorateButtons(el, size) {
   actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
 }
 
-export function decorateIcons(el) {
+export function decorateButtonsGroup(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
@@ -39,7 +39,7 @@ export function decorateBlockText(el, size = 'small') {
   } else {
     decorate(heading, 'M', 'S', 'M');
   }
-  decorateIcons(el);
+  decorateButtonsGroup(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
@@ -53,6 +53,7 @@ export function decorateBlockBg(block, node) {
       node.children[1].classList.add(viewports[2]);
     } else {
       [...node.children].forEach((e, i) => {
+        /* c8 ignore next */
         e.classList.add(viewports[i]);
       });
     }

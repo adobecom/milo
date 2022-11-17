@@ -8,7 +8,7 @@ import {
   useState,
 } from '../../deps/htm-preact.js';
 import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
-import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
+import { loadStyle, parseEncodedConfig, utf8ToB64 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import { Input as FormInput } from '../../ui/controls/formControls.js';
@@ -23,6 +23,15 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   // eslint-disable-next-line no-nested-ternary
   return x < y ? -1 : x > y ? 1 : 0;
 });
+
+const getHashConfig = () => {
+  const { hash } = window.location;
+  if (!hash) return null;
+  window.location.hash = '';
+
+  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
+  return parseEncodedConfig(encodedConfig);
+}
 
 const getInitialState = () => {
   const hashConfig = getHashConfig();
@@ -357,9 +366,9 @@ const PrepopulationPanel = () => html`
 const StylePanel = () => html`
   <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{ white: 'White', dark: 'Dark' }}" />
   <${Select} label="Layout" prop="style_layout" options="${{ column1: '1 Column', column2: '2 Columns' }}" />
-  <${Select} 
+  <${Select}
     label="Title Size"
-    prop="title_size" 
+    prop="title_size"
     options="${{ h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P' }}" />
   <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
