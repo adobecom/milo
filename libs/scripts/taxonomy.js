@@ -93,7 +93,7 @@ function parseTaxonomyJson(data, root) {
         return `${current.origin}${u.pathname}`;
       }
 
-      return `${generateUri(root)}/${generateUri(name)}`;
+      return `${root}/${generateUri(name)}`;
     }, null);
 
     const hidden = !!row[TAXONOMY_FIELDS.hidden]?.trim();
