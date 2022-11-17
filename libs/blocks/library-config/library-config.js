@@ -12,6 +12,11 @@ async function loadPlaceholders(content, list) {
   placeholders(content, list);
 }
 
+async function loadIcons(content, list) {
+  const { default: icons } = await import('./lists/icons.js');
+  icons(content, list);
+}
+
 async function loadList(type, content, list) {
   list.innerHTML = '';
   switch (type) {
@@ -20,6 +25,9 @@ async function loadList(type, content, list) {
       break;
     case 'placeholders':
       loadPlaceholders(content, list);
+      break;
+    case 'icons':
+      loadIcons(content, list);
       break;
     default:
       await import('../../utils/lana.js');
@@ -45,6 +53,7 @@ function combineLibraries(base, supplied) {
   const library = {
     blocks: base.blocks.data,
     placeholders: base.placeholders.data,
+    icons: base.icons.data,
   };
 
   if (supplied) {
