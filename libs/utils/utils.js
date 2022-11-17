@@ -251,6 +251,7 @@ export async function loadBlock(block) {
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
+
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -261,8 +262,8 @@ export async function loadBlock(block) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
-          block.dataset.failed = 'true';
-          block.dataset.reason = `Failed loading ${name || ''} block.`;
+          const { showError } = await import('../blocks/fallback/fallback.js');
+          showError(block, name);
         }
       }
       resolve();
@@ -392,6 +393,13 @@ function decorateHeader() {
   }
 }
 
+async function decorateIcons(area, config) {
+  const domIcons = area.querySelectorAll('span.icon');
+  if (domIcons.length === 0) return;
+  const { default: loadIcons } = await import('../features/icons.js');
+  loadIcons(domIcons, config);
+}
+
 async function decoratePlaceholders(area, config) {
   const el = area.documentElement || area;
   const regex = /{{(.*?)}}/g;
@@ -500,6 +508,9 @@ export async function loadArea(area = document) {
     // Only move on to the next section when all blocks are loaded.
     // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
+
+    // eslint-disable-next-line no-await-in-loop
+    await decorateIcons(section.el, config);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
