@@ -1,5 +1,3 @@
-
-
 :root {
   /* Colors */
   --link-color: #035fe6;
@@ -24,6 +22,8 @@
   --color-brand-title: #000B1D;
   --color-accent: rgb(20, 115, 230);
   --color-accent-hover: rgb(13, 102, 208);
+  --color-accent-down: rgb(9, 90, 186);
+  --color-accent-focus-ring: rgb(55, 142, 240);
   --color-info-accent: #5C5CE0;
   --color-info-accent-hover: #4646C6;
   --color-info-accent-down: #3D3DB4;
@@ -93,6 +93,10 @@
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
+  --grid-margins-width: calc((100vw - var(--grid-container-width)) / 2);
+  --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
+  --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
+  --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
 }
 
 :root:lang(ko-KR) {

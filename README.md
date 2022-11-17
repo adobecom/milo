@@ -1,5 +1,5 @@
 # Milo
-Milo is a shared set of features and services to power Helix-based websites on adobe.com. If you wish to create your own milo-based project, please use the [College project](https://github.com/adobecom/milo-college) as your foundation.
+Milo is a shared set of features and services to power Franklin-based websites on adobe.com. If you wish to create your own milo-based project, please use the [College project](https://github.com/adobecom/milo-college) as your foundation.
 
 [![codecov](https://codecov.io/gh/adobecom/milo/branch/main/graph/badge.svg?token=a7ZTCbitBt)](https://codecov.io/gh/adobecom/milo)
 

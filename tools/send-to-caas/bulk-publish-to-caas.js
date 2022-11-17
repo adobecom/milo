@@ -17,6 +17,20 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
+const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
+const FIELDS_CB = ['draftOnly', 'usepreview'];
+const DEFAULT_VALUES = {
+  caasEnv: 'Prod',
+  excelFile: '',
+  host: 'business.adobe.com',
+  owner: 'adobecom',
+  repo: 'bacom',
+  urls: '',
+};
+const DEFAULT_VALUES_CB = {
+  draftOnly: false,
+  usepreview: false,
+};
 
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
@@ -79,12 +93,22 @@ const processData = async (data, accessToken) => {
   let keepGoing = true;
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
+  const { caasEnv, draftOnly, host, owner, repo, usepreview } = getConfig();
+
+  const domain = usepreview
+    ? `https://main--${repo}--${owner}.hlx.page`
+    : `https://${host}`;
 
   // eslint-disable-next-line no-restricted-syntax
   for (const page of data) {
     if (!keepGoing) break;
+
     try {
-      const pageUrl = page.Path || page.path || page.url || page.URL || page.Url;
+      const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
+
+      const { pathname } = new URL(rawUrl);
+      const pageUrl = `${domain}${pathname}`;
+      const prodUrl = `${host}${pathname}`;
 
       index += 1;
       statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
@@ -93,15 +117,15 @@ const processData = async (data, accessToken) => {
 
       const { dom, error, lastModified } = await getPageDom(pageUrl);
       if (error) {
-        errorArr.push({ url: pageUrl, error });
+        errorArr.push([pageUrl, error]);
         continue;
       }
 
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
-      const { caasMetadata, errors } = await getCardMetadata({ prodUrl: pageUrl.replace('https://', '') });
+      const { caasMetadata, errors } = await getCardMetadata({ prodUrl });
 
       if (errors.length) {
-        errorArr.push({ url: pageUrl, error: errors.join('\n') });
+        errorArr.push([pageUrl, errors]);
         continue;
       }
 
@@ -113,8 +137,6 @@ const processData = async (data, accessToken) => {
 
       const caasProps = getCaasProps(caasMetadata);
 
-      const { caasEnv, draftOnly } = getConfig();
-
       const response = await postDataToCaaS({
         accessToken,
         caasEnv: caasEnv?.toLowerCase(),
@@ -123,9 +145,9 @@ const processData = async (data, accessToken) => {
       });
 
       if (response.success) {
-        successArr.push({ url: pageUrl, caasMetadata });
+        successArr.push([pageUrl, caasMetadata.entityid]);
       } else {
-        errorArr.push({ url: pageUrl, response });
+        errorArr.push([pageUrl, response]);
       }
     } catch (e) {
       console.log(`ERROR: ${e.message}`);
@@ -143,12 +165,16 @@ const bulkPublish = async () => {
   const accessToken = await checkIms();
   if (!accessToken) return;
 
-  const excelJsonUrl = getConfig().excelFile;
-  if (!excelJsonUrl) {
-    await showAlert('Please enter an excel json url.');
+  const { excelFile, urls } = getConfig();
+
+  if (!(excelFile || urls)) {
+    await showAlert('Please enter urls or an excel json url.');
   }
 
-  const data = await fetchExcelJson(excelJsonUrl);
+  const data = urls
+    ? urls.split('\n')
+    : await fetchExcelJson(excelFile);
+
   await processData(data, accessToken);
 };
 
@@ -158,19 +184,15 @@ const loadFromLS = () => {
     try {
       setConfig(JSON.parse(ls));
       /* c8 ignore next */
-    } catch (e) {}
+    } catch (e) { /* do nothing */ }
   }
-  const fieldIds = ['host', 'repo', 'owner', 'excelFile', 'caasEnv'];
-  const defaults = {
-    excelFile: '',
-    host: 'business.adobe.com',
-    repo: 'bacom',
-    owner: 'adobecom',
-    caasEnv: 'Prod',
-  };
+
   const config = getConfig();
-  fieldIds.forEach((field) => {
-    document.getElementById(field).value = config[field] || defaults[field];
+  FIELDS.forEach((field) => {
+    document.getElementById(field).value = config[field] || DEFAULT_VALUES[field];
+  });
+  FIELDS_CB.forEach((field) => {
+    document.getElementById(field).checked = config[field] || DEFAULT_VALUES_CB[field];
   });
 };
 
@@ -180,9 +202,11 @@ const init = async () => {
   loadFromLS();
 
   window.addEventListener('beforeunload', () => {
-    const fieldIds = ['host', 'repo', 'owner', 'excelFile', 'caasEnv'];
-    fieldIds.forEach((field) => {
+    FIELDS.forEach((field) => {
       setConfig({ [field]: document.getElementById(field).value });
+    });
+    FIELDS_CB.forEach((field) => {
+      setConfig({ [field]: document.getElementById(field).checked });
     });
     window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   });
@@ -195,6 +219,9 @@ const init = async () => {
       branch: 'main',
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
+      urls: document.getElementById('urls').value,
+      draftOnly: document.getElementById('draftOnly').checked,
+      usepreview: document.getElementById('usepreview').checked,
     });
     bulkPublish();
   });

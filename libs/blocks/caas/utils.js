@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
+const URL_ENCODED_COMMA = '%2C';
+
 const fetchWithTimeout = async (resource, options = {}) => {
   const { timeout = 5000 } = options;
 
@@ -20,11 +22,10 @@ export const loadStrings = async (url) => {
   const resp = await fetch(url);
   if (!resp.ok) return {};
   const json = await resp.json();
-  const convertToObj = (data) =>
-    data.reduce((obj, { key, val }) => {
-      obj[key] = val;
-      return obj;
-    }, {});
+  const convertToObj = (data) => data.reduce((obj, { key, val }) => {
+    obj[key] = val;
+    return obj;
+  }, {});
   return convertToObj(json.data);
 };
 
@@ -64,6 +65,7 @@ export const loadCaasTags = async (tagsUrl) => {
   };
 };
 
+/* c8 ignore next 22 */
 const fixAlloyAnalytics = async () => {
   const sat = await window.__satelliteLoadedPromise;
   if (!sat || !window.alloy) return;
@@ -74,38 +76,18 @@ const fixAlloyAnalytics = async () => {
 
     const ogSLP = window.__satelliteLoadedPromise;
     window.__satelliteLoadedPromise = Promise.resolve({
-      /* c8 ignore next 9 */
       getVisitorId: () => ({
         getMarketingCloudVisitorID: () => mcgvid,
         getSupplementalDataID: () => '',
         getAudienceManagerBlob: () => '',
         getAudienceManagerLocationHint: () => {
+          // eslint-disable-next-line no-return-assign
           setTimeout(() => (window.__satelliteLoadedPromise = ogSLP), 1);
           return mboxMCGLH;
         },
       }),
     });
   }
-};
-
-export const initCaas = async (state, caasStrs, el) => {
-  window.dexter = window.dexter || {}; // required for caas modals
-
-  const caasEl = el || document.getElementById('caas');
-  if (!caasEl) return;
-
-  const appEl = caasEl.parentElement;
-  caasEl.remove();
-
-  const newEl = document.createElement('div');
-  newEl.id = 'caas';
-  newEl.className = 'caas-preview';
-  appEl.append(newEl);
-
-  const config = await getConfig(state, caasStrs);
-  await fixAlloyAnalytics();
-
-  new ConsonantCardCollection(config, newEl);
 };
 
 const getTags = (() => {
@@ -120,7 +102,7 @@ const getTags = (() => {
 
 const getContentIdStr = (cardStr, card) => {
   if (card.contentId) {
-    cardStr = cardStr.length ? `${cardStr}%2C${card.contentId}` : card.contentId;
+    return cardStr.length ? `${cardStr}%2C${card.contentId}` : card.contentId;
   }
   return cardStr;
 };
@@ -135,7 +117,7 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 
   let orQuery = orLogicTags
     .filter((tag) => tag.orTags.length)
-    .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+OR+')))
+    .map((tag) => wrapInParens(tag.orTags.map((val) => `"${val}"`).join('+AND+')))
     .join('+OR+');
 
   andQuery = andQuery.length ? wrapInParens(andQuery) : '';
@@ -145,7 +127,7 @@ const buildComplexQuery = (andLogicTags, orLogicTags) => {
 };
 
 const getSortOptions = (state, strs) => {
-  const defaultVals = {
+  const sortVals = {
     featured: 'Featured',
     dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
@@ -155,9 +137,14 @@ const getSortOptions = (state, strs) => {
     random: 'Random',
   };
 
-  return Object.entries(defaultVals).reduce((options, [key, defaultValue]) => {
+  return Object.entries(sortVals).reduce((options, [key, defaultValue]) => {
     const fullKey = `sort${key.charAt(0).toUpperCase() + key.slice(1)}`;
-    if (state[fullKey]) options.push({ label: strs[fullKey] || defaultValue, sort: key });
+    if (state[fullKey]) {
+      options.push({
+        label: strs[fullKey] || defaultValue,
+        sort: key,
+      });
+    }
     return options;
   }, []);
 };
@@ -179,6 +166,7 @@ const alphaSort = (a, b) => {
   const itemB = b.label.toUpperCase();
   if (itemA < itemB) return -1;
   if (itemA > itemB) return 1;
+  /* c8 ignore next */
   return 0;
 };
 
@@ -186,6 +174,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
+  if (!tag) return null;
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
@@ -230,8 +219,8 @@ export const getConfig = async (state, strs = {}) => {
   const country = state.country ? state.country.split('/').pop() : 'us';
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
-  const targetActivity =
-    state.targetEnabled && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  const targetActivity = state.targetEnabled
+    && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -251,7 +240,7 @@ export const getConfig = async (state, strs = {}) => {
       endpoint: `https://${
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
-        ','
+        ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
@@ -265,9 +254,8 @@ export const getConfig = async (state, strs = {}) => {
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
-        onErrorDescription:
-          strs.onErrorDesc ||
-          'Please try reloading the page or try coming back to the page another time.',
+        onErrorDescription: strs.onErrorDesc
+          || 'Please try reloading the page or try coming back to the page another time.',
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
@@ -287,6 +275,7 @@ export const getConfig = async (state, strs = {}) => {
         pool: state.sortReservoirPool,
       },
     },
+    featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
@@ -398,24 +387,47 @@ export const getConfig = async (state, strs = {}) => {
   return config;
 };
 
+export const initCaas = async (state, caasStrs, el) => {
+  window.dexter = window.dexter || {}; // required for caas modals
+
+  const caasEl = el || document.getElementById('caas');
+  if (!caasEl) return;
+
+  const appEl = caasEl.parentElement;
+  caasEl.remove();
+
+  const newEl = document.createElement('div');
+  newEl.id = 'caas';
+  newEl.className = 'caas-preview';
+  appEl.append(newEl);
+
+  const config = await getConfig(state, caasStrs);
+  await fixAlloyAnalytics();
+
+  // eslint-disable-next-line no-new, no-undef
+  new ConsonantCardCollection(config, newEl);
+};
+
 export const defaultState = {
-  analyticsTrackImpression: false,
   analyticsCollectionName: '',
+  analyticsTrackImpression: false,
   andLogicTags: [],
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionName: '',
   collectionSize: '',
   container: '1200MaxWidth',
-  country: 'caas:country/us',
   contentTypeTags: [],
+  country: 'caas:country/us',
+  doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
-  environment: '',
   endpoint: 'www.adobe.com/chimera-api/collection',
-  excludeTags: [],
+  environment: '',
   excludedCards: [],
+  excludeTags: [],
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
@@ -433,8 +445,8 @@ export const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationUseTheme3: false,
   paginationType: 'none',
+  paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
@@ -444,11 +456,18 @@ export const defaultState = {
   showFilters: false,
   showSearch: false,
   showTotalResults: false,
+  sortDateAsc: false,
+  sortDateDesc: false,
   sortDefault: 'dateDesc',
   sortEnablePopup: false,
   sortEnableRandomSampling: false,
-  sortReservoirSample: 3,
+  sortEventSort: false,
+  sortFeatured: false,
+  sortRandom: false,
   sortReservoirPool: 1000,
+  sortReservoirSample: 3,
+  sortTitleAsc: false,
+  sortTitleDesc: false,
   source: ['hawks'],
   tagsUrl: 'www.adobe.com/chimera-api/tags',
   targetActivity: '',
