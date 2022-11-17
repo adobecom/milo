@@ -300,7 +300,6 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
-      // Fragments
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -458,20 +457,14 @@ export async function loadDeferred(area) {
   }
 }
 
-/**
-* Load the Privacy library
-*/
 function loadPrivacy() {
-  // Configure Privacy
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
       footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
   };
-
-  const env = getConfig().env.name === 'prod' ? '' : 'stage.';
-  loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 }
 
 function initSidekick() {
@@ -536,9 +529,7 @@ export async function loadArea(area = document) {
   await loadDeferred(area);
 }
 
-/**
- * Load everything that impacts performance later.
- */
+// Load everything that impacts performance later.
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -554,27 +545,8 @@ export function loadDelayed(delay = 3000) {
   });
 }
 
-export function utf8ToB64(str) {
-  return window.btoa(unescape(encodeURIComponent(str)));
-}
-
-export function b64ToUtf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
-}
-
-const RE_ALPHANUM = /[^0-9a-z]/gi;
-const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
-export const analyticsGetLabel = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
-
-export const analyticsDecorateList = (li, idx) => {
-  const link = li.firstChild?.nodeName === 'A' && li.firstChild;
-  if (!link) return;
-
-  const label = link.textContent || link.getAttribute('aria-label');
-  if (!label) return;
-
-  link.setAttribute('daa-ll', `${analyticsGetLabel(label)}-${idx + 1}`);
-};
+export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
 
 export function parseEncodedConfig(encodedConfig) {
   try {
@@ -583,37 +555,6 @@ export function parseEncodedConfig(encodedConfig) {
     console.log(e);
   }
   return null;
-}
-
-export const removeHash = (url) => url?.split('#')[0];
-
-export function getHashConfig() {
-  const { hash } = window.location;
-  if (!hash) return null;
-  window.location.hash = '';
-
-  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
-}
-
-export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-
-export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
-
-export function updateObj(obj, defaultObj) {
-  const ds = cloneObj(defaultObj);
-  Object.keys(ds).forEach((key) => {
-    if (obj[key] === undefined) obj[key] = ds[key];
-  });
-  return obj;
-}
-
-export function getBlockClasses(className) {
-  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
-  const blockWithVariants = className.split('--');
-  const name = trimDashes(blockWithVariants.shift());
-  const variants = blockWithVariants.map((v) => trimDashes(v));
-  return { name, variants };
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {

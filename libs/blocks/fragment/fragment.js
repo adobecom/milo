@@ -1,7 +1,9 @@
-import { createTag, loadArea, makeRelative, removeHash } from '../../utils/utils.js';
+import { createTag, loadArea, makeRelative } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
+
+const removeHash = (url) => url?.split('#')[0];
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
