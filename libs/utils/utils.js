@@ -250,6 +250,7 @@ export async function loadBlock(block) {
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
+
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -260,8 +261,8 @@ export async function loadBlock(block) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
-          block.dataset.failed = 'true';
-          block.dataset.reason = `Failed loading ${name || ''} block.`;
+          const { showError } = await import('../blocks/fallback/fallback.js');
+          showError(block, name);
         }
       }
       resolve();
