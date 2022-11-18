@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach afterEach it */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import getApps from '../../../libs/blocks/gnav/gnav-appLauncher.js';
@@ -7,7 +5,7 @@ import getApps from '../../../libs/blocks/gnav/gnav-appLauncher.js';
 document.body.innerHTML = await readFile({ path: './mocks/applauncher.html' });
 
 // Mock Toggle
-function toggle () {
+function toggle() {
   const appsMenu = document.querySelector('.gnav-navitem.app-launcher');
   appsMenu.classList.toggle('is-open');
 }
@@ -22,9 +20,9 @@ describe('App Launcher', () => {
     const nav = document.body.querySelector('nav');
     const profile = document.body.querySelector('.gnav-profile');
     const appLauncherBlock = document.body.querySelector('.app-launcher');
-    
+
     await getApps(profile, appLauncherBlock, toggle);
-    
+
     const hasApps = nav.classList.contains('has-apps');
     expect(hasApps).to.be.true;
   });

@@ -32,10 +32,11 @@ describe('PDF Viewer', () => {
       pdfViewerClientId: '3b685312b5784de6943647df19f1f492',
       pdfViewerReportSuite: 'adbadobedxqa',
     };
-    setConfig({
-      local: consumer,
-    });
+    setConfig({ local: consumer });
 
-    expect(getPdfConfig()).to.eql({ clientId: consumer.pdfViewerClientId, reportSuiteId: consumer.pdfViewerReportSuite });
+    expect(getPdfConfig()).to.eql({
+      clientId: consumer.pdfViewerClientId,
+      reportSuiteId: consumer.pdfViewerReportSuite,
+    });
   });
 });
