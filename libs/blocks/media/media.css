@@ -80,12 +80,6 @@
   margin: 0 0 var(--spacing-s) 0;
   gap: var(--spacing-xs);
   grid-template-columns: 1fr;
-  display: none;
-}
-
-/* Init Icons loaded on svg load */
-.text .icon-area.loaded {
-  display: grid;
 }
 
 .media .image img {

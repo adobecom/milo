@@ -1,36 +1,27 @@
-.text.block {
+.text-block {
   padding: var(--spacing-xxl) 0;
   position: relative;
 }
-
-.text p {
-  margin-top: 0;
+.text-block p {
+  margin: 0 0 var(--spacing-s);
 }
 
-.text p.action-area {
+.text-block p.action-area {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--spacing-xs);
 }
 
-.text p.action-area a {
+.text-block p.action-area a {
   margin-right: var(--spacing-s);
 }
 
-.text p.action-area a.con-button {
+.text-block p.action-area a.con-button {
   flex: 0 0 auto;
 }
 
-.text a:not(.con-button) {
-  color: var(--link-color);
-  font-weight: 700;
-}
-
-.text a:not(.con-button):hover {
-  color: var(--link-hover-color);
-}
-
-.text .background {
+.text-block .background {
   bottom: 0;
   left: 0;
   position: absolute;
@@ -39,7 +30,7 @@
   z-index: -1;
 }
 
-.text .full-width {
+.text-block .full-width {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -47,16 +38,16 @@
   width: 100%;
 }
 
-.text .full-width .heading-XL,
-.text .full-width .heading-L {
+.text-block .full-width .heading-XL,
+.text-block .full-width .heading-L {
   margin: 0 0 var(--spacing-xs);
 }
 
-.text .full-width p {
+.text-block .full-width p {
   margin: 0;
 }
 
-.text .full-width p:not(:last-child) {
+.text-block .full-width p:not(:last-child) {
   margin: 0 0 var(--spacing-s);
 }
 
@@ -72,14 +63,14 @@
   font-size: var(--type-body-xs-size);
 }
 
-.text .heading-M {
+.text-block .heading-M {
   margin: 0 0 var(--spacing-xs);
 }
 
 /* Desktop */
 
 @media screen and (min-width: 1200px) {
-  .text .full-width > * {
+  .text-block .full-width > * {
     max-width: calc(var(--grid-column-width) * 8);
   }
 }

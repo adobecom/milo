@@ -93,7 +93,6 @@ export default (deviceSize) => {
         lineStyle: { color: axisColor },
       },
     },
-    aria: { enabled: true },
   };
 
   window.echarts.registerTheme(themeName, options);
