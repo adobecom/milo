@@ -279,7 +279,7 @@ export const makeFaasConfig = (targetState) => {
     q: {},
     p: {
       js: {
-        36: targetState.pjs36 || defaultState.p.js[36],
+        36: targetState.pjs36?.trim() || defaultState.p.js[36],
         39: targetState.pjs39 || defaultState.p.js[39],
         77: 1,
         78: 1,
