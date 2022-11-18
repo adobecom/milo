@@ -1,0 +1,57 @@
+.author-header {
+  visibility: unset;
+  margin-top: 0;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-100);
+}
+
+.author-header + div {
+  margin-top: 16px;
+}
+
+.author-header {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.author-header h1,
+.author-header h2,
+.author-header h3 {
+  margin: 0;
+}
+
+.author-header-img > div, .author-header-bio > div {
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+
+.author-header img {
+  border-radius: 50%;
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
+}
+
+@media (min-width: 600px) {
+  .author-header {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    text-align: left;
+  }
+
+  .author-header > div:nth-child(1),
+  .author-header .author-header-title {
+    flex: 1 0 100%;
+  }
+
+  .author-header > div:nth-child(2),
+  .author-header .author-header-img {
+    margin-right: 2rem;
+  }
+
+  .author-header > div:nth-child(3),
+  .author-header .author-header-bio {
+    flex-basis: calc(100% - 200px - 2rem);
+  }
+}
