@@ -147,7 +147,7 @@ export async function loadTaxonomy() {
 
       // adjust meta article:tag
 
-      const currentTags = getMetadata('article:tag', true) || [];
+      const currentTags = getMetadata('article:tag') || [];
       const articleTax = computeTaxonomyFromTopics(currentTags);
 
       const allTopics = articleTax.allTopics || [];
@@ -329,39 +329,22 @@ export function stamp(message) {
 }
 
 /**
- * forward looking *.metadata.json experiment
- * fetches metadata.json of page
+ * fetches document of page
  * @param {path} path to *.metadata.json
  * @returns {Object} containing sanitized meta data
 */
-async function getMetadataJson(path) {
-  let resp;
-  try {
-    resp = await fetch(`${path.split('.')[0]}?noredirect`);
-  } catch {
+async function getDocument(path) {
+  const resp = await fetch(`${path}`);
+  if (!resp || !resp.ok) {
     // eslint-disable-next-line no-console
     console.log(`Could not retrieve metadata for ${path}`);
+    return null;
   }
 
-  if (resp && resp.ok) {
-    const text = await resp.text();
-    const headStr = text.split('<head>')[1].split('</head>')[0];
-    const head = document.createElement('head');
-    head.innerHTML = headStr;
-    const metaTags = head.querySelectorAll(':scope > meta');
-    const meta = {};
-    metaTags.forEach((metaTag) => {
-      const name = metaTag.getAttribute('name') || metaTag.getAttribute('property');
-      const value = metaTag.getAttribute('content');
-      if (meta[name]) {
-        meta[name] += `, ${value}`;
-      } else {
-        meta[name] = value;
-      }
-    });
-    return meta;
-  }
-  return null;
+  const text = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'text/html');
+  return doc;
 }
 
 /**
@@ -370,24 +353,23 @@ async function getMetadataJson(path) {
  * @returns {object} article object (or null if article does not exist)
 */
 export async function getBlogArticle(path) {
-  const meta = await getMetadataJson(`${path}.metadata.json`);
-
-  if (meta) {
-    let title = meta['og:title'].trim();
+  const doc = await getDocument(`${path}`);
+  if (doc) {
+    let title = getMetadata('og:title', doc).trim();
     const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
     trimEndings.forEach((ending) => {
       if (title.endsWith(ending)) title = title.substr(0, title.length - ending.length);
     });
 
     const articleMeta = {
-      description: meta.description,
+      description: getMetadata('description', doc),
       title,
-      author: meta.author,
-      image: meta['og:image'],
-      imageAlt: meta['og:image:alt'],
-      date: meta['publication-date'],
+      author: getMetadata('author', doc),
+      image: getMetadata('og:image', doc),
+      imageAlt: getMetadata('og:image:alt', doc),
+      date: getMetadata('publication-date', doc),
       path,
-      tags: meta['article:tag'],
+      tags: getMetadata('article:tag', doc),
     };
     loadArticleTaxonomy(articleMeta);
     return articleMeta;

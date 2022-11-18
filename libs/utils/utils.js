@@ -138,9 +138,10 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
-export function getMetadata(name) {
+export function getMetadata(name, argDoc) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  const doc = argDoc || document;
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
