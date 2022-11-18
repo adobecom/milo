@@ -83,6 +83,9 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
 }
 
 export default async function getProfile(blockEl, profileEl, toggle, ioResp) {
+  const gnav = profileEl.closest('nav.gnav');
+  gnav.classList.add('signed-in');
+
   const profiles = {};
   profiles.ims = await window.adobeIMS.getProfile();
   profiles.io = await ioResp.json();
