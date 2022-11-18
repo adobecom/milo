@@ -11,9 +11,11 @@ export function decorateButtons(el, size) {
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  const actionArea = buttons[0].closest('p, div');
+  if (actionArea) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
 }
 
 export function decorateIconArea(el) {
@@ -27,7 +29,7 @@ export function decorateIconArea(el) {
 export function decorateBlockText(el, size = 'small') {
   const blockTypeSizes = {
     media: {
-      //name: [heading, detail, body]
+      // name: [heading, detail, body]
       small: ['XS', 'M', 'S'],
       medium: ['M', 'M', 'S'],
       large: ['XL', 'L', 'M'],
