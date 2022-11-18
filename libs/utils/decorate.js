@@ -11,12 +11,14 @@ export function decorateButtons(el, size) {
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  const actionArea = buttons[0].closest('p, div');
+  if (actionArea) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
 }
 
-export function decorateButtonsGroup(el) {
+export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
@@ -25,21 +27,32 @@ export function decorateButtonsGroup(el) {
 }
 
 export function decorateBlockText(el, size = 'small') {
+  const blockTypeSizes = {
+    media: {
+      // name: [heading, detail, body]
+      small: ['XS', 'M', 'S'],
+      medium: ['M', 'M', 'S'],
+      large: ['XL', 'L', 'M'],
+      xlarge: ['XXL', 'L', 'M'],
+    },
+    text: {
+      small: ['M', 'S', 'S'],
+      medium: ['L', 'M', 'M'],
+      large: ['XL', 'L', 'M'],
+      xlarge: ['XXL', 'XL', 'L'],
+    }
+  };
+  const sizeType = el.classList.contains('text-block') ? blockTypeSizes.text[size] : blockTypeSizes.media[size];
+  const decorateHeading = (headingEl, sizes) => {
+    headingEl.classList.add(`heading-${sizes[0]}`);
+    headingEl.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
+    const emptyPs = headingEl.parentElement.querySelectorAll(':scope > p:not([class])');
+    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizeType[2]}`); });
+  };
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
-    headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
-  };
-  if (size === 'small') {
-    decorate(heading, 'XS', 'S', 'M');
-  } else if (size === 'large') {
-    decorate(heading, 'XL', 'M', 'L');
-  } else {
-    decorate(heading, 'M', 'S', 'M');
-  }
-  decorateButtonsGroup(el);
+  if (heading) decorateHeading(heading, sizeType);
+  decorateIconArea(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
@@ -65,6 +78,6 @@ export function decorateBlockBg(block, node) {
 }
 
 export function getBlockSize(el) {
-  const sizes = ['small', 'medium', 'large'];
+  const sizes = ['small', 'medium', 'large', 'xlarge'];
   return sizes.find((size) => el.classList.contains(size)) || sizes[1]; /* medium default */
 }
