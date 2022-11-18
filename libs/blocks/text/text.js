@@ -17,6 +17,7 @@ import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
  */
 
 export default function init(el) {
+  el.classList.add('text-block');
   const children = el.querySelectorAll(':scope > div');
   const [background, ...cols] = children;
   decorateBlockBg(el, background);
@@ -24,7 +25,6 @@ export default function init(el) {
   const container = document.createElement('div');
   container.classList.add('foreground', 'container', 'grid');
   el.appendChild(container);
-  el.classList.add('block');
 
   cols.forEach((col, idx) => {
     let headingClass = 'medium';

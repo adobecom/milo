@@ -9,11 +9,8 @@ import {
   useState,
 } from '../../deps/htm-preact.js';
 import {
-  updateObj,
-  cloneObj,
   getConfig,
-  getHashConfig,
-  isValidUuid,
+  parseEncodedConfig,
   loadStyle,
   utf8ToB64,
 } from '../../utils/utils.js';
@@ -25,6 +22,27 @@ import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
 
 const LS_KEY = 'caasConfiguratorState';
+
+const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+
+const updateObj = (obj, defaultObj) => {
+  const ds = cloneObj(defaultObj);
+  Object.keys(ds).forEach((key) => {
+    if (obj[key] === undefined) obj[key] = ds[key];
+  });
+  return obj;
+};
+
+const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+
+const getHashConfig = () => {
+  const { hash } = window.location;
+  if (!hash) return null;
+  window.location.hash = '';
+
+  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
+  return parseEncodedConfig(encodedConfig);
+}
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -788,4 +806,11 @@ const init = async (el) => {
   render(app, el);
 };
 
-export { init as default, loadCaasTags };
+export {
+  init as default,
+  cloneObj,
+  getHashConfig,
+  isValidUuid,
+  loadCaasTags,
+  updateObj,
+};
