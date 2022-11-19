@@ -189,6 +189,51 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export function appendHtmlPostfix(area = document) {
+  const pageUrl = new URL(window.location.href);
+  if (!pageUrl.pathname.endsWith('.html')) return;
+
+  const relativeAutoBlocks = AUTO_BLOCKS
+    .map((b) => Object.values(b)[0])
+    .filter((b) => b.startsWith('/'));
+
+  const { htmlExclude = [] } = getConfig();
+
+  const HAS_EXTENSION = /\..*$/;
+  const shouldNotConvert = (href) => {
+    if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
+      || href.endsWith('/')
+      || href === pageUrl.origin
+      || htmlExclude.includes(href)
+      || HAS_EXTENSION.test(href.split('/').pop())) {
+      return true;
+    }
+    const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
+    if (isAutoblockLink) return true;
+    return false;
+  };
+
+  const links = area.querySelectorAll('a');
+  links.forEach((el) => {
+    const href = el.getAttribute('href');
+    if (!href || shouldNotConvert(href)) return;
+
+    try {
+      const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
+      if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
+        linkUrl.pathname = `${linkUrl.pathname}.html`;
+        el.setAttribute('href', href.startsWith('/')
+          ? `${linkUrl.pathname}${linkUrl.search}${linkUrl.hash}`
+          : linkUrl.href);
+      }
+    } catch (err) {
+      /* c8 ignore next 3 */
+      // eslint-disable-next-line no-console
+      console.log(err);
+    }
+  });
+}
+
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
@@ -340,11 +385,6 @@ function decorateLinks(el) {
   }, []);
 }
 
-function decorateBlocks(el) {
-  const blocks = el.querySelectorAll('div[class]:not(.content)');
-  return [...blocks].map((block) => block);
-}
-
 function decorateContent(el) {
   const children = [el];
   let child = el;
@@ -427,7 +467,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = decorateBlocks(section);
+    const blocks = el.querySelectorAll('div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -495,6 +535,7 @@ export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
+  appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
