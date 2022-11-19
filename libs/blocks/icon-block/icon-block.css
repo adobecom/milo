@@ -34,33 +34,8 @@
 }
 
 .icon-block .foreground {
-  padding: var(--spacing-xxxl) 0;
   position: relative;
   text-align: center;
-}
-
-.icon-block.xl-spacing .foreground {
-  padding: var(--spacing-xl) 0;
-}
-
-.icon-block.l-spacing .foreground {
-  padding: var(--spacing-l) 0;
-}
-
-.icon-block.m-spacing .foreground {
-  padding: var(--spacing-m) 0;
-}
-
-.icon-block.s-spacing .foreground {
-  padding: var(--spacing-s) 0;
-}
-
-.icon-block.xs-spacing .foreground {
-  padding: var(--spacing-xs) 0;
-}
-
-.icon-block.no-spacing .foreground {
-  padding: 0;
 }
 
 .icon-block .foreground .text {
@@ -71,7 +46,7 @@
 }
 
 .icon-block .foreground .icon-area {
-  margin: 0 auto var(--spacing-xs) auto;
+  margin: 0 auto var(--spacing-s) auto;
   height: 80px;
   max-width: 234px;
   overflow: hidden;
@@ -83,7 +58,6 @@
 }
 
 .icon-block.bio .foreground .icon-area {
-  margin: 0 auto;
   width: 80px;
   height: 80px;
   position: relative;
@@ -93,14 +67,6 @@
 
 .icon-block.bio .foreground .icon-area img {
   object-fit: cover;
-}
-
-.icon-block .foreground {
-  gap: var(--spacing-m);
-}
-
-.five-up .icon-block .foreground {
-  gap: var(--spacing-xs);
 }
 
 .five-up .icon-block:not(.full-width) .foreground .icon-area {
@@ -119,7 +85,7 @@
 .icon-block .foreground .text .heading-L,
 .icon-block .foreground .text .heading-M,
 .icon-block .foreground .text .heading-S {
-  margin: var(--spacing-xs) 0;
+  margin: 0 0 var(--spacing-xs);
 }
 
 .icon-block .foreground .text .body-M {
@@ -156,7 +122,7 @@
 
 .icon-block.vertical .foreground .icon-area {
   margin: 0;
-  margin-bottom: var(--spacing-xxs);
+  margin-bottom: var(--spacing-xs);
 }
 
 .icon-block.centered .foreground .text .action-area>a:not(.con-button) {
@@ -188,26 +154,16 @@
     max-width: 234px;
   }
 
-  .five-up {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .icon-block .foreground {
-    gap: 32px;
-  }
-
-  .three-up .icon-block.vertical .foreground .text:last-child {
-    padding-right: 53%;
-  }
-
   .five-up .icon-block .foreground .icon-area {
     text-align: center;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .icon-block .foreground {
-    padding: var(--spacing-xxxl) 0;
+  .icon-block.full-width,
+  .icon-block.bio {
+    max-width: 800px;
+    margin: 0 auto;
   }
 
   .icon-block .foreground .text {

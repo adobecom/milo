@@ -24,45 +24,37 @@ const iconBlockVariants = {
   centered: ['M', 'M']
 }
 
-function decorateLayout(el) {
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground');
-  el.appendChild(foreground);
-  return foreground;
-}
-
-function decorateContent(row, sizes) {
-  if (!row) return;
-  const text = row.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+function decorateContent(block, variant) {
+  if (!block) return;
+  const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
     text?.classList.add('text');
     const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     const heading = headings?.[headings.length - 1];
-    heading?.classList.add(`heading-${sizes[0]}`);
-    heading?.nextElementSibling?.classList.add(`body-${sizes[1]}`);
+    heading?.classList.add(`heading-${variant[0]}`);
+    heading?.nextElementSibling?.classList.add(`body-${variant[1]}`);
     heading?.previousElementSibling?.classList.add('icon-area');
-    const image = row.querySelector(':scope img');
+    const image = block.querySelector(':scope img');
     image?.parentElement?.parentElement?.classList?.add('icon-area');
-    decorateButtons(row);
+    decorateButtons(block);
   }
 }
 
-function sortedVariants(x, y) {
+function sortPriority(x, y) {
   const priority = ['bio', 'small'];
   return priority.includes(x) ? -1 : priority.includes(y) ? 1 : 0;
 }
 
 function getBlockVariant(el) {
-  const variantList = [...el.classList].filter(i => Object.keys(iconBlockVariants).indexOf(i) > -1).sort(sortedVariants);
-  return variantList?.[0] ?? 'fullwidth';
+  const variantList = [...el.classList].filter(i => Object.keys(iconBlockVariants).indexOf(i) > -1).sort(sortPriority);
+  const variant = variantList?.[0] ?? 'fullwidth';
+  if (variant === 'fullwidth') el.classList.add('full-width');
+  return variant;
 }
 
 export default function init(el) {
-  const foreground = decorateLayout(el);
-  const rows = el.querySelectorAll(':scope > div:not([class])');
-  [...rows].forEach(row => {
-    decorateContent(row, iconBlockVariants[getBlockVariant(el)]);
-    foreground.insertAdjacentElement('beforeEnd', row.children[0]);
-    row.remove();
-  });
+  const block = el.querySelector(':scope > div:not([class])');
+  block.classList.add('foreground');
+  const variant = iconBlockVariants[getBlockVariant(el)];
+  decorateContent(block, variant);
 }
