@@ -64,6 +64,16 @@ describe('marketo', () => {
     expect(error.classList.contains('alert')).to.be.true;
   });
 
+  it('marketo field error visible', async () => {
+    const button = await waitForElement('.marketo button');
+    button.click();
+
+    const firstField = document.querySelector('.mktoField');
+    const bounding = firstField.getBoundingClientRect();
+
+    expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
+  });
+
   it('validate marketo fields success', async () => {
     const error = await waitForElement('.marketo-error');
     const errorMessage = 'There are some fields that require your attention';
