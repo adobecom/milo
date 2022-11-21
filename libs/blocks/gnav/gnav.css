@@ -1136,7 +1136,6 @@ header .app-launcher {
 
   .gnav-search-results {
     margin: 0 auto;
-    max-width: 1400px;
   }
 
   .gnav-profile {
@@ -1152,7 +1151,8 @@ header .app-launcher {
 @media (min-width: 1200px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
-  .gnav-search.is-open .gnav-search-field {
+  .gnav-search.is-open .gnav-search-field,
+  .gnav-search.is-open .gnav-search-results {
     max-width: 1200px;
   }
 }
@@ -1160,7 +1160,8 @@ header .app-launcher {
 @media (min-width: 1440px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
-  .gnav-search.is-open .gnav-search-field {
+  .gnav-search.is-open .gnav-search-field,
+  .gnav-search.is-open .gnav-search-results {
     max-width: 1400px;
   }
 }
