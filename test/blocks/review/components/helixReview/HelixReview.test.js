@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it beforeEach */
 import { expect } from '@esm-bundle/chai';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
 import { waitForElement, delay } from '../../../../helpers/waitfor.js';
@@ -30,9 +28,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);
@@ -71,9 +69,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);
@@ -99,9 +97,9 @@ describe('HelixReview', () => {
       postUrl=${strings.postUrl}
       visitorId=""
       reviewPath="/data/review"
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
+      onRatingSet=${(/* { rating, comment } */) => {}}
+      onRatingHover=${(/* { rating } */) => {}}
+      onReviewLoad=${(/* { hasRated, rating } */) => {}}
       productJson="{}"
     />`;
     render(helixReview, document.body);
