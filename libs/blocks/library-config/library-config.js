@@ -1,124 +1,33 @@
-/* global ClipboardItem */
-
 import { createTag } from '../../utils/utils.js';
 
-function createCopy(blob) {
-  const data = [new ClipboardItem({ [blob.type]: blob })];
-  navigator.clipboard.write(data);
+const LIBRARY_PATH = '/docs/library/library.json';
+
+async function loadBlocks(content, list) {
+  const { default: blocks } = await import('./lists/blocks.js');
+  blocks(content, list);
 }
 
-function getAuthorName(block) {
-  const blockSib = block.previousElementSibling;
-  if (!blockSib) return null;
-  if (['H2', 'H3'].includes(blockSib.nodeName)) {
-    return blockSib.textContent;
-  }
-  return null;
+async function loadPlaceholders(content, list) {
+  const { default: placeholders } = await import('./lists/placeholders.js');
+  placeholders(content, list);
 }
 
-function getBlockName(block) {
-  const classes = block.className.split(' ');
-  const name = classes.shift();
-  return classes.length > 0 ? `${name} (${classes.join(', ')})` : name;
+async function loadIcons(content, list) {
+  const { default: icons } = await import('./lists/icons.js');
+  icons(content, list);
 }
 
-function getTable(block, name, path) {
-  const url = new URL(path);
-  block.querySelectorAll('img').forEach((img) => {
-    const srcSplit = img.src.split('/');
-    const mediaPath = srcSplit.pop();
-    img.style = 'max-height: 100px; width: auto;';
-    img.src = `${url.origin}/${mediaPath}`;
-  });
-  const rows = [...block.children];
-  const maxCols = rows.reduce((cols, row) => (
-    row.children.length > cols ? row.children.length : cols), 0);
-  const table = document.createElement('table');
-  table.setAttribute('border', 1);
-  const headerRow = document.createElement('tr');
-  headerRow.append(createTag('th', { colspan: maxCols }, name));
-  table.append(headerRow);
-  rows.forEach((row) => {
-    const tr = document.createElement('tr');
-    [...row.children].forEach((col) => {
-      const td = document.createElement('td');
-      if (row.children.length < maxCols) {
-        td.setAttribute('colspan', maxCols);
-      }
-      td.innerHTML = col.innerHTML;
-      tr.append(td);
-    });
-    table.append(tr);
-  });
-  return table.outerHTML;
-}
-
-async function loadBlockList(paths, list) {
-  for (const path of paths) {
-    const resp = await fetch(path);
-    if (!resp.ok) return;
-    const json = await resp.json();
-    // eslint-disable-next-line no-restricted-syntax
-    for (const blockGroup of json.data) {
-      const titleText = createTag('p', { class: 'block-title' }, blockGroup.key);
-      const title = createTag('li', { class: 'block-group' }, titleText);
-      const previewButton = createTag('button', { class: 'preview-group' }, 'Preview');
-      title.append(previewButton);
-      list.append(title);
-
-      previewButton.addEventListener('click', () => {
-        window.open(blockGroup.value, '_blockpreview');
-      });
-
-      // eslint-disable-next-line no-await-in-loop
-      const pageResp = await fetch(`${blockGroup.value}.plain.html`);
-      if (!pageResp.ok) return;
-      // eslint-disable-next-line no-await-in-loop
-      const html = await pageResp.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const blocks = doc.body.querySelectorAll('div[class]');
-      blocks.forEach((block) => {
-        const item = document.createElement('li');
-        const name = document.createElement('p');
-        name.textContent = getAuthorName(block) || getBlockName(block);
-        const copy = document.createElement('button');
-        copy.addEventListener('click', (e) => {
-          const table = getTable(block, getBlockName(block), blockGroup.value);
-          e.target.classList.add('copied');
-          setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
-          const blob = new Blob([table], { type: 'text/html' });
-          createCopy(blob);
-        });
-        item.append(name, copy);
-        list.append(item);
-      });
-    }
-  };
-}
-
-function stub(list) {
-  const item = document.createElement('li');
-  const name = document.createElement('p');
-  name.textContent = 'This library isn\'t supported';
-  item.append(name);
-  list.append(item);
-}
-
-async function loadList(type, list) {
+async function loadList(type, content, list) {
   list.innerHTML = '';
-  switch (type.text) {
-    case 'Blocks':
-      loadBlockList(type.paths, list);
+  switch (type) {
+    case 'blocks':
+      loadBlocks(content, list);
       break;
-    case 'Templates':
-      stub(list);
+    case 'placeholders':
+      loadPlaceholders(content, list);
       break;
-    case 'Placeholders':
-      stub(list);
-      break;
-    case 'Tokens':
-      stub(list);
+    case 'icons':
+      loadIcons(content, list);
       break;
     default:
       await import('../../utils/lana.js');
@@ -126,67 +35,108 @@ async function loadList(type, list) {
   }
 }
 
-export default function init(el) {
-  const librarEls = el.querySelectorAll('a');
+async function fetchLibrary(domain) {
+  const resp = await fetch(`${domain}${LIBRARY_PATH}`);
+  if (!resp.ok) return null;
+  return resp.json();
+}
 
-  const blockPaths = [...librarEls].map((lib) => { return lib.href; });
+async function getSuppliedLibrary() {
+  const { searchParams } = new URL(window.location.href);
+  const repo = searchParams.get('repo');
+  const owner = searchParams.get('owner');
+  if (!repo || !owner) return null;
+  return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`);
+}
 
-  const { searchParams: sp } = new URL(window.location.href);
-  const additionalBlockLibs = sp.getAll('blocks')
-    .map((lib) => {
-      if (lib.startsWith('http')) return lib;
-      return `https://${lib}.hlx.page/docs/library/blocks.json`;
-    });
-  blockPaths.push(...additionalBlockLibs);
+function combineLibraries(base, supplied) {
+  const library = {
+    blocks: base.blocks.data,
+    placeholders: base.placeholders.data,
+    icons: base.icons.data,
+  };
 
-  const libraries = [ { text: 'Blocks', paths: blockPaths } ];
+  if (supplied) {
+    if (supplied.blocks.data.length > 0) {
+      library.blocks.push(...supplied.blocks.data);
+    }
 
-  el.querySelector('div').remove();
+    if (supplied.placeholders.data.length > 0) {
+      library.placeholders = supplied.placeholders.data;
+    }
+  }
 
-  const finder = document.createElement('div');
-  finder.className = 'con-finder';
+  return library;
+}
 
-  const span = createTag('span', { class: 'logo' }, 'Close');
+function createList(libraries) {
+  const container = createTag('div', { class: 'con-container' });
 
-  const title = createTag('div', { class: 'con-title' }, span);
-  title.append(createTag('p', { class: 'con-title-text' }, 'Library'));
-  const header = createTag('div', { class: 'con-header' }, title);
-
-  const back = document.createElement('button');
-  back.className = 'con-back';
-  back.addEventListener('click', () => {
-    const insetEls = finder.querySelectorAll('.inset');
-    insetEls.forEach((el) => {
-      el.classList.remove('inset');
-    });
-    finder.classList.remove('allow-back');
-  });
-  header.append(back);
-  finder.append(header);
-
-  const container = document.createElement('div');
-  container.className = 'con-container';
-  finder.append(container);
-
-  const contentList = document.createElement('ul');
-  container.append(contentList);
+  const libraryList = createTag('ul', { class: 'sk-library-list' });
+  container.append(libraryList);
 
   Object.keys(libraries).forEach((type) => {
-    const item = document.createElement('li');
-    item.className = 'content-type';
-    item.innerHTML = `<p>${libraries[type].text}</p>`;
-    contentList.appendChild(item);
+    const item = createTag('li', { class: 'content-type' }, type);
+    libraryList.append(item);
 
     const list = document.createElement('ul');
     list.classList.add('con-type-list', `con-${type}-list`);
     container.append(list);
 
-    item.addEventListener('click', () => {
-      contentList.classList.add('inset');
+    item.addEventListener('click', (e) => {
+      const skLibrary = e.target.closest('.sk-library');
+      skLibrary.querySelector('.sk-library-title-text').textContent = type;
+      libraryList.classList.add('inset');
       list.classList.add('inset');
-      finder.classList.add('allow-back');
-      loadList(libraries[type], list);
+      skLibrary.classList.add('allow-back');
+      loadList(type, libraries[type], list);
     });
   });
-  el.append(finder);
+
+  return container;
+}
+
+function createHeader() {
+  const nav = createTag('button', { class: 'sk-library-logo' }, 'Franklin Library');
+  const title = createTag('div', { class: 'sk-library-title' }, nav);
+  title.append(createTag('p', { class: 'sk-library-title-text' }, 'Pick a library'));
+  const header = createTag('div', { class: 'sk-library-header' }, title);
+
+  nav.addEventListener('click', (e) => {
+    const skLibrary = e.target.closest('.sk-library');
+    skLibrary.querySelector('.sk-library-title-text').textContent = 'Pick a library';
+    const insetEls = skLibrary.querySelectorAll('.inset');
+    insetEls.forEach((el) => {
+      el.classList.remove('inset');
+    });
+    skLibrary.classList.remove('allow-back');
+  });
+  return header;
+}
+
+function detectContext() {
+  if (window.self === window.top) {
+    document.body.classList.add('in-page');
+  }
+}
+
+export default async function init(el) {
+  el.querySelector('div').remove();
+  detectContext();
+
+  // Get the data
+  const base = await fetchLibrary(window.location.origin);
+  const supplied = await getSuppliedLibrary();
+  const libraries = combineLibraries(base, supplied);
+
+  // Create the UI
+  const skLibrary = createTag('div', { class: 'sk-library' });
+
+  const header = createHeader();
+  skLibrary.append(header);
+
+  const list = createList(libraries);
+  skLibrary.append(list);
+
+  el.append(skLibrary);
 }

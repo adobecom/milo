@@ -5,8 +5,6 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
-
 const utils = {};
 
 const config = {
@@ -140,32 +138,9 @@ describe('Utils', () => {
     expect(b64).to.equal('hello world');
   });
 
-  it('Converts Base 64 to UTF-8', () => {
-    window.location.hash = hash;
-    const hashConfig = utils.getHashConfig();
-    expect(hashConfig.cardStyle).to.equal('full-card');
-  });
-
   it('Successfully dies parsing a bad config', () => {
     utils.parseEncodedConfig('error');
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
-  });
-
-  it('updateObj should add any missing keys to the obj', () => {
-    const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
-    expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
-    expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
-  });
-
-  it('Clones an object', () => {
-    const o = {
-      sortReservoirPool: 1000,
-      source: ['hawks'],
-      tagsUrl: 'www.adobe.com/chimera-api/tags',
-      targetActivity: '',
-      targetEnabled: false,
-    };
-    expect(utils.cloneObj(o)).to.be.eql(o);
   });
 
   it('Decorates no nav', async () => {
@@ -175,6 +150,12 @@ describe('Utils', () => {
     await utils.loadArea();
     expect(document.querySelector('header')).to.not.exist;
     expect(document.querySelector('footer')).to.not.exist;
+  });
+
+  it('Decorates placeholder', () => {
+    const paragraphs = [...document.querySelectorAll('p')];
+    const lastPara = paragraphs.pop();
+    expect(lastPara.textContent).to.equal('nothing to see here');
   });
 
   it('getLocale default return', () => {

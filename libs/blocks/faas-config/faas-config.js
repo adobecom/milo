@@ -8,7 +8,7 @@ import {
   useState,
 } from '../../deps/htm-preact.js';
 import { faasHostUrl, defaultState, initFaas, loadFaasFiles } from '../faas/utils.js';
-import { loadStyle, getHashConfig, utf8ToB64 } from '../../utils/utils.js';
+import { loadStyle, parseEncodedConfig, utf8ToB64 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import { Input as FormInput } from '../../ui/controls/formControls.js';
@@ -23,6 +23,15 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   // eslint-disable-next-line no-nested-ternary
   return x < y ? -1 : x > y ? 1 : 0;
 });
+
+const getHashConfig = () => {
+  const { hash } = window.location;
+  if (!hash) return null;
+  window.location.hash = '';
+
+  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
+  return parseEncodedConfig(encodedConfig);
+}
 
 const getInitialState = () => {
   const hashConfig = getHashConfig();
@@ -83,7 +92,7 @@ const CopyBtn = () => {
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if (!input.value) {
+      if (!input.value && input.id !== '149') {
         inputValuesFilled = false;
         if (requiredPanelExpandButton) {
           requiredPanelExpandButton.click();
@@ -279,7 +288,7 @@ const RequiredPanel = () => {
         // b2bpartners
         if (d.question.id === '149') {
           setField149(html`
-          <${Input} label="Name(s) of B2B Partner(s)"
+          <${Input} label="Name(s) of B2B Partners (Optional)"
           prop="${d.question.id}"
           placeholder="Comma separated list e.g. Microsoft, SAP" />`);
         }
@@ -303,7 +312,7 @@ const RequiredPanel = () => {
           setFieldMultiCampStyle(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
         }
       });
-      if (!isMultipleCampaign) {
+      if (!isMultipleCampaign && formId !== '63') {
         setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
       }
       // eslint-disable-next-line no-use-before-define
@@ -357,9 +366,9 @@ const PrepopulationPanel = () => html`
 const StylePanel = () => html`
   <${Select} label="Background Theme" prop="style_backgroundTheme" options="${{ white: 'White', dark: 'Dark' }}" />
   <${Select} label="Layout" prop="style_layout" options="${{ column1: '1 Column', column2: '2 Columns' }}" />
-  <${Select} 
+  <${Select}
     label="Title Size"
-    prop="title_size" 
+    prop="title_size"
     options="${{ h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P' }}" />
   <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
