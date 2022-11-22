@@ -18,9 +18,10 @@ export default async function init(block) {
   if (!a && !a.href) return;
   block.innerHTML = '';
   loadTaxonomy();
-  const article = await getBlogArticle(a.href);
+  const href = new URL(a.href).pathname;
+  const article = await getBlogArticle(href);
   if (!article) {
-    console.log(`Featured article does not exist or is missing in index: ${a.href}`);
+    console.log(`Featured article does not exist or is missing in index: ${href}`);
     return;
   }
   await decorate(block, article);
