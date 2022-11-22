@@ -72,8 +72,8 @@
 
 .inset.text-block .foreground ul,
 .inset.text-block .foreground ol {
-  list-style: inside;
-  padding-left: 0;
+  list-style: outside;
+  padding-left: var(--spacing-xs);;
 }
 
 /* Tablet */
