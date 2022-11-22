@@ -402,7 +402,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.documentElement || area;
+  const el = area.documentElement ? area.body : area;
   const regex = /{{(.*?)}}/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
