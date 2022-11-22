@@ -4,26 +4,24 @@ import {
   loadTaxonomy,
 } from '../article-feed/article-helpers.js';
 
-export async function decorateFeaturedArticle(featuredArticleEl, articlePath) {
-  const article = await getBlogArticle(articlePath);
-
-  if (article) {
-    const card = buildArticleCard(article, 'featured-article');
-    const tagHeader = document.querySelector('.tag-header-container > div');
-    featuredArticleEl.append(card);
-    if (tagHeader) tagHeader.append(featuredArticleEl);
-  } else {
-    // eslint-disable-next-line no-console
-    console.warn(`Featured article does not exist or is missing in index: ${window.location.origin}${articlePath}`);
-  }
+async function decorate(block, article) {
+  const card = buildArticleCard(article, 'featured-article');
+  block.insertAdjacentElement('afterbegin', card);
+  const tagHeader = document.querySelector('.tag-header-container > div');
+  /* c8 ignore next */
+  if (tagHeader) tagHeader.append(block);
 }
 
-export default async function decorate(block) {
+export default async function init(block) {
   const a = block.querySelector('a');
+  /* c8 ignore next */
+  if (!a && !a.href) return;
   block.innerHTML = '';
   loadTaxonomy();
-  if (a && a.href) {
-    const { href } = a;
-    await decorateFeaturedArticle(block, href);
+  const article = await getBlogArticle(a.href);
+  if (!article) {
+    console.log(`Featured article does not exist or is missing in index: ${a.href}`);
+    return;
   }
+  await decorate(block, article);
 }

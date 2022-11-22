@@ -1,43 +1,33 @@
+/* eslint-disable no-unused-expressions */
+/* global describe it */
+
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-const articleHtml = await readFile({ path: './mocks/article.html' });
-
-const ogFetch = window.fetch;
-window.fetch = stub();
-window.fetch.withArgs(`https://main--blog--adobecom.hlx.page/published/2022/11/15/voices-of-our-community`).returns(
-  new Promise((resolve) => {
-    resolve({
-      ok: true,
-      text: () => articleHtml});
-  }),
-);
-const restoreFetch = () => {
-  window.fetch = ogFetch;
-};
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales };
+setConfig(conf);
+const config = getConfig();
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/featured-article/featured-article.js')
+const { default: initFeaturedArticleBlock} = await import('../../../libs/blocks/featured-article/featured-article.js')
 
-describe('creates feature article block', async () => {
-  before(async () => {
-    await init(document.body);
-  });
-  after(() => {
-    restoreFetch()
-  });
+describe('creates feature article block', () => {
 
-  it('has card with url', () => {
-    const card = document.querySelector('.featured-article-card');
+  const featuredArticles = document.querySelectorAll('.featured-article');
+  it('has card with url', async () => {
+    config.locale.contentRoot = '/test/blocks/featured-article';
+    await initFeaturedArticleBlock(featuredArticles[0]);
+    const card = featuredArticles[0].querySelector('.featured-article-card');
     expect(card).to.exist;
   });
-  it('has featured article image', () => {
-    const image = document.querySelector('.featured-article-card-image');
-    expect(image).to.exist;
+
+  it('has disregards bad card requests', async () => {
+    config.locale.contentRoot = '/test/blocks/featured-article';
+    await initFeaturedArticleBlock(featuredArticles[1]);
+    const card = featuredArticles[1].querySelector('.featured-article-card');
+    expect(card).to.not.exist;
   });
-  it('has content', () => {
-    const content = document.querySelector('.featured-article-card-body');
-    expect(content).to.exist;
-  });
+
 });
