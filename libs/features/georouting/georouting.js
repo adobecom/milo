@@ -133,7 +133,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
   const storedInter = sessionStorage.getItem('international') || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
-  const resp = await fetch(`${origin}/georouting.json`);
+  const resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
   if (!resp.ok) return;
   const json =  await resp.json();
 
