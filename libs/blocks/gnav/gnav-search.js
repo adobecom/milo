@@ -1,8 +1,6 @@
-import { getConfig, getMetadata, createTag } from '../../utils/utils.js';
-
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';
-
+const SEARCH_DEBOUNCE_MS = 300;
 
 
 const getHelpxLink = (searchStr, country = 'US') => `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
@@ -20,56 +18,32 @@ const fetchResults = async (searchStr, locale = 'en_US') => {
   return null;
 };
 
-const getNoResultsEl = (value) => {
-  const noResultsTxt = 'Try our advanced search';
-  const a = createTag('a', {
-    href: getHelpxLink(value),
-    'aria-label': noResultsTxt,
-  }, noResultsTxt);
-  return createTag('li', {}, a);
-};
-
-const wrapValueInSpan = (value, suggestion, linkEl) => {
-  const textArr = suggestion.split(value);
-  return textArr.reduce((el, text, idx, arr) => {
-    el.insertAdjacentText('beforeend', text);
-    if (idx < arr.length - 1) {
-      el.append(createTag('span', {}, value));
-    }
-    return el;
-  }, linkEl);
-};
-
-const updateSearchResults = (value, suggestions, resultsEl) => {
-  if (!suggestions.length) {
-    const noResults = getNoResultsEl(value);
-    resultsEl.replaceChildren(noResults);
-    return;
-  }
-
-  const df = document.createDocumentFragment();
-  suggestions.forEach((suggestion) => {
-    const a = createTag('a', {
-      href: getHelpxLink(suggestion),
-      'aria-label': suggestion,
-    });
-    const linkEl = wrapValueInSpan(value, suggestion, a);
-    const li = createTag('li', {}, linkEl);
-    df.appendChild(li);
-  });
-  resultsEl.replaceChildren(df);
-};
-
 const getSuggestions = (json) => {
   if (!json?.suggested_completions) return [];
   return json.suggested_completions.map((suggestion) => suggestion?.name);
 };
 
-const onSearchInput = async (value, resultsEl, locale) => {
+const debounce = (f, interval = SEARCH_DEBOUNCE_MS) => {
+  let timer = null;
+
+  return (...args) => {
+    clearTimeout(timer);
+    return new Promise((resolve) => {
+      timer = setTimeout(
+        () => resolve(f(...args)),
+        interval,
+      );
+    });
+  };
+}
+
+const searchInput = async (value, resultsEl, locale) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
-  updateSearchResults(value, suggestions, resultsEl);
+  return suggestions
 };
+
+const onSearchInput = debounce(searchInput)
 
 export {
   onSearchInput,
