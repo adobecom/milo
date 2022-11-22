@@ -63,16 +63,31 @@
 }
 
 /* Inset */
-.inset.text-block .text {
-  padding-left: var(--spacing-l);
+.inset.text-block .foreground {
+  max-width: unset;
+  padding-right: var(--grid-margins-width);
+  padding-left: calc(var(--grid-margins-width) - 2px);
   border-left: 2px solid #ccc;
-  text-align: left;
 }
 
-.inset.text-block .text ul,
-.inset.text-block .text ol {
+.inset.text-block .foreground ul,
+.inset.text-block .foreground ol {
   list-style: inside;
   padding-left: 0;
+}
+
+/* Tablet */
+@media screen and (min-width: 600px) {
+  .inset.text-block .foreground {
+    max-width: var(--grid-container-width);
+    margin: 0 auto;
+    padding-right: 0;
+    padding-left: 0;
+    border-left: 2px solid #ccc;
+  }
+  .inset.text-block .foreground > div {
+    padding-left: var(--spacing-m);
+  }
 }
 
 /* Desktop */
