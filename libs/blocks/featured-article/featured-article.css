@@ -93,7 +93,7 @@
 .featured-article-card-category,
 .featured-article-card-category a,
 .featured-article-card-date {
-  font-weight: var(-type-detail-all-weight);
+  font-weight: var(--type-detail-all-weight);
   color: var(--type-detail-color);
   font-size: var(--type-detail-s-lh);
   line-height: var(--type-detail-line-height);
@@ -179,11 +179,11 @@
 }
 
 .tag-header-container .featured-article-card-body p:not(:first-child) {
-  font-size: var(--type-body-font-size-xs);
+  font-size: 0.875rem;
 }
 
 @media (min-width: 600px) {
   .tag-header-container .featured-article-card-body p:not(:first-child) {
-    font-size: var(--type-body-font-size-m);
+    font-size: 1.125rem;
   }
 }
