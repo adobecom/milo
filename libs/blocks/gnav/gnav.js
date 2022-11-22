@@ -282,32 +282,8 @@ const Profile = ({body}) => {
         aria-expanded="false"
         aria-controls="gnav-profile-menu"
       >
-        <img
-          class="gnav-profile-img"
-          src="https://a5.behance.net/8dd6d3fa934bb5d947e21f62daf16f79373e91f4/img/profile/avatars/zoom-138.png?cb=264615658"
-        />
+        Sign In
       </button>
-      <div id="gnav-profile-menu" class="gnav-profile-menu">
-        <a
-          class="gnav-profile-header"
-          href="https://account.adobe.com/"
-          aria-label="View Account"
-          ><img
-            class="gnav-profile-img"
-            src="https://a5.behance.net/8dd6d3fa934bb5d947e21f62daf16f79373e91f4/img/profile/avatars/zoom-138.png?cb=264615658"
-          />
-          <div class="gnav-profile-details">
-            <p class="gnav-profile-name">Oakan Sahin</p>
-            <p class="gnav-profile-email">osahin@adobe.com</p>
-            <p class="gnav-profile-account">View Account</p>
-          </div></a
-        >
-        <ul class="gnav-profile-actions">
-          <li class="gnav-profile-action">
-            <a href="https://account.adobe.com">Sign Out</a>
-          </li>
-        </ul>
-      </div>
     </div>
   `;
 };
