@@ -453,6 +453,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area) {
+  const links = area.querySelectorAll('a:is([href*="#_blank"])');
+  [...links].map((link) => link.setAttribute('target', '_blank'))
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
