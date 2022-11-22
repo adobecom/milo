@@ -1,14 +1,16 @@
 import {
-  analyticsDecorateList,
-  analyticsGetLabel,
   createTag,
   decorateSVG,
   getConfig,
-  getBlockClasses,
   getMetadata,
   loadScript,
   makeRelative,
 } from '../../utils/utils.js';
+
+import {
+  analyticsDecorateList,
+  analyticsGetLabel,
+} from '../../martech/attributes.js';
 
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
 const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
@@ -30,6 +32,14 @@ const debounce = (func, timeout = 300) => {
     timer = setTimeout(async () => func.apply(this, args), timeout);
   };
 };
+
+function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
+}
 
 class Gnav {
   constructor(body, el) {
@@ -389,6 +399,14 @@ class Gnav {
   };
 
   /* c8 ignore start */
+  getAppLauncher = async (profileEl) => {
+    const appLauncherBlock = this.body.querySelector('.app-launcher');
+    if (!appLauncherBlock) return;
+
+    const { default: appLauncher } = await import('./gnav-appLauncher.js');
+    appLauncher(profileEl, appLauncherBlock, this.toggleMenu);
+  };
+  
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
@@ -419,6 +437,7 @@ class Gnav {
       if (ioResp.status === 200) {
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        this.getAppLauncher(profileEl);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }

@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import interlink from '../../../libs/features/interlinks.js';
@@ -11,21 +8,24 @@ let foundInterlinks = 0;
 function interlinksCheck(item) {
   if (item.getAttribute('data-origin')) {
     expect(item.getAttribute('data-origin')).to.equal('interlink');
-  } else return;
-  if (!item.getAttribute('daa-ll'))
+  } else {
     return;
+  }
+  if (!item.getAttribute('daa-ll')) {
+    return;
+  }
   if (item.parentElement.getAttribute('daa-lh')) {
     expect(item.parentElement.getAttribute('daa-lh')).to.contain('interlinks_p_');
   } else return;
 
-  foundInterlinks++;
+  foundInterlinks += 1;
 }
 describe('Interlinks', async () => {
   it('No valid keywords file is provided', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/maxlinks.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/invalid.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(0);
   });
@@ -34,7 +34,7 @@ describe('Interlinks', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/nomain.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/keywords.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(0);
   });
@@ -43,7 +43,7 @@ describe('Interlinks', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/interlinks.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/empty.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(0);
   });
@@ -52,7 +52,7 @@ describe('Interlinks', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/maxlinks.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/keywords.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(0);
   });
@@ -61,7 +61,7 @@ describe('Interlinks', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/interlinks.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/nomatches.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(0);
   });
@@ -70,7 +70,7 @@ describe('Interlinks', async () => {
     foundInterlinks = 0;
     document.body.innerHTML = await readFile({ path: './mocks/interlinks.plain.html' });
     await interlink('/test/blocks/interlinks/mocks/keywords.json');
-    const atags = document.getElementsByTagName("a");
+    const atags = document.getElementsByTagName('a');
     atags.forEach(interlinksCheck);
     expect(foundInterlinks).to.equal(3);
   });
