@@ -278,7 +278,7 @@ export function getArticleTaxonomy(article) {
 function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule().get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
@@ -328,11 +328,6 @@ export function stamp(message) {
   }
 }
 
-/**
- * fetches document of page
- * @param {path} path to *.metadata.json
- * @returns {Object} containing sanitized meta data
-*/
 async function getDocument(path) {
   const resp = await fetch(`${path}`);
   if (!resp || !resp.ok) {
@@ -347,13 +342,9 @@ async function getDocument(path) {
   return doc;
 }
 
-/**
- * gets a blog article index information by path.
- * @param {string} path indentifies article
- * @returns {object} article object (or null if article does not exist)
-*/
 export async function getBlogArticle(path) {
   const doc = await getDocument(`${path}`);
+  
   if (doc) {
     let title = getMetadata('og:title', doc).trim();
     const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];

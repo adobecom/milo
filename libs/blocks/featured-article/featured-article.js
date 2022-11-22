@@ -4,8 +4,9 @@ import {
   loadTaxonomy,
 } from '../article-feed/article-helpers.js';
 
-async function decorateFeaturedArticle(featuredArticleEl, articlePath) {
+export async function decorateFeaturedArticle(featuredArticleEl, articlePath) {
   const article = await getBlogArticle(articlePath);
+
   if (article) {
     const card = buildArticleCard(article, 'featured-article');
     const tagHeader = document.querySelector('.tag-header-container > div');
