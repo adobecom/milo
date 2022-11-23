@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it before after */
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 

@@ -4,7 +4,7 @@
 import { delay, waitForElement, waitForUpdate } from './waitfor.js';
 
 const asyncSome = async (arr, predicate) => {
-  for (let e of arr) {
+  for (const e of arr) {
     if (await predicate(e)) return true;
   }
   return false;
@@ -23,7 +23,7 @@ export const findByLabel = (labelStr, rootEl = document) => {
  * Find the first field with the given heading
  * @param {string} headStr
  */
- export const findByHeading = (headStr, rootEl = document) => {
+export const findByHeading = (headStr, rootEl = document) => {
   const labelEl = [...rootEl.querySelectorAll('h1, h2, h3, h4, h5, h6')].find((el) => el.textContent === headStr);
   return labelEl.nextElementSibling;
 };
