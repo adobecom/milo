@@ -94,9 +94,9 @@
 .featured-article-card-category a,
 .featured-article-card-date {
   font-weight: var(--type-detail-all-weight);
-  color: var(--type-detail-color);
-  font-size: var(--type-detail-s-lh);
-  line-height: var(--type-detail-line-height);
+  color: var(--color-gray-600);
+  font-size: var(--ype-detail-s-size);
+  line-height: var(--type-detail-s-lh);
   text-transform: uppercase;
   letter-spacing: .1em;
   margin-bottom: 0.5rem;
@@ -104,7 +104,7 @@
 
 .featured-article-card-body h3 {
   font-size: var(--type-heading-l-size);
-  line-height: var(--type-heading-line-height);
+  line-height: var(--type-heading-l-lh);
   margin: 0;
   margin-bottom: 1rem;
   overflow: hidden;

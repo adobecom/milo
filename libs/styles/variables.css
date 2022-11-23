@@ -63,7 +63,6 @@
   --type-heading-xs-lh: 20px;
   --type-heading-xxs-size: 14px;
   --type-heading-xxs-lh: 18px;
-  --type-heading-line-height: 1.25;
 
   /* Body (Consonant) */
   --type-body-xxl-size: 28px;
@@ -92,8 +91,6 @@
   --type-detail-m-lh: 15px;
   --type-detail-s-size: 10px;
   --type-detail-s-lh: 12px;
-  --type-detail-line-height: 1.25;
-  --type-detail-color: var(--color-gray-600);
 
   /* grid sizes */
   --grid-container-width: 83.4%;
