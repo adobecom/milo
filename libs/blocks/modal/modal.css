@@ -68,11 +68,11 @@
 
 .locale-modal{
   text-align: center;
-  padding: 3rem 2rem 1.88rem;
+  padding: 48px 32px 30px;
 }
 
 .locale-modal .text-wrapper {
-  padding-top: 1.875rem;
+  padding-top: 30px;
 }
 
 .locale-modal p {
@@ -86,7 +86,7 @@
   font-size: .875rem;
   display: block;
   font-weight: 500;
-  padding: 0.5rem;
+  padding: 8px;
   cursor: pointer;
 }
 
