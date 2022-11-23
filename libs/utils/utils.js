@@ -129,11 +129,8 @@ export const [setConfig, getConfig] = (() => {
       } catch (e) {
         console.log("Invalid or missing locale:",e)
       }
-      if (config.contentRoot) {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
-      } else {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
-      }
+      config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
+
       return config;
     },
     () => config,
