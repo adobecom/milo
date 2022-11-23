@@ -17,11 +17,8 @@
   display: flex !important;
   flex-wrap: wrap;
   justify-content: space-between;
-}
-
-.recommended-articles-small-content-wrapper .content > p {
-  margin-block-start: 24px;
-  margin-block-end: 24px;
+  row-gap: 6px;
+  margin: 0 0 14px !important;
 }
 
 .recommended-articles-content-wrapper .recommended-articles,
