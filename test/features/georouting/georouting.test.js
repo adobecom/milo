@@ -71,7 +71,7 @@ function stubHeadRequestToReturnVal(prefix, val) {
 }
 
 const stubFetchForGeorouting = () => {
-  window.fetch.withArgs(`${origin}/georouting.json`).returns(
+  window.fetch.withArgs(`/georouting.json`).returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
