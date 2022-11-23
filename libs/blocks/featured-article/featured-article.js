@@ -8,16 +8,14 @@ async function decorate(block, article) {
   const card = buildArticleCard(article, 'featured-article');
   block.insertAdjacentElement('afterbegin', card);
   const tagHeader = document.querySelector('.tag-header-container > div');
-  /* c8 ignore next */
   if (tagHeader) tagHeader.append(block);
 }
 
 export default async function init(block) {
   const a = block.querySelector('a');
-  /* c8 ignore next */
   if (!a && !a.href) return;
   block.innerHTML = '';
-  loadTaxonomy();
+  await loadTaxonomy();
   const href = new URL(a.href).pathname;
   const article = await getBlogArticle(href);
   if (!article) {

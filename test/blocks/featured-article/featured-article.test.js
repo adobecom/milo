@@ -14,7 +14,6 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: initFeaturedArticleBlock} = await import('../../../libs/blocks/featured-article/featured-article.js')
 
 describe('creates feature article block', () => {
-
   const featuredArticles = document.querySelectorAll('.featured-article');
   it('has card with url', async () => {
     config.locale.contentRoot = '/test/blocks/featured-article';
