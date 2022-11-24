@@ -18,6 +18,7 @@ const MILO_BLOCKS = [
   'faas',
   'faq',
   'fragment',
+  'featured-article',
   'footer',
   'gnav',
   'how-to',
@@ -138,9 +139,9 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
-export function getMetadata(name) {
+export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
