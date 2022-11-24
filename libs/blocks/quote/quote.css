@@ -91,26 +91,6 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
   color: #ffffff;
 }
 
-.quote.xxl-spacing {
-  padding: var(--spacing-xxl) 0;
-}
-
-.quote.xl-spacing {
-  padding: var(--spacing-xl) 0;
-}
-
-.quote.l-spacing {
-  padding: var(--spacing-l) 0;
-}
-
-.quote.s-spacing {
-  padding: var(--spacing-s) 0;
-}
-
-.quote.xs-spacing {
-  padding: var(--spacing-xs) 0;
-}
-
 /* align */
 .quote.align-left {
   text-align: left;

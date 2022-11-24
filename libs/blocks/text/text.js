@@ -6,7 +6,7 @@ export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
-    el.classList.add('has-bg');
+    if (rows[0].textContent !== '') el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);
     rows = tail;

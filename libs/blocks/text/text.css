@@ -15,6 +15,8 @@
 
 .grid .text-block div > *:last-child { margin-bottom: var(--spacing-s); }
 
+.text-block .foreground > div *:first-child { margin-top: 0; }
+
 .text-block .background {
   bottom: 0;
   left: 0;
@@ -63,11 +65,25 @@
 }
 
 /* Inset */
+.inset.text-block {
+  position: relative;
+}
+.inset.text-block:before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  left: 0;
+  background: var(--color-gray-400);
+}
+
 .inset.text-block .foreground {
-  max-width: unset;
-  padding-right: var(--grid-margins-width);
-  padding-left: calc(var(--grid-margins-width) - 2px);
-  border-left: 2px solid #ccc;
+  padding-top: var(--spacing-m);
+  padding-bottom: var(--spacing-m);
+}
+
+.inset.text-block [class^="heading"]:nth-child(n+2) {
+  margin-top: var(--spacing-xxl);
 }
 
 .inset.text-block .foreground ul,
@@ -78,15 +94,16 @@
 
 /* Tablet */
 @media screen and (min-width: 600px) {
+  .inset.text-block:before {
+    display: none;
+  }
+
   .inset.text-block .foreground {
-    max-width: var(--grid-container-width);
-    margin: 0 auto;
-    padding-right: 0;
-    padding-left: 0;
     border-left: 2px solid #ccc;
   }
+
   .inset.text-block .foreground > div {
-    padding-left: var(--spacing-m);
+    padding-left: var(--spacing-l);
   }
 }
 

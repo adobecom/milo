@@ -17,6 +17,7 @@
 import { createTag } from '../../utils/utils.js';
 
 export default function init(el) {
+  el.classList.add('con-block');
   const allRows = el.querySelectorAll(':scope > div');
   const lastRow = allRows[allRows.length - 1];
   const imageRow = allRows.length > 1 ? allRows[0] : false;
@@ -25,7 +26,7 @@ export default function init(el) {
   const figcaption = createTag('figcaption', {}, copyNodes[1]);
   const cite = createTag('cite', {}, copyNodes[2]);
   const wrapper = createTag('div', { class: 'quote-wrapper' });
-  const figure = createTag('figure', {}, wrapper);
+  const figure = createTag('figure', { class: 'foreground' }, wrapper);
   copyNodes[0]?.classList.add('quote-copy');
   copyNodes[1]?.classList.add('figcaption');
   lastRow.remove();

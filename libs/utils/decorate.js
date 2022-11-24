@@ -28,31 +28,57 @@ export function decorateIconArea(el) {
 
 export function decorateBlockText(el, size = 'small') {
   const blockTypeSizes = {
-    media: {
-      // name: [heading, detail, body]
-      small: ['XS', 'M', 'S'],
-      medium: ['M', 'M', 'S'],
-      large: ['XL', 'L', 'M'],
-      xlarge: ['XXL', 'L', 'M'],
+    // size: [heading, detail, body]
+    normal: {
+      small: ['S', 'S', 'S'],
+      medium: ['M', 'M', 'M'],
+      large: ['L', 'L', 'L'],
+      xlarge: ['XL', 'XL', 'XL'],
+    },
+    inset: {
+      small: ['S', 'S', 'M'],
+      medium: ['M', 'M', 'L'],
+      large: ['L', 'L', 'XL'],
+      xlarge: ['XL', 'XL', 'XXL'],
     },
     text: {
       small: ['M', 'S', 'S'],
       medium: ['L', 'M', 'M'],
       large: ['XL', 'L', 'M'],
       xlarge: ['XXL', 'XL', 'L'],
-    }
+    },
+    media: {
+      small: ['XS', 'M', 'S'],
+      medium: ['M', 'M', 'S'],
+      large: ['XL', 'L', 'M'],
+      xlarge: ['XXL', 'L', 'M'],
+    },
   };
-  const sizeType = el.classList.contains('text-block') ? blockTypeSizes.text[size] : blockTypeSizes.media[size];
-  const decorateHeading = (headingEl, sizes) => {
-    headingEl.classList.add(`heading-${sizes[0]}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
-    const emptyPs = headingEl.parentElement.querySelectorAll(':scope > p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizeType[2]}`); });
-  };
+  const defaultBlock = el.classList.contains('default') ? true : false;
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
-  if (heading) decorateHeading(heading, sizeType);
-  decorateIconArea(el);
+  if (!defaultBlock) {
+    const variants = Object.keys(blockTypeSizes);
+    const variant = variants.find((v) => el.classList.contains(v)) || 'media'; /* media default */
+    const sizes = blockTypeSizes[variant][size];
+    console.log(variant, sizes)
+    const decorateForeground = () => {
+      // headings
+      if (headings) {
+        headings.forEach((h) => {
+          h.classList.add(`heading-${sizes[0]}`);
+        });
+        if (variant !== 'normal' || variant !== 'inset') {
+          // detail
+          headings[0]?.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
+          decorateIconArea(el);
+        }
+      }
+      // bodys
+      const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizes[2]}`); });
+    }
+    decorateForeground();
+  }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
