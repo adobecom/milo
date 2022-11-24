@@ -1,7 +1,4 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it beforeEach */
 import { expect } from '@esm-bundle/chai';
-// import { fireEvent, render, screen } from '@testing-library/preact';
 import { html, render } from '../../../../../libs/deps/htm-preact.js';
 import { waitForElement, delay } from '../../../../helpers/waitfor.js';
 
@@ -19,7 +16,7 @@ describe('Comments', () => {
   });
   it('should display text area', async () => {
     const commentElem = await waitForElement(
-      'fieldset.hlx-Review-commentFields'
+      'fieldset.hlx-Review-commentFields',
     );
     const textAreaElem = commentElem.querySelector('textarea');
     expect(textAreaElem).to.exist;
@@ -27,7 +24,7 @@ describe('Comments', () => {
 
   it('could be focussed', async () => {
     const commentElem = await waitForElement(
-      'fieldset.hlx-Review-commentFields'
+      'fieldset.hlx-Review-commentFields',
     );
     const ctaCoverElem = commentElem.querySelector('#ctaCover');
     const textAreaElem = commentElem.querySelector('textarea');

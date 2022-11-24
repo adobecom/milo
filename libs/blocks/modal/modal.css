@@ -144,6 +144,7 @@
 @media (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
+    width: fit-content;
   }
 
   .region-selector .content {

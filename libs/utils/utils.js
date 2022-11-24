@@ -399,7 +399,7 @@ async function decorateIcons(area, config) {
 }
 
 async function decoratePlaceholders(area, config) {
-  const el = area.documentElement || area;
+  const el = area.documentElement ? area.body : area;
   const regex = /{{(.*?)}}/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
@@ -449,12 +449,18 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area) {
+export async function loadDeferred(area, blocks) {
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
     nofollow(path, area);
   }
+
+  import('./samplerum.js').then(({ sampleRUM }) => {
+    sampleRUM('lazy');
+    sampleRUM.observe(blocks);
+    sampleRUM.observe(area.querySelectorAll('picture > img'));
+  });
 }
 
 function loadPrivacy() {
@@ -490,12 +496,19 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateHeader();
+
+    import('./samplerum.js').then(({ addRumListeners }) => {
+      addRumListeners();
+    });
   }
 
   const sections = decorateSections(area, isDoc);
+
+  const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
+    areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
     // eslint-disable-next-line no-await-in-loop
@@ -531,7 +544,7 @@ export async function loadArea(area = document) {
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area);
+  await loadDeferred(area, areaBlocks);
 }
 
 // Load everything that impacts performance later.
@@ -546,6 +559,7 @@ export function loadDelayed(delay = 3000) {
       } else {
         resolve(null);
       }
+      import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
     }, delay);
   });
 }

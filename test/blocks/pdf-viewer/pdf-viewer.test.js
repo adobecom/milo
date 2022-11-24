@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe before it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -35,10 +32,11 @@ describe('PDF Viewer', () => {
       pdfViewerClientId: '3b685312b5784de6943647df19f1f492',
       pdfViewerReportSuite: 'adbadobedxqa',
     };
-    setConfig({
-      local: consumer,
-    });
+    setConfig({ local: consumer });
 
-    expect(getPdfConfig()).to.eql({ clientId: consumer.pdfViewerClientId, reportSuiteId: consumer.pdfViewerReportSuite });
+    expect(getPdfConfig()).to.eql({
+      clientId: consumer.pdfViewerClientId,
+      reportSuiteId: consumer.pdfViewerReportSuite,
+    });
   });
 });
