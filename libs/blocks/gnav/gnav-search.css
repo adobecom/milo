@@ -1,0 +1,133 @@
+
+header.is-open .gnav .gnav-search-bar {
+  display: block;
+}
+
+header .gnav-search-bar {
+  display: none;
+  background: var(--color-white);
+}
+
+header .gnav-search-field {
+  position: relative;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  box-sizing: border-box;
+}
+
+header .gnav-search-field svg {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  fill: rgb(110, 110, 110);
+  transition: fill 130ms ease-in-out;
+}
+
+header .gnav-search-field:hover svg {
+  fill: rgb(44, 44, 44);
+}
+
+header .gnav-search-field:hover .gnav-search-input {
+  border-color: rgb(179, 179, 179);
+}
+
+header .gnav-search-field .gnav-search-input {
+  display: block;
+  width: 100%;
+  line-height: 30px;
+  border: 1px solid;
+  border-color: rgb(202, 202, 202);
+  border-radius: 4px;
+  padding: 0 30px;
+  font-size: 14px;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  outline: none !important;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  transition: border-color 130ms ease-in-out, box-shadow 130ms ease-in-out;
+}
+
+header .gnav-search-field .gnav-search-input:focus {
+  border-color: rgb(42, 124, 223);
+}
+
+.gnav-search-input::placeholder {
+  font-style: italic;
+  font-weight: 400;
+  color: #8e8e8e;
+  transition: color 130ms ease-in-out;
+}
+
+.gnav-search-input:focus::placeholder,
+header .gnav-search-field:hover .gnav-search-input::placeholder {
+  color: #2c2c2c;
+}
+
+.gnav-search-results {
+  /* padding: 0 20px;
+  box-sizing: border-box;
+  display: block; */
+  left: 0;
+    padding: 0 20px 20px;
+    /* position: absolute; */
+    right: 0;
+    top: 100%;
+
+    background: var(--color-white);
+    width: 100%;
+}
+
+.gnav-search-results > ul {
+  max-height: 75vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  list-style-type: none;
+  border: 1px solid #d3d3d3;
+  border-radius: 0 0 3px 3px;
+  border-top: 0 solid #d3d3d3;
+  padding: 10px 0;
+  margin: 0;
+}
+
+.gnav-search-results > ul:empty {
+  display: none;
+}
+
+.gnav-search-results > ul li {
+  font-size: 14px;
+    line-height: 1;
+    margin: 0;
+}
+
+.gnav-search-results > ul li > a {
+  color: #2d2d2d;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 10px;
+}
+
+.gnav-search-results > ul li > a span {
+  font-weight: 400;
+}
+
+.gnav-search-highlight {
+  position: relative;
+  z-index: 1;
+}
+
+.gnav-search-highlight:after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+  background-color: rgba(255, 208, 0, 0.3);
+  border-radius: 4px;
+}

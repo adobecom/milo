@@ -11,13 +11,37 @@ import { html, render, useState } from '../../deps/htm-preact.js';
 
 export const IS_OPEN = 'is-open';
 
-const getLocale = () =>
-  document.documentElement.getAttribute('lang') || 'en-US';
-const getCountry = () => getLocale()?.split('-').pop() || 'US';
-const childIndexOf = (el) =>
-  [...el.parentElement.children]
-    .filter((e) => e.nodeName === 'DIV' || e.nodeName === 'P')
-    .indexOf(el);
+const SearchIcon = () => html`<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  focusable="false"
+>
+  <path
+    d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"
+  ></path>
+</svg> `;
+
+const BrandImg = () => html`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234">
+    <defs>
+      <style>
+        .cls-1 {
+          fill: #fa0f00;
+        }
+        .cls-2 {
+          fill: #fff;
+        }
+      </style>
+    </defs>
+    <rect class="cls-1" width="240" height="234" rx="42.5" />
+    <path
+      id="_256"
+      data-name="256"
+      class="cls-2"
+      d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"
+    />
+  </svg>
+`;
 
 async function fetchGnav(url) {
   const resp = await fetch(`${url}.plain.html`);
@@ -71,29 +95,6 @@ const BrandBlock = ({ body }) => {
   if (!brandBlock) return null;
   const brandLinks = [...brandBlock.querySelectorAll('a')];
   const brand = brandLinks.pop();
-  // TODO what hapenns if a brand image is defined? ... also can an image contain a link from an authoring perspective?
-  // I'm not sure if that is currently supported
-  const brandImg = brandLinks[0]?.querySelector('img')
-    ? html`${brandImg}` // TODO THIS IS NOT WORKING
-    : html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234">
-        <defs>
-          <style>
-            .cls-1 {
-              fill: #fa0f00;
-            }
-            .cls-2 {
-              fill: #fff;
-            }
-          </style>
-        </defs>
-        <rect class="cls-1" width="240" height="234" rx="42.5" />
-        <path
-          id="_256"
-          data-name="256"
-          class="cls-2"
-          d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"
-        />
-      </svg>`;
   return html`
     <a
       href=${brand.getAttribute('href')}
@@ -101,7 +102,7 @@ const BrandBlock = ({ body }) => {
       aria-label=${brand.textContent}
       daa-ll="Brand"
     >
-      ${brandImg}
+      <${BrandImg} />
       <span class="gnav-brand-title"> ${brand.textContent} </span>
     </a>
   `;
@@ -140,6 +141,15 @@ const MainNav = ({
   `;
 };
 
+let NavMenu;
+let LargeMenu;
+const loadMenu = async () => {
+  if (NavMenu) return;
+  const menu = await import('./gnav-menu.js');
+  NavMenu = menu.NavMenu;
+  LargeMenu = menu.LargeMenu;
+};
+
 const NavLink = ({ navLink, index, menuOpen, setMenuOpen }) => {
   const navBlock = navLink.closest('.large-menu');
   const menu = navLink.closest('div');
@@ -163,9 +173,10 @@ const NavLink = ({ navLink, index, menuOpen, setMenuOpen }) => {
     ? ' section-menu'
     : '';
 
-  const handleClick = (e) => {
+  const handleClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    await loadMenu();
     setMenuOpen(menuOpen === index ? false : index);
   };
 
@@ -188,73 +199,18 @@ const NavLink = ({ navLink, index, menuOpen, setMenuOpen }) => {
       >
         ${navLink.textContent}
       </a>
-      ${menu.childElementCount > 1 &&
+      ${NavMenu &&
+      menuOpen === index &&
       html`<${NavMenu}
         id=${`navmenu-${index}`}
         menu=${menu}
         navLink=${navLink}
       />`}
-      ${navBlock && html`<${LargeMenu} menu=${navBlock} />`}
+      ${LargeMenu &&
+      menuOpen === index &&
+      html`<${LargeMenu} menu=${navBlock} />`}
     </div>
   `;
-};
-
-const NavMenu = ({ navLink, id, menu }) => {
-  // A few open TODOs here // use cases that were not handled
-  const small = menu.childElementCount === 2 ? ' small-Variant' : '';
-  const medium = menu.childElementCount === 3 ? ' medium-Variant' : '';
-  const large = menu.childElementCount >= 4 ? ' large-Variant' : '';
-
-  return html`
-    <div
-      id=${id}
-      class="gnav-navitem-menu${small || medium || large}"
-      daa-lh=${`header|${navLink.textContent}`}
-    >
-      ${menu.childElementCount >= 4 &&
-      html`<div class="gnav-menu-container"></div>`}
-      ${Array.from(menu.children).map((child) => {
-        if (child.nodeName === 'UL') {
-          return html`<ul>
-            ${Array.from(child.children).map((li, i) => MenuItem({ li, i }))}
-          </ul>`;
-        }
-        if (child.nodeName === 'DIV') {
-          return GnavPromo({ div: child });
-        }
-      })}
-    </div>
-  `;
-};
-
-const MenuItem = ({ li, i }) =>
-  html`<li>
-    <a
-      href=${makeRelative(li.firstChild.href, true)}
-      daa-ll=${`${analyticsGetLabel(li.textContent)}-${i + 1}`}
-      >${li.textContent}</a
-    >
-  </li>`;
-
-const GnavPromo = ({ div }) => {
-  const anchorTags = div.querySelectorAll('a');
-  for (const anchorTag of anchorTags) {
-    anchorTag.setAttribute(
-      'daa-ll',
-      `${analyticsGetLabel(anchorTag.textContent)}-${
-        childIndexOf(anchorTag.parentElement) + 1
-      }`
-    );
-  }
-  // TODO dangerouslySetInnerHTML? Alternative? Sanitize?
-  return html`<div
-    class=${Array.from(div.classList).join(' ')}
-    dangerouslySetInnerHTML=${{ __html: div.innerHTML }}
-  ></div>`;
-};
-
-const LargeMenu = () => {
-  return html``;
 };
 
 const Cta = ({ body }) => {
@@ -274,57 +230,22 @@ const Cta = ({ body }) => {
   `;
 };
 
-let onSearchInput;
-let getHelpxLink;
-
-// TODO on slow connections this leads to a JS error
-// if the user types before the search has actually loaded (same issue for the prod gnav)
+let SearchUI;
 const loadSearch = async () => {
-  if (onSearchInput) return;
+  if (SearchUI) return;
   const search = await import('./gnav-search.js');
-  onSearchInput = search.onSearchInput;
-  getHelpxLink = search.getHelpxLink;
+  SearchUI = search.SearchUI;
 };
 
 const Search = ({ body, searchOpen, setSearchOpen }) => {
   const searchBlock = body.querySelector('.search');
   if (!searchBlock) return;
-
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchInput, setSearchInput] = useState('');
   const label = searchBlock.querySelector('p').textContent;
-  const locale = getLocale();
 
-  const handleInput = async (e) => {
-    const res = await onSearchInput(e.target.value, 'searchResultsUl', locale);
-    setSearchInput(e.target.value);
-    setSearchResults(res);
-  };
-
-  const handleEnter = (e) => {
-    window.open(getHelpxLink(e.target.value, getCountry()));
-  };
-
-  const openSearch = () => {
+  const openSearch = async () => {
+    await loadSearch();
     setSearchOpen(!searchOpen);
-    loadSearch();
   };
-
-  // TODO change: advanced search vanishes if nothing was typed
-  // same as the live gnav
-  const noResults =
-    searchInput &&
-    !searchResults.length &&
-    html`
-      <li>
-        <a
-          href=${getHelpxLink(searchInput)}
-          aria-label="Try our advanced search"
-        >
-          Try our advanced search
-        </a>
-      </li>
-    `;
 
   return html`
     <div class="gnav-search${searchOpen ? ' is-open' : ''}">
@@ -337,49 +258,10 @@ const Search = ({ body, searchOpen, setSearchOpen }) => {
         daa-ll="Search"
         daa-lh="Header|${searchOpen ? 'Close' : 'Open'}"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          focusable="false"
-        >
-          <path
-            d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"
-          ></path>
-        </svg>
+        <${SearchIcon} />
       </button>
-      <aside id="gnav-search-bar" class="gnav-search-bar">
-        <div class="gnav-search-field">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            focusable="false"
-          >
-            <path
-              d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"
-            ></path>
-          </svg>
-          <input
-            value=${searchInput}
-            onInput=${handleInput}
-            onKeyDown=${(e) => e.code === 'Enter' && handleEnter(e)}
-            class="gnav-search-input"
-            placeholder=${label}
-            daa-ll="search-results:standard search"
-          />
-        </div>
-        <div class="gnav-search-results">
-          <ul>
-            ${searchResults.map(
-              (item) => html`
-                <li>
-                  <a href=${getHelpxLink(item)}>${item}</a>
-                </li>
-              `
-            )}
-            ${noResults}
-          </ul>
-        </div>
-      </aside>
+      ${searchOpen &&
+      html`<${SearchUI} SearchIcon=${SearchIcon} label=${label} />`}
     </div>
   `;
 };
