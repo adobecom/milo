@@ -67,7 +67,7 @@ function buildText(locales, config, createTag) {
   const fragment = new DocumentFragment();
   const wrapper = createTag('div', { class: 'text-wrapper' });
   locales.forEach((locale) => {
-    const lang = config.locales[locale.prefix].ietf;
+    const lang = config.locales[locale.prefix]?.ietf ?? '';
     const text = createTag('p', { class: 'locale-text', lang }, locale.text);
     wrapper.append(text);
   });
@@ -79,7 +79,7 @@ function buildLinks(locales, config, createTag) {
   const fragment = new DocumentFragment();
   const wrapper = createTag('div', { class: 'link-wrapper' });
   locales.forEach((locale) => {
-    const lang = config.locales[locale.prefix].ietf;
+    const lang = config.locales[locale.prefix]?.ietf ?? '';
     const link = createTag('a', { class: 'locale-link', lang, href: locale.url }, locale.button);
     const para = createTag('p', { class: 'locale-link-wrapper' }, link);
     wrapper.append(para);
