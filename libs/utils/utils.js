@@ -332,6 +332,7 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
+    if (a.href.includes('#_blank')) a.setAttribute('target', '_blank');
     const autoBLock = decorateAutoBlock(a);
     if (autoBLock) {
       rdx.push(a);
@@ -453,13 +454,9 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks) {
-  const links = area.querySelectorAll('a:is([href*="#_blank"])');
-  [...links].map((link) => link.setAttribute('target', '_blank'))
-  if (getMetadata('nofollow-links') === 'on') {
-    const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
-    const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, area);
-  }
+  const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
+  const { default: nofollow } = await import('../features/links.js');
+  nofollow(path, area);
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
