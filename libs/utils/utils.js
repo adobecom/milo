@@ -452,7 +452,7 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area) {
+export async function loadDeferred(area, blocks) {
   const links = area.querySelectorAll('a:is([href*="#_blank"])');
   [...links].map((link) => link.setAttribute('target', '_blank'))
   if (getMetadata('nofollow-links') === 'on') {
