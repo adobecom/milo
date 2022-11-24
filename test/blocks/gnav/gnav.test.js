@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach afterEach it */
-
 import { readFile, resetMouse, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';

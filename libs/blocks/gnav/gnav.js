@@ -384,7 +384,7 @@ class Gnav {
     const locale = getLocale();
 
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResultsUl, locale);
+      this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
     });
 
     searchInput.addEventListener('keydown', (e) => {

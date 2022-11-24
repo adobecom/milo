@@ -287,6 +287,12 @@ header .gnav-search-field .gnav-search-input {
   transition: border-color 130ms ease-in-out, box-shadow 130ms ease-in-out;
 }
 
+/* If the search results dropdown is shown, the search input's
+  bottom border radius is removed to make it continuous with the dropdown element */
+header .gnav-search-field .gnav-search-input.gnav-search-input--isPopulated {
+  border-radius: 4px 4px 0 0;
+}
+
 header .gnav-search-field .gnav-search-input:focus {
   border-color: rgb(42, 124, 223);
 }
@@ -308,7 +314,7 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   box-sizing: border-box;
   display: block; */
   left: 0;
-    padding: 0 20px 20px;
+    padding: 0 0 20px;
     /* position: absolute; */
     right: 0;
     top: 100%;
@@ -323,7 +329,7 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
   overflow-y: auto;
   list-style-type: none;
   border: 1px solid #d3d3d3;
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 4px 4px;
   border-top: 0 solid #d3d3d3;
   padding: 10px 0;
   margin: 0;
@@ -1136,7 +1142,6 @@ header .app-launcher {
 
   .gnav-search-results {
     margin: 0 auto;
-    max-width: 1400px;
   }
 
   .gnav-profile {
@@ -1152,7 +1157,8 @@ header .app-launcher {
 @media (min-width: 1200px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
-  .gnav-search.is-open .gnav-search-field {
+  .gnav-search.is-open .gnav-search-field,
+  .gnav-search.is-open .gnav-search-results {
     max-width: 1200px;
   }
 }
@@ -1160,7 +1166,8 @@ header .app-launcher {
 @media (min-width: 1440px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
-  .gnav-search.is-open .gnav-search-field {
+  .gnav-search.is-open .gnav-search-field,
+  .gnav-search.is-open .gnav-search-results {
     max-width: 1400px;
   }
 }
