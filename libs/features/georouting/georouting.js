@@ -111,7 +111,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
 
   if (availableLocales && availableLocales.length > 0) {
-    currentPage.url = document.location.href;
+    currentPage.url = window.location.hash ? document.location.href : '#';
     const imgUrl = `${config.miloLibs || config.codeRoot}/img/icons/Smock_GlobeOutline_18_N.svg`;
     const worldIcon = createTag('img', { src: imgUrl, class: 'world-icon' });
     const text = buildText([...availableLocales, currentPage], config, createTag);
