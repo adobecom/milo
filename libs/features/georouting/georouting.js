@@ -52,7 +52,7 @@ async function getAvailableLocales(locales, config, getMetadata) {
         locale.url = `${origin}${prefix}${path}`;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${origin}${prefix}`;
+        locale.url = `${origin}${prefix}/`;
         availableLocales[index] = locale;
       }
     });
