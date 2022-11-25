@@ -454,9 +454,9 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks) {
-  const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
-  const { default: nofollow } = await import('../features/links.js');
-  nofollow(path, area);
+  const path = getMetadata('links-path') || '/seo/links.json';
+  const { default: setupMappedLinks } = await import('../features/links.js');
+  setupMappedLinks(path, area);
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
