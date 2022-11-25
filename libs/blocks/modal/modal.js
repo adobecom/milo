@@ -23,7 +23,7 @@ function getDetails(el) {
   return null;
 }
 
-function closeModals(modals) {
+function closeModals(modals, removeHash=true) {
   const qModals = modals || document.querySelectorAll('.dialog-modal');
   if (qModals?.length) {
     qModals.forEach((modal) => {
@@ -32,13 +32,18 @@ function closeModals(modals) {
       }
       modal.remove();
     });
-    window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
+    if(removeHash) {window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);}
   }
 }
 
 function handleCustomModal(custom, dialog) {
   dialog.id = custom.id;
   dialog.classList.add(custom.class);
+  if (custom.closeEvent) {
+    dialog.addEventListener(custom.closeEvent, () => {
+      closeModals([dialog], false);
+    });
+  }
   return custom.content;
 }
 
@@ -67,20 +72,20 @@ export async function getModal(el, custom) {
   if (!content) return;
 
   close.addEventListener('click', (e) => {
-    closeModals([dialog]);
+    closeModals([dialog], !custom);
     e.preventDefault();
   });
 
   curtain.addEventListener('click', (e) => {
     // on click outside of modal
     if (e.target === curtain) {
-      closeModals([dialog]);
+      closeModals([dialog], !custom);
     }
   });
 
   dialog.addEventListener('keydown', (event) => {
     if (event.keyCode === 27) {
-      closeModals([dialog]);
+      closeModals([dialog], !custom);
     }
   });
 

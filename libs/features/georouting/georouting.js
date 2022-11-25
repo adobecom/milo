@@ -88,6 +88,7 @@ function buildLinks(locales, config, createTag) {
       // set cookie so legacy code on adobecom still works properly.
       document.cookie = `international=${modPrefix};path=/`;
       sessionStorage.setItem("international", modPrefix);
+      link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     });
   });
   fragment.append(wrapper);
@@ -110,7 +111,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
 
   if (availableLocales && availableLocales.length > 0) {
-    currentPage.url = '#';
+    currentPage.url = document.location.href;
     const imgUrl = `${config.miloLibs || config.codeRoot}/img/icons/Smock_GlobeOutline_18_N.svg`;
     const worldIcon = createTag('img', { src: imgUrl, class: 'world-icon' });
     const text = buildText([...availableLocales, currentPage], config, createTag);
@@ -124,7 +125,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
 
 async function showModal(details) {
   const { getModal } = await import('../../blocks/modal/modal.js');
-  return getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details });
+  return getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details, closeEvent: 'closeModal' });
 }
 
 export default async function loadGeoRouting(config, createTag, getMetadata) {
