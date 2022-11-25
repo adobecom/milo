@@ -14,7 +14,7 @@ const getNoFollowLinks = (() => {
 
 export default async function init(path, area = document) {
   const data = await getNoFollowLinks(path);
-  if (!data) return;
+  if (!data) return null;
   const links = area.querySelectorAll('a:not([href^="/"])');
   [...links].forEach((link) => {
     data.filter((s) => link.href.startsWith(s.domain)).map((s) => {
