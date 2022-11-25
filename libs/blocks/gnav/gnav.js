@@ -89,7 +89,6 @@ const GnavPreact = ({ name, body }) => {
   `;
 };
 
-// done apart of the todo
 const BrandBlock = ({ body }) => {
   const brandBlock = body.querySelector('[class^="gnav-brand"]');
   if (!brandBlock) return null;
@@ -141,8 +140,8 @@ const MainNav = ({
   `;
 };
 
-let NavMenu;
-let LargeMenu;
+let NavMenu
+let LargeMenu 
 const loadMenu = async () => {
   if (NavMenu) return;
   const menu = await import('./gnav-menu.js');
@@ -199,16 +198,12 @@ const NavLink = ({ navLink, index, menuOpen, setMenuOpen }) => {
       >
         ${navLink.textContent}
       </a>
-      ${NavMenu &&
-      menuOpen === index &&
-      html`<${NavMenu}
+      ${ menuOpen === index && html`<${NavMenu}
         id=${`navmenu-${index}`}
         menu=${menu}
         navLink=${navLink}
       />`}
-      ${LargeMenu &&
-      menuOpen === index &&
-      html`<${LargeMenu} menu=${navBlock} />`}
+      ${ menuOpen === index && html`<${LargeMenu} menu=${navBlock} />`}
     </div>
   `;
 };
@@ -260,8 +255,7 @@ const Search = ({ body, searchOpen, setSearchOpen }) => {
       >
         <${SearchIcon} />
       </button>
-      ${searchOpen &&
-      html`<${SearchUI} SearchIcon=${SearchIcon} label=${label} />`}
+      ${searchOpen && html`<${SearchUI} SearchIcon=${SearchIcon} label=${label} />`}
     </div>
   `;
 };

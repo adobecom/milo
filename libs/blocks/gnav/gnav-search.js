@@ -45,7 +45,7 @@ const getLocale = () =>
   document.documentElement.getAttribute('lang') || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
 
-const searchInput = async (value, resultsEl, locale) => {
+const searchInput = async (value, locale) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
   return suggestions
@@ -59,7 +59,7 @@ const SearchUI = ({SearchIcon, label}) => {
   const locale = getLocale();
 
   const handleInput = async (e) => {
-    const res = await onSearchInput(e.target.value, 'searchResultsUl', locale);
+    const res = await onSearchInput(e.target.value, locale);
     setSearchInput(e.target.value);
     setSearchResults(res);
   };
@@ -68,8 +68,6 @@ const SearchUI = ({SearchIcon, label}) => {
     window.open(getHelpxLink(e.target.value, getCountry()));
   };
 
-  // TODO change: advanced search vanishes if nothing was typed
-  // same as the live gnav
   const noResults =
     searchInput &&
     !searchResults.length &&

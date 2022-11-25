@@ -15,7 +15,6 @@ condition ? wrapper(children) : children;
 
 const NavMenu = ({ navLink, id, menu }) => {
   if(menu.childElementCount <= 1) return null
-  // A few open TODOs here // use cases that were not handled
   const small = menu.childElementCount === 2 ? ' small-Variant' : '';
   const medium = menu.childElementCount === 3 ? ' medium-Variant' : '';
   const large = menu.childElementCount >= 4 ? ' large-Variant' : '';
