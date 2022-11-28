@@ -254,6 +254,13 @@
 
 @media screen and (min-width: 600px) {
 
+  .marquee .action-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
   .marquee .background .mobileOnly,
   .marquee .background .desktopOnly {
     display: none;

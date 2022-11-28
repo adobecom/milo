@@ -1,5 +1,4 @@
 import {
-  getPrefix,
   stamp,
   getTaxonomyModule,
   loadTaxonomy,
@@ -73,7 +72,7 @@ export async function fetchBlogArticleIndex() {
 
   if (blogIndex.complete) return (blogIndex);
 
-  return fetch(`${getPrefix()}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
+  return fetch(`${getConfig().locale.contentRoot}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
     .then((response) => response.json())
     .then((json) => {
       const complete = (json.limit + json.offset) === json.total;

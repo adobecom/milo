@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
@@ -30,7 +27,7 @@ describe('Section Metdata', () => {
   });
 
   it('gets section metadata', () => {
-    const expected = { style: 'darkest, xxl spacing', background: 'rgb(239, 239, 239)' };
+    const expected = { style: 'darkest, xxl spacing, two up', background: 'rgb(239, 239, 239)' };
     expect(getSectionMetadata(document.querySelector('.section.color .section-metadata'))).to.eql(expected);
   });
 });

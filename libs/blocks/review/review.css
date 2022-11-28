@@ -244,6 +244,7 @@
 @media only screen and (min-width: 1200px) {
   .hlx-ReviewWrapper {
     flex-direction: row;
+    justify-content: center;
   }
 
   .hlx-ReviewWrapper .hlx-reviewTitle {

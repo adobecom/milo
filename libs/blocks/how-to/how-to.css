@@ -7,7 +7,9 @@
     margin: 0 auto;
   }
 }
-ol, h1 {
+
+.how-to ol,
+.how-to h1 {
   max-width: 700px;
   margin: 0 auto;
 }
@@ -26,7 +28,7 @@ ol, h1 {
 .how-to ol li {
   counter-increment: step-counter;
   display: flex;
-  align-items: center;  
+  align-items: center;
   padding: 24px 0;
   font-size: 18px;
   line-height: 27px;
