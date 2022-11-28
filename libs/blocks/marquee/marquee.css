@@ -212,6 +212,11 @@
   margin-bottom: var(--spacing-s);
 }
 
+.marquee.split a:not(.con-button) {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
 .marquee.large .text .body-XL {
   order: 3;
 }
