@@ -126,9 +126,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log('Invalid or missing locale:', e);
       }
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
@@ -587,9 +587,3 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   io.observe(el);
   return io;
 }
-
-
-setTimeout(() => {
-  const event = new CustomEvent('modal:open', { detail: { name: 'extension-modal' } });
-  window.dispatchEvent(event);
-}, 3000);
