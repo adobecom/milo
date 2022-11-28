@@ -342,6 +342,7 @@ input[type="checkbox"] + label {
 .dialog-modal .faas {
   font-size: 13px;
   max-width: 100%;
+  min-width: 200px;
 }
 
 .dialog-modal .faas .faas-form-wrapper {

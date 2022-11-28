@@ -40,13 +40,25 @@ const wrapValueInSpan = (value, suggestion, linkEl) => {
   }, linkEl);
 };
 
-const updateSearchResults = (value, suggestions, resultsEl) => {
+const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
+  // If no value is provided, search results dropdown should not be populated
+  if (!value.length) {
+    resultsEl.replaceChildren();
+    searchInputEl.classList.remove('gnav-search-input--isPopulated');
+    return;
+  }
+
+  // Add a modifier class if the input is populated
+  searchInputEl.classList.add('gnav-search-input--isPopulated');
+
+  // If there are no suggestions, the advanced search option should be shown
   if (!suggestions.length) {
     const noResults = getNoResultsEl(value);
     resultsEl.replaceChildren(noResults);
     return;
   }
 
+  // Show suggestions in the dropdown if they exist
   const df = document.createDocumentFragment();
   suggestions.forEach((suggestion) => {
     const a = createTag('a', {
@@ -65,10 +77,10 @@ const getSuggestions = (json) => {
   return json.suggested_completions.map((suggestion) => suggestion?.name);
 };
 
-const onSearchInput = async (value, resultsEl, locale) => {
+const onSearchInput = async (value, resultsEl, locale, searchInputEl) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
-  updateSearchResults(value, suggestions, resultsEl);
+  updateSearchResults(value, suggestions, resultsEl, searchInputEl);
 };
 
 export {

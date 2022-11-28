@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach it */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import sendHelixData from '../../../../libs/blocks/review/utils/sendHelixData.js';
