@@ -1,6 +1,6 @@
 import { html, useState } from '../../deps/htm-preact.js';
 import css from './gnav-search.css' assert {type: 'css'}
-document.adoptedStyleSheets = [css]
+document.adoptedStyleSheets = [...document.adoptedStyleSheets, css]
 
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';

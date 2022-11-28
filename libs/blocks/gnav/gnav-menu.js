@@ -2,7 +2,7 @@ import { html } from '../../deps/htm-preact.js';
 import { makeRelative } from '../../utils/utils.js';
 import { analyticsGetLabel } from '../../martech/attributes.js';
 import css from './gnav-menu.css' assert {type: 'css'}
-document.adoptedStyleSheets = [css]
+document.adoptedStyleSheets = [...document.adoptedStyleSheets, css]
 
 const childIndexOf = (el) =>
   [...el.parentElement.children]
