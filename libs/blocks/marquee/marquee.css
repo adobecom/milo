@@ -311,7 +311,7 @@
     left: 0;
   }
 
-  .marquee.split.right .foreground.container {
+  .marquee.split.right:not(.one-third) .foreground.container {
     justify-content: flex-end;
   }
 
@@ -344,6 +344,10 @@
   .marquee.split.one-third {
     display: flex;
     justify-content: center;
+  }
+
+  .marquee.split.one-third.right .foreground.container {
+    justify-content: flex-end;
   }
 
   .marquee.split.one-third .media.bleed {
@@ -430,7 +434,7 @@
   }
 
   .marquee.split .text {
-    padding: var(--spacing-xxl) 0;
+    padding: var(--spacing-xl) 0;
   }
 
   .marquee.split.small .text {
