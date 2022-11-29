@@ -90,6 +90,26 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 .quote.dark {
   color: #ffffff;
 }
+.quote.xsmall blockquote .quote-copy {
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+.quote.small blockquote .quote-copy {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+}
+.quote.large blockquote .quote-copy {
+  font-size: var(--type-heading-l-size);
+  line-height: var(--type-heading-l-lh);
+}
+.quote.xlarge blockquote .quote-copy {
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+.quote.xxlarge blockquote .quote-copy {
+  font-size: var(--type-heading-xxl-size);
+  line-height: var(--type-heading-xxl-lh);
+}
 
 /* align */
 .quote.align-left {
