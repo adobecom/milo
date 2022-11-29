@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
@@ -15,8 +12,10 @@ describe('renders author header block', () => {
     const title = block.querySelector('div:nth-child(1)');
     const img = block.querySelector('div:nth-child(2)');
     const bio = block.querySelector('div:nth-child(3)');
+    const social = block.querySelector('div:nth-child(4)');
     if (title) expect(document.querySelector('.author-header-title')).to.exist;
     if (img) expect(document.querySelector('.author-header-img')).to.exist;
     if (bio) expect(document.querySelector('.author-header-bio')).to.exist;
+    if (social) expect(document.querySelector('.author-header-socials')).to.exist;
   });
 });
