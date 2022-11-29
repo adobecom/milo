@@ -110,7 +110,20 @@
 
 .tabs .tabContent {
   padding: var(--spacing-s) 0;
-  border-bottom: 1px solid var(--tabs-border-color)
+  border-bottom: 1px solid var(--tabs-border-color);
+}
+
+.tabContent [role='tabpanel'] .section {
+  position: relative;
+}
+
+.tabContent [role='tabpanel'] .section picture.section-background {
+  z-index: 0;
+}
+
+.tabContent [role='tabpanel'] .section > .content {
+  z-index: 1;
+  position: relative;
 }
 
 /* contained tabs content */

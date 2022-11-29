@@ -146,13 +146,14 @@ const init = (e) => {
   allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
-    const metadata = sectionMetadata.querySelectorAll(':scope > div > div');
-    if (metadata[0].textContent === 'tab') {
-      const metaValue = getStringKeyName(metadata[1].textContent);
-      const section = sectionMetadata.closest('.section');
-      const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
-      if (assocTabItem) assocTabItem.append(section);
-    }
+    const metadata = sectionMetadata.querySelectorAll(':scope > div');
+    [...metadata].filter((d) => getStringKeyName(d.children[0].textContent) === 'tab')
+      .map((d) => {
+        const metaValue = getStringKeyName(d.children[1].textContent);
+        const section = sectionMetadata.closest('.section');
+        const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
+        if (assocTabItem) assocTabItem.append(section);
+      });
   });
   initTabs(e, config);
   initCount++;

@@ -13,3 +13,7 @@
   height: 100%;
   position: absolute;
 }
+
+.dialog-modal .milo-video {
+  min-width: 80vw;
+}
