@@ -24,20 +24,25 @@ async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   }
 
   const articleCardsContainer = createTag('div', { class: 'article-cards' });
-
-  const promises = paths.map(async (articlePath) => getBlogArticle(articlePath));
-  const articles = await Promise.all(promises);
-  articles.forEach((article, index) => {
-    if (!article) {
-      const { origin } = new URL(window.location.href);
-      // eslint-disable-next-line no-console
-      console.warn(`Recommended article does not exist or is missing in index: ${origin}${paths[index]}`);
-    } else {
-      const card = buildArticleCard(article);
-      articleCardsContainer.append(card);
-      recommendedArticlesEl.append(articleCardsContainer);
+  let articles;
+  const asyncFunc = async () => {
+    const unresolvedPromises = paths.map(async (path) => getBlogArticle(path));
+    articles = await Promise.all(unresolvedPromises);
+    if (articles.length) {
+      articles.forEach((article, index) => {
+        if (!article) {
+          const { origin } = new URL(window.location.href);
+          // eslint-disable-next-line no-console
+          console.warn(`Recommended article does not exist or is missing in index: ${origin}${paths[index]}`);
+        } else {
+          const card = buildArticleCard(article);
+          articleCardsContainer.append(card);
+          recommendedArticlesEl.append(articleCardsContainer);
+        }
+      });
     }
-  });
+  };
+  await asyncFunc();
 
   if (!articleCardsContainer.hasChildNodes()) {
     recommendedArticlesEl.parentNode.remove();
