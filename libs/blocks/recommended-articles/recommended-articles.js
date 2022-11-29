@@ -28,7 +28,7 @@ async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
         if (!article) {
           const { origin } = new URL(window.location.href);
           // eslint-disable-next-line no-console
-          console.warn(`Recommended article does not exist or is missing in index: ${origin}${paths[index]}`);
+          window.lana.log(`Recommended article does not exist or is missing in index: ${origin}${paths[index]}`);
         } else {
           const card = buildArticleCard(article);
           articleCardsContainer.append(card);
