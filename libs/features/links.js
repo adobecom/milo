@@ -14,12 +14,13 @@ const getNoFollowLinks = (() => {
 
 export default async function init(path, area = document) {
   const data = await getNoFollowLinks(path);
-  if (!data) return null;
+  if (!data) return;
   const links = area.querySelectorAll('a:not([href^="/"])');
   [...links].forEach((link) => {
-    data.filter((s) => link.href.startsWith(s.domain)).map((s) => {
-      if(s.rel) link.setAttribute('rel', s.rel);
-      if(s.window) link.setAttribute('target', s.window);
-    })
+    data.filter((s) => link.href.startsWith(s.domain))
+      .forEach((s) => {
+        if (s.rel) link.setAttribute('rel', s.rel);
+        if (s.window) link.setAttribute('target', s.window);
+      });
   });
 }
