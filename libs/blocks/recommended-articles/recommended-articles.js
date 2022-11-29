@@ -4,7 +4,11 @@ import {
   loadTaxonomy,
 } from '../article-feed/article-helpers.js';
 
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+
+import { replaceKey } from '../../features/placeholders.js';
+
+const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
 async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   if (recommendedArticlesEl.classList.contains('small')) {
@@ -15,6 +19,7 @@ async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   } else {
     recommendedArticlesEl.parentNode.classList.add('recommended-articles-content-wrapper');
     const title = document.createElement('h3');
+    title.textContent = await replacePlaceholder('recommended-for-you');
     recommendedArticlesEl.prepend(title);
   }
 
