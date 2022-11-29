@@ -9,5 +9,5 @@ export default function init(blockEl) {
   if (social) { social.classList.add('author-header-socials'); }
 
   const blockWrapper = blockEl.parentElement;
-  blockWrapper.classList.add('author-header-wrapper');
+  blockWrapper?.classList.add('author-header-wrapper');
 }
