@@ -125,9 +125,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
 
@@ -528,7 +528,7 @@ export async function loadArea(area = document) {
   // Post section loading on document
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.georouting;
-    if (georouting !== 'off') {
+    if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
