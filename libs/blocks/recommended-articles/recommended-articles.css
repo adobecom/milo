@@ -18,7 +18,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   row-gap: 6px;
-  margin: 0 0 14px !important;
+  margin: 0 auto 14px !important;
 }
 
 .recommended-articles-content-wrapper .recommended-articles,
