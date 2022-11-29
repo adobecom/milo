@@ -195,8 +195,12 @@
   height: 64px;
 }
 
-.marquee.large.split .text .icon-area img {
-  height: 56px;
+.marquee.split .text .icon-area img {
+  height: auto;
+  max-height: 80px;
+  max-width: 200px;
+  object-fit: contain;
+  object-position: left bottom;
 }
 
 .marquee .action-area {
@@ -285,6 +289,10 @@
     justify-content: center;
   }
 
+  .marquee.split .action-area {
+    gap: var(--spacing-s);
+  }
+
   .marquee.split .foreground.container {
     flex-direction: row;
     padding: var(--spacing-xl) 0;
@@ -335,10 +343,6 @@
 
   .marquee.split.large .text {
     margin: 0;
-  }
-
-  .marquee.large.split .text .icon-area img {
-    height: 48px;
   }
 
   .marquee.split.small .media img,
