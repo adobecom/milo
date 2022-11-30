@@ -125,9 +125,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log('Invalid or missing locale:', e);
       }
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
@@ -453,8 +453,8 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area, blocks) {
-  const path = getMetadata('links-path') || '/seo/links.json';
+export async function loadDeferred(area, blocks, config) {
+  const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
   const { default: setupMappedLinks } = await import('../features/links.js');
   setupMappedLinks(path, area);
 
@@ -463,6 +463,7 @@ export async function loadDeferred(area, blocks) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+  config.contentRoot = undefined;
 }
 
 function loadPrivacy() {
@@ -541,7 +542,7 @@ export async function loadArea(area = document) {
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area, areaBlocks);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 // Load everything that impacts performance later.
