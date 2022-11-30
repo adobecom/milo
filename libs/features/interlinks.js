@@ -23,7 +23,7 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
  * @param {string} path The location of the keywords file to be used for interlinks.
  * @param {number} limit The maximum amount of keywords to fetch from the file.  Default is 1000.
  */
-export default async function interlink(path, limit = 1000) {
+export default async function interlink(path = '/keywords.json', limit = 1000) {
   const articleBody = document.querySelector('main');
   const resp = await fetch(`${path}?limit=${limit}`);
   if (!(articleBody && resp.ok)) return;

@@ -117,7 +117,5 @@ const config = {
 (async function loadPage() {
   setConfig(config);
   await loadArea();
-  loadDelayed().then((interlinksMod) => {
-    if (interlinksMod) interlinksMod.default('/keywords.json');
-  });
+  loadDelayed();
 }());

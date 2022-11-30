@@ -125,9 +125,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log('Invalid or missing locale:', e);
       }
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
@@ -550,14 +550,12 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
+      const promises = [];
       if (getMetadata('interlinks') === 'on') {
-        import('../features/interlinks.js').then((mod) => {
-          resolve(mod);
-        });
-      } else {
-        resolve(null);
+        promises.push(import('../features/interlinks.js').then((mod) => mod.default()));
       }
-      import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
+      promises.push(import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv')));
+      Promise.all(promises).then(() => resolve());
     }, delay);
   });
 }
