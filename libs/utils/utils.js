@@ -527,7 +527,7 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    const georouting = getMetadata('georouting') || config.georouting;
+    const georouting = getMetadata('geoRouting') || config.geoRouting;
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
