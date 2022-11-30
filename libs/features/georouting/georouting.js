@@ -45,14 +45,15 @@ async function getAvailableLocales(locales, config, getMetadata) {
   const pagesExist = [];
   for (const [index, locale] of locales.entries()) {
     const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localePath = `${prefix}${config.contentRoot ?? ''}${path}`;
+    const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
+    const localePath = `${localeRoot}${path}`;
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
-        locale.url = `${origin}${prefix}${path}`;
+        locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${origin}${prefix}/`;
+        locale.url = `${localeRoot}/`;
         availableLocales[index] = locale;
       }
     });
@@ -60,7 +61,7 @@ async function getAvailableLocales(locales, config, getMetadata) {
   }
   if (pagesExist.length > 0) await Promise.all(pagesExist);
 
-  return availableLocales.filter(a => !!a);
+  return availableLocales.filter((a) => !!a);
 }
 
 function buildText(locales, config, createTag) {
@@ -87,7 +88,7 @@ function buildLinks(locales, config, createTag) {
       const modPrefix = locale.prefix || 'us';
       // set cookie so legacy code on adobecom still works properly.
       document.cookie = `international=${modPrefix};path=/`;
-      sessionStorage.setItem("international", modPrefix);
+      sessionStorage.setItem('international', modPrefix);
       link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     });
   });
@@ -96,7 +97,7 @@ function buildLinks(locales, config, createTag) {
 }
 
 function getCodes(data) {
-  return data.akamaiCodes.split(',').map((a) => a.toLowerCase().trim())
+  return data.akamaiCodes.split(',').map((a) => a.toLowerCase().trim());
 }
 
 function getMatches(data, suppliedCode) {
@@ -137,15 +138,15 @@ export default async function loadGeoRouting(config, createTag, getMetadata) {
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georouting.json`);
   if (!resp.ok) return;
-  const json =  await resp.json();
+  const json = await resp.json();
 
-  const urlGeoData = json.data.find(d => d.prefix === urlLocale);
+  const urlGeoData = json.data.find((d) => d.prefix === urlLocale);
   if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
-      const localeMatches = json.data.filter(d => d.prefix === storedLocale)
+      const localeMatches = json.data.filter((d) => d.prefix === storedLocale);
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata);
       if (details) { await showModal(details); }
     }
