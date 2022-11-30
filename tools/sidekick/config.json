@@ -38,6 +38,13 @@
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 398px; width: 360px;",
       "url": "/tools/library",
       "includePaths": [ "**.docx**" ]
+    },
+    {
+      "id": "tools",
+      "title": "Tools",
+      "environments": [ "edit" ],
+      "url": "/tools/ost",
+      "includePaths": [ "**.docx**" ]
     }
   ]
 }
