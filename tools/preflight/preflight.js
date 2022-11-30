@@ -176,7 +176,7 @@ async function getLinks() {
   data.statusCode = r.status
 
 
-  const resp = await fetch('http://localhost:3000/seo/preflight', {
+  const resp = await fetch('https://main--milo--adobecom.hlx.page/seo/preflight', {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
     credentials: 'same-origin', // include, *same-origin, omit
     headers: {
