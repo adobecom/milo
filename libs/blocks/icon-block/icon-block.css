@@ -77,6 +77,10 @@
   height: 44px;
 }
 
+.section.five-up:has(.icon-block) {
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+}
+
 .icon-block .foreground .text>* {
   width: 100%;
 }
@@ -157,9 +161,14 @@
   .five-up .icon-block .foreground .icon-area {
     text-align: center;
   }
+
+  .section.five-up:has(.icon-block) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 @media screen and (min-width: 1200px) {
+
   .icon-block.full-width,
   .icon-block.bio {
     max-width: 800px;
