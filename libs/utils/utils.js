@@ -21,7 +21,12 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
+<<<<<<< HEAD
   'featured-article',
+=======
+  'global-footer',
+  'global-navigation',
+>>>>>>> MWPW-121743 - initial commit
   'footer',
   'gnav',
   'how-to',
