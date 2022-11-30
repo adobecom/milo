@@ -18,6 +18,8 @@ const MILO_BLOCKS = [
   'faas',
   'faq',
   'fragment',
+  'global-footer',
+  'global-navigation',
   'footer',
   'gnav',
   'how-to',
