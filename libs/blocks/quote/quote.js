@@ -17,7 +17,9 @@
 import { createTag } from '../../utils/utils.js';
 
 export default function init(el) {
-  el.classList.add('con-block');
+  const blockVarints = ['con-block'];
+  if (el.classList.contains('long-form')) blockVarints.push('xxlarge', 'contained', 'max-width-10-desktop');
+  el.classList.add(...blockVarints);
   const allRows = el.querySelectorAll(':scope > div');
   const lastRow = allRows[allRows.length - 1];
   const imageRow = allRows.length > 1 ? allRows[0] : false;

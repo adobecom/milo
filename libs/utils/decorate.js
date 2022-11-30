@@ -54,13 +54,11 @@ export function decorateBlockText(el, size = 'small') {
       xlarge: ['XXL', 'L', 'M'],
     },
   };
-  const defaultBlock = el.classList.contains('default') ? true : false;
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  if (!defaultBlock) {
+  if (!el.classList.contains('default')) {
     const variants = Object.keys(blockTypeSizes);
     const variant = variants.find((v) => el.classList.contains(v)) || 'media'; /* media default */
     const sizes = blockTypeSizes[variant][size];
-    console.log(variant, sizes)
     const decorateForeground = () => {
       // headings
       if (headings) {
@@ -76,7 +74,7 @@ export function decorateBlockText(el, size = 'small') {
       // bodys
       const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
       if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizes[2]}`); });
-    }
+    };
     decorateForeground();
   }
   decorateButtons(el);
