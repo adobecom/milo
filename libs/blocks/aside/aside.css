@@ -7,6 +7,10 @@
   overflow: hidden;
 }
 
+.dark .aside {
+  color: white;
+}
+
 .aside .detail-M {
   text-transform: uppercase;
   font-weight: 700;
@@ -106,6 +110,14 @@
 
 .aside .foreground.container .text .action-area>a {
   margin-right: var(--spacing-s);
+}
+
+.aside .foreground.container .text .action-area>a:last-child {
+  margin-right: 0;
+}
+
+.aside .foreground.container .text .action-area>a:not(.con-button) {
+  text-decoration: underline;
 }
 
 .aside .foreground.container div {
@@ -413,12 +425,20 @@
     padding-left: 16px;
   }
 
+  .aside.right .foreground.container .image {
+    padding-right: 16px;
+  }
+
   .aside .foreground.container .text {
     margin-bottom: 0;
     padding: var(--spacing-xxxl) 0;
     flex: 1 0 50%;
     max-width: 302px;
     padding-right: 16px;
+  }
+
+  .aside.right .foreground.container .text {
+    padding-left: 16px;
   }
 
   .aside.simple .foreground.container .text {
@@ -447,7 +467,7 @@
 
   .aside.split .split-image img {
     width: 60.5vw;
-    max-width: 1396px;
+    max-width: 437px;
     position: absolute;
     right: 0;
     object-fit: cover;
@@ -468,7 +488,7 @@
   }
 
   .aside.split .foreground.container .text {
-    flex: 0 0 212px;
+    flex: 0 0 30vw;
     padding: var(--spacing-xxl) 0;
     max-width: 100%;
     margin: 0;
@@ -601,6 +621,10 @@
     flex: 0 0 70%;
     max-width: none;
     object-fit: cover;
+  }
+
+  .aside.split .split-image img {
+    max-width: 1396px;
   }
 
   .aside.split.half .foreground.container .text {
