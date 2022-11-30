@@ -46,17 +46,15 @@ function sortPriority(x, y) {
 }
 
 function getBlockVariant(el) {
-  const variantList = [...el.classList].filter(i => Object.keys(iconBlockVariants).indexOf(i) > -1).sort(sortPriority);
-  const variant = variantList[0] ?? 'fullwidth';
-  if (variant === 'fullwidth') el.classList.add('full-width');
-  return variant;
+  const variant = [...el.classList].filter(i => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
+  return variant[0];
 }
 
 export default function init(el) {
   const block = el.querySelector(':scope > div:not([class])');
   if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xxl-spacing-bottom');
-  const blockVarient = getBlockVariant(el);
-  const variant = iconBlockVariants[blockVarient];
+  const blockVariant = getBlockVariant(el);
+  const variant = iconBlockVariants[blockVariant];
   block.classList.add('foreground');
   decorateContent(block, variant);
 }
