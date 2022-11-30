@@ -403,7 +403,7 @@ async function decorateIcons(area, config) {
   loadIcons(domIcons, config);
 }
 
-async function decoratePlaceholders(area, config) {
+export async function decoratePlaceholders(area, config) {
   const el = area.documentElement ? area.body : area;
   const regex = /{{(.*?)}}/g;
   const found = regex.test(el.innerHTML);

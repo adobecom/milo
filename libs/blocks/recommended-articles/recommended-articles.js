@@ -4,11 +4,7 @@ import {
   loadTaxonomy,
 } from '../article-feed/article-helpers.js';
 
-import { createTag, getConfig } from '../../utils/utils.js';
-
-import { replaceKey } from '../../features/placeholders.js';
-
-const replacePlaceholder = async (key) => replaceKey(key, getConfig());
+import { createTag, getConfig, decoratePlaceholders } from '../../utils/utils.js';
 
 async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   if (recommendedArticlesEl.classList.contains('small')) {
@@ -19,7 +15,8 @@ async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   } else {
     recommendedArticlesEl.parentNode.classList.add('recommended-articles-content-wrapper');
     const title = document.createElement('h3');
-    title.textContent = await replacePlaceholder('recommended-for-you');
+    title.innerHTML = '{{recommended-for-you}}'
+    await decoratePlaceholders(title, getConfig())
     recommendedArticlesEl.prepend(title);
   }
 
@@ -28,6 +25,7 @@ async function decorateRecommendedArticles(recommendedArticlesEl, paths) {
   const asyncFunc = async () => {
     const unresolvedPromises = paths.map(async (path) => getBlogArticle(path));
     articles = await Promise.all(unresolvedPromises);
+    console.log(articles.length)
     if (articles.length) {
       articles.forEach((article, index) => {
         if (!article) {

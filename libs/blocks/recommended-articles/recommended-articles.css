@@ -13,7 +13,7 @@
 }
 
 .recommended-articles-small-content-wrapper .content {
-  width: 100%;
+  min-width: min(100%, 1200px); 
   display: flex !important;
   flex-wrap: wrap;
   justify-content: space-between;
