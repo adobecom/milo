@@ -211,7 +211,7 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.l-spacing-bottom { padding-bottom: var(--spacing-l); }
 .con-block.xl-spacing-bottom { padding-bottom: var(--spacing-xl); }
 .con-block.xxl-spacing-bottom { padding-bottom: var(--spacing-xxl); }
-.con-block.xxxl-spacing-bottom { padding-bottom: var(--spacing-xxxl); }x
+.con-block.xxxl-spacing-bottom { padding-bottom: var(--spacing-xxxl); }
 .con-block.no-spacing-bottom { padding-bottom: 0; }
 
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }

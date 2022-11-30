@@ -21,7 +21,7 @@ const iconBlockVariants = {
   small: ['L', 'M'],
   bio: ['S', 'S'],
   vertical: ['S', 'M'],
-  centered: ['M', 'M']
+  centered: ['M', 'M'],
 }
 
 function decorateContent(block, variant) {
@@ -47,7 +47,7 @@ function sortPriority(x, y) {
 
 function getBlockVariant(el) {
   const variantList = [...el.classList].filter(i => Object.keys(iconBlockVariants).indexOf(i) > -1).sort(sortPriority);
-  const variant = variantList?.[0] ?? 'fullwidth';
+  const variant = variantList[0] ?? 'fullwidth';
   if (variant === 'fullwidth') el.classList.add('full-width');
   return variant;
 }

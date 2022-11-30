@@ -80,7 +80,7 @@
   justify-items: center;
 }
 
-main > .section[class*='-up'] > .content {
+main>.section[class*='-up']>.content {
   max-width: initial;
   margin: 0;
 }
@@ -127,6 +127,16 @@ main > .section[class*='-up'] > .content {
   align-items: start;
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
+}
+
+.section.five-up {
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+}
+
+@media screen and (min-width: 600px) and (max-width: 1200px) {
+  .section.five-up {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 @media screen and (min-width: 1200px) {
