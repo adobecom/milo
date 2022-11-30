@@ -20,6 +20,8 @@ const MILO_BLOCKS = [
   'figure',
   'fragment',
   'featured-article',
+  'global-footer',
+  'global-navigation',
   'footer',
   'gnav',
   'how-to',
