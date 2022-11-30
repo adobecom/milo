@@ -46,8 +46,8 @@ function sortPriority(x, y) {
 }
 
 function getBlockVariant(el) {
-  const variant = [...el.classList].filter(i => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
-  return variant[0];
+  const variants = [...el.classList].filter(i => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
+  return variants[0];
 }
 
 export default function init(el) {

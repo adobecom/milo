@@ -73,11 +73,11 @@
   object-fit: cover;
 }
 
-.five-up .icon-block:not(.full-width) .foreground .icon-area {
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
   height: 44px;
 }
 
-.five-up .icon-block:not(.full-width) .foreground .icon-area img {
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
   height: 44px;
 }
 
@@ -136,7 +136,7 @@
   margin-top: var(--spacing-xs);
 }
 
-.icon-block.full-width.small .foreground .text .action-area>a:not(.con-button) {
+.icon-block.fullwidth.small .foreground .text .action-area>a:not(.con-button) {
   display: block;
   margin-top: var(--spacing-xs);
   font-size: 18px;
@@ -148,14 +148,14 @@
   line-height: 21px;
 }
 
-.two-up .icon-block.full-width,
-.three-up .icon-block.full-width,
-.four-up .icon-block.full-width,
-.five-up .icon-block.full-width {
+.two-up .icon-block.fullwidth,
+.three-up .icon-block.fullwidth,
+.four-up .icon-block.fullwidth,
+.five-up .icon-block.fullwidth {
   grid-column: 1 /-1;
 }
 
-.icon-block.full-width .foreground,
+.icon-block.fullwidth .foreground,
 .icon-block.bio .foreground {
   width: var(--grid-container-width);
   margin: 0 auto;
@@ -174,7 +174,7 @@
 
 @media screen and (min-width: 1200px) {
 
-  .icon-block.full-width .foreground,
+  .icon-block.fullwidth .foreground,
   .icon-block.bio .foreground {
     width: 800px;
     margin: 0 auto;
