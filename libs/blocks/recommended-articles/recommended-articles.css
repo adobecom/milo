@@ -1,3 +1,4 @@
+@import url('../../styles/article-card.css');
 
 .recommended-articles-content-wrapper,
 .recommended-articles-small-content-wrapper {
@@ -13,7 +14,7 @@
 }
 
 .recommended-articles-small-content-wrapper .content {
-  min-width: min(100%, 1200px); 
+  min-width: min(100%, 1200px);
   display: flex !important;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -50,13 +51,6 @@
   width: 100%;
 }
 
-@media (min-width: 600px) {
-  .recommended-articles .article-cards {
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-
 /* small specific */
 .recommended-articles-small-content-wrapper {
   display: flex;
@@ -66,13 +60,6 @@
   max-width: 100%;
   margin: 0 auto;
 }
-
-@media (min-width: 700px) {
-  .recommended-articles-small-content-wrapper p {
-    max-width: unset;
-  }
-}
-
 
 .recommended-articles-small-content-wrapper h3 {
   min-width: 100%;
@@ -84,29 +71,12 @@
   margin: 0;
 }
 
-@media (min-width: 1200px) {
-  .recommended-articles-small-content-wrapper h3 {
-    margin-bottom: 0;
-  }
-}
-
 .recommended-articles-small-content-wrapper .article-card {
   display: flex;
   width: 100%;
   max-width: 100%;
   margin-right: 0;
   margin-bottom: 32px;
-}
-
-@media (min-width: 1200px) {
-  .recommended-articles-small-content-wrapper .article-card {
-    max-width: 378px;
-    margin-right: 32px;
-  }
-
-  .recommended-articles-small-content-wrapper .article-card:last-child {
-    margin-right: 0;
-  }
 }
 
 .recommended-articles-small-content-wrapper .article-card .article-card-image {
@@ -178,4 +148,30 @@
   background-color: var(--color-gray-800);
   border-color: var(--color-gray-800);
   color: var(--color-white);
+}
+
+@media (min-width: 600px) {
+  .recommended-articles-small-content-wrapper p {
+    max-width: unset;
+  }
+
+  .recommended-articles .article-cards {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .recommended-articles-small-content-wrapper .article-card {
+    max-width: 378px;
+    margin-right: 32px;
+  }
+
+  .recommended-articles-small-content-wrapper .article-card:last-child {
+    margin-right: 0;
+  }
+
+  .recommended-articles-small-content-wrapper h3 {
+    margin-bottom: 0;
+  }
 }

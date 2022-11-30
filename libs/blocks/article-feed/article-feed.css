@@ -1,3 +1,5 @@
+@import url('../../styles/article-card.css');
+
 element {
   --detail-color: var(--color-gray-600);
   --detail-line-height: 1.25;

@@ -12,7 +12,6 @@
 
 @import url('variables.css');
 @import url('typography.css');
-@import url('lazy-styles.css');
 
 @font-face {
   font-family: 'Trebuchet MS';
