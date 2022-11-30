@@ -54,6 +54,7 @@ function getBlockVariant(el) {
 
 export default function init(el) {
   const block = el.querySelector(':scope > div:not([class])');
+  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xxl-spacing-bottom');
   block.classList.add('foreground');
   const variant = iconBlockVariants[getBlockVariant(el)];
   decorateContent(block, variant);

@@ -21,6 +21,10 @@
   background-color: unset;
 }
 
+.section.xxxl-spacing {
+  padding: var(--spacing-xxxl) 0;
+}
+
 .section.xxl-spacing {
   padding: var(--spacing-xxl) 0;
 }

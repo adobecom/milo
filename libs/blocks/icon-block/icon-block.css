@@ -45,6 +45,10 @@
   width: 100%;
 }
 
+.icon-block .foreground .text p:not([class]) a {
+  font-size: 18px;
+}
+
 .icon-block .foreground .icon-area {
   margin: 0 auto var(--spacing-s) auto;
   height: 80px;
@@ -100,7 +104,7 @@
   margin-bottom: 0;
 }
 
-.icon-block:not(.centered) .foreground .text .action-area>a {
+.icon-block:not(.centered):not(.small) .foreground .text .action-area>a {
   margin-right: var(--spacing-s);
   white-space: nowrap;
 }
@@ -136,9 +140,11 @@
   margin-top: var(--spacing-xs);
 }
 
-.icon-block.centered.inverted .foreground .text .action-area>a:not(.con-button) {
-  color: white;
-  text-decoration: underline;
+.icon-block.full-width.small .foreground .text .action-area>a:not(.con-button) {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: 18px;
+  line-height: 27px;
 }
 
 .icon-block.vertical .foreground .text .action-area>a:not(.con-button) {
