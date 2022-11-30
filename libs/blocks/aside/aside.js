@@ -34,21 +34,23 @@ function decorateLinks(el) {
   const links = el.querySelectorAll('a');
   if (links.length === 0) return;
   const actionLinks = [...links].filter(link => link.closest('div')?.classList.contains('text'));
-  const actions = document.createElement('div');
-  actions.classList.add('action-area');
-  actionLinks.forEach(link => {
-    let parent = link.parentElement;
-    if (parent.nodeName === 'P') link.classList.add('body-S');
-    else {
-      const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-      link.classList.add('con-button', buttonType);
-      parent = link.closest('p');
-    }
-    actions.insertAdjacentElement('beforeend', link);
-    parent?.remove();
-  });
-  const content = el.querySelector('.text');
-  content?.insertAdjacentElement('beforeend', actions);
+  if (actionLinks.length) {
+    const actions = document.createElement('div');
+    actions.classList.add('action-area');
+    actionLinks.forEach(link => {
+      let parent = link.parentElement;
+      if (parent.nodeName === 'P') link.classList.add('body-S');
+      else {
+        const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
+        link.classList.add('con-button', buttonType);
+        parent = link.closest('p');
+      }
+      actions.insertAdjacentElement('beforeend', link);
+      parent?.remove();
+    });
+    const content = el.querySelector('.text');
+    content?.insertAdjacentElement('beforeend', actions);
+  }
 }
 
 function decorateContent(el, type, size) {
