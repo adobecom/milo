@@ -555,7 +555,7 @@ export function loadDelayed(delay = 3000) {
         promises.push(import('../features/interlinks.js').then((mod) => mod.default()));
       }
       promises.push(import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv')));
-      Promise.all(promises).then(() => resolve());
+      Promise.all(promises).then((mods) => resolve(mods));
     }, delay);
   });
 }
