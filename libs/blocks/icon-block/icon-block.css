@@ -159,7 +159,14 @@
   grid-column: 1 /-1;
 }
 
+.icon-block.full-width .foreground,
+.icon-block.bio .foreground {
+  width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
 @media screen and (min-width: 600px) and (max-width: 1200px) {
+
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -175,9 +182,9 @@
 
 @media screen and (min-width: 1200px) {
 
-  .icon-block.full-width,
-  .icon-block.bio {
-    max-width: 800px;
+  .icon-block.full-width .foreground,
+  .icon-block.bio .foreground {
+    width: 800px;
     margin: 0 auto;
   }
 
