@@ -1,23 +1,34 @@
-import { getMetadata, createTag } from '../../utils/utils.js';
+import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
+import fetchTaxonomy from '../../scripts/taxonomy.js'
 
 export default async function init(el) {
   const a = el.querySelector('a');
   if (!a) return;
   a.innerHTML = '';
   a.classList.add('featured-article-card');
-  const resp = await fetch(a.href);
-  if (!resp.ok) return;
+  const path = new URL(a.href).pathname;
+  const resp = await fetch(path);
+  if (!resp || !resp.ok) {
+    // eslint-disable-next-line no-console
+    console.log(`Could not retrieve metadata for ${path}`);
+    return;
+  }
+
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const category = getMetadata('article:tag', doc);
+
+  //load taxonomy to get link of article "category"
+  let taxonomy = await fetchTaxonomy(getConfig(), '/topics')
+  const categoryTaxonomy = taxonomy.get(category)
 
   // Image
   const pic = doc.body.querySelector('picture');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
 
   // Category
-  const categoryLink = createTag('a', { href: 'CHANGE_ME' }, category);
+  const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' }, categoryLink);
 
   // Title

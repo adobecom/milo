@@ -141,7 +141,7 @@ export async function loadTaxonomy() {
 
       // adjust meta article:tag
 
-      const currentTags = getMetadata('article:tag', true) || [];
+      const currentTags = getMetadata('article:tag') || [];
       const articleTax = computeTaxonomyFromTopics(currentTags);
 
       const allTopics = articleTax.allTopics || [];
@@ -267,7 +267,7 @@ export function getArticleTaxonomy(article) {
  * @param {string} topic The topic name
  * @returns {string} A link tag as a string
  */
-function getLinkForTopic(topic, path) {
+export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
   const catLink = [getTaxonomyModule().get(topic)].map((tax) => tax?.link ?? '#');
