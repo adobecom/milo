@@ -42,8 +42,12 @@
   width: 100%;
 }
 
+.icon-block .foreground .text .supplemental-text {
+  margin-top: var(--spacing-s);
+}
+
 .icon-block .foreground .text p:not([class]) a {
-  font-size: 18px;
+  font-size: var(--type-body-m-size);
 }
 
 .icon-block .foreground .icon-area {
@@ -129,21 +133,21 @@
 
 .icon-block.centered .foreground .text .action-area > a:not(.con-button) {
   display: block;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
   margin-top: var(--spacing-xs);
 }
 
 .icon-block.vertical .foreground .text .action-area > a:not(.con-button) {
-  font-size: 14px;
-  line-height: 21px;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
 }
 
 .icon-block.fullwidth.small .foreground .text .action-area > a:not(.con-button) {
   display: block;
   margin-top: var(--spacing-xs);
-  font-size: 18px;
-  line-height: 27px;
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
 }
 
 
