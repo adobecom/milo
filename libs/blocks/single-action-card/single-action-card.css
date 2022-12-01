@@ -18,7 +18,7 @@
   bottom: 0;
 }
 
-.single-action-card .background > div {
+.single-action-card .background>div {
   height: 100%;
 }
 
@@ -48,21 +48,30 @@
   text-align: left;
   align-items: center;
   background-color: white;
-  border: inset 1px solid #EAEAEA;
   border-radius: 4px;
-  max-height: 132px;
   gap: var(--spacing-s);
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px #EAEAEA;
+  max-height: 132px;
 }
 
 .single-action-card .foreground .card-block .card-content {
   padding-right: var(--spacing-s);
   margin: 16px 0;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .single-action-card .foreground .card-block .card-image {
   height: 132px;
   flex: 1 0 90px;
+}
+
+.single-action-card.tile .foreground .card-block .card-image picture {
+  height: 62px;
 }
 
 .single-action-card .foreground .card-block .card-image img {
@@ -72,37 +81,33 @@
 
 .single-action-card.tile .foreground .card-block .card-image {
   height: 132px;
-  flex: 1 0 85px;
+  flex: 0 0 88px;
   display: flex;
   align-items: center;
 }
 
-.single-action-card.tile .foreground .card-block .card-image picture {
-  height: 53px;
-}
-
 .single-action-card.tile .foreground .card-block .card-image img {
-  width: 52px;
-  height: 53px;
+  width: 64px;
+  height: 62px;
   object-fit: contain;
-  margin-left: var(--spacing-m);
+  margin-left: var(--spacing-s);
 }
 
 @media screen and (min-width: 600px) {
   .single-action-card .foreground .card-block {
-    gap: var(--spacing-m);
+    gap: var(--spacing-s);
   }
 
   .single-action-card .foreground .card-block .card-image {
-    flex: 1 0 191px;
+    flex: 0 0 191px;
   }
 
   .single-action-card.tile .foreground .card-block .card-content {
-    padding-right: var(--spacing-m);
+    padding-right: var(--spacing-s);
   }
 
   .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 121px;
+    flex: 0 0 106px;
   }
 
   .single-action-card.tile .foreground .card-block .card-image picture {
@@ -110,9 +115,9 @@
   }
 
   .single-action-card.tile .foreground .card-block .card-image img {
-    width: 72px;
-    height: 73px;
-    margin-left: 48px;
+    width: 74px;
+    height: 72px;
+    margin-left: var(--spacing-m);
   }
 
   .two-up .single-action-card .foreground .card-block {
@@ -120,7 +125,7 @@
   }
 
   .two-up .single-action-card .foreground .card-block .card-image {
-    flex: 1 0 91px;
+    flex: 0 0 91px;
   }
 
   .three-up .single-action-card .foreground .card-block {
@@ -128,11 +133,11 @@
   }
 
   .three-up .single-action-card .foreground .card-block .card-image {
-    flex: 1 0 90px;
+    flex: 0 0 90px;
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 96px;
+    flex: 0 0 96px;
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-content {
@@ -140,21 +145,17 @@
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image img {
-    width: 64px;
-    height: 62px;
-    margin-left: var(--spacing-m);
-  }
-
-  .two-up .single-action-card.tile .foreground .card-block .card-image picture {
-    height: 62px;
+    width: 74px;
+    height: 72px;
+    margin-left: var(--spacing-s);
   }
 
   .three-up .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 90px;
+    flex: 0 0 98px;
   }
 
   .three-up .single-action-card.tile .foreground .card-block .card-image img {
-    margin-left: 24px;
+    margin-left: var(--spacing-s);
   }
 }
 
@@ -162,6 +163,10 @@
   .single-action-card .foreground {
     max-width: 600px;
     margin: 0 auto;
+  }
+
+  .single-action-card .foreground .card-block {
+    max-height: 132px;
   }
 
   .single-action-card .foreground .card-block .card-content {
@@ -181,7 +186,7 @@
   }
 
   .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 121px;
+    flex: 1 0 106px;
   }
 
   .two-up .single-action-card .foreground .card-block {
@@ -201,18 +206,18 @@
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 105px;
+    flex: 1 0 98px;
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image img {
-    margin-left: 32px;
+    margin-left: var(--spacing-s);
   }
 
   .three-up .single-action-card.tile .foreground .card-block .card-image {
-    flex: 1 0 90px;
+    flex: 1 0 98px;
   }
 
   .three-up .single-action-card.tile .foreground .card-block .card-image img {
-    margin-left: 24px;
+    margin-left: var(--spacing-s);
   }
 }
