@@ -18,7 +18,7 @@
   bottom: 0;
 }
 
-.single-action-card .background>div {
+.single-action-card .background > div {
   height: 100%;
 }
 
@@ -48,16 +48,16 @@
   text-align: left;
   align-items: center;
   background-color: white;
-  border: 1px solid #D5D5D5;
+  border: inset 1px solid #EAEAEA;
   border-radius: 4px;
   max-height: 132px;
-  gap: 24px;
-  width: 99%;
+  gap: var(--spacing-s);
   overflow: hidden;
 }
 
 .single-action-card .foreground .card-block .card-content {
   padding-right: var(--spacing-s);
+  margin: 16px 0;
 }
 
 .single-action-card .foreground .card-block .card-image {
