@@ -1,5 +1,7 @@
-const PROJECT_NAME = 'milo--adobecom';
-const PRODUCTION_DOMAINS = ['milo.adobe.com'];
+const PROJECTS_TO_PRODUCTION_DOMAINS = {
+  'bacom--adobecom': 'business.adobe.com',
+  'milo--adobecom': 'milo.adobe.com',
+};
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -9,7 +11,6 @@ const MILO_BLOCKS = [
   'adobetv',
   'article-feed',
   'aside',
-  'author-header',
   'caas',
   'caas-config',
   'card-metadata',
@@ -18,8 +19,6 @@ const MILO_BLOCKS = [
   'columns',
   'faas',
   'faq',
-  'featured-article',
-  'figure',
   'fragment',
   'featured-article',
   'footer',
@@ -80,6 +79,7 @@ const ENVS = {
   },
 };
 const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
+const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -99,11 +99,15 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export function getLocaleFromPath(locales, path) {
-  const split = path.split('/');
+// find out current locale based on pathname and existing locales object from config.
+export function getLocale(locales, pathname = window.location.pathname) {
+  if (!locales) {
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+  }
+  const split = pathname.split('/');
   const localeString = split[1];
   const locale = locales[localeString] || locales[''];
-  if (localeString === 'langstore') {
+  if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
@@ -111,40 +115,36 @@ export function getLocaleFromPath(locales, path) {
   return locale;
 }
 
-// find out current locale based on pathname and existing locales object from config.
-export function getLocale(locales) {
-  if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
-  }
-  const { pathname } = window.location;
-  return getLocaleFromPath(locales, pathname);
-}
-
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
-      const { origin } = window.location;
+      const origin = conf.origin || window.location.origin;
+      const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
-      config.locale = getLocale(conf.locales);
+      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
-      config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
-
+      if (config.contentRoot) {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
+      } else {
+        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
+      }
       return config;
     },
     () => config,
   ];
 })();
 
-export function getMetadata(name, doc = document) {
+export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
@@ -165,13 +165,48 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href) {
+function isInternalDomainUrl(urlHostName, originHostName) {
+  const split = originHostName.split('.').shift().split('--');
+  if (split[1] && split[2]) {
+    const projectName = `${split[1]}--${split[2]}`;
+    const liveDomain = PROJECTS_TO_PRODUCTION_DOMAINS[projectName];
+    return urlHostName === liveDomain;
+  }
+  return false;
+}
+
+function getLocaleLinkInfo(url, relative, originHostName) {
+  const { hash } = url;
+  if (hash === '#_dnt') {
+    return { prefix: '', hash: '' };
+  }
+  const urlHostName = url.hostname;
+  const { locale, locales } = getConfig();
+  if (!locale || !locales) {
+    return { prefix: '', hash };
+  }
+  if (relative || isInternalDomainUrl(urlHostName, originHostName)) {
+    const path = url.pathname;
+    // Handle only pages.
+    const valueAfterLastSlash = path.split('/').pop();
+    const extension = valueAfterLastSlash.includes('.') ? valueAfterLastSlash.split('.').pop() : '';
+    if (!extension || extension === 'html') {
+      const hasPrefix = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}`));
+      if (!hasPrefix) {
+        return { prefix: locale.prefix, hash };
+      }
+    }
+  }
+  return { prefix: '', hash };
+}
+
+export function localizeLink(href, originHostName = window.location.hostname) {
   const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
   const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host))
-    || url.hostname === window.location.hostname;
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
+  const relative = url.hostname === originHostName;
+  const localeInfo = getLocaleLinkInfo(url, relative, originHostName);
+  const urlPath = `${localeInfo.prefix}${url.pathname}${url.search}${localeInfo.hash}`;
+  return relative ? urlPath : `${url.origin}${urlPath}`;
 }
 
 export function loadStyle(href, callback) {
@@ -327,7 +362,7 @@ export function decorateSVG(a) {
   const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
   const img = document.createElement('img');
-  img.src = makeRelative(textContent);
+  img.src = localizeLink(textContent);
   const pic = document.createElement('picture');
   pic.append(img);
   if (img.src === href) {
@@ -346,7 +381,7 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
-      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
+      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
         a.target = '_blank';
         return false;
       }
@@ -377,7 +412,7 @@ export function decorateAutoBlock(a) {
 function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
-    a.href = makeRelative(a.href);
+    a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
@@ -576,11 +611,6 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    const georouting = getMetadata('georouting') || config.geoRouting;
-    if (georouting === 'on') {
-      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
-    }
     const type = getMetadata('richresults');
     if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
       const { addRichResults } = await import('../features/richresults.js');

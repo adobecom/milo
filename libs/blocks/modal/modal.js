@@ -1,4 +1,4 @@
-import { createTag, getMetadata, makeRelative } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLink } from '../../utils/utils.js';
 
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -17,7 +17,7 @@ function getDetails(el) {
   }
   const metaPath = getMetadata(`-${details.id}`);
   if (metaPath) {
-    details.path = makeRelative(metaPath);
+    details.path = localizeLink(metaPath);
     return details;
   }
   return null;
