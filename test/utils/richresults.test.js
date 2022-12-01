@@ -26,7 +26,7 @@ describe('Rich Results', () => {
     };
     expect(actual).to.deep.equal(expected);
   });
-  
+
   it('disable the NewsArticle rich results', async () => {
     // remove the richresults meta tag
     document.querySelector('meta[name="richresults"]').remove();

@@ -115,12 +115,6 @@ function loadArticleTaxonomy(article) {
   return clonedArticle;
 }
 
-/**
- * Returns the language dependent root path
- * @returns {string} The computed root path
- */
-export const getPrefix = () => (getConfig().locale?.prefix ? `/${getConfig().locale?.prefix}` : '');
-
 export function getTaxonomyModule() {
   return taxonomyModule;
 }

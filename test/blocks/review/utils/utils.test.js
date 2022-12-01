@@ -1,4 +1,3 @@
-/* global describe it */
 import { expect } from '@esm-bundle/chai';
 import {
   addToAverage,
