@@ -229,7 +229,7 @@ async function safeGetVersionOfFile(filePath, version) {
   return versionFile;
 }
 
-async function rollout(file, targetFolders, skipMerge = true) {
+async function rollout(file, targetFolders, skipMerge = false) {
   const filePath = file.path;
   await connectToSP();
   const filePathWithoutExtension = stripExtension(filePath);
