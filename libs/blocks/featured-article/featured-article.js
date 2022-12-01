@@ -9,6 +9,7 @@ export default async function init(el) {
   const path = new URL(a.href).pathname;
   const resp = await fetch(path);
   if (!resp || !resp.ok) {
+    a.remove();
     // eslint-disable-next-line no-console
     console.log(`Could not retrieve metadata for ${path}`);
     return;
