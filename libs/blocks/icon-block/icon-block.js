@@ -41,12 +41,16 @@ function decorateContent(block, variant) {
 }
 
 function sortPriority(x, y) {
-  const priority = ['bio', 'small'];
-  return priority.includes(x) ? -1 : priority.includes(y) ? 1 : 0;
+  const priorities = ['bio', 'small'];
+  let priority = 0;
+  if (priorities.includes(x)) priority = -1;
+  else if (priorities.includes(y)) priority = 1;
+  return priority;
 }
 
 function getBlockVariant(el) {
-  const variants = [...el.classList].filter(i => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
+  const variants = [...el.classList]
+    .filter((i) => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
   return variants[0];
 }
 
