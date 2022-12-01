@@ -269,7 +269,7 @@ export function getArticleTaxonomy(article) {
  * @param {string} topic The topic name
  * @returns {string} A link tag as a string
  */
-function getLinkForTopic(topic, path) {
+export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
   const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
@@ -320,44 +320,4 @@ export function stamp(message) {
     // eslint-disable-next-line no-console
     console.warn(`${new Date() - performance.timeOrigin}:${message}`);
   }
-}
-
-async function getDocument(path) {
-  const resp = await fetch(`${path}`);
-  if (!resp || !resp.ok) {
-    // eslint-disable-next-line no-console
-    console.log(`Could not retrieve metadata for ${path}`);
-    return null;
-  }
-
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(text, 'text/html');
-  return doc;
-}
-
-export async function getBlogArticle(path) {
-  const doc = await getDocument(`${path}`);
-  
-  if (doc) {
-    let title = getMetadata('og:title', doc).trim();
-    const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
-    trimEndings.forEach((ending) => {
-      if (title.endsWith(ending)) title = title.substr(0, title.length - ending.length);
-    });
-
-    const articleMeta = {
-      description: getMetadata('description', doc),
-      title,
-      author: getMetadata('author', doc),
-      image: getMetadata('og:image', doc),
-      imageAlt: getMetadata('og:image:alt', doc),
-      date: getMetadata('publication-date', doc),
-      path,
-      tags: getMetadata('article:tag', doc),
-    };
-    loadArticleTaxonomy(articleMeta);
-    return articleMeta;
-  }
-  return null;
 }
