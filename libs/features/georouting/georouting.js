@@ -48,7 +48,7 @@ async function getAvailableLocales(locales, config, getMetadata) {
     const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
     const localePath = `${localeRoot}${path}`;
 
-    const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
+    const pageExistsRequest = fetch(localePath, { method: 'GET' }).then((resp) => {
       if (resp.ok) {
         locale.url = localePath;
         availableLocales[index] = locale;
