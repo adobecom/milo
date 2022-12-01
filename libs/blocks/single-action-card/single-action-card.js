@@ -24,7 +24,7 @@ function decorateLayout(el) {
 
 function decorateImage(block) {
   const image = block.querySelector(':scope img');
-  if (!image) return;
+  if (!image) return null;
   const wrapper = createTag('div', { class: 'card-image' });
   const picture = image.parentElement.cloneNode(true);
   wrapper.append(picture);
@@ -43,8 +43,8 @@ function decorateContent(block) {
   const headings = content?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
   heading?.classList?.add('heading-XS');
-  const paragraphs = content.querySelectorAll(":scope > p");
-  paragraphs.forEach((item) => item.classList.add("body-XS"));
+  const paragraphs = content.querySelectorAll(':scope > p');
+  paragraphs.forEach((item) => item.classList.add('body-XS'));
   const image = decorateImage(block);
   if (image) card.insertAdjacentElement('afterbegin', image);
 }
