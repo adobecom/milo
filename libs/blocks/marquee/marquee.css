@@ -197,8 +197,8 @@
 
 .marquee.split .text .icon-area img {
   height: auto;
-  max-height: 80px;
-  max-width: 200px;
+  max-height: 56px;
+  max-width: 275px;
   object-fit: contain;
   object-position: left bottom;
 }
@@ -326,6 +326,16 @@
     text-align: right;
   }
 
+  .marquee.split .text .icon-area img {
+    max-height: 80px;
+    max-width: 159px;
+  }
+
+  .marquee.split.one-third .text .icon-area img {
+    max-height: 56px;
+    max-width: 275px;
+  }
+
   .marquee.split.right .media.bleed {
     right: auto;
     left: 0;
@@ -376,6 +386,11 @@
   .marquee.split.one-third .foreground.container .text,
   .marquee.split.one-third.large .foreground.container .text {
     max-width: calc(33.3334% - var(--grid-column-width));
+  }
+
+  .marquee.split.one-third .text .icon-area img {
+    max-height: 80px;
+    max-width: 159px;
   }
 
   .marquee.split.one-third.right .media-credit {
@@ -504,6 +519,11 @@
 
   .marquee.split.has-credit {
     margin-bottom: unset;
+  }
+
+  .marquee.split .text .icon-area img,
+  .marquee.split.one-third .text .icon-area img {
+    max-width: 200px;
   }
 }
 
