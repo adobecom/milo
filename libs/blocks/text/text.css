@@ -68,12 +68,14 @@
 .inset.text-block {
   position: relative;
 }
+
 .inset.text-block:before {
   content: '';
   position: absolute;
   width: 2px;
   height: 100%;
-  left: 0;
+  left: 4px;
+  top: 0;
   background: var(--color-gray-400);
 }
 
