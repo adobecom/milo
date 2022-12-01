@@ -15,26 +15,26 @@
 */
 
 import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 function decorateLayout(el) {
   const children = el.querySelectorAll(':scope > div');
   if (children.length > 1 && children[0].childNodes.length) {
     decorateBlockBg(el, children[0]);
   }
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container', 'grid');
+  const foreground = createTag('div', { class: 'foreground' });
   el.appendChild(foreground);
   return foreground;
 }
 
-function decorateContent(row, isVertical) {
+function decorateContent(row, isColumn) {
   if (!row) return;
   const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
   if (text) {
     text?.classList.add('text');
     const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     const heading = headings?.[headings.length - 1];
-    heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
+    heading?.classList.add(isColumn ? 'heading-S' : 'heading-XL');
     heading?.nextElementSibling?.classList.add('body-M');
     heading?.previousElementSibling?.classList.add('icon-area');
     decorateButtons(row);
@@ -48,9 +48,9 @@ function decorateContent(row, isVertical) {
 export default function init(el) {
   const foreground = decorateLayout(el);
   const rows = el.querySelectorAll(':scope > div:not([class])');
-  const isVertical = el.classList.contains('vertical');
+  const isColumn = el.classList.contains('vertical') || el.classList.contains('centered');
   [...rows].forEach(row => {
-    decorateContent(row, isVertical);
+    decorateContent(row, isColumn);
     foreground.insertAdjacentElement('beforeEnd', row.children[0]);
     row.remove();
   });
