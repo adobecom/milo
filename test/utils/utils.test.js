@@ -189,52 +189,51 @@ describe('Utils', () => {
         be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
         langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
       };
+      config.liveDomains = ['milo.adobe.com'];
       config.pathname = '/be_fr/page';
-      config.origin = 'https://main--bacom--adobecom';
+      config.origin = 'https://main--milo--adobecom';
       utils.setConfig(config);
     });
 
     it('Same domain link is relative and localized', () => {
-      expect(utils.localizeLink('https://main--bacom--adobecom.hlx.page/gnav/solutions', 'main--bacom--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+    });
+
+    it('Same domain fragment link is relative and localized', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+    });
+
+    it('Same domain extensions /, .html, .json are handled', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
     });
 
     it('Same domain link that is already localized is returned as relative', () => {
-      expect(utils.localizeLink('https://main--bacom--adobecom.hlx.page/be_fr/gnav/solutions', 'main--bacom--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
-      expect(utils.localizeLink('https://main--bacom--adobecom.hlx.page/fi/gnav/solutions', 'main--bacom--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
     });
 
     it('Same domain PDF link is returned as relative and not localized', () => {
-      expect(utils.localizeLink('https://main--bacom--adobecom.hlx.page/gnav/solutions.pdf', 'main--bacom--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
     });
 
     it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', () => {
-      expect(utils.localizeLink('https://main--bacom--adobecom.hlx.page/gnav/solutions#_dnt', 'main--bacom--adobecom.hlx.page'))
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
         .to
         .equal('/gnav/solutions');
     });
 
     it('Live domain html link  is absolute and localized', () => {
-      expect(utils.localizeLink('https://business.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--bacom--adobecom.hlx.page'))
+      expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
         .to
-        .equal('https://business.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
-    });
-
-    it('Live domain html link of another project is untouched', () => {
-      expect(utils.localizeLink('https://business.adobe.com/solutions/customer-experience-personalization-at-scale.html?offers=123', 'main--milo--adobecom.hlx.page'))
-        .to
-        .equal('https://business.adobe.com/solutions/customer-experience-personalization-at-scale.html?offers=123');
+        .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
     });
 
     it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
-      expect(utils.localizeLink('https://business.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--bacom--adobecom.hlx.page'))
+      expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
         .to
-        .equal('https://business.adobe.com/solutions/customer-experience-personalization-at-scale.html');
-    });
-
-    it('Lower Environment Links of another project group are untouched', () => {
-      expect(utils.localizeLink('https://dev--milo--adobecom.hlx.page/gnav/solutions', 'main--bacom--adobecom.hlx.page'))
-        .to
-        .equal('https://dev--milo--adobecom.hlx.page/gnav/solutions');
+        .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
     });
   });
 

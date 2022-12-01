@@ -1,7 +1,3 @@
-const PROJECTS_TO_PRODUCTION_DOMAINS = {
-  'bacom--adobecom': 'business.adobe.com',
-  'milo--adobecom': 'milo.adobe.com',
-};
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -165,47 +161,38 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-function isInternalDomainUrl(urlHostName, originHostName) {
-  const split = originHostName.split('.').shift().split('--');
-  if (split[1] && split[2]) {
-    const projectName = `${split[1]}--${split[2]}`;
-    const liveDomain = PROJECTS_TO_PRODUCTION_DOMAINS[projectName];
-    return urlHostName === liveDomain;
-  }
-  return false;
-}
-
-function getLocaleLinkInfo(url, relative, originHostName) {
-  const { hash } = url;
-  if (hash === '#_dnt') {
-    return { prefix: '', hash: '' };
-  }
-  const urlHostName = url.hostname;
-  const { locale, locales } = getConfig();
-  if (!locale || !locales) {
-    return { prefix: '', hash };
-  }
-  if (relative || isInternalDomainUrl(urlHostName, originHostName)) {
-    const path = url.pathname;
-    // Handle only pages.
-    const valueAfterLastSlash = path.split('/').pop();
-    const extension = valueAfterLastSlash.includes('.') ? valueAfterLastSlash.split('.').pop() : '';
-    if (!extension || extension === 'html') {
-      const hasPrefix = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}`));
-      if (!hasPrefix) {
-        return { prefix: locale.prefix, hash };
-      }
-    }
-  }
-  return { prefix: '', hash };
+function getExtension(path) {
+  const pageName = path.split('/').pop();
+  return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const url = new URL(fixedHref);
+  const url = new URL(href);
   const relative = url.hostname === originHostName;
-  const localeInfo = getLocaleLinkInfo(url, relative, originHostName);
-  const urlPath = `${localeInfo.prefix}${url.pathname}${url.search}${localeInfo.hash}`;
+  const processedHref = relative ? href.replace(url.origin, '') : href;
+  const { hash } = url;
+  if (hash === '#_dnt') {
+    return processedHref.split('#')[0];
+  }
+  const path = url.pathname;
+  const extension = getExtension(path);
+  const allowedExts = ['', 'html', 'json'];
+  if (!allowedExts.includes(extension)) {
+    return processedHref;
+  }
+  const { locale, locales, liveDomains } = getConfig();
+  if (!locale || !locales) {
+    return processedHref;
+  }
+  const isLocalizable = relative || (liveDomains && liveDomains.includes(url.hostname));
+  if (!isLocalizable) {
+    return processedHref;
+  }
+  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
+  if (isLocalizedLink) {
+    return processedHref;
+  }
+  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
   return relative ? urlPath : `${url.origin}${urlPath}`;
 }
 

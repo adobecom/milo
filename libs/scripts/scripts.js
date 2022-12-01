@@ -17,6 +17,8 @@ import {
   setConfig,
 } from '../utils/utils.js';
 
+const liveDomains = ['milo.adobe.com'];
+
 const locales = {
   // Americas
   ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
@@ -108,6 +110,7 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
+  liveDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
