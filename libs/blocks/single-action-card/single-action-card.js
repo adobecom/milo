@@ -11,7 +11,7 @@
  */
 
 /*
-* Icon Block - v5.1
+* Single Action Cards - v1.0
 */
 
 import { createTag } from '../../utils/utils.js';
