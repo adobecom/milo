@@ -1,3 +1,4 @@
+/* stylelint-disable selector-class-pattern */
 .icon-block {
   display: block;
   width: 100%;
@@ -9,10 +10,6 @@
   margin: 0;
 }
 
-.icon-block.inverted {
-  color: white;
-}
-
 .icon-block .background {
   overflow: hidden;
   position: absolute;
@@ -22,7 +19,7 @@
   bottom: 0;
 }
 
-.icon-block .background>div {
+.icon-block .background > div {
   height: 100%;
 }
 
@@ -51,7 +48,7 @@
 
 .icon-block .foreground .icon-area {
   margin: 0 auto var(--spacing-s) auto;
-  height: 80px;
+  max-height: 80px;
   max-width: 234px;
   overflow: hidden;
 }
@@ -73,6 +70,11 @@
   object-fit: cover;
 }
 
+.icon-block.vertical .foreground .icon-area {
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
+}
+
 .five-up .icon-block:not(.fullwidth) .foreground .icon-area {
   height: 44px;
 }
@@ -81,7 +83,7 @@
   height: 44px;
 }
 
-.icon-block .foreground .text>* {
+.icon-block .foreground .text > * {
   width: 100%;
 }
 
@@ -90,6 +92,10 @@
 .icon-block .foreground .text .heading-M,
 .icon-block .foreground .text .heading-S {
   margin: 0 0 var(--spacing-xs);
+}
+
+.icon-block .foreground .text .action-area > a:last-child {
+  margin: 0;
 }
 
 .icon-block .foreground .text .body-M {
@@ -103,10 +109,6 @@
 .icon-block:not(.centered):not(.small) .foreground .text .action-area>a {
   margin-right: var(--spacing-s);
   white-space: nowrap;
-}
-
-.icon-block .foreground .text .action-area>a:last-child {
-  margin: 0;
 }
 
 .icon-block .foreground div {
@@ -124,29 +126,26 @@
   padding-bottom: var(--spacing-xs);
 }
 
-.icon-block.vertical .foreground .icon-area {
-  margin: 0;
-  margin-bottom: var(--spacing-xs);
-}
 
-.icon-block.centered .foreground .text .action-area>a:not(.con-button) {
+.icon-block.centered .foreground .text .action-area > a:not(.con-button) {
   display: block;
   font-size: 14px;
   line-height: 21px;
   margin-top: var(--spacing-xs);
 }
 
-.icon-block.fullwidth.small .foreground .text .action-area>a:not(.con-button) {
+.icon-block.vertical .foreground .text .action-area > a:not(.con-button) {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.icon-block.fullwidth.small .foreground .text .action-area > a:not(.con-button) {
   display: block;
   margin-top: var(--spacing-xs);
   font-size: 18px;
   line-height: 27px;
 }
 
-.icon-block.vertical .foreground .text .action-area>a:not(.con-button) {
-  font-size: 14px;
-  line-height: 21px;
-}
 
 .two-up .icon-block.fullwidth,
 .three-up .icon-block.fullwidth,
@@ -162,7 +161,6 @@
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
-
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -173,7 +171,6 @@
 }
 
 @media screen and (min-width: 1200px) {
-
   .icon-block.fullwidth .foreground,
   .icon-block.bio .foreground {
     width: 800px;
@@ -203,6 +200,10 @@
     max-width: 1000px;
   }
 
+  .five-up .icon-block .foreground .text {
+    font-size: var(--type-body-s-size);
+  }
+
   .three-up .icon-block.vertical .foreground .text:last-child {
     padding-right: 0;
   }
@@ -217,9 +218,5 @@
 
   .four-up .icon-block.vertical .foreground .icon-area {
     max-width: 276px;
-  }
-
-  .five-up .icon-block .foreground .text {
-    font-size: var(--type-body-s-size);
   }
 }
