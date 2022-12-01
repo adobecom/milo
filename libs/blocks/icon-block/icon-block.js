@@ -22,7 +22,7 @@ const iconBlockVariants = {
   bio: ['S', 'S'],
   vertical: ['S', 'M'],
   centered: ['M', 'M'],
-}
+};
 
 function decorateContent(block, variant) {
   if (!block) return;
