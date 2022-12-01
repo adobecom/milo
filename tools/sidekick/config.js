@@ -59,7 +59,7 @@ function hasSchema(host) {
               );
               document.dispatchEvent(skEvent);
             };
-            script.src = `${domain}/libs/ui/library/library.js`;
+            script.src = `${domain}/libs/templates/library/library.js`;
             document.head.appendChild(script);
           },
         },
