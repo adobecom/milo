@@ -18,7 +18,9 @@ import { decorateButtons } from '../../utils/decorate.js';
 
 const iconBlockVariants = {
   fullwidth: ['XL', 'M'],
-  small: ['L', 'M'],
+  large: ['XL', 'M'],
+  medium: ['L', 'M'],
+  small: ['M', 'M'],
   bio: ['S', 'S'],
   vertical: ['S', 'M'],
   centered: ['M', 'M'],
@@ -41,7 +43,7 @@ function decorateContent(block, variant) {
 }
 
 function sortPriority(x, y) {
-  const priorities = ['bio', 'small'];
+  const priorities = ['bio', 'medium', 'small'];
   let priority = 0;
   if (priorities.includes(x)) priority = -1;
   else if (priorities.includes(y)) priority = 1;

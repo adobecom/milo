@@ -51,7 +51,7 @@
 }
 
 .icon-block .foreground .icon-area {
-  margin: 0 auto var(--spacing-s) auto;
+  margin: 0 auto var(--spacing-m) auto;
   max-height: 80px;
   max-width: 234px;
   overflow: hidden;
@@ -145,7 +145,7 @@
 
 .icon-block.fullwidth.small .foreground .text .action-area > a:not(.con-button) {
   display: block;
-  margin-top: var(--spacing-xs);
+  margin-top: var(--spacing-s);
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
 }
