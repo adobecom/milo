@@ -23,11 +23,6 @@ function calculateExcelDate(date) {
   return new Date(Math.round((date - (1 + 25567 + 1)) * 86400 * 1000));
 }
 
-// Safari won't accept '-' as a date separator
-function replaceSeparator(date) {
-  return date.replace(/-/g, '/');
-}
-
 /**
  * For the given list of topics, returns the corresponding computed taxonomy:
  * - category: main topic
@@ -182,7 +177,7 @@ export async function loadTaxonomy() {
  */
 export function formatCardLocaleDate(date) {
   if (!date) return '';
-  const jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
+  const jsDate = !date.includes('-') ? calculateExcelDate(date) : date.replace(/-/g, '/');;
 
   const dateLocale = getConfig().locale?.ietf;
 
