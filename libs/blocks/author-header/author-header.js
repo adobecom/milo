@@ -1,18 +1,19 @@
-import { createTag } from '../../utils/utils.js'
+import { createTag } from '../../utils/utils.js';
 
 export default function init(blockElement) {
   const block = blockElement.querySelector('div');
   blockElement.innerHTML = '';
 
-  const titleText = block.querySelector('h1').textContent;
-  const titleEl = createTag('h1', { class: 'author-header-title' }, titleText);
+  const titleEl = block.querySelector('h1');
+  titleEl.classList.add('author-header-title');
 
   let pictureElement;
   let bioElement;
   const paragraphs = block.querySelectorAll('p');
   paragraphs.forEach((el) => {
-    if (el.querySelector('picture')) {
-      pictureElement = el;
+    const picture = el.querySelector('picture');
+    if (picture) {
+      pictureElement = picture;
     } else {
       bioElement = el;
     }
