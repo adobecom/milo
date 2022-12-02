@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
@@ -9,13 +6,13 @@ const { default: init } = await import('../../../libs/blocks/icon-block/icon-blo
 
 describe('icon blocks', () => {
   const blocks = document.querySelectorAll('.icon-block');
-  blocks.forEach(block => {
+  blocks.forEach((block) => {
     init(block);
     const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');
     describe(`icon block ${isColumn ? 'column' : 'full-width'}`, () => {
       const children = block.querySelectorAll('.text');
       if (children.length) {
-        children.forEach(blk => {
+        children.forEach((blk) => {
           it('has an icon', () => {
             const icon = blk.querySelector('.icon-area');
             expect(icon).to.exist;
@@ -32,6 +29,6 @@ describe('icon blocks', () => {
           });
         });
       }
-    })
+    });
   });
-})
+});

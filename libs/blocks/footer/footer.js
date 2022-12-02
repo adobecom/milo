@@ -1,11 +1,12 @@
 import {
-  analyticsDecorateList,
   createTag,
   decorateAutoBlock,
   getConfig,
   getMetadata,
   loadBlock,
 } from '../../utils/utils.js';
+
+import { analyticsDecorateList } from '../../martech/attributes.js';
 
 import { getSVGsfromFile } from '../share/share.js';
 
