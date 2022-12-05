@@ -26,54 +26,24 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, size = 'small') {
-  const blockTypeSizes = {
-    // size: [heading, detail, body]
-    normal: {
-      small: ['S', 'S', 'S'],
-      medium: ['M', 'M', 'M'],
-      large: ['L', 'L', 'L'],
-      xlarge: ['XL', 'XL', 'XL'],
-    },
-    inset: {
-      small: ['S', 'S', 'M'],
-      medium: ['M', 'M', 'L'],
-      large: ['L', 'L', 'XL'],
-      xlarge: ['XL', 'XL', 'XXL'],
-    },
-    text: {
-      small: ['M', 'S', 'S'],
-      medium: ['L', 'M', 'M'],
-      large: ['XL', 'L', 'M'],
-      xlarge: ['XXL', 'XL', 'L'],
-    },
-    media: {
-      small: ['XS', 'M', 'S'],
-      medium: ['M', 'M', 'S'],
-      large: ['XL', 'L', 'M'],
-      xlarge: ['XXL', 'L', 'M'],
-    },
-  };
+export function decorateBlockText(el, config = ['M', 'M', 'S'], hasDetail = false) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
-    const variants = Object.keys(blockTypeSizes);
-    const variant = variants.find((v) => el.classList.contains(v)) || 'media'; /* media default */
-    const sizes = blockTypeSizes[variant][size];
     const decorateForeground = () => {
       // headings
       if (headings) {
         headings.forEach((h) => {
-          h.classList.add(`heading-${sizes[0]}`);
+          h.classList.add(`heading-${config[0]}`);
         });
-        if (variant !== 'normal' || variant !== 'inset') {
+        if (hasDetail) {
           // detail
-          headings[0]?.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
+          headings[0]?.previousElementSibling?.classList.add(`detail-${config[1]}`);
           decorateIconArea(el);
         }
       }
       // bodys
       const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
-      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizes[2]}`); });
+      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[2]}`); });
     };
     decorateForeground();
   }
