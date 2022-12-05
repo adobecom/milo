@@ -84,8 +84,8 @@ main a.article-card:any-link {
 .article-card-body p.article-card-date {
   font-weight: var(--type-detail-all-weight);
   color: var(--color-gray-600);
-  font-size: var(--type-detail-s-size);
-  line-height: var(--type-detail-s-lh);
+  font-size: var(--type-detail-m-size);
+  line-height: var(--type-detail-m-lh);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.5rem;

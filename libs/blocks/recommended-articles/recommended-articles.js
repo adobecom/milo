@@ -42,7 +42,7 @@ function getDecoratedCards(articles, taxonomy) {
 
     const categoryTaxonomy = taxonomy.get(category || 'News')
     const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name)
-    const categoryEl = createTag('div', { class: 'article-card-category' }, categoryLink)
+    const categoryEl = createTag('p', { class: 'article-card-category' }, categoryLink)
 
     const titleEl = createTag('h3', null, title)
 
@@ -68,6 +68,7 @@ export default async function init(blockEl) {
   } else {
     content = children[0].querySelector('div');
     content.classList.add('recommended-articles-content')
+    content.querySelector('a')?.classList.add('button')
 
     recommendedArticleLinks = [...children[1].querySelectorAll('a')];
   }
