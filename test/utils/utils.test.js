@@ -121,8 +121,8 @@ describe('Utils', () => {
 
   it('loadDelayed() test - expect nothing', async () => {
     document.head.querySelector('meta[name="interlinks"]').remove();
-    const mods = await utils.loadDelayed(0);
-    expect(mods[0]).to.be.undefined;
+    const mod = await utils.loadDelayed(0);
+    expect(mod).to.be.null;
   });
 
   it('Converts UTF-8 to Base 64', () => {
