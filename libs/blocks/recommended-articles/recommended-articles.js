@@ -58,6 +58,7 @@ function getDecoratedCards(articles, taxonomy) {
 }
 
 export default async function init(blockEl) {
+  // console.log(blockEl)
   const children = [...blockEl.querySelectorAll(':scope > div')];
   let content;
   let recommendedArticleLinks;
