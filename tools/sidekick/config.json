@@ -14,7 +14,8 @@
       "environments": [ "edit" ],
       "url": "/tools/loc/index.html?project=milo--adobecom",
       "passReferrer": true,
-      "includePaths": [ "**.xlsx**" ]
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
     },
     {
       "title": "Send to CaaS",
