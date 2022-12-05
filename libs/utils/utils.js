@@ -550,12 +550,12 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
-      const promises = [];
       if (getMetadata('interlinks') === 'on') {
-        promises.push(import('../features/interlinks.js').then((mod) => mod.default()));
+        import('../features/interlinks.js').then((mod) => { mod.default(getConfig()); resolve(mod); });
+      } else {
+        resolve(null);
       }
-      promises.push(import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv')));
-      Promise.all(promises).then((mods) => resolve(mods));
+      import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
     }, delay);
   });
 }
