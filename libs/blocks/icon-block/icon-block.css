@@ -142,6 +142,7 @@
   margin: 0;
 }
 
+.icon-block.bio .foreground .text-content p,
 .icon-block .foreground .text-content p[class*="body-M"]:not(:last-of-type) {
   margin-bottom: var(--spacing-s);
 }
