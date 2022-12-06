@@ -1,10 +1,11 @@
-import { expect } from '@esm-bundle/chai'
-const { default: init } = await import('../../../libs/blocks/images/images.js')
+import { expect } from '@esm-bundle/chai';
+
+const { default: init } = await import('../../../libs/blocks/images/images.js');
 
 describe('init', () => {
   it('should add the correct classes to the block element when multiple pictures are present', () => {
     const blockEl = document.createElement('div');
-    const pictures = [document.createElement('picture'), document.createElement('picture'),];
+    const pictures = [document.createElement('picture'), document.createElement('picture')];
     blockEl.appendChild(pictures[0]);
     blockEl.appendChild(pictures[1]);
 
