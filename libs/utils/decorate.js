@@ -29,23 +29,17 @@ export function decorateIconArea(el) {
 export function decorateBlockText(el, config = ['M', 'S', 'M']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
-    const decorateForeground = () => {
-      // headings
-      if (headings) {
-        headings.forEach((h) => {
-          h.classList.add(`heading-${config[0]}`);
-        });
-        if (config[2]) {
-          // detail
-          headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
-          decorateIconArea(el);
-        }
+    if (headings) {
+      headings.forEach((h) => {
+        h.classList.add(`heading-${config[0]}`);
+      });
+      if (config[2]) {
+        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        decorateIconArea(el);
       }
-      // bodys
-      const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
-      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
-    };
-    decorateForeground();
+    }
+    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
