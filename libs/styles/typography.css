@@ -212,6 +212,7 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.xl-spacing-bottom { padding-bottom: var(--spacing-xl); }
 .con-block.xxl-spacing-bottom { padding-bottom: var(--spacing-xxl); }
 .con-block.xxxl-spacing-bottom { padding-bottom: var(--spacing-xxxl); }
+.con-block.intro-spacing-bottom { padding-bottom: 56px; }
 .con-block.no-spacing-bottom { padding-bottom: 0; }
 
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
@@ -221,3 +222,7 @@ div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+
+@media (min-width: 1200px) {
+  .con-block.intro-spacing-bottom { padding-bottom: 64px; }
+}

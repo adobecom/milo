@@ -14,53 +14,61 @@
 * Icon Block - v5.1
 */
 
-import { decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockText } from '../../utils/decorate.js';
 
-const iconBlockVariants = {
-  fullwidth: ['XL', 'M'],
-  large: ['XL', 'M'],
-  medium: ['L', 'M'],
-  small: ['M', 'M'],
-  bio: ['S', 'S'],
-  vertical: ['S', 'M'],
-  centered: ['M', 'M'],
+const iconBlocks = {
+  small: {
+    fullwidth: ['M', 'M'],
+    vertical: ['S', 'M'],
+    centered: ['S', 'M'],
+    bio: ['S', 'S'],
+  },
+  medium: {
+    fullwidth: ['L', 'M'],
+    vertical: ['M', 'M'],
+    centered: ['M', 'M'],
+    bio: ['S', 'S'],
+  },
+  large: {
+    fullwidth: ['XL', 'M'],
+    vertical: ['M', 'M'],
+    centered: ['M', 'M'],
+    bio: ['S', 'S'],
+  },
 };
 
-function decorateContent(block, variant) {
-  if (!block) return;
-  const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
-  if (text) {
-    text?.classList.add('text');
-    const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const heading = headings?.[headings.length - 1];
-    heading?.classList.add(`heading-${variant[0]}`);
-    heading?.nextElementSibling?.classList.add(`body-${variant[1]}`);
-    heading?.previousElementSibling?.classList.add('icon-area');
-    const image = block.querySelector(':scope img');
-    image?.parentElement?.parentElement?.classList?.add('icon-area');
-    decorateButtons(block);
-  }
-}
-
 function sortPriority(x, y) {
-  const priorities = ['bio', 'medium', 'small'];
+  const priorities = ['bio', 'large', 'medium', 'small'];
   let priority = 0;
   if (priorities.includes(x)) priority = -1;
   else if (priorities.includes(y)) priority = 1;
   return priority;
 }
 
-function getBlockVariant(el) {
-  const variants = [...el.classList]
-    .filter((i) => Object.keys(iconBlockVariants).includes(i)).sort(sortPriority);
-  return variants[0];
+function getBlockVariantSize(el) {
+  const attrs = [...el.classList];
+  const size = attrs.filter((i) => Object.keys(iconBlocks).includes(i)).sort(sortPriority)?.[0];
+  const sizeObj = iconBlocks[size];
+  const variant = attrs.filter((i) => Object.keys(sizeObj).includes(i)).sort(sortPriority)?.[0];
+  if (!size || !variant) return iconBlocks.large.fullwidth;
+  return iconBlocks[size][variant];
+}
+
+function decorateContent(el) {
+  const block = el.querySelector(':scope > div:not([class])');
+  block.classList.add('foreground');
+  if (!block) return;
+  const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  if (text) {
+    text?.classList.add('text-content');
+    const image = block.querySelector(':scope img');
+    image?.parentElement?.parentElement?.classList?.add('icon-area');
+    const variantSize = getBlockVariantSize(el);
+    decorateBlockText(el, variantSize);
+  }
 }
 
 export default function init(el) {
-  const block = el.querySelector(':scope > div:not([class])');
-  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xxl-spacing-bottom');
-  const blockVariant = getBlockVariant(el);
-  const variant = iconBlockVariants[blockVariant];
-  block.classList.add('foreground');
-  decorateContent(block, variant);
+  if (el.classList.contains('intro')) el.classList.add('con-block', 'xxxl-spacing-top', 'intro-spacing-bottom');
+  decorateContent(el);
 }

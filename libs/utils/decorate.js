@@ -26,33 +26,27 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, size = 'small') {
-  const blockTypeSizes = {
-    media: {
-      // name: [heading, detail, body]
-      small: ['XS', 'M', 'S'],
-      medium: ['M', 'M', 'S'],
-      large: ['XL', 'L', 'M'],
-      xlarge: ['XXL', 'L', 'M'],
-    },
-    text: {
-      small: ['M', 'S', 'S'],
-      medium: ['L', 'M', 'M'],
-      large: ['XL', 'L', 'M'],
-      xlarge: ['XXL', 'XL', 'L'],
-    }
-  };
-  const sizeType = el.classList.contains('text-block') ? blockTypeSizes.text[size] : blockTypeSizes.media[size];
-  const decorateHeading = (headingEl, sizes) => {
-    headingEl.classList.add(`heading-${sizes[0]}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${sizes[1]}`);
-    const emptyPs = headingEl.parentElement.querySelectorAll(':scope > p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${sizeType[2]}`); });
-  };
+export function decorateBlockText(el, config = ['M', 'S', 'M']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
-  if (heading) decorateHeading(heading, sizeType);
-  decorateIconArea(el);
+  if (!el.classList.contains('default')) {
+    const decorateForeground = () => {
+      // headings
+      if (headings) {
+        headings.forEach((h) => {
+          h.classList.add(`heading-${config[0]}`);
+        });
+        if (config[2]) {
+          // detail
+          headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+          decorateIconArea(el);
+        }
+      }
+      // bodys
+      const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
+    };
+    decorateForeground();
+  }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
