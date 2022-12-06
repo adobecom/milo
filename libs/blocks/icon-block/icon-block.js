@@ -48,7 +48,7 @@ function sortPriority(x, y) {
 function getBlockVariantSize(el) {
   const attrs = [...el.classList];
   const size = attrs.filter((i) => Object.keys(iconBlocks).includes(i)).sort(sortPriority)?.[0];
-  const sizeObj = iconBlocks[size];
+  const sizeObj = iconBlocks[size] ?? iconBlocks.large;
   const variant = attrs.filter((i) => Object.keys(sizeObj).includes(i)).sort(sortPriority)?.[0];
   if (!size || !variant) return iconBlocks.large.fullwidth;
   return iconBlocks[size][variant];
@@ -62,7 +62,7 @@ function decorateContent(el) {
   if (text) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
-    image?.parentElement?.parentElement?.classList?.add('icon-area');
+    if (image) image.closest('p').classList.add('icon-area');
     const variantSize = getBlockVariantSize(el);
     decorateBlockText(el, variantSize);
   }
