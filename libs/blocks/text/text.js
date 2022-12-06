@@ -1,6 +1,13 @@
-
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+
+const blockTypeSizes = {
+  text: {
+    small: ['M', 'S', 'S'],
+    medium: ['L', 'M', 'M'],
+    large: ['XL', 'M', 'L'],
+    xlarge: ['XXL', 'L', 'XL'],
+  },
+};
 
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
@@ -12,9 +19,9 @@ export default function init(el) {
     rows = tail;
   }
   const size = getBlockSize(el);
-  decorateBlockText(el, size);
+  decorateBlockText(el, blockTypeSizes.text[size]);
   rows.forEach((row) => { row.classList.add('foreground'); });
-  let helperClasses = [];
+  const helperClasses = [];
   if (el.classList.contains('full-width')) helperClasses.push('center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
