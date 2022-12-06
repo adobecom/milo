@@ -65,7 +65,8 @@ export function decorateBlockBg(block, node) {
   }
 }
 
-export function getBlockSize(el) {
+export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
-  return sizes.find((size) => el.classList.contains(size)) || sizes[1]; /* medium default */
+  if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
+  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }

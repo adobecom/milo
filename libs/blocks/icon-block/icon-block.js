@@ -14,45 +14,29 @@
 * Icon Block - v5.1
 */
 
-import { decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
+const variants = ['fullwidth', 'vertical', 'centered', 'bio'];
 const iconBlocks = {
   small: {
-    fullwidth: ['M', 'M'],
-    vertical: ['S', 'M'],
-    centered: ['S', 'M'],
-    bio: ['S', 'S'],
+    [variants[0]]: ['M', 'M'],
+    [variants[1]]: ['S', 'M'],
+    [variants[2]]: ['S', 'M'],
+    [variants[3]]: ['S', 'S'],
   },
   medium: {
-    fullwidth: ['L', 'M'],
-    vertical: ['M', 'M'],
-    centered: ['M', 'M'],
-    bio: ['S', 'S'],
+    [variants[0]]: ['L', 'M'],
+    [variants[1]]: ['M', 'M'],
+    [variants[2]]: ['M', 'M'],
+    [variants[3]]: ['S', 'S'],
   },
   large: {
-    fullwidth: ['XL', 'M'],
-    vertical: ['M', 'M'],
-    centered: ['M', 'M'],
-    bio: ['S', 'S'],
+    [variants[0]]: ['XL', 'M'],
+    [variants[1]]: ['M', 'M'],
+    [variants[2]]: ['M', 'M'],
+    [variants[3]]: ['S', 'S'],
   },
 };
-
-function sortPriority(x, y) {
-  const priorities = ['bio', 'large', 'medium', 'small'];
-  let priority = 0;
-  if (priorities.includes(x)) priority = -1;
-  else if (priorities.includes(y)) priority = 1;
-  return priority;
-}
-
-function getBlockVariantSize(el) {
-  const attrs = [...el.classList];
-  const size = attrs.filter((i) => Object.keys(iconBlocks).includes(i)).sort(sortPriority)?.[0];
-  const sizeObj = iconBlocks[size] ?? iconBlocks.large;
-  const variant = attrs.filter((i) => Object.keys(sizeObj).includes(i)).sort(sortPriority)?.[0];
-  if (!size || !variant) return iconBlocks.large.fullwidth;
-  return iconBlocks[size][variant];
-}
 
 function decorateContent(el) {
   const block = el.querySelector(':scope > div:not([class])');
@@ -63,8 +47,9 @@ function decorateContent(el) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     if (image) image.closest('p').classList.add('icon-area');
-    const variantSize = getBlockVariantSize(el);
-    decorateBlockText(el, variantSize);
+    const size = getBlockSize(el, 2);
+    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
+    decorateBlockText(el, iconBlocks[size][variant]);
   }
 }
 
