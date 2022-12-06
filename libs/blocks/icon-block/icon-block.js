@@ -60,7 +60,7 @@ function decorateContent(el) {
   if (!block) return;
   const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
-    text?.classList.add('text-content');
+    text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     image?.parentElement?.parentElement?.classList?.add('icon-area');
     const variantSize = getBlockVariantSize(el);

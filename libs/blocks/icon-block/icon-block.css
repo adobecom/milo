@@ -211,19 +211,12 @@
     max-width: 234px;
   }
 
-  .five-up .icon-block .foreground .text-content {
-    text-align: center;
-  }
-
+  .five-up .icon-block .foreground .text-content,
   .five-up .icon-block .foreground .text-content .icon-area {
     text-align: center;
   }
-
-  .icon-block.bio .foreground .icon-area img {
-    height: 80px;
-    width: 80px;
-  }
   
+  .icon-block.bio .foreground .icon-area img,
   .icon-block.bio.centered.small .foreground .icon-area,
   .icon-block.bio.vertical.small .foreground .icon-area {
     width: 80px;
@@ -285,12 +278,8 @@
   .four-up .icon-block.vertical .foreground .icon-area {
     max-width: 276px;
   }
-
-  .icon-block.bio .foreground .icon-area img {
-    height: 80px;
-    width: 80px;
-  }
   
+  .icon-block.bio .foreground .icon-area img,
   .icon-block.bio.centered.small .foreground .icon-area,
   .icon-block.bio.vertical.small .foreground .icon-area {
     width: 80px;
