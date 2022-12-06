@@ -108,10 +108,3 @@
     padding-left: var(--spacing-l);
   }
 }
-
-/* Desktop */
-@media screen and (min-width: 1200px) {
-  .text-block.full-width .foreground {
-    max-width: calc(var(--grid-column-width) * 8);
-  }
-}

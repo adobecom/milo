@@ -1,32 +1,30 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
+// size: [heading, body, ...detail]
 const blockTypeSizes = {
-  // size: [heading, detail, body]
-  normal: {
+  standard: {
     small: ['S', 'S', 'S'],
     medium: ['M', 'M', 'M'],
     large: ['L', 'L', 'L'],
     xlarge: ['XL', 'XL', 'XL'],
   },
   inset: {
-    small: ['S', 'S', 'M'],
-    medium: ['M', 'M', 'L'],
-    large: ['L', 'L', 'XL'],
-    xlarge: ['XL', 'XL', 'XXL'],
+    small: ['S', 'M'],
+    medium: ['M', 'L'],
+    large: ['L', 'XL'],
+    xlarge: ['XL', 'XXL'],
   },
   text: {
     small: ['M', 'S', 'S'],
     medium: ['L', 'M', 'M'],
-    large: ['XL', 'L', 'M'],
-    xlarge: ['XXL', 'XL', 'L'],
-  },
-  media: {
-    small: ['XS', 'M', 'S'],
-    medium: ['M', 'M', 'S'],
-    large: ['XL', 'L', 'M'],
-    xlarge: ['XXL', 'L', 'M'],
+    large: ['XL', 'M', 'L'],
+    xlarge: ['XXL', 'L', 'XL'],
   },
 };
+
+function checkAvailability(arr, val) {
+  return arr.some((arrVal) => val === arrVal);
+}
 
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
@@ -38,28 +36,34 @@ export default function init(el) {
     rows = tail;
   }
   const helperClasses = [];
-  if (el.classList.contains('full-width')) helperClasses.push('center', 'xxl-spacing');
+  if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('l-spacing-top', 'm-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-S');
   }
-  const longFormBlocks = ['inset', 'long-form', 'bio'];
-  longFormBlocks.forEach((b, i) => {
+  let blockType = 'text';
+  const textLongFormVariants = ['inset', 'long-form', 'bio'];
+  textLongFormVariants.forEach((b, i) => {
     if (el.classList.contains(b)) {
       helperClasses.push('max-width-8-desktop');
-      if (i > 0) helperClasses.push('normal');
+      blockType = (i > 0) ? 'standard' : b;
     }
   });
+  if (el.classList.contains('override')) {
+    const config = [];
+    const headingClass = [...el.classList].filter((i) => i.includes('heading-'));
+    if (headingClass) config.push(headingClass);
+    const bodyClass = [...el.classList].filter((i) => i.includes('body-'));
+    if (bodyClass) config.push(bodyClass);
+    const detailClass = [...el.classList].filter((i) => i.includes('detail-'));
+    if (detailClass) config.push(detailClass);
+    console.log('config', config);
+  }
   el.classList.add(...helperClasses);
-  const variants = ['normal', 'inset', 'text'];
   const size = getBlockSize(el);
-  const blockV = variants.find((v) => el.classList.contains(v)) || variants[2];
-  const typeConfig = blockTypeSizes[blockV][size];
-  const hasDetail = (blockV !== 'normal' || blockV !== 'inset');
-
-  console.log(blockV, size, 'typeConfig', typeConfig, '[heading, detail, body]', el);
-  
-  decorateBlockText(el, typeConfig, hasDetail);
+  const typeConfig = blockTypeSizes[blockType][size];
+  // console.log(blockType, size, 'typeConfig', typeConfig, '[heading, detail, body]', el);
+  decorateBlockText(el, typeConfig);
   rows.forEach((row) => { row.classList.add('foreground'); });
 }
