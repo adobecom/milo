@@ -16,25 +16,22 @@
 
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
-const variants = ['fullwidth', 'vertical', 'centered', 'bio'];
+const variants = ['fullwidth', 'vertical', 'bio'];
 const iconBlocks = {
   small: {
     [variants[0]]: ['M', 'M'],
     [variants[1]]: ['S', 'M'],
-    [variants[2]]: ['S', 'M'],
-    [variants[3]]: ['S', 'S'],
+    [variants[2]]: ['S', 'S'],
   },
   medium: {
     [variants[0]]: ['L', 'M'],
     [variants[1]]: ['M', 'M'],
-    [variants[2]]: ['M', 'M'],
-    [variants[3]]: ['S', 'S'],
+    [variants[2]]: ['S', 'S'],
   },
   large: {
     [variants[0]]: ['XL', 'M'],
     [variants[1]]: ['M', 'M'],
-    [variants[2]]: ['M', 'M'],
-    [variants[3]]: ['S', 'S'],
+    [variants[2]]: ['S', 'S'],
   },
 };
 
@@ -47,6 +44,12 @@ function decorateContent(el) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     if (image) image.closest('p').classList.add('icon-area');
+    if (el.classList.contains('vertical')) {
+      const lastChild = text.lastElementChild;
+      if (lastChild.children.length === 1 && lastChild.lastElementChild.nodeName === 'A') {
+        text.lastElementChild.classList.add('action-area');
+      }
+    }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
     decorateBlockText(el, iconBlocks[size][variant]);
