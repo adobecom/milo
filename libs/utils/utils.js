@@ -463,7 +463,6 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
-  config.contentRoot = undefined;
 }
 
 function loadPrivacy() {
