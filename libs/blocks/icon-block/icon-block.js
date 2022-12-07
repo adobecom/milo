@@ -44,11 +44,12 @@ function decorateContent(el) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     if (image) image.closest('p').classList.add('icon-area');
-    if (el.classList.contains('vertical')) {
-      const lastChild = text.lastElementChild;
-      if (lastChild.children.length === 1 && lastChild.lastElementChild.nodeName === 'A') {
-        text.lastElementChild.classList.add('action-area');
-      }
+    // be sure to place standalone links inside an action-area
+    const lastElem = text.lastElementChild;
+    if (lastElem.children.length === 1
+      && lastElem.lastElementChild.nodeName === 'A'
+      && lastElem.lastElementChild.innerText === lastElem.innerText) {
+      text.lastElementChild.classList.add('action-area');
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
@@ -57,6 +58,7 @@ function decorateContent(el) {
 }
 
 export default function init(el) {
-  if (el.classList.contains('intro')) el.classList.add('con-block', 'xxxl-spacing-top', 'intro-spacing-bottom');
+  el.classList.add('con-block');
+  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'intro-spacing-bottom');
   decorateContent(el);
 }

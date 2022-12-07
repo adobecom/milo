@@ -21,6 +21,18 @@
   background-color: unset;
 }
 
+.section.xxxl-spacing-static {
+  padding: var(--spacing-xxxl-static) 0;
+}
+
+.section.xxl-spacing-static {
+  padding: var(--spacing-xxl-static) 0;
+}
+
+.section.xl-spacing-static {
+  padding: var(--spacing-xl-static) 0;
+}
+
 .section.xxxl-spacing {
   padding: var(--spacing-xxxl) 0;
 }

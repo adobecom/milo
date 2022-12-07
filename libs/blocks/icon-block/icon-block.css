@@ -42,14 +42,20 @@
   width: 100%;
 }
 
-.icon-block .foreground .text-content .body-M.supplemental-text {
+.icon-block .foreground .text-content .action-area.supplemental-text {
   margin-top: var(--spacing-s);
   margin-bottom: 0;
   font-size: var(--type-body-m-size);
 }
 
+
 .icon-block .foreground .text-content p:not([class]) a {
   font-size: var(--type-body-m-size);
+}
+
+.icon-block.fullwidth .foreground .text-content .action-area a,
+.icon-block .foreground .text-content .action-area.supplemental-text a {
+  font-weight: bold;
 }
 
 .icon-block .foreground .icon-area {
@@ -74,6 +80,8 @@
 
 .icon-block.bio .foreground {
   text-align: left;
+  border-top: 1px solid #D5D5D5;
+  border-bottom: 1px solid #D5D5D5;
 }
 
 .icon-block.bio .foreground .icon-area {
@@ -97,32 +105,19 @@
   margin-bottom: var(--spacing-m);
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
-  max-height: 44px;
-  margin-bottom: var(--spacing-xs);
-}
-
-.five-up .icon-block.logo:not(.fullwidth) .foreground .icon-area {
-  max-height: 48px;
-  max-width: 147px;
-}
-
-.icon-block.bio .foreground {
-  border-top: 1px solid #D5D5D5;
-  border-bottom: 1px solid #D5D5D5;
-}
-
 .icon-block.bio .foreground .icon-area img {
   object-fit: cover;
   height: 60px;
   width: 60px;
 }
 
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
-  max-height: 44px;
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
+  max-height: 48px;
+  max-width: 147px;
+  margin-bottom: var(--spacing-xs);
 }
 
-.five-up .icon-block.logo:not(.fullwidth) .foreground .icon-area img {
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
   max-height: 48px;
   max-width: 147px;
 }
