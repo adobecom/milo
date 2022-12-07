@@ -332,7 +332,10 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
-    if (a.href.includes('#_blank')) a.setAttribute('target', '_blank');
+    if (a.href.includes('#_blank')) {
+      a.setAttribute('target', '_blank');
+      a.href = a.href.replace('#_blank', '');
+    }
     const autoBLock = decorateAutoBlock(a);
     if (autoBLock) {
       rdx.push(a);
@@ -455,8 +458,7 @@ async function loadPostLCP(config) {
 
 export async function loadDeferred(area, blocks, config) {
   const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
-  const { default: setupMappedLinks } = await import('../features/links.js');
-  setupMappedLinks(path, area);
+  import('../features/links.js').then((mod) => mod.default(path, area));
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
