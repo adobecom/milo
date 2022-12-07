@@ -15,7 +15,6 @@ export default function init({ loadScript, loadStyle }) {
   };
   const preflightListener = async (e) => {
     const { preflight } = await import('../../tools/preflight/preflight.js');
-    await preflight();
    };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
