@@ -109,7 +109,7 @@ describe('Utils', () => {
     metaPath.content = '/test/utils/mocks/nofollow.json';
 
     document.head.append(metaOn, metaPath);
-    await utils.loadDeferred(document, [], { contentRoot: '' });
+    await utils.loadDeferred(document);
     const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
     expect(gaLink).to.exist;
   });
