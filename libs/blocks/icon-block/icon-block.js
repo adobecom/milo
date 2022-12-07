@@ -44,7 +44,7 @@ function decorateContent(el) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     if (image) image.closest('p').classList.add('icon-area');
-    // be sure to place standalone links inside an action-area
+    // place standalone links inside an action-area
     const lastElem = text.lastElementChild;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
