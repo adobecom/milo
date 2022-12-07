@@ -49,10 +49,16 @@ function processMdast(nodes) {
   const hashToIndex = new Map();
   const arrayWithTypeAndHash = [];
   let index = 0;
+  const hashCounter = new Map();
   nodes.forEach((node) => {
     const nodeType = getNodeType(node);
     types.add(nodeType);
-    const hash = objectHash.sha1(node);
+    let hash = objectHash.sha1(node);
+    if (hashToIndex.has(hash)) {
+      const suffix = hashCounter.get(hash) || 1;
+      hash += `-count${suffix}`;
+      hashCounter.set(hash, suffix + 1);
+    }
     arrayWithTypeAndHash.push({ type: nodeType, hash });
     hashToIndex.set(hash, index);
     hashToContentMap.set(hash, node);
@@ -77,13 +83,6 @@ function getMdastFromMd(mdContent) {
 async function getMdast(path) {
   const mdContent = await getMd(path);
   return getMdastFromMd(mdContent);
-}
-
-// eslint-disable-next-line no-unused-vars
-async function getProcessedMdastFromPath(path) {
-  const mdast = await getMdast(path);
-  const nodes = mdast.children || [];
-  return processMdast(nodes);
 }
 
 async function getProcessedMdast(mdast) {
