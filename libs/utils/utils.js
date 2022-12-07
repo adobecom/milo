@@ -125,9 +125,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log('Invalid or missing locale:', e);
       }
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
@@ -332,6 +332,10 @@ function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = makeRelative(a.href);
     decorateSVG(a);
+    if (a.href.includes('#_blank')) {
+      a.setAttribute('target', '_blank');
+      a.href = a.href.replace('#_blank', '');
+    }
     const autoBLock = decorateAutoBlock(a);
     if (autoBLock) {
       rdx.push(a);
@@ -452,12 +456,9 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area, blocks) {
-  if (getMetadata('nofollow-links') === 'on') {
-    const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
-    const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, area);
-  }
+export async function loadDeferred(area, blocks, config) {
+  const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
+  import('../features/links.js').then((mod) => mod.default(path, area));
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
@@ -542,7 +543,7 @@ export async function loadArea(area = document) {
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area, areaBlocks);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 // Load everything that impacts performance later.
