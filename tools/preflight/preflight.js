@@ -1,19 +1,12 @@
-function validURL(str) {
-  var pattern = new RegExp(
-    '^(https?:\\/\\/)?' +
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
-      '((\\d{1,3}\\.){3}\\d{1,3}))' +
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-      '(\\?[;&a-z\\d%_.~+=-]*)?' +
-      '(\\#[-a-z\\d_]*)?$',
-    'i'
-  );
-  return !!pattern.test(str);
-}
-function containsSpecialChars(str) {
-  const specialChars = /[`@#$%^*()~+=]/;
-  return specialChars.test(str);
-}
+const validURL = (s) => {
+  try {
+    new URL(s);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
 async function uniq(a) {
   var seen = {};
   return a.filter(function (item) {
@@ -70,7 +63,6 @@ async function https2http(data) {
     alert('No title');
   } else {
     const titleSize = document.title.replace(/\s/g, '').length;
-
     if (titleSize < 15) {
       data.title = 'Too Short';
       alert('Title too short');
@@ -102,11 +94,8 @@ async function https2http(data) {
     alert('Too many Canononical Urls');
   }
 
-  if (validURL(window.location.href)) {
-    data.contentEncoding = 'Expected';
-  } else {
-    data.contentEncoding = 'Unexpected';
-  }
+  data.validUrl = validURL(window.location.protocol) ? 'Valid':'Invalid';
+  
   //Test for Depracated tags
   let dep;
   let dep2 = [];
@@ -163,7 +152,6 @@ async function https2http(data) {
       : ('Blocked' + ' ' + robotIndex, alert('Robots blocked'));
 
   //special character test
-  data.validUrl = containsSpecialChars(window.location.href);
   var body = document.body;
   var textContent = body.textContent || body.innerText;
   if (textContent.includes('Lorem ipsum')) {
