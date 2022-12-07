@@ -59,6 +59,6 @@ function decorateContent(el) {
 
 export default function init(el) {
   el.classList.add('con-block');
-  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'intro-spacing-bottom');
+  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xl-spacing-static-bottom');
   decorateContent(el);
 }
