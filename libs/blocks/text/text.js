@@ -26,6 +26,9 @@ function checkAvailability(arr, val) {
   return arr.some((arrVal) => val === arrVal);
 }
 
+function getSizeString(str) {
+  return str.split('-').pop().toUpperCase();
+}
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -50,20 +53,20 @@ export default function init(el) {
       blockType = (i > 0) ? 'standard' : b;
     }
   });
+ 
+  const veto = [];
   if (el.classList.contains('override')) {
-    const config = [];
     const headingClass = [...el.classList].filter((i) => i.includes('heading-'));
-    if (headingClass) config.push(headingClass);
+    if (headingClass) veto.push(getSizeString(headingClass[0]));
     const bodyClass = [...el.classList].filter((i) => i.includes('body-'));
-    if (bodyClass) config.push(bodyClass);
+    if (bodyClass) veto.push(getSizeString(bodyClass[0]));
     const detailClass = [...el.classList].filter((i) => i.includes('detail-'));
-    if (detailClass) config.push(detailClass);
-    console.log('config', config);
+    if (detailClass) veto.push(getSizeString(detailClass[0]));
   }
   el.classList.add(...helperClasses);
   const size = getBlockSize(el);
-  const typeConfig = blockTypeSizes[blockType][size];
+  const config = (veto.length) ? veto : blockTypeSizes[blockType][size];
   // console.log(blockType, size, 'typeConfig', typeConfig, '[heading, detail, body]', el);
-  decorateBlockText(el, typeConfig);
+  decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
 }
