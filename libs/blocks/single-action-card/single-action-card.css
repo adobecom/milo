@@ -51,7 +51,7 @@
   border-radius: 4px;
   gap: var(--spacing-s);
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px #EAEAEA;
+  border: 1px solid #EAEAEA;
   max-height: 132px;
   max-width: 600px;
   margin: 0 auto;
@@ -135,7 +135,7 @@
   }
 
   .three-up .single-action-card .foreground .card-block .card-image {
-    flex: 0 0 90px;
+    flex: 0 0 91px;
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image {
@@ -200,7 +200,7 @@
   }
 
   .three-up .single-action-card .foreground .card-block .card-image {
-    flex: 1 0 90px;
+    flex: 1 0 113px;
   }
 
   .two-up .single-action-card.tile .foreground .card-block .card-image {
