@@ -11,7 +11,7 @@
  */
 
 /*
-* Single Action Cards - v1.0
+* Card Horizontal - v1.0
 */
 
 import { createTag } from '../../utils/utils.js';

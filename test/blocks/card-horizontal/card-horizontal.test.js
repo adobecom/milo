@@ -5,17 +5,17 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/single-action-card/single-action-card.js');
+const { default: init } = await import('../../../libs/blocks/card-horizontal/card-horizontal.js');
 
 describe('single action card blocks', () => {
-  const blocks = document.querySelectorAll('.single-action-card');
-  blocks.forEach(block => {
+  const blocks = document.querySelectorAll('.card-horizontal');
+  blocks.forEach((block) => {
     init(block);
 
-    describe(`single action cards`, () => {
+    describe('card horizontal', () => {
       const cardblocks = block.querySelectorAll('.card-block');
       if (cardblocks.length) {
-        cardblocks.forEach(blk => {
+        cardblocks.forEach((blk) => {
           it('has a card image', () => {
             const image = blk.querySelector('.card-image');
             expect(image).to.exist;
@@ -32,6 +32,6 @@ describe('single action card blocks', () => {
           });
         });
       }
-    })
+    });
   });
-})
+});
