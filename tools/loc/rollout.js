@@ -229,7 +229,7 @@ async function safeGetVersionOfFile(filePath, version) {
   return versionFile;
 }
 
-async function rollout(file, targetFolders) {
+async function rollout(file, targetFolders, skipMerge = true) {
   const filePath = file.path;
   await connectToSP();
   const filePathWithoutExtension = stripExtension(filePath);
@@ -259,7 +259,7 @@ async function rollout(file, targetFolders) {
         loadingON(`Rollout to ${livecopyFilePath} complete`);
         return status;
       }
-      if (noRegionalChanges(fileMetadata) && !previouslyMerged) {
+      if (skipMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)) {
         await saveFileAndUpdateMetadata(
           filePath,
           file.blob,

@@ -12,7 +12,7 @@ Milo is a shared set of features and services to power Franklin-based websites o
 1. Open this repo's folder in your favorite editor and start coding.
 
 ### NPM (Recommended)
-While milo does not require a build step to function, you will need to install npm packages to:
+While milo *does not* require a build step to function, you will need to install npm packages (`npm install`) to:
 
 1. Lint
 2. Test
@@ -20,12 +20,6 @@ While milo does not require a build step to function, you will need to install n
 
 ### Tool recommendations
 You can use any text editor or IDE of your choice, but milo is highly optimized for VS Code. Milo provides recommended extensions (use the filters) and debugging tools.
-
-### Forks
-Forks will have a separate content bus and will 404. To use the main content bus run the following:
-```bash
-hlx up --pages-url=https://main--milo--adobecom.hlx.page
-```
 
 ### Libs
 If you want to see how your milo changes impact a consuming site you will need to work on a different port.
