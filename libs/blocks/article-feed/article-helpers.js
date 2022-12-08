@@ -334,25 +334,24 @@ async function getDocument(path) {
 export async function getBlogArticle(path) {
   const doc = await getDocument(`${path}`);
 
-  if (doc) {
-    let title = getMetadata('og:title', doc).trim();
-    const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
-    trimEndings.forEach((ending) => {
-      if (title.endsWith(ending)) title = title.substr(0, title.length - ending.length);
-    });
+  if (!doc) return null;
+  
+  let title = getMetadata('og:title', doc).trim();
+  const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
+  trimEndings.forEach((ending) => {
+    if (title.endsWith(ending)) title = title.substr(0, title.length - ending.length);
+  });
 
-    const articleMeta = {
-      description: getMetadata('description', doc),
-      title,
-      author: getMetadata('author', doc),
-      image: getMetadata('og:image', doc),
-      imageAlt: getMetadata('og:image:alt', doc),
-      date: getMetadata('publication-date', doc),
-      path,
-      tags: getMetadata('article:tag', doc),
-    };
-    loadArticleTaxonomy(articleMeta);
-    return articleMeta;
-  }
-  return null;
+  const articleMeta = {
+    description: getMetadata('description', doc),
+    title,
+    author: getMetadata('author', doc),
+    image: getMetadata('og:image', doc),
+    imageAlt: getMetadata('og:image:alt', doc),
+    date: getMetadata('publication-date', doc),
+    path,
+    tags: getMetadata('article:tag', doc),
+  };
+  loadArticleTaxonomy(articleMeta);
+  return articleMeta;
 }
