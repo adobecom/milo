@@ -1,14 +1,20 @@
 import { expect } from '@esm-bundle/chai';
+import { readFile } from '@web/test-runner-commands';
+
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const ogDocument = document.body.innerHTML;
 
 const { default: init } = await import('../../../libs/blocks/images/images.js');
 
 describe('init', () => {
-  it('should add the correct classes to the block element when multiple pictures are present', () => {
-    const blockEl = document.createElement('div');
-    const pictures = [document.createElement('picture'), document.createElement('picture')];
-    blockEl.appendChild(pictures[0]);
-    blockEl.appendChild(pictures[1]);
+  afterEach(() => {
+    document.body.innerHTML = ogDocument;
+  });
 
+  const sections = document.querySelectorAll('.section');
+
+  it('should add the correct classes to the block element when multiple pictures are present', () => {
+    const blockEl = sections[1].querySelector('.images');
     init(blockEl);
 
     expect(blockEl.classList.contains('images-list')).to.be.true;
@@ -16,14 +22,28 @@ describe('init', () => {
   });
 
   it('should add the correct classes to the block element when only one picture is present', () => {
-    const blockEl = document.createElement('div');
-    const picture = document.createElement('picture');
-    blockEl.appendChild(picture);
-
+    const blockEl = sections[2].querySelector('.images');
     init(blockEl);
 
     expect(blockEl.classList.contains('images-list')).to.be.false;
     expect(blockEl.classList.contains('images-list-1')).to.be.false;
+  });
+
+  it('should add the correct classes to the block element with caption', () => {
+    const blockEl = sections[0].querySelector('.images');
+    init(blockEl);
+
+    expect(blockEl.classList.contains('images-list')).to.be.false;
+    expect(blockEl.classList.contains('images-list-1')).to.be.false;
+  });
+
+  it('should create picture and video figure blocks wrapped in A tag', () => {
+    const blockEl = sections[3].querySelector('.images');
+    init(blockEl);
+
+    const figures = blockEl.querySelectorAll('.figure');
+    expect(figures[0].querySelector('a > picture')).to.be.exist;
+    expect(figures[1].querySelector('a > video')).to.be.exist;
   });
 
   it('should not add any classes to the block element when no pictures are present', () => {
@@ -33,4 +53,5 @@ describe('init', () => {
 
     expect(blockEl.classList.length).to.equal(0);
   });
+  console.log(document.body.innerHTML)
 });
