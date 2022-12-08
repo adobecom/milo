@@ -332,7 +332,7 @@ async function getDocument(path) {
 }
 
 export async function getBlogArticle(path) {
-  const doc = await getDocument(`${path}`);
+  const doc = await getDocument(path);
 
   if (doc) {
     let title = getMetadata('og:title', doc).trim();
