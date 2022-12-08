@@ -13,7 +13,7 @@ export default function init(a) {
       <iframe src="${src}" class="youtube"
         webkitallowfullscreen mozallowfullscreen allowfullscreen
         allow="encrypted-media; accelerometer; gyroscope; picture-in-picture"
-"
+        scrolling="no"
         title="${title}">
       </iframe>
     </div>`;

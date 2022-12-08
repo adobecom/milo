@@ -44,13 +44,15 @@ function buildFigure(blockEl) {
 }
 
 export default function init(blockEl) {
-  const pictures = blockEl.querySelectorAll(':scope > div > div');
+  const children = blockEl.querySelectorAll(':scope > div > div');
   blockEl.innerHTML = '';
 
-  const blockCount = pictures.length;
-  if (!pictures.length) return;
+  const blockCount = children.length;
+  if (!children.length) return;
 
-  pictures.forEach((pic) => {
+  // For each child, creates a figure element using the buildFigure function
+  // and adds it as a child of the given element
+  children.forEach((pic) => {
     const figureEL = buildFigure(pic);
     blockEl.append(figureEL);
   });
