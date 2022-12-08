@@ -17,7 +17,6 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 
-// size: [heading, body, ...detail]
 const blockTypeSizes = {
   small: ['XS', 'S', 'M'],
   medium: ['M', 'S', 'M'],

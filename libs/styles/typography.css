@@ -185,6 +185,7 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.l-spacing { padding: var(--spacing-l) 0; }
 .con-block.xl-spacing { padding: var(--spacing-xl) 0; }
 .con-block.xxl-spacing { padding: var(--spacing-xxl) 0; }
+.con-block.xxxl-spacing { padding: var(--spacing-xxxl) 0; }
 .con-block.no-spacing { padding: 0; }
 
 .con-block.xs-spacing-top { padding-top: var(--spacing-xs); }
@@ -193,6 +194,7 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.l-spacing-top { padding-top: var(--spacing-l); }
 .con-block.xl-spacing-top { padding-top: var(--spacing-xl); }
 .con-block.xxl-spacing-top { padding-top: var(--spacing-xxl); }
+.con-block.xxxl-spacing-top { padding-top: var(--spacing-xxxl); }
 .con-block.no-spacing-top { padding-top: 0; }
 
 .con-block.xs-spacing-bottom { padding-bottom: var(--spacing-xs); }
@@ -201,7 +203,12 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.l-spacing-bottom { padding-bottom: var(--spacing-l); }
 .con-block.xl-spacing-bottom { padding-bottom: var(--spacing-xl); }
 .con-block.xxl-spacing-bottom { padding-bottom: var(--spacing-xxl); }
+.con-block.xxxl-spacing-bottom { padding-bottom: var(--spacing-xxxl); }
 .con-block.no-spacing-bottom { padding-bottom: 0; }
+
+.con-block.xl-spacing-static-bottom { padding-bottom: var(--spacing-xl-static); }
+.con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
+.con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
 div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }

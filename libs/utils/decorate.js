@@ -28,24 +28,18 @@ export function decorateIconArea(el) {
 
 export function decorateBlockText(el, config = ['M', 'S', 'M']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  if (!el.classList.contains('disabled')) {
-    const decorateForeground = () => {
-      // headings
-      if (headings) {
-        headings.forEach((h) => {
-          h.classList.add(`heading-${config[0]}`);
-        });
-        if (config[2]) {
-          // detail
-          headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
-          decorateIconArea(el);
-        }
+  if (!el.classList.contains('default')) {
+    if (headings) {
+      headings.forEach((h) => {
+        h.classList.add(`heading-${config[0]}`);
+      });
+      if (config[2]) {
+        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        decorateIconArea(el);
       }
-      // bodys
-      const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
-      if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
-    };
-    decorateForeground();
+    }
+    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
@@ -71,7 +65,8 @@ export function decorateBlockBg(block, node) {
   }
 }
 
-export function getBlockSize(el) {
+export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
-  return sizes.find((size) => el.classList.contains(size)) || sizes[1]; /* medium default */
+  if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
+  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
