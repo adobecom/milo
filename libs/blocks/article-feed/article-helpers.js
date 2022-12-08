@@ -318,7 +318,7 @@ export function stamp(message) {
 }
 
 async function getDocument(path) {
-  const resp = await fetch(`${path}`);
+  const resp = await fetch(path);
   if (!resp || !resp.ok) {
     // eslint-disable-next-line no-console
     console.log(`Could not retrieve metadata for ${path}`);
