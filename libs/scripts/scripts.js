@@ -17,6 +17,7 @@ import {
   setConfig,
 } from '../utils/utils.js';
 
+// List of domains that should be localized.
 const liveDomains = ['milo.adobe.com'];
 
 const locales = {
@@ -75,10 +76,10 @@ const locales = {
   bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
   ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
   ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'en', tk: 'aaz7dvd.css' },
-  ae_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
-  mena_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
-  sa_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
   // Asia Pacific
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },

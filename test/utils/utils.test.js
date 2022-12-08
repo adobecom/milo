@@ -181,6 +181,42 @@ describe('Utils', () => {
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
   });
 
+  describe ('rtlSupport', () => {
+    before(async () => {
+      config.locales = {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        africa: { ietf: 'en', tk: 'pps7abe.css' },
+        il_he: { ietf: 'he', tk: 'nwq1mna.css' },
+        mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+        ua: { tk: 'aaz7dvd.css' },
+      };
+    });
+
+    function setConfigWithPath(path) {
+      document.documentElement.removeAttribute('dir');
+      config.pathname = path;
+      utils.setConfig(config);
+    }
+
+    it('LTR Languages have dir as ltr', () => {
+      setConfigWithPath( '/africa/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+    });
+
+    it('RTL Languages have dir as rtl', () => {
+      setConfigWithPath( '/il_he/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      setConfigWithPath( '/mena_ar/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+    });
+
+    it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
+      setConfigWithPath( '/ua/solutions');
+      expect(document.documentElement.getAttribute('dir')).null;
+    });
+
+  });
+
   describe('localizeLink', () => {
     before(async () => {
       config.locales = {
