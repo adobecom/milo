@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe before after it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -25,7 +22,7 @@ describe('Utils', () => {
   });
 
   before(async () => {
-    const module = await import('../../../libs/utils/utils.js');
+    const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
