@@ -318,7 +318,7 @@ export function stamp(message) {
 }
 
 async function getDocument(path) {
-  const resp = await fetch(`${path}`);
+  const resp = await fetch(path);
   if (!resp || !resp.ok) {
     // eslint-disable-next-line no-console
     console.log(`Could not retrieve metadata for ${path}`);
@@ -332,7 +332,7 @@ async function getDocument(path) {
 }
 
 export async function getBlogArticle(path) {
-  const doc = await getDocument(`${path}`);
+  const doc = await getDocument(path);
 
   if (!doc) return null;
   
