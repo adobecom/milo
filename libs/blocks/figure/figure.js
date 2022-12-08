@@ -56,6 +56,6 @@ export default function init(blockEl) {
   });
 
   if (blockCount > 1) {
-    blockEl.classList.add('images-list', `images-list-${blockCount}`);
+    blockEl.classList.add('figure-list', `figure-list-${blockCount}`);
   }
 }
