@@ -20,7 +20,7 @@ export default async function init(el) {
   const doc = parser.parseFromString(html, 'text/html');
   const category = getMetadata('article:tag', doc);
 
-  //load taxonomy to get link of article "category"
+  // load taxonomy to get link of article "category"
   let taxonomy = await fetchTaxonomy(getConfig(), '/topics')
   const categoryTaxonomy = taxonomy.get(category)
 
