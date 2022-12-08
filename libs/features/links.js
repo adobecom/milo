@@ -1,16 +1,18 @@
-const getNoFollowLinks = (() => {
-  let data;
-  return async (path) => {
-    if (!path) return null;
-    if (!data) {
-      const resp = await fetch(path);
-      if (!resp.ok) return null;
+let fetched = false;
+let noFollowData = null;
+
+const getNoFollowLinks = async (path) => {
+  if (!path) return null;
+  if (!fetched) {
+    const resp = await fetch(path);
+    if (resp.ok) {
       const json = await resp.json();
-      data = json.data;
+      noFollowData = json.data;
     }
-    return data;
-  };
-})();
+    fetched = true;
+  }
+  return noFollowData;
+};
 
 export default async function init(path, area = document) {
   const data = await getNoFollowLinks(path);
