@@ -19,7 +19,6 @@ const MILO_BLOCKS = [
   'faq',
   'featured-article',
   'fragment',
-  'featured-article',
   'footer',
   'gnav',
   'how-to',
