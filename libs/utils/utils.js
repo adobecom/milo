@@ -35,6 +35,7 @@ const MILO_BLOCKS = [
   'tabs',
   'table-of-contents',
   'text',
+  'tiktok',
   'twitter',
   'youtube',
   'z-pattern',
@@ -46,6 +47,7 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { tiktok: 'https://www.tiktok.com' },
   { twitter: 'https://twitter.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
@@ -127,9 +129,9 @@ export const [setConfig, getConfig] = (() => {
       config.locale = getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir',(new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
-        console.log("Invalid or missing locale:",e)
+        console.log("Invalid or missing locale:", e)
       }
       if (config.contentRoot) {
         config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
