@@ -338,6 +338,11 @@ input[type="checkbox"] + label {
   bottom: -10px;
 }
 
+/* for bottom checkbox */
+.FaaS-35 {
+  width: 100%;
+}
+
 /* for modal */
 .dialog-modal .faas {
   font-size: 13px;
