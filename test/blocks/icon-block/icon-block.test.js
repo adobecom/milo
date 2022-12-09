@@ -17,16 +17,6 @@ describe('icon blocks', () => {
             const icon = blk.querySelector('.icon-area');
             expect(icon).to.exist;
           });
-
-          it('has a heading', () => {
-            const heading = blk.querySelector(isColumn ? '.heading-S' : '.heading-XL');
-            expect(heading).to.exist;
-          });
-
-          it('has body text', () => {
-            const body = blk.querySelector('.body-M');
-            expect(body).to.exist;
-          });
         });
       }
     });
