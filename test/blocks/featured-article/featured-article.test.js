@@ -8,7 +8,7 @@ setConfig(conf);
 const config = getConfig();
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: initFeaturedArticleBlock} = await import('../../../libs/blocks/featured-article/featured-article.js')
+const { default: initFeaturedArticleBlock } = await import('../../../libs/blocks/featured-article/featured-article.js');
 
 describe('creates feature article block', () => {
   const featuredArticles = document.querySelectorAll('.featured-article');
@@ -30,6 +30,6 @@ describe('creates feature article block', () => {
     config.locale.contentRoot = '/test/blocks/featured-article/mocks';
     await initFeaturedArticleBlock(featuredArticles[2]);
     const card = featuredArticles[2].querySelector('a');
-    expect(card).to.not.exist; 
-  })
+    expect(card).to.not.exist;
+  });
 });

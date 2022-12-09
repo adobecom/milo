@@ -1,5 +1,5 @@
 import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
-import fetchTaxonomy from '../../scripts/taxonomy.js'
+import fetchTaxonomy from '../../scripts/taxonomy.js';
 
 export default async function init(el) {
   const a = el.querySelector('a');
@@ -21,8 +21,8 @@ export default async function init(el) {
   const category = getMetadata('article:tag', doc);
 
   // load taxonomy to get link of article "category"
-  let taxonomy = await fetchTaxonomy(getConfig(), '/topics')
-  const categoryTaxonomy = taxonomy.get(category)
+  const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+  const categoryTaxonomy = taxonomy.get(category);
 
   // Image
   const pic = doc.body.querySelector('picture');
