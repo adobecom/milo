@@ -22,13 +22,10 @@ const blockTypeSizes = {
   },
 };
 
-function checkAvailability(arr, val) {
-  return arr.some((arrVal) => val === arrVal);
+function getSizeString(str) {
+  return str.split('-').shift().toUpperCase();
 }
 
-function getSizeString(str) {
-  return str.split('-').pop().toUpperCase();
-}
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -40,7 +37,7 @@ export default function init(el) {
   }
   const helperClasses = [];
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
-  if (el.classList.contains('intro')) helperClasses.push('l-spacing-top', 'm-spacing-bottom');
+  if (el.classList.contains('intro')) helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-S');
@@ -56,11 +53,11 @@ export default function init(el) {
  
   const veto = [];
   if (el.classList.contains('override')) {
-    const headingClass = [...el.classList].filter((i) => i.includes('heading-'));
+    const headingClass = [...el.classList].filter((i) => i.includes('-heading'));
     if (headingClass) veto.push(getSizeString(headingClass[0]));
-    const bodyClass = [...el.classList].filter((i) => i.includes('body-'));
+    const bodyClass = [...el.classList].filter((i) => i.includes('-body'));
     if (bodyClass) veto.push(getSizeString(bodyClass[0]));
-    const detailClass = [...el.classList].filter((i) => i.includes('detail-'));
+    const detailClass = [...el.classList].filter((i) => i.includes('-detail'));
     if (detailClass) veto.push(getSizeString(detailClass[0]));
   }
   el.classList.add(...helperClasses);
