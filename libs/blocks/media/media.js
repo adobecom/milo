@@ -17,6 +17,13 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 
+const blockTypeSizes = {
+  small: ['XS', 'S', 'M'],
+  medium: ['M', 'S', 'M'],
+  large: ['XL', 'M', 'L'],
+  xlarge: ['XXL', 'M', 'L'],
+};
+
 export default function init(el) {
   decorateBlockAnalytics(el);
   const children = el.querySelectorAll(':scope > div');
@@ -33,7 +40,7 @@ export default function init(el) {
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
-      decorateBlockText(text, size);
+      decorateBlockText(text, blockTypeSizes[size]);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
