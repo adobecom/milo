@@ -88,19 +88,30 @@ const CopyBtn = () => {
   };
 
   const configFormValidation = () => {
-    let inputValuesFilled = true;
+    let inputValidation = true;
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if (!input.value && input.id !== '149') {
-        inputValuesFilled = false;
+      if(input.id === '149') {
+        return;
+      }
+      if (!input.value) {
+        inputValidation = false;
         if (requiredPanelExpandButton) {
           requiredPanelExpandButton.click();
         }
+        setErrorMessage('Required fields must be filled');
         input.focus();
+        return;
+      }
+      if (input.id === 'pjs36' && !/^[A-Za-z0-9]*$/.test(input.value)) {
+        inputValidation = false;
+        setErrorMessage('Internal Campagin ID allows only letters and numbers');
+        input.focus();
+        return;
       }
     });
-    return inputValuesFilled;
+    return inputValidation;
   };
 
   const getUrl = () => {
@@ -116,7 +127,6 @@ const CopyBtn = () => {
       return;
     }
     if (!configFormValidation()) {
-      setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
       setShowConfigUrl(false);
       return;
