@@ -339,7 +339,7 @@ input[type="checkbox"] + label {
 }
 
 /* for bottom checkbox */
-.faas.column2 .faas-form .FaaS-35 {
+.faas.column2 .faas-form .row:not(.submit).FaaS-35 {
   width: 100%;
 }
 
