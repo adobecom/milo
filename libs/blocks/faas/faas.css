@@ -159,6 +159,14 @@ input[type="checkbox"] + label {
   display: none !important;
 }
 
+.faas-form .legalnotice {
+  font-style: italic;
+}
+
+.faas-form .legalnotice a {
+  color: var(--link-color);
+}
+
 /* dark theme */
 .faas.dark {
   color: #fff;
