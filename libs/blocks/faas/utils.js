@@ -94,7 +94,7 @@ const afterYiiLoadedCallback = () => {
   }
 
   function changeSelectionElement() {
-    if (multicampaignradiostyle) {
+    if (state.multicampaignradiostyle) {
       const inputs = wr.querySelectorAll('.checkboxlist input');
       inputs.forEach((input) => {
         if (input.type === 'checkbox') {
