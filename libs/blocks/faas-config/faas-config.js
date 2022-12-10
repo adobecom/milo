@@ -106,7 +106,13 @@ const CopyBtn = () => {
       }
       if (input.id === 'pjs36' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
-        setErrorMessage('Internal Campagin ID allows only letters and numbers');
+        setErrorMessage('Campagin ID allows only letters and numbers');
+        input.focus();
+        return;
+      }
+      if(input.name == "v" && !/^[A-Za-z0-9]*$/.test(input.value)) {
+        inputValidation = false;
+        setErrorMessage('Campagin ID allows only letters and numbers');
         input.focus();
         return;
       }
@@ -266,7 +272,6 @@ const RequiredPanel = () => {
     const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
 
     getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
-      let isMultipleCampaign = false;
       data.formQuestions.forEach((d) => {
         // Form Type
         if (d.question.id === '92') {
@@ -308,7 +313,6 @@ const RequiredPanel = () => {
         }
         // Multiple Campaign Ids
         if (d.question.id === '103') {
-          isMultipleCampaign = true;
           const internalCampIDs = html`
             <${MultiField}
             onChange=${onCampaignIDChange}
@@ -322,7 +326,7 @@ const RequiredPanel = () => {
           setFieldMultiCampStyle(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
         }
       });
-      if (!isMultipleCampaign && formId !== '63') {
+      if (formId !== '63') {
         setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
       }
       // eslint-disable-next-line no-use-before-define
