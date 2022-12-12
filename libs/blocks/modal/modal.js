@@ -23,16 +23,17 @@ function getDetails(el) {
   return null;
 }
 
-function closeModals(modals, removeHash = true) {
+function closeModals(modals) {
   const qModals = modals || document.querySelectorAll('.dialog-modal');
   if (qModals?.length) {
+    const anchor = qModals.some((m) => m.classList.contains('anchor'));
     qModals.forEach((modal) => {
       if (modal.nextElementSibling?.classList.contains('modal-curtain')) {
         modal.nextElementSibling.remove();
       }
       modal.remove();
     });
-    if (removeHash) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
+    if (anchor) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
   }
 }
 
@@ -41,17 +42,10 @@ function handleCustomModal(custom, dialog) {
   dialog.classList.add(custom.class);
   if (custom.closeEvent) {
     dialog.addEventListener(custom.closeEvent, () => {
-      closeModals([dialog], false);
+      closeModals([dialog]);
     });
   }
   return custom.content;
-}
-
-async function decorate(block) {
-  if (block.id === 'langnav') {
-    const { default: dec } = await import('./decorators/regions.js');
-    dec(block);
-  }
 }
 
 async function handleAnchorModal(el, dialog) {
@@ -59,12 +53,13 @@ async function handleAnchorModal(el, dialog) {
   if (!details) return null;
 
   dialog.id = details.id;
+  dialog.classList.add('anchor');
 
   const linkBlock = document.createElement('a');
   linkBlock.href = details.path;
+
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(linkBlock, dialog);
-  decorate(dialog);
 
   return linkBlock;
 }
@@ -79,20 +74,20 @@ export async function getModal(el, custom) {
   if (!content) return;
 
   close.addEventListener('click', (e) => {
-    closeModals([dialog], !custom);
+    closeModals([dialog]);
     e.preventDefault();
   });
 
   curtain.addEventListener('click', (e) => {
     // on click outside of modal
     if (e.target === curtain) {
-      closeModals([dialog], !custom);
+      closeModals([dialog]);
     }
   });
 
   dialog.addEventListener('keydown', (event) => {
     if (event.keyCode === 27) {
-      closeModals([dialog], !custom);
+      closeModals([dialog]);
     }
   });
 
