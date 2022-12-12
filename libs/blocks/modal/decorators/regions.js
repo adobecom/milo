@@ -2,7 +2,9 @@ import { getConfig } from '../../../utils/utils.js';
 
 export default function decorate(block) {
   const config = getConfig();
-  const links = block.querySelectorAll('a');
+  const regionSelectorBlock = block.querySelector('.region-selector');
+  if (!regionSelectorBlock) return;
+  const links = regionSelectorBlock.querySelectorAll('a');
   if (!links || links.length === 0) return;
   const { contentRoot } = config.locale;
   const path = window.location.href.replace(`${contentRoot}/`, '').replace('#langnav', '');
