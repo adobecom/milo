@@ -23,7 +23,7 @@ function getDetails(el) {
   return null;
 }
 
-function closeModals(modals, removeHash=true) {
+function closeModals(modals, removeHash = true) {
   const qModals = modals || document.querySelectorAll('.dialog-modal');
   if (qModals?.length) {
     qModals.forEach((modal) => {
@@ -32,7 +32,7 @@ function closeModals(modals, removeHash=true) {
       }
       modal.remove();
     });
-    if(removeHash) {window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);}
+    if (removeHash) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
   }
 }
 
@@ -47,6 +47,13 @@ function handleCustomModal(custom, dialog) {
   return custom.content;
 }
 
+async function decorate(block) {
+  if (block.id === 'langnav') {
+    const { default: dec } = await import('./decorators/regions.js');
+    dec(block);
+  }
+}
+
 async function handleAnchorModal(el, dialog) {
   const details = getDetails(el);
   if (!details) return null;
@@ -55,9 +62,9 @@ async function handleAnchorModal(el, dialog) {
 
   const linkBlock = document.createElement('a');
   linkBlock.href = details.path;
-
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(linkBlock, dialog);
+  decorate(dialog);
 
   return linkBlock;
 }
