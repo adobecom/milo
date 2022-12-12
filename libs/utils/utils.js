@@ -17,6 +17,7 @@ const MILO_BLOCKS = [
   'columns',
   'faas',
   'faq',
+  'figure',
   'fragment',
   'footer',
   'gnav',
