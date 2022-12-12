@@ -55,6 +55,7 @@ const AUTO_BLOCKS = [
   { tiktok: 'https://www.tiktok.com' },
   { twitter: 'https://twitter.com' },
   { vimeo: 'https://vimeo.com' },
+  { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
