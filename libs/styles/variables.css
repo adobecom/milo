@@ -43,6 +43,11 @@
   --spacing-xxl: 56px;
   --spacing-xxxl: 80px;
 
+  /* Static Spacing */
+  --spacing-xl-static: 56px;
+  --spacing-xxl-static: 80px;
+  --spacing-xxxl-static: 104px;
+
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
   --type-heading-xxxl-size: 44px;
