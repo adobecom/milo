@@ -1,9 +1,7 @@
-
-
 import { createIntersectionObserver, createTag } from '../../utils/utils.js';
 
 export default function init(a) {
-  const embedTwitter = () => {
+  const embedTiktok = () => {
     if (!a.origin?.includes('tiktok')) return;
 
     const url = new URL(a.href);
@@ -24,5 +22,5 @@ export default function init(a) {
     a.remove();
   };
 
-  createIntersectionObserver({ el: a, callback: embedTwitter });
+  createIntersectionObserver({ el: a, callback: embedTiktok });
 }
