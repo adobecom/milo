@@ -1,7 +1,6 @@
 import { getConfig } from '../../../utils/utils.js';
 
-function handleEvent(e, prefix, link, config) {
-  e.preventDefault();
+function handleEvent(prefix, link, config) {
   document.cookie = `international=${prefix};path=/`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
@@ -17,9 +16,12 @@ function handleEvent(e, prefix, link, config) {
 function decorateLink(link, config, path) {
   const linkParts = link.getAttribute('href').split('/');
   const prefix = linkParts[1] || 'us';
-  console.log(prefix);
+  if (link.href.endsWith('/')) link.href = link.href.slice(0, -1);
   link.href += `${config.contentRoot || ''}${path}`;
-  link.addEventListener('click', (e) => handleEvent(e, prefix, link, config));
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleEvent(prefix, link, config);
+  });
 }
 
 export default function decorate(block) {
@@ -28,7 +30,7 @@ export default function decorate(block) {
   const links = regionSelectorBlock?.querySelectorAll('a');
   if (!links || !links.length) return;
   const { contentRoot } = config.locale;
-  const path = window.location.href.replace(`${contentRoot}/`, '').replace('#langnav', '');
+  const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
 
-  links.map((l) => decorateLink(l, config, path));
+  links.forEach((l) => decorateLink(l, config, path));
 }
