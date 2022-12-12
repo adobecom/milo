@@ -6,7 +6,7 @@ export default function init(a) {
 
     const url = new URL(a.href);
     let src = url.href;
-    if (!url.origin.includes('player.vimeo.com')) {
+    if (url.hostname !== 'player.vimeo.com') {
       const video = url.pathname.split('/')[1];
       src = `https://player.vimeo.com/video/${video}?app_id=122963`;
     }
