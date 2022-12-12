@@ -25,7 +25,7 @@ function calculateExcelDate(date) {
 
 // Safari won't accept '-' as a date separator
 function replaceSeparator(date) {
-  date.replace(/-/g, '/');
+  return date.replace(/-/g, '/');
 }
 
 /**
@@ -141,7 +141,7 @@ export async function loadTaxonomy() {
 
       // adjust meta article:tag
 
-      const currentTags = getMetadata('article:tag', true) || [];
+      const currentTags = getMetadata('article:tag') || [];
       const articleTax = computeTaxonomyFromTopics(currentTags);
 
       const allTopics = articleTax.allTopics || [];
@@ -181,7 +181,9 @@ export async function loadTaxonomy() {
  * @returns {string} The formatted card date
  */
 export function formatCardLocaleDate(date) {
+  if (!date) return '';
   const jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
+
   const dateLocale = getConfig().locale?.ietf;
 
   let dateString = new Date(jsDate).toLocaleDateString(dateLocale, {
@@ -267,10 +269,10 @@ export function getArticleTaxonomy(article) {
  * @param {string} topic The topic name
  * @returns {string} A link tag as a string
  */
-function getLinkForTopic(topic, path) {
+export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule().get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
