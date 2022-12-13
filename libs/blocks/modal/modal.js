@@ -50,7 +50,7 @@ function handleCustomModal(custom, dialog) {
 
 async function decorate(block) {
   if (block.id === 'langnav') {
-    const { default: dec } = await import('./decorators/regions.js');
+    const { default: dec } = await import('./decorators/langnav.js');
     dec(block);
   }
 }
@@ -67,7 +67,7 @@ async function handleAnchorModal(el, dialog) {
 
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(linkBlock, dialog);
-  decorate(dialog);
+  await decorate(dialog);
 
   return linkBlock;
 }
