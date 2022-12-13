@@ -39,7 +39,7 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  return str.trim().replaceAll(' ', '-').toLowerCase();
+  return str.trim().toLowerCase().replace(/[^\w ]/g, '').replace(/ +/g, '-');
 }
 
 function configTabs(config) {
@@ -106,7 +106,7 @@ const init = (block) => {
         role: 'tab',
         class: btnClass,
         id: `tab-${initCount}-${tabName}`,
-        tabindex: (i > 0) ? '0' : '-1',
+        tabindex: '0',
         'aria-selected': (i === 0) ? 'true' : 'false',
         'aria-controls': `tab-panel-${initCount}-${tabName}`,
       };
