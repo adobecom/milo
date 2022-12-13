@@ -1,7 +1,7 @@
 let fetched = false;
 let noFollowData = null;
 
-const getNoFollowLinks = async (path) => {
+const getLinks = async (path) => {
   if (!path) return null;
   if (!fetched) {
     const resp = await fetch(path);
@@ -15,7 +15,7 @@ const getNoFollowLinks = async (path) => {
 };
 
 export default async function init(path, area = document) {
-  const data = await getNoFollowLinks(path);
+  const data = await getLinks(path);
   if (!data) return;
   const links = area.querySelectorAll('a:not([href^="/"])');
   [...links].forEach((link) => {
