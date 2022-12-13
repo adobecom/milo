@@ -14,9 +14,9 @@
   margin: 0 auto;
 }
 .how-to h1 {
-  margin-bottom: 32px;
-  font-size: 28px;
-  line-height: 35px;
+  margin-bottom: 64px;
+  font-size: 56px;
+  line-height: 70px;
 }
 .how-to ol {
   list-style-type: none;
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   padding: 24px 0;
-  font-size: 18px;
+  font-size: 36px;
   line-height: 27px;
   border-bottom: 1px solid #DDDDDD;
 }
