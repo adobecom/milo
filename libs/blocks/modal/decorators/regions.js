@@ -16,8 +16,9 @@ function handleEvent(prefix, link, config) {
 function decorateLink(link, config, path) {
   const linkParts = link.getAttribute('href').split('/');
   const prefix = linkParts[1] || 'us';
-  if (link.href.endsWith('/')) link.href = link.href.slice(0, -1);
-  link.href += `${config.contentRoot || ''}${path}`;
+  let { href } = link;
+  if (href.endsWith('/')) href = href.slice(0, -1);
+  link.href = `${href}${config.contentRoot || ''}${path}`;
   link.addEventListener('click', (e) => {
     e.preventDefault();
     handleEvent(prefix, link, config);
