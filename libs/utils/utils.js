@@ -9,6 +9,7 @@ const MILO_BLOCKS = [
   'adobetv',
   'article-feed',
   'aside',
+  'author-header',
   'caas',
   'caas-config',
   'card-metadata',
@@ -17,6 +18,8 @@ const MILO_BLOCKS = [
   'columns',
   'faas',
   'faq',
+  'featured-article',
+  'figure',
   'fragment',
   'footer',
   'gnav',
@@ -140,9 +143,9 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
-export function getMetadata(name) {
+export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
