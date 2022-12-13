@@ -76,6 +76,21 @@ describe('LANA', () => {
     Promise.reject('Promise Rejection');
   });
 
+  it('Catches errors without a message', (done) => {
+    const testCallback = () => {
+      window.removeEventListener('unhandledrejection', testCallback);
+      expect(xhrRequests.length).to.equal(1);
+      expect(xhrRequests[0].method).to.equal('GET');
+      expect(xhrRequests[0].url).to.equal(
+        'https://lana.adobeio.com/?m=&c=testClientId&s=100&t=i',
+      );
+      done();
+    };
+    window.addEventListener('unhandledrejection', testCallback);
+    /* eslint-disable-next-line prefer-promise-reject-errors */
+    Promise.reject();
+  });
+
   it('Will truncate the message', () => {
     const longMsg = 'm'.repeat(2100);
     const expectedMsg = `${'m'.repeat(2000)}%3Ctrunc%3E`;

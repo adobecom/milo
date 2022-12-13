@@ -88,19 +88,36 @@ const CopyBtn = () => {
   };
 
   const configFormValidation = () => {
-    let inputValuesFilled = true;
+    let inputValidation = true;
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if (!input.value && input.id !== '149') {
-        inputValuesFilled = false;
+      if(input.id === '149') {
+        return;
+      }
+      if (!input.value) {
+        inputValidation = false;
         if (requiredPanelExpandButton) {
           requiredPanelExpandButton.click();
         }
+        setErrorMessage('Required fields must be filled');
         input.focus();
+        return;
+      }
+      if (input.id === 'pjs36' && !/^[A-Za-z0-9]*$/.test(input.value)) {
+        inputValidation = false;
+        setErrorMessage('Campagin ID allows only letters and numbers');
+        input.focus();
+        return;
+      }
+      if(input.name == "v" && !/^[A-Za-z0-9]*$/.test(input.value)) {
+        inputValidation = false;
+        setErrorMessage('Campagin ID allows only letters and numbers');
+        input.focus();
+        return;
       }
     });
-    return inputValuesFilled;
+    return inputValidation;
   };
 
   const getUrl = () => {
@@ -116,7 +133,6 @@ const CopyBtn = () => {
       return;
     }
     if (!configFormValidation()) {
-      setErrorMessage('Required fields must be filled');
       setStatus(setIsError);
       setShowConfigUrl(false);
       return;
@@ -256,7 +272,6 @@ const RequiredPanel = () => {
     const formId = formTypeSelectValue || (initialState ? initialState.id : '40');
 
     getObjFromAPI(`/faas/api/form/${formId}`).then((data) => {
-      let isMultipleCampaign = false;
       data.formQuestions.forEach((d) => {
         // Form Type
         if (d.question.id === '92') {
@@ -298,7 +313,6 @@ const RequiredPanel = () => {
         }
         // Multiple Campaign Ids
         if (d.question.id === '103') {
-          isMultipleCampaign = true;
           const internalCampIDs = html`
             <${MultiField}
             onChange=${onCampaignIDChange}
@@ -312,7 +326,7 @@ const RequiredPanel = () => {
           setFieldMultiCampStyle(html`<${Input} label="Multi Campaign Radio Styling" prop="multicampaignradiostyle" type="checkbox" />`);
         }
       });
-      if (!isMultipleCampaign && formId !== '63') {
+      if (formId !== '63') {
         setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
       }
       // eslint-disable-next-line no-use-before-define

@@ -177,7 +177,7 @@ export async function loadTaxonomy() {
  */
 export function formatCardLocaleDate(date) {
   if (!date) return '';
-  const jsDate = !date.includes('-') ? calculateExcelDate(date) : date.replace(/-/g, '/');;
+  const jsDate = !date.includes('-') ? calculateExcelDate(date) : date.replace(/-/g, '/');
 
   const dateLocale = getConfig().locale?.ietf;
 
@@ -335,7 +335,7 @@ export async function getBlogArticle(path) {
   const doc = await getDocument(path);
 
   if (!doc) return null;
-  
+
   let title = getMetadata('og:title', doc).trim();
   const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
   trimEndings.forEach((ending) => {

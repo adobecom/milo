@@ -41,7 +41,7 @@
   }
 
   function log(msg, options) {
-    msg = msg && msg.stack ? msg.stack : msg;
+    msg = msg && msg.stack ? msg.stack : (msg || '');
     if (msg.length > MSG_LIMIT) {
       msg = msg.slice(0, MSG_LIMIT) + '<trunc>';
     }
