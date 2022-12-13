@@ -65,23 +65,20 @@
 }
 
 /* Inset */
-.inset.text-block {
+.inset.text-block .foreground {
   position: relative;
+  padding-top: var(--spacing-m);
+  padding-bottom: var(--spacing-m);
 }
 
-.inset.text-block:before {
+.inset.text-block .foreground::before {
   content: '';
   position: absolute;
   width: 2px;
   height: 100%;
-  left: 4px;
+  left: -8.3%;
   top: 0;
   background: var(--color-gray-400);
-}
-
-.inset.text-block .foreground {
-  padding-top: var(--spacing-m);
-  padding-bottom: var(--spacing-m);
 }
 
 .inset.text-block [class^="heading"]:nth-child(n+2) {
@@ -96,12 +93,12 @@
 
 /* Tablet */
 @media screen and (min-width: 600px) {
-  .inset.text-block:before {
+  .inset.text-block .foreground::before {
     display: none;
   }
 
   .inset.text-block .foreground {
-    border-left: 2px solid #ccc;
+    border-left: 2px solid var(--color-gray-400);
   }
 
   .inset.text-block .foreground > div {
