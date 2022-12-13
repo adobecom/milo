@@ -24,7 +24,7 @@ function getDetails(el) {
 }
 
 function closeModals(modals) {
-  const qModals = modals || document.querySelectorAll('.dialog-modal');
+  const qModals = modals || Array.from(document.querySelectorAll('.dialog-modal'));
   if (qModals?.length) {
     const anchor = qModals.some((m) => m.classList.contains('anchor'));
     qModals.forEach((modal) => {
