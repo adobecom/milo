@@ -1,6 +1,10 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-useless-concat */
+/* eslint-disable no-alert */
+/* eslint-disable no-return-assign */
 const validURL = (s) => {
   try {
-    new URL(s);
+    URL(s);
     return true;
   } catch (err) {
     return false;
@@ -8,30 +12,27 @@ const validURL = (s) => {
 };
 
 async function uniq(a) {
-  var seen = {};
-  return a.filter(function (item) {
-    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
-  });
+  const seen = {};
+  // eslint-disable-next-line no-prototype-builtins
+  return a.filter((item) => (seen.hasOwnProperty(item) ? false : (seen[item] = true)));
 }
 
 async function https2http(data) {
-  var arr2 = [],
-    l = document.links;
-  for (var i = 0; i < l.length; i++) {
+  const arr2 = [];
+  const l = document.links;
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < l.length; i++) {
     arr2.push(l[i].href);
   }
-  const checker = (value) =>
-    ['http:'].some((element) => value.includes(element));
-  data.https2Http =
-    arr2.filter(checker).length > 0
-      ? 'Http Link Count' + ' ' + arr2.filter(checker).length
-      : 'Good';
+  const checker = (value) => ['http:'].some((element) => value.includes(element));
+  data.https2Http = arr2.filter(checker).length > 0
+    // eslint-disable-next-line no-useless-concat
+    ? 'Http Link Count' + ` ${arr2.filter(checker).length}`
+    : 'Good';
 }
 
 (async function preflight() {
-  const data = {
-    url: window.location.href,
-  };
+  const data = { url: window.location.href };
   const h1s = document.querySelectorAll('h1');
   if (h1s.length === 1) {
     data.H1 = 'True';
@@ -43,20 +44,20 @@ async function https2http(data) {
     alert('Missing H1');
   }
 
-  data.https = window.location.protocol != 'Https:' ? 'Http' : 'Https';
+  data.https = window.location.protocol !== 'Https:' ? 'Http' : 'Https';
   data.dateTime = new Date().toLocaleString();
 
+  // eslint-disable-next-line no-unused-vars
   const test = await https2http(data);
-  //Testing for DOCTYPE
-  var node = document.doctype;
-  var html =
-    node.name +
-    (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '') +
-    (!node.publicId && node.systemId ? ' SYSTEM' : '') +
-    (node.systemId ? ' "' + node.systemId + '"' : '');
+  // Testing for DOCTYPE
+  const node = document.doctype;
+  const html = node.name
+    + (node.publicId ? ` PUBLIC "${node.publicId}"` : '')
+    + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+    + (node.systemId ? ` "${node.systemId}"` : '');
   data.docType = html;
 
-  //Testing for title
+  // Testing for title
   const titles = document.querySelectorAll('title');
   if (titles.length < 1) {
     data.title = 'No title';
@@ -74,11 +75,11 @@ async function https2http(data) {
     }
   }
 
-  //Testing for Canonical Url
+  // Testing for Canonical Url
   const canon = document.querySelectorAll("link[rel='canonical']");
-  if (canon.length == 1) {
+  if (canon.length === 1) {
     const r2 = await fetch(
-      document.querySelector("link[rel='canonical']").href
+      document.querySelector("link[rel='canonical']").href,
     );
     if (r2.status >= 400) {
       data.canon = 'Canon link broken';
@@ -94,28 +95,27 @@ async function https2http(data) {
     alert('Too many Canononical Urls');
   }
 
-  data.validUrl = validURL(window.location.protocol) ? 'Valid':'Invalid';
-  
-  //Test for Depracated tags
+  data.validUrl = validURL(window.location.protocol) ? 'Valid' : 'Invalid';
+  // Test for Depracated tags
   let dep;
-  let dep2 = [];
+  const dep2 = [];
   let foundTag = [];
+  // eslint-disable-next-line prefer-const
   dep = document.querySelectorAll(
-    'basefront,font,center,strike,big,dir,isindex,applet,acronym,noframe,xmp,noembed,plaintext,frameset,frame,u,tt,s'
+    'basefront,font,center,strike,big,dir,isindex,applet,acronym,noframe,xmp,noembed,plaintext,frameset,frame,u,tt,s',
   );
   dep.forEach((element) => dep2.push(element.tagName));
   foundTag = await uniq(dep2);
   if (dep.length > 0) {
-    data.depracatedTags =
-      'Found Tag' + ' ' + foundTag + ' ' + 'Amount of Uses' + ' ' + dep.length;
-    alert('Found depracated tag' + ' ' + foundTag);
+    data.depracatedTags = 'Found Tag' + ` ${foundTag} ` + 'Amount of Uses' + ` ${dep.length}`;
+    alert('Found depracated tag' + ` ${foundTag}`);
   } else {
     data.depracatedTags = 'None';
   }
 
-  //Meta description test
-  let metaD = document.querySelectorAll('meta[name="description"]');
-  let metadSize = metaD[0].content.replace(/\s/g, '').length;
+  // Meta description test
+  const metaD = document.querySelectorAll('meta[name="description"]');
+  const metadSize = metaD[0].content.replace(/\s/g, '').length;
   if (metaD.length < 1) {
     data.metaDescription = 'Missing';
     alert('Missing Meta Description');
@@ -127,33 +127,31 @@ async function https2http(data) {
       data.metaDescription = 'Good';
     }
   } else if (metaD.length > 1) {
-    data.metaDescription = 'More than one metadescription :' + metaD.length;
+    data.metaDescription = `More than one metadescription :${metaD.length}`;
     alert('More than one Meta description');
   }
 
-  let hrefLang = document.querySelectorAll('a[hreflang]');
+  const hrefLang = document.querySelectorAll('a[hreflang]');
   data.hreflang = hrefLang.length > 0 ? 'Has Hreflang' : 'No HrefLang';
 
-  let refresh = document.querySelectorAll('meta[http-equiv="refresh"]');
-  data.refresh =
-    refresh.length > 0 ? 'Contains Meta refresh' : 'No Meta refresh';
+  const refresh = document.querySelectorAll('meta[http-equiv="refresh"]');
+  data.refresh = refresh.length > 0 ? 'Contains Meta refresh' : 'No Meta refresh';
 
-  let charset = document.querySelectorAll('meta[charset]');
+  const charset = document.querySelectorAll('meta[charset]');
   data.charset = charset.length > 0 ? 'Contains Charset' : 'No Charset';
 
-  //test for robots
-  let robotIndex = document
+  // test for robots
+  const robotIndex = document
     .querySelector('meta[name="robots"]')
     .getAttribute('content');
 
-  data.robotsIndex =
-    robotIndex === 'index, follow'
-      ? 'Indexed' + ' ' + robotIndex
-      : ('Blocked' + ' ' + robotIndex, alert('Robots blocked'));
+  data.robotsIndex = robotIndex === 'index, follow'
+    ? 'Indexed' + ` ${robotIndex}`
+    : ('Blocked' + ` ${robotIndex}`, alert('Robots blocked'));
 
-  //special character test
-  var body = document.body;
-  var textContent = body.textContent || body.innerText;
+  // special character test
+  const { body } = document;
+  const textContent = body.textContent || body.innerText;
   if (textContent.includes('Lorem ipsum')) {
     data.loremIpsum = 'Contains Lorem ipsum';
     alert('Contains Lorem Ipsum');
@@ -161,18 +159,17 @@ async function https2http(data) {
     data.loremIpsum = 'No Lorem ipsum';
   }
 
-  if(document.querySelectorAll('div[class="content"]').length > 0){
-  var text = document
-    .getElementsByClassName('content')[0]
-    .innerText.replace(/\s/g, '').length;
-  data.bodyLength =
-    text < 100
-      ? 'Too little content in body' + ' ' + text
+  if (document.querySelectorAll('div[class="content"]').length > 0) {
+    const text = document
+      .getElementsByClassName('content')[0]
+      .innerText.replace(/\s/g, '').length;
+    data.bodyLength = text < 100
+      ? 'Too little content in body' + ` ${text}`
       : 'Body content is Sufficent';
   } else {
-    data.bodyLength = "No body"
+    data.bodyLength = 'No body';
   }
-  //status code test
+  // status code test
   const r = await fetch(window.location.href);
   data.statusCode = r.status;
   const resp = await fetch(
@@ -180,12 +177,10 @@ async function https2http(data) {
     {
       method: 'POST', // *GET, POST, PUT, DELETE, etc.
       credentials: 'same-origin', // include, *same-origin, omit
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       redirect: 'follow', // manual, *follow, error
       referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify({ data }), // body data type must match "Content-Type" header/
-    }
+    },
   );
-})();
+}());
