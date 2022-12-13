@@ -1,5 +1,5 @@
 let fetched = false;
-let noFollowData = null;
+let linkData = null;
 
 const getLinks = async (path) => {
   if (!path) return null;
@@ -7,11 +7,11 @@ const getLinks = async (path) => {
     const resp = await fetch(path);
     if (resp.ok) {
       const json = await resp.json();
-      noFollowData = json.data;
+      linkData = json.data;
     }
     fetched = true;
   }
-  return noFollowData;
+  return linkData;
 };
 
 export default async function init(path, area = document) {
