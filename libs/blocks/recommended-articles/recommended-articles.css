@@ -165,7 +165,7 @@
 @media (min-width: 1200px) {
   .recommended-articles-small-content-wrapper .article-card {
     max-width: 378px;
-    margin-right: 32px;
+    margin-right: var(--spacing-m);
   }
 
   .recommended-articles-small-content-wrapper .article-card:last-child {
