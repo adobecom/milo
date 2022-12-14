@@ -1,5 +1,6 @@
-import { createTag, getMetadata, getConfig, decoratePlaceholders } from '../../utils/utils.js';
+import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import fetchTaxonomy from '../../scripts/taxonomy.js';
+import { replaceKey } from '../../features/placeholders.js'
 
 async function getArticleDetails(article) {
   const path = new URL(article.href).pathname;
@@ -74,9 +75,8 @@ export default async function init(blockEl) {
   } else {
     blockEl.classList.add('recommended-articles-content-wrapper');
     if (!content) {
-      const title = createTag('h3', null, '{{recommended-for-you}}');
-      await decoratePlaceholders(title, getConfig());
-      content = title;
+      const text = await replaceKey('recommended-for-you', getConfig());
+      content = createTag('h3', null, text);
     }
   }
   blockEl.innerHTML = '';
