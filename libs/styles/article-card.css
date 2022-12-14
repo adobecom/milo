@@ -19,6 +19,7 @@
     margin-right: var(--spacing-m);
     margin-bottom: var(--spacing-m);
   }
+  
   .article-card:nth-of-type(2n),
   .article-card:last-of-type {
     margin-right: 0;
@@ -29,9 +30,11 @@
   .article-card {
     width: calc(100% / 3 - 22px);
   }
+  
   .article-card:nth-of-type(2n) {
     margin-right: 32px;
   }
+  
   .article-card:nth-of-type(3n),
   .article-card:last-of-type {
     margin-right: 0;
