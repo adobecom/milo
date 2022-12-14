@@ -32,7 +32,7 @@
 .recommended-articles-content-wrapper > h3 {
   max-width: 100%;
   text-align: center;
-  padding-top: 16px;
+  padding-top: var(--spacing-xs);
 }
 
 .recommended-articles-content-wrapper .article-card-date {
