@@ -467,7 +467,7 @@
 
   .aside.split .split-image img {
     width: 60.5vw;
-    max-width: 437px;
+    max-width: 56%;
     position: absolute;
     right: 0;
     object-fit: cover;

@@ -33,11 +33,11 @@ function decorateLayout(el) {
 function decorateLinks(el) {
   const links = el.querySelectorAll('a');
   if (links.length === 0) return;
-  const actionLinks = [...links].filter(link => link.closest('div')?.classList.contains('text'));
+  const actionLinks = [...links].filter((link) => link.closest('div')?.classList.contains('text'));
   if (actionLinks.length) {
     const actions = document.createElement('div');
     actions.classList.add('action-area');
-    actionLinks.forEach(link => {
+    actionLinks.forEach((link) => {
       let parent = link.parentElement;
       if (parent.nodeName === 'P') link.classList.add('body-S');
       else {
