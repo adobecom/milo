@@ -70,13 +70,13 @@ export function processDataset(data) {
   return { dataset, headers, units };
 }
 
-export function processMarkData(series, xAxisType) {
+export function processMarkData(series, xUnit) {
   const seriesOptions = series.reduce((options, mark) => {
     options[mark.Type] ??= { data: [] };
 
     const markData = options[mark.Type].data;
     const split = mark.Value?.split('-');
-    const value = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
+    const value = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
     const markObject = {
       ...(mark.Name ? { name: mark.Name } : {}),
       ...(mark.Axis ? { [mark.Axis]: value } : {}),
@@ -87,7 +87,7 @@ export function processMarkData(series, xAxisType) {
       markData[0].push(markObject);
 
       if (split.length > 1) {
-        const endRangeValue = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
+        const endRangeValue = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
 
         markData[0].push((mark.Axis ? { [mark.Axis]: endRangeValue } : {}));
       }
@@ -192,7 +192,7 @@ export const tooltipFormatter = (params, units) => {
   return tooltip;
 };
 
-export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, units) => {
+export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, yUnits) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -200,7 +200,7 @@ export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, s
     type: 'bar',
     label: {
       show: isBar,
-      formatter: `{@[${index + 1}]}${units[0]}`,
+      formatter: `{@[${index + 1}]}${yUnits[0]}`,
       position: 'right',
       textBorderColor: '#000',
       distance: 8,
@@ -216,19 +216,19 @@ export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, s
     itemStyle: { borderRadius: 3 },
     barCategoryGap: isBar ? 0 : '33.3%',
     barGap: '33.3%',
-    yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
+    yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
   }));
 };
 
-export const lineSeriesOptions = (series, firstDataset, units, xAxisType) => {
-  const marks = processMarkData(series, xAxisType);
+export const lineSeriesOptions = (series, firstDataset, xUnit, yUnits) => {
+  const marks = processMarkData(series, xUnit);
 
   return firstDataset.map((value, index) => {
     let options = {
       type: 'line',
       symbol: 'none',
       lineStyle: { width: 3 },
-      yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
+      yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
     };
 
     if (index === 0 && marks) {
@@ -344,16 +344,18 @@ export const pieSeriesOptions = (size) => {
  */
 export const getChartOptions = (chartType, dataset, series, headers, colors, size, units = []) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
-  const xAxisType = units[0] === 'date' ? units[0] : '';
   const source = dataset?.source;
   const firstDataset = source?.[1]?.slice() || [];
   const isBar = chartType === 'bar';
   const isColumn = chartType === 'column';
   const isPie = chartType === 'pie';
   const isDonut = chartType === 'donut';
+  let xUnit = '';
+  let yUnits = units;
 
-  if (xAxisType) {
-    units.shift();
+  if (units[0] === 'date') {
+    xUnit = units[0];
+    yUnits = units.slice(1).length > 0 ? units.slice(1) : [''];
   }
 
   firstDataset.shift();
@@ -366,13 +368,13 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
       inactiveColor: '#6C6C6C',
       type: 'scroll',
     },
-    title: isDonut ? donutTitleOptions(source, series, units[0], size) : {},
+    title: isDonut ? donutTitleOptions(source, series, yUnits[0], size) : {},
     tooltip: {
       show: true,
       formatter: ((params) => {
-        if (isBar) return barTooltipFormatter(params, units[0]);
-        if (isPie) return pieTooltipFormatter(params, units[0]);
-        if (isDonut) return donutTooltipFormatter(params, units[0]);
+        if (isBar) return barTooltipFormatter(params, yUnits[0]);
+        if (isPie) return pieTooltipFormatter(params, yUnits[0]);
+        if (isDonut) return donutTooltipFormatter(params, yUnits[0]);
         return tooltipFormatter(params, units);
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
@@ -391,7 +393,7 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
       boundaryGap: isColumn,
     },
     yAxis: (() => (
-      units.map((unit) => (
+      yUnits.map((unit) => (
         {
           type: isBar ? 'category' : 'value',
           axisLabel: {
@@ -406,9 +408,9 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
     ))(),
     series: (() => {
       if (isBar || isColumn) {
-        return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
+        return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, yUnits);
       }
-      if (chartType === 'line') return lineSeriesOptions(series, firstDataset, units, xAxisType);
+      if (chartType === 'line') return lineSeriesOptions(series, firstDataset, xUnit, yUnits);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       if (isDonut) return donutSeriesOptions(size);
       if (isPie) return pieSeriesOptions(size);
