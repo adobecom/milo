@@ -122,7 +122,7 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const resp = await fetch(link.href);
+  const resp = await fetch(link.href.toLowerCase());
 
   if (!resp.ok) return {};
 

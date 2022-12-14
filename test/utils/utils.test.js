@@ -225,7 +225,7 @@ describe('Utils', () => {
         be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
         langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
       };
-      config.liveDomains = ['milo.adobe.com'];
+      config.productionDomain = 'milo.adobe.com';
       config.pathname = '/be_fr/page';
       config.origin = 'https://main--milo--adobecom';
       utils.setConfig(config);

@@ -17,8 +17,8 @@ import {
   setConfig,
 } from '../utils/utils.js';
 
-// List of domains that should be localized.
-const liveDomains = ['milo.adobe.com'];
+// Production Domain
+const productionDomain = 'milo.adobe.com';
 
 const locales = {
   // Americas
@@ -111,7 +111,7 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
-  liveDomains,
+  productionDomain,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',

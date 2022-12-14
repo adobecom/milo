@@ -7,6 +7,7 @@ const MILO_BLOCKS = [
   'adobetv',
   'article-feed',
   'aside',
+  'author-header',
   'caas',
   'caas-config',
   'card-metadata',
@@ -15,6 +16,8 @@ const MILO_BLOCKS = [
   'columns',
   'faas',
   'faq',
+  'featured-article',
+  'figure',
   'fragment',
   'featured-article',
   'footer',
@@ -95,7 +98,6 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-// find out current locale based on pathname and existing locales object from config.
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
@@ -138,9 +140,9 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
-export function getMetadata(name) {
+export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
@@ -180,11 +182,11 @@ export function localizeLink(href, originHostName = window.location.hostname) {
   if (!allowedExts.includes(extension)) {
     return processedHref;
   }
-  const { locale, locales, liveDomains } = getConfig();
+  const { locale, locales, productionDomain } = getConfig();
   if (!locale || !locales) {
     return processedHref;
   }
-  const isLocalizable = relative || (liveDomains && liveDomains.includes(url.hostname));
+  const isLocalizable = relative || productionDomain === url.hostname;
   if (!isLocalizable) {
     return processedHref;
   }
@@ -368,7 +370,7 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
-      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
         a.target = '_blank';
         return false;
       }
@@ -598,6 +600,11 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
+    const georouting = getMetadata('georouting') || config.geoRouting;
+    if (georouting === 'on') {
+      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
+      loadGeoRouting(config, createTag, getMetadata);
+    }
     const type = getMetadata('richresults');
     if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
       const { addRichResults } = await import('../features/richresults.js');
