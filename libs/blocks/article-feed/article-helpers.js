@@ -327,8 +327,7 @@ async function getDocument(path) {
 
   const text = await resp.text();
   const parser = new DOMParser();
-  const doc = parser.parseFromString(text, 'text/html');
-  return doc;
+  return parser.parseFromString(text, 'text/html');
 }
 
 export async function getBlogArticle(path) {
