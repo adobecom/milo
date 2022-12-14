@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
+
 const { default: loadIcons } = await import('../../../libs/features/icons.js');
 
 const codeRoot = '/libs';

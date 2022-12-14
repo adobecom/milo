@@ -92,9 +92,9 @@ const afterYiiLoadedCallback = () => {
       i += 1;
     } while (sibs[i]);
   }
-  const { multicampaignradiostyle } = state; // temp
+
   function changeSelectionElement() {
-    if (multicampaignradiostyle) {
+    if (state.multicampaignradiostyle) {
       const inputs = wr.querySelectorAll('.checkboxlist input');
       inputs.forEach((input) => {
         if (input.type === 'checkbox') {
@@ -264,6 +264,8 @@ export const makeFaasConfig = (targetState) => {
   }
 
   const config = {
+    multicampaignradiostyle: targetState.multicampaignradiostyle ?? false,
+    hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
     d: targetState.d,
@@ -279,7 +281,7 @@ export const makeFaasConfig = (targetState) => {
     q: {},
     p: {
       js: {
-        36: targetState.pjs36 || defaultState.p.js[36],
+        36: targetState.pjs36?.trim() || defaultState.p.js[36],
         39: targetState.pjs39 || defaultState.p.js[39],
         77: 1,
         78: 1,
@@ -336,12 +338,11 @@ export const initFaas = (config, targetEl) => {
   }
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
-
   if (state.complete) {
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
-    state = makeFaasConfig(config);
+    state = makeFaasConfig(state);
     $(formEl).faas(state);
   }
 

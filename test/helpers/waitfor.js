@@ -7,7 +7,7 @@ export const waitForElement = (
     },
     rootEl = document.body,
     textContent = '',
-  } = {}
+  } = {},
 ) => new Promise((resolve) => {
   const el = document.querySelector(selector);
 

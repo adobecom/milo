@@ -159,6 +159,14 @@ input[type="checkbox"] + label {
   display: none !important;
 }
 
+.faas-form .legalnotice {
+  font-style: italic;
+}
+
+.faas-form .legalnotice a {
+  color: var(--link-color);
+}
+
 /* dark theme */
 .faas.dark {
   color: #fff;
@@ -338,10 +346,16 @@ input[type="checkbox"] + label {
   bottom: -10px;
 }
 
+/* for bottom checkbox */
+.faas.column2 .faas-form .row:not(.submit).FaaS-35 {
+  width: 100%;
+}
+
 /* for modal */
 .dialog-modal .faas {
   font-size: 13px;
   max-width: 100%;
+  min-width: 200px;
 }
 
 .dialog-modal .faas .faas-form-wrapper {

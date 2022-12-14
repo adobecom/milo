@@ -11,12 +11,14 @@ export function decorateButtons(el, size) {
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
-  const actionArea = buttons[0].closest('p');
-  actionArea.classList.add('action-area');
-  actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  const actionArea = buttons[0].closest('p, div');
+  if (actionArea) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
 }
 
-export function decorateButtonsGroup(el) {
+export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
     icon.parentElement.classList.add('icon-area');
@@ -24,22 +26,21 @@ export function decorateButtonsGroup(el) {
   });
 }
 
-export function decorateBlockText(el, size = 'small') {
+export function decorateBlockText(el, config = ['M', 'S', 'M']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.length - 1];
-  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
-    headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
-    headingEl.previousElementSibling?.classList.add(`detail-${detailSize}`);
-  };
-  if (size === 'small') {
-    decorate(heading, 'XS', 'S', 'M');
-  } else if (size === 'large') {
-    decorate(heading, 'XL', 'M', 'L');
-  } else {
-    decorate(heading, 'M', 'S', 'M');
+  if (!el.classList.contains('default')) {
+    if (headings) {
+      headings.forEach((h) => {
+        h.classList.add(`heading-${config[0]}`);
+      });
+      if (config[2]) {
+        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        decorateIconArea(el);
+      }
+    }
+    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
-  decorateButtonsGroup(el);
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
@@ -64,9 +65,10 @@ export function decorateBlockBg(block, node) {
   }
 }
 
-export function getBlockSize(el) {
-  const sizes = ['small', 'medium', 'large'];
-  return sizes.find((size) => el.classList.contains(size)) || sizes[1]; /* medium default */
+export function getBlockSize(el, defaultSize = 1) {
+  const sizes = ['small', 'medium', 'large', 'xlarge'];
+  if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
+  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
 export function decorateVideo(el, parentClass = 'video') {

@@ -384,7 +384,7 @@ class Gnav {
     const locale = getLocale();
 
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResultsUl, locale);
+      this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
     });
 
     searchInput.addEventListener('keydown', (e) => {
@@ -399,6 +399,14 @@ class Gnav {
   };
 
   /* c8 ignore start */
+  getAppLauncher = async (profileEl) => {
+    const appLauncherBlock = this.body.querySelector('.app-launcher');
+    if (!appLauncherBlock) return;
+
+    const { default: appLauncher } = await import('./gnav-appLauncher.js');
+    appLauncher(profileEl, appLauncherBlock, this.toggleMenu);
+  };
+  
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
@@ -429,6 +437,7 @@ class Gnav {
       if (ioResp.status === 200) {
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        this.getAppLauncher(profileEl);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }
