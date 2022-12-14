@@ -78,7 +78,7 @@
   width: 100%;
   max-width: 100%;
   margin-right: 0;
-  margin-bottom: 32px;
+  margin-bottom: var(--spacing-m);
 }
 
 .recommended-articles-small-content-wrapper .article-card .article-card-image {
