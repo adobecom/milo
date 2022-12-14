@@ -1,3 +1,4 @@
+/* stylelint-disable selector-class-pattern */
 .aside {
   display: flex;
   width: 100%;
@@ -64,7 +65,7 @@
   bottom: 0;
 }
 
-.aside .background>div {
+.aside .background > div {
   height: 100%;
 }
 
@@ -91,7 +92,18 @@
   padding: var(--spacing-xxxl) 0 0;
 }
 
-.aside .foreground.container .text>* {
+.aside.notification .foreground.container .text {
+  max-width: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  justify-content: center;
+}
+
+.aside.notification .foreground.container .text a {
+  white-space: nowrap;
+}
+
+.aside .foreground.container .text > * {
   width: 100%;
 }
 
@@ -108,15 +120,15 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .text .action-area>a {
+.aside .foreground.container .text .action-area > a {
   margin-right: var(--spacing-s);
 }
 
-.aside .foreground.container .text .action-area>a:last-child {
+.aside .foreground.container .text .action-area > a:last-child {
   margin-right: 0;
 }
 
-.aside .foreground.container .text .action-area>a:not(.con-button) {
+.aside .foreground.container .text .action-area > a:not(.con-button) {
   text-decoration: underline;
 }
 
@@ -152,6 +164,11 @@
   color: transparent;
 }
 
+.aside.split .split-image img {
+  position: relative;
+  min-height: 270px;
+}
+
 .aside .foreground.container .icon-area img {
   max-width: 234px;
   height: 56px;
@@ -182,7 +199,20 @@
 
 .aside.split .foreground.container {
   width: 100%;
+  max-width: 100%;
+  flex-direction: column;
   z-index: 1;
+}
+
+.aside.split .foreground.container .text {
+  padding: 40px 0;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.aside.inline .foreground.container .image,
+.aside.inline .foreground.container .text {
+  padding: 0;
 }
 
 .aside.split.dark .foreground.container .text {
@@ -201,21 +231,6 @@
   background-color: transparent;
 }
 
-.aside.split .split-image img {
-  position: relative;
-  min-height: 270px;
-}
-
-.aside.split .foreground.container {
-  max-width: 100%;
-}
-
-.aside.split .foreground.container .text {
-  padding: 40px 0;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-}
-
 .aside.split .foreground.container .image {
   margin: 0;
   display: none;
@@ -224,23 +239,6 @@
 .aside.split .foreground.container img {
   object-fit: cover;
   height: 270px;
-}
-
-.aside.split .foreground.container {
-  flex-direction: column;
-}
-
-.aside.augmented-image .foreground.container {
-  justify-content: center;
-  align-items: center;
-}
-
-.aside.augmented-image .foreground.container .text {
-  margin: 0;
-}
-
-.aside.augmented-image .foreground.container .image {
-  margin: 0;
 }
 
 .aside.inline {
@@ -253,11 +251,6 @@
   margin: 32px;
 }
 
-.aside.inline .foreground.container .image,
-.aside.inline .foreground.container .text {
-  padding: 0;
-}
-
 .aside.inline .foreground.container .image {
   margin-top: 0;
   margin-bottom: 24px;
@@ -267,7 +260,7 @@
   margin-bottom: 16px;
 }
 
-.aside.inline .action-area {
+.aside.inline .foreground.container .text .action-area {
   margin-top: 24px;
 }
 
@@ -292,21 +285,14 @@
   display: block;
 }
 
-.aside.notification .foreground.container .text {
-  max-width: none;
-  padding-top: 0;
-  padding-bottom: 0;
-  justify-content: center;
-}
-
-.aside.notification .foreground.container .text>* {
+.aside.notification .foreground.container .text > * {
   display: flex;
   align-items: center;
   flex: 0 1 auto;
 }
 
 .aside.notification .foreground.container .text[data-align=center],
-.aside.notification .foreground.container .text[data-align=center]>* {
+.aside.notification .foreground.container .text[data-align=center] > * {
   justify-content: center;
 }
 
@@ -318,16 +304,12 @@
   margin-top: var(--spacing-s);
 }
 
-.aside.notification .foreground.container .text a {
-  white-space: nowrap;
-}
-
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
   margin-left: 5px;
 }
 
-.aside.notification .foreground.container .text .action-area>a {
+.aside.notification .foreground.container .text .action-area > a {
   margin-right: 0;
 }
 
@@ -386,7 +368,7 @@
 }
 
 .aside.notification.small .foreground.container .text[data-align=center],
-.aside.notification.small .foreground.container .text[data-align=center]>* {
+.aside.notification.small .foreground.container .text[data-align=center] > * {
   justify-content: flex-start;
 }
 
@@ -456,13 +438,12 @@
     bottom: 0;
   }
 
-  .aside.split.large {
-    flex-direction: column;
+  .aside.right .split-image img {
+    left: 0;
   }
 
-  .aside.split .split-image {
-    position: absolute;
-    top: 0;
+  .aside.split.large {
+    flex-direction: column;
   }
 
   .aside.split .split-image img {
@@ -506,16 +487,21 @@
     max-width: 1396px;
   }
 
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(60% - 16px);
+    max-width: none;
+  }
+
+  .aside.notification .foreground.container .text {
+    padding-right: 0;
+  }
+
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
 
   .aside.right .foreground.container {
     flex-direction: row-reverse;
-  }
-
-  .aside.right .split-image img {
-    left: 0;
   }
 
   .aside.augmented-image .background {
@@ -527,19 +513,10 @@
     max-width: none;
   }
 
-  .aside.augmented-image .foreground.container .text {
-    flex: 0 0 43%;
-  }
-
   .aside.inline .foreground.container .image {
     flex: 0 0 calc(40% - 16px);
     margin-right: 32px;
     margin-bottom: 0;
-  }
-
-  .aside.inline .foreground.container .text {
-    flex: 0 0 calc(60% - 16px);
-    max-width: none;
   }
 
   .aside.notification .foreground.container {
@@ -558,10 +535,6 @@
   .aside.notification .foreground.container .text+.image {
     margin-left: var(--spacing-s);
     margin-right: 0;
-  }
-
-  .aside.notification .foreground.container .text {
-    padding-right: 0;
   }
 
   .aside.notification .foreground.container .icon-area {
@@ -608,6 +581,10 @@
     margin-bottom: var(--spacing-xs);
   }
 
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(64% - 16px);
+  }
+
   .aside.simple .foreground.container .text {
     margin-bottom: 0;
     max-width: 500px;
@@ -649,10 +626,6 @@
     flex: 0 0 calc(36% - 16px);
   }
 
-  .aside.inline .foreground.container .text {
-    flex: 0 0 calc(64% - 16px);
-  }
-
   .aside.notification {
     min-height: 250px;
   }
@@ -683,7 +656,7 @@
   }
 
   .aside.notification.small .foreground.container .text[data-align=center],
-  .aside.notification.small .foreground.container .text[data-align=center]>* {
+  .aside.notification.small .foreground.container .text[data-align=center] > * {
     justify-content: center;
   }
 
