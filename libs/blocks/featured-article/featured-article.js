@@ -26,21 +26,16 @@ export default async function init(el) {
 
   const pic = doc.body.querySelector('picture');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
-
   const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' }, categoryLink);
-
   const text = doc.body.querySelector('h1, h2, h3').textContent;
   const title = createTag('h3', null, text);
   const body = createTag('div', { class: 'featured-article-card-body' });
-
   const descriptionMeta = getMetadata('description', doc);
   const description = createTag('p', { class: 'featured-article-card-description' }, descriptionMeta);
-
   const dateMeta = getMetadata('publication-date', doc);
   const date = createTag('p', { class: 'featured-article-card-date' }, dateMeta);
 
   body.append(categoryEl, title, description, date);
-
   a.append(featuredImg, body);
 }

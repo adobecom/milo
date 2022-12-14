@@ -13,11 +13,10 @@ async function getArticleDetails(article) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
-  let title = getMetadata('og:title', doc).trim();
   const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
-  trimEndings.forEach((ending) => {
-    if (title.endsWith(ending)) title = title.substr(0, title.length - ending.length);
-  });
+  let title = getMetadata('og:title', doc).trim();
+  const ending = trimEndings.find((el) => title.endsWith(el));
+  [title] = title.split(ending);
 
   return {
     title,
@@ -75,8 +74,7 @@ export default async function init(blockEl) {
   } else {
     blockEl.classList.add('recommended-articles-content-wrapper');
     if (!content) {
-      const title = document.createElement('h3');
-      title.innerHTML = '{{recommended-for-you}}';
+      const title = createTag('h3', null, '{{recommended-for-you}}');
       await decoratePlaceholders(title, getConfig());
       content = title;
     }
@@ -84,8 +82,8 @@ export default async function init(blockEl) {
   blockEl.innerHTML = '';
 
   const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
-  let articles = [];
   const unresolvedPromises = recommendedArticleLinks.map((article) => getArticleDetails(article));
+  let articles = [];
   articles = await Promise.all(unresolvedPromises);
 
   if (!articles.some((article) => article)) {

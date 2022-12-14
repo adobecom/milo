@@ -4,7 +4,6 @@
   cursor: pointer;
   box-sizing: border-box;
   display: inline-block;
-  /* border: solid 1px var(--color-gray-200); */
   border-radius: 4px;
   width: 100%;
   min-width: 268px;

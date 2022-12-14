@@ -27,8 +27,6 @@
   min-height: unset;
 }
 
-
-
 .recommended-articles-content-wrapper > h3 {
   max-width: 100%;
   text-align: center;
@@ -38,7 +36,6 @@
 .recommended-articles-content-wrapper .article-card-date {
   min-height: 12px;
 }
-
 
 .recommended-articles .article-cards {
   margin: 0 auto;
