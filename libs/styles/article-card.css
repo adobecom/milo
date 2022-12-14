@@ -11,35 +11,6 @@
   margin-bottom: 24px;
 }
 
-@media (min-width: 600px) {
-  .article-card {
-    min-width: unset;
-    width: calc(100% / 2 - 16px);
-    margin-right: var(--spacing-m);
-    margin-bottom: var(--spacing-m);
-  }
-  
-  .article-card:nth-of-type(2n),
-  .article-card:last-of-type {
-    margin-right: 0;
-  }
-}
-
-@media (min-width: 1200px) {
-  .article-card {
-    width: calc(100% / 3 - 22px);
-  }
-  
-  .article-card:nth-of-type(2n) {
-    margin-right: var(--spacing-m);
-  }
-  
-  .article-card:nth-of-type(3n),
-  .article-card:last-of-type {
-    margin-right: 0;
-  }
-}
-
 main a.article-card:any-link {
   text-decoration: none;
 }
@@ -104,17 +75,6 @@ main a.article-card:any-link {
   display: -webkit-box;
 }
 
-@media (min-width: 600px) {
-  .article-card-body h3 {
-    font-size: var(--type-heading-s-size);
-    margin-bottom: 0.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    min-height: 4.7rem;
-  }
-}
-
 .article-card .article-card-body .article-card-description {
   color: var(--color-gray-700);
   font-size: var(--body-font-size-xs);
@@ -126,8 +86,45 @@ main a.article-card:any-link {
 }
 
 @media (min-width: 600px) {
+  .article-card {
+    min-width: unset;
+    width: calc(100% / 2 - 16px);
+    margin-right: var(--spacing-m);
+    margin-bottom: var(--spacing-m);
+  }
+  
+  .article-card:nth-of-type(2n),
+  .article-card:last-of-type {
+    margin-right: 0;
+  }
+  
+  .article-card-body h3 {
+    font-size: var(--type-heading-s-size);
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    min-height: 4.7rem;
+  }
+
   .article-card .article-card-body .article-card-description {
     display: -webkit-box;
     min-height: 2.6rem;
+  }
+}
+
+
+@media (min-width: 1200px) {
+  .article-card {
+    width: calc(100% / 3 - 22px);
+  }
+  
+  .article-card:nth-of-type(2n) {
+    margin-right: var(--spacing-m);
+  }
+  
+  .article-card:nth-of-type(3n),
+  .article-card:last-of-type {
+    margin-right: 0;
   }
 }
