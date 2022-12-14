@@ -335,8 +335,8 @@ export async function getBlogArticle(path) {
 
   if (!doc) return null;
 
-  let title = getMetadata('og:title', doc).trim();
   const trimEndings = ['|Adobe', '| Adobe', '| Adobe Blog', '|Adobe Blog'];
+  let title = getMetadata('og:title', doc).trim();
   const ending = trimEndings.find((ending) => title.endsWith(ending));
   title = title.split(ending)[0];
 
