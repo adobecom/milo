@@ -129,11 +129,7 @@ export const [setConfig, getConfig] = (() => {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
-      if (config.contentRoot) {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
-      } else {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
-      }
+      config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
     () => config,
@@ -173,27 +169,17 @@ export function localizeLink(href, originHostName = window.location.hostname) {
   const relative = url.hostname === originHostName;
   const processedHref = relative ? href.replace(url.origin, '') : href;
   const { hash } = url;
-  if (hash === '#_dnt') {
-    return processedHref.split('#')[0];
-  }
+  if (hash === '#_dnt') return processedHref.split('#')[0];
   const path = url.pathname;
   const extension = getExtension(path);
   const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) {
-    return processedHref;
-  }
+  if (!allowedExts.includes(extension)) return processedHref;
   const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) {
-    return processedHref;
-  }
+  if (!locale || !locales) return processedHref;
   const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) {
-    return processedHref;
-  }
+  if (!isLocalizable) return processedHref;
   const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) {
-    return processedHref;
-  }
+  if (isLocalizedLink) return processedHref;
   const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
   return relative ? urlPath : `${url.origin}${urlPath}`;
 }

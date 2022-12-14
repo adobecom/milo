@@ -231,12 +231,23 @@ describe('Utils', () => {
       utils.setConfig(config);
     });
 
+    function setConfigPath(path) {
+      config.pathname = path;
+      utils.setConfig(config);
+    }
+
     it('Same domain link is relative and localized', () => {
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
     });
 
     it('Same domain fragment link is relative and localized', () => {
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+    });
+
+    it('Same domain langstore link is relative and localized', () => {
+      setConfigPath('/langstore/fr/page');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+      setConfigPath('/be_fr/page');
     });
 
     it('Same domain extensions /, .html, .json are handled', () => {
@@ -248,6 +259,7 @@ describe('Utils', () => {
     it('Same domain link that is already localized is returned as relative', () => {
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
     });
 
     it('Same domain PDF link is returned as relative and not localized', () => {
