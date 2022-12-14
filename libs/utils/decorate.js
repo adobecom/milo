@@ -72,12 +72,21 @@ export function getBlockSize(el, defaultSize = 1) {
 }
 
 export function decorateVideo(el, parentClass = 'video') {
-  const link = el.querySelector('a[href$=".mp4"]');
-  if (!link) return;
-  const parent = link.parentElement;
-  parent.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-    <source src="${link.href}" type="video/mp4" />
-  </video>`;
-  link.remove();
-  parent.classList.add(parentClass);
-};
+  // milo-video
+  const mp4video = el.querySelector('a[href$=".mp4"]');
+  const adobeTv = document.querySelector('div.milo-video');
+  console.log(adobeTv);
+
+  if (!mp4video && !adobeTv) return;
+  if (mp4video) {
+    const parent = mp4video.parentElement;
+    parent.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+      <source src="${mp4video.href}" type="video/mp4" />
+    </video>`;
+    mp4video.remove();
+    parent.classList.add(parentClass);
+  } else {
+    const parent = adobeTv.parentElement;
+    parent.classList.add(parentClass);
+  }
+}

@@ -148,10 +148,13 @@
   width: 100%;
 }
 
-.aside .foreground.container img {
+.aside .foreground.container img,
+.aside .foreground.container iframe {
   object-fit: contain;
   height: 100%;
   width: 100%;
+  align-self: center;
+  justify-self: center;
 }
 
 .aside .foreground.container .icon-area {
@@ -394,7 +397,7 @@
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: stretch;
     flex-direction: row;
     margin: 0 auto;
@@ -405,6 +408,8 @@
     flex: 0 0 50%;
     max-width: 302px;
     padding-left: 16px;
+    align-self: center;
+    justify-self: center;
   }
 
   .aside.right .foreground.container .image {
