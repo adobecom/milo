@@ -299,7 +299,7 @@ export function decorateAutoBlock(a) {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
-      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
         a.target = '_blank';
         return false;
       }
