@@ -65,6 +65,31 @@ export const loadCaasTags = async (tagsUrl) => {
   };
 };
 
+/* c8 ignore next 22 */
+const fixAlloyAnalytics = async () => {
+  const sat = await window.__satelliteLoadedPromise;
+  if (!sat || !window.alloy) return;
+  if (sat.getVisitorId() === null) {
+    const identity = await window.alloy('getIdentity');
+    const mcgvid = identity.identity.ECID;
+    const mboxMCGLH = identity.edge.regionId;
+
+    const ogSLP = window.__satelliteLoadedPromise;
+    window.__satelliteLoadedPromise = Promise.resolve({
+      getVisitorId: () => ({
+        getMarketingCloudVisitorID: () => mcgvid,
+        getSupplementalDataID: () => '',
+        getAudienceManagerBlob: () => '',
+        getAudienceManagerLocationHint: () => {
+          // eslint-disable-next-line no-return-assign
+          setTimeout(() => (window.__satelliteLoadedPromise = ogSLP), 1);
+          return mboxMCGLH;
+        },
+      }),
+    });
+  }
+};
+
 const getTags = (() => {
   let tags;
   return (async (tagsUrl) => {
@@ -377,6 +402,7 @@ export const initCaas = async (state, caasStrs, el) => {
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);
+  await fixAlloyAnalytics();
 
   // eslint-disable-next-line no-new, no-undef
   new ConsonantCardCollection(config, newEl);
