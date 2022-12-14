@@ -37,19 +37,14 @@ function getDecoratedCards(articles, taxonomy) {
     const {
       category, imageEl, path, title, description, date,
     } = article;
-
     const wrapper = createTag('a', { class: 'article-card', href: path });
     const cardImage = createTag('div', { class: 'article-card-image' }, imageEl);
     const cardBody = createTag('div', { class: 'article-card-body' });
-
     const categoryTaxonomy = taxonomy.get(category || 'News');
     const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
     const categoryEl = createTag('p', { class: 'article-card-category' }, categoryLink);
-
     const titleEl = createTag('h3', null, title);
-
     const descriptionEl = createTag('p', { class: 'article-card-description' }, description);
-
     const dateEl = createTag('p', { class: 'article-card-date' }, date);
 
     cardBody.append(categoryEl, titleEl, descriptionEl, dateEl);
