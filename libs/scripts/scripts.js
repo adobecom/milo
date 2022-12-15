@@ -103,7 +103,7 @@ const locales = {
 const config = {
   geoRouting: 'off',
   fallbackRouting: 'off',
-  links: 'off',
+  links: 'on',
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
