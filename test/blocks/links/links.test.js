@@ -11,7 +11,7 @@ describe('Nofollow', async () => {
   });
 
   it('Does not find links that are relative', async () => {
-    await nofollow('/test/blocks/links/mocks/nofollow.json');
+    await nofollow('/test/blocks/links/mocks/links.json');
     const links = document.body.querySelectorAll('a');
     expect(links[0].getAttribute('rel')).to.equal('nofollow noopener noreferrer');
     expect(links[1].getAttribute('rel')).to.equal(null);
