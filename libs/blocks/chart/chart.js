@@ -375,7 +375,7 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
         if (isBar) return barTooltipFormatter(params, yUnits[0]);
         if (isPie) return pieTooltipFormatter(params, yUnits[0]);
         if (isDonut) return donutTooltipFormatter(params, yUnits[0]);
-        return tooltipFormatter(params, units);
+        return tooltipFormatter(params, yUnits);
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
