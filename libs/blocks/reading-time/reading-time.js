@@ -25,7 +25,4 @@ export default function init(el) {
   const readingTime = Math.ceil(textLength / readingSpeed);
   span.innerHTML = `${readingTime} min read`;
   el.append(span);
-
-  // to-do: Update the SEO with the reading time
-  
 }
