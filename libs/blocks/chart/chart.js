@@ -355,7 +355,7 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
 
   if (units[0] === 'date') {
     xUnit = units[0];
-    yUnits = units.slice(1).length > 0 ? units.slice(1) : [''];
+    yUnits = units.length > 1 ? units.slice(1) : [''];
   }
 
   firstDataset.shift();
