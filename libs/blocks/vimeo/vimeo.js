@@ -2,8 +2,6 @@ import { createIntersectionObserver, createTag } from '../../utils/utils.js';
 
 export default function init(a) {
   const embedVimeo = () => {
-    if (!a.origin?.includes('vimeo')) return;
-
     const url = new URL(a.href);
     let src = url.href;
     if (url.hostname !== 'player.vimeo.com') {
@@ -21,8 +19,7 @@ export default function init(a) {
     });
     const wrapper = createTag('div', { class: 'embed-vimeo' }, iframe);
 
-    a.insertAdjacentElement('afterend', wrapper);
-    a.remove();
+    a.parentElement.replaceChild(wrapper, a);
   };
 
   createIntersectionObserver({ el: a, callback: embedVimeo });

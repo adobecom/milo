@@ -1,18 +1,13 @@
-import { createIntersectionObserver, createTag } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, loadScript } from '../../utils/utils.js';
 
 export default function init(a) {
-  const embedInstagram = () => {
-    if (!a.origin?.includes('instagram')) return;
-
+  const embedInstagram = async () => {
     const anchor = createTag('a', { href: a.href });
     const blockquote = createTag('blockquote', { class: 'instagram-media' }, anchor);
     const wrapper = createTag('div', { class: 'embed-instagram' }, blockquote);
-    const head = document.querySelector('head');
-    const script = createTag('script', { src: 'https://www.instagram.com/embed.js' });
-    head.append(script);
+    a.parentElement.replaceChild(wrapper, a);
 
-    a.insertAdjacentElement('afterend', wrapper);
-    a.remove();
+    loadScript('https://www.instagram.com/embed.js');
   };
 
   createIntersectionObserver({ el: a, callback: embedInstagram });

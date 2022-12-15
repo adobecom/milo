@@ -2,8 +2,6 @@ import { createIntersectionObserver, createTag } from '../../utils/utils.js';
 
 export default function init(a) {
   const embedSlideshare = () => {
-    if (!a.origin?.includes('slideshare')) return;
-
     const iframe = createTag('iframe', {
       src: a.href,
       style: 'border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%; top: 0; left: 0; width: 100%; height: 100%; position: absolute;',
@@ -20,8 +18,7 @@ export default function init(a) {
       id: 'slideshare',
     }, iframe);
 
-    a.insertAdjacentElement('afterend', wrapper);
-    a.remove();
+    a.parentElement.replaceChild(wrapper, a);
   };
 
   createIntersectionObserver({ el: a, callback: embedSlideshare });

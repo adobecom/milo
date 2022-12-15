@@ -1,9 +1,7 @@
-import { createIntersectionObserver, createTag } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, loadScript } from '../../utils/utils.js';
 
 export default function init(a) {
   const embedTiktok = () => {
-    if (!a.origin?.includes('tiktok')) return;
-
     const url = new URL(a.href);
 
     const videoId = url.pathname.match(/[^/]+(?=\/$|$)/)[0];
@@ -14,12 +12,9 @@ export default function init(a) {
       cite: url,
       style: 'max-width: 605px;min-width: 325px;',
     }, anchor);
-    const head = document.querySelector('head');
-    const script = createTag('script', { src: 'https://www.tiktok.com/embed.js' });
-    head.append(script);
+    a.parentElement.replaceChild(wrapper, a);
 
-    a.insertAdjacentElement('afterend', wrapper);
-    a.remove();
+    loadScript('https://www.tiktok.com/embed.js');
   };
 
   createIntersectionObserver({ el: a, callback: embedTiktok });
