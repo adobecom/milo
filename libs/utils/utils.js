@@ -457,8 +457,10 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
-  import('../features/links.js').then((mod) => mod.default(path, area));
+  if (config.links === 'on') {
+    const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
+    import('../features/links.js').then((mod) => mod.default(path, area));
+  }
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
