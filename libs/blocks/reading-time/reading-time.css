@@ -3,6 +3,7 @@ main > .section > .content.reading-time > span {
   font-size: var(--type-body-s-size);
   display: block;
   margin: 0;
+  padding: 1rem 0;
 }
 
 main > .section.center > .content.reading-time > span {
