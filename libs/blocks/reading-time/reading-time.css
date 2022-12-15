@@ -5,6 +5,6 @@ main > .section > .content.reading-time > span {
   margin: 0;
 }
 
-main > .section > .content.reading-time > span {
+main > .section.center > .content.reading-time > span {
   text-align: center;
 }
