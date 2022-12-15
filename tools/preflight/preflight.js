@@ -1,7 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-useless-concat */
 /* eslint-disable no-alert */
-/* eslint-disable no-return-assign */
 const validURL = (s) => {
   try {
     URL(s);
@@ -11,23 +8,16 @@ const validURL = (s) => {
   }
 };
 
-async function uniq(a) {
-  const seen = {};
-  // eslint-disable-next-line no-prototype-builtins
-  return a.filter((item) => (seen.hasOwnProperty(item) ? false : (seen[item] = true)));
-}
-
 async function https2http(data) {
   const arr2 = [];
   const l = document.links;
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < l.length; i++) {
+
+  for (let i = 0; i < l.length; i += 1) {
     arr2.push(l[i].href);
   }
   const checker = (value) => ['http:'].some((element) => value.includes(element));
   data.https2Http = arr2.filter(checker).length > 0
-    // eslint-disable-next-line no-useless-concat
-    ? 'Http Link Count' + ` ${arr2.filter(checker).length}`
+    ? `Http Link Count ${arr2.filter(checker).length}`
     : 'Good';
 }
 
@@ -47,8 +37,7 @@ async function https2http(data) {
   data.https = window.location.protocol !== 'Https:' ? 'Http' : 'Https';
   data.dateTime = new Date().toLocaleString();
 
-  // eslint-disable-next-line no-unused-vars
-  const test = await https2http(data);
+  await https2http(data);
   // Testing for DOCTYPE
   const node = document.doctype;
   const html = node.name
@@ -97,18 +86,16 @@ async function https2http(data) {
 
   data.validUrl = validURL(window.location.protocol) ? 'Valid' : 'Invalid';
   // Test for Depracated tags
-  let dep;
   const dep2 = [];
   let foundTag = [];
-  // eslint-disable-next-line prefer-const
-  dep = document.querySelectorAll(
+  const dep = document.querySelectorAll(
     'basefront,font,center,strike,big,dir,isindex,applet,acronym,noframe,xmp,noembed,plaintext,frameset,frame,u,tt,s',
   );
   dep.forEach((element) => dep2.push(element.tagName));
-  foundTag = await uniq(dep2);
+  foundTag = Array.from(new Set(dep2));
   if (dep.length > 0) {
-    data.depracatedTags = 'Found Tag' + ` ${foundTag} ` + 'Amount of Uses' + ` ${dep.length}`;
-    alert('Found depracated tag' + ` ${foundTag}`);
+    data.depracatedTags = `Found Tag ${foundTag} Amount of Uses ${dep.length}`;
+    alert(`Found depracated tag ${foundTag}`);
   } else {
     data.depracatedTags = 'None';
   }
@@ -146,8 +133,8 @@ async function https2http(data) {
     .getAttribute('content');
 
   data.robotsIndex = robotIndex === 'index, follow'
-    ? 'Indexed' + ` ${robotIndex}`
-    : ('Blocked' + ` ${robotIndex}`, alert('Robots blocked'));
+    ? `Indexed ${robotIndex}`
+    : (`Blocked ${robotIndex}`, alert('Robots blocked'));
 
   // special character test
   const { body } = document;
@@ -164,7 +151,7 @@ async function https2http(data) {
       .getElementsByClassName('content')[0]
       .innerText.replace(/\s/g, '').length;
     data.bodyLength = text < 100
-      ? 'Too little content in body' + ` ${text}`
+      ? `Too little content in body ${text}`
       : 'Body content is Sufficent';
   } else {
     data.bodyLength = 'No body';
@@ -172,15 +159,15 @@ async function https2http(data) {
   // status code test
   const r = await fetch(window.location.href);
   data.statusCode = r.status;
-  const resp = await fetch(
+  await fetch(
     'https://main--milo--adobecom.hlx.page/seo/preflight',
     {
-      method: 'POST', // *GET, POST, PUT, DELETE, etc.
-      credentials: 'same-origin', // include, *same-origin, omit
+      method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      redirect: 'follow', // manual, *follow, error
-      referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify({ data }), // body data type must match "Content-Type" header/
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify({ data }),
     },
   );
 }());
