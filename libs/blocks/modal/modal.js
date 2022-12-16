@@ -24,7 +24,7 @@ function getDetails(el) {
 }
 
 function closeModals(modals) {
-  const qModals = modals || document.querySelectorAll('.dialog-modal');
+  const qModals = modals || Array.from(document.querySelectorAll('.dialog-modal'));
   if (qModals?.length) {
     const anchor = qModals.some((m) => m.classList.contains('anchor'));
     qModals.forEach((modal) => {
@@ -37,6 +37,13 @@ function closeModals(modals) {
   }
 }
 
+async function decorate(block) {
+  if (block.id === 'langnav') {
+    const { default: dec } = await import('./decorators/langnav.js');
+    dec(block);
+  }
+}
+
 function handleCustomModal(custom, dialog) {
   dialog.id = custom.id;
   dialog.classList.add(custom.class);
@@ -46,13 +53,6 @@ function handleCustomModal(custom, dialog) {
     });
   }
   return custom.content;
-}
-
-async function decorate(block) {
-  if (block.id === 'langnav') {
-    const { default: dec } = await import('./decorators/langnav.js');
-    dec(block);
-  }
 }
 
 async function handleAnchorModal(el, dialog) {
