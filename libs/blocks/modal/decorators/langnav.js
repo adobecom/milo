@@ -4,17 +4,18 @@ export async function handleEvent(prefix, link, config) {
   document.cookie = `international=${prefix};path=/`;
   sessionStorage.setItem('international', prefix);
   return fetch(link.href, { method: 'HEAD' }).then((resp) => {
-    if (resp.ok) {
-      window.location.assign(link.href);
-    } else {
-      const prefixUrl = prefix ? `/${prefix}` : '';
-      window.location.assign(`${prefixUrl}${config.contentRoot || ''}/`);
-    }
+    if (!resp.ok) throw new Error('request failed');
+    window.location.assign(link.href);
+  }).catch(() => {
+    const prefixUrl = prefix ? `/${prefix}` : '';
+    window.location.assign(`${prefixUrl}${config.contentRoot || ''}/`);
   });
 }
 
 function decorateLink(link, config, path) {
-  const linkParts = link.getAttribute('href').split('/');
+  let pathname = link.getAttribute('href');
+  try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
+  const linkParts = pathname.split('/');
   const prefix = linkParts[1] || 'us';
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
@@ -32,6 +33,5 @@ export default function decorate(block) {
   if (!links || !links.length) return;
   const { contentRoot } = config.locale;
   const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
-
   links.forEach((l) => decorateLink(l, config, path));
 }
