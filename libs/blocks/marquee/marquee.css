@@ -521,7 +521,10 @@
     margin-bottom: unset;
   }
 
-  .marquee.split .text .icon-area img,
+  .marquee.split .text .icon-area img {
+    max-width: 400px;
+  }
+
   .marquee.split.one-third .text .icon-area img {
     max-width: 200px;
   }
