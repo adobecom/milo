@@ -1,14 +1,14 @@
 import { getConfig } from '../../../utils/utils.js';
 
-function handleEvent(prefix, link, config) {
+export async function handleEvent(prefix, link, config) {
   document.cookie = `international=${prefix};path=/`;
   sessionStorage.setItem('international', prefix);
-  fetch(link.href, { method: 'HEAD' }).then((resp) => {
+  return fetch(link.href, { method: 'HEAD' }).then((resp) => {
     if (resp.ok) {
-      window.location = link.href;
+      window.location.assign(link.href);
     } else {
       const prefixUrl = prefix ? `/${prefix}` : '';
-      window.location = `${prefixUrl}${config.contentRoot || ''}/`;
+      window.location.assign(`${prefixUrl}${config.contentRoot || ''}/`);
     }
   });
 }
