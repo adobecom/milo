@@ -37,7 +37,7 @@ export default function init(el) {
   }
   const helperClasses = [];
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
-  if (el.classList.contains('intro')) helperClasses.push('xxl-spacing-top', 'xl-spacing-bottom');
+  if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-S');
@@ -50,7 +50,7 @@ export default function init(el) {
       blockType = (i > 0) ? 'standard' : b;
     }
   });
- 
+
   const veto = [];
   if (el.classList.contains('override')) {
     const headingClass = [...el.classList].filter((i) => i.includes('-heading'));
@@ -63,7 +63,6 @@ export default function init(el) {
   el.classList.add(...helperClasses);
   const size = getBlockSize(el);
   const config = (veto.length) ? veto : blockTypeSizes[blockType][size];
-  // console.log(blockType, size, 'typeConfig', typeConfig, '[heading, detail, body]', el);
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
 }
