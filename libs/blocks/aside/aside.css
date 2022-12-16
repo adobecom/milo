@@ -35,6 +35,7 @@
 }
 
 .aside.dark {
+  color: white;
   background-color: #1E1E1E;
 }
 
@@ -48,7 +49,7 @@
 .aside.dark h4,
 .aside.dark h5,
 .aside.dark h6,
-.aside.dark p {
+.aside.dark p:not(.action-area) {
   color: white;
 }
 
@@ -65,7 +66,7 @@
   bottom: 0;
 }
 
-.aside .background > div {
+.aside .background>div {
   height: 100%;
 }
 
@@ -96,14 +97,13 @@
   max-width: none;
   padding-top: 0;
   padding-bottom: 0;
-  justify-content: center;
 }
 
 .aside.notification .foreground.container .text a {
   white-space: nowrap;
 }
 
-.aside .foreground.container .text > * {
+.aside:not(.notification) .foreground.container .text > * {
   width: 100%;
 }
 
@@ -112,6 +112,7 @@
   margin-bottom: var(--spacing-xs);
 }
 
+.aside .foreground.container .text .body-M,
 .aside .foreground.container .text .body-S {
   margin-bottom: var(--spacing-s);
 }
@@ -136,20 +137,23 @@
   flex: 1 1 auto;
 }
 
-.aside .foreground.container .image {
+.aside .foreground.container .image,
+.aside .foreground.container div:has(.milo-video),
+.aside .foreground.container .milo-inline-video {
   display: flex;
   margin-top: 32px;
   margin-bottom: var(--spacing-xxxl);
   justify-content: center;
 }
 
-.aside .foreground.container .image video {
+.aside .foreground.container .milo-inline-video video {
   object-fit: contain;
   width: 100%;
+  align-self: center;
+  justify-self: center;
 }
 
-.aside .foreground.container img,
-.aside .foreground.container iframe {
+.aside .foreground.container img {
   object-fit: contain;
   height: 100%;
   width: 100%;
@@ -214,6 +218,7 @@
 }
 
 .aside.inline .foreground.container .image,
+.aside.inline .foreground.container div:has(.milo-video),
 .aside.inline .foreground.container .text {
   padding: 0;
 }
@@ -256,15 +261,15 @@
 
 .aside.inline .foreground.container .image {
   margin-top: 0;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-m);
 }
 
 .aside.inline .heading-S {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-s);
 }
 
 .aside.inline .foreground.container .text .action-area {
-  margin-top: 24px;
+  margin-top: var(--spacing-m);
 }
 
 .aside.notification {
@@ -288,52 +293,37 @@
   display: block;
 }
 
-.aside.notification .foreground.container .text > * {
-  display: flex;
-  align-items: center;
-  flex: 0 1 auto;
-}
-
-.aside.notification .foreground.container .text[data-align=center],
-.aside.notification .foreground.container .text[data-align=center] > * {
-  justify-content: center;
-}
-
-.aside.notification .foreground.container .text[data-align=center] p {
+.aside.notification.center .foreground.container .text,
+.aside.notification.center .foreground.container .text > * {
   text-align: center;
-}
-
-.aside.notification .foreground.container .text .action-area {
-  margin-top: var(--spacing-s);
+  justify-content: center;
 }
 
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
-  margin-left: 5px;
+  text-decoration: underline;
 }
+
 
 .aside.notification .foreground.container .text .action-area > a {
   margin-right: 0;
 }
 
-.aside.notification .foreground.container .text .body-area a {
-  text-decoration: underline;
+.aside.notification.extra-small .foreground.container .text a:not(.con-button):last-of-type {
+  margin-left: var(--spacing-xs);
 }
 
-.aside.notification .foreground.container .text .body-area a:first-of-type {
-  color: var(--text-color);
-  font-weight: normal;
-}
-
-.aside.notification.dark .foreground.container .text .body-area a:first-of-type {
-  color: white;
+.aside.notification.small .foreground.container .text a.con-button {
+  display: table;
+  margin-left: 0;
 }
 
 .aside.notification .foreground.container .text .heading-L {
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification .foreground.container .text .body-S {
+.aside.notification .foreground.container:not(.no-image) .text .body-S.action-area,
+.aside.notification .foreground.container:not(.no-image) .text .body-M.action-area {
   margin-bottom: 0;
 }
 
@@ -349,17 +339,36 @@
 
 .aside.notification.extra-small .foreground.container {
   min-height: 50px;
-  padding-top: var(--spacing-xs);
-  padding-bottom: var(--spacing-xs);
+  padding-top: var(--spacing-xxs);
+  padding-bottom: var(--spacing-xxs);
 }
 
 .aside.notification.extra-small .foreground.container .text {
-  flex-wrap: nowrap;
+  display: block;
+  max-width: 800px;
 }
 
-.aside.notification.extra-small .foreground.container .text .body-M,
+
+.aside.notification.medium .foreground.container .text {
+  flex-direction: column;
+}
+
+.aside.notification.extra-small .foreground.container .text,
 .aside.notification.small .foreground.container .text .body-M {
   font-weight: bold;
+}
+
+.aside.notification.small .foreground.container .text {
+  flex-direction: column;
+}
+
+.aside.notification.center.small .foreground.container .text {
+  text-align: left;
+}
+
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.extra-small .foreground.container .text {
+    margin: 0 auto;
 }
 
 .aside.notification.small {
@@ -367,65 +376,73 @@
 }
 
 .aside.notification.small .foreground.container .text {
-  flex-direction: column;
-}
-
-.aside.notification.small .foreground.container .text[data-align=center],
-.aside.notification.small .foreground.container .text[data-align=center] > * {
-  justify-content: flex-start;
-}
-
-.aside.notification.small .foreground.container .text[data-align=center] p {
-  text-align: left;
-}
-
-.aside.notification.small .foreground.container .body-area {
-  width: auto;
+  max-width: 1000px;
 }
 
 .aside.notification.medium {
   min-height: 160px;
 }
 
-.aside.notification.medium .foreground.container .text {
-  flex-direction: column;
+.aside.notification.medium .foreground.container {
+  max-width: 800px;
 }
 
 .aside.notification.medium .foreground.container .text .heading-S {
   margin-bottom: var(--spacing-xxs);
 }
 
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.small .foreground.container .text > * {
+  justify-content: flex-start;
+}
+
+.aside.notification.center.small .foreground.container .text p {
+  text-align: left;
+}
+
+.aside.notification.large .foreground.container {
+  max-width: 1000px;
+}
+
+.aside.notification.large .foreground.container.no-image {
+  max-width: 800px;
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: stretch;
     flex-direction: row;
     margin: 0 auto;
   }
 
-  .aside .foreground.container .image {
+  .aside .foreground.container .image,
+  .aside .foreground.container div:has(.milo-video),
+  .aside .foreground.container .milo-inline-video {
     margin: 0;
     flex: 0 0 50%;
-    max-width: 302px;
-    padding-left: 16px;
+    max-width: 50%;
+    padding-left: var(--spacing-s);
     align-self: center;
     justify-self: center;
   }
 
-  .aside.right .foreground.container .image {
-    padding-right: 16px;
+  .aside.right .foreground.container .image,
+  .aside.right .foreground.container div:has(.milo-video),
+  .aside.right .foreground.container .milo-inline-video {
+    padding-right: var(--spacing-s);
   }
 
   .aside .foreground.container .text {
     margin-bottom: 0;
     padding: var(--spacing-xxxl) 0;
     flex: 1 0 50%;
-    max-width: 302px;
-    padding-right: 16px;
+    max-width: 50%;
+    padding-right: var(--spacing-s);
   }
 
   .aside.right .foreground.container .text {
-    padding-left: 16px;
+    padding-left: var(--spacing-s);
   }
 
   .aside.simple .foreground.container .text {
@@ -493,12 +510,25 @@
   }
 
   .aside.inline .foreground.container .text {
-    flex: 0 0 calc(60% - 16px);
+    flex: 0 0 calc(60% - var(--spacing-s));
     max-width: none;
   }
 
   .aside.notification .foreground.container .text {
     padding-right: 0;
+  }
+
+  .aside.notification.small .foreground.container .text {
+    flex-flow: row nowrap;
+    align-items: center;
+  }
+
+  .aside.notification.small .foreground.container .text .body-M {
+    margin: 0;
+  }
+
+  .aside.notification.small .foreground.container .text .body-M.action-area {
+    margin-left: 24px;
   }
 
   .aside.split.half .foreground.container .text {
@@ -509,17 +539,8 @@
     flex-direction: row-reverse;
   }
 
-  .aside.augmented-image .background {
-    clip-path: inset(19% 0);
-  }
-
-  .aside.augmented-image .foreground.container .image {
-    flex: 0 0 57%;
-    max-width: none;
-  }
-
   .aside.inline .foreground.container .image {
-    flex: 0 0 calc(40% - 16px);
+    flex: 0 0 calc(40% - var(--spacing-s));
     margin-right: 32px;
     margin-bottom: 0;
   }
@@ -548,14 +569,17 @@
     margin-bottom: 0;
   }
 
-  .aside.notification.small .foreground.container .text {
-    flex-flow: row nowrap;
+  .aside.notification.extra-small .foreground.container.no-image .text {
+    display: flex;
+  }
+
+  .aside.notification.extra-small .foreground.container.no-image .text a {
+    margin-left: 5px;
   }
 
   .aside.notification.small .foreground.container .text .action-area {
     width: auto;
     margin-top: 0;
-    margin-left: var(--spacing-s);
   }
 }
 
@@ -565,7 +589,9 @@
     width: var(--grid-container-width);
   }
 
-  .aside .foreground.container .image {
+  .aside .foreground.container .image,
+  .aside .foreground.container div:has(.milo-video),
+  .aside .foreground.container .milo-inline-video {
     flex: 0 0 50%;
     max-width: 500px;
     object-fit: cover;
@@ -587,7 +613,7 @@
   }
 
   .aside.inline .foreground.container .text {
-    flex: 0 0 calc(64% - 16px);
+    flex: 0 0 calc(64% - var(--spacing-s));
   }
 
   .aside.simple .foreground.container .text {
@@ -613,14 +639,6 @@
     max-width: 500px;
   }
 
-  .aside.augmented-image {
-    min-height: 700px;
-  }
-
-  .aside.augmented-image .foreground.container .image img {
-    width: 130%;
-  }
-
   .aside.inline {
     max-width: 800px;
     margin-right: auto;
@@ -628,7 +646,7 @@
   }
 
   .aside.inline .foreground.container .image {
-    flex: 0 0 calc(36% - 16px);
+    flex: 0 0 calc(36% - var(--spacing-s));
   }
 
   .aside.notification {
@@ -657,15 +675,16 @@
   }
 
   .aside.notification.small .foreground.container .text {
+    align-items: center;
     justify-content: flex-start;
   }
 
-  .aside.notification.small .foreground.container .text[data-align=center],
-  .aside.notification.small .foreground.container .text[data-align=center] > * {
+  .aside.notification.center.small .foreground.container .text,
+  .aside.notification.center.small .foreground.container .text > * {
     justify-content: center;
   }
 
-  .aside.notification.small .foreground.container .text[data-align=center] p {
+  .aside.notification.center.small .foreground.container .text p {
     text-align: center;
   }
 

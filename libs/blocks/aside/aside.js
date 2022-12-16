@@ -14,106 +14,57 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateVideo } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, decorateInlineVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const asideTypes = ['inline', 'notification', 'split'];
-const [INLINE, NOTIFICATION, SPLIT] = asideTypes;
-const asideSizes = ['extra-small', 'small', 'medium', 'large'];
-const [SIZE_XS, SIZE_S, SIZE_M, SIZE_L] = asideSizes;
+// standard/default aside uses same text sizes as the split
+const variants = ['split', 'inline', 'notification'];
+const sizes = ['extra-small', 'small', 'medium', 'large'];
+const [split, inline, notification] = variants;
+const [xsmall, small, medium, large] = sizes;
+const blockConfig = {
+  [split]: ['XL', 'S', 'M'],
+  [inline]: ['S', 'M'],
+  [notification]: {
+    [xsmall]: ['M', 'M'],
+    [small]: ['M', 'M'],
+    [medium]: ['S', 'S'],
+    [large]: ['L', 'M'],
+  },
+};
+
+function getBlockData(el) {
+  const variant = variants.find((v) => el.classList.contains(v));
+  const size = sizes.find((sz) => el.classList.contains(sz));
+  const blockData = variant ? blockConfig[variant] : blockConfig[Object.keys(blockConfig)[0]];
+  return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
+}
 
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
+  if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, a')?.closest('div');
+  text?.classList.add('text');
+  const picture = text?.querySelector('picture');
+  const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
+  iconArea?.classList.add('icon-area');
+  const image = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  if (image) {
+    const issplit = el.classList.contains('split');
+    image.classList.add(`${issplit ? 'split-' : ''}image`);
+    if (issplit) foreground.parentElement.appendChild(image);
+  } else if (!iconArea) {
+    foreground?.classList.add('no-image');
+  }
   return foreground;
 }
 
-function decorateLinks(el) {
-  const links = el.querySelectorAll('a');
-  if (links.length === 0) return;
-  const actionLinks = [...links].filter((link) => link.closest('div')?.classList.contains('text'));
-  if (actionLinks.length) {
-    const actions = document.createElement('div');
-    actions.classList.add('action-area');
-    actionLinks.forEach((link) => {
-      let parent = link.parentElement;
-      if (parent.nodeName === 'P') link.classList.add('body-S');
-      else {
-        const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-        link.classList.add('con-button', buttonType);
-        parent = link.closest('p');
-      }
-      actions.insertAdjacentElement('beforeend', link);
-      parent?.remove();
-    });
-    const content = el.querySelector('.text');
-    content?.insertAdjacentElement('beforeend', actions);
-  }
-}
-
-function decorateContent(el, type, size) {
-  if (!el) return;
-  const text = el.querySelector('h1, h2, h3, h4, h5, h6, a')?.closest('div');
-  const picture = text?.querySelector('picture');
-  const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
-  text?.classList.add('text');
-  if (text && !text.querySelector('p')) {
-    const buttons = text.querySelectorAll('em a, strong a');
-    let btnWrap = null;
-    if (buttons[0] && !buttons[0].closest('p')) {
-      btnWrap = document.createElement('p');
-      btnWrap.append(...[...buttons].map((button) => button.parentElement));
-    }
-    const desc = createTag('p', null, text.innerHTML);
-    text.innerHTML = '';
-    text.append(
-      iconArea || '',
-      desc,
-      btnWrap || '',
-    );
-  }
-  iconArea?.classList.add('icon-area');
-  const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings?.[headings.length - 1];
-  const isInline = type === INLINE;
-  const isNotification = type === NOTIFICATION;
-  if (heading) {
-    let headingClass = 'heading-XL';
-    if ((isNotification && size === SIZE_M) || isInline) {
-      headingClass = 'heading-S';
-    }
-    if (isNotification && size === SIZE_L) {
-      headingClass = 'heading-L';
-    }
-    heading?.classList.add(headingClass);
-    const prevClasses = heading?.previousElementSibling?.classList;
-    if (prevClasses?.length === 0) prevClasses.add('detail-M');
-  }
-  const bodyClass = (isNotification && (size === SIZE_XS || size === SIZE_S || size === SIZE_L)) || isInline ? 'body-M' : 'body-S';
-  const bodyCopy = heading?.nextElementSibling.classList.length === 0 ? heading.nextElementSibling : text?.querySelector('p:not([class])');
-  bodyCopy?.classList.add(bodyClass);
-  const body = createTag('div', { class: 'body-area' });
-  bodyCopy?.insertAdjacentElement('beforebegin', body);
-  body.append(bodyCopy);
-  if (type === SPLIT) {
-    const splitBg = el.querySelector(':scope > div:not(.text) img')?.closest('div');
-    if (splitBg) {
-      splitBg.classList.add('split-image');
-      el.parentElement.appendChild(splitBg);
-    }
-  } else {
-    el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
-  }
-  decorateVideo(el, 'image');
-  decorateLinks(el);
-}
-
 export default function init(el) {
+  if (!el) return;
+  const blockData = getBlockData(el);
   const foreground = decorateLayout(el);
-  const type = asideTypes.find((asideType) => el.className.includes(asideType));
-  const size = asideSizes.find((asideSize) => el.className.includes(asideSize))
-    || (type === NOTIFICATION ? SIZE_L : null);
-  decorateContent(foreground, type, size);
+  decorateBlockText(foreground, blockData);
+  decorateInlineVideo(el);
 }
