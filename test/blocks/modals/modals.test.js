@@ -15,7 +15,6 @@ describe('Modals', () => {
   it('Loads a modal on load with hash and closes when removed from hash', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    debugger;
     expect(document.getElementById('milo')).to.exist;
     window.location.hash = '';
     await waitForRemoval('#milo');
