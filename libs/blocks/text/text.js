@@ -43,6 +43,7 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-S');
   }
   let blockType = 'text';
+  const size = getBlockSize(el);
   const textLongFormVariants = ['inset', 'long-form', 'bio'];
   textLongFormVariants.forEach((b, i) => {
     if (el.classList.contains(b)) {
@@ -50,19 +51,15 @@ export default function init(el) {
       blockType = (i > 0) ? 'standard' : b;
     }
   });
+  const config = blockTypeSizes[blockType][size];
+  const headingClass = [...el.classList].filter((c) => c.includes('-heading'));
+  if (headingClass.length > 0) config[0] = getSizeString(headingClass[0]);
+  const bodyClass = [...el.classList].filter((c) => c.includes('-body'));
+  if (bodyClass.length > 0) config[1] = getSizeString(bodyClass[0]);
+  const detailClass = [...el.classList].filter((c) => c.includes('-detail'));
+  if (detailClass.length > 0) config[2] = getSizeString(detailClass[0]);
 
-  const veto = [];
-  if (el.classList.contains('override')) {
-    const headingClass = [...el.classList].filter((i) => i.includes('-heading'));
-    if (headingClass) veto.push(getSizeString(headingClass[0]));
-    const bodyClass = [...el.classList].filter((i) => i.includes('-body'));
-    if (bodyClass) veto.push(getSizeString(bodyClass[0]));
-    const detailClass = [...el.classList].filter((i) => i.includes('-detail'));
-    if (detailClass) veto.push(getSizeString(detailClass[0]));
-  }
   el.classList.add(...helperClasses);
-  const size = getBlockSize(el);
-  const config = (veto.length) ? veto : blockTypeSizes[blockType][size];
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
 }
