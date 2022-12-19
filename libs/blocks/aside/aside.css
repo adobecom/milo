@@ -360,6 +360,7 @@
 
 .aside.notification.small .foreground.container .text {
   flex-direction: column;
+  max-width: 1000px;
 }
 
 .aside.notification.center.small .foreground.container .text {
@@ -373,10 +374,6 @@
 
 .aside.notification.small {
   min-height: 88px;
-}
-
-.aside.notification.small .foreground.container .text {
-  max-width: 1000px;
 }
 
 .aside.notification.medium {
@@ -410,7 +407,6 @@
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
-    justify-content: space-between;
     align-items: stretch;
     flex-direction: row;
     margin: 0 auto;
@@ -586,6 +582,7 @@
 @media screen and (min-width: 1200px) {
   .aside .foreground.container {
     min-height: 420px;
+    justify-content: space-between;
     width: var(--grid-container-width);
   }
 
