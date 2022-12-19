@@ -1,5 +1,5 @@
 /* eslint-disable no-alert */
-const validURL = (s) => {
+const isValidURL = (s) => {
   try {
     URL(s);
     return true;
@@ -8,157 +8,167 @@ const validURL = (s) => {
   }
 };
 
-async function https2http(data) {
-  const arr2 = [];
-  const l = document.links;
-
-  for (let i = 0; i < l.length; i += 1) {
-    arr2.push(l[i].href);
-  }
-  const checker = (value) => ['http:'].some((element) => value.includes(element));
-  data.https2Http = arr2.filter(checker).length > 0
-    ? `Http Link Count ${arr2.filter(checker).length}`
+async function httpsLinks() {
+  const isHttp = (link) => link.href.includes('http:');
+  const httpLinkCount = [...document.links].filter(isHttp).length;
+  const result = httpLinkCount > 0
+    ? `Http Link Count ${httpLinkCount}`
     : 'Good';
+  return result;
 }
 
-(async function preflight() {
-  const data = { url: window.location.href };
+async function checkH1s() {
   const h1s = document.querySelectorAll('h1');
+  let result;
   if (h1s.length === 1) {
-    data.H1 = 'True';
+    result = 'Good';
   } else if (h1s.length > 1) {
-    data.H1 = 'Multiple H1';
-    alert('Multiple H1');
+    result = 'Multiple H1s';
+    alert('Multiple H1s');
   } else if (h1s.length < 1) {
-    data.H1 = 'Missing H1';
+    result = 'Missing H1s';
     alert('Missing H1');
   }
+  return result;
+}
 
-  data.https = window.location.protocol !== 'Https:' ? 'Http' : 'Https';
-  data.dateTime = new Date().toLocaleString();
+async function deprecatedTagCheck() {
+  const deprecatedTags = 'basefront,font,center,strike,big,dir,isindex,applet,acronym,noframe,xmp,noembed,plaintext,frameset,frame,u,tt,s';
+  let result;
+  const tags = [...document.querySelectorAll(deprecatedTags)].map((el) => el.tagName);
+  if (tags.length) {
+    const foundTags = [...new Set(tags)];
+    result = `Found Tag ${foundTags} Amount of Uses ${tags.length}`;
+    alert(`Found deprecated tag ${foundTags}`);
+  } else {
+    result = 'None';
+  }
+  return result;
+}
 
-  await https2http(data);
-  // Testing for DOCTYPE
-  const node = document.doctype;
-  const html = node.name
-    + (node.publicId ? ` PUBLIC "${node.publicId}"` : '')
-    + (!node.publicId && node.systemId ? ' SYSTEM' : '')
-    + (node.systemId ? ` "${node.systemId}"` : '');
-  data.docType = html;
-
-  // Testing for title
+async function testTitle() {
   const titles = document.querySelectorAll('title');
+  let result;
   if (titles.length < 1) {
-    data.title = 'No title';
+    result = 'No title';
     alert('No title');
   } else {
     const titleSize = document.title.replace(/\s/g, '').length;
     if (titleSize < 15) {
-      data.title = 'Too Short';
+      result = 'Too Short';
       alert('Title too short');
     } else if (titleSize > 70) {
-      data.title = 'Too Long';
+      result = 'Too Long';
       alert('Title too long');
     } else {
-      data.title = 'Good';
+      result = 'Good';
     }
   }
+  return result;
+}
 
-  // Testing for Canonical Url
+async function canonURLTest() {
   const canon = document.querySelectorAll("link[rel='canonical']");
+  let result;
   if (canon.length === 1) {
     const r2 = await fetch(
       document.querySelector("link[rel='canonical']").href,
     );
     if (r2.status >= 400) {
-      data.canon = 'Canon link broken';
+      result = 'Canon link broken';
       alert('Canononical link broken');
     } else if (r2.status >= 300) {
-      data.canon = 'Canon link redirects';
+      result = 'Canon link redirects';
       alert('Canononical redirects');
     } else {
-      data.canon = 'Good';
+      result = 'Good';
     }
   } else {
-    data.canon = 'Incorrect amount of Canonical Urls';
+    result = 'Incorrect amount of Canonical Urls';
     alert('Too many Canononical Urls');
   }
+  return result;
+}
 
-  data.validUrl = validURL(window.location.protocol) ? 'Valid' : 'Invalid';
-  // Test for Depracated tags
-  const dep2 = [];
-  let foundTag = [];
-  const dep = document.querySelectorAll(
-    'basefront,font,center,strike,big,dir,isindex,applet,acronym,noframe,xmp,noembed,plaintext,frameset,frame,u,tt,s',
-  );
-  dep.forEach((element) => dep2.push(element.tagName));
-  foundTag = Array.from(new Set(dep2));
-  if (dep.length > 0) {
-    data.depracatedTags = `Found Tag ${foundTag} Amount of Uses ${dep.length}`;
-    alert(`Found depracated tag ${foundTag}`);
-  } else {
-    data.depracatedTags = 'None';
-  }
-
-  // Meta description test
+async function metaDescriptionTest() {
+  let result;
   const metaD = document.querySelectorAll('meta[name="description"]');
   const metadSize = metaD[0].content.replace(/\s/g, '').length;
   if (metaD.length < 1) {
-    data.metaDescription = 'Missing';
+    result = 'Missing';
     alert('Missing Meta Description');
   } else if (metaD.length === 1) {
     if (metadSize < 50 || metadSize > 150) {
-      data.metaDescription = 'Incorrect Size';
+      result = 'Incorrect Size';
       alert('Incorrect Meta Description size');
     } else {
-      data.metaDescription = 'Good';
+      result = 'Good';
     }
   } else if (metaD.length > 1) {
-    data.metaDescription = `More than one metadescription :${metaD.length}`;
+    result = `More than one metadescription :${metaD.length}`;
     alert('More than one Meta description');
   }
+  return result;
+}
 
-  const hrefLang = document.querySelectorAll('a[hreflang]');
-  data.hreflang = hrefLang.length > 0 ? 'Has Hreflang' : 'No HrefLang';
-
-  const refresh = document.querySelectorAll('meta[http-equiv="refresh"]');
-  data.refresh = refresh.length > 0 ? 'Contains Meta refresh' : 'No Meta refresh';
-
-  const charset = document.querySelectorAll('meta[charset]');
-  data.charset = charset.length > 0 ? 'Contains Charset' : 'No Charset';
-
-  // test for robots
-  const robotIndex = document
-    .querySelector('meta[name="robots"]')
-    .getAttribute('content');
-
-  data.robotsIndex = robotIndex === 'index, follow'
-    ? `Indexed ${robotIndex}`
-    : (`Blocked ${robotIndex}`, alert('Robots blocked'));
-
-  // special character test
-  const { body } = document;
-  const textContent = body.textContent || body.innerText;
-  if (textContent.includes('Lorem ipsum')) {
-    data.loremIpsum = 'Contains Lorem ipsum';
-    alert('Contains Lorem Ipsum');
-  } else {
-    data.loremIpsum = 'No Lorem ipsum';
-  }
-
+async function bodyLength() {
+  let result;
   if (document.querySelectorAll('div[class="content"]').length > 0) {
     const text = document
       .getElementsByClassName('content')[0]
       .innerText.replace(/\s/g, '').length;
-    data.bodyLength = text < 100
-      ? `Too little content in body ${text}`
-      : 'Body content is Sufficent';
+    result = text < 100 ? `Too little content in body ${text}` : 'Body content is Sufficent';
   } else {
-    data.bodyLength = 'No body';
+    result = 'No body';
   }
-  // status code test
-  const r = await fetch(window.location.href);
-  data.statusCode = r.status;
+  return result;
+}
+
+async function loremIpsumTest() {
+  const { body } = document;
+  let result;
+  const textContent = body.textContent || body.innerText;
+  if (textContent.includes('Lorem ipsum')) {
+    result = 'Contains Lorem ipsum';
+    alert('Contains Lorem Ipsum');
+  } else {
+    result = 'No Lorem ipsum';
+  }
+  return result;
+}
+
+(async function preflight() {
+  const hrefLang = document.querySelectorAll('a[hreflang]');
+  const refresh = document.querySelectorAll('meta[http-equiv="refresh"]');
+  const charset = document.querySelectorAll('meta[charset]');
+  const robotIndex = document.querySelector('meta[name="robots"]').getAttribute('content');
+  const node = document.doctype;
+
+  const data = {
+    url: window.location.href,
+    H1: await checkH1s(),
+    httpsLinks: await httpsLinks(),
+    depracatedTags: await deprecatedTagCheck(),
+    title: await testTitle(),
+    canon: await canonURLTest(),
+    metaDescription: await metaDescriptionTest(),
+    loremIpsum: await loremIpsumTest(),
+    bodyLength: await bodyLength(),
+    https: window.location.protocol !== 'Https:' ? 'Http' : 'Https',
+    dateTime: new Date().toLocaleString(),
+    validUrl: isValidURL(window.location.protocol) ? 'Valid' : 'Invalid',
+    hreflang: hrefLang.length ? 'Has Hreflang' : 'No HrefLang',
+    refresh: refresh.length ? 'Contains Meta refresh' : 'No Meta refresh',
+    charset: charset.length ? 'Contains Charset' : 'No Charset',
+    robotsIndex: robotIndex === 'index, follow' ? `Indexed ${robotIndex}` : (`Blocked ${robotIndex}`, alert('Robots blocked')),
+  };
+
+  // Testing for DOCTYPE
+  data.docType = node.name
+    + (node.publicId ? ` PUBLIC "${node.publicId}"` : '')
+    + (!node.publicId && node.systemId ? ' SYSTEM' : '')
+    + (node.systemId ? ` "${node.systemId}"` : '');
+
   await fetch(
     'https://main--milo--adobecom.hlx.page/seo/preflight',
     {
