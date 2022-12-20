@@ -65,6 +65,7 @@
   -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex-grow: 1;
 }
 
 .card-horizontal .foreground .card-block .card-image {
@@ -95,9 +96,13 @@
   margin-left: var(--spacing-s);
 }
 
+.two-up .card-horizontal .foreground .card-block .card-image {
+  flex: 0 0 91px;
+}
+
 @media screen and (min-width: 600px) {
   .card-horizontal .foreground .card-block {
-    gap: var(--spacing-s);
+    gap: var(--spacing-m);
   }
 
   .card-horizontal .foreground .card-block .card-image {
@@ -124,10 +129,6 @@
 
   .two-up .card-horizontal .foreground .card-block {
     gap: var(--spacing-s);
-  }
-
-  .two-up .card-horizontal .foreground .card-block .card-image {
-    flex: 0 0 91px;
   }
 
   .three-up .card-horizontal .foreground .card-block {
