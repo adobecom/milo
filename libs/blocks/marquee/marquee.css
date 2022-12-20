@@ -539,6 +539,7 @@
   }
 
   .marquee.split.one-third .text .icon-area img {
+    max-height: 80px;
     max-width: 200px;
   }
 }
