@@ -593,3 +593,27 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   io.observe(el);
   return io;
 }
+
+export function loadLana(options = {}) {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana.log(e.reason || e.error || e.message, {
+      errorType: 'i',
+    });
+  }
+
+  window.lana = {
+    log: async (...args) => {
+      await import('../utils/lana.js');
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      return window.lana.log(...args);
+    },
+    debug: false,
+    options,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
+}
