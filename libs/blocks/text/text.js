@@ -35,10 +35,10 @@ export default function init(el) {
   let blockType = 'text';
   const size = getBlockSize(el);
   const longFormVariants = ['inset', 'long-form', 'bio'];
-  longFormVariants.forEach((varient, index) => {
-    if (el.classList.contains(varient)) {
+  longFormVariants.forEach((variant, index) => {
+    if (el.classList.contains(variant)) {
       helperClasses.push('max-width-8-desktop');
-      blockType = (index > 0) ? 'standard' : varient;
+      blockType = (index > 0) ? 'standard' : variant;
     }
   });
   const config = blockTypeSizes[blockType][size];
