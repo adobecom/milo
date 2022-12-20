@@ -36,6 +36,8 @@ export default async function init(config, loadScript) {
     },
   };
 
+  window.edgeConfigId = edgeConfigId;
+
   window.digitalData ??= {};
   window.digitalData.diagnostic ??= {};
   window.digitalData.diagnostic.franklin = { implementation: 'milo' };
