@@ -467,7 +467,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = el.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll('div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
