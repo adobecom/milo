@@ -55,7 +55,6 @@ describe('Decorating', () => {
 
   it('Loads lana.js upon calling lana.log the first time', async () => {
     expect(window.lana.log).to.exist;
-    expect(window.lana.options).not.to.exist;
 
     sinon.spy(console, 'log');
 
