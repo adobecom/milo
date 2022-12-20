@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+<head>
+  <title>Block loading from Milo</title>
+  <link rel="canonical" href="https://localhost:3000/published/2022/11/15/block-loading-from-milo">
+  <meta name="description"
+    content="We’ve been talking lately about how sites can consume Milo blocks, features, and utilities. This is also highly relevant for existing sites that already have ...">
+  <meta property="og:title" content="Block loading from Milo">
+  <meta property="og:description"
+    content="We’ve been talking lately about how sites can consume Milo blocks, features, and utilities. This is also highly relevant for existing sites that already have ...">
+  <meta property="og:url" content="https://localhost:3000/published/2022/11/15/block-loading-from-milo">
+  <meta property="og:image"
+    content="https://localhost:3000/published/2022/11/15/media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=1200&amp;format=pjpg&amp;optimize=medium">
+  <meta property="og:image:secure_url"
+    content="https://localhost:3000/published/2022/11/15/media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=1200&amp;format=pjpg&amp;optimize=medium">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Block loading from Milo">
+  <meta name="twitter:description"
+    content="We’ve been talking lately about how sites can consume Milo blocks, features, and utilities. This is also highly relevant for existing sites that already have ...">
+  <meta name="twitter:image"
+    content="https://localhost:3000/published/2022/11/15/media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=1200&amp;format=pjpg&amp;optimize=medium">
+  <meta name="access-control-allow-origin" content="*">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/scripts/scripts.js" type="module"></script>
+  <style>
+    body {
+      display: none;
+    }
+  </style>
+  <link rel="icon" href="http://localhost:3000/img/favicons/favicon.ico">
+  <link rel="apple-touch-icon" href="http://localhost:3000/img/favicons/favicon-180.png">
+  <link rel="manifest" href="http://localhost:3000/img/favicons/favicon.webmanifest">
+  </style>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1087.0" data-gr-ext-installed="">
+  <main>
+    <div class="section">
+      <div>
+        <div>
+          <div>
+            <picture>
+              <source type="image/webp"
+                srcset="./media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=2000&amp;format=webply&amp;optimize=medium"
+                media="(min-width: 400px)">
+              <source type="image/webp"
+                srcset="./media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=750&amp;format=webply&amp;optimize=medium">
+              <source type="image/jpeg"
+                srcset="./media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=2000&amp;format=jpeg&amp;optimize=medium"
+                media="(min-width: 400px)">
+              <img loading="eager" alt="" type="image/jpeg"
+                src="./media_1cd4c36b23061d888bafa4acc7606ff424b69cccf.jpeg?width=750&amp;format=jpeg&amp;optimize=medium"
+                width="8304" height="1842">
+            </picture>
+          </div>
+        </div>
+      </div>
+      <div class="content">
+        <h1 id="block-loading-from-milo">Block loading from Milo</h1>
+        <p>We’ve been talking lately about how sites can consume Milo blocks, features, and utilities. This is also
+          highly relevant for existing sites that already have a significant inventory of blocks. I think we have landed
+          on a model that will work well for most and has the fewest drawbacks.</p>
+        <p>We have a few key pillars that we are measuring a solution against:</p>
+        <ol>
+          <li>Milo-centric. We want it to be painful or borderline impossible to override a block provided by Milo.</li>
+          <li>We do want to allow some highly specialized blocks to be built directly in a project. This is especially
+            important for sites that may be run by vendors.</li>
+          <li>We do not want to maintain a list or registry of blocks. When solving this problem, it’s easy to jump to,
+            “Just have a list of which blocks to pull from Milo.” Beyond about 20 blocks, that list starts to get way to
+            long and provide less and less value.</li>
+        </ol>
+        <p>For #1 above, we need to accept the realities of where we are starting today. Milo only has a few blocks
+          right now. This is in comparison to mature sites that may have 20+ of their own blocks today. It doesn’t make
+          sense for these projects to default to Milo in the beginning. This means we are going to bifurcate our
+          consumers into two buckets:</p>
+        <ol>
+          <li>Milo first</li>
+          <li>Site first</li>
+        </ol>
+        <p>The idea is that when a site finds a block, it will see if Milo has code to make that block work, and if Milo
+          doesn’t have it, it will look to the site. For the second, it will look to the site first.</p>
+        <p>Here’s the fun bit: we are not maintaining a list of blocks anywhere. If Milo returns a 404, the block loader
+          will fallback to asking the site for the block code. This sounds good in theory, but we need to make sure this
+          404 fallback method will continue to work for us from a Lighthouse perspective.</p>
+        <p>We don’t want to start out of the gate with a ton of 404s. It’s important to recognize the realities of
+          today. A site like <a href="https://blog.adobe.com/">Blog</a> should be site-first. They have a much larger
+          block inventory than Milo does and we don’t want them throwing a ton of 404s. A site like <a
+            href="https://www.adobe.com/creativecloud/photography/hub/guides/manual-or-automatic-dslr-aperture">FedPub</a>,
+          which only has 2 blocks total, should be Milo-first.</p>
+        <p>As we migrate more and more blocks off Blog and other sites like it, we can move Blog to being Milo-first. If
+          we find the 404 model isn’t work, we will then evaluate if we do need sites to maintain a lookup of
+          <em>their</em> own blocks.
+        </p>
+      </div>
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </main>
+  <footer class="footer"></footer>
+
+</html>
