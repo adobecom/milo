@@ -35,17 +35,17 @@ export default function init(el) {
   let blockType = 'text';
   const size = getBlockSize(el);
   const longFormVariants = ['inset', 'long-form', 'bio'];
-  longFormVariants.forEach((v, i) => {
-    if (el.classList.contains(v)) {
+  longFormVariants.forEach((varient, index) => {
+    if (el.classList.contains(varient)) {
       helperClasses.push('max-width-8-desktop');
-      blockType = (i > 0) ? 'standard' : v;
+      blockType = (index > 0) ? 'standard' : varient;
     }
   });
   const config = blockTypeSizes[blockType][size];
   const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((o, i) => {
-    const hasClass = [...el.classList].filter((c) => c.includes(o));
-    if (hasClass.length) config[i] = hasClass[0].split('-').shift().toUpperCase();
+  overrides.forEach((override, index) => {
+    const hasClass = [...el.classList].filter((c) => c.includes(override));
+    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toUpperCase();
   });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
