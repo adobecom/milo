@@ -464,8 +464,6 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks) {
-  buildTagsBlock();
-
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
@@ -553,6 +551,7 @@ export async function loadArea(area = document) {
       const { addRichResults } = await import('../features/richresults.js');
       addRichResults(type, { createTag, getMetadata });
     }
+    buildTagsBlock();
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
