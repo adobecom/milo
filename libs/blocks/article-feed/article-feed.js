@@ -67,12 +67,12 @@ export function readBlockConfig(block) {
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
-export async function fetchBlogArticleIndex() {
+export async function fetchBlogArticleIndex(blockConfig) {
   const pageSize = 500;
 
   if (blogIndex.complete) return (blogIndex);
 
-  return fetch(`${getConfig().locale.contentRoot}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
+  return fetch(`${getConfig().locale.contentRoot}${blockConfig.queryIndexPath || '/query-index.json'}?limit=${pageSize}&offset=${blogIndex.offset}`)
     .then((response) => response.json())
     .then((json) => {
       const complete = (json.limit + json.offset) === json.total;
@@ -362,7 +362,7 @@ async function filterArticles(config, feed, limit, offset) {
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
     // eslint-disable-next-line no-await-in-loop
-    const index = await fetchBlogArticleIndex();
+    const index = await fetchBlogArticleIndex(config);
     const indexChunk = index.data.slice(feed.cursor);
 
     const beforeFiltering = new Date();
@@ -525,7 +525,7 @@ const clearBlock = (block) => { block.innerHTML = ''; };
 export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
   clearBlock(articleFeed);
-  loadTaxonomy();
+  loadTaxonomy(config);
   if (config.filters) {
     decorateFeedFilter(articleFeed, config);
   }
