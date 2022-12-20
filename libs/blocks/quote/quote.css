@@ -64,6 +64,13 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
   font-weight: bold;
 }
 
+/* borders */
+.quote.borders figure {
+  border-top: 1px solid #cacaca;
+  border-bottom: 1px solid #cacaca;
+  padding: var(--spacing-s) 0;
+}
+
 /* inline */
 .quote.inline figure {
   text-align: left;
@@ -79,25 +86,13 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
   max-height: 200px;
 }
 
-/* borders */
-.quote.borders figure {
-  border-top: 1px solid #cacaca;
-  border-bottom: 1px solid #cacaca;
-  padding: var(--spacing-s) 0;
-}
-
 /* options */
 .quote.dark {
-  color: #ffffff;
+  color: #fff;
 }
 
 .quote.long-form blockquote .quote-copy {
   font-weight: unset;
-}
-
-.quote.xxlarge blockquote .quote-copy {
-  font-size: var(--type-heading-xxl-size);
-  line-height: var(--type-heading-xxl-lh);
 }
 
 .quote.xsmall blockquote .quote-copy {
