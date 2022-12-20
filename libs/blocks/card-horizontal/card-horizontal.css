@@ -52,7 +52,7 @@
   gap: var(--spacing-s);
   overflow: hidden;
   border: 1px solid #EAEAEA;
-  max-height: 132px;
+  max-height: 130px;
   max-width: 600px;
   margin: 0 auto;
 }
