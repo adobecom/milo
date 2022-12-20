@@ -38,6 +38,7 @@ const MILO_BLOCKS = [
   'review',
   'section-metadata',
   'tabs',
+  'tags',
   'table-of-contents',
   'text',
   'youtube',
@@ -437,6 +438,14 @@ function decorateSections(el, isDoc) {
   });
 }
 
+async function buildTagsBlock() {
+  const topics = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
+
+  const tagsBlock = createTag('div', { class: 'tags' }, `<p>${topics.join(';')}`);
+
+  loadBlock(tagsBlock);
+}
+
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
@@ -455,6 +464,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks) {
+  buildTagsBlock();
+
   if (getMetadata('nofollow-links') === 'on') {
     const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
     const { default: nofollow } = await import('../features/nofollow.js');
