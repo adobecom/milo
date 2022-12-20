@@ -111,7 +111,7 @@
   }
 
   .card-horizontal.tile .foreground .card-block .card-content {
-    padding-right: var(--spacing-s);
+    padding-right: var(--spacing-m);
   }
 
   .card-horizontal.tile .foreground .card-block .card-image {
