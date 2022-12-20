@@ -44,7 +44,7 @@ export default function init(el) {
   const config = blockTypeSizes[blockType][size];
   const overrides = ['-heading', '-body', '-detail'];
   overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((c) => c.includes(override));
+    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
     if (hasClass.length) config[index] = hasClass[0].split('-').shift().toUpperCase();
   });
   decorateBlockText(el, config);
