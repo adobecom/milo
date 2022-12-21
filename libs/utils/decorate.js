@@ -70,12 +70,3 @@ export function getBlockSize(el, defaultSize = 1) {
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
-
-export function decorateInlineVideo(el, attrs = 'controls') {
-  const video = el.querySelector('a[href$=".mp4"]');
-  if (!video) return;
-  const parent = video.parentElement;
-  parent.innerHTML = `<video preload="metadata" ${attrs}><source src="${video.href}" type="video/mp4" /></video>`;
-  parent.classList.add('milo-inline-video');
-  video.remove();
-}

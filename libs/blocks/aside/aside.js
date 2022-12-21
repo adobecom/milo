@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText, decorateInlineVideo } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -38,6 +38,17 @@ function getBlockData(el) {
   const size = sizes.find((sz) => el.classList.contains(sz));
   const blockData = variant ? blockConfig[variant] : blockConfig[Object.keys(blockConfig)[0]];
   return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
+}
+
+function decorateInlineVideo(el) {
+  const video = el.querySelector('a[href*=".mp4"]');
+  if (!video) return;
+  const videoHref = video.getAttribute('href');
+  const videoAttrs = videoHref.includes('autoplay=true') ? 'playsinline autoplay muted loop' : 'controls';
+  const parent = video.parentElement;
+  parent.innerHTML = `<video preload="metadata" ${videoAttrs}><source src="${video.href}" type="video/mp4" /></video>`;
+  parent.classList.add('milo-inline-video');
+  video.remove();
 }
 
 function decorateLayout(el) {
@@ -65,6 +76,6 @@ export default function init(el) {
   if (!el) return;
   const blockData = getBlockData(el);
   const foreground = decorateLayout(el);
-  decorateBlockText(foreground, blockData);
   decorateInlineVideo(el);
+  decorateBlockText(foreground, blockData);
 }
