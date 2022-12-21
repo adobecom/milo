@@ -284,8 +284,7 @@
 
 .aside.notification .foreground.container .image {
   max-width: 75px;
-  margin-top: 0;
-  margin-bottom: var(--spacing-xs);
+  margin: 0;
   order: -1;
 }
 
@@ -348,7 +347,6 @@
   max-width: 800px;
 }
 
-
 .aside.notification.medium .foreground.container .text {
   flex-direction: column;
 }
@@ -382,6 +380,7 @@
 
 .aside.notification.medium .foreground.container {
   max-width: 800px;
+  gap: var(--spacing-xs);
 }
 
 .aside.notification.medium .foreground.container .text .heading-S {
@@ -399,6 +398,7 @@
 
 .aside.notification.large .foreground.container {
   max-width: 1000px;
+  gap: var(--spacing-xs);
 }
 
 .aside.notification.large .foreground.container.no-image {
@@ -487,7 +487,7 @@
   }
 
   .aside.split .foreground.container .text {
-    flex: 0 0 30vw;
+    flex: 0 0 31vw;
     padding: var(--spacing-xxl) 0;
     max-width: 100%;
     margin: 0;
@@ -530,32 +530,35 @@
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
-
+  
   .aside.right .foreground.container {
     flex-direction: row-reverse;
   }
-
+  
   .aside.inline .foreground.container .image {
     flex: 0 0 calc(40% - var(--spacing-s));
     margin-right: 32px;
     margin-bottom: 0;
   }
-
+  
   .aside.notification .foreground.container {
     flex-direction: row;
+  }
+  
+  .aside.notification.medium .foreground.container,
+  .aside.notification.large .foreground.container {
+    gap: var(--spacing-s);
   }
 
   .aside.notification .foreground.container .image {
     width: 30%;
     max-width: 188px;
-    margin-right: var(--spacing-s);
-    margin-left: 0;
-    margin-bottom: 0;
+    margin: 0;
+    padding: 0;
     order: unset;
   }
 
   .aside.notification .foreground.container .text+.image {
-    margin-left: var(--spacing-s);
     margin-right: 0;
   }
 
@@ -654,14 +657,19 @@
     min-height: 0;
   }
 
+  .aside.notification.medium .foreground.container {
+    gap: var(--spacing-m);
+  }
+
+  .aside.notification.large .foreground.container {
+    gap: var(--spacing-l);
+  }
+
   .aside.notification .foreground.container .image {
     width: 20%;
-    max-width: 168px;
-    margin-right: var(--spacing-l);
   }
 
   .aside.notification .foreground.container .text+.image {
-    margin-left: var(--spacing-l);
     margin-right: 0;
   }
 
@@ -686,11 +694,14 @@
   }
 
   .aside.notification.medium .foreground.container .image {
-    margin-right: var(--spacing-m);
+    max-width: 168px;
+  }
+
+  .aside.notification.large .foreground.container .image {
+    max-width: 304px;
   }
 
   .aside.notification.medium .foreground.container .text+.image {
-    margin-left: var(--spacing-m);
     margin-right: 0;
   }
 }
