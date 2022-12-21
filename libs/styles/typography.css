@@ -218,10 +218,11 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
-div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+div[class*='-up'] .con-block.has-bg,
 div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
 div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
 div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
