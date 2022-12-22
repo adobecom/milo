@@ -157,8 +157,8 @@ const formatPath = (str) => str?.replace(/^\/+/g, '').replace(/\/+$/, '');
  */
 export default async (config, route, target) => {
   const root = route
-        ? `${config.locale.contentRoot}/${formatPath(route)}` 
-        : config.locale.contentRoot;
+    ? `${config.locale.contentRoot}/${formatPath(route)}`
+    : config.locale.contentRoot;
   const path = target || `${config.locale.contentRoot}/taxonomy.json`;
 
   return fetchTaxonomy(path)
