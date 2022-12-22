@@ -97,6 +97,9 @@ export default function init(el) {
     media?.classList.add('image');
   }
 
+  const firstDivInForeground = foreground.querySelector(':scope > div');
+  if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
+
   const size = getBlockSize(el);
   decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
