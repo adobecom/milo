@@ -1,0 +1,38 @@
+/* TODO just a POC. Copy of the css for the profile avatar from global-navigation.css */
+
+.gnav:not(.signed-in) .gnav-profile {
+  min-width: 5.766rem;
+}
+
+.gnav-profile,
+.gnav.signed-in .gnav-profile{
+  min-width: 62.25px;
+}
+
+.gnav-profile {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.gnav-profile .gnav-signin {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  padding-bottom: 2px;
+}
+
+.gnav-profile .gnav-profile-button {
+  padding: 0 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.gnav-profile .gnav-profile-button .gnav-profile-img {
+  display: block;
+  width: 30px;
+  border-radius: 4px;
+}

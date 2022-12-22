@@ -1,9 +1,5 @@
 :root {
-  --border-color: #e1e1e1;
-  --apps-border-color: #cacaca;
   /* New Variables */
-  --background-nav--light: #fff;
-  --color-focus-ring: #109cde;
   --padding-utilityIcon: 4px;
   --radius-utilityIcon: 4px;
 }
@@ -472,121 +468,11 @@ header .gnav-navitem.has-menu > a:after {
   border-radius: 4px;
 }
 
-.gnav-profile .gnav-profile-menu {
-  display: none;
-  position: fixed;
-  right: 0;
-  top: 56px;
-  min-width: 320px;
-  background: var(--color-white);
-  border: 1px solid var(--border-color);
-  border-radius: 0 0 4px 4px;
-  overflow: hidden;
-}
-
-.gnav-profile.is-open .gnav-profile-menu {
-  display: unset;
-}
-
-.gnav-profile-header {
-  display: flex;
-  padding: 20px;
-  align-items: start;
-}
-
-.gnav-profile-header .gnav-profile-img {
-  width: 64px;
-  height: 64px;
-  border-radius: 4px;
-}
-
-.gnav-profile-details {
-  margin-left: 16px;
-  align-self: stretch;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.gnav-profile-name {
-  font-size: 18px;
-  line-height: 1;
-  margin: 0;
-  font-weight: 700;
-  flex: 0 0 100%;
-}
-
-.gnav-profile-email {
-  color: #707070;
-  font-size: 14px;
-  line-height: 1.25;
-  margin: 0;
-  flex: 0 0 100%;
-}
-
-.gnav-profile-account {
-  margin: 0;
-  text-decoration: underline;
-  font-size: 14px;
-  align-self: flex-end;
-  flex: 0 0 100%;
-}
-
-.gnav-profile-actions {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 14px;
-}
-
-.gnav-profile-actions a {
-  padding: 14px 20px;
-  display: block;
-  border-top: 1px solid var(--border-color);
-  box-sizing: border-box;
-  color: #4b4b4b;
-}
-
-.gnav-profile-menu a:hover {
-  background-color: #FAFAFA;
-}
-
 /* PROFILE MULTI CLOUD SIGNIN */
 
 header .gnav-profile.gnav-navitem > a {
   border-bottom: none;
   padding-top: unset;
-}
-
-header .gnav-profile.gnav-navitem.has-menu.is-open > a {
-  font-weight: unset;
-}
-
-.gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
-  position: fixed;
-  margin-top: 57px;
-  padding: 34px 28px 40px;
-  z-index: 1;
-  left: unset;
-  right: 0;
-}
-
-.gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu ul > li:last-child {
- border-top: 1px solid var(--border-color);
- padding-top: 3px;
- margin-top: 3px;
-}
-
-header .gnav-profile.gnav-navitem ul a {
-  padding: 6px 12px;
-}
-
-header .gnav-profile.gnav-navitem.has-menu.is-open:before,
-header .gnav-profile.gnav-navitem.has-menu.is-open > a:before {
-  content: unset;
-}
-
-header.gnav .gnav-profile-header {
-  white-space: unset;
 }
 
 /* END PROFILE */
@@ -835,11 +721,6 @@ header .app-launcher {
 
   .gnav-profile {
     padding: 0 8px;
-  }
-
-  .gnav-profile .gnav-profile-menu {
-    position: absolute;
-    top: 100%;
   }
 }
 

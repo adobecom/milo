@@ -1,3 +1,7 @@
+:root {
+  --apps-border-color: #cacaca;
+}
+
 header .gnav-navitem-menu {
   display: none;
   padding: 14px 0;
