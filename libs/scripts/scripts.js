@@ -13,6 +13,7 @@
 import {
   loadArea,
   loadDelayed,
+  loadLana,
   setConfig,
 } from '../utils/utils.js';
 
@@ -101,6 +102,8 @@ const locales = {
 };
 
 const config = {
+  geoRouting: 'off',
+  fallbackRouting: 'off',
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
@@ -116,6 +119,7 @@ const config = {
 
 (async function loadPage() {
   setConfig(config);
+  loadLana({ clientId: 'milo' });
   await loadArea();
   loadDelayed();
 }());

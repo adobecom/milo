@@ -1,3 +1,5 @@
+@import url('../../styles/article-card.css');
+
 element {
   --detail-color: var(--color-gray-600);
   --detail-line-height: 1.25;
@@ -445,7 +447,7 @@ main a.article-card:any-link {
   width: 100%;
   transition: opacity 0.4s;
   color: var(--color-white);
-  line-height: var(--body-line-height);
+  line-height: var(--type-body-line-height);
 }
 
 .article-card .article-card-image img:hover {

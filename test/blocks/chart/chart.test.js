@@ -537,7 +537,8 @@ describe('chart', () => {
   it('lineSeriesOptions returns correct options with marks', () => {
     const series = [{ Type: 'markArea', Name: 'Weekend', Axis: 'xAxis', Value: 'Saturday-Sunday' }, { Type: 'markLine', Name: 'Standout', Axis: 'xAxis', Value: 'Tuesday' }, { Type: 'markLine', Name: 'Average', Axis: 'yAxis', Value: '200' }];
     const firstDataset = [100, 156, 160];
-    const units = ['K'];
+    const xUnit = '';
+    const yUnits = ['K'];
     const expected = [
       {
         type: 'line',
@@ -596,7 +597,7 @@ describe('chart', () => {
       },
     ];
 
-    expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
+    expect(lineSeriesOptions(series, firstDataset, xUnit, yUnits)).to.eql(expected);
   });
 
   it('init donut chart', async () => {
