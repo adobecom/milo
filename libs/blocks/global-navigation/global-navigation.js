@@ -45,66 +45,32 @@ class Gnav {
   constructor(body, el) {
     this.el = el;
     this.body = body;
-    this.decorateBlocks();
     this.desktop = window.matchMedia('(min-width: 1200px)');
+    body.querySelectorAll('[class$="-"]').forEach((block) => {
+      const { name, variants } = getBlockClasses(block.className);
+      block.classList.add(name, ...variants);
+    });
   }
 
   init = () => {
     this.state = {};
-    this.curtain = createTag('div', { class: 'gnav-curtain' });
-    const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
-
-    const mobileToggle = this.decorateToggle(nav);
-    nav.append(mobileToggle);
-
-    const brand = this.decorateBrand();
-    if (brand) {
-      nav.append(brand);
-    }
-
-    const scrollWrapper = toFragment`
-      <div class="mainnav-wrapper">
-
+    this.curtain = toFragment`<div class="gnav-curtain"></div>`
+    const nav = toFragment`
+      <div class="gnav-wrapper">
+        <nav class="gnav" aria-label="Main">
+          ${this.mobileToggle()}
+          ${this.decorateBrand()}
+          <div class="mainnav-wrapper">
+            ${this.decorateMainNav()}
+            ${this.decorateSearch()}
+          </div>
+          ${this.decorateProfile()}
+          ${this.decorateLogo()}
+        </nav>
+        ${this.decorateBreadcrumbs()}
       </div>
-    `
-
-    const mainNav = this.decorateMainNav();
-    if (mainNav) {
-      const cta = this.decorateCta();
-      if (cta) {
-        mainNav.append(cta);
-      }
-      scrollWrapper.append(mainNav);
-    }
-
-    const search = this.decorateSearch();
-    if (search) {
-      scrollWrapper.append(search);
-    }
-
-    if (scrollWrapper.children.length > 0) {
-      nav.append(scrollWrapper);
-    }
-
-    const profile = this.decorateProfile();
-    if (profile) {
-      nav.append(profile);
-    }
-
-    const logo = this.decorateLogo();
-    if (logo) {
-      nav.append(logo);
-    }
-
-    const wrapper = createTag('div', { class: 'gnav-wrapper' }, nav);
-
-    this.setBreadcrumbSEO();
-    const breadcrumbs = this.decorateBreadcrumbs();
-    if (breadcrumbs) {
-      wrapper.append(breadcrumbs);
-    }
-
-    this.el.append(this.curtain, wrapper);
+    ` 
+    this.el.append(this.curtain, nav);
   };
 
   loadSearch = async () => {
@@ -114,13 +80,9 @@ class Gnav {
     this.getHelpxLink = getHelpxLink;
   };
 
-  decorateToggle = () => {
-    const toggle = createTag('button', { class: 'gnav-toggle', 'aria-label': 'Navigation menu', 'aria-expanded': false });
-    const onMediaChange = (e) => {
-      if (e.matches) {
-        this.el.classList.remove(IS_OPEN);
-      }
-    };
+  mobileToggle = () => {
+    const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`
+    const onMediaChange = (e) => e.matches && this.el.classList.remove(IS_OPEN)
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
@@ -139,78 +101,70 @@ class Gnav {
     if (!brandBlock) return null;
     const brandLinks = [...brandBlock.querySelectorAll('a')];
     const brand = brandLinks.pop();
-    const brandTitle = brand.textContent;
-    brand.className = brandBlock.className;
-    const title = createTag('span', { class: 'gnav-brand-title' }, brandTitle);
-    brand.setAttribute('aria-label', brand.textContent);
-    brand.setAttribute('daa-ll', 'Brand');
-    if (brand.textContent !== '') brand.textContent = '';
-    if (brand.classList.contains('logo')) {
-      if (brandLinks.length > 0) {
-        decorateSVG(brandLinks[0]);
-        brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
-      } else {
-        brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
-      }
-    }
-    brand.append(title);
-    return brand;
+    return toFragment`
+      <a
+        href="${brand.getAttribute('href')}"
+        class="${brandBlock.className}"
+        aria-label="${brand.textContent}"
+        daa-ll="Brand"
+      >
+        ${BRAND_IMG}
+        <span class="gnav-brand-title"> ${brand.textContent} </span>
+      </a>
+    `;
   };
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
-    logo.href = makeRelative(logo.href, true);
-    logo.classList.add('gnav-logo');
-    logo.setAttribute('aria-label', logo.textContent);
-    logo.setAttribute('daa-ll', 'Logo');
-    logo.textContent = '';
-    logo.insertAdjacentHTML('afterbegin', COMPANY_IMG);
-    return logo;
+    return toFragment`
+      <a
+        href="https://www.adobe.com/"
+        class="gnav-logo"
+        aria-label="${logo.textContent}"
+        daa-ll="Logo"
+      >
+        ${COMPANY_IMG}
+      </a>
+    `;
   };
 
   decorateMainNav = () => {
-    const mainNav = createTag('div', { class: 'gnav-mainnav' });
-    const mainLinks = this.body.querySelectorAll('h2 > a');
-    if (mainLinks.length > 0) {
-      this.buildMainNav(mainNav, mainLinks);
+    const mainNav = toFragment`<div class="gnav-mainnav"></div>`
+    const links = this.body.querySelectorAll('h2 > a');
+    links.forEach((link, i) => mainNav.appendChild(this.navLink(link, i)))
+    mainNav.appendChild(this.decorateCta())
+    return mainNav;
+  };
+
+  navLink = (navLink, idx) => {
+    navLink.href = makeRelative(navLink.href, true);
+    const navBlock = navLink.closest('.large-menu');
+    const menu = navLink.closest('div');
+    menu.querySelector('h2').remove();
+    const navItem = toFragment`<div class="gnav-navitem">${navLink}</div>`
+
+    // All menu types
+    if (menu.childElementCount > 0 || navBlock) {
+      const id = `navmenu-${idx}`;
+      menu.id = id;
+      navItem.classList.add('has-menu');
+      this.setNavLinkAttributes(id, navLink);
     }
-    return mainNav;
-  };
-
-  buildMainNav = (mainNav, navLinks) => {
-    navLinks.forEach((navLink, idx) => {
-      navLink.href = makeRelative(navLink.href, true);
-      const navItem = createTag('div', { class: 'gnav-navitem' });
-      const navBlock = navLink.closest('.large-menu');
-      const menu = navLink.closest('div');
-
-      menu.querySelector('h2').remove();
-      navItem.appendChild(navLink);
-
-      // All menu types
-      if (menu.childElementCount > 0 || navBlock) {
-        const id = `navmenu-${idx}`;
-        menu.id = id;
-        navItem.classList.add('has-menu');
-        this.setNavLinkAttributes(id, navLink);
+    // Small and medium menu types
+    if (menu.childElementCount > 0) {
+      const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
+      navItem.appendChild(decoratedMenu);
+    }
+    // Large Menus & Section Nav
+    if (navBlock) {
+      navItem.classList.add('large-menu');
+      if (navBlock.classList.contains('section')) {
+        navItem.classList.add('section-menu');
       }
-      // Small and medium menu types
-      if (menu.childElementCount > 0) {
-        const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
-        navItem.appendChild(decoratedMenu);
-      }
-      // Large Menus & Section Nav
-      if (navBlock) {
-        navItem.classList.add('large-menu');
-        if (navBlock.classList.contains('section')) {
-          navItem.classList.add('section-menu');
-        }
-        this.decorateLargeMenu(navLink, navItem, menu);
-      }
-      mainNav.appendChild(navItem);
-    });
-    return mainNav;
-  };
+      this.decorateLargeMenu(navLink, navItem, menu);
+    }
+    return navItem
+  }
 
   setNavLinkAttributes = (id, navLink) => {
     navLink.setAttribute('role', 'button');
@@ -333,18 +287,20 @@ class Gnav {
   };
 
   decorateCta = () => {
-    const cta = this.body.querySelector('strong a');
-    if (cta) {
-      const { origin } = new URL(cta.href);
-      if (origin !== window.location.origin) {
-        cta.target = '_blank';
-      }
-      cta.classList.add('con-button', 'blue', 'button-M');
-      cta.setAttribute('daa-ll', analyticsGetLabel(cta.textContent));
-      cta.parentElement.classList.add('gnav-cta');
-      return cta.parentElement;
-    }
-    return null;
+    const cta = this.body.querySelector('strong a')
+    const { origin } = new URL(cta.href);
+    return toFragment`
+      <strong class="gnav-cta">
+        <a 
+          href="${cta.getAttribute("href")}"
+          class="con-button blue button-M" 
+          daa-ll="${analyticsGetLabel(cta.textContent)}"
+          target="${origin === window.location.origin ? '' : '_blank'}"
+        >
+          ${cta.textContent}
+        </a>
+      </strong>
+    `
   };
 
   decorateSearch = () => {
@@ -597,37 +553,19 @@ class Gnav {
       this.toggleMenu(this.state.openMenu);
     }
   };
-
-  decorateBlocks = () => {
-    const variantBlocks = this.body.querySelectorAll('[class$="-"]');
-    variantBlocks.forEach((block) => {
-      const { name, variants } = getBlockClasses(block.className);
-      block.classList.add(name, ...variants);
-    });
-  };
-}
-
-async function fetchGnav(url) {
-  const resp = await fetch(`${url}.plain.html`);
-  const html = await resp.text();
-  return html;
 }
 
 export default async function init(header) {
   const { locale, imsClientId } = getConfig();
-  const name = imsClientId ? `|${imsClientId}` : '';
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  const html = await fetchGnav(url);
+  const resp = await fetch(`${url}.plain.html`);
+  const html = await resp.text();
   if (!html) return null;
   try {
-    const initEvent = new Event('gnav:init');
-    const parser = new DOMParser();
-    const gnavDoc = parser.parseFromString(html, 'text/html');
-    const gnav = new Gnav(gnavDoc.body, header);
+    const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
     gnav.init();
-    header.dispatchEvent(initEvent);
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav${name}`);
+    header.setAttribute('daa-lh', `gnav${imsClientId ? `|${imsClientId}` : ''}`);
     return gnav;
   } catch (e) {
     console.log('Could not create global navigation:', e);
