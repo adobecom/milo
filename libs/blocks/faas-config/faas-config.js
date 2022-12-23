@@ -30,7 +30,16 @@ const getHashConfig = () => {
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
+  let hashConfig = parseEncodedConfig(encodedConfig);
+  hashConfig.pjs36 = hashConfig.p.js[36] || '';
+  hashConfig.pjs39 = hashConfig.p.js[39] || '';
+  hashConfig.pjs92 = hashConfig.p.js[92] || '';
+  hashConfig.pjs93 = hashConfig.p.js[93] || '';
+  hashConfig.pjs94 = hashConfig.p.js[94] || '';
+  hashConfig.pjs149 = hashConfig.p.js[149] || '';
+  hashConfig.pjs172 = hashConfig.p.js[172] || '';
+  hashConfig.q103 = hashConfig.q[103]?.c || {};
+  return hashConfig;
 }
 
 const getInitialState = () => {

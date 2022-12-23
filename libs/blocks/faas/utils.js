@@ -296,7 +296,15 @@ export const makeFaasConfig = (targetState) => {
     e: { 
       afterYiiLoadedCallback, 
       beforeSubmitCallback,
-    }
+    },
+    style_backgroundTheme: targetState.style_backgroundTheme || 'white',
+    style_layout: targetState.style_layout || 'column1',
+    isGate: targetState.isGate ? 'gated' : '',
+    pc1: targetState.pc1 || false,
+    pc2: targetState.pc2 || false,
+    pc3: targetState.pc3 || false,
+    pc4: targetState.pc4 || false,
+    pc5: targetState.pc5 || false,
   };
 
   // b2bpartners
