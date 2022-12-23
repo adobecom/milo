@@ -115,7 +115,7 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy(config) {
-  taxonomyLibrary.default(getConfig(), config.taxonomyPath || '/topics').then((_taxonomyModule) => {
+  taxonomyLibrary.default(getConfig(), config.taxonomy || '/topics').then((_taxonomyModule) => {
     taxonomyModule = _taxonomyModule;
     if (taxonomyModule) {
       // taxonomy loaded, post loading adjustments
