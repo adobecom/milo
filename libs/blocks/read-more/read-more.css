@@ -50,10 +50,6 @@
   background-color: #0F66D0;
 }
 
-.section:not(.read-more-expanded) .recommended-articles {
-  padding-top: 70px;
-}
-
 .section:not(.read-more-expanded) .read-more ~ *:not(.recommended-articles){
   min-height: 0;
   height: 0;
