@@ -1,15 +1,11 @@
 import {
   createTag,
-  decorateSVG,
   getConfig,
   getMetadata,
   loadScript,
   makeRelative,
 } from '../../utils/utils.js';
-import {
-  analyticsDecorateList,
-  analyticsGetLabel,
-} from '../../martech/attributes.js';
+import { analyticsGetLabel } from '../../martech/attributes.js';
 import { toFragment } from './utilities.js';
 
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
@@ -20,11 +16,6 @@ export const IS_OPEN = 'is-open';
 
 const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
-const isHeading = (el) => el?.nodeName.startsWith('H');
-const childIndexOf = (el) => [...el.parentElement.children]
-  .filter((e) => (e.nodeName === 'DIV' || e.nodeName === 'P'))
-  .indexOf(el);
-
 const debounce = (func, timeout = 300) => {
   let timer;
   return async (...args) => {
@@ -43,6 +34,7 @@ function getBlockClasses(className) {
 
 class Gnav {
   constructor(body, el) {
+    this.blocks = {}
     this.el = el;
     this.body = body;
     this.desktop = window.matchMedia('(min-width: 1200px)');
@@ -136,33 +128,49 @@ class Gnav {
     return mainNav;
   };
 
+  loadMenu = async () => {
+    if(this.menusLoaded) return this.menusLoaded
+    this.menusLoaded = import('./blocks/navMenu/menu.js')
+    .then(module => module.default)
+    return this.menusLoaded
+  }
+
   navLink = (navLink, idx) => {
     navLink.href = makeRelative(navLink.href, true);
     const navBlock = navLink.closest('.large-menu');
     const menu = navLink.closest('div');
     menu.querySelector('h2').remove();
-    const navItem = toFragment`<div class="gnav-navitem">${navLink}</div>`
+
+    const hasMenu = menu.childElementCount > 0 || navBlock ? ' has-menu' : '';
+    const largeMenu = navBlock ? ' large-menu' : '';
+    const sectionMenu = navBlock?.classList.contains('section')
+      ? ' section-menu'
+      : '';
 
     // All menu types
-    if (menu.childElementCount > 0 || navBlock) {
+    if (hasMenu) {
       const id = `navmenu-${idx}`;
       menu.id = id;
-      navItem.classList.add('has-menu');
       this.setNavLinkAttributes(id, navLink);
     }
-    // Small and medium menu types
-    if (menu.childElementCount > 0) {
-      const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
-      navItem.appendChild(decoratedMenu);
-    }
-    // Large Menus & Section Nav
-    if (navBlock) {
-      navItem.classList.add('large-menu');
-      if (navBlock.classList.contains('section')) {
-        navItem.classList.add('section-menu');
-      }
-      this.decorateLargeMenu(navLink, navItem, menu);
-    }
+
+    const navItem = toFragment`
+      <div class="gnav-navitem${hasMenu}${largeMenu}${sectionMenu}">
+        ${navLink}
+      </div>
+    `
+
+    // TODO remove/improve the setTimeout
+    // links should NOT be interactable until this resolved
+    // also loadMenu faster onClick
+    setTimeout(async () => {
+      const {decorateMenu, decorateLargeMenu} = await this.loadMenu()
+      // Small and medium menu types
+      if (menu.childElementCount > 0) navItem.appendChild(decorateMenu(navItem, navLink, menu))
+      
+      // Large Menus & Section Nav
+      if (navBlock) decorateLargeMenu(navLink, navItem, menu)
+    }, 2000);
     return navItem
   }
 
@@ -172,118 +180,6 @@ class Gnav {
     navLink.setAttribute('aria-controls', id);
     navLink.setAttribute('daa-ll', navLink.textContent);
     navLink.setAttribute('daa-lh', 'header|Open');
-  };
-
-  decorateLinkGroups = (menu) => {
-    const linkGroups = menu.querySelectorAll('.link-group');
-    linkGroups.forEach((linkGroup) => {
-      const image = linkGroup.querySelector('picture');
-      const anchor = linkGroup.querySelector('a');
-      const title = anchor?.textContent;
-      const subtitle = linkGroup.querySelector('p:last-of-type') || '';
-      const titleWrapper = createTag('div');
-      titleWrapper.className = 'link-group-title';
-      anchor.href = makeRelative(anchor.href, true);
-      const link = createTag('a', { class: 'link-block', href: anchor.href });
-
-      linkGroup.replaceChildren();
-      titleWrapper.append(title, subtitle);
-      const contents = image ? [image, titleWrapper] : [titleWrapper];
-      link.append(...contents);
-      linkGroup.appendChild(link);
-    });
-  };
-
-  setMenuAnalytics = (el) => {
-    switch (el.nodeName) {
-      case 'DIV':
-        if (el.classList.contains('link-group')) {
-          const title = el.querySelector('.link-group-title')?.childNodes?.[0]?.textContent;
-          if (title) {
-            el.firstChild.setAttribute('daa-lh', `${analyticsGetLabel(title)}-${childIndexOf(el) + 1}`);
-          }
-        } else {
-          [...el.children].forEach((childEl) => this.setMenuAnalytics(childEl));
-        }
-        break;
-      case 'UL':
-        if (isHeading(el.previousElementSibling)) {
-          el.setAttribute('daa-lh', el.previousElementSibling.textContent);
-        }
-        [...el.children].forEach(analyticsDecorateList);
-        break;
-      default: {
-        const a = el.querySelector('a');
-        if (a) {
-          a.setAttribute('daa-ll', `${analyticsGetLabel(a.textContent)}-${childIndexOf(el) + 1}`);
-        }
-      }
-    }
-  };
-
-  decorateAnalytics = (menu) => [...menu.children].forEach((child) => this.setMenuAnalytics(child));
-
-  decorateButtons = (menu) => {
-    const buttons = menu.querySelectorAll('strong a');
-    buttons.forEach((btn) => {
-      btn.classList.add('con-button', 'filled', 'blue', 'button-M');
-    });
-  };
-
-  decorateMenu = (navItem, navLink, menu) => {
-    menu.className = 'gnav-navitem-menu';
-    menu.setAttribute('daa-lh', `header|${navLink.textContent}`);
-    const childCount = menu.childElementCount;
-    if (childCount === 1) {
-      menu.classList.add('small-Variant');
-    } else if (childCount === 2) {
-      menu.classList.add('medium-Variant');
-    } else if (childCount >= 3) {
-      menu.classList.add('large-Variant');
-      const container = createTag('div', { class: 'gnav-menu-container' });
-      container.append(...Array.from(menu.children));
-      menu.append(container);
-    }
-    this.decorateLinkGroups(menu);
-    this.decorateAnalytics(menu);
-    navLink.addEventListener('focus', () => {
-      window.addEventListener('keydown', this.toggleOnSpace);
-    });
-    navLink.addEventListener('blur', () => {
-      window.removeEventListener('keydown', this.toggleOnSpace);
-    });
-    navLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.toggleMenu(navItem);
-    });
-    this.decorateButtons(menu);
-    return menu;
-  };
-
-  decorateLargeMenu = (navLink, navItem, menu) => {
-    let path = navLink.href;
-    path = makeRelative(path, true);
-    const promise = fetch(`${path}.plain.html`);
-    promise.then(async (resp) => {
-      if (resp.status === 200) {
-        const text = await resp.text();
-        menu.insertAdjacentHTML('beforeend', text);
-        const links = menu.querySelectorAll('a');
-        links.forEach((link) => {
-          decorateSVG(link);
-        });
-        const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
-        const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
-        menuSections.forEach((sec) => { sec.classList.add('section'); });
-        const sectionMetas = decoratedMenu.querySelectorAll('.section-metadata');
-        sectionMetas.forEach(async (meta) => {
-          const { default: sectionMetadata } = await import('../section-metadata/section-metadata.js');
-          sectionMetadata(meta);
-        });
-        navItem.appendChild(decoratedMenu);
-      }
-    });
   };
 
   decorateCta = () => {
@@ -453,6 +349,7 @@ class Gnav {
   };
 
   decorateBreadcrumbs = () => {
+    this.setBreadcrumbSEO();
     const parent = this.el.querySelector('.breadcrumbs');
     if (parent) {
       const ul = parent.querySelector('ul');
@@ -466,93 +363,6 @@ class Gnav {
     return null;
   };
   /* c8 ignore stop */
-
-  /**
-   * Toggles menus when clicked directly
-   * @param {HTMLElement} el the element to check
-   */
-  toggleMenu = (el) => {
-    const isSearch = el.classList.contains('gnav-search');
-    const sameMenu = el === this.state.openMenu;
-    if (this.state.openMenu) {
-      this.closeMenu();
-    }
-    if (!sameMenu) {
-      this.openMenu(el, isSearch);
-    }
-  };
-
-  closeMenu = () => {
-    this.state.openMenu.classList.remove(IS_OPEN);
-    this.curtain.classList.remove('is-open');
-    this.curtain.classList.remove('is-quiet');
-    document.removeEventListener('click', this.closeOnDocClick);
-    window.removeEventListener('keydown', this.closeOnEscape);
-    const menuToggle = this.state.openMenu.querySelector('[aria-expanded]');
-    menuToggle.setAttribute('aria-expanded', false);
-    menuToggle.setAttribute('daa-lh', 'header|Open');
-    this.state.openMenu = null;
-  };
-
-  openMenu = (el, isSearch) => {
-    el.classList.add(IS_OPEN);
-
-    const menuToggle = el.querySelector('[aria-expanded]');
-    menuToggle.setAttribute('aria-expanded', true);
-    menuToggle.setAttribute('daa-lh', 'header|Close');
-
-    document.addEventListener('click', this.closeOnDocClick);
-    window.addEventListener('keydown', this.closeOnEscape);
-    if (!isSearch) {
-      const desktop = window.matchMedia('(min-width: 900px)');
-      if (desktop.matches) {
-        document.addEventListener('scroll', this.closeOnScroll, { passive: true });
-        if (el.classList.contains('large-menu')) {
-          this.curtain.classList.add('is-open', 'is-quiet');
-        }
-      }
-    } else {
-      this.curtain.classList.add('is-open');
-      el.querySelector('.gnav-search-input').focus();
-    }
-    this.state.openMenu = el;
-  };
-
-  toggleOnSpace = (e) => {
-    if (e.code === 'Space') {
-      e.preventDefault();
-      const parentEl = e.target.closest('.has-menu');
-      this.toggleMenu(parentEl);
-    }
-  };
-
-  closeOnScroll = () => {
-    let scrolled;
-    if (!scrolled) {
-      if (this.state.openMenu) {
-        this.toggleMenu(this.state.openMenu);
-      }
-      scrolled = true;
-      document.removeEventListener('scroll', this.closeOnScroll);
-    }
-  };
-
-  closeOnDocClick = (e) => {
-    const closest = e.target.closest(`.${IS_OPEN}`);
-    const isCurtain = e.target === this.curtain;
-    if ((this.state.openMenu && !closest) || isCurtain) {
-      this.toggleMenu(this.state.openMenu);
-    }
-    if (isCurtain) {
-      this.curtain.classList.remove('is-open');
-    }
-  };
-
-  closeOnEscape = (e) => {
-    if (e.code === 'Escape') {
-      this.toggleMenu(this.state.openMenu);
-    }
-  };
 }
 
 export default async function init(header) {
