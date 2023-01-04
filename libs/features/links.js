@@ -3,7 +3,7 @@ let linkData = null;
 
 const getLinks = async (path) => {
   if (!path) return null;
-  if (!fetched) {
+  if (!linkData) {
     const resp = await fetch(path);
     if (resp.ok) {
       const json = await resp.json();
