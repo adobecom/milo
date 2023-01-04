@@ -178,14 +178,6 @@ span.icon.margin-left { margin-left: 8px; }
 
 .con-button.button-XL span.icon.margin-left { margin-left: 14px; }
 
-/* mobile only */
-@media (max-width: 600px) {
-  .con-button.button-justified-mobile {
-    display: block;
-    text-align: center;
-  }
-}
-
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }
 .con-block.s-spacing { padding: var(--spacing-s) 0; }
@@ -225,3 +217,30 @@ div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+
+.con-block.max-width-6 .foreground { max-width: 600px; }
+.con-block.max-width-8 .foreground { max-width: 800px; }
+.con-block.max-width-10 .foreground { max-width: 1000px; }
+
+/* mobile only */
+@media (max-width: 600px) {
+  .con-button.button-justified-mobile {
+    display: block;
+    text-align: center;
+  }
+}
+
+/* Tablet up */
+@media screen and (min-width: 600px) {
+  .con-block.max-width-6-tablet .foreground { max-width: 600px; }
+  .con-block.max-width-8-tablet .foreground { max-width: 800px; }
+  .con-block.max-width-10-tablet .foreground { max-width: 1000px; }
+}
+
+
+/* desktop up */
+@media screen and (min-width: 1200px) {
+  .con-block.max-width-6-desktop .foreground { max-width: 600px; }
+  .con-block.max-width-8-desktop .foreground { max-width: 800px; }
+  .con-block.max-width-10-desktop .foreground { max-width: 1000px; }
+}

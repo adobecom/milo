@@ -13,6 +13,7 @@
 import {
   loadArea,
   loadDelayed,
+  loadLana,
   setConfig,
 } from '../utils/utils.js';
 
@@ -119,6 +120,7 @@ const config = {
 
 (async function loadPage() {
   setConfig(config);
+  loadLana({ clientId: 'milo' });
   await loadArea();
   loadDelayed();
 }());
