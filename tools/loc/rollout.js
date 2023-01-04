@@ -56,8 +56,8 @@ function processMdast(nodes) {
     let hash = objectHash.sha1(node);
     if (hashToIndex.has(hash)) {
       const suffix = hashCounter.get(hash) || 1;
-      hash += `-count${suffix}`;
       hashCounter.set(hash, suffix + 1);
+      hash += `-count${suffix}`;
     }
     arrayWithTypeAndHash.push({ type: nodeType, hash });
     hashToIndex.set(hash, index);
@@ -133,14 +133,18 @@ function getChanges(left, right) {
       if (leftElement.hash === rightElement.hash) {
         updateChangesMap(changesMap, leftElement.hash, { op: 'nochange' });
       } else if (rightHashToIndex.has(leftElement.hash)) {
+        // Current Left Element is added newly
         updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
       } else if (leftHashToIndex.has(rightElement.hash)) {
+        // Current Right Element has been moved down - handled as add delete
         updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
         updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
       } else if (leftElement.type === rightElement.type) {
+        // Type is same so consider as edited.
         updateChangesMap(changesMap, leftElement.hash, { op: 'edited', newHash: rightElement.hash });
         editSet.add(rightElement.hash);
       } else {
+        // Default Add Delete
         updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
         updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
       }
@@ -239,7 +243,7 @@ async function rollout(file, targetFolders, skipMerge = false) {
     const livecopyFilePath = `${targetFolder}/${fileName}`;
     const status = { success: true, path: livecopyFilePath };
 
-    function udpateErrorStatus(errorMessage) {
+    function updateErrorStatus(errorMessage) {
       status.success = false;
       status.errorMsg = errorMessage;
       loadingON(errorMessage);
@@ -299,10 +303,10 @@ async function rollout(file, targetFolders, skipMerge = false) {
         await persist(filePath, livecopyMergedMdast, livecopyFilePath);
         loadingON(`Rollout to ${livecopyFilePath} complete`);
       } else {
-        udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
+        updateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
       }
     } catch (error) {
-      udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
+      updateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
     }
     return status;
   }
