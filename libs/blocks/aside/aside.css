@@ -39,7 +39,8 @@
   background-color: #1E1E1E;
 }
 
-.aside.light {
+.aside.light,
+.aside.split {
   background-color: #f5f5f5;
 }
 
