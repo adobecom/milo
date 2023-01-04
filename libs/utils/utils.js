@@ -602,9 +602,8 @@ export function loadDelayed(delay = 3000) {
     setTimeout(() => {
       loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
-        import('../features/interlinks.js').then((mod) => {
-          resolve(mod);
-        });
+        const path = `${getConfig().locale.contentRoot}/keywords.json`;
+        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
       } else {
         resolve(null);
       }
