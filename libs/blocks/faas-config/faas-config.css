@@ -19,12 +19,13 @@ button {
 .success-message, .error-message {
   position: absolute;
   right: 15px;
-  bottom: -10px;
+  bottom: -40px;
   opacity: 0;
-  padding: 5px 15px;
+  padding: 10px 15px;
   transition: opacity .3s ease-in-out;
   width: 150px;
   text-align: center;
+  line-height: 1.5;
 }
 
 .success-message {

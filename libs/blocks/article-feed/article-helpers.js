@@ -23,11 +23,6 @@ function calculateExcelDate(date) {
   return new Date(Math.round((date - (1 + 25567 + 1)) * 86400 * 1000));
 }
 
-// Safari won't accept '-' as a date separator
-function replaceSeparator(date) {
-  date.replace(/-/g, '/');
-}
-
 /**
  * For the given list of topics, returns the corresponding computed taxonomy:
  * - category: main topic
@@ -141,7 +136,7 @@ export async function loadTaxonomy() {
 
       // adjust meta article:tag
 
-      const currentTags = getMetadata('article:tag', true) || [];
+      const currentTags = getMetadata('article:tag') || [];
       const articleTax = computeTaxonomyFromTopics(currentTags);
 
       const allTopics = articleTax.allTopics || [];
@@ -181,7 +176,9 @@ export async function loadTaxonomy() {
  * @returns {string} The formatted card date
  */
 export function formatCardLocaleDate(date) {
-  const jsDate = !date.includes('-') ? calculateExcelDate(date) : replaceSeparator(date);
+  if (!date) return '';
+  const jsDate = !date.includes('-') ? calculateExcelDate(date) : date.replace(/-/g, '/');
+
   const dateLocale = getConfig().locale?.ietf;
 
   let dateString = new Date(jsDate).toLocaleDateString(dateLocale, {
@@ -270,7 +267,7 @@ export function getArticleTaxonomy(article) {
 function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule().get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
