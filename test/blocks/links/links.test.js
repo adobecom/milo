@@ -5,7 +5,7 @@ import nofollow from '../../../libs/features/links.js';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Nofollow', async () => {
-  it('Returns null if no path provided', async () => {
+  it('Returns undefined if no path provided', async () => {
     const imnull = await nofollow();
     expect(imnull).to.be.undefined;
   });
