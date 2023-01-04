@@ -28,10 +28,12 @@ function closeModals(modals) {
   if (qModals?.length) {
     const anchor = qModals.some((m) => m.classList.contains('anchor'));
     qModals.forEach((modal) => {
+      const modalId = modal.id;
       if (modal.nextElementSibling?.classList.contains('modal-curtain')) {
         modal.nextElementSibling.remove();
       }
       modal.remove();
+      document.querySelector(`[data-modal-hash="#${modalId}"]`)?.focus();
     });
     if (anchor) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
   }
