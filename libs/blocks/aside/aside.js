@@ -61,11 +61,15 @@ function decorateLayout(el) {
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
-  const image = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const foreImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const image = foreImage ?? bgImage;
   if (image) {
-    const issplit = el.classList.contains('split');
-    image.classList.add(`${issplit ? 'split-' : ''}image`);
-    if (issplit) foreground.parentElement.appendChild(image);
+    const isSplit = el.classList.contains('split');
+    image.classList.add(`${isSplit ? 'split-' : ''}image`);
+    if (isSplit) {
+      foreground.parentElement.appendChild(image);
+    }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
   }
