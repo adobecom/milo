@@ -8,7 +8,6 @@
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
   --text-color: #2c2c2c;
-
   --color-white: #FFF;
   --color-gray-100: #F8F8F8;
   --color-gray-200: #E8E8E8;
@@ -106,6 +105,10 @@
 
 :root:lang(ko-KR) {
   --body-font-family: adobe-han-k, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(ja-JP) {
+  --body-font-family: adobe-clean-han-japanese, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 @media (min-width: 1200px) {
