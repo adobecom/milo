@@ -269,10 +269,6 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside.inline .foreground.container .text .action-area {
-  margin-top: var(--spacing-m);
-}
-
 .aside.notification {
   min-height: 0;
 }
@@ -423,6 +419,10 @@
     align-self: center;
     justify-self: center;
   }
+  
+  .aside .foreground.container .text.image {
+    justify-content: flex-start;
+  }
 
   .aside.right .foreground.container .image,
   .aside.right .foreground.container div:has(.milo-video),
@@ -518,6 +518,7 @@
   .aside.notification.small .foreground.container .text {
     flex-flow: row nowrap;
     align-items: center;
+    flex-grow: 1;
   }
 
   .aside.notification.small .foreground.container .text .body-M {
@@ -679,7 +680,7 @@
   .aside.notification.medium {
     min-height: auto;
   }
-
+  
   .aside.notification.small .foreground.container .text {
     align-items: center;
     justify-content: flex-start;

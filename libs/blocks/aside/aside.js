@@ -61,9 +61,9 @@ function decorateLayout(el) {
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
-  const foreImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
-  const image = foreImage ?? bgImage;
+  const image = foregroundImage ?? bgImage;
   if (image) {
     const isSplit = el.classList.contains('split');
     image.classList.add(`${isSplit ? 'split-' : ''}image`);
