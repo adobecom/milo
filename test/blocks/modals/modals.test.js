@@ -53,7 +53,7 @@ describe('Modals', () => {
   it('Opens an inherited modal', async () => {
     const meta = document.createElement('meta');
     meta.name = '-otis';
-    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/otis';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/otis';
     document.head.append(meta);
     window.location.hash = '#otis';
     await waitForElement('#otis');
@@ -125,7 +125,7 @@ describe('Modals', () => {
   it('Focuses on close when there are no other focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-paragraph';
-    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/paragraph';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/paragraph';
     document.head.append(meta);
     window.location.hash = '#paragraph';
     await waitForElement('#paragraph');
@@ -138,7 +138,7 @@ describe('Modals', () => {
   it('Focuses on a header when there are no other focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-title';
-    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/title';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
     document.head.append(meta);
     window.location.hash = '#title';
     await waitForElement('#title');
