@@ -34,7 +34,7 @@ describe('LANA', () => {
       xhrRequests.push(req);
     };
 
-    window.lana.setDefaultOptions(defaultTestOptions);
+    window.lana.options = { ...defaultTestOptions };
     window.lana.debug = false;
     window.lana.localhost = false;
     sinon.spy(console, 'log');
@@ -49,16 +49,6 @@ describe('LANA', () => {
 
   it('Exists on the window object', () => {
     expect(window.lana).to.exist;
-  });
-
-  it('Set the default clientId', () => {
-    window.lana.setClientId('myClientId');
-    window.lana.log('I set the client id');
-    expect(xhrRequests.length).to.equal(1);
-    expect(xhrRequests[0].method).to.equal('GET');
-    expect(xhrRequests[0].url).to.equal(
-      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=myClientId&s=100&t=e',
-    );
   });
 
   it('Catches unhandled error', (done) => {
@@ -164,6 +154,20 @@ describe('LANA', () => {
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
       'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore',
+    );
+  });
+
+  it('uses default option values if not set in options object', () => {
+    window.lana.options = {
+      clientId: 'blah',
+      sampleRate: 100,
+      implicitSampleRate: 100,
+    };
+    window.lana.log('only the clientId set in window.lana.options');
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://www.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e',
     );
   });
 });

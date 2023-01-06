@@ -1,4 +1,4 @@
-import { createTag, getMetadata, makeRelative } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLink } from '../../utils/utils.js';
 
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -17,7 +17,7 @@ function getDetails(el) {
   }
   const metaPath = getMetadata(`-${details.id}`);
   if (metaPath) {
-    details.path = makeRelative(metaPath);
+    details.path = localizeLink(metaPath);
     return details;
   }
   return null;
@@ -35,6 +35,16 @@ function closeModals(modals) {
     });
     if (anchor) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
   }
+}
+
+function isElementInView(element) {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0
+    && rect.left >= 0
+    && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
 }
 
 function handleCustomModal(custom, dialog) {
@@ -73,6 +83,36 @@ export async function getModal(el, custom) {
   const content = custom ? handleCustomModal(custom, dialog) : await handleAnchorModal(el, dialog);
   if (!content) return;
 
+  const focusVisible = { focusVisible: true };
+  const focusablesOnLoad = [...dialog.querySelectorAll('a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]')];
+  const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
+  let firstFocusable;
+
+  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
+    firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
+  } else if (titleOnLoad) {
+    titleOnLoad.setAttribute('tabIndex', 0);
+    firstFocusable = titleOnLoad;
+  } else {
+    firstFocusable = close;
+  }
+
+  dialog.addEventListener('keydown', (event) => {
+    const isShiftKey = event.shiftKey;
+    const isTab = event.key === 'Tab';
+    const isCloseActive = document.activeElement === close;
+
+    if (!isShiftKey && isTab && isCloseActive) {
+      event.preventDefault();
+      firstFocusable.focus(focusVisible);
+    }
+
+    if (isTab && isShiftKey && document.activeElement === firstFocusable) {
+      event.preventDefault();
+      close.focus(focusVisible);
+    }
+  });
+
   close.addEventListener('click', (e) => {
     closeModals([dialog]);
     e.preventDefault();
@@ -86,7 +126,7 @@ export async function getModal(el, custom) {
   });
 
   dialog.addEventListener('keydown', (event) => {
-    if (event.keyCode === 27) {
+    if (event.key === 'Escape') {
       closeModals([dialog]);
     }
   });
@@ -94,7 +134,7 @@ export async function getModal(el, custom) {
   dialog.append(close, content);
   document.body.append(dialog);
   dialog.insertAdjacentElement('afterend', curtain);
-  close.focus({ focusVisible: true });
+  firstFocusable.focus(focusVisible);
 
   return dialog;
 }

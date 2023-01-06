@@ -1,4 +1,4 @@
-import { getMetadata, makeRelative } from '../../utils/utils.js';
+import { getMetadata, localizeLink } from '../../utils/utils.js';
 
 /**
  * decorates the header, mainly the nav
@@ -15,7 +15,7 @@ export default async function init(block) {
 
     const anchors = doc.querySelectorAll('a');
     anchors.forEach((a) => {
-      a.href = makeRelative(a.href);
+      a.href = localizeLink(a.href);
     });
 
     const nav = document.createElement('nav');
