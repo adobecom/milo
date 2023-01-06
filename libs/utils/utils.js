@@ -1,5 +1,3 @@
-const PROJECT_NAME = 'milo--adobecom';
-const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -80,6 +78,7 @@ const ENVS = {
   },
 };
 const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
+const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -99,11 +98,14 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export function getLocaleFromPath(locales, path) {
-  const split = path.split('/');
+export function getLocale(locales, pathname = window.location.pathname) {
+  if (!locales) {
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+  }
+  const split = pathname.split('/');
   const localeString = split[1];
   const locale = locales[localeString] || locales[''];
-  if (localeString === 'langstore') {
+  if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
@@ -111,31 +113,23 @@ export function getLocaleFromPath(locales, path) {
   return locale;
 }
 
-// find out current locale based on pathname and existing locales object from config.
-export function getLocale(locales) {
-  if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
-  }
-  const { pathname } = window.location;
-  return getLocaleFromPath(locales, pathname);
-}
-
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
-      const { origin } = window.location;
+      const origin = conf.origin || window.location.origin;
+      const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
-      config.locale = getLocale(conf.locales);
+      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
-
       return config;
     },
     () => config,
@@ -165,13 +159,29 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href) {
-  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host))
-    || url.hostname === window.location.hostname;
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
+function getExtension(path) {
+  const pageName = path.split('/').pop();
+  return pageName.includes('.') ? pageName.split('.').pop() : '';
+}
+
+export function localizeLink(href, originHostName = window.location.hostname) {
+  const url = new URL(href);
+  const relative = url.hostname === originHostName;
+  const processedHref = relative ? href.replace(url.origin, '') : href;
+  const { hash } = url;
+  if (hash === '#_dnt') return processedHref.split('#')[0];
+  const path = url.pathname;
+  const extension = getExtension(path);
+  const allowedExts = ['', 'html', 'json'];
+  if (!allowedExts.includes(extension)) return processedHref;
+  const { locale, locales, productionDomain } = getConfig();
+  if (!locale || !locales) return processedHref;
+  const isLocalizable = relative || productionDomain === url.hostname;
+  if (!isLocalizable) return processedHref;
+  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
+  if (isLocalizedLink) return processedHref;
+  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+  return relative ? urlPath : `${url.origin}${urlPath}`;
 }
 
 export function loadStyle(href, callback) {
@@ -327,7 +337,7 @@ export function decorateSVG(a) {
   const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
   const img = document.createElement('img');
-  img.src = makeRelative(textContent);
+  img.src = localizeLink(textContent);
   const pic = document.createElement('picture');
   pic.append(img);
   if (img.src === href) {
@@ -377,7 +387,7 @@ export function decorateAutoBlock(a) {
 function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
-    a.href = makeRelative(a.href);
+    a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
