@@ -15,6 +15,7 @@
  */
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
+import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
@@ -111,10 +112,10 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
-    if (media?.lastChild.textContent && !media?.lastChild.textContent.match(/^\s+$/g)) {
+    if (media?.lastChild.textContent.trim()) {
       const mediaCredit = document.createElement('div');
       mediaCredit.classList.add('media-credit', 'container');
-      mediaCredit.innerHTML = `<p class="body-S">${media.lastChild.textContent}</p>`;
+      mediaCredit.appendChild(createTag('p', { class: 'body-S' }, media.lastChild.textContent));
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
       media.lastChild.remove();
