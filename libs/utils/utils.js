@@ -145,7 +145,9 @@ export function getMetadata(name, doc = document) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement || html instanceof SVGElement) {
+    if (html instanceof HTMLElement
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
@@ -509,6 +511,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  const event = new Event('milo:deferred');
+  area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
