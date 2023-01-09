@@ -4,7 +4,7 @@ import {
   getConfig,
   getMetadata,
   loadScript,
-  makeRelative,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -155,7 +155,7 @@ class Gnav {
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
-    logo.href = makeRelative(logo.href, true);
+    logo.href = localizeLink(logo.href);
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -175,7 +175,7 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
-      navLink.href = makeRelative(navLink.href, true);
+      navLink.href = localizeLink(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -225,7 +225,7 @@ class Gnav {
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = makeRelative(anchor.href, true);
+      anchor.href = localizeLink(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -305,7 +305,7 @@ class Gnav {
 
   decorateLargeMenu = (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = makeRelative(path, true);
+    path = localizeLink(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {
@@ -406,7 +406,7 @@ class Gnav {
     const { default: appLauncher } = await import('./gnav-appLauncher.js');
     appLauncher(profileEl, appLauncherBlock, this.toggleMenu);
   };
-  
+
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;

@@ -1,4 +1,4 @@
-import { makeRelative, loadScript, getConfig } from '../../utils/utils.js';
+import { loadScript, getConfig } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -122,8 +122,7 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const path = makeRelative(link.href);
-  const resp = await fetch(path.toLowerCase());
+  const resp = await fetch(link.href.toLowerCase());
 
   if (!resp.ok) return {};
 

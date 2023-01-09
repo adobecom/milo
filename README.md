@@ -49,4 +49,5 @@ or:
 ```sh
 npm run test:watch
 ```
-This will give you several options to debug tests. Note: coverage may not be accurate.
+### Coverage
+`npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
