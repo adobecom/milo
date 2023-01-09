@@ -40,6 +40,7 @@ const MILO_BLOCKS = [
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
   'youtube',
   'z-pattern',
   'share',
