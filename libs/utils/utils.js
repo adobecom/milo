@@ -77,7 +77,6 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
@@ -592,7 +591,7 @@ export async function loadArea(area = document) {
       loadGeoRouting(config, createTag, getMetadata);
     }
     const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+    if (type) {
       const { addRichResults } = await import('../features/richresults.js');
       addRichResults(type, { createTag, getMetadata });
     }
