@@ -7,10 +7,10 @@
 
 .walls-io .wallsio-load-more-button {
     text-decoration: none;
-    border-radius: 2rem;
-    padding: 6px 1rem;
+    border-radius: 44px;
+    padding: 6px 16px;
     text-align: center;
-    font-size: var(--body-font-size-s);
+    font-size: var(--type-body-s-size);
     font-style: normal;
     font-weight: 600;
     cursor: pointer;
@@ -30,12 +30,6 @@
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-800);
     color: var(--color-white);
-}
-
-.walls-io {
-    max-width: 100%;
-    text-align: center;
-    padding-top: 16px;
 }
 
 @media (min-width: 700px) {
