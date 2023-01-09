@@ -35,6 +35,7 @@ const MILO_BLOCKS = [
   'recommended-articles',
   'review',
   'section-metadata',
+  'sticky-header',
   'tabs',
   'table-of-contents',
   'text',

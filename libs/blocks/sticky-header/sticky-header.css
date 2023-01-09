@@ -1,0 +1,88 @@
+.sticky-header {
+    position: sticky;
+    top: 65px;
+    left: 0;
+    z-index: 1;
+    background-color: white;
+    border-bottom: 1px #EEE solid;
+    padding: 8px 0;
+    font-size: 16px;
+}
+
+.sticky-header > div {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+}
+
+.sticky-header img {
+    display: block;
+}
+
+@-webkit-keyframes button-gradient {
+    0% {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+}
+
+@-moz-keyframes button-gradient {
+    0% {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+}
+
+@keyframes button-gradient {
+    0% {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+}
+
+.sticky-header .button {
+    display: block;
+    margin: 0;
+    border-radius: 2rem;
+    border: 2px solid transparent;
+    padding: 6px 1rem;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--color-white);
+    text-decoration: none;
+    user-select: none;
+    background: linear-gradient(320deg, #7C84F3, #FF4DD2, #FF993B, #FF4DD2, #7C84F3, #FF4DD2, #FF993B);
+    background-size: 400% 400%;
+    background-position: center;
+    -webkit-animation: button-gradient 45s ease infinite;
+    -moz-animation: button-gradient 45s ease infinite;
+    animation: button-gradient 45s ease infinite;
+}
+
+.sticky-header-close {
+  cursor: pointer;
+}
