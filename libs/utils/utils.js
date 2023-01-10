@@ -337,6 +337,7 @@ export function decorateSVG(a) {
   const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
   const img = document.createElement('img');
+  img.setAttribute('loading', 'lazy');
   img.src = localizeLink(textContent);
   const pic = document.createElement('picture');
   pic.append(img);
