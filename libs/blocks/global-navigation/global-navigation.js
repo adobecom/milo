@@ -1,5 +1,4 @@
 import {
-  createTag,
   getConfig,
   getMetadata,
   loadScript,
@@ -9,21 +8,15 @@ import {
 import { analyticsGetLabel } from '../../martech/attributes.js';
 import { toFragment } from './utilities.js';
 
+const CONFIG = {
+ search: {
+  icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
+ },
+};
+
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
 const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
-const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
-const SEARCH_DEBOUNCE_MS = 300;
 export const IS_OPEN = 'is-open';
-
-const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
-const getCountry = () => getLocale()?.split('-').pop() || 'US';
-const debounce = (func, timeout = 300) => {
-  let timer;
-  return async (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(async () => func.apply(this, args), timeout);
-  };
-};
 
 function getBlockClasses(className) {
   const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
@@ -94,18 +87,22 @@ class Gnav {
         { decorateMenu, decorateLargeMenu },
         { appLauncher },
         { profile },
+        { Search },
       ] = await Promise.all([
         loadBlock('./delayed-utilities.js'),
         loadBlock('./blocks/navMenu/menu.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/profile.js'),
+        loadBlock('./blocks/search/gnav-search.js'),
         loadStyles('navMenu/menu.css'),
+        loadStyles('search/gnav-search.css'),
       ]);
       this.menuControls = new MenuControls();
       this.decorateMenu = decorateMenu;
       this.decorateLargeMenu = decorateLargeMenu;
       this.appLauncher = appLauncher;
       this.profile = profile;
+      this.search = Search;
 
       this.imsReady
         .then(({ blockEl, profileEl }) => {
@@ -136,11 +133,11 @@ class Gnav {
     }
   };
 
-  loadSearch = async () => {
-    if (this.onSearchInput) return;
-    const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
-    this.onSearchInput = debounce(onSearchInput, SEARCH_DEBOUNCE_MS);
-    this.getHelpxLink = getHelpxLink;
+  loadSearch = () => {
+    if (this.blocks?.search?.instance) return this.loadDelayed();
+    return this.loadDelayed().then(() => {
+      this.blocks.search.instance = new this.search(this.blocks.search.config);
+    });
   };
 
   mobileToggle = () => {
@@ -270,64 +267,41 @@ class Gnav {
 
   decorateSearch = () => {
     const searchBlock = this.body.querySelector('.search');
-    if (searchBlock) {
-      const label = searchBlock.querySelector('p').textContent;
-      const searchEl = createTag('div', { class: 'gnav-search' });
-      const searchBar = this.decorateSearchBar(label);
-      const searchButton = createTag(
-        'button',
-        {
-          class: 'gnav-search-button',
-          'aria-label': label,
-          'aria-expanded': false,
-          'aria-controls': 'gnav-search-bar',
-          'daa-ll': 'Search',
-        },
-        SEARCH_ICON,
-      );
-      searchButton.addEventListener('click', async () => {
-        this.loadSearch();
-        await this.loadDelayed();
-        this.menuControls.toggleMenu(searchEl);
-      });
-      searchEl.append(searchButton, searchBar);
-      return searchEl;
-    }
-    return null;
-  };
 
-  decorateSearchBar = (label) => {
-    const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
-    const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
-    const searchInput = createTag('input', {
-      class: 'gnav-search-input',
-      placeholder: label,
-      'daa-ll': 'search-results:standard search',
-    });
-    const searchResults = createTag('div', { class: 'gnav-search-results' });
-    const searchResultsUl = createTag('ul');
-    searchResults.append(searchResultsUl);
-    const locale = getLocale();
+    if (!searchBlock) return null;
 
-    searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
+    this.blocks = this.blocks || {};
+    this.blocks.search = {
+      config: {},
+    };
+
+    // TODO: Retrieve all types of labels through placeholders
+    this.blocks.search.config.label = searchBlock.querySelector('p').textContent;
+    this.blocks.search.config.icon = CONFIG.search.icon;
+
+    this.blocks.search.config.trigger = toFragment`
+      <button class="feds-search-trigger" aria-label="${this.blocks.search.config.label}" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
+        ${this.blocks.search.config.icon}
+        <span class="feds-search-close"></span>
+      </button>`;
+
+    const searchEl = toFragment`
+      <div class="feds-search">
+        ${this.blocks.search.config.trigger}
+      </div>`;
+
+    this.blocks.search.config.trigger.addEventListener('click', async () => {
+      await this.loadSearch();
+      this.menuControls.toggleMenu(searchEl);
     });
 
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, getCountry()));
-      }
-    });
-
-    searchField.append(searchInput);
-    searchBar.append(searchField, searchResults);
-    return searchBar;
+    return searchEl;
   };
 
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
-    const profileEl = createTag('div', { class: 'gnav-profile' });
+    const profileEl = toFragment`<div class="gnav-profile"></div>`;
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
     const { locale, imsClientId, env } = getConfig();
@@ -386,7 +360,7 @@ class Gnav {
         item: link?.href,
       });
     });
-    const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(breadcrumbSEO));
+    const script = toFragment`<script type="application/ld+json">${JSON.stringify(breadcrumbSEO)}</script>`;
     document.head.append(script);
   };
 
@@ -397,7 +371,7 @@ class Gnav {
       const ul = parent.querySelector('ul');
       if (ul) {
         ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        const nav = createTag('nav', { class: 'breadcrumbs', 'aria-label': 'Breadcrumb' }, ul);
+        const nav = toFragment`<nav class="breadcrumbs" aria-label="Breadcrumb">${ul}</nav>`;
         parent.remove();
         return nav;
       }

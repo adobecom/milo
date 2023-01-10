@@ -1,10 +1,25 @@
 :root {
   --border-color: #e1e1e1;
   --apps-border-color: #cacaca;
+  /* New Variables */
+  --background-nav--light: #fff;
+  --color-focus-ring: #109cde;
+  --padding-utilityIcon: 4px;
+  --radius-utilityIcon: 4px;
 }
 
 header {
   display: block;
+}
+
+/* Base styles */
+.global-navigation ul {
+  list-style-type: none;
+}
+
+.global-navigation button {
+  background: none;
+  cursor: pointer;
 }
 
 header.is-open .gnav-curtain,
@@ -51,7 +66,6 @@ header nav.gnav {
     'scroll     gutter';
   grid-template-columns: 1fr 12px;
   grid-template-rows: 56px 36px;
-  position: absolute;
   inset: 0;
 }
 
@@ -137,6 +151,10 @@ header .mainnav-wrapper {
     'nav';
 }
 
+header .mainnav-wrapper.has-results .gnav-mainnav {
+  display: none;
+}
+
 header.is-open .mainnav-wrapper {
   display: grid;
 }
@@ -199,103 +217,70 @@ header .breadcrumbs li:first-of-type a {
   content: '/';
 }
 
-/* Search */
-header.is-open .gnav-search {
+/* New Search */
+.feds-search {
   grid-area: search;
-  padding: 12px;
-  border-bottom: 1px solid #EAEAEA;
 }
 
-header .gnav-search button.gnav-search-button {
-  overflow: hidden;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0 6px; /* Two pixel offset due to svg crop */
-  display: none;
-  align-items: center;
-}
-
-header.is-open .gnav .gnav-search-bar {
-  display: block;
-}
-
-header .gnav-search button svg {
-  width: 20px;
-  height: 20px;
-}
-
-header .gnav-search .gnav-search-button:hover {
-  fill: #2b9af3;
-}
-
-header .gnav-search.is-open .gnav-search-button::after {
-  content: "\2715";
-  width: 20px;
-  font-size: 24px;
-  padding: 1px 0 0;
-}
-
-header .gnav-search.is-open .gnav-search-button svg {
+.feds-search-trigger {
   display: none;
 }
 
-header .gnav-search-bar {
+.feds-search-close {
   display: none;
-  background: var(--color-white);
+  font-size: 20px;
+  line-height: 1;
+  color: #2d2d2d;
 }
 
-header .gnav-search-field {
-  position: relative;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  box-sizing: border-box;
+.feds-search-close:hover {
+  color: #2b9af3;
 }
 
-header .gnav-search-field svg {
-  width: 20px;
-  height: 20px;
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  fill: rgb(110, 110, 110);
-  transition: fill 130ms ease-in-out;
+.feds-search-close:before {
+  content: '\2715';
 }
 
-header .gnav-search-field:hover svg {
-  fill: rgb(44, 44, 44);
+@media screen and (min-width: 900px) {
+  .feds-search {
+    grid-area: content;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+  }
+
+  .feds-search-trigger {
+    display: flex;
+    padding: var(--padding-utilityIcon);
+    border: none;
+    border-radius: var(--radius-utilityIcon);
+    outline-offset: 2px;
+  }
+
+  .feds-search-trigger svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+
+  .feds-search-trigger[aria-expanded="true"] svg {
+    display: none;
+  }
+
+  .feds-search-trigger[aria-expanded="true"] .feds-search-close {
+    display: flex;
+  }
+
+  .feds-search-trigger svg path {
+    fill: #2d2d2d;
+  }
+
+  .feds-search-trigger:hover svg path {
+    fill: #2b9af3;
+  }
 }
 
-header .gnav-search-field:hover .gnav-search-input {
-  border-color: rgb(179, 179, 179);
-}
-
-header .gnav-search-field .gnav-search-input {
-  display: block;
-  width: 100%;
-  line-height: 30px;
-  border: 1px solid;
-  border-color: rgb(202, 202, 202);
-  border-radius: 4px;
-  padding: 0 30px;
-  font-size: 14px;
-  font-family: 'Adobe Clean', adobe-clean, sans-serif;
-  outline: none !important;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  transition: border-color 130ms ease-in-out, box-shadow 130ms ease-in-out;
-}
-
-/* If the search results dropdown is shown, the search input's
-  bottom border radius is removed to make it continuous with the dropdown element */
-header .gnav-search-field .gnav-search-input.gnav-search-input--isPopulated {
-  border-radius: 4px 4px 0 0;
-}
-
-header .gnav-search-field .gnav-search-input:focus {
-  border-color: rgb(42, 124, 223);
-}
+/* Search */
 
 .gnav-search-input::placeholder {
   font-style: italic;
@@ -641,15 +626,16 @@ header .app-launcher {
     background: var(--color-white);
     min-height: 63px;
     border-bottom: 1px solid #EAEAEA;
+    justify-content: center;
+    grid-template-columns: calc(100% - 20px);
   }
 
   header .gnav-wrapper nav.gnav,
   header.has-breadcrumbs .gnav-wrapper nav.gnav {
     grid-area: main;
     grid-template-areas: 'brand navlist profile logo';
-    grid-template-columns: auto 1fr auto auto auto;
+    grid-template-columns: auto 1fr auto auto;
     grid-template-rows: 63px;
-    margin: 0 auto;
   }
 
   header .gnav-wrapper nav.gnav.has-apps {
@@ -681,7 +667,8 @@ header .app-launcher {
     overflow: unset;
   }
 
-  header .gnav-mainnav {
+  header .gnav-mainnav,
+  header .mainnav-wrapper.has-results .gnav-mainnav {
     display: flex;
     grid-area: content;
   }
@@ -857,6 +844,10 @@ header .app-launcher {
 }
 
 @media (min-width: 1200px) {
+  header .gnav-wrapper {
+    grid-template-columns: 1200px;
+  }
+
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
   .gnav-search.is-open .gnav-search-field,
@@ -866,6 +857,10 @@ header .app-launcher {
 }
 
 @media (min-width: 1440px) {
+  header .gnav-wrapper {
+    grid-template-columns: 1400px;
+  }
+
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
   .gnav-search.is-open .gnav-search-field,
