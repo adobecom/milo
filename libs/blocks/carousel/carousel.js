@@ -43,9 +43,7 @@ function decorateNextPreviousBtns() {
     },
     ARROW_NEXT_IMG,
   );
-
-  btnsArray.push(previousBtn, nextBtn);
-  return btnsArray;
+  return [previousBtn, nextBtn];;
 }
 
 function decorateLightboxButtons() {
@@ -66,8 +64,7 @@ function decorateLightboxButtons() {
     },
     CLOSE_ICON,
   );
-  btnsArray.push(expandBtn, closeBtn);
-  return btnsArray;
+  return [expandBtn, closeBtn];;
 }
 
 function decorateSlideIndicators(slides) {
@@ -156,11 +153,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index;
 
+  // Track reference slide - last slide initially
   if (!referenceSlide) {
-    slides[slides.length - 1].classList.add('reference-slide');
-    slides[slides.length - 1].style.order = '1';
-    // track reference slide - last slide initially
     referenceSlide = slides[slides.length - 1];
+    referenceSlide.classList.add('reference-slide');
+    referenceSlide.style.order = '1';
   }
 
   // Remove class/attributes after being tracked
@@ -228,10 +225,13 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   /*
    * Activates slide animation.
-   * Delay time matches animation time
+   * Delay time matches animation time for next/previous controls.
+   * JumpToInidex uses a shorter delay that better supports
+   * non-linear slide navigation.
   */
+  const slideDelay = jumpToIndex >= 0 ? 10 : 50;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), 60);
+  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
