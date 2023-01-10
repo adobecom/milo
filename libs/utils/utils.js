@@ -303,6 +303,32 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
+function getBlockSize(el, defaultSize = 1) {
+  const sizes = ['small', 'medium', 'large', 'xlarge'];
+  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+}
+function decorateButtons(el) {
+  const buttons = el.querySelectorAll('em a, strong a');
+  if (buttons.length === 0) return;
+  const section = buttons.parentElement.parentElement;
+  if (!section || Array.from(section.childNodes).some((n) => !['a', 'strong', 'em'].includes(n.tagName))) return;
+
+  const size = getBlockSize(el);
+  buttons.forEach((button) => {
+    const parent = button.parentElement;
+    const buttonType = [parent.nodeName, button.child.nodeName].includes('STRONG') ? 'blue' : 'outline';
+    button.classList.add('con-button', buttonType);
+    button.classList.add(size);
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
+  });
+  const actionArea = buttons[0].closest('p, div');
+  if (actionArea) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
+}
+
 export async function loadBlock(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot } = getConfig();
@@ -329,7 +355,7 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  // TODO add button logic here
+  decorateButtons(block);
   return block;
 }
 
@@ -457,7 +483,6 @@ async function decorateIcons(area, config) {
   const { default: loadIcons } = await import('../features/icons.js');
   loadIcons(domIcons, config);
 }
-
 async function decoratePlaceholders(area, config) {
   const el = area.documentElement ? area.body : area;
   const regex = /{{(.*?)}}/g;
