@@ -1,6 +1,6 @@
 .sticky-header {
     position: sticky;
-    top: 65px;
+    top: 57px;
     left: 0;
     z-index: 1;
     background-color: white;
@@ -85,4 +85,10 @@
 
 .sticky-header-close {
   cursor: pointer;
+}
+
+@media (min-width: 900) {
+  .sticky-header {
+      top: 64px;
+  }
 }
