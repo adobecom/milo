@@ -46,25 +46,34 @@ function getNodeType(node) {
 }
 
 function processMdast(nodes) {
-  const hashToIndex = new Map();
-  const arrayWithTypeAndHash = [];
-  let index = 0;
-  const hashCounter = new Map();
+  const sections = [];
+  const sectionsHash = new Set();
+  let blocksHash = new Set();
+  let blocks = [];
+
+  function addToSection() {
+    const hash = objectHash.sha1(blocks);
+    sectionsHash.add(hash);
+    sections.push({ hash, blocks, blocksHash, type: 'thematicBreak' });
+    blocks = [];
+    blocksHash = new Set();
+  }
+
   nodes.forEach((node) => {
     const nodeType = getNodeType(node);
     types.add(nodeType);
-    let hash = objectHash.sha1(node);
-    if (hashToIndex.has(hash)) {
-      const suffix = hashCounter.get(hash) || 1;
-      hashCounter.set(hash, suffix + 1);
-      hash += `-count${suffix}`;
-    }
-    arrayWithTypeAndHash.push({ type: nodeType, hash });
-    hashToIndex.set(hash, index);
+    const hash = objectHash.sha1(node);
+    blocks.push({ type: nodeType, hash });
+    blocksHash.add(hash);
     hashToContentMap.set(hash, node);
-    index += 1;
+    if (nodeType === 'thematicBreak') {
+      addToSection();
+    }
   });
-  return { hashToIndex, arrayWithTypeAndHash };
+  if (blocks.length !== 0) {
+    addToSection();
+  }
+  return { sectionsHash, sections };
 }
 
 async function getMd(path) {
@@ -116,10 +125,10 @@ function updateChangesMap(changesMap, key, value) {
 }
 
 function getChanges(left, right) {
-  const leftArray = left.arrayWithTypeAndHash;
-  const leftHashToIndex = left.hashToIndex;
-  const rightArray = right.arrayWithTypeAndHash;
-  const rightHashToIndex = right.hashToIndex;
+  const leftArray = left.sections;
+  const leftHashes = left.sectionsHash;
+  const rightArray = right.sections;
+  const rightHashes = right.sectionsHash;
   const leftLimit = leftArray.length - 1;
   const rightLimit = rightArray.length - 1;
   const changesMap = new Map();
@@ -131,16 +140,24 @@ function getChanges(left, right) {
       rightPointer = leftPointer;
       const rightElement = rightArray[rightPointer];
       if (leftElement.hash === rightElement.hash) {
-        updateChangesMap(changesMap, leftElement.hash, { op: 'nochange' });
-      } else if (rightHashToIndex.has(leftElement.hash)) {
-        // Current Left Element is added newly
-        updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
-      } else if (leftHashToIndex.has(rightElement.hash)) {
-        // Current Right Element has been moved down - handled as add delete
-        updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
-        updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
+        leftElement.blocks.forEach((block) => {
+          updateChangesMap(changesMap, block.hash, { op: 'nochange' });
+        });
+      } else if (rightHashes.has(leftElement.hash)) {
+        // Current Right Section is added newly.
+        rightElement.blocks.forEach((block) => {
+          updateChangesMap(changesMap, block.hash, { op: 'added' });
+        });
+      } else if (leftHashes.has(rightElement.hash)) {
+        // Move - handled as delete add
+        leftElement.blocks.forEach((block) => {
+          updateChangesMap(changesMap, block.hash, { op: 'deleted' });
+        });
+        rightElement.blocks.forEach((block) => {
+          updateChangesMap(changesMap, block.hash, { op: 'added' });
+        });
       } else if (leftElement.type === rightElement.type) {
-        // Type is same so consider as edited.
+        // Section Position is the same hence compare block elements
         updateChangesMap(changesMap, leftElement.hash, { op: 'edited', newHash: rightElement.hash });
         editSet.add(rightElement.hash);
       } else {
