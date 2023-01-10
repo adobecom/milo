@@ -87,7 +87,7 @@
   cursor: pointer;
 }
 
-@media (min-width: 900) {
+@media (min-width: 900px) {
   .sticky-header {
       top: 64px;
   }
