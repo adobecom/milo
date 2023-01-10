@@ -1,4 +1,4 @@
-import { getConfig, createTag } from '../../utils/utils.js';
+import { getConfig, createTag } from '../../../../utils/utils.js';
 
 function decorateEmail(email) {
   const MAX_CHAR = 12;
@@ -82,7 +82,7 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   profileEl.append(profileButton, profileMenu);
 }
 
-export default async function getProfile(blockEl, profileEl, toggle, ioResp) {
+async function profile(blockEl, profileEl, toggle, ioResp) {
   const gnav = profileEl.closest('nav.gnav');
   gnav.classList.add('signed-in');
 
@@ -91,3 +91,5 @@ export default async function getProfile(blockEl, profileEl, toggle, ioResp) {
   profiles.io = await ioResp.json();
   decorateProfileMenu(blockEl, profileEl, profiles, toggle);
 }
+
+export default { profile };
