@@ -22,7 +22,7 @@ function handleStyle(div, section) {
 
 function handleLayout(div, section) {
   const layoutString = div.textContent.trim();
-  const layoutClass = `grid-template-columns-${layoutString.replaceAll(' ', '').replace('|', '-')}`;
+  const layoutClass = `grid-template-columns-${layoutString.replaceAll(' | ', '-')}`;
 
   if (section) {
     section.classList.add(layoutClass);
