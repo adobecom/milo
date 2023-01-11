@@ -25,22 +25,6 @@
   box-shadow: 200px -200px 200px rgba(255, 255, 255, 1);
 }
 
-.read-more .button.read-more-button {
-  border: none;
-  display: inline-flex;
-  align-self: center;
-  justify-self: center;
-  cursor: pointer;
-  background-color: #1473E6;
-  color: white;
-  font-size: 13px;
-  width: auto;
-  padding: 8px 16px;
-  margin: 10px 10 10 16px;
-  border-radius: 100px;
-  font-weight: bold;
-}
-
 .read-more .button.read-more-button:hover {
   background-color: #0F66D0;
 }
