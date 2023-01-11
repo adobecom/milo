@@ -9,6 +9,6 @@ main > .section > .content.reading-time > span {
   padding: 1rem 0;
 }
 
-.reading-time > span {
+.center .reading-time > span {
   text-align: center;
 }
