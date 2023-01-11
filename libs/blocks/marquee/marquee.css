@@ -211,18 +211,14 @@
   align-items: center;
 }
 
+.marquee.split .action-area {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .marquee.large p.action-area {
   order: 2;
   margin-bottom: var(--spacing-s);
-}
-
-.marquee.split a:not(.con-button) {
-  color: var(--color-accent);
-  text-decoration: underline;
-}
-
-.marquee.split .button-justified-mobile {
-  width: 100%;
 }
 
 .marquee.large .text .body-XL {
@@ -291,6 +287,8 @@
 
   .marquee.split .action-area {
     gap: var(--spacing-s);
+    flex-direction: row;
+    align-items: center;
   }
 
   .marquee.split .foreground.container {

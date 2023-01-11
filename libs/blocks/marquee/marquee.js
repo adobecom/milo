@@ -113,9 +113,8 @@ export default function init(el) {
       foreground.insertAdjacentElement('beforebegin', media);
     }
     if (media?.lastChild.textContent.trim()) {
-      const mediaCredit = document.createElement('div');
-      mediaCredit.classList.add('media-credit', 'container');
-      mediaCredit.appendChild(createTag('p', { class: 'body-S' }, media.lastChild.textContent));
+      const mediaCreditInner = createTag('p', { class: 'body-S' }, media.lastChild.textContent);
+      const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
       media.lastChild.remove();
