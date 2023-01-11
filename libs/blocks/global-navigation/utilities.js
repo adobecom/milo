@@ -26,3 +26,12 @@ export function debounceCallback(callback, time = 200) {
     timeout = setTimeout(() => callback(...args), time);
   };
 }
+
+// TODO: should we replace these with proper Locale/country service(s)?
+export function getLocale() {
+  return document.documentElement.getAttribute('lang') || 'en-US';
+}
+
+export function getCountry() {
+  return getLocale()?.split('-').pop() || 'US';
+}
