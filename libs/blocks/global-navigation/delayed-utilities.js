@@ -26,7 +26,7 @@ class MenuControls {
   };
 
   toggleMenu = (el) => {
-    const isSearch = el.classList.contains('gnav-search');
+    const isSearch = el.classList.contains('feds-search');
     const sameMenu = el === this.state.openMenu;
     if (this.state.openMenu) {
       this.closeMenu();
@@ -37,6 +37,7 @@ class MenuControls {
   };
 
   closeOnEscape = (e) => {
+    // TODO: Search has different ESC logic, this should be adapted
     if (e.code === 'Escape') {
       this.toggleMenu(this.state.openMenu);
     }
@@ -72,7 +73,11 @@ class MenuControls {
       }
     } else {
       curtain.classList.add('is-open');
-      el.querySelector('.gnav-search-input').focus();
+      // Search template is not available yet
+      // TODO: better logic to focus elements that have not been added yet
+      if (el.querySelector('.feds-search-input')) {
+        el.querySelector('.feds-search-input').focus();
+      };
     }
     this.state.openMenu = el;
   };
