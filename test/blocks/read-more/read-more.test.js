@@ -17,7 +17,7 @@ describe('init', () => {
 
     expect(block.querySelector('strong')).to.be.null;
     expect(block.querySelector('button')).to.exist;
-    expect(block.querySelector('.button.read-more-button')).to.exist;
+    expect(block.querySelector('.button.con-button.filled.blue')).to.exist;
   });
 
   it('adds the "read-more-expanded" class when clicked', async () => {
