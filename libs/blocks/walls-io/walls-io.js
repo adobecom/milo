@@ -26,8 +26,13 @@ function extractWallParameters(block) {
     const parameterTitle = parameterContainer.children[0].textContent;
     const parameterValue = parameterContainer.children[1].textContent;
 
-    if (parameterTitle.toLowerCase() === 'url' && parameterValue.includes('https://my.walls.io')) {
-      parameters['data-wallurl'] = parameterValue;
+    if (parameterTitle.toLowerCase() === 'url') {
+      try {
+        const url = new URL(parameterValue);
+        parameters['data-wallurl'] = url.origin.includes('https://my.walls.io') ? url : null;
+      } catch (err) {
+        console.error('Invalid URL');
+      }
     }
 
     if (parameterTitle.toLowerCase() === 'height') {
