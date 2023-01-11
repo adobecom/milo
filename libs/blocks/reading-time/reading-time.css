@@ -1,11 +1,14 @@
 main > .section > .content.reading-time > span {
+  margin: 0;
+}
+
+main .reading-time > span {
   color: var(--color-gray-600);
   font-size: var(--type-body-s-size);
   display: block;
-  margin: 0;
   padding: 1rem 0;
 }
 
-main > .section.center > .content.reading-time > span {
+main .reading-time > span {
   text-align: center;
 }
