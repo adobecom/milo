@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockBg } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 const asideTypes = ['inline', 'notification'];
@@ -52,7 +52,6 @@ function decorateContent(el, type, size) {
     );
   }
   iconArea?.classList.add('icon-area');
-  decorateButtons(el);
   const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
   const isInline = type === INLINE;

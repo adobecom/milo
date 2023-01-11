@@ -41,7 +41,6 @@ export function decorateBlockText(el, config = ['M', 'S', 'M']) {
     const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
-  decorateButtons(el);
   decorateLinkAnalytics(el, headings);
 }
 

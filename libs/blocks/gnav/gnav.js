@@ -265,13 +265,6 @@ class Gnav {
 
   decorateAnalytics = (menu) => [...menu.children].forEach((child) => this.setMenuAnalytics(child));
 
-  decorateButtons = (menu) => {
-    const buttons = menu.querySelectorAll('strong a');
-    buttons.forEach((btn) => {
-      btn.classList.add('con-button', 'filled', 'blue', 'button-M');
-    });
-  };
-
   decorateMenu = (navItem, navLink, menu) => {
     menu.className = 'gnav-navitem-menu';
     menu.setAttribute('daa-lh', `header|${navLink.textContent}`);
@@ -299,7 +292,6 @@ class Gnav {
       e.stopPropagation();
       this.toggleMenu(navItem);
     });
-    this.decorateButtons(menu);
     return menu;
   };
 

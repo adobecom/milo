@@ -303,32 +303,6 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-function getBlockSize(el, defaultSize = 1) {
-  const sizes = ['small', 'medium', 'large', 'xlarge'];
-  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
-}
-function decorateButtons(el) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  if (buttons.length === 0) return;
-  const section = buttons.parentElement.parentElement;
-  if (!section || Array.from(section.childNodes).some((n) => !['a', 'strong', 'em'].includes(n.tagName))) return;
-
-  const size = getBlockSize(el);
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = [parent.nodeName, button.child.nodeName].includes('STRONG') ? 'blue' : 'outline';
-    button.classList.add('con-button', buttonType);
-    button.classList.add(size);
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
-}
-
 export async function loadBlock(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot } = getConfig();
@@ -355,7 +329,6 @@ export async function loadBlock(block) {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-  decorateButtons(block);
   return block;
 }
 
@@ -483,6 +456,45 @@ async function decorateIcons(area, config) {
   const { default: loadIcons } = await import('../features/icons.js');
   loadIcons(domIcons, config);
 }
+
+async function decorateButtons(el) {
+  const buttons = Array.from(el.querySelectorAll('p em a, p strong a, br + em a, br + strong a')).filter((b) => {
+    const section = b.parentElement.parentElement;
+    return section && section.querySelectorAll(':scope > em a, :scope > strong a, :scope > a, :scope > br').length === section.childNodes.length;
+  });
+  if (buttons.length === 0) return;
+
+  const { getBlockSize } = await import('./decorate.js');
+  const blockSize = getBlockSize(el);
+  const mapObj = { large: 'button-L', xlarge: 'button-XL' };
+  let size = mapObj[blockSize] ? mapObj[blockSize] : blockSize;
+
+  // This is bad, but it's unfortunately necessary.
+  // Otherwise, authors will have to go over all marquees in all projects to prevent buttons having the wrong size
+  if (el.classList.contains('marquee')) size = blockSize === 'large' ? 'button-XL' : 'button-L';
+
+  buttons.forEach((button) => {
+    const parent = button.parentElement;
+    const childName = button.childNodes?.length === 1 ? button.childNodes[0].nodeName : '';
+    const nodes = [parent.nodeName, childName];
+    const buttonType = [];
+    if (nodes.includes('STRONG') && nodes.includes('EM')) {
+      buttonType.push('fill');
+      if (el.classList.contains('dark')) buttonType.push('dark');
+    } else if (nodes.includes('STRONG')) buttonType.push('blue');
+    else if (nodes.includes('EM')) buttonType.push('outline');
+    button.classList.add('con-button', ...buttonType);
+    button.classList.add(size);
+    parent.insertAdjacentElement('afterend', button);
+    parent.remove();
+  });
+  const actionArea = buttons[0].closest('p, div');
+  if (actionArea) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+  }
+}
+
 async function decoratePlaceholders(area, config) {
   const el = area.documentElement ? area.body : area;
   const regex = /{{(.*?)}}/g;
@@ -528,7 +540,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { loadBlock(header); }
+  if (header) {
+    loadBlock(header);
+  }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -599,11 +613,15 @@ export async function loadArea(area = document) {
     // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
 
+    decorateButtons(section.el);
+
     // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
@@ -639,7 +657,10 @@ export function loadDelayed(delay = 3000) {
       loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
         const path = `${getConfig().locale.contentRoot}/keywords.json`;
-        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
+        import('../features/interlinks.js').then((mod) => {
+          mod.default(path);
+          resolve(mod);
+        });
       } else {
         resolve(null);
       }
