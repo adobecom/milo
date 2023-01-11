@@ -24,8 +24,9 @@ export default async function init(el) {
   const textLength = getTextLength(document.body);
   const readingTime = Math.ceil(textLength / readingSpeed);
   const config = getConfig();
-  const format = await replaceKey('5-min-read', config);
-  const readingTimeText = format.replace('5', readingTime);
+  const placeholderKey = (readingTime > 1) ? '5-min-read' : '1-min-read';
+  const format = await replaceKey(placeholderKey, config);
+  const readingTimeText = format.replace(/[1,5]/g, readingTime);
   span.innerHTML = readingTimeText;
   el.append(span);
 }
