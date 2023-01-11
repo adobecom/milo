@@ -1,5 +1,3 @@
-const PROJECT_NAME = 'milo--adobecom';
-const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -21,6 +19,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
+  'featured-article',
   'footer',
   'gnav',
   'how-to',
@@ -34,6 +33,7 @@ const MILO_BLOCKS = [
   'modal',
   'pdf-viewer',
   'quote',
+  'recommended-articles',
   'review',
   'section-metadata',
   'slideshare',
@@ -89,6 +89,7 @@ const ENVS = {
   },
 };
 const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
+const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
   const { host, href } = window.location;
@@ -108,11 +109,14 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export function getLocaleFromPath(locales, path) {
-  const split = path.split('/');
+export function getLocale(locales, pathname = window.location.pathname) {
+  if (!locales) {
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+  }
+  const split = pathname.split('/');
   const localeString = split[1];
   const locale = locales[localeString] || locales[''];
-  if (localeString === 'langstore') {
+  if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
@@ -120,31 +124,23 @@ export function getLocaleFromPath(locales, path) {
   return locale;
 }
 
-// find out current locale based on pathname and existing locales object from config.
-export function getLocale(locales) {
-  if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
-  }
-  const { pathname } = window.location;
-  return getLocaleFromPath(locales, pathname);
-}
-
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
-      const { origin } = window.location;
+      const origin = conf.origin || window.location.origin;
+      const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
-      config.locale = getLocale(conf.locales);
+      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
-
       return config;
     },
     () => config,
@@ -174,13 +170,29 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href) {
-  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host))
-    || url.hostname === window.location.hostname;
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
+function getExtension(path) {
+  const pageName = path.split('/').pop();
+  return pageName.includes('.') ? pageName.split('.').pop() : '';
+}
+
+export function localizeLink(href, originHostName = window.location.hostname) {
+  const url = new URL(href);
+  const relative = url.hostname === originHostName;
+  const processedHref = relative ? href.replace(url.origin, '') : href;
+  const { hash } = url;
+  if (hash === '#_dnt') return processedHref.split('#')[0];
+  const path = url.pathname;
+  const extension = getExtension(path);
+  const allowedExts = ['', 'html', 'json'];
+  if (!allowedExts.includes(extension)) return processedHref;
+  const { locale, locales, productionDomain } = getConfig();
+  if (!locale || !locales) return processedHref;
+  const isLocalizable = relative || productionDomain === url.hostname;
+  if (!isLocalizable) return processedHref;
+  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
+  if (isLocalizedLink) return processedHref;
+  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+  return relative ? urlPath : `${url.origin}${urlPath}`;
 }
 
 export function loadStyle(href, callback) {
@@ -198,6 +210,51 @@ export function loadStyle(href, callback) {
     callback('noop');
   }
   return link;
+}
+
+export function appendHtmlPostfix(area = document) {
+  const pageUrl = new URL(window.location.href);
+  if (!pageUrl.pathname.endsWith('.html')) return;
+
+  const relativeAutoBlocks = AUTO_BLOCKS
+    .map((b) => Object.values(b)[0])
+    .filter((b) => b.startsWith('/'));
+
+  const { htmlExclude = [] } = getConfig();
+
+  const HAS_EXTENSION = /\..*$/;
+  const shouldNotConvert = (href) => {
+    if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
+      || href.endsWith('/')
+      || href === pageUrl.origin
+      || htmlExclude.includes(href)
+      || HAS_EXTENSION.test(href.split('/').pop())) {
+      return true;
+    }
+    const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
+    if (isAutoblockLink) return true;
+    return false;
+  };
+
+  const links = area.querySelectorAll('a');
+  links.forEach((el) => {
+    const href = el.getAttribute('href');
+    if (!href || shouldNotConvert(href)) return;
+
+    try {
+      const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
+      if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
+        linkUrl.pathname = `${linkUrl.pathname}.html`;
+        el.setAttribute('href', href.startsWith('/')
+          ? `${linkUrl.pathname}${linkUrl.search}${linkUrl.hash}`
+          : linkUrl.href);
+      }
+    } catch (err) {
+      /* c8 ignore next 3 */
+      // eslint-disable-next-line no-console
+      console.log(err);
+    }
+  });
 }
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
@@ -291,7 +348,7 @@ export function decorateSVG(a) {
   const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
   const img = document.createElement('img');
-  img.src = makeRelative(textContent);
+  img.src = localizeLink(textContent);
   const pic = document.createElement('picture');
   pic.append(img);
   if (img.src === href) {
@@ -341,19 +398,18 @@ export function decorateAutoBlock(a) {
 function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
-    a.href = makeRelative(a.href);
+    a.href = localizeLink(a.href);
     decorateSVG(a);
+    if (a.href.includes('#_blank')) {
+      a.setAttribute('target', '_blank');
+      a.href = a.href.replace('#_blank', '');
+    }
     const autoBLock = decorateAutoBlock(a);
     if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
   }, []);
-}
-
-function decorateBlocks(el) {
-  const blocks = el.querySelectorAll('div[class]:not(.content)');
-  return [...blocks].map((block) => block);
 }
 
 function decorateContent(el) {
@@ -438,7 +494,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = decorateBlocks(section);
+    const blocks = section.querySelectorAll('div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -463,11 +519,10 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area, blocks) {
-  if (getMetadata('nofollow-links') === 'on') {
-    const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
-    const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, area);
+export async function loadDeferred(area, blocks, config) {
+  if (config.links === 'on') {
+    const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
+    import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
   import('./samplerum.js').then(({ sampleRUM }) => {
@@ -506,6 +561,7 @@ export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
+  appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
@@ -558,7 +614,7 @@ export async function loadArea(area = document) {
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area, areaBlocks);
+  await loadDeferred(area, areaBlocks, config);
 }
 
 // Load everything that impacts performance later.
@@ -567,9 +623,8 @@ export function loadDelayed(delay = 3000) {
     setTimeout(() => {
       loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
-        import('../features/interlinks.js').then((mod) => {
-          resolve(mod);
-        });
+        const path = `${getConfig().locale.contentRoot}/keywords.json`;
+        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
       } else {
         resolve(null);
       }
@@ -601,4 +656,28 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   }, options);
   io.observe(el);
   return io;
+}
+
+export function loadLana(options = {}) {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana.log(e.reason || e.error || e.message, {
+      errorType: 'i',
+    });
+  }
+
+  window.lana = {
+    log: async (...args) => {
+      await import('../utils/lana.js');
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      return window.lana.log(...args);
+    },
+    debug: false,
+    options,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
 }
