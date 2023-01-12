@@ -21,12 +21,10 @@ function handleStyle(div, section) {
 }
 
 function handleLayout(div, section) {
+  if (!(div || section)) return;
   const layoutString = div.textContent.trim();
   const layoutClass = `grid-template-columns-${layoutString.replaceAll(' | ', '-')}`;
-
-  if (section) {
-    section.classList.add(layoutClass);
-  }
+  section.classList.add(layoutClass);
 }
 
 export const getSectionMetadata = (el) => {
