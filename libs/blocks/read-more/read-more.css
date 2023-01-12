@@ -25,11 +25,13 @@
   box-shadow: 200px -200px 200px rgba(255, 255, 255, 1);
 }
 
-.read-more .button.read-more-button:hover {
-  background-color: #0F66D0;
+.read-more .button {
+  cursor: pointer;
+  margin: 10px;
 }
 
-.section:not(.read-more-expanded) .read-more ~ *:not(.recommended-articles){
+.section:not(.read-more-expanded) .read-more ~ *:not(.recommended-articles), 
+.section:not(.read-more-expanded) ~ * > :not(.recommended-articles) {
   min-height: 0;
   height: 0;
   max-height: 0;
@@ -41,4 +43,6 @@
   pointer-events: none;
   user-select: none;
 }
+
+
 
