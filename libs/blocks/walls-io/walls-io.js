@@ -23,29 +23,25 @@ function extractWallParameters(block) {
   };
 
   parameterContainers.forEach((parameterContainer) => {
-    const parameterTitle = parameterContainer.children[0].textContent;
-    const parameterValue = parameterContainer.children[1].textContent;
+    const key = parameterContainer.children[0].textContent?.toLowerCase();
+    const val = parameterContainer.children[1].textContent;
 
-    if (parameterTitle.toLowerCase() === 'url') {
+    if (!key || !val) return;
+
+    if (key === 'url') {
       try {
-        const url = new URL(parameterValue);
-        parameters['data-wallurl'] = url.origin.includes('https://my.walls.io') ? url : null;
+        const url = new URL(val);
+        parameters['data-wallurl'] = url.origin.startsWith('https://my.walls.io') ? url : null;
       } catch (err) {
         console.error('Invalid URL');
       }
-    }
-
-    if (parameterTitle.toLowerCase() === 'height') {
-      parameters['data-height'] = parameterValue.replace('px', '');
-    }
-
-    if (parameterTitle.toLowerCase() === 'title') {
-      parameters['data-title'] = parameterValue;
-    }
-
-    if (parameterTitle.toLowerCase() === 'load more') {
+    } else if (key === 'height') {
+      parameters['data-height'] = val.replace('px', '');
+    } else if (key === 'title') {
+      parameters['data-title'] = val;
+    } else if (key === 'load more') {
       parameters['data-injectloadmorebutton'] = 1;
-      parameters['data-loadmorecount'] = parseInt(parameterValue, 10);
+      parameters['data-loadmorecount'] = parseInt(val, 10);
     }
   });
 
