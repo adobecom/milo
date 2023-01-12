@@ -114,11 +114,7 @@ a:hover {
 
 /* Buttons */
 .dark a {
-  color: #FFF;
-}
-
-.light a {
-  color: #2C2C2C;
+  color: var(--link-color-dark);
 }
 
 img {
