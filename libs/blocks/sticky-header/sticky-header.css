@@ -85,6 +85,7 @@
 
 .sticky-header-close {
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 @media (min-width: 900px) {
