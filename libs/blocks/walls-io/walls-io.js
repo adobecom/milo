@@ -31,7 +31,9 @@ function extractWallParameters(block) {
     if (key === 'url') {
       try {
         const url = new URL(val);
-        parameters['data-wallurl'] = url.origin.startsWith('https://my.walls.io') ? url : null;
+        const { host } = url;
+        const wallsioHost = 'my.walls.io';
+        parameters['data-wallurl'] = host === wallsioHost ? url : null;
       } catch (err) {
         console.error('Invalid URL');
       }
