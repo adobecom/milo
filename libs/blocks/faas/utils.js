@@ -296,7 +296,15 @@ export const makeFaasConfig = (targetState) => {
     e: { 
       afterYiiLoadedCallback, 
       beforeSubmitCallback,
-    }
+    },
+    style_backgroundTheme: targetState.style_backgroundTheme || 'white',
+    style_layout: targetState.style_layout || 'column1',
+    isGate: targetState.isGate ? 'gated' : '',
+    pc1: targetState.pc1 || false,
+    pc2: targetState.pc2 || false,
+    pc3: targetState.pc3 || false,
+    pc4: targetState.pc4 || false,
+    pc5: targetState.pc5 || false,
   };
 
   // b2bpartners
@@ -313,7 +321,7 @@ export const makeFaasConfig = (targetState) => {
   if (targetState.q103) {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
-
+  
   return config;
 };
 
@@ -339,6 +347,11 @@ export const initFaas = (config, targetEl) => {
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
+    Object.keys(state.js).forEach((key) => {
+      state[key] = state.js[key];
+    });
+    delete state.js;
+    state.complete = false;
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
