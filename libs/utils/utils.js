@@ -401,6 +401,53 @@ function decorateLinks(el) {
   }, []);
 }
 
+/**
+ * returns an image caption of a picture elements
+ * @param {Element} picture picture element
+ */
+function getImageCaption(picture) {
+  const parentEl = picture.parentNode;
+  let caption = parentEl.querySelector('em');
+  if (caption) return caption;
+
+  const parentSiblingEl = parentEl.nextElementSibling;
+  caption = parentSiblingEl && !parentSiblingEl.querySelector('picture') && parentSiblingEl.querySelector('em') ? parentSiblingEl.querySelector('em') : undefined;
+  return caption;
+}
+
+/**
+ * builds images blocks from default content.
+ * @param {Element} mainEl The container element
+ */
+function buildImageBlocks(mainEl) {
+  const imgEls = mainEl.querySelectorAll('.content picture');
+  if (!imgEls.length) return;
+
+  imgEls.forEach((imgEl) => {
+    const block = createTag('div', { class: 'figure' });
+    const row = createTag('div', null);
+    const caption = getImageCaption(imgEl);
+    const parentEl = imgEl.closest('p');
+
+    if (!caption) {
+      const wrapper = createTag('div', null, imgEl.cloneNode(true));
+      row.append(wrapper);
+    } else {
+      const picture = createTag('p', null, imgEl.cloneNode(true));
+      const em = createTag('p', null, caption.cloneNode(true));
+      const wrapper = createTag('div', null);
+      wrapper.append(picture, em);
+      row.append(wrapper);
+      caption.remove();
+    }
+
+    block.append(row.cloneNode(true));
+    loadBlock(block);
+    const clone = block.cloneNode(true);
+    parentEl.replaceWith(clone);
+  });
+}
+
 function decorateContent(el) {
   const children = [el];
   let child = el;
@@ -415,6 +462,7 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
+  buildImageBlocks(block);
   return block;
 }
 
@@ -483,6 +531,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
+    // buildImageBlocks(section);
     const blocks = section.querySelectorAll('div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
