@@ -459,9 +459,12 @@ async function decorateIcons(area, config) {
 
 async function decorateButtons(el) {
   const buttons = Array.from(el.querySelectorAll('p em a, p strong a, p a:has(em), p a:has(strong)')).filter((b) => {
+    if (b.href.includes('#_dns')) { b.href = b.href.replace('#_dns', ''); return false; }
     const section = b.parentElement.nodeName === 'P' ? b.parentElement : b.parentElement.parentElement;
     // if there are any siblings which are not met by the following selector the link is not buttonable
-    return section && section.querySelectorAll(':scope > em a, :scope > strong a, :scope > a, :scope > br').length === section.childNodes.length;
+    return section
+      && section.querySelectorAll(':scope > em a, :scope > strong a, :scope > a, :scope > br')
+        .length === Array.from(section.childNodes).filter((s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim())).length;
   });
   if (buttons.length === 0) return;
 
@@ -470,14 +473,14 @@ async function decorateButtons(el) {
   const mapObj = { large: 'button-L', xlarge: 'button-XL' };
   let size = mapObj[blockSize] ? mapObj[blockSize] : blockSize;
 
-  // without this authors will have to go over all marquees in all projects to prevent buttons having the wrong size
-  if (el.classList.contains('marquee')) size = blockSize === 'large' ? 'button-XL' : 'button-L';
+  if (el.classList.contains('marquee')) ;
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
     const grandChild = child?.childNodes?.length === 1 ? child?.childNodes[0] : null;
     const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
+    const text = [button.textContent, child?.textContent, grandChild?.textContent].filter((t) => !!t)[0];
     const buttonType = [];
     if (nodes.includes('STRONG') && nodes.includes('EM')) {
       buttonType.push('fill');
@@ -485,17 +488,26 @@ async function decorateButtons(el) {
     } else if (nodes.includes('STRONG')) buttonType.push('blue');
     else if (nodes.includes('EM')) buttonType.push('outline');
     button.classList.add('con-button', ...buttonType);
-    button.classList.add(size);
-    parent.insertAdjacentElement('afterend', button);
-    [parent].forEach((n) => {
+    if (button.closest('.marquee')) {
+      // without this authors must go over marquees in all projects to stop buttons having the wrong size
+      button.classList.add(size = blockSize === 'large' ? 'button-XL' : 'button-L');
+    } else {
+      button.classList.add(size);
+    }
+    if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
+    [parent, child, grandChild].forEach((n) => {
       if (n && n.nodeName !== 'P') n.remove();
     });
+    button.textContent = text;
+    const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
+    if (allowedArea) {
+      const actionArea = button.closest('p, div');
+      if (actionArea && !actionArea.classList.contains('action-area')) {
+        actionArea.classList.add('action-area');
+        actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+      }
+    }
   });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
 }
 
 async function decoratePlaceholders(area, config) {
