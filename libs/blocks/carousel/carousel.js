@@ -3,16 +3,10 @@ import { createTag, getConfig } from '../../utils/utils.js';
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
-const ARROW_NEXT_IMG = `<img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/arrow.svg" height="10" width="16">`;
-const ARROW_PREVIOUS_IMG = `<img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/arrow.svg" height="10" width="16">`;
-const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/expand.svg" height="14" width="20">`;
-const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-  <g transform="translate(-10500 3403)">
-    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
-    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-  </g>
-</svg>`;
+const ARROW_NEXT_IMG = `<img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
+const ARROW_PREVIOUS_IMG = `<img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16">`;
+const LIGHTBOX_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/expand.svg" height="14" width="20">`;
+const CLOSE_ICON = `<img class="expand-icon" alt="Expand carousel to full screen" src="${base}/blocks/carousel/img/close.svg" height="20" width="20">`;
 
 const KEY_CODES = {
   SPACE: 'Space',
@@ -23,7 +17,6 @@ const KEY_CODES = {
 };
 
 function decorateNextPreviousBtns() {
-  const btnsArray = [];
   const previousBtn = createTag(
     'button',
     {
@@ -43,11 +36,10 @@ function decorateNextPreviousBtns() {
     },
     ARROW_NEXT_IMG,
   );
-  return [previousBtn, nextBtn];;
+  return [previousBtn, nextBtn];
 }
 
 function decorateLightboxButtons() {
-  const btnsArray = [];
   const expandBtn = createTag(
     'button',
     {
@@ -64,7 +56,7 @@ function decorateLightboxButtons() {
     },
     CLOSE_ICON,
   );
-  return [expandBtn, closeBtn];;
+  return [expandBtn, closeBtn];
 }
 
 function decorateSlideIndicators(slides) {
@@ -369,12 +361,14 @@ export default function init(el) {
 
   el.append(...nextPreviousBtns, controlsContainer);
 
-  parentArea.addEventListener('milo:deferred', () => {
+  function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
       img.removeAttribute('loading');
     });
-  });
+    parentArea.removeEventListener('milo:deferred', handleDeferredImages, true);
+  }
+  parentArea.addEventListener('milo:deferred', handleDeferredImages, true);
 
   slides[0].classList.add('active');
   handleChangingSlides(carouselElements);
