@@ -458,8 +458,9 @@ async function decorateIcons(area, config) {
 }
 
 async function decorateButtons(el) {
-  const buttons = Array.from(el.querySelectorAll('p em a, p strong a, br + em a, br + strong a')).filter((b) => {
-    const section = b.parentElement.parentElement;
+  const buttons = Array.from(el.querySelectorAll('p em a, p strong a, p a:has(em), p a:has(strong)')).filter((b) => {
+    const section = b.parentElement.nodeName === 'P' ? b.parentElement : b.parentElement.parentElement;
+    // if there are any siblings which are not met by the following selector the link is not buttonable
     return section && section.querySelectorAll(':scope > em a, :scope > strong a, :scope > a, :scope > br').length === section.childNodes.length;
   });
   if (buttons.length === 0) return;
@@ -469,14 +470,14 @@ async function decorateButtons(el) {
   const mapObj = { large: 'button-L', xlarge: 'button-XL' };
   let size = mapObj[blockSize] ? mapObj[blockSize] : blockSize;
 
-  // This is bad, but it's unfortunately necessary.
-  // Otherwise, authors will have to go over all marquees in all projects to prevent buttons having the wrong size
+  // without this authors will have to go over all marquees in all projects to prevent buttons having the wrong size
   if (el.classList.contains('marquee')) size = blockSize === 'large' ? 'button-XL' : 'button-L';
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    const childName = button.childNodes?.length === 1 ? button.childNodes[0].nodeName : '';
-    const nodes = [parent.nodeName, childName];
+    const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
+    const grandChild = child?.childNodes?.length === 1 ? child?.childNodes[0] : null;
+    const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
     const buttonType = [];
     if (nodes.includes('STRONG') && nodes.includes('EM')) {
       buttonType.push('fill');
@@ -486,7 +487,9 @@ async function decorateButtons(el) {
     button.classList.add('con-button', ...buttonType);
     button.classList.add(size);
     parent.insertAdjacentElement('afterend', button);
-    parent.remove();
+    [parent].forEach((n) => {
+      if (n && n.nodeName !== 'P') n.remove();
+    });
   });
   const actionArea = buttons[0].closest('p, div');
   if (actionArea) {
