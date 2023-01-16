@@ -1,6 +1,8 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
-export function decorateButtons(el, size) {
+const MAP_BTN_SIZE = { large: 'button-L', xlarge: 'button-XL' };
+
+export function decorateButtonsOld(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
@@ -39,7 +41,11 @@ export function decorateBlockText(el, config = ['M', 'S', 'M']) {
       }
     }
     const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
-    if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
+    if (emptyPs) {
+      emptyPs.forEach((p) => {
+        p.classList.add(`body-${config[1]}`);
+      });
+    }
   }
   decorateLinkAnalytics(el, headings);
 }
@@ -68,4 +74,49 @@ export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+}
+
+export function decorateButtons(el, buttons) {
+  const blockSize = getBlockSize(el);
+  const size = MAP_BTN_SIZE[blockSize] ?? blockSize;
+  buttons.forEach((button) => {
+    const parent = button.parentElement;
+    const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
+    const grandChild = child?.childNodes?.length === 1 ? child?.childNodes[0] : null;
+    const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
+    const text = [button.textContent, child?.textContent, grandChild?.textContent]
+      .filter((t) => !!t)[0];
+    const buttonTypes = [];
+    if (nodes.includes('STRONG') && nodes.includes('EM')) {
+      buttonTypes.push('fill');
+      if (el.classList.contains('dark')) {
+        buttonTypes.push('dark');
+      }
+    } else if (nodes.includes('STRONG')) {
+      buttonTypes.push('blue');
+    } else if (nodes.includes('EM')) {
+      buttonTypes.push('outline');
+    }
+    button.classList.add('con-button', ...buttonTypes);
+
+    if (button.closest('.marquee')) {
+      // without this authors must review marquees in all projects to stop buttons having wrong size
+      button.classList.add(blockSize === 'large' ? 'button-XL' : 'button-L');
+    } else {
+      button.classList.add(size);
+    }
+    if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
+    [parent, child, grandChild].forEach((n) => {
+      if (n && n.nodeName !== 'P') n.remove();
+    });
+    button.textContent = text;
+  });
+  const allowedArea = buttons[0].closest('.marquee, .aside, .icon-block, .media, .text-block');
+  if (allowedArea) {
+    const actionArea = buttons[0].closest('p, div');
+    if (actionArea && !actionArea.classList.contains('action-area')) {
+      actionArea.classList.add('action-area');
+      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    }
+  }
 }
