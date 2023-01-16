@@ -1,23 +1,5 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
-export function decorateButtonsOld(el, size) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-L, button-XL */
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
-  });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-  }
-}
-
 export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
