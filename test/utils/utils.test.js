@@ -181,7 +181,7 @@ describe('Utils', () => {
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
   });
 
-  describe ('rtlSupport', () => {
+  describe('rtlSupport', () => {
     before(async () => {
       config.locales = {
         '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -199,22 +199,21 @@ describe('Utils', () => {
     }
 
     it('LTR Languages have dir as ltr', () => {
-      setConfigWithPath( '/africa/solutions');
+      setConfigWithPath('/africa/solutions');
       expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
     });
 
     it('RTL Languages have dir as rtl', () => {
-      setConfigWithPath( '/il_he/solutions');
+      setConfigWithPath('/il_he/solutions');
       expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
-      setConfigWithPath( '/mena_ar/solutions');
+      setConfigWithPath('/mena_ar/solutions');
       expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
     });
 
     it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
-      setConfigWithPath( '/ua/solutions');
+      setConfigWithPath('/ua/solutions');
       expect(document.documentElement.getAttribute('dir')).null;
     });
-
   });
 
   describe('localizeLink', () => {
@@ -299,5 +298,47 @@ describe('Utils', () => {
       },
     });
     expect(io instanceof IntersectionObserver).to.be.true;
+  });
+
+  it('decorates buttons', async () => {
+    const doc = await readFile({ path: './mocks/buttons.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    const divs = el.querySelectorAll('div');
+    await Promise.all(Array.from(divs).map(async (d) => utils.decButtons(d)));
+
+    const links0 = divs[0].querySelectorAll('a');
+    expect(Array.from(links0[0].classList).includes('con-button')).to.equal(false);
+
+    const links1 = divs[1].querySelectorAll('a');
+    expect(Array.from(links1[0].classList).includes('con-button')).to.equal(false);
+
+    const links2 = divs[2].querySelectorAll('a');
+    expect(Array.from(links2[0].classList).includes('con-button')).to.equal(false);
+
+    const links3 = divs[3].querySelectorAll('a');
+    expect(Array.from(links3[0].classList).includes('con-button')).to.equal(true);
+    const links4 = divs[4].querySelectorAll('a');
+    expect(Array.from(links4[0].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links4[0].classList).includes('blue')).to.equal(true);
+    expect(Array.from(links4[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links4[1].classList).includes('fill')).to.equal(true);
+    expect(Array.from(links4[1].classList).includes('dark')).to.equal(true);
+
+    const links5 = divs[5].querySelectorAll('a');
+    expect(Array.from(links5[0].classList).includes('con-button')).to.equal(false);
+    expect(links5[0].href.includes('#_dns')).to.equal(false);
+    const links6 = divs[6].querySelectorAll('a');
+    expect(Array.from(links6[0].classList).includes('con-button')).to.equal(false);
+    expect(Array.from(links6[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links6[2].classList).includes('con-button')).to.equal(true);
+
+    const links7 = divs[7].querySelectorAll('a');
+    expect(Array.from(links7[0].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links7[0].classList).includes('fill')).to.equal(true);
+    expect(Array.from(links7[0].classList).includes('button-XL')).to.equal(true);
+    const pTags = divs[7].querySelectorAll('p');
+    expect(Array.from(pTags[0].classList).includes('action-area')).to.equal(true);
+    expect(Array.from(pTags[1].classList).includes('supplemental-text')).to.equal(true);
   });
 });

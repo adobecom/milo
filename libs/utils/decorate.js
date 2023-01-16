@@ -1,7 +1,5 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
-const MAP_BTN_SIZE = { large: 'button-L', xlarge: 'button-XL' };
-
 export function decorateButtonsOld(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
@@ -78,7 +76,8 @@ export function getBlockSize(el, defaultSize = 1) {
 
 export function decorateButtons(el, buttons) {
   const blockSize = getBlockSize(el);
-  const size = MAP_BTN_SIZE[blockSize] ?? blockSize;
+  const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
+  const size = mapBtnSize[blockSize] ?? blockSize;
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
@@ -98,7 +97,6 @@ export function decorateButtons(el, buttons) {
       buttonTypes.push('outline');
     }
     button.classList.add('con-button', ...buttonTypes);
-
     if (button.closest('.marquee')) {
       // without this authors must review marquees in all projects to stop buttons having wrong size
       button.classList.add(blockSize === 'large' ? 'button-XL' : 'button-L');
