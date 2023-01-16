@@ -592,7 +592,7 @@ export async function loadArea(area = document) {
       loadGeoRouting(config, createTag, getMetadata);
     }
     const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
+    if (type) {
       const { addRichResults } = await import('../features/richresults.js');
       addRichResults(type, { createTag, getMetadata });
     }
