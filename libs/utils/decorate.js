@@ -88,9 +88,6 @@ export function decorateButtons(el, buttons) {
     const buttonTypes = [];
     if (nodes.includes('STRONG') && nodes.includes('EM')) {
       buttonTypes.push('fill');
-      if (el.classList.contains('dark')) {
-        buttonTypes.push('dark');
-      }
     } else if (nodes.includes('STRONG')) {
       buttonTypes.push('blue');
     } else if (nodes.includes('EM')) {

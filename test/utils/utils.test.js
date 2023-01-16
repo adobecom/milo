@@ -323,7 +323,6 @@ describe('Utils', () => {
     expect(Array.from(links4[0].classList).includes('blue')).to.equal(true);
     expect(Array.from(links4[1].classList).includes('con-button')).to.equal(true);
     expect(Array.from(links4[1].classList).includes('fill')).to.equal(true);
-    expect(Array.from(links4[1].classList).includes('dark')).to.equal(true);
 
     const links5 = divs[5].querySelectorAll('a');
     expect(Array.from(links5[0].classList).includes('con-button')).to.equal(false);
