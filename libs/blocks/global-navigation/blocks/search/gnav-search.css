@@ -2,11 +2,16 @@
   --background-nav--light: #fff;
 }
 
+.feds-nav-wrapper.has-results .feds-nav {
+  display: none;
+}
+
 .feds-search-bar {
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
   background-color: var(--background-nav--light);
+  /* TODO: add desktop top border */
 }
 
 .feds-search-field {
@@ -118,6 +123,10 @@
 }
 
 @media screen and (min-width: 900px) {
+  .feds-nav-wrapper.has-results .feds-nav {
+    display: flex;
+  }
+
   .feds-search-bar {
     position: absolute;
     top: 100%;
