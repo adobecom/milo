@@ -26,6 +26,13 @@ describe('Section Metdata', () => {
     expect(sec.style.backgroundColor).to.equal('rgb(239, 239, 239)');
   });
 
+  it('Adds class based on layout input', () => {
+    const sec = document.querySelector('.section.layout');
+    const sm = sec.querySelector('.section-metadata');
+    init(sm);
+    expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
+  });
+
   it('gets section metadata', () => {
     const expected = { style: 'darkest, xxl spacing, two up', background: 'rgb(239, 239, 239)' };
     expect(getSectionMetadata(document.querySelector('.section.color .section-metadata'))).to.eql(expected);
