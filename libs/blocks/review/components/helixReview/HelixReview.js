@@ -77,7 +77,7 @@ const HelixReview = ({
                 setInitialRating(
                   initialValue !== undefined
                     ? initialValue
-                    : Math.round(average)
+                    : 0 // Math.round(average)
                 );
 
               if (productJson) {
