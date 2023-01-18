@@ -44,6 +44,28 @@ async function load404() {
   sampleRUM('404', { source: document.referrer, target: window.location.href });
 }
 
+function log404() {
+  const logFile = '/drafts/jck/404-logs';
+  const requestDate = new Date().toISOString();
+  const requestUrl = window.location.href;
+  fetch(logFile, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      'data': {
+        'date': requestDate,
+        'url': requestUrl,
+      },
+    })
+  })
+    .catch((error) => {
+      console.error('Error logging the 404:', error);
+    });
+}
+
 (async function init() {
   load404();
+  log404();
 }());
