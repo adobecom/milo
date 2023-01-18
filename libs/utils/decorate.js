@@ -53,14 +53,15 @@ export function decorateBlockBg(block, node) {
 export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
-  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+  return sizes.find((size) => el?.classList.contains(size)) || sizes[defaultSize];
 }
 
-export function decorateButtons(el, buttons) {
-  const blockSize = getBlockSize(el);
+export function decorateButtons(buttons) {
   const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
-  const size = mapBtnSize[blockSize] ?? blockSize;
   buttons.forEach((button) => {
+    const block = button.closest('.section div[class]:not(.content)');
+    const blockSize = getBlockSize(block);
+    const size = mapBtnSize[blockSize] ?? blockSize;
     const parent = button.parentElement;
     const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
     const grandChild = child?.childNodes?.length === 1 ? child?.childNodes[0] : null;
@@ -87,13 +88,13 @@ export function decorateButtons(el, buttons) {
       if (n && n.nodeName !== 'P') n.remove();
     });
     button.textContent = text;
-  });
-  const allowedArea = buttons[0].closest('.marquee, .aside, .icon-block, .media, .text-block');
-  if (allowedArea) {
-    const actionArea = buttons[0].closest('p, div');
-    if (actionArea && !actionArea.classList.contains('action-area')) {
-      actionArea.classList.add('action-area');
-      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
+    if (allowedArea) {
+      const actionArea = button.closest('p, div');
+      if (actionArea && !actionArea.classList.contains('action-area')) {
+        actionArea.classList.add('action-area');
+        actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+      }
     }
-  }
+  });
 }

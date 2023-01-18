@@ -1,84 +1,67 @@
 <main>
-  <div>
-    no button because there's text in the tag. This could maybe be considered as a sibling
-    <p>
-      test text
-      <strong>
+  <div class="section">
+    <div>
+      no button because there's text in the tag. This could maybe be considered as a sibling
+      <p>
+        test text
+        <strong><a>test</a></strong>
+      </p>
+    </div>
+
+    <div>
+      no button because there's a sibling (strong tag)
+      <p>
+        <strong>strong text</strong>
+        <strong><a>test</a></strong>
+      </p>
+    </div>
+
+    <div>
+      no button even though there's a new line because there's a sibling
+      <p>
+        <strong>strong text</strong>
+        <br>
+        <strong><a>test</a></strong>
+      </p>
+    </div>
+
+    <div>
+      button since this is on a new line (p tag)
+      <p><strong><a>test</a></strong></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="dark">
+      both should be buttons
+      <p>
+        <strong><a>test</a></strong>
+        <strong><a><em>test</em></a></strong>
+      </p>
+    </div>
+
+    <div>
+      first link is no button because of #_dns tag
+      <p>
+        <strong><a href="www.adobe.com/#_dns">test</a></strong>
+      </p>
+    </div>
+
+
+    <div>
+      first link is no button, but the other two should be?
+      <p>
         <a>test</a>
-      </strong>
-    </p>
-  </div>
+        <strong><a>test</a></strong>
+        <strong><a><em>test</em></a></strong>
+      </p>
+    </div>
 
-  <div>
-    no button because there's a sibling (strong tag)
-    <p>
-      <strong>strong text</strong>
-      <strong>
-        <a>test</a>
-      </strong>
-    </p>
-  </div>
-
-  <div>
-    no button even though there's a new line because there's a sibling
-    <p>
-      <strong>strong text</strong>
-      <br>
-      <strong>
-        <a>test</a>
-      </strong>
-    </p>
-  </div>
-
-  <div>
-    button since this is on a new line (p tag)
-    <p>
-      <strong>
-        <a>test</a>
-      </strong>
-    </p>
-  </div>
-
-
-  <div class="dark">
-    both should be buttons
-    <p>
-      <strong><a>test</a></strong>
-      <strong>
-        <a><em>test</em></a>
-      </strong>
-    </p>
-  </div>
-
-  <div>
-    first link is no button because of #_dns tag
-    <p>
-      <strong>
-        <a href="www.adobe.com/#_dns">test</a>
-      </strong>
-    </p>
-  </div>
-
-
-  <div>
-    first link is no button, but the other two should be?
-    <p>
-      <a>test</a>
-      <strong>
-        <a>test</a>
-      </strong>
-      <strong>
-        <em>
-          <a>test</a>
-        </em>
-      </strong>
-    </p>
-  </div>
-
-  <div class="marquee large">
-    <p>
-      <a><em><strong>test</strong></em></a>
-    </p>
-    <p>test</p>
+    <div class="marquee large">
+      <p>
+        <a><em><strong>test</strong></em></a>
+      </p>
+      <p>test</p>
+    </div>
   </div>
 </main>
