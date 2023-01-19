@@ -1,14 +1,14 @@
 .walls-io {
     max-width: 100%;
     text-align: center;
-    padding-top: 16px;
+    padding-top: var(--spacing-xs);;
     margin: 0 auto;
 }
 
 .walls-io .wallsio-load-more-button {
     text-decoration: none;
     border-radius: 44px;
-    padding: 6px 16px;
+    padding: 6px var(--spacing-xs);
     text-align: center;
     font-size: var(--type-body-s-size);
     font-style: normal;
@@ -18,7 +18,7 @@
     border: solid 2px var(--color-info-accent);
     color: var(--color-gray-700);
     border-color: var(--color-gray-700);
-    margin: 16px 0;
+    margin: var(--spacing-xs) 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -13,7 +13,6 @@ import { createTag } from '../../utils/utils.js';
 
 function extractWallParameters(block) {
   const parameterContainers = Array.from(block.children);
-
   const parameters = {
     src: 'https://walls.io/js/wallsio-widget-1.2.js',
     async: true,
@@ -28,29 +27,35 @@ function extractWallParameters(block) {
 
     if (!key || !val) return;
 
-    if (key === 'url') {
-      try {
-        const url = new URL(val);
-        const { host } = url;
-        const wallsioHost = 'my.walls.io';
-        parameters['data-wallurl'] = host === wallsioHost ? url : null;
-      } catch (err) {
-        console.error('Invalid URL');
-      }
-    } else if (key === 'height') {
-      parameters['data-height'] = val.replace('px', '');
-    } else if (key === 'title') {
-      parameters['data-title'] = val;
-    } else if (key === 'load more') {
-      parameters['data-injectloadmorebutton'] = 1;
-      parameters['data-loadmorecount'] = parseInt(val, 10);
+    switch (key) {
+      case 'url':
+        try {
+          const url = new URL(val);
+          const { host } = url;
+          const wallsioHost = 'my.walls.io';
+          parameters['data-wallurl'] = host === wallsioHost ? url : null;
+        } catch (err) {
+          console.error('Invalid URL');
+        }
+        break;
+      case 'height':
+        parameters['data-height'] = val.replace('px', '');
+        break;
+      case 'title':
+        parameters['data-title'] = val;
+        break;
+      case 'load more':
+        parameters['data-injectloadmorebutton'] = 1;
+        parameters['data-loadmorecount'] = parseInt(val, 10);
+        break;
+      default:
+        break;
     }
   });
-
   return parameters;
 }
 
-export default function decorate(block) {
+export default function init(block) {
   const parameters = extractWallParameters(block);
 
   block.innerHTML = '';
