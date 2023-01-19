@@ -195,8 +195,7 @@
   margin-top: var(--spacing-xs);
 }
 
-.icon-block.vertical .foreground .text-content .action-area > a:not(.con-button),
-.icon-block.vertical .foreground .text-content p.body-M a:only-child {
+.icon-block.vertical .foreground .text-content .action-area > a:not(.con-button) {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
 }

@@ -1,0 +1,48 @@
+.read-more {
+  width: 100%;
+  height: 300px;
+  background: transparent linear-gradient(180deg, #FFFFFF00 0%, #FFFFFFD4 38%, #fff 90%) 0% 0% no-repeat padding-box;
+  position: absolute;
+  left: 0;
+  margin-top: -230px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.section.read-more-expanded .read-more {
+  display: none;
+}
+
+.read-more > div {
+  width: 100%;
+  border-top: 1px solid var(--color-gray-300);
+  border-bottom: 1px solid var(--color-gray-300);
+  background: var(--color-white);
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  color: #505050;
+  box-shadow: 200px -200px 200px rgba(255, 255, 255, 1);
+}
+
+.read-more .button {
+  cursor: pointer;
+  margin: 10px;
+}
+
+.section:not(.read-more-expanded) .read-more ~ *:not(.recommended-articles), 
+.section:not(.read-more-expanded) ~ * > :not(.recommended-articles) {
+  min-height: 0;
+  height: 0;
+  max-height: 0;
+  margin: 0;
+  opacity: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+
+
