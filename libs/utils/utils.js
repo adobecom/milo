@@ -305,21 +305,38 @@ export async function loadTemplate() {
 }
 
 export async function universalButtons(links) {
+  const ignoreEmptyText = (s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim());
+  const buttonable = (b) => {
+    const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
+    const isPara = (node) => node.nodeName === 'P';
+    return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
+      || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
+  };
   const buttons = Array.from(links).filter((b) => {
     if (b.href.includes('#_dns')) {
       b.href = b.href.replace('#_dns', '');
       return false;
     }
-    if (!((b.parentElement.nodeName === 'STRONG' || b.parentElement.nodeName === 'EM') && b.parentElement.parentElement.nodeName === 'P')
-      && !(Array.from(b.childNodes).some((l) => l.nodeName === 'STRONG' || l.nodeName === 'EM') && b.parentElement.nodeName === 'P')) {
+    if (!buttonable(b)) {
       return false;
     }
-    const block = b.parentElement.nodeName === 'P' ? b.parentElement : b.parentElement.parentElement;
-    const btnAndSiblings = Array.from(block.childNodes)
-      .filter((s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim()));
-    // if any btn siblings are not met by the following selector the link is not buttonable
-    return block.querySelectorAll(':scope > em a, :scope > strong a, :scope > a')
-      .length === btnAndSiblings.length;
+    const block = b.closest('p');
+    let isButton = true;
+    Array.from(block.childNodes).filter(ignoreEmptyText).forEach((child) => {
+      if (buttonable(child) || child.nodeName === 'A') {
+        return;
+      }
+      const grandChildren = Array.from(child.childNodes).filter(ignoreEmptyText);
+      if (!grandChildren || grandChildren.length === 0) {
+        isButton = false;
+      }
+      grandChildren.forEach((g) => {
+        if (!(buttonable(g) || g.nodeName === 'A')) {
+          isButton = false;
+        }
+      });
+    });
+    return isButton;
   });
   if (buttons.length === 0) return;
 
@@ -398,7 +415,7 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        a.className = 'modal link-block';
+        // a.className = 'modal link-block';
         return true;
       }
       a.className = `${key} link-block`;

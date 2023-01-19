@@ -63,8 +63,9 @@ export function decorateButtons(buttons) {
     const blockSize = getBlockSize(block);
     const size = mapBtnSize[blockSize] ?? blockSize;
     const parent = button.parentElement;
-    const child = button.childNodes?.length === 1 ? button.childNodes[0] : null;
-    const grandChild = child?.childNodes?.length === 1 ? child?.childNodes[0] : null;
+
+    const child = button.childNodes?.length > 0 ? Array.from(button.childNodes).filter((n) => !n.classList?.contains('icon'))[0] : null;
+    const grandChild = child?.childNodes?.length > 0 ? Array.from(child.childNodes).filter((n) => !n.classList?.contains('icon'))[0] : null;
     const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
     const text = [button.textContent, child?.textContent, grandChild?.textContent]
       .filter((t) => !!t)[0];
@@ -83,11 +84,14 @@ export function decorateButtons(buttons) {
     } else {
       button.classList.add(size);
     }
-    if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
-    [parent, child, grandChild].forEach((n) => {
-      if (n && n.nodeName !== 'P') n.remove();
+    // if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
+    [grandChild, child, parent].forEach((n) => {
+      if (n && ['STRONG', 'EM', '#text'].some((t) => t === n.nodeName)) {
+        // TODO figure out why the grandchildren aren't being copied
+        n.replaceWith(...n.childNodes);
+      }
     });
-    button.textContent = text;
+    if (!button.textContent) button.textContent = text;
     const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
     if (allowedArea) {
       const actionArea = button.closest('p, div');
