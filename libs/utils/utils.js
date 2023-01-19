@@ -193,7 +193,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
   if (!locale || !locales) return processedHref;
   const isLocalizable = relative || productionDomain === url.hostname;
   if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
+  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
   if (isLocalizedLink) return processedHref;
   const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
   return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -399,7 +399,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);

@@ -1,5 +1,6 @@
 import {
   createTag,
+  decorateLinks,
   decorateSVG,
   getConfig,
   getMetadata,
@@ -135,6 +136,7 @@ class Gnav {
     if (!brandBlock) return null;
     const brandLinks = [...brandBlock.querySelectorAll('a')];
     const brand = brandLinks.pop();
+    brand.href = localizeLink(brand.href);
     const brandTitle = brand.textContent;
     brand.className = brandBlock.className;
     const title = createTag('span', { class: 'gnav-brand-title' }, brandTitle);
@@ -287,6 +289,7 @@ class Gnav {
       container.append(...Array.from(menu.children));
       menu.append(container);
     }
+    decorateLinks(menu);
     this.decorateLinkGroups(menu);
     this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
@@ -332,6 +335,7 @@ class Gnav {
   decorateCta = () => {
     const cta = this.body.querySelector('strong a');
     if (cta) {
+      cta.href = localizeLink(cta.href);
       const { origin } = new URL(cta.href);
       if (origin !== window.location.origin) {
         cta.target = '_blank';
@@ -503,6 +507,7 @@ class Gnav {
       const ul = parent.querySelector('ul');
       if (ul) {
         ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
+        decorateLinks(ul);
         const nav = createTag('nav', { class: 'breadcrumbs', 'aria-label': 'Breadcrumb' }, ul);
         parent.remove();
         return nav;
