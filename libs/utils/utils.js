@@ -6,6 +6,7 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
+  'article-header',
   'aside',
   'author-header',
   'caas',
