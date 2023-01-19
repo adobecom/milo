@@ -126,16 +126,22 @@ export async function getModal(el, custom) {
     }
   });
 
-  dialog.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeModals([dialog]);
-    }
-  });
 
   dialog.append(close, content);
   document.body.append(dialog);
   dialog.insertAdjacentElement('afterend', curtain);
-  firstFocusable.focus(focusVisible);
+  setTimeout(() => {
+    document.getElementsByClassName("dialog-close")[0]?.focus({ focusVisible: true });
+  }, 500)
+
+  const closeModal = (event) => {
+    var code = event.keyCode || event.which;
+    if (code === 27) {
+      document.getElementsByClassName("dialog-close")[0]?.click();
+      document.removeEventListener('keydown', closeModal);
+    }
+  }
+  document.addEventListener('keydown', closeModal);
 
   return dialog;
 }
