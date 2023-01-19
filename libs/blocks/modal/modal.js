@@ -130,9 +130,7 @@ export async function getModal(el, custom) {
   dialog.append(close, content);
   document.body.append(dialog);
   dialog.insertAdjacentElement('afterend', curtain);
-  setTimeout(() => {
-    document.getElementsByClassName("dialog-close")[0]?.focus({ focusVisible: true });
-  }, 500)
+  document.getElementsByClassName("dialog-close")[0]?.focus({ focusVisible: true });
 
   const closeModal = (event) => {
     var code = event.keyCode || event.which;
