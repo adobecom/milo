@@ -33,12 +33,41 @@ function getRichResultsForSiteSearchBox(getMetadata) {
   };
 }
 
+function getRichResultsForProduct(getMetadata) {
+  // See specifications at https://developers.google.com/search/docs/appearance/structured-data/product
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: getMetadata('name'),
+    description: getMetadata('description'),
+    review: {
+      '@type': 'Review',
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: getMetadata('review-rating'),
+        bestRating: getMetadata('review-best-rating'),
+      },
+      author: {
+        '@type': 'Person',
+        name: getMetadata('review-author'),
+      }
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: getMetadata('aggregate-rating'),
+      reviewCount: getMetadata('aggregate-count'),
+    },
+  };
+}
+
 function getRichResults(type, getMetadata) {
   switch (type) {
     case 'NewsArticle':
       return getRichResultsForNewsArticle(getMetadata);
     case 'SiteSearchBox':
       return getRichResultsForSiteSearchBox(getMetadata);
+    case 'Product':
+      return getRichResultsForProduct(getMetadata);
     default:
       // eslint-disable-next-line no-console
       console.error(`Type ${type} is not supported`);

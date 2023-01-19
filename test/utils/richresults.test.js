@@ -62,4 +62,35 @@ describe('Rich Results', () => {
     };
     expect(actual).to.deep.equal(expected);
   });
+  
+  it('add the rich results for Product', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-product.html' });
+    await loadArea(document);
+    const script = document.querySelector('script[type="application/ld+json"]');
+    const actual = JSON.parse(script.innerHTML);
+    const expected = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: 'Executive Anvil',
+      description: 'Sleeker than ACME Classic Anvil, the Executive Anvil is perfect for the business traveler looking for something to drop from a height.',
+      review: {
+        '@type': 'Review',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: '4',
+          bestRating: '5',
+        },
+        author: {
+          '@type': 'Person',
+          name: 'Jane Doe',
+        }
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.4',
+        reviewCount: '89',
+      },
+    };
+    expect(actual).to.deep.equal(expected);
+  });
 });
