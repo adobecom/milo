@@ -56,6 +56,15 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el?.classList.contains(size)) || sizes[defaultSize];
 }
 
+function moveDescendentsUpDOM(node, fragment = document.createDocumentFragment()) {
+  for (let i = 0; i < node.childNodes.length; i += 1) {
+    const child = node.childNodes[i];
+    fragment.appendChild(child);
+    moveDescendentsUpDOM(child, fragment.lastChild);
+  }
+  return fragment;
+}
+
 export function decorateButtons(buttons) {
   const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
   buttons.forEach((button) => {
@@ -83,14 +92,19 @@ export function decorateButtons(buttons) {
     } else {
       button.classList.add(size);
     }
-    if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
+    const validParent = parent.nodeName === 'P' ? null : parent;
+    [grandChild, child, validParent].forEach((n) => {
+      if (n && ['STRONG', 'EM'].some((t) => t === n.nodeName)) {
+        n.replaceWith(moveDescendentsUpDOM(n));
+      }
+    });
     const span = button.querySelector('span');
     button.textContent = text;
     if (span) button.prepend(span);
     const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
     if (allowedArea) {
       const actionArea = button.closest('p, div');
-      if (actionArea && !actionArea.classList.contains('action-area')) {
+      if (actionArea && !actionArea.parentElement.querySelector('.action-area')) {
         actionArea.classList.add('action-area');
         actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
       }
