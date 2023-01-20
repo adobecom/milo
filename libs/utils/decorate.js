@@ -56,11 +56,11 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el?.classList.contains(size)) || sizes[defaultSize];
 }
 
-function moveDescendentsUpDOM(node, fragment = document.createDocumentFragment()) {
+function getDescendants(node, fragment = document.createDocumentFragment()) {
   for (let i = 0; i < node.childNodes.length; i += 1) {
     const child = node.childNodes[i];
     fragment.appendChild(child);
-    moveDescendentsUpDOM(child, fragment.lastChild);
+    getDescendants(child, fragment.lastChild);
   }
   return fragment;
 }
@@ -95,7 +95,7 @@ export function decorateButtons(buttons) {
     const validParent = parent.nodeName === 'P' ? null : parent;
     [grandChild, child, validParent].forEach((n) => {
       if (n && ['STRONG', 'EM'].some((t) => t === n.nodeName)) {
-        n.replaceWith(moveDescendentsUpDOM(n));
+        n.replaceWith(getDescendants(n));
       }
     });
     const span = button.querySelector('span');
