@@ -300,12 +300,12 @@ describe('Utils', () => {
     expect(io instanceof IntersectionObserver).to.be.true;
   });
 
-  it.only('decorates buttons', async () => {
+  it('decorates buttons', async () => {
     const doc = await readFile({ path: './mocks/buttons.html' });
     const parser = new DOMParser();
     const el = parser.parseFromString(doc, 'text/html');
     const links = el.querySelectorAll('a');
-    await utils.universalButtons(links);
+    await utils.decorateLinksToButtons(links);
     const divs = el.querySelectorAll('div:not(.section)');
 
     const links0 = divs[0].querySelectorAll('a');

@@ -304,9 +304,10 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-export async function universalButtons(links) {
+export async function decorateLinksToButtons(links) {
   const ignoreEmptyText = (s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim());
   const buttonable = (b) => {
+    if (b.nodeName !== 'A') return false;
     const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
     const isPara = (node) => node.nodeName === 'P';
     return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
@@ -321,22 +322,22 @@ export async function universalButtons(links) {
       return false;
     }
     const block = b.closest('p');
-    let isButton = true;
+    let validSiblings = true;
     Array.from(block.childNodes).filter(ignoreEmptyText).forEach((child) => {
       if (buttonable(child) || child.nodeName === 'A') {
         return;
       }
       const grandChildren = Array.from(child.childNodes).filter(ignoreEmptyText);
       if (!grandChildren || grandChildren.length === 0) {
-        isButton = false;
+        validSiblings = false;
       }
       grandChildren.forEach((g) => {
         if (!(buttonable(g) || g.nodeName === 'A')) {
-          isButton = false;
+          validSiblings = false;
         }
       });
     });
-    return isButton;
+    return validSiblings;
   });
   if (buttons.length === 0) return;
 
@@ -415,10 +416,10 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        // a.className = 'modal link-block';
-        return true;
+        a.classList.add('modal', 'link-block');
+      } else {
+        a.classList.add(key, 'link-block');
       }
-      a.className = `${key} link-block`;
       return true;
     }
     return false;
@@ -427,7 +428,7 @@ export function decorateAutoBlock(a) {
 
 async function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
-  await universalButtons(anchors);
+  await decorateLinksToButtons(anchors);
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
@@ -436,7 +437,7 @@ async function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
+    if (autoBLock && !a.classList.contains('con-button')) {
       rdx.push(a);
     }
     return rdx;

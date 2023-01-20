@@ -64,11 +64,10 @@ export function decorateButtons(buttons) {
     const size = mapBtnSize[blockSize] ?? blockSize;
     const parent = button.parentElement;
 
-    const child = button.childNodes?.length > 0 ? Array.from(button.childNodes).filter((n) => !n.classList?.contains('icon'))[0] : null;
-    const grandChild = child?.childNodes?.length > 0 ? Array.from(child.childNodes).filter((n) => !n.classList?.contains('icon'))[0] : null;
+    const child = button.childNodes?.length > 0 ? Array.from(button.childNodes).filter((n) => n.nodeName === 'STRONG' || n.nodeName === 'EM')[0] : null;
+    const grandChild = child?.childNodes?.length > 0 ? Array.from(child.childNodes).filter((n) => n.nodeName === 'STRONG' || n.nodeName === 'EM')[0] : null;
     const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
-    const text = [button.textContent, child?.textContent, grandChild?.textContent]
-      .filter((t) => !!t)[0];
+    const text = parent.textContent || '';
     const buttonTypes = [];
     if (nodes.includes('STRONG') && nodes.includes('EM')) {
       buttonTypes.push('fill');
@@ -84,14 +83,10 @@ export function decorateButtons(buttons) {
     } else {
       button.classList.add(size);
     }
-    // if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
-    [grandChild, child, parent].forEach((n) => {
-      if (n && ['STRONG', 'EM', '#text'].some((t) => t === n.nodeName)) {
-        // TODO figure out why the grandchildren aren't being copied
-        n.replaceWith(...n.childNodes);
-      }
-    });
-    if (!button.textContent) button.textContent = text;
+    if (parent.nodeName !== 'P') parent.insertAdjacentElement('afterend', button);
+    const span = button.querySelector('span');
+    button.textContent = text;
+    if (span) button.prepend(span);
     const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
     if (allowedArea) {
       const actionArea = button.closest('p, div');
