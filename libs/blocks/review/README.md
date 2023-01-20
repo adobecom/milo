@@ -16,6 +16,7 @@
 | thank you text      | Thank you for your Feedback                              |
 | tooltips            | Poor, Bad, Good, very good, Excellent                    |
 | tooltip delay       | 5                                                        |
+| intitial value      | 0                                                        |
 
 ```
 
