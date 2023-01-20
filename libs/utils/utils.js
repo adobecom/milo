@@ -335,13 +335,24 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
+  const altTextFlagIndex =  textContent.indexOf('|');
+  const sanitizeTextContent = altTextFlagIndex === -1
+    ? textContent
+    : textContent?.slice(0 ,altTextFlagIndex).trim();
+  const ext = sanitizeTextContent?.substring(sanitizeTextContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
+
+  const altText = altTextFlagIndex === -1
+    ? ''
+    : textContent.substring(textContent.indexOf('|') + 1).trim();
+  const textContentUrl = new URL(sanitizeTextContent);
+  const hrefUrl = new URL(href);
   const img = document.createElement('img');
-  img.src = localizeLink(textContent);
+  img.src = localizeLink(sanitizeTextContent);
+  img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
-  if (img.src === href) {
+  if (textContentUrl.pathname === hrefUrl.pathname) {
     a.parentElement.replaceChild(pic, a);
   } else {
     a.textContent = '';
