@@ -20,6 +20,13 @@ function handleStyle(div, section) {
   }
 }
 
+function handleLayout(div, section) {
+  if (!(div || section)) return;
+  const layoutString = div.textContent.trim();
+  const layoutClass = `grid-template-columns-${layoutString.replaceAll(' | ', '-')}`;
+  section.classList.add(layoutClass);
+}
+
 export const getSectionMetadata = (el) => {
   if (!el) return {};
   const metadata = {};
@@ -43,6 +50,9 @@ export default function init(el) {
     }
     if (div.textContent === 'background') {
       handleBackground(valueDiv, section);
+    }
+    if (div.textContent === 'layout') {
+      handleLayout(valueDiv, section);
     }
   });
 }

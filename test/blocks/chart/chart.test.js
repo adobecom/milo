@@ -106,7 +106,7 @@ describe('chart', () => {
 
   it('getColors returns rotated color list if color provided ', () => {
     const authoredColor = 'indigo';
-    const colors = ['#4046CA', '#7326D3', '#147AF3', '#72E06A', '#7E84FA', '#DE3D82', '#008F5D', '#CB5D00', '#E8C600', '#BCE931', '#0FB5AE', '#F68511'];
+    const colors = ['#4046CA', '#F68511', '#DE3D82', '#7E84FA', '#72E06A', '#147AF3', '#7326D3', '#E8C600', '#CB5D00', '#008F5D', '#BCE931', '#0FB5AE'];
 
     expect(getColors(authoredColor)).to.eql(colors);
   });
@@ -468,9 +468,9 @@ describe('chart', () => {
   it('fetchData returns json given an anchor tag', async () => {
     const link = document.createElement('a');
     const linkRel = '/drafts/data-viz/line.json';
-    link.href = `https://data-viz--milo--adobecom.hlx.page${linkRel}`;
+    link.href = `${linkRel}`;
     const goodResponse = { ok: true, json: () => true };
-    fetch.withArgs(linkRel).resolves(goodResponse);
+    fetch.withArgs(link.href).resolves(goodResponse);
     const response = await fetchData(link);
     expect(response).to.be.true;
   });
@@ -604,7 +604,7 @@ describe('chart', () => {
     document.body.innerHTML = '<div class="chart"><div>Title</div><div>Subtitle</div><div><div><a href="/drafts/data-viz/chart.json"></a></div></div><div>Footnote</div></div>';
     const el = document.querySelector('.chart');
     const data = await readFile({ path: './mocks/donutChart.json' });
-    fetch.withArgs('/drafts/data-viz/chart.json').resolves({ ok: true, json: () => JSON.parse(data) });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
     el.classList.add('donut');
     init(el);
     const svg = await waitForElement('svg');
@@ -617,11 +617,11 @@ describe('chart', () => {
 
   it('init generates list chart', async () => {
     const linkRel = '/drafts/data-viz/list.json';
-    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/listChartSingleTable.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const listWrapper = await waitForElement('.list-wrapper');
     expect(listWrapper).to.exist;
@@ -631,7 +631,7 @@ describe('chart', () => {
     document.body.innerHTML = await readFile({ path: './mocks/chart.html' });
     const el = document.querySelector('.chart');
     const data = await readFile({ path: './mocks/areaChart.json' });
-    fetch.withArgs('/test/blocks/chart/mocks/chart.json').resolves({ ok: true, json: () => JSON.parse(data) });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
     el.classList.add('area');
     init(el);
     const svg = await waitForElement('svg');
@@ -641,11 +641,11 @@ describe('chart', () => {
   it('init chart with echarts without intersection observer', async () => {
     window.IntersectionObserver = undefined;
     const linkRel = '/drafts/data-viz/column.json';
-    document.body.innerHTML = `<div class="chart column"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart column"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/columnChart.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const svg = await waitForElement('svg');
     expect(svg).to.exist;
@@ -683,11 +683,11 @@ describe('chart', () => {
 
   it('init generates oversized number chart', async () => {
     const linkRel = '/drafts/data-viz/oversized-number.json';
-    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/oversized-number.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const svg = await waitForElement('svg');
     expect(svg).to.exist;

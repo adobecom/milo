@@ -40,6 +40,7 @@ const App = ({ rootEl, strings }) => html`
     postUrl=${strings.postUrl}
     visitorId=${getVisitorId()}
     reviewPath=${getReviewPath(strings.postUrl)}
+    initialValue=${strings.initialValue}
     onRatingSet=${({ rating, comment }) => {}}
     onRatingHover=${({ rating }) => {}}
     onReviewLoad=${({ hasRated, rating }) => {}}
@@ -61,6 +62,7 @@ const getStrings = (metaData) => {
     tooltips,
     hidetitle,
     reviewurl,
+    initialvalue
   } = metaData;
 
   return {
@@ -77,6 +79,7 @@ const getStrings = (metaData) => {
     hideTitleOnReload: hidetitle,
     tooltips: tooltips && tooltips.split(',').map((t) => t.trim()),
     postUrl: reviewurl,
+    initialValue: initialvalue
   };
 };
 
