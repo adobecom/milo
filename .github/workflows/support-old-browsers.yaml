@@ -1,0 +1,28 @@
+name: Check for unsupported functions
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check for unsupported functions
+        run: |
+          # Install a package that can check for unsupported functions
+          npm install -g browser-compat-data
+
+          # Use the package to check for unsupported functions in the code
+          unsupported_functions=$(grep -rE '\w+\(' . --exclude-dir node_modules | browser-compat-data check)
+
+          # If any unsupported functions were found, fail the action
+          if [[ -n "$unsupported_functions" ]]; then
+              echo "Found unsupported functions: $unsupported_functions"
+              exit 1
+          fi
