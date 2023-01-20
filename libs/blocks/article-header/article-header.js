@@ -15,6 +15,7 @@ async function populateAuthorInfo(authorEl, imgContainer, url, name) {
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
+
   const img = doc.querySelector('img');
   if (img) {
     img.setAttribute('alt', name);
@@ -56,9 +57,11 @@ async function copyToClipboard(button) {
     setTimeout(() => {
       tooltip.remove();
     }, 5000);
+    button.classList.remove('copy-failure');
+    button.classList.add('copy-success');
   } catch (e) {
-    button.classList.remove('copy-success');
     button.classList.add('copy-failure');
+    button.classList.remove('copy-success');
   }
 }
 
@@ -87,7 +90,7 @@ async function buildSharing() {
     },
     link: {
       id: 'copy-to-clipboard',
-      alt: `${await replaceKey('copied-to-clipboard', getConfig())}`,
+      alt: `${await replaceKey('copy-to-clipboard', getConfig())}`,
       'aria-label': `${await replaceKey('copy-to-clipboard', getConfig())}`,
     },
   };
@@ -124,14 +127,10 @@ async function buildSharing() {
 }
 
 async function validateDate(date) {
-  if (date
-    && !window.location.hostname.includes('adobe.com')
-    && window.location.pathname.includes('/publish/')) {
+  if (date && !/[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}/.test(date.textContent.trim())) {
     // match publication date to MM-DD-YYYY format
-    if (!/[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}/.test(date.textContent.trim())) {
-      date.classList.add('article-date-invalid');
-      date.setAttribute('title', await replaceKey('invalid-date', getConfig()));
-    }
+    date.classList.add('article-date-invalid');
+    date.setAttribute('title', await replaceKey('invalid-date', getConfig()));
   }
 }
 
