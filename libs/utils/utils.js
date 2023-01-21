@@ -159,6 +159,8 @@ export function createTag(tag, attributes, html) {
   if (html) {
     if (html instanceof HTMLElement || html instanceof SVGElement) {
       el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
     }
