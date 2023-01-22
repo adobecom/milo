@@ -189,18 +189,15 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-export function arrayToObj (input=[]) {
+const arrayToObj = (array) => {
   const obj = {};
-  if(!Array.isArray(input)){
-    input = [];
-  }
-  input.forEach(item => {
+  array.forEach((item) => {
     if (item.key && item.value) {
       obj[item.key] = item.value;
     }
   });
   return obj;
-}
+};
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -242,8 +239,8 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
-        titleHeadingLevel: state.titleHeadingLevel,
-        cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
+        titleHeadingLevel: state.titleLevel || 'h3',
+        cardTitleAccessibilityLevel: state.accessibilityLevel || 6,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
@@ -419,7 +416,6 @@ export const defaultState = {
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
-  customCard: '',
   ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
