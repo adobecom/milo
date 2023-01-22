@@ -188,6 +188,16 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
+const arrayToObj = (array) => {
+  const obj = {};
+  array.forEach((item) => {
+    if (item.key && item.value) {
+      obj[item.key] = item.value;
+    }
+  });
+  return obj;
+};
+
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const language = state.language ? state.language.split('/').pop() : 'en';
@@ -195,7 +205,7 @@ export const getConfig = async (state, strs = {}) => {
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
-    && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  && state.targetActivity ? `.${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -219,7 +229,7 @@ export const getConfig = async (state, strs = {}) => {
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
-      fallbackEndpoint: '',
+      fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
@@ -228,6 +238,8 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
+        titleHeadingLevel: state.titleLevel || 'h3',
+        cardTitleAccessibilityLevel: state.accessibilityLevel || 6,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
@@ -249,6 +261,8 @@ export const getConfig = async (state, strs = {}) => {
         sample: state.sortReservoirSample,
         pool: state.sortReservoirPool,
       },
+      ctaAction: state.ctaAction,
+      additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
@@ -357,7 +371,11 @@ export const getConfig = async (state, strs = {}) => {
       trackImpressions: state.analyticsTrackImpression || '',
       collectionIdentifier: state.analyticsCollectionName,
     },
-    target: { enabled: state.targetEnabled || '' },
+    target: {
+      enabled: state.targetEnabled || '',
+      lastViewedSession: state.lastViewedSession || '',
+    },
+    customCard: ['card', `return \`${state.customCard}\``],
   };
   return config;
 };
@@ -395,6 +413,7 @@ export const defaultState = {
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
+  ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
