@@ -2,6 +2,7 @@ import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
 import { buildFigure } from '../figure/figure.js';
+import { buildBlock, getLinkForTopic, loadTaxonomy } from '../article-feed/article-helpers.js';
 
 async function populateAuthorInfo(authorEl, imgContainer, url, name) {
   const resp = await fetch(`${url}.plain.html`);
@@ -134,37 +135,7 @@ async function validateDate(date) {
   }
 }
 
-// /**
-//  * builds article header block from meta and default content.
-//  * @param {Element} mainEl The container element
-//  */
-// //  function buildArticleHeader(mainEl) {
-// //   const div = document.createElement('div');
-// //   const h1 = mainEl.querySelector('h1');
-// //   const picture = mainEl.querySelector('picture');
-// //   const tags = getMetadata('article:tag', true);
-// //   const category = tags.length > 0 ? tags[0] : '';
-// //   const author = getMetadata('author');
-// //   const { codeRoot } = getConfig();
-// //   const authorURL = getMetadata('author-url') || `${codeRoot}/authors/${toClassName(author)}`;
-// //   const publicationDate = getMetadata('publication-date');
-
-// //   const categoryTag = getLinkForTopic(category);
-
-// //   const test = [
-// //     [`<p>${categoryTag}</p>`],
-// //     [h1],
-// //     [`<p><a href="${authorURL}">${author}</a></p>
-// //       <p>${publicationDate}</p>`],
-// //     [{ elems: [picture.closest('p'), getImageCaption(picture)] }],
-// //   ]
-// //   const articleHeaderBlockEl = buildBlock('article-header', test);
-// //   console.log(articleHeaderBlockEl);
-// //   div.append(articleHeaderBlockEl);
-// //   mainEl.prepend(div);
-// // }
-
-export default async function init(blockEl, blockName, document, eager) {
+async function decorateBlock(blockEl, eager) {
   const childrenEls = Array.from(blockEl.children);
 
   const categoryContainer = childrenEls[0];
@@ -203,4 +174,37 @@ export default async function init(blockEl, blockName, document, eager) {
   featureFigEl.classList.add('figure-feature');
   featureImgContainer.prepend(featureFigEl);
   featureImgContainer.lastElementChild.remove();
+}
+
+export async function buildArticleHeader(el) {
+  await loadTaxonomy();
+  const h1 = el.querySelector('h1');
+  const picture = el.querySelector('picture');
+  const tag = getMetadata('article:tag');
+  const category = tag || 'News';
+  const author = getMetadata('author');
+  const { codeRoot } = getConfig();
+  const authorURL = getMetadata('author-url') || `${codeRoot}/authors/${author.replace(/[^0-9a-z]/gi, '-')}`;
+  const publicationDate = getMetadata('publication-date');
+
+  const categoryTag = getLinkForTopic(category);
+
+  const articleHeaderBlockEl = buildBlock('article-header', [
+    [`<p>${categoryTag}</p>`],
+    [h1],
+    [`<p><a href="${authorURL}">${author}</a></p>
+      <p>${publicationDate}</p>`],
+    [picture],
+  ]);
+  el.prepend(articleHeaderBlockEl);
+  return articleHeaderBlockEl;
+}
+
+export default async function init(blockEl, eager) {
+  let block = blockEl;
+  if (blockEl.nodeName === 'A' && block.pathname.includes('/publish')) {
+    block = await buildArticleHeader(document.querySelector('.section'));
+  }
+
+  decorateBlock(block, eager);
 }

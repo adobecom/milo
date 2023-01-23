@@ -64,6 +64,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { 'article-header': '/publish/' },
 ];
 const ENVS = {
   local: {
