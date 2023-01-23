@@ -32,6 +32,7 @@ function closeModals(modals) {
         modal.nextElementSibling.remove();
       }
       modal.remove();
+      document.querySelector(`[data-modal-hash="#${modal.id}"]`)?.focus();
     });
     if (anchor) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
   }
