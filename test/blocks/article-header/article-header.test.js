@@ -66,7 +66,11 @@ describe('article header', () => {
     const meta = document.createElement('meta');
     meta.setAttribute('name', 'author');
     meta.setAttribute('content', 'Adobe Communication Team');
-    document.head.append(meta);
+
+    const publicationDate = document.createElement('meta');
+    publicationDate.setAttribute('name', 'publication-date');
+    publicationDate.setAttribute('content', '12-12-2022');
+    document.head.append(meta, publicationDate);
 
     const autoBlock = document.createElement('a');
     autoBlock.setAttribute('class', 'article-header');

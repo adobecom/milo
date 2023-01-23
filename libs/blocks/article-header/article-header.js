@@ -202,7 +202,7 @@ export async function buildArticleHeader(el) {
 
 export default async function init(blockEl, eager) {
   let block = blockEl;
-  if (blockEl.nodeName === 'A' && block.pathname.includes('/publish')) {
+  if (blockEl.nodeName === 'A' && getMetadata('publication-date')) {
     block = await buildArticleHeader(document.querySelector('.section'));
   }
 
