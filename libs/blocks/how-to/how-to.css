@@ -30,7 +30,10 @@
   border-bottom: 1px solid #DDDDDD;
 }
 
-.how-to > ol > li {}
+.how-to > ol > li > picture {
+  margin-right: 20px;
+  max-width: 25%;
+}
 
 .how-to > ol > li::before {
   content: counter(step-counter);
