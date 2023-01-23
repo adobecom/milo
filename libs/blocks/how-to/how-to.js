@@ -1,8 +1,8 @@
 import { createTag } from '../../utils/utils.js';
 
-const getSrc = (image) => image.src || image.querySelector('[src]').src;
+const getSrc = (image) => image.src || image.querySelector('[src]')?.src || image.href;
 
-const getStepLd = (count, divId, image, text) => ({
+const getStepLd = (count, divId, image, step) => ({
   '@type': 'HowToStep',
   url: `${window.location.href}#${divId}`,
   name: `Step ${count}`,
@@ -10,16 +10,16 @@ const getStepLd = (count, divId, image, text) => ({
   itemListElement: [
     {
       '@type': 'HowToDirection',
-      text,
+      text: step.innerText?.trim(),
     },
   ],
 });
 
-const setJsonLd = (description, mainImage, stepsLd) => {
+const setJsonLd = (heading, description, mainImage, stepsLd) => {
   const jsonLd = {
     '@context': 'http://schema.org',
     '@type': 'HowTo',
-    name: 'How to',
+    name: heading,
     description,
     publisher: {
       '@type': 'Organization',
@@ -45,7 +45,7 @@ const setJsonLd = (description, mainImage, stepsLd) => {
   document.getElementsByTagName('head')[0].appendChild(jsonLdScript);
 };
 
-const getImage = (el) => el.querySelector('picture');
+const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
 
 const getHowToInfo = (el) => {
   const infoDiv = el.querySelector(':scope > div > div');
@@ -118,8 +118,8 @@ export default function init(el) {
 
   if (isSeo) {
     const stepsLd = steps.map((step, idx) =>
-      getStepLd(idx + 1, heading.id, images[idx], step.innerHTML));
-    setJsonLd(desc, mainImage, stepsLd);
+      getStepLd(idx + 1, heading.id, images[idx], step));
+    setJsonLd(heading?.textContent, desc?.textContent, mainImage, stepsLd);
   }
 
   el.appendChild(orderedList);
