@@ -2,12 +2,13 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
 setConfig(conf);
+const config = getConfig();
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/article-header/article-header.js');
@@ -56,6 +57,28 @@ describe('article header', () => {
 
     expect(tooltip).to.be.exist;
     writeTextStub.restore();
+  });
+
+  it('auto creates article-header block', async () => {
+    config.locale.contentRoot = '/test/blocks/recommended-articles/mocks';
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'author');
+    meta.setAttribute('content', 'Adobe Communication Team');
+    document.head.append(meta);
+
+    const autoBlock = document.createElement('a');
+    autoBlock.setAttribute('class', 'article-header');
+    autoBlock.setAttribute('href', 'https://my.blog.com/publish/2022/11/23/awesome-blog');
+    await init(autoBlock);
+
+    expect(document.body.querySelector('.article-category')).to.be.exist;
+    expect(document.body.querySelector('.article-title')).to.be.exist;
+    expect(document.body.querySelector('.article-author-image')).to.be.exist;
+    expect(document.body.querySelector('.article-author')).to.be.exist;
+    expect(document.body.querySelector('.article-date')).to.be.exist;
+    expect(document.body.querySelector('.article-byline-sharing')).to.be.exist;
   });
 });
 

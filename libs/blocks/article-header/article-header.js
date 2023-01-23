@@ -184,7 +184,7 @@ export async function buildArticleHeader(el) {
   const category = tag || 'News';
   const author = getMetadata('author');
   const { codeRoot } = getConfig();
-  const authorURL = getMetadata('author-url') || `${codeRoot}/authors/${author.replace(/[^0-9a-z]/gi, '-')}`;
+  const authorURL = getMetadata('author-url') || (author ? `${codeRoot}/authors/${author.replace(/[^0-9a-z]/gi, '-')}` : null);
   const publicationDate = getMetadata('publication-date');
 
   const categoryTag = getLinkForTopic(category);
@@ -192,7 +192,7 @@ export async function buildArticleHeader(el) {
   const articleHeaderBlockEl = buildBlock('article-header', [
     [`<p>${categoryTag}</p>`],
     [h1],
-    [`<p><a href="${authorURL}">${author}</a></p>
+    [`<p>${authorURL ? `<a href="${authorURL}">${author}</a>` : author}</p>
       <p>${publicationDate}</p>`],
     [picture],
   ]);
@@ -206,5 +206,5 @@ export default async function init(blockEl, eager) {
     block = await buildArticleHeader(document.querySelector('.section'));
   }
 
-  decorateBlock(block, eager);
+  await decorateBlock(block, eager);
 }
