@@ -158,7 +158,8 @@ main .section[data-status='decorated'] {
   display: none;
 }
 
-main > .section {
+main > .section,
+.fragment > .section {
   display: block;
   position: relative;
 }

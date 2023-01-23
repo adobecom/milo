@@ -17,16 +17,16 @@ export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 export const colorPalette = {
   seafoam: '#0FB5AE',
-  orange: '#F68511',
   indigo: '#4046CA',
-  purple: '#7326D3',
-  blue: '#147AF3',
-  lime: '#72E06A',
-  lavender: '#7E84FA',
+  orange: '#F68511',
   magenta: '#DE3D82',
-  green: '#008F5D',
-  copper: '#CB5D00',
+  lavender: '#7E84FA',
+  lime: '#72E06A',
+  blue: '#147AF3',
+  purple: '#7326D3',
   yellow: '#E8C600',
+  copper: '#CB5D00',
+  green: '#008F5D',
   chartreuse: '#BCE931',
 };
 const SECTION_CLASSNAME = 'chart-section';
