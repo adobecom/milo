@@ -6,6 +6,7 @@
 
 header {
   display: block;
+  overflow: visible;
 }
 
 /* Base styles */
@@ -58,7 +59,7 @@ header nav.gnav {
   grid-area: content;
   display: grid;
   grid-template-areas:
-    'header     header'
+    'header     profile'
     'scroll gutter'
     'scroll     gutter';
   grid-template-columns: 1fr 12px;
@@ -69,7 +70,7 @@ header nav.gnav {
 header.has-breadcrumbs nav.gnav {
 
   grid-template-areas:
-    'header     header'
+    'header     profile'
     'breadcrumb gutter'
     'scroll     gutter';
 }
@@ -428,7 +429,7 @@ header .gnav-navitem.has-menu > a:after {
 /* PROFILE */
 
 .feds-profile {
-  grid-area: header;
+  grid-area: profile;
   display: flex;
   align-items: center;
   font-size: 14px;
@@ -442,8 +443,8 @@ header .gnav-navitem.has-menu > a:after {
 }
 
 .feds-profile-img {
-  height: 30px;
-  width: 30px;
+  max-height: 30px;
+  max-width: 30px;
 }
 
 .feds-profile-button {

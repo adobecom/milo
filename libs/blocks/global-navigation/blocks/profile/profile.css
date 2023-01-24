@@ -20,7 +20,6 @@
   padding: 20px;
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid #e1e1e1;
 }
 
 .feds-profile-header .feds-profile-img {
@@ -55,7 +54,13 @@
 }
 
 .feds-profile-actions {
-  padding-left: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.feds-profile-action {
+  padding: 14px 20px;
+  border-top: 1px solid #e1e1e1;
 }
 
 @keyframes profile-collapsed {
