@@ -1,38 +1,29 @@
 /* TODO just a POC. Copy of the css for the profile avatar from global-navigation.css */
-
-.gnav:not(.signed-in) .gnav-profile {
-  min-width: 5.766rem;
-}
-
-.gnav-profile,
-.gnav.signed-in .gnav-profile{
-  min-width: 62.25px;
-}
-
-.gnav-profile {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  padding: 0 12px;
-  box-sizing: border-box;
-}
-
-.gnav-profile .gnav-signin {
+.feds-profile {
+  grid-area: header;
   display: flex;
   align-items: center;
   font-size: 14px;
-  padding-bottom: 2px;
+  position: relative;
+  justify-content: end;
 }
 
-.gnav-profile .gnav-profile-button {
-  padding: 0 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
+.feds-signin {
+  padding: 4px var(--padding-utilityIcon);
+  border-radius: var(--radius-utilityIcon);
 }
 
-.gnav-profile .gnav-profile-button .gnav-profile-img {
-  display: block;
+.feds-profile-img {
+  height: 30px;
   width: 30px;
-  border-radius: 4px;
+}
+
+.feds-profile-button {
+  padding: 2px var(--padding-utilityIcon);
+  border-radius: var(--radius-utilityIcon);
+  border: none;
+}  
+
+.feds-profile {
+  grid-area: profile;
 }

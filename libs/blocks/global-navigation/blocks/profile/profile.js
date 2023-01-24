@@ -24,7 +24,7 @@ const decorateProfileLink = (href, service) => {
 const decorateAction = (actionEl) => {
   if (!actionEl) return '';
   actionEl.href = decorateProfileLink(actionEl.href, 'adminconsole');
-  return toFragment`<li class="gnav-profile-action">${actionEl}</li>`;
+  return toFragment`<li class="feds-profile-action">${actionEl}</li>`;
 };
 
 class Profile {
@@ -52,6 +52,8 @@ class Profile {
   }
 
   async init() {
+    // TODO do some sanity checks if the user is logged in, the mandatory properties are set.
+    // If not there should be helpful logs providing guidance for developers
     const { displayName, email } = await window.adobeIMS.getProfile();
     if (this.profileButtonEl) this.profileButtonEl.setAttribute('aria-label', displayName);
     this.displayName = displayName;
@@ -62,8 +64,10 @@ class Profile {
   }
 
   decorateSignOut() {
-    const signOutLink = toFragment`<li class="gnav-profile-action">${this.signOutEl}</li>`;
+    const signOutLink = toFragment`<li class="feds-profile-action">${this.signOutEl}</li>`;
     signOutLink.addEventListener('click', (e) => {
+      // TODO consumers might want to execute their own logic before a sign out
+      // we might want to provide them a way to do so here
       e.preventDefault();
       window.adobeIMS.signOut();
     });
@@ -72,20 +76,20 @@ class Profile {
 
   menu() {
     return toFragment`
-      <div id="gnav-profile-menu" class="gnav-profile-menu">
+      <div id="feds-profile-menu" class="feds-profile-menu">
         <a 
           href="${decorateProfileLink(this.accountLinkEl.href, 'account')}" 
-          class="gnav-profile-header"
+          class="feds-profile-header"
           aria-label="${this.accountLinkEl.textContent}"
         >
           ${this.avatarImgEl.cloneNode(true)}
-          <div class="gnav-profile-details">
-            <p class="gnav-profile-name">${this.displayName}</p>
-            <p class="gnav-profile-email">${decorateEmail(this.email)}</p>
-            <p class="gnav-profile-account">${this.accountLinkEl.innerHTML}</p>
+          <div class="feds-profile-details">
+            <p class="feds-profile-name">${this.displayName}</p>
+            <p class="feds-profile-email">${decorateEmail(this.email)}</p>
+            <p class="feds-profile-account">${this.accountLinkEl.innerHTML}</p>
           </div>
         </a>
-        <ul class="gnav-profile-actions">
+        <ul class="feds-profile-actions">
           ${this.sections.manage.items.team?.id ? decorateAction(this.manageTeamsEl) : ''}
           ${this.sections.manage.items.enterprise?.id ? decorateAction(this.manageEnterpriseEl) : ''}
           ${this.decorateSignOut()}
@@ -94,5 +98,4 @@ class Profile {
     `;
   }
 }
-export default { Profile };
-export { Profile };
+export default Profile;

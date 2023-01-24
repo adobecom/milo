@@ -1,6 +1,6 @@
 import { toFragment } from '../../utilities.js';
 import { MenuControls } from '../../delayed-utilities.js';
-import { Profile } from './profile.js';
+import Profile from './profile.js';
 import { loadStyle } from '../../../../utils/utils.js';
 
 const loadStyles = (path) => new Promise((resolve) => {

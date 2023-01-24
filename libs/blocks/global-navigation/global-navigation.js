@@ -45,7 +45,7 @@ class Gnav {
     this.blocks = {
       profile: {
         blockEl: body.querySelector('.profile'),
-        decoratedEl: toFragment`<div class="gnav-profile"></div>`,
+        decoratedEl: toFragment`<div class="feds-profile"></div>`,
       },
       search: {},
     };
@@ -90,7 +90,7 @@ class Gnav {
         { MenuControls },
         { decorateMenu, decorateLargeMenu },
         { appLauncher },
-        { Profile },
+        Profile,
         { Search },
       ] = await Promise.all([
         loadBlock('./delayed-utilities.js'),
@@ -116,6 +116,9 @@ class Gnav {
   loadIMS = () => {
     const { locale, imsClientId, env } = getConfig();
     if (!imsClientId) return null;
+    // TODO-1 scopes should be defineable by the consumers
+    // We didn't have a use-case for that so far
+    // TODO-2 we should emit an event after the onReady callback
     window.adobeid = {
       client_id: imsClientId,
       scope: 'AdobeID,openid,gnav',
@@ -125,8 +128,8 @@ class Gnav {
       useLocalStorage: false,
       onReady: () => this.decorateProfile(),
     };
-    const imsScriptEl = document.querySelector('script[src$="/imslib.min.js"]') instanceof HTMLElement;
-    if (!imsScriptEl && !window.adobeIMS) {
+    const imsScript = document.querySelector('script[src$="/imslib.min.js"]') instanceof HTMLElement;
+    if (!imsScript && !window.adobeIMS) {
       loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
     }
     return null;
@@ -146,12 +149,12 @@ class Gnav {
     if (blockEl.children.length > 1) decoratedEl.classList.add('has-menu');
     decoratedEl.closest('nav.gnav').classList.add('signed-in');
     const { sections, user: { avatar } } = await profileRes.json();
-    const avatarImgEl = toFragment`<img class="gnav-profile-img" src="${avatar}"></img>`;
+    const avatarImgEl = toFragment`<img class="feds-profile-img" src="${avatar}"></img>`;
     const profileButtonEl = toFragment`
         <button 
-          class="gnav-profile-button" 
+          class="feds-profile-button" 
           aria-expanded="false" 
-          aria-controls="gnav-profile-menu"
+          aria-controls="feds-profile-menu"
           aria-label="Profile button"
         > 
         ${avatarImgEl}
@@ -246,6 +249,7 @@ class Gnav {
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
+    if (!logo) return null;
     return toFragment`
       <a
         href="https://www.adobe.com/"
@@ -370,7 +374,7 @@ class Gnav {
     const { blockEl, decoratedEl } = this.blocks.profile;
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     const signIn = blockEl.querySelector('a');
-    signIn.classList.add('gnav-signin');
+    signIn.classList.add('feds-signin');
     signIn.setAttribute('daa-ll', 'Sign In');
     if (dropDown) {
       const id = `navmenu-${blockEl.className}`;

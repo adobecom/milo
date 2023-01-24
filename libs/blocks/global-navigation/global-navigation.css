@@ -1,6 +1,6 @@
 :root {
   /* New Variables */
-  --padding-utilityIcon: 4px;
+  --padding-utilityIcon: 8px;
   --radius-utilityIcon: 4px;
 }
 
@@ -42,6 +42,7 @@ header.is-open .gnav-curtain,
   grid-template-areas: 'content';
   position: relative;
   z-index: 100;
+  grid-template-columns: calc(100% - 20px);
 }
 
 header.is-open .gnav-wrapper {
@@ -94,7 +95,7 @@ header a.gnav-logo {
 }
 
 header button.gnav-toggle {
-  width: 56px;
+  margin-left: 20px;
   grid-area: header;
   justify-self: start;
   font-size: 20px;
@@ -131,11 +132,6 @@ header.gnav a {
   white-space: nowrap;
 }
 
-header .gnav-profile {
-  grid-area: header;
-  justify-self: end;
-}
-
 header .mainnav-wrapper {
   display: none;
   background: var(--color-white);
@@ -159,7 +155,7 @@ header .breadcrumbs {
   align-self: start;
   margin-top: 57px;
   grid-area: content;
-  width: 100%;
+  width: calc(100% + 20px);
   background: var(--color-white);
   border-bottom: 1px solid #EAEAEA;
   font-size: 12px;
@@ -431,48 +427,29 @@ header .gnav-navitem.has-menu > a:after {
 
 /* PROFILE */
 
-.gnav:not(.signed-in) .gnav-profile {
-  min-width: 5.766rem;
-}
-
-.gnav-profile,
-.gnav.signed-in .gnav-profile{
-  min-width: 62.25px;
-}
-
-.gnav-profile {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  padding: 0 12px;
-  box-sizing: border-box;
-}
-
-.gnav-profile .gnav-signin {
+.feds-profile {
+  grid-area: header;
   display: flex;
   align-items: center;
   font-size: 14px;
-  padding-bottom: 2px;
+  position: relative;
+  justify-content: end;
 }
 
-.gnav-profile .gnav-profile-button {
-  padding: 0 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
+.feds-signin {
+  padding: 4px var(--padding-utilityIcon);
+  border-radius: var(--radius-utilityIcon);
 }
 
-.gnav-profile .gnav-profile-button .gnav-profile-img {
-  display: block;
+.feds-profile-img {
+  height: 30px;
   width: 30px;
-  border-radius: 4px;
 }
 
-/* PROFILE MULTI CLOUD SIGNIN */
-
-header .gnav-profile.gnav-navitem > a {
-  border-bottom: none;
-  padding-top: unset;
+.feds-profile-button {
+  padding: 2px var(--padding-utilityIcon);
+  border-radius: var(--radius-utilityIcon);
+  border: none;
 }
 
 /* END PROFILE */
@@ -505,6 +482,10 @@ header .app-launcher {
 /* END APP LAUNCHER */
 
 @media (min-width: 900px) {
+  .feds-profile {
+    grid-area: profile;
+  }
+
   header .gnav-wrapper {
     height: unset;
     grid-template-areas: 'main'
@@ -513,7 +494,7 @@ header .app-launcher {
     min-height: 63px;
     border-bottom: 1px solid #EAEAEA;
     justify-content: center;
-    grid-template-columns: calc(100% - 20px);
+    grid-template-columns: calc(100% - 40px);
   }
 
   header .gnav-wrapper nav.gnav,
@@ -567,15 +548,6 @@ header .app-launcher {
     border-left: 1px solid #EBEBEB;
     border-right: 1px solid #EBEBEB;
   }
-
-  /* PROFILE MULTI CLOUD SIGNIN OVERRIDE */
-
-  header .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu.small-Variant {
-    left: unset;
-    right: 0;
-  }
-
-  /* END PROFILE MULTI CLOUD SIGNIN OVERRIDE */
 
   /* APP LAUNCHER */
 
@@ -658,15 +630,15 @@ header .app-launcher {
 
   .gnav-wrapper .breadcrumbs {
     display: block;
-    margin-top: 63px;
+    margin-top: 0;
     grid-area: breadcrumbs;
     border-top: 1px solid #EAEAEA;
     border-bottom: none;
+    width: 100%;
   }
 
   .gnav-wrapper .breadcrumbs ul {
     margin: 0 auto;
-    max-width: 83.4%;
   }
 
   header .breadcrumbs a,
@@ -686,10 +658,6 @@ header .app-launcher {
     display: none;
   }
 
-  header .gnav-profile {
-    grid-area: profile;
-  }
-
   header .mainnav-wrapper + .gnav-logo {
     margin-left: 16px;
   }
@@ -701,8 +669,9 @@ header .app-launcher {
     align-items: center;
     width: 25px;
     box-sizing: border-box;
+    margin-left: var(--padding-utilityIcon);
   }
-
+  
   /* Search Bar */
   .gnav-search.is-open .gnav-search-bar {
     position: fixed;
@@ -718,22 +687,18 @@ header .app-launcher {
   .gnav-search-results {
     margin: 0 auto;
   }
-
-  .gnav-profile {
-    padding: 0 8px;
-  }
 }
 
 @media (min-width: 1200px) {
   header .gnav-wrapper {
-    grid-template-columns: 1200px;
+    grid-template-columns: 1160px;
   }
 
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
   .gnav-search.is-open .gnav-search-field,
   .gnav-search.is-open .gnav-search-results {
-    max-width: 1200px;
+    max-width: 1160px;
   }
 }
 
