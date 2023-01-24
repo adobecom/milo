@@ -106,7 +106,7 @@ describe('chart', () => {
 
   it('getColors returns rotated color list if color provided ', () => {
     const authoredColor = 'indigo';
-    const colors = ['#4046CA', '#7326D3', '#147AF3', '#72E06A', '#7E84FA', '#DE3D82', '#008F5D', '#CB5D00', '#E8C600', '#BCE931', '#0FB5AE', '#F68511'];
+    const colors = ['#4046CA', '#F68511', '#DE3D82', '#7E84FA', '#72E06A', '#147AF3', '#7326D3', '#E8C600', '#CB5D00', '#008F5D', '#BCE931', '#0FB5AE'];
 
     expect(getColors(authoredColor)).to.eql(colors);
   });
