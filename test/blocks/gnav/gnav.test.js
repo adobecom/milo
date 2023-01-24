@@ -144,7 +144,7 @@ describe('Localized Gnav', () => {
     document.head.getElementsByTagName('meta')[0].setAttribute('content', '/test/blocks/gnav/mocks/simple-gnav');
     const localizedConfig = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' }, } };
     localizedConfig.pathname = '/fi/gnav';
-    localizedConfig.productionDomain = 'milo.adobe.com';
+    localizedConfig.prodDomains = ['milo.adobe.com'];
     setConfig(localizedConfig);
     gnav = await mod.default(document.querySelector('header'));
   });

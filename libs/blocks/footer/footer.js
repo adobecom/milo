@@ -42,6 +42,7 @@ class Footer {
     }
 
     this.addAnalytics(wrapper);
+    decorateLinks(wrapper);
     this.footerEl.append(wrapper);
   };
 
@@ -110,7 +111,6 @@ class Footer {
         const linksContainer = heading.nextElementSibling;
         linksContainer.classList = 'footer-nav-item-links';
         linksContainer.id = `${titleId}-menu`;
-        decorateLinks(linksContainer);
         const links = linksContainer.querySelectorAll('li');
         links.forEach((link) => {
           link.classList.add('footer-nav-item-link');

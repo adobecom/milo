@@ -18,7 +18,7 @@ import {
 } from '../utils/utils.js';
 
 // Production Domain
-const productionDomain = 'milo.adobe.com';
+const prodDomains = ['milo.adobe.com'];
 
 const locales = {
   // Americas
@@ -111,7 +111,7 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
-  productionDomain,
+  prodDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',

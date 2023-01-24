@@ -1,11 +1,9 @@
 import {
   createTag,
   decorateLinks,
-  decorateSVG,
   getConfig,
   getMetadata,
   loadScript,
-  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -100,7 +98,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -136,7 +134,6 @@ class Gnav {
     if (!brandBlock) return null;
     const brandLinks = [...brandBlock.querySelectorAll('a')];
     const brand = brandLinks.pop();
-    brand.href = localizeLink(brand.href);
     const brandTitle = brand.textContent;
     brand.className = brandBlock.className;
     const title = createTag('span', { class: 'gnav-brand-title' }, brandTitle);
@@ -145,7 +142,6 @@ class Gnav {
     if (brand.textContent !== '') brand.textContent = '';
     if (brand.classList.contains('logo')) {
       if (brandLinks.length > 0) {
-        decorateSVG(brandLinks[0]);
         brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
       } else {
         brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
@@ -158,7 +154,6 @@ class Gnav {
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
     if (!logo) return null;
-    logo.href = localizeLink(logo.href);
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -178,7 +173,6 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
-      navLink.href = localizeLink(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -228,7 +222,6 @@ class Gnav {
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = localizeLink(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -289,7 +282,6 @@ class Gnav {
       container.append(...Array.from(menu.children));
       menu.append(container);
     }
-    decorateLinks(menu);
     this.decorateLinkGroups(menu);
     this.decorateAnalytics(menu);
     navLink.addEventListener('focus', () => {
@@ -309,16 +301,11 @@ class Gnav {
 
   decorateLargeMenu = (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = localizeLink(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
-        const links = menu.querySelectorAll('a');
-        links.forEach((link) => {
-          decorateSVG(link);
-        });
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
@@ -335,7 +322,6 @@ class Gnav {
   decorateCta = () => {
     const cta = this.body.querySelector('strong a');
     if (cta) {
-      cta.href = localizeLink(cta.href);
       const { origin } = new URL(cta.href);
       if (origin !== window.location.origin) {
         cta.target = '_blank';
@@ -507,7 +493,6 @@ class Gnav {
       const ul = parent.querySelector('ul');
       if (ul) {
         ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        decorateLinks(ul);
         const nav = createTag('nav', { class: 'breadcrumbs', 'aria-label': 'Breadcrumb' }, ul);
         parent.remove();
         return nav;
