@@ -12,29 +12,25 @@ describe('init', async () => {
     document.body.innerHTML = ogDoc;
   });
 
-  it('adds sticky header below the gnav header', async () => {
-    const block = await readFile({ path: './mocks/block.html' });
-    const blockEl = document.createElement('div');
-    blockEl.innerHTML = block.trim();
+  it('adds sticky inside main', async () => {
+    const block = document.querySelector('.sticky')
 
-    init(blockEl);
+    init(block);
 
-    expect(document.body.querySelector('.sticky-header')).to.exist;
-
-    const headerSiblingBlock = document.body.querySelector('header').nextElementSibling;
-    expect(headerSiblingBlock.querySelector(':scope > .sticky-header')).to.exist;
+    const stickyEl = document.body.querySelector('.sticky-wrapper');
+    const main = document.body.querySelector('main');
+    expect(stickyEl).to.exist;
+    expect(main.firstElementChild).to.eql(stickyEl);
   });
 
   it('removes sticky header when close button is clicked', async () => {
-    const block = await readFile({ path: './mocks/block.html' });
-    const blockEl = document.createElement('div');
-    blockEl.innerHTML = block.trim();
+    const block = document.querySelector('.sticky')
 
-    init(blockEl);
+    init(block);
 
-    const button = document.body.querySelector('.sticky-header-close');
+    const button = document.body.querySelector('.sticky-close');
     sinon.fake();
     button.click();
-    expect(document.body.querySelector('.sticky-header')).to.not.exist;
+    expect(document.body.querySelector('.sticky')).to.not.exist;
   });
 });
