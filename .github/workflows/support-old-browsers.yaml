@@ -18,14 +18,5 @@ jobs:
 
       - name: Check for unsupported functions
         run: |
-          # Install a package that can check for unsupported functions
-          npm install -g browser-compat-data
-
-          # Use the package to check for unsupported functions in the code
-          unsupported_functions=$(grep -rE '\w+\(' . --exclude-dir node_modules | browser-compat-data check)
-
-          # If any unsupported functions were found, fail the action
-          if [[ -n "$unsupported_functions" ]]; then
-              echo "Found unsupported functions: $unsupported_functions"
-              exit 1
-          fi
+          # Check for unsupported functions in the code
+          npx eslint --no-eslintrc -c .eslintrc-gh-action.js .
