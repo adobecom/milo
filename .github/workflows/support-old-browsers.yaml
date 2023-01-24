@@ -18,5 +18,8 @@ jobs:
 
       - name: Check for unsupported functions
         run: |
+          # Install the eslint plugins
+          npm install
+
           # Check for unsupported functions in the code
           npx eslint --no-eslintrc -c .eslintrc-gh-action.js .
