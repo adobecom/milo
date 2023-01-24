@@ -6,7 +6,7 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 const config = getConfig();
-config.locale.contentRoot = '/test/blocks/recommended-articles/mocks';
+config.locale.contentRoot = '/test/blocks/reading-time/mocks';
 
 const { default: init } = await import('../../../libs/blocks/reading-time/reading-time.js');
 
