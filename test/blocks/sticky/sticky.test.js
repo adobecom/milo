@@ -5,7 +5,7 @@ import sinon from 'sinon';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const ogDoc = document.body.innerHTML;
 
-const { default: init } = await import('../../../libs/blocks/sticky-header/sticky-header.js');
+const { default: init } = await import('../../../libs/blocks/sticky/sticky.js');
 
 describe('init', async () => {
   afterEach(() => {

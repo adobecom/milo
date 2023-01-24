@@ -1,15 +1,22 @@
-.sticky-header {
+.sticky{
+    display: block;
     position: sticky;
     top: 57px;
     left: 0;
     z-index: 1;
-    background-color: white;
     border-bottom: 1px #EEE solid;
     padding: 8px 0;
     font-size: 16px;
 }
 
-.sticky-header > div {
+.sticky.bottom {
+  position: fixed;
+  top: unset;
+  bottom: 0;
+  width: 100%;
+}
+
+.sticky > div {
     display: flex;
     gap: 20px;
     align-items: center;
@@ -17,7 +24,7 @@
     padding: 0 24px;
 }
 
-.sticky-header img {
+.sticky img {
     display: block;
 }
 
@@ -63,7 +70,7 @@
     }
 }
 
-.sticky-header .button {
+.sticky .button {
     display: block;
     margin: 0;
     border-radius: 2rem;
@@ -83,13 +90,13 @@
     animation: button-gradient 45s ease infinite;
 }
 
-.sticky-header-close {
+.sticky-close {
   cursor: pointer;
   flex-shrink: 0;
 }
 
 @media (min-width: 900px) {
-  .sticky-header {
+  .sticky {
       top: 64px;
   }
 }
