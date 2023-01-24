@@ -24,6 +24,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'instagram',
   'marketo',
   'card',
   'marquee',
@@ -32,12 +33,18 @@ const MILO_BLOCKS = [
   'modal',
   'pdf-viewer',
   'quote',
+  'read-more',
   'recommended-articles',
   'review',
   'section-metadata',
+  'slideshare',
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
+  'tiktok',
+  'twitter',
+  'vimeo',
   'youtube',
   'z-pattern',
   'share',
@@ -49,6 +56,12 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { instagram: 'https://www.instagram.com' },
+  { slideshare: 'https://www.slideshare.net' },
+  { tiktok: 'https://www.tiktok.com' },
+  { twitter: 'https://twitter.com' },
+  { vimeo: 'https://vimeo.com' },
+  { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
@@ -146,7 +159,9 @@ export function getMetadata(name, doc = document) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement || html instanceof SVGElement) {
+    if (html instanceof HTMLElement
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
@@ -510,6 +525,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  const event = new Event('milo:deferred');
+  area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
