@@ -14,11 +14,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check for unsupported functions
         run: |
-          # Install the eslint plugins
+          # Install eslint and its plugins
           npm install
 
           # Check for unsupported functions in the code
