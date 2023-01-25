@@ -109,7 +109,7 @@ export default function init(el) {
   const { steps, images } = getHowToSteps(el);
 
   const orderedList = document.createElement('ol');
-  orderedList.append(...steps);
+  if (steps) orderedList.append(...steps);
 
   if (mainImage) {
     const imageClass = `how-to-image${isLargeImage ? ' how-to-image-large' : ''}`;
