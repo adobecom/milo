@@ -78,8 +78,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    '_blank': "blank",
-    '_self': "self",
+    _blank: 'blank',
+    _self: 'self',
   },
   draftDb: {
     false: 'Live',
@@ -287,8 +287,8 @@ const BasicsPanel = ({ tagsData }) => {
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
   return html`
-    <${Select} options=${defaultOptions.titleLevel} prop="titleLevel" label="Collection Title Level" />
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Select} options=${defaultOptions.titleLevel} prop="titleLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Select} options=${countryTags} prop="country" label="Country" />
     <${Select} options=${languageTags} prop="language" label="Language" />
@@ -564,7 +564,7 @@ const AdvancedPanel = () => {
       prop="fallbackEndpoint"
       type="text"}
     />
-    <${Input} label="Placeholders Folder" prop="placeholderUrl" type="text" />
+    <${Input} label="Placeholders JSON" prop="placeholderUrl" type="text" />
     <${Input} label="Tags Url" prop="tagsUrl" defaultValue=${defaultState.tagsUrl} type="text" />
     <${MultiField}
       onChange=${onChange('additionalRequestParams')}
