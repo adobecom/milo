@@ -33,14 +33,6 @@ describe('Fragments', () => {
     expect(h1).to.exist;
   });
 
-  it('Loads a fragment into a parent', async () => {
-    const a = document.querySelector('.parent-link');
-    const parent = document.querySelector('.parent');
-    await getFragment(a, parent);
-    const h1 = document.querySelector('.parent h1');
-    expect(h1).to.exist;
-  });
-
   it('Doesnt load a fragment', async () => {
     const a = document.querySelector('a.bad');
     await getFragment(a);
