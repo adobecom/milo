@@ -1,6 +1,6 @@
 import { html, render } from '../../deps/htm-preact.js';
 
-import { loadStyle } from '../../utils/utils.js';
+import { getMetadata, loadStyle } from '../../utils/utils.js';
 import HelixReview from './components/helixReview/HelixReview.js';
 
 const COMMENT_THRESHOLD = 3;
@@ -28,24 +28,37 @@ const getVisitorId = () => {
   return null;
 };
 
+const getProductJson = () => {
+  const name = getMetadata('product-name');
+  const description = getMetadata('product-description');
+  if (!name) return null;
+  return {
+    name,
+    description,
+    '@type': 'Product',
+    '@context': 'http://schema.org',
+  };
+};
+
 const App = ({ rootEl, strings }) => html`
-  <${HelixReview}
-    clickTimeout="5000"
-    commentThreshold=${COMMENT_THRESHOLD}
-    hideTitleOnReload=${strings.hideTitleOnReload}
-    lang=${getPageLocale()}
-    reviewTitle=${strings.reviewTitle}
-    strings=${strings}
-    tooltipDelay=${strings.tooltipdelay}
-    postUrl=${strings.postUrl}
-    visitorId=${getVisitorId()}
-    reviewPath=${getReviewPath(strings.postUrl)}
-    initialValue=${strings.initialValue}
-    onRatingSet=${({ rating, comment }) => {}}
-    onRatingHover=${({ rating }) => {}}
-    onReviewLoad=${({ hasRated, rating }) => {}}
-  />
-`;
+    <${HelixReview}
+      clickTimeout="5000"
+      commentThreshold=${COMMENT_THRESHOLD}
+      hideTitleOnReload=${strings.hideTitleOnReload}
+      lang=${getPageLocale()}
+      reviewTitle=${strings.reviewTitle}
+      productJson=${getProductJson()}
+      strings=${strings}
+      tooltipDelay=${strings.tooltipdelay}
+      postUrl=${strings.postUrl}
+      visitorId=${getVisitorId()}
+      reviewPath=${getReviewPath(strings.postUrl)}
+      initialValue=${strings.initialValue}
+      onRatingSet=${({ rating, comment }) => {}}
+      onRatingHover=${({ rating }) => {}}
+      onReviewLoad=${({ hasRated, rating }) => {}}
+    />
+  `;
 
 const sanitizedKeyDiv = (text) => text.toLowerCase().replace(/ /g, '');
 
@@ -62,7 +75,7 @@ const getStrings = (metaData) => {
     tooltips,
     hidetitle,
     reviewurl,
-    initialvalue
+    initialvalue,
   } = metaData;
 
   return {
@@ -79,7 +92,7 @@ const getStrings = (metaData) => {
     hideTitleOnReload: hidetitle,
     tooltips: tooltips && tooltips.split(',').map((t) => t.trim()),
     postUrl: reviewurl,
-    initialValue: initialvalue
+    initialValue: initialvalue,
   };
 };
 
