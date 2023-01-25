@@ -145,7 +145,7 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
+const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
@@ -153,10 +153,11 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-
+      const lang = state.language.split('/')[1];
+      const label = itemTag[`title.${lang}`] ? itemTag[`title.${lang}`] : itemTag.title;
       return {
         id: itemTag.tagID,
-        label: itemTag.title.replace('&amp;', '&'),
+        label: label.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -183,20 +184,17 @@ const getFilterArray = async (state) => {
 
   const { tags } = await getTags(state.tagsUrl);
   const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags))
+    .map((filter) => getFilterObj(filter, tags, state))
     .filter((filter) => filter !== null);
   return filters;
 };
 
-const arrayToObj = (array) => {
-  const obj = {};
-  array.forEach((item) => {
-    if (item.key && item.value) {
-      obj[item.key] = item.value;
-    }
-  });
+const arrayToObj = (array = []) => array.reduce((obj, item) => {
+  if (item.key && item.value) {
+    obj[item.key] = item.value;
+  }
   return obj;
-};
+}, {});
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -238,8 +236,8 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
-        titleHeadingLevel: state.titleLevel || 'h3',
-        cardTitleAccessibilityLevel: state.accessibilityLevel || 6,
+        titleHeadingLevel: state.titleLevel,
+        cardTitleAccessibilityLevel: state.accessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
@@ -407,6 +405,7 @@ export const defaultState = {
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
+  cardTitleAccessibilityLevel: 6,
   collectionBtnStyle: 'primary',
   collectionName: '',
   collectionSize: '',
@@ -466,6 +465,7 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
