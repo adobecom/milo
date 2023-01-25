@@ -1,6 +1,7 @@
-import { createIntersectionObserver, createTag } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, isInTextNode } from '../../utils/utils.js';
 
 export default function init(a) {
+  if (isInTextNode(a)) return;
   const embedVimeo = () => {
     const url = new URL(a.href);
     let src = url.href;
