@@ -26,17 +26,9 @@ function handleLayout(text, section) {
   section.classList.add(layoutClass);
 }
 
-<<<<<<< HEAD
-function handleSticky(div, section) {
-  if (!(div || section)) return;
-  const value = div.textContent.toLowerCase();
-  section.classList.add(`sticky-${value}`);
-}
-
-function handleSticky(div, section) {
-  if (!(div || section)) return;
-  const value = div.textContent.toLowerCase();
-  section.classList.add(`sticky-${value}`);
+function handleSticky(text, section) {
+  if (!(text || section)) return;
+  section.classList.add(`sticky-${text}`);
 }
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
@@ -55,4 +47,5 @@ export default function init(el) {
   if (metadata.style) handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata.background.content, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
+  if (metadata.sticky) handleSticky(metadata.sticky.text, section);
 }
