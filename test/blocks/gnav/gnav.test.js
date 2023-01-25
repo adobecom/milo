@@ -6,8 +6,12 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
-document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+async function loadDefaultHtml() {
+  document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+  document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+}
+
+await loadDefaultHtml();
 
 const mod = await import('../../../libs/blocks/gnav/gnav.js');
 let gnav;
@@ -129,5 +133,59 @@ describe('Gnav', () => {
     expect(script).to.be.null;
     // reset <head>
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+  });
+});
+
+describe('Localized Gnav', () => {
+
+  before( async () => {
+    // Load Localized Gnav
+    await loadDefaultHtml();
+    document.head.getElementsByTagName('meta')[0].setAttribute('content', '/test/blocks/gnav/mocks/simple-gnav');
+    const localizedConfig = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' }, } };
+    localizedConfig.pathname = '/fi/gnav';
+    localizedConfig.prodDomains = ['milo.adobe.com'];
+    setConfig(localizedConfig);
+    gnav = await mod.default(document.querySelector('header'));
+  });
+
+  after (async () => {
+    // reset to regular Gnav
+    setConfig(config);
+    await loadDefaultHtml();
+    gnav = await mod.default(document.querySelector('header'));
+  })
+
+  it('Test Gnav Localized Links', async () => {
+    const links = document.getElementById('localized-links').getElementsByTagName('a');
+    links.forEach((anchor) => {
+      expect(anchor.href.startsWith('https://milo.adobe.com/fi/'), "Menu Links should be localized").true;
+    });
+  });
+
+  it('Test Gnav DNT Links', async () => {
+    const dntLinks = document.getElementById('dnt-links')
+      .getElementsByTagName('a');
+    dntLinks.forEach((anchor) => {
+      const dntLink = anchor.href;
+      expect(dntLink.startsWith('https://milo.adobe.com/fi/'), "Menu DNT Links should not be localized").false;
+      expect(dntLink.endsWith('#_dnt'), "#_dnt should be stripped").false;
+    });
+  });
+
+  it('Test Gnav Breadcrumb Links', async () => {
+    const breadcrumbLinks = document.querySelector('header nav.breadcrumbs').getElementsByTagName('a');
+    breadcrumbLinks.forEach((anchor) => {
+      expect(anchor.href.startsWith('http://localhost:2000/fi/'), "Breadcrumb Links should be localized").true;
+    });
+  });
+
+  it('Test Gnav Cta Link', async () => {
+    const ctaLink = document.querySelector('.gnav-cta').getElementsByTagName('a')[0];
+    expect(ctaLink.href.startsWith('http://localhost:2000/fi/'), "Cta Link should be localized").true;
+  });
+
+  it('Test Gnav Brand Link', async () => {
+    expect(document.querySelector('.gnav-brand').href.startsWith('http://localhost:2000/fi/'), "Brand Link should be localized").true;
   });
 });

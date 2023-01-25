@@ -12,19 +12,25 @@ function handleBackground(div, section) {
   }
 }
 
-function handleStyle(div, section) {
-  const value = div.textContent.toLowerCase();
-  const styles = value.split(', ').map((style) => style.replaceAll(' ', '-'));
+export function handleStyle(text, section) {
   if (section) {
+    if (!text) return;
+    const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
     section.classList.add(...styles);
   }
 }
 
-function handleLayout(div, section) {
-  if (!(div || section)) return;
-  const layoutString = div.textContent.trim();
-  const layoutClass = `grid-template-columns-${layoutString.replaceAll(' | ', '-')}`;
+function handleLayout(text, section) {
+  if (!(text || section)) return;
+  const layoutClass = `grid-template-columns-${text.replaceAll(' | ', '-')}`;
   section.classList.add(layoutClass);
+}
+
+<<<<<<< HEAD
+function handleSticky(div, section) {
+  if (!(div || section)) return;
+  const value = div.textContent.toLowerCase();
+  section.classList.add(`sticky-${value}`);
 }
 
 function handleSticky(div, section) {
@@ -33,35 +39,20 @@ function handleSticky(div, section) {
   section.classList.add(`sticky-${value}`);
 }
 
-export const getSectionMetadata = (el) => {
-  if (!el) return {};
-  const metadata = {};
-  el.childNodes.forEach((node) => {
-    const key = node.children?.[0]?.textContent?.toLowerCase();
-    if (!key) return;
-    const val = node.children?.[1]?.textContent?.toLowerCase();
-    metadata[key] = val;
-  });
-  return metadata;
-};
+export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
+  if (row.children) {
+    const key = row.children[0].textContent.trim().toLowerCase();
+    const content = row.children[1];
+    const text = content.textContent.trim().toLowerCase();
+    if (key && content) rdx[key] = { content, text };
+  }
+  return rdx;
+}, {});
 
 export default function init(el) {
   const section = el.closest('.section');
-  if (!section) return;
-  const keyDivs = el.querySelectorAll(':scope > div > div:first-child');
-  keyDivs.forEach((div) => {
-    const valueDiv = div.nextElementSibling;
-    if (div.textContent === 'style' && valueDiv.textContent) {
-      handleStyle(valueDiv, section);
-    }
-    if (div.textContent === 'background') {
-      handleBackground(valueDiv, section);
-    }
-    if (div.textContent === 'layout') {
-      handleLayout(valueDiv, section);
-    }
-    if (div.textContent === 'sticky') {
-      handleSticky(valueDiv, section)
-    }
-  });
+  const metadata = getMetadata(el);
+  if (metadata.style) handleStyle(metadata.style.text, section);
+  if (metadata.background) handleBackground(metadata.background.content, section);
+  if (metadata.layout) handleLayout(metadata.layout.text, section);
 }
