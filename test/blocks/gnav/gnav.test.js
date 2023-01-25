@@ -2,6 +2,7 @@ import { readFile, resetMouse, setViewport, sendKeys, sendMouse } from '@web/tes
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
@@ -10,6 +11,9 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 const mod = await import('../../../libs/blocks/gnav/gnav.js');
 let gnav;
+
+const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+setConfig(config);
 
 describe('Gnav', () => {
   beforeEach(() => {

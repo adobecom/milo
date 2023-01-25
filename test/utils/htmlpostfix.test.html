@@ -1,0 +1,89 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <div id="sameserverlinks">
+      <a href="http://localhost:2000/testA"></a>
+      <a href="http://localhost:2000/has/qp?a=1&b=2"></a>
+      <a href="http://localhost:2000/has/hash#blah"></a>
+      <a href="http://localhost:2000/has/qp/and/hash?r=34&hello=world#blah"></a>
+      <a href="http://localhost:2000"></a>
+      <a href="http://localhost:2000/"></a>
+      <a href="http://localhost:2000/endswithslash/"></a>
+      <a href="http://localhost:2000/has/extension.html"></a>
+      <a href="http://localhost:2000/has/json/extension.json"></a>
+      <a href="http://localhost:2000/has/css/extension.css"></a>
+      <a href="http://localhost/wrongport"></a>
+    </div>
+    <div id="relativelinks">
+      <a href="/test/relative/link"></a>
+      <a href="/test/endswith/slash/"></a>
+      <a href="/has/qp?a=1&b=2"></a>
+      <a href="/has/hash#blah"></a>
+      <a href="/has/qp/and/hash?r=34&hello=world#blah"></a>
+      <a href="/test/relative/linkwith.html"></a>
+      <a href="/"></a>
+      <a href=""></a>
+    </div>
+    <div id="externallinks">
+      <a href="http://adobe.com/test"></a>
+      <a href="http://adobe.com/test/"></a>
+      <a href="http://google.com"></a>
+    </div>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import { appendHtmlPostfix, setConfig } from './../../libs/utils/utils.js';
+
+    runTests(() => {
+      describe('htmlpostfix', () => {
+        it('same server links', async () => {
+          const links = document.getElementById('sameserverlinks');
+          appendHtmlPostfix(links);
+          const hrefs = [...links.querySelectorAll('a')].map(a => a.getAttribute('href'));
+          expect(hrefs).to.eql([
+          'http://localhost:2000/testA.html',
+          'http://localhost:2000/has/qp.html?a=1&b=2',
+          'http://localhost:2000/has/hash.html#blah',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000',
+          'http://localhost:2000/',
+          'http://localhost:2000/endswithslash/',
+          'http://localhost:2000/has/extension.html',
+          'http://localhost:2000/has/json/extension.json',
+          'http://localhost:2000/has/css/extension.css',
+          'http://localhost/wrongport',
+          ])
+        });
+
+        it('relative links', async () => {
+          const links = document.getElementById('relativelinks');
+          appendHtmlPostfix(links);
+          const hrefs = [...links.querySelectorAll('a')].map(a => a.getAttribute('href'));
+          expect(hrefs).to.eql([
+          '/test/relative/link.html',
+          '/test/endswith/slash/',
+          '/has/qp.html?a=1&b=2',
+          '/has/hash.html#blah',
+          '/has/qp/and/hash.html?r=34&hello=world#blah',
+          '/test/relative/linkwith.html',
+          '/',
+          '',
+          ])
+        });
+
+        it('external links are not modified', async () => {
+          const links = document.getElementById('externallinks');
+          appendHtmlPostfix(links);
+          const hrefs = [...links.querySelectorAll('a')].map(a => a.getAttribute('href'));
+          expect(hrefs).to.eql([
+          'http://adobe.com/test',
+          'http://adobe.com/test/',
+          'http://google.com',
+          ])
+        });
+      });
+    });
+  </script>
+</html>

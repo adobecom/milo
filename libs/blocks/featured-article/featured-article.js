@@ -24,28 +24,18 @@ export default async function init(el) {
   const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
   const categoryTaxonomy = taxonomy.get(category);
 
-  // Image
   const pic = doc.body.querySelector('picture');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
-
-  // Category
   const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' }, categoryLink);
-
-  // Title
   const text = doc.body.querySelector('h1, h2, h3').textContent;
   const title = createTag('h3', null, text);
   const body = createTag('div', { class: 'featured-article-card-body' });
-
-  // Description
   const descriptionMeta = getMetadata('description', doc);
   const description = createTag('p', { class: 'featured-article-card-description' }, descriptionMeta);
-
-  // Date
   const dateMeta = getMetadata('publication-date', doc);
   const date = createTag('p', { class: 'featured-article-card-date' }, dateMeta);
 
   body.append(categoryEl, title, description, date);
-
   a.append(featuredImg, body);
 }

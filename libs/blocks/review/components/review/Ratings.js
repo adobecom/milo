@@ -36,7 +36,7 @@ const Ratings = ({
         const hoveredRating = parseInt(fieldSetMouseOut.event.target.value, 10);
         setCurrentRating(hoveredRating);
         if (onRatingHover) onRatingHover({ rating: hoveredRating });
-
+        
         // Delay display of tooltips unless one is currently showing
         if (hoverIndex) {
           clearTimeout(timeoutId);
@@ -59,7 +59,7 @@ const Ratings = ({
     if (!fieldSetMouseLeave.hovering && rating !== currentRating) {
       setCurrentRating(rating);
     }
-  }, [fieldSetMouseOut.hovering, fieldSetMouseLeave.hovering, hoverIndex]);
+  }, [fieldSetMouseOut, fieldSetMouseLeave, hoverIndex]);
 
   useEffect(() => {
     setCurrentRating(rating);

@@ -24,7 +24,7 @@ describe('Modals', () => {
   it('Closes a modal on button click', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
-    const close = document.querySelector('.dialog-modal button');
+    const close = document.querySelector('.dialog-close');
     close.click();
     await waitForRemoval('#milo');
     expect(window.location.hash).to.be.empty;
@@ -53,7 +53,7 @@ describe('Modals', () => {
   it('Opens an inherited modal', async () => {
     const meta = document.createElement('meta');
     meta.name = '-otis';
-    meta.content = 'https://milo.adobe.com/test/blocks/modals/mocks/otis';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/otis';
     document.head.append(meta);
     window.location.hash = '#otis';
     await waitForElement('#otis');
@@ -83,6 +83,67 @@ describe('Modals', () => {
     await waitForElement('#milo');
     init(document.getElementById('milo-modal-link'));
     expect(document.getElementById('milo')).to.exist;
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('Locks focus when tabbing forward through tabbable elements', async () => {
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    expect(document.getElementById('milo')).to.exist;
+    await sendKeys({ press: 'Tab' });
+    await delay(100);
+    expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
+    await sendKeys({ press: 'Tab' });
+    expect(document.activeElement.getAttribute('id')).to.equal('milo-button-2');
+    await sendKeys({ press: 'Tab' });
+    expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
+    await sendKeys({ press: 'Tab' });
+    expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('Locks focus when tabbing backward through tabbable elements', async () => {
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    expect(document.getElementById('milo')).to.exist;
+    expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
+    await sendKeys({ down: 'Shift' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ up: 'Shift' });
+    await delay(100);
+    expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
+    await sendKeys({ down: 'Shift' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ up: 'Shift' });
+    expect(document.activeElement.getAttribute('id')).to.equal('milo-button-2');
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('Focuses on close when there are no other focusables', async () => {
+    const meta = document.createElement('meta');
+    meta.name = '-paragraph';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/paragraph';
+    document.head.append(meta);
+    window.location.hash = '#paragraph';
+    await waitForElement('#paragraph');
+    expect(document.getElementById('paragraph')).to.exist;
+    expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+  });
+
+  it('Focuses on a header when there are no other focusables', async () => {
+    const meta = document.createElement('meta');
+    meta.name = '-title';
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
+    document.head.append(meta);
+    window.location.hash = '#title';
+    await waitForElement('#title');
+    expect(document.getElementById('title')).to.exist;
+    expect(document.activeElement.getAttribute('id')).to.equal('test-title');
     window.location.hash = '';
     await waitForRemoval('#milo');
   });
