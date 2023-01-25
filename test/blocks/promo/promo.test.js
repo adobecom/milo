@@ -12,25 +12,18 @@ describe('init', async () => {
     document.body.innerHTML = ogDoc;
   });
 
-  it('adds sticky inside main', async () => {
-    const block = document.querySelector('.sticky')
-
+  it('creates promo block', async () => {
+    const block = document.querySelector('.promo');
     init(block);
-
-    const stickyEl = document.body.querySelector('.sticky-wrapper');
-    const main = document.body.querySelector('main');
-    expect(stickyEl).to.exist;
-    expect(main.firstElementChild).to.eql(stickyEl);
+    expect(block.querySelector('.promo-close')).to.be.exist;
   });
 
   it('removes sticky header when close button is clicked', async () => {
-    const block = document.querySelector('.sticky')
-
+    const block = document.querySelector('.promo');
     init(block);
-
-    const button = document.body.querySelector('.sticky-close');
+    const button = document.body.querySelector('.promo-close');
     sinon.fake();
     button.click();
-    expect(document.body.querySelector('.sticky')).to.not.exist;
+    expect(document.body.querySelector('.promo')).to.not.exist;
   });
 });
