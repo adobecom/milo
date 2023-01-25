@@ -27,6 +27,12 @@ function handleLayout(div, section) {
   section.classList.add(layoutClass);
 }
 
+function handleSticky(div, section) {
+  if (!(div || section)) return;
+  const value = div.textContent.toLowerCase();
+  section.classList.add(`sticky-${value}`);
+}
+
 export const getSectionMetadata = (el) => {
   if (!el) return {};
   const metadata = {};
@@ -53,6 +59,9 @@ export default function init(el) {
     }
     if (div.textContent === 'layout') {
       handleLayout(valueDiv, section);
+    }
+    if (div.textContent === 'sticky') {
+      handleSticky(valueDiv, section)
     }
   });
 }

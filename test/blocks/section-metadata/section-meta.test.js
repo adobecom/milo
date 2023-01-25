@@ -37,4 +37,11 @@ describe('Section Metdata', () => {
     const expected = { style: 'darkest, xxl spacing, two up', background: 'rgb(239, 239, 239)' };
     expect(getSectionMetadata(document.querySelector('.section.color .section-metadata'))).to.eql(expected);
   });
+
+  it('adds sticky postion', () => {
+    const section = document.querySelector('.section.sticky');
+    const sectionMetadata = section.querySelector('.section-metadata');
+    init(sectionMetadata)
+    expect(section.classList.contains('sticky-bottom')).to.be.true;
+  });
 });
