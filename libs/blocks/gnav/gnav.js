@@ -1,10 +1,9 @@
 import {
   createTag,
-  decorateSVG,
+  decorateLinks,
   getConfig,
   getMetadata,
   loadScript,
-  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -99,7 +98,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -143,7 +142,6 @@ class Gnav {
     if (brand.textContent !== '') brand.textContent = '';
     if (brand.classList.contains('logo')) {
       if (brandLinks.length > 0) {
-        decorateSVG(brandLinks[0]);
         brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
       } else {
         brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
@@ -155,7 +153,7 @@ class Gnav {
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
-    logo.href = localizeLink(logo.href);
+    if (!logo) return null;
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -175,7 +173,6 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
-      navLink.href = localizeLink(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -225,7 +222,6 @@ class Gnav {
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = localizeLink(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -305,16 +301,11 @@ class Gnav {
 
   decorateLargeMenu = (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = localizeLink(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {
         const text = await resp.text();
         menu.insertAdjacentHTML('beforeend', text);
-        const links = menu.querySelectorAll('a');
-        links.forEach((link) => {
-          decorateSVG(link);
-        });
         const decoratedMenu = this.decorateMenu(navItem, navLink, menu);
         const menuSections = decoratedMenu.querySelectorAll('.gnav-menu-container > div');
         menuSections.forEach((sec) => { sec.classList.add('section'); });
@@ -413,7 +404,11 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const { locale, imsClientId, env } = getConfig();
+    const defaultOnReady = () => { 
+      this.imsReady(blockEl, profileEl); ;
+    }
+
+    const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
     window.adobeid = {
       client_id: imsClientId,
@@ -422,7 +417,7 @@ class Gnav {
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
-      onReady: () => { this.imsReady(blockEl, profileEl); },
+      onReady: onReady || defaultOnReady,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
     return profileEl;
