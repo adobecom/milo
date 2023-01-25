@@ -1,6 +1,7 @@
 import {
   createTag,
   decorateSVG,
+  decorateLinks,
   getConfig,
   getMetadata,
   loadScript,
@@ -99,7 +100,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -156,7 +157,6 @@ class Gnav {
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
     if (!logo) return null;
-    logo.href = localizeLink(logo.href);
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -285,6 +285,7 @@ class Gnav {
       menu.classList.add('large-Variant');
       const container = createTag('div', { class: 'gnav-menu-container' });
       container.append(...Array.from(menu.children));
+      decorateLinks(container);
       menu.append(container);
     }
     this.decorateLinkGroups(menu);
@@ -414,7 +415,7 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const defaultOnReady = () => { 
+    const defaultOnReady = () => {
       this.imsReady(blockEl, profileEl); ;
     }
 
