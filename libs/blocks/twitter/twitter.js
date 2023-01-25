@@ -1,6 +1,7 @@
 import { createIntersectionObserver, createTag, loadScript } from '../../utils/utils.js';
 
 export default function init(a) {
+  if (a.parentElement.firstChild.nodeType === Node.TEXT_NODE) return;
   const embedTwitter = () => {
     const anchor = createTag('a', { href: a.href });
     const blockquote = createTag('blockquote', { class: 'twitter-tweet' }, anchor);

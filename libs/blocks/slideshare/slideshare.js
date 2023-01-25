@@ -1,6 +1,7 @@
 import { createIntersectionObserver, createTag } from '../../utils/utils.js';
 
 export default function init(a) {
+  if (a.parentElement.firstChild.nodeType === Node.TEXT_NODE) return;
   const embedSlideshare = () => {
     const iframe = createTag('iframe', {
       src: a.href,

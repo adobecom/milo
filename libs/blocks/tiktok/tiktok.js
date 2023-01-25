@@ -1,6 +1,7 @@
 import { createIntersectionObserver, createTag, loadScript } from '../../utils/utils.js';
 
 export default function init(a) {
+  if (a.parentElement.firstChild.nodeType === Node.TEXT_NODE) return;
   const embedTiktok = () => {
     const url = new URL(a.href);
 
