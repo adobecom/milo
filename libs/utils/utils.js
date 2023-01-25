@@ -150,6 +150,10 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
+export function isInTextNode(node) {
+  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -357,7 +361,7 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const altTextFlagIndex =  textContent.indexOf('|');
+  const altTextFlagIndex = textContent.indexOf('|');
   const sanitizedTextContent = altTextFlagIndex === -1
     ? textContent
     : textContent?.slice(0, altTextFlagIndex).trim();
@@ -383,7 +387,7 @@ export function decorateSVG(a) {
       a.textContent = '';
       a.append(pic);
     }
-  } catch(err) {
+  } catch (err) {
     // eslint-disable-next-line no-console
     console.log('Failed to load svg.', err.message);
   }

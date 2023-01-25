@@ -1,8 +1,8 @@
-import { createIntersectionObserver } from '../../utils/utils.js';
+import { createIntersectionObserver, isInTextNode } from '../../utils/utils.js';
 
 export default function init(a) {
   const embedVideo = () => {
-    if (a.parentElement.firstChild.nodeType === Node.TEXT_NODE || !a.origin?.includes('youtu')) return;
+    if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
     const title = !a.textContent.includes('http') ? a.textContent : 'Youtube Video';
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
