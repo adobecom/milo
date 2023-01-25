@@ -5,9 +5,6 @@ export default function decorate(block) {
   const section = block.closest('.section');
   section.classList.add('sticky-wrapper');
 
-  if (block.classList.contains('bottom')) {
-    section.classList.add('sticky-bottom');
-  }
 
   const div = block.firstElementChild;
   const a = block.querySelector('div > :last-child > a');
@@ -25,5 +22,11 @@ export default function decorate(block) {
 
   div.append(closeButton);
   closeButton.append(closeIcon);
-  main.prepend(section);
+
+  if (block.classList.contains('bottom')) {
+    section.classList.add('sticky-bottom'); 
+    main.append(section)
+  } else {
+    main.prepend(section);
+  }
 }

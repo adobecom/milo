@@ -10,7 +10,7 @@
 }
 
 .section.sticky-wrapper.sticky-bottom {
-  position: fixed;
+  position: sticky;
   top: unset;
   bottom: 0;
   background-color: var(--color-white);
