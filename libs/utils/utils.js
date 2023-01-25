@@ -42,6 +42,7 @@ const MILO_BLOCKS = [
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
   'tiktok',
   'twitter',
   'vimeo',
@@ -190,16 +191,17 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, productionDomain } = getConfig();
+    const { locale, locales, prodDomains } = getConfig();
     if (!locale || !locales) return processedHref;
-    const isLocalizable = relative || productionDomain === url.hostname;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
-  } catch (e) {
-    return null;
+  } catch (error) {
+    return href;
   }
 }
 
@@ -353,17 +355,34 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
+  const altTextFlagIndex =  textContent.indexOf('|');
+  const sanitizedTextContent = altTextFlagIndex === -1
+    ? textContent
+    : textContent?.slice(0, altTextFlagIndex).trim();
+  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
+
+  const altText = altTextFlagIndex === -1
+    ? ''
+    : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
-  img.src = localizeLink(textContent);
+  img.src = localizeLink(sanitizedTextContent);
+  img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
-    a.textContent = '';
-    a.append(pic);
+
+  try {
+    const textContentUrl = new URL(sanitizedTextContent);
+    const hrefUrl = new URL(href);
+    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+      a.parentElement.replaceChild(pic, a);
+    } else {
+      a.textContent = '';
+      a.append(pic);
+    }
+  } catch(err) {
+    // eslint-disable-next-line no-console
+    console.log('Failed to load svg.', err.message);
   }
 }
 
@@ -403,7 +422,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);

@@ -12,9 +12,11 @@ function Comments({
   placeholderText,
   sendCtaText,
 }) {
+  const maxLength = 500;
   const [hasComment, setHasComment] = useState(false);
   const [displaySend, setDisplaySend] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
+  const [charCount, setCharCount] = useState(maxLength);
 
   const textArea = useRef(null);
 
@@ -27,6 +29,7 @@ function Comments({
   const onCommentChange = (e) => {
     const { value } = e.target;
     setHasComment(!!value);
+    setCharCount(maxLength - value.length);
     if (handleCommentChange) {
       handleCommentChange(value);
     }
@@ -53,6 +56,9 @@ function Comments({
     <input disabled=${!hasComment} type="submit" value=${sendCtaText} />
   `;
 
+  const charCountElement = html`
+    <span class="comment-counter">${charCount}/${maxLength}</span>
+  `
   return html`
     <fieldset className=${commentsClass}>
       <label htmlFor="rating-comments" />
@@ -60,7 +66,7 @@ function Comments({
         id="rating-comments"
         ref=${textArea}
         cols="40"
-        maxlength="4000"
+        maxlength=${maxLength}
         name="rating-comments"
         aria-label=${label}
         placeholder=${placeholderText}
@@ -69,8 +75,10 @@ function Comments({
         value=${comment}
         onBlur=${onBlur}
       />
-      <div id="ctaCover" onClick=${onCtaCoverClick}></div>
-      ${displaySend && disabledElement}
+      <div id="ctaCover" onClick=${onCtaCoverClick}>
+        ${charCountElement}
+      </div>
+        ${displaySend && disabledElement}
     </fieldset>
   `;
 }
