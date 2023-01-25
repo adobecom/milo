@@ -24,6 +24,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'instagram',
   'marketo',
   'card',
   'marquee',
@@ -36,9 +37,14 @@ const MILO_BLOCKS = [
   'recommended-articles',
   'review',
   'section-metadata',
+  'slideshare',
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
+  'tiktok',
+  'twitter',
+  'vimeo',
   'youtube',
   'z-pattern',
   'share',
@@ -49,6 +55,12 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { instagram: 'https://www.instagram.com' },
+  { slideshare: 'https://www.slideshare.net' },
+  { tiktok: 'https://www.tiktok.com' },
+  { twitter: 'https://twitter.com' },
+  { vimeo: 'https://vimeo.com' },
+  { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
@@ -146,7 +158,9 @@ export function getMetadata(name, doc = document) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement || html instanceof SVGElement) {
+    if (html instanceof HTMLElement
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
       el.append(html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
@@ -166,23 +180,28 @@ function getExtension(path) {
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const url = new URL(href);
-  const relative = url.hostname === originHostName;
-  const processedHref = relative ? href.replace(url.origin, '') : href;
-  const { hash } = url;
-  if (hash === '#_dnt') return processedHref.split('#')[0];
-  const path = url.pathname;
-  const extension = getExtension(path);
-  const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) return processedHref;
-  const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) return processedHref;
-  const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) return processedHref;
-  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-  return relative ? urlPath : `${url.origin}${urlPath}`;
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -402,7 +421,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -527,6 +546,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  const event = new Event('milo:deferred');
+  area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
