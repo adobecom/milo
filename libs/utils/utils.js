@@ -354,17 +354,34 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
+  const altTextFlagIndex =  textContent.indexOf('|');
+  const sanitizedTextContent = altTextFlagIndex === -1
+    ? textContent
+    : textContent?.slice(0, altTextFlagIndex).trim();
+  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
+
+  const altText = altTextFlagIndex === -1
+    ? ''
+    : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
-  img.src = localizeLink(textContent);
+  img.src = localizeLink(sanitizedTextContent);
+  img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
-    a.textContent = '';
-    a.append(pic);
+
+  try {
+    const textContentUrl = new URL(sanitizedTextContent);
+    const hrefUrl = new URL(href);
+    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+      a.parentElement.replaceChild(pic, a);
+    } else {
+      a.textContent = '';
+      a.append(pic);
+    }
+  } catch(err) {
+    // eslint-disable-next-line no-console
+    console.log('Failed to load svg.', err.message);
   }
 }
 
