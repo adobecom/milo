@@ -3,7 +3,7 @@ import { createIntersectionObserver, createTag, loadScript } from '../../utils/u
 export default function init(a) {
   const embedInstagram = async () => {
     const anchor = createTag('a', { href: a.href });
-    const blockquote = createTag('blockquote', { class: 'instagram-media' }, anchor);
+    const blockquote = createTag('blockquote', { class: 'instagram-media', 'data-instgrm-captioned': '' }, anchor);
     const wrapper = createTag('div', { class: 'embed-instagram' }, blockquote);
     a.parentElement.replaceChild(wrapper, a);
 
