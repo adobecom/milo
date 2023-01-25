@@ -58,10 +58,9 @@ const getHowToInfo = (el) => {
 
   const image = getImage(infoDiv.lastElementChild);
 
-  const desc =
-    infoDiv.childElementCount > 2 || (infoDiv.childElementCount === 2 && !image)
-      ? infoDiv.children[1]
-      : infoDiv.children[2] || '';
+  const desc = infoDiv.childElementCount > 2 || (infoDiv.childElementCount === 2 && !image)
+    ? infoDiv.children[1]
+    : infoDiv.children[2] || '';
 
   const newParentEl = infoDiv.parentElement;
   infoDiv.remove();
@@ -75,10 +74,21 @@ const getHowToInfo = (el) => {
   };
 };
 
+const getLegacyList = (rows) => {
+  const rowArray = [...rows];
+  rowArray.shift();
+  const list = createTag('ol');
+  rowArray.forEach((row) => {
+    list.append(createTag('li', null, row.innerHTML));
+  });
+  Array.from(rows).forEach((row, idx) => { if (idx > 1) row.remove(); });
+  return list;
+};
+
 const getHowToSteps = (el) => {
   const stepsDiv = el.children[1]?.firstElementChild;
-  const list = stepsDiv?.querySelector('ol, ul');
-  if (!list) return [];
+  let list = stepsDiv?.querySelector('ol, ul');
+  if (!list) list = getLegacyList(el.children);
 
   const steps = [...list.children].reduce(
     (stepInfo, step, idx) => {
@@ -117,8 +127,7 @@ export default function init(el) {
   }
 
   if (isSeo) {
-    const stepsLd = steps.map((step, idx) =>
-      getStepLd(idx + 1, heading.id, images[idx], step));
+    const stepsLd = steps.map((step, idx) => getStepLd(idx + 1, heading.id, images[idx], step));
     setJsonLd(heading?.textContent, desc?.textContent, mainImage, stepsLd);
   }
 
