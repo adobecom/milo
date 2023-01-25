@@ -180,23 +180,28 @@ function getExtension(path) {
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const url = new URL(href);
-  const relative = url.hostname === originHostName;
-  const processedHref = relative ? href.replace(url.origin, '') : href;
-  const { hash } = url;
-  if (hash === '#_dnt') return processedHref.split('#')[0];
-  const path = url.pathname;
-  const extension = getExtension(path);
-  const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) return processedHref;
-  const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) return processedHref;
-  const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) return processedHref;
-  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-  return relative ? urlPath : `${url.origin}${urlPath}`;
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -399,7 +404,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
