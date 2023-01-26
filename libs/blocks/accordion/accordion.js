@@ -75,6 +75,7 @@ export default function init(el) {
 
   if (isSeo) { setSEO(items); }
   el.innerHTML = '';
-  el.className = 'accordion-container';
+  el.className = `accordion-container ${el.className}`;
+  el.classList.remove('accordion');
   el.append(accordion);
 }

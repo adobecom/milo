@@ -1,9 +1,9 @@
-import { createTag, loadArea, makeRelative } from '../../utils/utils.js';
+import { createTag, loadArea, localizeLink } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
-const removeHash = (url) => url?.split('#')[0];
+const removeHash = (url) => url?.endsWith('#_dnt') ? url : url?.split('#')[0];
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
@@ -13,23 +13,23 @@ const isCircularRef = (href) => [...Object.values(fragMap)]
 
 const updateFragMap = (fragment, a, href) => {
   const fragLinks = [...fragment.querySelectorAll('a')]
-    .filter((link) => makeRelative(link.href).includes('/fragments/'));
+    .filter((link) => localizeLink(link.href).includes('/fragments/'));
   if (!fragLinks.length) return;
 
   if (document.body.contains(a)) { // is fragment on page (not nested)
     fragMap[href] = new Tree(href);
-    fragLinks.forEach((link) => fragMap[href].insert(href, makeRelative(removeHash(link.href))));
+    fragLinks.forEach((link) => fragMap[href].insert(href, localizeLink(removeHash(link.href))));
   } else {
     Object.values(fragMap).forEach((tree) => {
       if (tree.find(href)) {
-        fragLinks.forEach((link) => tree.insert(href, makeRelative(removeHash(link.href))));
+        fragLinks.forEach((link) => tree.insert(href, localizeLink(removeHash(link.href))));
       }
     });
   }
 };
 
-export default async function init(a, parent) {
-  const relHref = makeRelative(a.href);
+export default async function init(a) {
+  const relHref = localizeLink(a.href);
   if (isCircularRef(relHref)) {
     console.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
@@ -46,14 +46,9 @@ export default async function init(a, parent) {
 
       updateFragMap(fragment, a, relHref);
 
-      await loadArea(fragment);
+      a.parentElement.replaceChild(fragment, a);
 
-      if (parent) {
-        a.remove();
-        parent.append(fragment);
-      } else if (a.parentElement) {
-        a.parentElement.replaceChild(fragment, a);
-      }
+      await loadArea(fragment);
     } else {
       window.lana.log('Could not make fragment');
     }

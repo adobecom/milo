@@ -13,8 +13,12 @@
 import {
   loadArea,
   loadDelayed,
+  loadLana,
   setConfig,
 } from '../utils/utils.js';
+
+// Production Domain
+const prodDomains = ['milo.adobe.com'];
 
 const locales = {
   // Americas
@@ -72,10 +76,10 @@ const locales = {
   bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
   ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
   ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'en', tk: 'aaz7dvd.css' },
-  ae_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
-  mena_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
-  sa_ar: { ietf: 'en', tk: 'aaz7dvd.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
   // Asia Pacific
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
@@ -101,11 +105,13 @@ const locales = {
 };
 
 const config = {
-  geoRouting: 'off',
-  fallbackRouting: 'off',
+  geoRouting: 'on',
+  fallbackRouting: 'on',
+  links: 'on',
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
+  prodDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
@@ -118,6 +124,7 @@ const config = {
 
 (async function loadPage() {
   setConfig(config);
+  loadLana({ clientId: 'milo' });
   await loadArea();
   loadDelayed();
 }());
