@@ -1,4 +1,4 @@
-name: Check for unsupported functions
+name: Check code compatibility with Milo supported browsers
 
 on:
   push:
@@ -22,4 +22,4 @@ jobs:
           npm install
 
           # Check for unsupported functions in the code
-          npx eslint --no-eslintrc -c .eslintrc-gh-action.js .
+          npx eslint --no-eslintrc -c .eslintrc-code-compatibility.js .
