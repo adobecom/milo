@@ -55,6 +55,7 @@ const AUTO_BLOCKS = [
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
+  { ost: '/tools/ost'},
   { fragment: '/fragments/' },
   { instagram: 'https://www.instagram.com' },
   { slideshare: 'https://www.slideshare.net' },
