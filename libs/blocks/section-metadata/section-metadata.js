@@ -16,6 +16,11 @@ export function handleStyle(text, section) {
   if (section) {
     if (!text) return;
     const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
+    if (styles.includes('sticky-top')) {
+      const header = document.querySelector('header');
+      const headerHeight = header.offsetHeight;
+      section.style.top = `${headerHeight}px`;
+    }
     section.classList.add(...styles);
   }
 }
@@ -24,11 +29,6 @@ function handleLayout(text, section) {
   if (!(text || section)) return;
   const layoutClass = `grid-template-columns-${text.replaceAll(' | ', '-')}`;
   section.classList.add(layoutClass);
-}
-
-function handleSticky(text, section) {
-  if (!(text || section)) return;
-  section.classList.add(`sticky-${text}`);
 }
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
@@ -47,5 +47,4 @@ export default function init(el) {
   if (metadata.style) handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata.background.content, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
-  if (metadata.sticky) handleSticky(metadata.sticky.text, section);
 }

@@ -37,11 +37,4 @@ describe('Section Metdata', () => {
     const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
   });
-
-  it('adds sticky postion', () => {
-    const section = document.querySelector('.section.sticky');
-    const sectionMetadata = section.querySelector('.section-metadata');
-    init(sectionMetadata)
-    expect(section.classList.contains('sticky-bottom')).to.be.true;
-  });
 });
