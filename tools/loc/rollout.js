@@ -46,34 +46,19 @@ function getNodeType(node) {
 }
 
 function processMdast(nodes) {
-  const sections = [];
-  const sectionsHash = new Set();
-  let blocksHash = new Set();
-  let blocks = [];
-
-  function addToSection() {
-    const hash = objectHash.sha1(blocks);
-    sectionsHash.add(hash);
-    sections.push({ hash, blocks, blocksHash, type: 'thematicBreak' });
-    blocks = [];
-    blocksHash = new Set();
-  }
-
+  const hashToIndex = new Map();
+  const arrayWithTypeAndHash = [];
+  let index = 0;
   nodes.forEach((node) => {
     const nodeType = getNodeType(node);
     types.add(nodeType);
     const hash = objectHash.sha1(node);
-    blocks.push({ type: nodeType, hash });
-    blocksHash.add(hash);
+    arrayWithTypeAndHash.push({ type: nodeType, hash });
+    hashToIndex.set(hash, index);
     hashToContentMap.set(hash, node);
-    if (nodeType === 'thematicBreak') {
-      addToSection();
-    }
+    index += 1;
   });
-  if (blocks.length !== 0) {
-    addToSection();
-  }
-  return { sectionsHash, sections };
+  return { hashToIndex, arrayWithTypeAndHash };
 }
 
 async function getMd(path) {
@@ -92,6 +77,13 @@ function getMdastFromMd(mdContent) {
 async function getMdast(path) {
   const mdContent = await getMd(path);
   return getMdastFromMd(mdContent);
+}
+
+// eslint-disable-next-line no-unused-vars
+async function getProcessedMdastFromPath(path) {
+  const mdast = await getMdast(path);
+  const nodes = mdast.children || [];
+  return processMdast(nodes);
 }
 
 async function getProcessedMdast(mdast) {
@@ -125,10 +117,10 @@ function updateChangesMap(changesMap, key, value) {
 }
 
 function getChanges(left, right) {
-  const leftArray = left.sections;
-  const leftHashes = left.sectionsHash;
-  const rightArray = right.sections;
-  const rightHashes = right.sectionsHash;
+  const leftArray = left.arrayWithTypeAndHash;
+  const leftHashToIndex = left.hashToIndex;
+  const rightArray = right.arrayWithTypeAndHash;
+  const rightHashToIndex = right.hashToIndex;
   const leftLimit = leftArray.length - 1;
   const rightLimit = rightArray.length - 1;
   const changesMap = new Map();
@@ -140,28 +132,16 @@ function getChanges(left, right) {
       rightPointer = leftPointer;
       const rightElement = rightArray[rightPointer];
       if (leftElement.hash === rightElement.hash) {
-        leftElement.blocks.forEach((block) => {
-          updateChangesMap(changesMap, block.hash, { op: 'nochange' });
-        });
-      } else if (rightHashes.has(leftElement.hash)) {
-        // Current Right Section is added newly.
-        rightElement.blocks.forEach((block) => {
-          updateChangesMap(changesMap, block.hash, { op: 'added' });
-        });
-      } else if (leftHashes.has(rightElement.hash)) {
-        // Move - handled as delete add
-        leftElement.blocks.forEach((block) => {
-          updateChangesMap(changesMap, block.hash, { op: 'deleted' });
-        });
-        rightElement.blocks.forEach((block) => {
-          updateChangesMap(changesMap, block.hash, { op: 'added' });
-        });
+        updateChangesMap(changesMap, leftElement.hash, { op: 'nochange' });
+      } else if (rightHashToIndex.has(leftElement.hash)) {
+        updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
+      } else if (leftHashToIndex.has(rightElement.hash)) {
+        updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
+        updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
       } else if (leftElement.type === rightElement.type) {
-        // Section Position is the same hence compare block elements
         updateChangesMap(changesMap, leftElement.hash, { op: 'edited', newHash: rightElement.hash });
         editSet.add(rightElement.hash);
       } else {
-        // Default Add Delete
         updateChangesMap(changesMap, leftElement.hash, { op: 'deleted' });
         updateChangesMap(changesMap, rightElement.hash, { op: 'added' });
       }
@@ -260,7 +240,7 @@ async function rollout(file, targetFolders, skipMerge = false) {
     const livecopyFilePath = `${targetFolder}/${fileName}`;
     const status = { success: true, path: livecopyFilePath };
 
-    function updateErrorStatus(errorMessage) {
+    function udpateErrorStatus(errorMessage) {
       status.success = false;
       status.errorMsg = errorMessage;
       loadingON(errorMessage);
@@ -320,10 +300,10 @@ async function rollout(file, targetFolders, skipMerge = false) {
         await persist(filePath, livecopyMergedMdast, livecopyFilePath);
         loadingON(`Rollout to ${livecopyFilePath} complete`);
       } else {
-        updateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
+        udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Missing langstore file`);
       }
     } catch (error) {
-      updateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
+      udpateErrorStatus(`Rollout to ${livecopyFilePath} did not succeed. Error ${error.message}`);
     }
     return status;
   }
