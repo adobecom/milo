@@ -56,25 +56,27 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el?.classList.contains(size)) || sizes[defaultSize];
 }
 
-function getDescendants(node, fragment = document.createDocumentFragment()) {
+function getCopyDescendants(node, fragment = document.createDocumentFragment()) {
   for (let i = 0; i < node.childNodes.length; i += 1) {
     const child = node.childNodes[i];
-    fragment.appendChild(child);
-    getDescendants(child, fragment.lastChild);
+    fragment.appendChild(child.cloneNode(true));
   }
   return fragment;
 }
 
 export function decorateButtons(buttons) {
   const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
+  const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
   buttons.forEach((button) => {
     const block = button.closest('.section div[class]:not(.content)');
     const blockSize = getBlockSize(block);
     const size = mapBtnSize[blockSize] ?? blockSize;
     const parent = button.parentElement;
 
-    const child = button.childNodes?.length > 0 ? Array.from(button.childNodes).filter((n) => n.nodeName === 'STRONG' || n.nodeName === 'EM')[0] : null;
-    const grandChild = child?.childNodes?.length > 0 ? Array.from(child.childNodes).filter((n) => n.nodeName === 'STRONG' || n.nodeName === 'EM')[0] : null;
+    const child = button.childNodes?.length > 0
+      ? Array.from(button.childNodes).filter(isStrongOrEm)[0] : null;
+    const grandChild = child?.childNodes?.length > 0
+      ? Array.from(child.childNodes).filter(isStrongOrEm)[0] : null;
     const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
     const text = parent.textContent || '';
     const buttonTypes = [];
@@ -95,7 +97,7 @@ export function decorateButtons(buttons) {
     const validParent = parent.nodeName === 'P' ? null : parent;
     [grandChild, child, validParent].forEach((n) => {
       if (n && ['STRONG', 'EM'].some((t) => t === n.nodeName)) {
-        n.replaceWith(getDescendants(n));
+        n.replaceWith(getCopyDescendants(n));
       }
     });
     const span = button.querySelector('span');
