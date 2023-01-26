@@ -1,5 +1,5 @@
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { getSectionMetadata } from '../section-metadata/section-metadata.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -18,8 +18,10 @@ const getCardType = (styles) => {
 };
 
 const getUpFromSectionMetadata = (section) => {
-  const sectionMetadata = getSectionMetadata(section.querySelector('.section-metadata'));
-  const styles = sectionMetadata.style?.split(', ').map((style) => style.replaceAll(' ', '-'));
+  const sectionMetadata = section.querySelector('.section-metadata');
+  if (!sectionMetadata) return null;
+  const metadata = getMetadata(sectionMetadata);
+  const styles = metadata.style?.text.split(', ').map((style) => style.replaceAll(' ', '-'));
   return styles?.find((style) => style.includes('-up'));
 };
 
