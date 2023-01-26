@@ -1,6 +1,6 @@
 .promo{
   padding: 8px 0;
-  font-size: 16px;
+  font-size: var(--type-body-s-size);
 }
 
 .promo > div {
@@ -8,7 +8,7 @@
     gap: 20px;
     align-items: center;
     justify-content: center;
-    padding: 0 24px;
+    padding: 0 var(--spacing-s);
 }
 
 .promo img {
@@ -60,11 +60,11 @@
 .promo .button {
     display: block;
     margin: 0;
-    border-radius: 2rem;
+    border-radius: 44px;
     border: 2px solid transparent;
-    padding: 6px 1rem;
+    padding: 6px var(--spacing-xs);
     font-weight: normal;
-    font-size: 14px;
+    font-size: var(--type-body-xs-size);
     line-height: 1;
     color: var(--color-white);
     text-decoration: none;
