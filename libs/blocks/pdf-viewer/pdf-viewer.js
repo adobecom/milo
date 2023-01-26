@@ -63,6 +63,12 @@ const init = async (a) => {
       {
         listenOn: [
           AdobeDC.View.Enum.PDFAnalyticsEvents.PAGE_VIEW,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.DOCUMENT_DOWNLOAD,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.ZOOM_LEVEL,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.TEXT_SEARCH,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.BOOKMARK_ITEM_CLICK,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.TEXT_COPY,
+          AdobeDC.View.Enum.PDFAnalyticsEvents.DOCUMENT_PRINT,
         ],
         enablePDFAnalytics: true,
       },
