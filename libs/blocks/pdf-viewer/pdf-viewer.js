@@ -1,3 +1,5 @@
+/* global AdobeDC */
+
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 
 const API_SOURCE_URL = 'https://documentcloud.adobe.com/view-sdk/viewer.js';
@@ -51,6 +53,18 @@ const init = async (a) => {
       {
         content: { location: { url } },
         metaData: { fileName },
+      },
+    );
+    adobeDCView.registerCallback(
+      AdobeDC.Enum.CallbackType.EVENT_LISTENER,
+      (event) => {
+        console.log(event);
+      },
+      {
+        listenOn: [
+          AdobeDC.View.Enum.PDFAnalyticsEvents.PAGE_VIEW,
+        ],
+        enablePDFAnalytics: true,
       },
     );
     document.removeEventListener('adobe_dc_view_sdk.ready', handleViewSdkReady);
