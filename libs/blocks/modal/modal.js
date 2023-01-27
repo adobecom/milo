@@ -133,8 +133,8 @@ export async function getModal(el, custom) {
   document.getElementsByClassName("dialog-close")[0]?.focus({ focusVisible: true });
 
   const closeModal = (event) => {
-    var code = event.keyCode || event.which;
-    if (code === 27) {
+    var keyPressed = event.key;
+    if (keyPressed?.toLowerCase() === 'escape') {
       document.getElementsByClassName("dialog-close")[0]?.click();
       document.removeEventListener('keydown', closeModal);
     }
