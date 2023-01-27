@@ -86,7 +86,7 @@ const defaultOptions = {
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
-    automatic: 'Automatic',
+    '': 'Automatic',
     custom: 'Custom',
   },
   filterEvent: {
@@ -443,6 +443,7 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${Select} label="Automatic or Custom Panel" prop="filterEvent" options=${defaultOptions.filterBuildPanel} />
     <${MultiField}
       onChange=${onChange('filters')}
       className="filters"
