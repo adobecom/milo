@@ -134,20 +134,28 @@ describe('getConfig', () => {
         button: { style: 'primary' },
         resultsPerPage: 5,
         endpoint:
-          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=a%2Cb&environment=&draft=false&size=10&flatFile=false',
+          'https://www.adobe.com/chimera-api/collection.myTargetActivity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=a%2Cb&environment=&draft=false&size=10&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
+<<<<<<< HEAD
           cardTitleAccessibilityLevel: 6,
+=======
+          cardTitleAccessibilityLevel: undefined,
+>>>>>>> 86df72f (Saving WIP)
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
+<<<<<<< HEAD
           titleHeadingLevel: 'h3'
+=======
+          "titleHeadingLevel": undefined
+>>>>>>> 86df72f (Saving WIP)
         },
         setCardBorders: false,
         useOverlayLinks: false,
@@ -297,7 +305,11 @@ describe('getConfig', () => {
       country: 'US',
       "customCard": [
         "card",
+<<<<<<< HEAD
         "return ``"
+=======
+        "return `card,`"
+>>>>>>> 86df72f (Saving WIP)
       ],
     analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
