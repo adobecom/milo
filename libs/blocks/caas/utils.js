@@ -234,6 +234,7 @@ export const getConfig = async (state, strs = {}) => {
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
+      collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
           description: strs.registrationText || 'Sign Up',
