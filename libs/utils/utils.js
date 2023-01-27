@@ -24,20 +24,28 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'instagram',
   'marketo',
   'card',
   'marquee',
   'media',
   'merch',
   'modal',
+  'modal-metadata',
   'pdf-viewer',
   'quote',
+  'read-more',
   'recommended-articles',
   'review',
   'section-metadata',
+  'slideshare',
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
+  'tiktok',
+  'twitter',
+  'vimeo',
   'youtube',
   'z-pattern',
   'share',
@@ -48,6 +56,12 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { instagram: 'https://www.instagram.com' },
+  { slideshare: 'https://www.slideshare.net' },
+  { tiktok: 'https://www.tiktok.com' },
+  { twitter: 'https://twitter.com' },
+  { vimeo: 'https://vimeo.com' },
+  { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
@@ -135,6 +149,10 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
+export function isInTextNode(node) {
+  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -144,8 +162,12 @@ export function getMetadata(name, doc = document) {
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement || html instanceof SVGElement) {
+    if (html instanceof HTMLElement
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
       el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
     }
@@ -164,23 +186,28 @@ function getExtension(path) {
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const url = new URL(href);
-  const relative = url.hostname === originHostName;
-  const processedHref = relative ? href.replace(url.origin, '') : href;
-  const { hash } = url;
-  if (hash === '#_dnt') return processedHref.split('#')[0];
-  const path = url.pathname;
-  const extension = getExtension(path);
-  const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) return processedHref;
-  const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) return processedHref;
-  const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) return processedHref;
-  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-  return relative ? urlPath : `${url.origin}${urlPath}`;
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -333,17 +360,35 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
+  const altTextFlagIndex = textContent.indexOf('|');
+  const sanitizedTextContent = altTextFlagIndex === -1
+    ? textContent
+    : textContent?.slice(0, altTextFlagIndex).trim();
+  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
+
+  const altText = altTextFlagIndex === -1
+    ? ''
+    : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
-  img.src = localizeLink(textContent);
+  img.setAttribute('loading', 'lazy');
+  img.src = localizeLink(sanitizedTextContent);
+  img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
-    a.textContent = '';
-    a.append(pic);
+
+  try {
+    const textContentUrl = new URL(sanitizedTextContent);
+    const hrefUrl = new URL(href);
+    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+      a.parentElement.replaceChild(pic, a);
+    } else {
+      a.textContent = '';
+      a.append(pic);
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log('Failed to load svg.', err.message);
   }
 }
 
@@ -383,7 +428,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -508,6 +553,8 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
+  const event = new Event('milo:deferred');
+  area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
