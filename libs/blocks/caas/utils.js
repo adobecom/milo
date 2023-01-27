@@ -189,12 +189,15 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-const arrayToObj = (array = []) => array.reduce((obj, item) => {
-  if (item.key && item.value) {
-    obj[item.key] = item.value;
-  }
+function arrayToObject (array=[]) {
+  const obj = {};
+  array.forEach(item => {
+    if (item.key && item.value) {
+      obj[item.key] = item.value;
+    }
+  });
   return obj;
-}, {});
+}
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -413,6 +416,7 @@ export const defaultState = {
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
+  customCard: ['card', ''],
   ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
