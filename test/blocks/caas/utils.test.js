@@ -141,13 +141,13 @@ describe('getConfig', () => {
         ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
-          cardTitleAccessibilityLevel: 6,
+          cardTitleAccessibilityLevel: undefined,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
-          titleHeadingLevel: 'h3'
+          "titleHeadingLevel": undefined
         },
         setCardBorders: false,
         useOverlayLinks: false,
@@ -297,7 +297,7 @@ describe('getConfig', () => {
       country: 'US',
       "customCard": [
         "card",
-        "return ``"
+        "return `card,`"
       ],
     analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
