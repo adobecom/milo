@@ -12,7 +12,8 @@ export default function decorate(block) {
   const closeIcon = createTag('img', { class: 'promo-close-icon', src: `${base}/blocks/promo/close.svg` });
 
   closeButton.addEventListener('click', () => {
-    block.remove();
+    const section = block.closest('.section');
+    section.remove();
   });
 
   div.append(closeButton);

@@ -25,15 +25,29 @@ function handleTopHeight(section) {
   section.style.top = `${headerHeight}px`;
 }
 
-export function handleStyle(text, section) {
-  if (section) {
-    if (!text) return;
-    const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
-    if (styles.includes('sticky-top')) {
+function handleStickySection(sticky, section) {
+  const main = document.querySelector('main');
+  switch (sticky) {
+    case 'sticky-top':
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
-    }
-    section.classList.add(...styles);
+      main.prepend(section);
+      break;
+    case 'sticky-bottom':
+      main.append(section);
+      break;
+    default:
+      break;
   }
+}
+
+export function handleStyle(text, section) {
+  if (!(text || section)) return;
+  const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
+  const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
+  if (sticky) {
+    handleStickySection(sticky, section);
+  }
+  section.classList.add(...styles);
 }
 
 function handleLayout(text, section) {
