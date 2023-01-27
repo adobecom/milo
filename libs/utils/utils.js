@@ -515,6 +515,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
@@ -670,42 +677,4 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
-}
-
-/**
-* Searches for Japanese text in headings and applies a smart word-breaking algorithm by inserting
-* <wbr> between semantic blocks. This allows browsers to break japanese sentences correctly.
-*/
-export async function wordBreakJapanese() {
-  const { miloLibs, codeRoot, locale } = getConfig();
-
-  if (locale.ietf !== 'ja-JP') {
-    return;
-  }
-
-  const base = miloLibs || codeRoot;
-
-  // The thresould value to control word break granularity for long semantic blocks.
-  const WORD_SEG_THRES = 8;
-  const { loadDefaultJapaneseParser } = await import(`${base}/deps/budoux-index-ja.min.js`);
-  const parser = loadDefaultJapaneseParser();
-  document.querySelectorAll('h1, h2, h3, h4, h5').forEach((el) => {
-    // apply budoux to headings
-    parser.applyElement(el, { wordSegThres: WORD_SEG_THRES });
-  });
-
-  const BalancedWordWrapper = (await import(`${base}/deps/./bw2.min.js`)).default;
-  const bw2 = new BalancedWordWrapper();
-  document.querySelectorAll('h1, h2, h3, h4, h5').forEach((el) => {
-    // apply balanced word wrap to headings
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(() => {
-        bw2.applyElement(el);
-      });
-    } else {
-      window.setTimeout(() => {
-        bw2.applyElement(el);
-      }, 1000);
-    }
-  });
 }

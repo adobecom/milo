@@ -15,7 +15,6 @@ import {
   loadDelayed,
   loadLana,
   setConfig,
-  wordBreakJapanese,
 } from '../utils/utils.js';
 
 // Production Domain
@@ -128,6 +127,4 @@ const config = {
   loadLana({ clientId: 'milo' });
   await loadArea();
   loadDelayed();
-  // Japanese word-wrap
-  wordBreakJapanese();
 }());
