@@ -12,14 +12,25 @@ function handleBackground(div, section) {
   }
 }
 
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
+
+function handleTopHeight(section) {
+  const headerHeight = document.querySelector('header').offsetHeight;
+  section.style.top = `${headerHeight}px`;
+}
+
 export function handleStyle(text, section) {
   if (section) {
     if (!text) return;
     const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
     if (styles.includes('sticky-top')) {
-      const header = document.querySelector('header');
-      const headerHeight = header.offsetHeight;
-      section.style.top = `${headerHeight}px`;
+      window.addEventListener('resize', debounce(() => handleTopHeight(section)));
     }
     section.classList.add(...styles);
   }
