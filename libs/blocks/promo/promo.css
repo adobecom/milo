@@ -81,3 +81,8 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+
+.promo-close-icon {
+  width: 12px;
+  height: 12px;;
+}
