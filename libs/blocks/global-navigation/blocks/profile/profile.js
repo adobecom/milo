@@ -65,6 +65,7 @@ class Profile {
 
   decorateSignOut() {
     const signOutLink = toFragment`<li class="feds-profile-action">${this.signOutEl}</li>`;
+    this.signOutEl.setAttribute('daa-ll', 'Sign Out');
     signOutLink.addEventListener('click', (e) => {
       // TODO consumers might want to execute their own logic before a sign out
       // we might want to provide them a way to do so here
@@ -80,6 +81,7 @@ class Profile {
         <a 
           href="${decorateProfileLink(this.accountLinkEl.href, 'account')}" 
           class="feds-profile-header"
+          daa-ll="View Account"
           aria-label="${this.accountLinkEl.textContent}"
         >
           ${this.avatarImgEl.cloneNode(true)}

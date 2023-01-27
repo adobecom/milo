@@ -156,8 +156,10 @@ class Gnav {
           aria-expanded="false" 
           aria-controls="feds-profile-menu"
           aria-label="Profile button"
+          daa-ll="Account"
+          aria-haspopup="true"
         > 
-        ${avatarImgEl}
+          ${avatarImgEl}
         </button>
       `;
     this.decorateProfileMenu({ avatarImgEl, sections, profileRes, profileButtonEl });

@@ -20,6 +20,7 @@
   padding: 20px;
   display: flex;
   flex-direction: row;
+  outline-offset: -3px;
 }
 
 .feds-profile-header .feds-profile-img {
