@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getSectionMetadata } = await import('../../../libs/blocks/section-metadata/section-metadata.js');
+const { default: init, getMetadata } = await import('../../../libs/blocks/section-metadata/section-metadata.js');
 
 describe('Section Metdata', () => {
   it('Gracefully dies', () => {
@@ -26,8 +26,15 @@ describe('Section Metdata', () => {
     expect(sec.style.backgroundColor).to.equal('rgb(239, 239, 239)');
   });
 
+  it('Adds class based on layout input', () => {
+    const sec = document.querySelector('.section.layout');
+    const sm = sec.querySelector('.section-metadata');
+    init(sm);
+    expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
+  });
+
   it('gets section metadata', () => {
-    const expected = { style: 'darkest, xxl spacing, two up', background: 'rgb(239, 239, 239)' };
-    expect(getSectionMetadata(document.querySelector('.section.color .section-metadata'))).to.eql(expected);
+    const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
+    expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
   });
 });
