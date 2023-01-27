@@ -41,7 +41,7 @@ function handleStickySection(sticky, section) {
 }
 
 export function handleStyle(text, section) {
-  if (!(text || section)) return;
+  if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) {
