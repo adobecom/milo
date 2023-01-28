@@ -297,7 +297,7 @@ describe('getConfig', () => {
       country: 'US',
       "customCard": [
         "card",
-        "return `card,`"
+        "return ``"
       ],
     analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
