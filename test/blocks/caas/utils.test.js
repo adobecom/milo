@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj } from '../../../libs/blocks/caas/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -16,6 +16,9 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
+describe('additionalQueryParams', () => {
+  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+})
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
