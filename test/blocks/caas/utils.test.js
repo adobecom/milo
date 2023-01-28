@@ -18,6 +18,7 @@ const strings = {
 
 describe('additionalQueryParams', () => {
   expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+  expect(arrayToObj({})).to.be.eql([]);
 })
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
