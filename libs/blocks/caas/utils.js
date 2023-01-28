@@ -376,7 +376,7 @@ export const getConfig = async (state, strs = {}) => {
       enabled: state.targetEnabled || '',
       lastViewedSession: state.lastViewedSession || '',
     },
-    customCard: ['card', `return \`${state.customCard[1]}\``],
+    customCard: ['card', `return \`${state.customCard}\``],
   };
   return config;
 };
@@ -416,7 +416,7 @@ export const defaultState = {
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
-  customCard: ['card', ''],
+  customCard: '',
   ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
