@@ -147,7 +147,7 @@ describe('getConfig', () => {
         },
         setCardBorders: false,
         useOverlayLinks: false,
-        additionalRequestParams: [],
+        additionalRequestParams: {},
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
