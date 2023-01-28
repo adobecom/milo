@@ -553,6 +553,13 @@ const AdvancedPanel = () => {
       value: values,
     });
   };
+
+  function getAdditionalQueryParams(){
+    if(Array.isArray(context.state.additionalRequestParams)){
+      return context.state.additionalRequestParams;
+    }
+    return Object.entries(context.state.additionalRequestParams).map(([key, value]) => ({key, value}));
+  }
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
@@ -569,7 +576,7 @@ const AdvancedPanel = () => {
     <${MultiField}
       onChange=${onChange('additionalRequestParams')}
       className="additionalRequestParams"
-      values=${context.state.additionalRequestParams}
+      values=${getAdditionalQueryParams()}
       title="Additional Request Params"
       subTitle="Enter a key/value pair you want to include in a card's url."
     >
