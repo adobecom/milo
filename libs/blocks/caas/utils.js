@@ -451,5 +451,6 @@ export const defaultState = {
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  collectionButtonStyle: 'primary',
   userInfo: [],
 };
