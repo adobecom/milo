@@ -222,6 +222,15 @@
         expect(findByLabel('Pagination Type')).to.not.be.null;
       });
 
+      it('Can add additional query params cards', async () => {
+        const addButton = configPanelEl.querySelector('.additionalRequestParams.multifield-add');
+        addButton.click();
+        const keyIdEl = await waitForElement('#key');
+        const valIdEl = await waitForElement('#value');
+        expect(keyIdEl).to.not.be.null;
+        expect(valIdEl).to.not.be.null;
+      });
+
       it('shows additional filter options when Show Filters is checked', async () => {
         const showFiltersCb = findByLabel('Show Filters');
         showFiltersCb.checked = true;
