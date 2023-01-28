@@ -34,7 +34,7 @@ function updateDomWithBaseUrl(dom, url) {
 }
 
 function isLocalFragment(link, baseUrlOrigin) {
-  return link && link.startsWith(`${baseUrlOrigin}${fragmentPath}`);
+  return link && link.startsWith(baseUrlOrigin) && link.includes(fragmentPath);
 }
 
 function getOriginFromLink(link) {
