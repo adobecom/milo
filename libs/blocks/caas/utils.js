@@ -189,7 +189,7 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-function arrayToObj (array=[]) {
+export function arrayToObj (array=[]) {
   const obj = {};
   array.forEach(item => {
     if (item.key && item.value) {
