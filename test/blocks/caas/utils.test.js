@@ -141,25 +141,17 @@ describe('getConfig', () => {
         ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
-<<<<<<< HEAD
           cardTitleAccessibilityLevel: 6,
-=======
-          cardTitleAccessibilityLevel: undefined,
->>>>>>> 86df72f (Saving WIP)
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
-<<<<<<< HEAD
           titleHeadingLevel: 'h3'
-=======
-          "titleHeadingLevel": undefined
->>>>>>> 86df72f (Saving WIP)
         },
         setCardBorders: false,
         useOverlayLinks: false,
-        additionalRequestParams: {},
+        additionalRequestParams: [],
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -305,11 +297,7 @@ describe('getConfig', () => {
       country: 'US',
       "customCard": [
         "card",
-<<<<<<< HEAD
-        "return ``"
-=======
         "return `card,`"
->>>>>>> 86df72f (Saving WIP)
       ],
     analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
