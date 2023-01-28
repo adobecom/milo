@@ -189,7 +189,7 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-function arrayToObject (array=[]) {
+function arrayToObj (array=[]) {
   const obj = {};
   array.forEach(item => {
     if (item.key && item.value) {
@@ -239,8 +239,8 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
-        titleHeadingLevel: state.titleLevel,
-        cardTitleAccessibilityLevel: state.accessibilityLevel,
+        titleHeadingLevel: state.titleHeadingLevel,
+        cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
@@ -376,7 +376,7 @@ export const getConfig = async (state, strs = {}) => {
       enabled: state.targetEnabled || '',
       lastViewedSession: state.lastViewedSession || '',
     },
-    customCard: ['card', `return \`${state.customCard}\``],
+    customCard: ['card', `return \`${state.customCard[1]}\``],
   };
   return config;
 };
@@ -402,7 +402,7 @@ export const initCaas = async (state, caasStrs, el) => {
 };
 
 export const defaultState = {
-  additionalRequestParams: {},
+  additionalRequestParams: [],
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],

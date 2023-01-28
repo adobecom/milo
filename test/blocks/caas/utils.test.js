@@ -141,17 +141,17 @@ describe('getConfig', () => {
         ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
-          cardTitleAccessibilityLevel: undefined,
+          cardTitleAccessibilityLevel: 6,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
-          "titleHeadingLevel": undefined
+          titleHeadingLevel: 'h3'
         },
         setCardBorders: false,
         useOverlayLinks: false,
-        additionalRequestParams: {},
+        additionalRequestParams: [],
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
