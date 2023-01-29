@@ -44,7 +44,11 @@ async function loadList(type, content, list) {
 }
 
 async function fetchLibrary(domain) {
-  const resp = await fetch(`${domain}${LIBRARY_PATH}`);
+  const { searchParams } = new URL(window.location.href);
+  const suppliedLibrary = searchParams.get('library');
+  const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
+
+  const resp = await fetch(library);
   if (!resp.ok) return null;
   return resp.json();
 }
@@ -74,8 +78,8 @@ async function combineLibraries(base, supplied) {
 
   const library = {
     blocks: base.blocks.data,
-    placeholders: base.placeholders.data,
-    icons: base.icons.data,
+    placeholders: base.placeholders?.data,
+    icons: base.icons?.data,
     assets: await fetchAssetsData(assetsPath),
   };
 
