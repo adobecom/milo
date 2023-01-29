@@ -103,6 +103,8 @@ function createList(libraries) {
   container.append(libraryList);
 
   Object.keys(libraries).forEach((type) => {
+    if (!libraries[type] || libraries[type].length === 0) return;
+
     const item = createTag('li', { class: 'content-type' }, type);
     libraryList.append(item);
 
