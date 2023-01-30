@@ -38,6 +38,7 @@ const setNavLinkAttributes = (id, navLink) => {
   navLink.setAttribute('aria-controls', id);
   navLink.setAttribute('daa-ll', navLink.textContent);
   navLink.setAttribute('daa-lh', 'header|Open');
+  navLink.setAttribute('aria-haspopup', true);
 };
 
 class Gnav {
