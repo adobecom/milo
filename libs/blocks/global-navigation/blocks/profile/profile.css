@@ -8,12 +8,11 @@
   background: var(--color-white);
   overflow: hidden;
   box-shadow: 0 2px 6px -1px rgb(0 0 0 / 10%);
-  animation: profile-collapsed .2s ease 0s 1 both;
+  display: none;
 }
 
 .feds-profile.is-open .feds-profile-menu {
   display: block;
-  animation: profile-expanded .2s ease 0s 1 both;
 }
 
 .feds-profile-header {
