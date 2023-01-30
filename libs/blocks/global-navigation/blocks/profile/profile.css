@@ -61,28 +61,3 @@
   padding: 14px 20px;
   border-top: 1px solid #e1e1e1;
 }
-
-@keyframes profile-collapsed {
-	0% {
-		opacity: 1;
-	}
-
-  99% {
-    opacity: 0;
-  }
-
-	100% {
-    opacity: 0;
-    display: none;
-	}
-}
-
-@keyframes profile-expanded {
-	0% {
-		opacity: 0;
-	}
-
-	100% {
-		opacity: 1;
-	}
-}
