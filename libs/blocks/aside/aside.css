@@ -298,11 +298,25 @@
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
   text-decoration: underline;
+  font-weight: normal;
+  color: #2c2c2c;
 }
-
 
 .aside.notification .foreground.container .text .action-area > a {
   margin-right: 0;
+}
+
+.aside.notification.dark .foreground.container .text a:not(.con-button) {
+  color: white;
+}
+
+.aside.notification.extra-small .foreground.container .text a:last-child {
+  color: var(--link-color);
+  font-weight: bold;
+}
+
+.aside.notification.extra-small.dark .foreground.container .text a:last-child {
+  color: white;
 }
 
 .aside.notification.extra-small .foreground.container .text a:not(.con-button):last-of-type {
@@ -335,8 +349,8 @@
 
 .aside.notification.extra-small .foreground.container {
   min-height: 50px;
-  padding-top: var(--spacing-xxs);
-  padding-bottom: var(--spacing-xxs);
+  padding-top: var(--spacing-xs);
+  padding-bottom: var(--spacing-xs);
 }
 
 .aside.notification.extra-small .foreground.container .text {
@@ -581,6 +595,11 @@
   .aside.notification.small .foreground.container .text .action-area {
     width: auto;
     margin-top: 0;
+  }
+
+  .aside.notification.small .foreground.container .text .icon-area {
+    width: 40px;
+    height: 40px;
   }
 }
 
