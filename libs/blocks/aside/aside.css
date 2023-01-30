@@ -670,12 +670,13 @@
     flex: 0 0 calc(36% - var(--spacing-s));
   }
 
-  .aside.notification {
-    min-height: 250px;
-  }
-
   .aside.notification .foreground.container {
     min-height: 0;
+  }
+
+  .aside.notification.extra-small .foreground.container {
+    padding-top: var(--spacing-xxs);
+    padding-bottom: var(--spacing-xxs);
   }
 
   .aside.notification.medium .foreground.container {
@@ -692,12 +693,6 @@
 
   .aside.notification .foreground.container .text+.image {
     margin-right: 0;
-  }
-
-  .aside.notification.extra-small,
-  .aside.notification.small,
-  .aside.notification.medium {
-    min-height: auto;
   }
   
   .aside.notification.small .foreground.container .text {
