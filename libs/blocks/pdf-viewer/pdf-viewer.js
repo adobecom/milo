@@ -20,6 +20,9 @@ export const getPdfConfig = () => {
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
+  // TODO: REMOVE AFTER TESTING
+  clientId = '7cda615329764b9d89f4e5a797fe3c1e';
+
   return { clientId, reportSuiteId };
 };
 
