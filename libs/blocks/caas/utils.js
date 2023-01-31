@@ -405,6 +405,7 @@ export const defaultState = {
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
+  filterBuildPanel: '',
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
