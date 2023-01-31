@@ -479,7 +479,10 @@ const FilterPanel = ({ tagsData }) => {
 
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-    ${state.filterBuildPanel === 'custom' ? CustomFilterBuildPanel : FilterBuildPanel}
+    ${state.showFilters
+      && (state.filterBuildPanel === 'custom'
+        ? CustomFilterBuildPanel
+        : FilterBuildPanel)}
   `;
 };
 
