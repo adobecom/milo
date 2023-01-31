@@ -20,13 +20,27 @@
   white-space: nowrap;
 }
 
-.feds-profile-menu ul {
-  margin: 0;
-  padding: 0;
+[dir = "rtl"] .feds-profile-menu {
+  right: initial;
+  left: 0;
 }
 
 .feds-profile.is-open .feds-profile-menu {
   display: block;
+}
+
+.feds-profile li a {
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  padding: 2px;
+}
+
+/* TODO be removable with refactoring the menu CSS  */
+.feds-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
+  top: 0;
+  left: auto
 }
 
 .feds-profile-header {
@@ -44,6 +58,11 @@
 .feds-profile-details {
   margin-left: 16px;
   overflow: hidden;
+}
+
+[dir = "rtl"] .feds-profile-details {
+  margin-left: 0;
+  margin-right: 16px;
 }
 
 .feds-profile-name {
@@ -71,14 +90,14 @@
   color: var(--feds-color-profile)
 }
 
-.feds-profile-action {
-  padding: 14px 20px;
-  border-top: var(--feds-border-profile);
-}
-
 .feds-local-menu {
   border-top: var(--feds-border-profile);
   padding: 6px 0;
+}
+
+.feds-local-menu ul {
+  margin: 0;
+  padding: 0;
 }
 
 .feds-local-menu h5 {
@@ -90,27 +109,23 @@
     text-transform: uppercase;
 }
 
-.feds-profile-menu li {
+.feds-local-menu li {
   font-size: 14px;
   padding: 9px 18px;
   color: var(--feds-color-profile)
 }
 
-.feds-local-menu li:hover {
+.feds-profile-actions {
+  margin: 0;
+  padding: 0;
+}
+
+.feds-profile-action {
+  padding: 14px 20px;
+  border-top: var(--feds-border-profile);
+}
+
+.feds-profile-menu li:hover {
   color: var(--feds-color-profile-emphasis);
   background-color: #F5F5F5;
-}
-
-.feds-profile li a {
-  color: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-  padding: 2px;
-}
-
-/* TODO be removable with refactoring the menu CSS  */
-.feds-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
-  top: 0;
-  left: auto
 }

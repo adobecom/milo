@@ -183,10 +183,10 @@ class Gnav {
 
       // TODO integrate placeholders here
       this.blocks.profile.instance = new this.Profile({
-        accountLinkEl: blockEl.querySelector('div > div > p:nth-child(2) a'),
-        manageTeamsEl: blockEl.querySelector('div > div > p:nth-child(3) a'),
-        manageEnterpriseEl: blockEl.querySelector('div > div > p:nth-child(4) a'),
-        signOutEl: blockEl.querySelector('div > div > p:nth-child(5) a'),
+        accountLinkEl: blockEl.querySelector('div > div > p:nth-child(2) a'), // TODO placeholders
+        manageTeamsEl: blockEl.querySelector('div > div > p:nth-child(3) a'), // TODO placeholders
+        manageEnterpriseEl: blockEl.querySelector('div > div > p:nth-child(4) a'), // TODO placeholders
+        signOutEl: blockEl.querySelector('div > div > p:nth-child(5) a'), // TODO placeholders
         localMenu: blockEl.querySelector('h5')?.parentElement,
         toggleMenu: this.menuControls.toggleMenu,
         decoratedEl,
