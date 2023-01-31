@@ -181,6 +181,25 @@ describe('Utils', () => {
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
   });
 
+  it('Open link in new tab', () => {
+    const newTabLink = document.querySelector('.new-tab');
+    newTabLink.target = '_blank';
+    expect(newTabLink.target).to.contain('_blank');
+    newTabLink.href = newTabLink.href.replace('#_blank', '');
+    expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+  });
+
+  describe('SVGs', () => {
+    it('Not a valid URL', () => {
+      const a = document.querySelector('.bad-url');
+      try {
+        const textContentUrl = new URL(a.textContent);
+      } catch (err) {
+        expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
+      }
+    });
+  });
+
   describe('rtlSupport', () => {
     before(async () => {
       config.locales = {
