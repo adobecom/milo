@@ -31,19 +31,19 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   let hashConfig = parseEncodedConfig(encodedConfig);
-  hashConfig.pjs36 = hashConfig.pjs36 || hashConfig.p.js[36] || '';
-  hashConfig.pjs39 = hashConfig.pjs39 || hashConfig.p.js[39] || '';
-  hashConfig.pjs92 = hashConfig.pjs92 || hashConfig.p.js[92] || '';
-  hashConfig.pjs93 = hashConfig.pjs93 || hashConfig.p.js[93] || '';
-  hashConfig.pjs94 = hashConfig.pjs94 || hashConfig.p.js[94] || '';
-  hashConfig[149] = hashConfig[149] || hashConfig.p.js[149] || '';
-  hashConfig[172] = hashConfig[172] || hashConfig.p.js[172] || '';
+  hashConfig.pjs36 ||= hashConfig.p.js[36] || '';
+  hashConfig.pjs39 ||= hashConfig.p.js[39] || '';
+  hashConfig.pjs92 ||= hashConfig.p.js[92] || '';
+  hashConfig.pjs93 ||= hashConfig.p.js[93] || '';
+  hashConfig.pjs94 ||= hashConfig.p.js[94] || '';
+  hashConfig[149] ||= hashConfig.p.js[149] || '';
+  hashConfig[172] ||= hashConfig.p.js[172] || '';
   hashConfig.q103 = hashConfig.q103 || hashConfig.q[103]?.c || {};
-  hashConfig.pc1 = hashConfig.pc1 || hashConfig.pc[1] || false;
-  hashConfig.pc2 = hashConfig.pc2 || hashConfig.pc[2] || false;
-  hashConfig.pc3 = hashConfig.pc3 || hashConfig.pc[3] || false;
-  hashConfig.pc4 = hashConfig.pc4 || hashConfig.pc[4] || false;
-  hashConfig.pc5 = hashConfig.pc5 || hashConfig.pc[5] || false;
+  hashConfig.pc1 ||= hashConfig.pc[1] || false;
+  hashConfig.pc2 ||= hashConfig.pc[2] || false;
+  hashConfig.pc3 ||= hashConfig.pc[3] || false;
+  hashConfig.pc4 ||= hashConfig.pc[4] || false;
+  hashConfig.pc5 ||= hashConfig.pc[5] || false;
   if(hashConfig.complete) {
     Object.keys(hashConfig.js).forEach((key) => {
       hashConfig[key] = hashConfig.js[key];
