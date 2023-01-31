@@ -71,8 +71,8 @@ class Profile {
   decorateSignOut() {
     // TODO integrate the placeholders here
     const signOutLink = toFragment`
-      <li class="feds-profile-action">
-        <a daa-ll="Sign Out">Sign Out</a>
+      <li>
+        <a class="feds-profile-action" daa-ll="Sign Out">Sign Out</a>
       </li>
     `;
     signOutLink.addEventListener('click', (e) => {
