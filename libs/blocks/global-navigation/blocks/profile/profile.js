@@ -38,6 +38,7 @@ class Profile {
     signOutEl,
     manageTeamsEl,
     manageEnterpriseEl,
+    localMenu,
   }) {
     this.sections = sections;
     this.avatarImgEl = avatarImgEl;
@@ -48,6 +49,10 @@ class Profile {
     this.toggleMenu = toggleMenu;
     this.profileButtonEl = profileButtonEl;
     this.decoratedEl = decoratedEl;
+    this.localMenu = localMenu;
+    if (localMenu) {
+      localMenu.classList.add('feds-local-menu');
+    }
     this.init();
   }
 
@@ -64,8 +69,12 @@ class Profile {
   }
 
   decorateSignOut() {
-    const signOutLink = toFragment`<li class="feds-profile-action">${this.signOutEl}</li>`;
-    this.signOutEl.setAttribute('daa-ll', 'Sign Out');
+    // TODO integrate the placeholders here
+    const signOutLink = toFragment`
+      <li class="feds-profile-action">
+        <a daa-ll="Sign Out">Sign Out</a>
+      </li>
+    `;
     signOutLink.addEventListener('click', (e) => {
       // TODO consumers might want to execute their own logic before a sign out
       // we might want to provide them a way to do so here
@@ -76,21 +85,28 @@ class Profile {
   }
 
   menu() {
+    // TODO integrate placerholders here, for the view account // and profile actions
+    // TODO the account name and email might need a bit of adaptive behaviour
+    // historically we shrunk the fontsize and displayed the account name on two lines
+    // the email had some special logic as well
+    // we took a simpler approach ("Some very long name, very l...") for MVP
+    // also TODO, TAKE A GOOD LOOK AT THE TEMPLATE WHEN DOING THE PLACEHOLDERS.
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
         <a 
-          href="${decorateProfileLink(this.accountLinkEl.href, 'account')}" 
+          href="${decorateProfileLink('https://account.adobe.com/', 'account')}" 
           class="feds-profile-header"
           daa-ll="View Account"
-          aria-label="${this.accountLinkEl.textContent}"
+          aria-label="${this.accountLinkText}"
         >
           ${this.avatarImgEl.cloneNode(true)}
           <div class="feds-profile-details">
             <p class="feds-profile-name">${this.displayName}</p>
             <p class="feds-profile-email">${decorateEmail(this.email)}</p>
-            <p class="feds-profile-account">${this.accountLinkEl.innerHTML}</p>
+            <p class="feds-profile-account">View Account</p>
           </div>
         </a>
+        ${this.localMenu}
         <ul class="feds-profile-actions">
           ${this.sections.manage.items.team?.id ? decorateAction(this.manageTeamsEl) : ''}
           ${this.sections.manage.items.enterprise?.id ? decorateAction(this.manageEnterpriseEl) : ''}

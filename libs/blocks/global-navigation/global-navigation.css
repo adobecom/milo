@@ -1,6 +1,6 @@
 :root {
   /* New Variables */
-  --padding-utilityIcon: 8px;
+  --feds-spacing-utilityNav: 8px;
   --radius-utilityIcon: 4px;
 }
 
@@ -127,12 +127,6 @@ header span.gnav-brand-title {
   display: none;
 }
 
-header.gnav a {
-  color: #2e2e2e;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
 header .mainnav-wrapper {
   display: none;
   background: var(--color-white);
@@ -244,7 +238,7 @@ header .breadcrumbs li:first-of-type a {
 
   .feds-search-trigger {
     display: flex;
-    padding: var(--padding-utilityIcon);
+    padding: var(--feds-spacing-utilityNav);
     border: none;
     border-radius: var(--radius-utilityIcon);
     outline-offset: 2px;
@@ -437,18 +431,21 @@ header .gnav-navitem.has-menu > a:after {
   justify-content: end;
 }
 
-.feds-signin {
-  padding: 4px var(--padding-utilityIcon);
+/* TODO temporarily more specificity until we improve the CSS */
+header .gnav-navitem .feds-signin {
+  padding: 11px var(--feds-spacing-utilityNav);
   border-radius: var(--radius-utilityIcon);
+  color: #4B4B4B;
 }
 
 .feds-profile-img {
   max-height: 30px;
   max-width: 30px;
+  display: block;
 }
 
 .feds-profile-button {
-  padding: 2px var(--padding-utilityIcon);
+  padding: 5px var(--feds-spacing-utilityNav);
   border-radius: var(--radius-utilityIcon);
   border: none;
 }
@@ -670,9 +667,13 @@ header .app-launcher {
     align-items: center;
     width: 25px;
     box-sizing: border-box;
-    margin-left: var(--padding-utilityIcon);
   }
-  
+
+  .gnav-logo::before {
+    content: "";
+    margin-left: var(--feds-spacing-utilityNav);
+  }
+
   /* Search Bar */
   .gnav-search.is-open .gnav-search-bar {
     position: fixed;

@@ -181,11 +181,13 @@ class Gnav {
         decoratedEl.addEventListener('profile_ready', () => decoratedEl.click(), { once: true });
       }
 
+      // TODO integrate placeholders here
       this.blocks.profile.instance = new this.Profile({
         accountLinkEl: blockEl.querySelector('div > div > p:nth-child(2) a'),
         manageTeamsEl: blockEl.querySelector('div > div > p:nth-child(3) a'),
         manageEnterpriseEl: blockEl.querySelector('div > div > p:nth-child(4) a'),
         signOutEl: blockEl.querySelector('div > div > p:nth-child(5) a'),
+        localMenu: blockEl.querySelector('h5')?.parentElement,
         toggleMenu: this.menuControls.toggleMenu,
         decoratedEl,
         avatarImgEl,
@@ -376,23 +378,46 @@ class Gnav {
   decorateSignIn = () => {
     const { blockEl, decoratedEl } = this.blocks.profile;
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
-    const signIn = blockEl.querySelector('a');
-    signIn.classList.add('feds-signin');
-    signIn.setAttribute('daa-ll', 'Sign In');
-    if (dropDown) {
-      const id = `navmenu-${blockEl.className}`;
-      dropDown.id = id;
-      decoratedEl.classList.add('gnav-navitem');
-      decoratedEl.insertAdjacentElement('beforeend', dropDown);
-      this.decorateMenu(decoratedEl, signIn, dropDown);
-      setNavLinkAttributes(id, signIn);
-    }
+    // TODO use placeholders
+    const signIn = toFragment`<a daa-ll="Sign In" class="feds-signin">Sign in</a>`;
+    const id = `navmenu-${blockEl.className}`;
     const signInEl = dropDown?.querySelector('li:last-of-type a') || decoratedEl;
-    signInEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.adobeIMS.signIn();
-    });
     decoratedEl.append(signIn);
+    if (!dropDown) {
+      signInEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.adobeIMS.signIn();
+      });
+      return;
+    }
+    dropDown.id = id;
+    decoratedEl.classList.add('gnav-navitem');
+    decoratedEl.classList.add('has-menu');
+    let decorating;
+    const decorate = async (event) => {
+      if (event) event.preventDefault();
+      if (decorating) return;
+      decorating = true;
+      await this.loadDelayed();
+      setNavLinkAttributes(id, signIn);
+      decoratedEl.insertAdjacentElement('beforeend', dropDown);
+
+      // TODO we don't have a good way of adding attributes to links
+      const dropDownSignIn = dropDown.querySelector('[href="https://adobe.com?sign-in=true"]');
+      if (dropDownSignIn) {
+        dropDownSignIn.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.adobeIMS.signIn();
+        });
+      }
+      this.decorateMenu(decoratedEl, signIn, dropDown, this.menuControls);
+      if (event) signIn.click();
+      signIn.removeEventListener('click', decorate);
+    };
+
+    // Load the menu as fast as possible if it has been clicked
+    signIn.addEventListener('click', decorate);
+    setTimeout(decorate, 3000);
   };
 
   setBreadcrumbSEO = () => {
