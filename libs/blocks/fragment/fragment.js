@@ -28,7 +28,7 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-export default async function init(a, parent) {
+export default async function init(a) {
   const relHref = localizeLink(a.href);
   if (isCircularRef(relHref)) {
     console.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
@@ -46,14 +46,9 @@ export default async function init(a, parent) {
 
       updateFragMap(fragment, a, relHref);
 
-      await loadArea(fragment);
+      a.parentElement.replaceChild(fragment, a);
 
-      if (parent) {
-        a.remove();
-        parent.append(fragment);
-      } else if (a.parentElement) {
-        a.parentElement.replaceChild(fragment, a);
-      }
+      await loadArea(fragment);
     } else {
       window.lana.log('Could not make fragment');
     }

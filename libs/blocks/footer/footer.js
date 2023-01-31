@@ -1,6 +1,7 @@
 import {
   createTag,
   decorateAutoBlock,
+  decorateLinks,
   getConfig,
   getMetadata,
   loadBlock,
@@ -41,6 +42,7 @@ class Footer {
     }
 
     this.addAnalytics(wrapper);
+    decorateLinks(wrapper);
     this.footerEl.append(wrapper);
   };
 
