@@ -276,11 +276,11 @@ async function getFileVersionInfo(filePath) {
 
 async function updateFile(dest, metadata, customMetadata = {}) {
   validateConnection();
-  const payload = {
-    RolloutVersion: metadata.rolloutVersion,
-    Rollout: metadata.rolloutTime,
-    ...customMetadata,
-  };
+  const payload = customMetadata;
+  if (metadata) {
+    payload.RolloutVersion = metadata.rolloutVersion;
+    payload.Rollout = metadata.rolloutTime;
+  }
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption({
     method: sp.api.file.update.method,
@@ -293,11 +293,11 @@ async function updateFile(dest, metadata, customMetadata = {}) {
   throw new Error(`Could not update file with metadata ${metadata}`);
 }
 
-async function getMetadata(srcPath, file) {
+async function getMetadata(path, file) {
   const metadata = {};
   if (file) {
     metadata.rolloutTime = new Date().toISOString();
-    metadata.rolloutVersion = await getFileVersionInfo(srcPath);
+    metadata.rolloutVersion = await getFileVersionInfo(path);
   }
   return metadata;
 }
@@ -444,6 +444,7 @@ export {
   getVersionOfFile,
   saveFile,
   saveFileAndUpdateMetadata,
+  updateFile,
   updateExcelTable,
   addWorksheetToExcel,
   validateConnection,

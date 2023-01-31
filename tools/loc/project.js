@@ -168,7 +168,7 @@ function getSubprojectsInfo(projectJson, config, urls, filePathToReferencePositi
   function getTasksAPI(workflow) {
     if (isInvalidWorkflow(workflow)) {
       // eslint-disable-next-line no-console
-      console.error('Workflow information not available in config.');
+      console.log('Workflow information not available in config.');
     }
     const { glaas } = config;
     return glaas.tasksApi(workflow);

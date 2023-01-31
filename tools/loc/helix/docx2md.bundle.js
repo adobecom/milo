@@ -19,13 +19,24 @@
  */
 
 /**
+ * Simple dequeing iterator.
+ * @param queue
+ * @returns {Generator<*, void, *>}
+ */
+function* dequeue(queue) {
+  while (queue.length) {
+    yield queue.shift();
+  }
+}
+
+/**
  * Processes the given queue concurrently. The handler functions can add more items to the queue
  * if needed.
  *
  * @param {Iterable|Array} queue A list of tasks
  * @param {ProcessQueueHandler} fn A handler function `fn(task:any, queue:array, results:array)`
  * @param {number} [maxConcurrent = 8] Concurrency level
- * @returns the results
+ * @returns {Promise<Array>} the results
  */
 async function processQueue(queue, fn, maxConcurrent = 8) {
   if (typeof queue !== 'object') {
@@ -37,44 +48,40 @@ async function processQueue(queue, fn, maxConcurrent = 8) {
 
   const handler = (entry) => {
     const task = fn(entry, queue, results);
-    if (task && task.then) {
+    if (task?.then) {
       running.push(task);
       task
+        .then((r) => {
+          if (r !== undefined) {
+            results.push(r);
+          }
+        })
         .catch(() => {})
         .finally(() => {
           running.splice(running.indexOf(task), 1);
         });
+    } else if (task !== undefined) {
+      results.push(task);
     }
   };
 
-  // when using array, dequeue the entries
-  if (Array.isArray(queue)) {
-    while (queue.length || running.length) {
-      if (running.length < maxConcurrent && queue.length) {
-        handler(queue.shift());
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.race(running);
-      }
-    }
-    return results;
+  const iter = Array.isArray(queue)
+    ? dequeue(queue)
+    : queue;
+  if (!iter || !('next' in iter)) {
+    throw Error('invalid queue argument: iterable expected');
   }
 
-  if ('next' in queue) {
-    let next = queue.next();
-    while (!next.done || running.length) {
-      if (running.length < maxConcurrent && !next.done) {
-        handler(next.value);
-        next = queue.next();
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.race(running);
-      }
+  for await (const value of iter) {
+    while (running.length >= maxConcurrent) {
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.race(running);
     }
-    return results;
+    handler(value);
   }
-
-  throw Error('invalid queue argument: iterable expected');
+  // wait until remaining tasks have completed
+  await Promise.all(running);
+  return results;
 }
 
 module.exports = processQueue;
@@ -112,7 +119,7 @@ function Files() {
   \******************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var types = exports.types = {
     document: "document",
@@ -351,7 +358,7 @@ exports.createBodyReader = createBodyReader;
 exports._readNumberingProperties = readNumberingProperties;
 
 var dingbatToUnicode = __webpack_require__(/*! dingbat-to-unicode */ "./node_modules/dingbat-to-unicode/dist/index.js");
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var documents = __webpack_require__(/*! ../documents */ "./node_modules/@adobe/mammoth/lib/documents.js");
 var Result = (__webpack_require__(/*! ../results */ "./node_modules/@adobe/mammoth/lib/results.js").Result);
@@ -1436,7 +1443,7 @@ function createReader(noteType, bodyReader) {
   \***************************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 exports.readNumberingXml = readNumberingXml;
 exports.Numbering = Numbering;
@@ -1539,7 +1546,7 @@ function readNums(root) {
   \*******************************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var promises = __webpack_require__(/*! ../promises */ "./node_modules/@adobe/mammoth/lib/promises.js");
 var xml = __webpack_require__(/*! ../xml */ "./node_modules/@adobe/mammoth/lib/xml/index.js");
@@ -1660,7 +1667,7 @@ function Relationships(relationships) {
   \***********************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var promises = __webpack_require__(/*! ../promises */ "./node_modules/@adobe/mammoth/lib/promises.js");
 var xml = __webpack_require__(/*! ../xml */ "./node_modules/@adobe/mammoth/lib/xml/index.js");
@@ -1859,7 +1866,7 @@ function replaceFragment(uri, fragment) {
 exports.readOptions = readOptions;
 
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var defaultStyleMap = exports._defaultStyleMap = [
     "p.Heading1 => h1:fresh",
@@ -1964,7 +1971,7 @@ function identity(value) {
   \*****************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 var bluebird = __webpack_require__(/*! bluebird/js/release/promise */ "./node_modules/bluebird/js/release/promise.js")();
 
 exports.defer = defer;
@@ -2016,7 +2023,7 @@ function defer() {
   \****************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 
 exports.Result = Result;
@@ -2115,7 +2122,7 @@ exports.writeString = __webpack_require__(/*! ./writer */ "./node_modules/@adobe
   \******************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 
 exports.Element = Element;
@@ -2196,7 +2203,7 @@ function toElementList(array) {
 
 var promises = __webpack_require__(/*! ../promises */ "./node_modules/@adobe/mammoth/lib/promises.js");
 var sax = __webpack_require__(/*! sax */ "./node_modules/sax/lib/sax.js");
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 
 var nodes = __webpack_require__(/*! ./nodes */ "./node_modules/@adobe/mammoth/lib/xml/nodes.js");
 var Element = nodes.Element;
@@ -2287,7 +2294,7 @@ function mapObject(input, valueFunc, keyFunc) {
   \*******************************************************/
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore-umd.js");
+var _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 var xmlbuilder = __webpack_require__(/*! xmlbuilder */ "./node_modules/xmlbuilder/lib/index.js");
 
 
@@ -16904,6 +16911,8 @@ var INTRINSICS = {
 	'%AsyncIteratorPrototype%': needsEval,
 	'%Atomics%': typeof Atomics === 'undefined' ? undefined : Atomics,
 	'%BigInt%': typeof BigInt === 'undefined' ? undefined : BigInt,
+	'%BigInt64Array%': typeof BigInt64Array === 'undefined' ? undefined : BigInt64Array,
+	'%BigUint64Array%': typeof BigUint64Array === 'undefined' ? undefined : BigUint64Array,
 	'%Boolean%': Boolean,
 	'%DataView%': typeof DataView === 'undefined' ? undefined : DataView,
 	'%Date%': Date,
@@ -16958,6 +16967,14 @@ var INTRINSICS = {
 	'%WeakRef%': typeof WeakRef === 'undefined' ? undefined : WeakRef,
 	'%WeakSet%': typeof WeakSet === 'undefined' ? undefined : WeakSet
 };
+
+try {
+	null.error; // eslint-disable-line no-unused-expressions
+} catch (e) {
+	// https://github.com/tc39/proposal-shadowrealm/pull/384#issuecomment-1364264229
+	var errorProto = getProto(getProto(e));
+	INTRINSICS['%Error.prototype%'] = errorProto;
+}
 
 var doEval = function doEval(name) {
 	var value;
@@ -17044,6 +17061,7 @@ var $concat = bind.call(Function.call, Array.prototype.concat);
 var $spliceApply = bind.call(Function.apply, Array.prototype.splice);
 var $replace = bind.call(Function.call, String.prototype.replace);
 var $strSlice = bind.call(Function.call, String.prototype.slice);
+var $exec = bind.call(Function.call, RegExp.prototype.exec);
 
 /* adapted from https://github.com/lodash/lodash/blob/4.17.15/dist/lodash.js#L6735-L6744 */
 var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
@@ -17099,6 +17117,9 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 		throw new $TypeError('"allowMissing" argument must be a boolean');
 	}
 
+	if ($exec(/^%?[^%]*%?$/, name) === null) {
+		throw new $SyntaxError('`%` may not be present anywhere but at the beginning and end of the intrinsic name');
+	}
 	var parts = stringToPath(name);
 	var intrinsicBaseName = parts.length > 0 ? parts[0] : '';
 
@@ -17170,6 +17191,32 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	}
 	return value;
 };
+
+
+/***/ }),
+
+/***/ "./node_modules/gopd/index.js":
+/*!************************************!*\
+  !*** ./node_modules/gopd/index.js ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+
+var GetIntrinsic = __webpack_require__(/*! get-intrinsic */ "./node_modules/get-intrinsic/index.js");
+
+var $gOPD = GetIntrinsic('%Object.getOwnPropertyDescriptor%', true);
+
+if ($gOPD) {
+	try {
+		$gOPD([], 'length');
+	} catch (e) {
+		// IE 8 has a broken gOPD
+		$gOPD = null;
+	}
+}
+
+module.exports = $gOPD;
 
 
 /***/ }),
@@ -17571,34 +17618,61 @@ var tryFunctionObject = function tryFunctionToStr(value) {
 	}
 };
 var toStr = Object.prototype.toString;
+var objectClass = '[object Object]';
 var fnClass = '[object Function]';
 var genClass = '[object GeneratorFunction]';
+var ddaClass = '[object HTMLAllCollection]'; // IE 11
+var ddaClass2 = '[object HTML document.all class]';
+var ddaClass3 = '[object HTMLCollection]'; // IE 9-10
 var hasToStringTag = typeof Symbol === 'function' && !!Symbol.toStringTag; // better: use `has-tostringtag`
-/* globals document: false */
-var documentDotAll = typeof document === 'object' && typeof document.all === 'undefined' && document.all !== undefined ? document.all : {};
+
+var isIE68 = !(0 in [,]); // eslint-disable-line no-sparse-arrays, comma-spacing
+
+var isDDA = function isDocumentDotAll() { return false; };
+if (typeof document === 'object') {
+	// Firefox 3 canonicalizes DDA to undefined when it's not accessed directly
+	var all = document.all;
+	if (toStr.call(all) === toStr.call(document.all)) {
+		isDDA = function isDocumentDotAll(value) {
+			/* globals document: false */
+			// in IE 6-8, typeof document.all is "object" and it's truthy
+			if ((isIE68 || !value) && (typeof value === 'undefined' || typeof value === 'object')) {
+				try {
+					var str = toStr.call(value);
+					return (
+						str === ddaClass
+						|| str === ddaClass2
+						|| str === ddaClass3 // opera 12.16
+						|| str === objectClass // IE 6-8
+					) && value('') == null; // eslint-disable-line eqeqeq
+				} catch (e) { /**/ }
+			}
+			return false;
+		};
+	}
+}
 
 module.exports = reflectApply
 	? function isCallable(value) {
-		if (value === documentDotAll) { return true; }
+		if (isDDA(value)) { return true; }
 		if (!value) { return false; }
 		if (typeof value !== 'function' && typeof value !== 'object') { return false; }
-		if (typeof value === 'function' && !value.prototype) { return true; }
 		try {
 			reflectApply(value, null, badArrayLike);
 		} catch (e) {
 			if (e !== isCallableMarker) { return false; }
 		}
-		return !isES6ClassFn(value);
+		return !isES6ClassFn(value) && tryFunctionObject(value);
 	}
 	: function isCallable(value) {
-		if (value === documentDotAll) { return true; }
+		if (isDDA(value)) { return true; }
 		if (!value) { return false; }
 		if (typeof value !== 'function' && typeof value !== 'object') { return false; }
-		if (typeof value === 'function' && !value.prototype) { return true; }
 		if (hasToStringTag) { return tryFunctionObject(value); }
 		if (isES6ClassFn(value)) { return false; }
 		var strClass = toStr.call(value);
-		return strClass === fnClass || strClass === genClass;
+		if (strClass !== fnClass && strClass !== genClass && !(/^\[object HTML/).test(strClass)) { return false; }
+		return tryFunctionObject(value);
 	};
 
 
@@ -17759,6 +17833,7 @@ var callBound = __webpack_require__(/*! call-bind/callBound */ "./node_modules/c
 
 var $toString = callBound('Object.prototype.toString');
 var hasToStringTag = __webpack_require__(/*! has-tostringtag/shams */ "./node_modules/has-tostringtag/shams.js")();
+var gOPD = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
 
 var g = typeof globalThis === 'undefined' ? __webpack_require__.g : globalThis;
 var typedArrays = availableTypedArrays();
@@ -17773,7 +17848,6 @@ var $indexOf = callBound('Array.prototype.indexOf', true) || function indexOf(ar
 };
 var $slice = callBound('String.prototype.slice');
 var toStrTags = {};
-var gOPD = __webpack_require__(/*! es-abstract/helpers/getOwnPropertyDescriptor */ "./node_modules/es-abstract/helpers/getOwnPropertyDescriptor.js");
 var getPrototypeOf = Object.getPrototypeOf; // require('getprototypeof');
 if (hasToStringTag && gOPD && getPrototypeOf) {
 	forEach(typedArrays, function (typedArray) {
@@ -33973,6 +34047,7 @@ exports.callbackify = callbackify;
 var forEach = __webpack_require__(/*! for-each */ "./node_modules/for-each/index.js");
 var availableTypedArrays = __webpack_require__(/*! available-typed-arrays */ "./node_modules/available-typed-arrays/index.js");
 var callBound = __webpack_require__(/*! call-bind/callBound */ "./node_modules/call-bind/callBound.js");
+var gOPD = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
 
 var $toString = callBound('Object.prototype.toString');
 var hasToStringTag = __webpack_require__(/*! has-tostringtag/shams */ "./node_modules/has-tostringtag/shams.js")();
@@ -33982,7 +34057,6 @@ var typedArrays = availableTypedArrays();
 
 var $slice = callBound('String.prototype.slice');
 var toStrTags = {};
-var gOPD = __webpack_require__(/*! es-abstract/helpers/getOwnPropertyDescriptor */ "./node_modules/es-abstract/helpers/getOwnPropertyDescriptor.js");
 var getPrototypeOf = Object.getPrototypeOf; // require('getprototypeof');
 if (hasToStringTag && gOPD && getPrototypeOf) {
 	forEach(typedArrays, function (typedArray) {
@@ -37768,3658 +37842,6 @@ module.exports = function availableTypedArrays() {
 
 /***/ }),
 
-/***/ "./node_modules/es-abstract/helpers/getOwnPropertyDescriptor.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/es-abstract/helpers/getOwnPropertyDescriptor.js ***!
-  \**********************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-var GetIntrinsic = __webpack_require__(/*! get-intrinsic */ "./node_modules/get-intrinsic/index.js");
-
-var $gOPD = GetIntrinsic('%Object.getOwnPropertyDescriptor%', true);
-if ($gOPD) {
-	try {
-		$gOPD([], 'length');
-	} catch (e) {
-		// IE 8 has a broken gOPD
-		$gOPD = null;
-	}
-}
-
-module.exports = $gOPD;
-
-
-/***/ }),
-
-/***/ "./node_modules/underscore/underscore-umd.js":
-/*!***************************************************!*\
-  !*** ./node_modules/underscore/underscore-umd.js ***!
-  \***************************************************/
-/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
-
-(function (global, factory) {
-   true ? module.exports = factory() :
-  0;
-}(this, (function () {
-  //     Underscore.js 1.13.4
-  //     https://underscorejs.org
-  //     (c) 2009-2022 Jeremy Ashkenas, Julian Gonggrijp, and DocumentCloud and Investigative Reporters & Editors
-  //     Underscore may be freely distributed under the MIT license.
-
-  // Current version.
-  var VERSION = '1.13.4';
-
-  // Establish the root object, `window` (`self`) in the browser, `global`
-  // on the server, or `this` in some virtual machines. We use `self`
-  // instead of `window` for `WebWorker` support.
-  var root = (typeof self == 'object' && self.self === self && self) ||
-            (typeof __webpack_require__.g == 'object' && __webpack_require__.g.global === __webpack_require__.g && __webpack_require__.g) ||
-            Function('return this')() ||
-            {};
-
-  // Save bytes in the minified (but not gzipped) version:
-  var ArrayProto = Array.prototype, ObjProto = Object.prototype;
-  var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
-
-  // Create quick reference variables for speed access to core prototypes.
-  var push = ArrayProto.push,
-      slice = ArrayProto.slice,
-      toString = ObjProto.toString,
-      hasOwnProperty = ObjProto.hasOwnProperty;
-
-  // Modern feature detection.
-  var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
-      supportsDataView = typeof DataView !== 'undefined';
-
-  // All **ECMAScript 5+** native function implementations that we hope to use
-  // are declared here.
-  var nativeIsArray = Array.isArray,
-      nativeKeys = Object.keys,
-      nativeCreate = Object.create,
-      nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
-
-  // Create references to these builtin functions because we override them.
-  var _isNaN = isNaN,
-      _isFinite = isFinite;
-
-  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
-  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
-  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
-    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
-
-  // The largest integer that can be represented exactly.
-  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
-
-  // Some functions take a variable number of arguments, or a few expected
-  // arguments at the beginning and then a variable number of values to operate
-  // on. This helper accumulates all remaining arguments past the function’s
-  // argument length (or an explicit `startIndex`), into an array that becomes
-  // the last argument. Similar to ES6’s "rest parameter".
-  function restArguments(func, startIndex) {
-    startIndex = startIndex == null ? func.length - 1 : +startIndex;
-    return function() {
-      var length = Math.max(arguments.length - startIndex, 0),
-          rest = Array(length),
-          index = 0;
-      for (; index < length; index++) {
-        rest[index] = arguments[index + startIndex];
-      }
-      switch (startIndex) {
-        case 0: return func.call(this, rest);
-        case 1: return func.call(this, arguments[0], rest);
-        case 2: return func.call(this, arguments[0], arguments[1], rest);
-      }
-      var args = Array(startIndex + 1);
-      for (index = 0; index < startIndex; index++) {
-        args[index] = arguments[index];
-      }
-      args[startIndex] = rest;
-      return func.apply(this, args);
-    };
-  }
-
-  // Is a given variable an object?
-  function isObject(obj) {
-    var type = typeof obj;
-    return type === 'function' || (type === 'object' && !!obj);
-  }
-
-  // Is a given value equal to null?
-  function isNull(obj) {
-    return obj === null;
-  }
-
-  // Is a given variable undefined?
-  function isUndefined(obj) {
-    return obj === void 0;
-  }
-
-  // Is a given value a boolean?
-  function isBoolean(obj) {
-    return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
-  }
-
-  // Is a given value a DOM element?
-  function isElement(obj) {
-    return !!(obj && obj.nodeType === 1);
-  }
-
-  // Internal function for creating a `toString`-based type tester.
-  function tagTester(name) {
-    var tag = '[object ' + name + ']';
-    return function(obj) {
-      return toString.call(obj) === tag;
-    };
-  }
-
-  var isString = tagTester('String');
-
-  var isNumber = tagTester('Number');
-
-  var isDate = tagTester('Date');
-
-  var isRegExp = tagTester('RegExp');
-
-  var isError = tagTester('Error');
-
-  var isSymbol = tagTester('Symbol');
-
-  var isArrayBuffer = tagTester('ArrayBuffer');
-
-  var isFunction = tagTester('Function');
-
-  // Optimize `isFunction` if appropriate. Work around some `typeof` bugs in old
-  // v8, IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
-  var nodelist = root.document && root.document.childNodes;
-  if ( true && typeof Int8Array != 'object' && typeof nodelist != 'function') {
-    isFunction = function(obj) {
-      return typeof obj == 'function' || false;
-    };
-  }
-
-  var isFunction$1 = isFunction;
-
-  var hasObjectTag = tagTester('Object');
-
-  // In IE 10 - Edge 13, `DataView` has string tag `'[object Object]'`.
-  // In IE 11, the most common among them, this problem also applies to
-  // `Map`, `WeakMap` and `Set`.
-  var hasStringTagBug = (
-        supportsDataView && hasObjectTag(new DataView(new ArrayBuffer(8)))
-      ),
-      isIE11 = (typeof Map !== 'undefined' && hasObjectTag(new Map));
-
-  var isDataView = tagTester('DataView');
-
-  // In IE 10 - Edge 13, we need a different heuristic
-  // to determine whether an object is a `DataView`.
-  function ie10IsDataView(obj) {
-    return obj != null && isFunction$1(obj.getInt8) && isArrayBuffer(obj.buffer);
-  }
-
-  var isDataView$1 = (hasStringTagBug ? ie10IsDataView : isDataView);
-
-  // Is a given value an array?
-  // Delegates to ECMA5's native `Array.isArray`.
-  var isArray = nativeIsArray || tagTester('Array');
-
-  // Internal function to check whether `key` is an own property name of `obj`.
-  function has$1(obj, key) {
-    return obj != null && hasOwnProperty.call(obj, key);
-  }
-
-  var isArguments = tagTester('Arguments');
-
-  // Define a fallback version of the method in browsers (ahem, IE < 9), where
-  // there isn't any inspectable "Arguments" type.
-  (function() {
-    if (!isArguments(arguments)) {
-      isArguments = function(obj) {
-        return has$1(obj, 'callee');
-      };
-    }
-  }());
-
-  var isArguments$1 = isArguments;
-
-  // Is a given object a finite number?
-  function isFinite$1(obj) {
-    return !isSymbol(obj) && _isFinite(obj) && !isNaN(parseFloat(obj));
-  }
-
-  // Is the given value `NaN`?
-  function isNaN$1(obj) {
-    return isNumber(obj) && _isNaN(obj);
-  }
-
-  // Predicate-generating function. Often useful outside of Underscore.
-  function constant(value) {
-    return function() {
-      return value;
-    };
-  }
-
-  // Common internal logic for `isArrayLike` and `isBufferLike`.
-  function createSizePropertyCheck(getSizeProperty) {
-    return function(collection) {
-      var sizeProperty = getSizeProperty(collection);
-      return typeof sizeProperty == 'number' && sizeProperty >= 0 && sizeProperty <= MAX_ARRAY_INDEX;
-    }
-  }
-
-  // Internal helper to generate a function to obtain property `key` from `obj`.
-  function shallowProperty(key) {
-    return function(obj) {
-      return obj == null ? void 0 : obj[key];
-    };
-  }
-
-  // Internal helper to obtain the `byteLength` property of an object.
-  var getByteLength = shallowProperty('byteLength');
-
-  // Internal helper to determine whether we should spend extensive checks against
-  // `ArrayBuffer` et al.
-  var isBufferLike = createSizePropertyCheck(getByteLength);
-
-  // Is a given value a typed array?
-  var typedArrayPattern = /\[object ((I|Ui)nt(8|16|32)|Float(32|64)|Uint8Clamped|Big(I|Ui)nt64)Array\]/;
-  function isTypedArray(obj) {
-    // `ArrayBuffer.isView` is the most future-proof, so use it when available.
-    // Otherwise, fall back on the above regular expression.
-    return nativeIsView ? (nativeIsView(obj) && !isDataView$1(obj)) :
-                  isBufferLike(obj) && typedArrayPattern.test(toString.call(obj));
-  }
-
-  var isTypedArray$1 = supportsArrayBuffer ? isTypedArray : constant(false);
-
-  // Internal helper to obtain the `length` property of an object.
-  var getLength = shallowProperty('length');
-
-  // Internal helper to create a simple lookup structure.
-  // `collectNonEnumProps` used to depend on `_.contains`, but this led to
-  // circular imports. `emulatedSet` is a one-off solution that only works for
-  // arrays of strings.
-  function emulatedSet(keys) {
-    var hash = {};
-    for (var l = keys.length, i = 0; i < l; ++i) hash[keys[i]] = true;
-    return {
-      contains: function(key) { return hash[key] === true; },
-      push: function(key) {
-        hash[key] = true;
-        return keys.push(key);
-      }
-    };
-  }
-
-  // Internal helper. Checks `keys` for the presence of keys in IE < 9 that won't
-  // be iterated by `for key in ...` and thus missed. Extends `keys` in place if
-  // needed.
-  function collectNonEnumProps(obj, keys) {
-    keys = emulatedSet(keys);
-    var nonEnumIdx = nonEnumerableProps.length;
-    var constructor = obj.constructor;
-    var proto = (isFunction$1(constructor) && constructor.prototype) || ObjProto;
-
-    // Constructor is a special case.
-    var prop = 'constructor';
-    if (has$1(obj, prop) && !keys.contains(prop)) keys.push(prop);
-
-    while (nonEnumIdx--) {
-      prop = nonEnumerableProps[nonEnumIdx];
-      if (prop in obj && obj[prop] !== proto[prop] && !keys.contains(prop)) {
-        keys.push(prop);
-      }
-    }
-  }
-
-  // Retrieve the names of an object's own properties.
-  // Delegates to **ECMAScript 5**'s native `Object.keys`.
-  function keys(obj) {
-    if (!isObject(obj)) return [];
-    if (nativeKeys) return nativeKeys(obj);
-    var keys = [];
-    for (var key in obj) if (has$1(obj, key)) keys.push(key);
-    // Ahem, IE < 9.
-    if (hasEnumBug) collectNonEnumProps(obj, keys);
-    return keys;
-  }
-
-  // Is a given array, string, or object empty?
-  // An "empty" object has no enumerable own-properties.
-  function isEmpty(obj) {
-    if (obj == null) return true;
-    // Skip the more expensive `toString`-based type checks if `obj` has no
-    // `.length`.
-    var length = getLength(obj);
-    if (typeof length == 'number' && (
-      isArray(obj) || isString(obj) || isArguments$1(obj)
-    )) return length === 0;
-    return getLength(keys(obj)) === 0;
-  }
-
-  // Returns whether an object has a given set of `key:value` pairs.
-  function isMatch(object, attrs) {
-    var _keys = keys(attrs), length = _keys.length;
-    if (object == null) return !length;
-    var obj = Object(object);
-    for (var i = 0; i < length; i++) {
-      var key = _keys[i];
-      if (attrs[key] !== obj[key] || !(key in obj)) return false;
-    }
-    return true;
-  }
-
-  // If Underscore is called as a function, it returns a wrapped object that can
-  // be used OO-style. This wrapper holds altered versions of all functions added
-  // through `_.mixin`. Wrapped objects may be chained.
-  function _$1(obj) {
-    if (obj instanceof _$1) return obj;
-    if (!(this instanceof _$1)) return new _$1(obj);
-    this._wrapped = obj;
-  }
-
-  _$1.VERSION = VERSION;
-
-  // Extracts the result from a wrapped and chained object.
-  _$1.prototype.value = function() {
-    return this._wrapped;
-  };
-
-  // Provide unwrapping proxies for some methods used in engine operations
-  // such as arithmetic and JSON stringification.
-  _$1.prototype.valueOf = _$1.prototype.toJSON = _$1.prototype.value;
-
-  _$1.prototype.toString = function() {
-    return String(this._wrapped);
-  };
-
-  // Internal function to wrap or shallow-copy an ArrayBuffer,
-  // typed array or DataView to a new view, reusing the buffer.
-  function toBufferView(bufferSource) {
-    return new Uint8Array(
-      bufferSource.buffer || bufferSource,
-      bufferSource.byteOffset || 0,
-      getByteLength(bufferSource)
-    );
-  }
-
-  // We use this string twice, so give it a name for minification.
-  var tagDataView = '[object DataView]';
-
-  // Internal recursive comparison function for `_.isEqual`.
-  function eq(a, b, aStack, bStack) {
-    // Identical objects are equal. `0 === -0`, but they aren't identical.
-    // See the [Harmony `egal` proposal](https://wiki.ecmascript.org/doku.php?id=harmony:egal).
-    if (a === b) return a !== 0 || 1 / a === 1 / b;
-    // `null` or `undefined` only equal to itself (strict comparison).
-    if (a == null || b == null) return false;
-    // `NaN`s are equivalent, but non-reflexive.
-    if (a !== a) return b !== b;
-    // Exhaust primitive checks
-    var type = typeof a;
-    if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
-    return deepEq(a, b, aStack, bStack);
-  }
-
-  // Internal recursive comparison function for `_.isEqual`.
-  function deepEq(a, b, aStack, bStack) {
-    // Unwrap any wrapped objects.
-    if (a instanceof _$1) a = a._wrapped;
-    if (b instanceof _$1) b = b._wrapped;
-    // Compare `[[Class]]` names.
-    var className = toString.call(a);
-    if (className !== toString.call(b)) return false;
-    // Work around a bug in IE 10 - Edge 13.
-    if (hasStringTagBug && className == '[object Object]' && isDataView$1(a)) {
-      if (!isDataView$1(b)) return false;
-      className = tagDataView;
-    }
-    switch (className) {
-      // These types are compared by value.
-      case '[object RegExp]':
-        // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
-      case '[object String]':
-        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
-        // equivalent to `new String("5")`.
-        return '' + a === '' + b;
-      case '[object Number]':
-        // `NaN`s are equivalent, but non-reflexive.
-        // Object(NaN) is equivalent to NaN.
-        if (+a !== +a) return +b !== +b;
-        // An `egal` comparison is performed for other numeric values.
-        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
-      case '[object Date]':
-      case '[object Boolean]':
-        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
-        // millisecond representations. Note that invalid dates with millisecond representations
-        // of `NaN` are not equivalent.
-        return +a === +b;
-      case '[object Symbol]':
-        return SymbolProto.valueOf.call(a) === SymbolProto.valueOf.call(b);
-      case '[object ArrayBuffer]':
-      case tagDataView:
-        // Coerce to typed array so we can fall through.
-        return deepEq(toBufferView(a), toBufferView(b), aStack, bStack);
-    }
-
-    var areArrays = className === '[object Array]';
-    if (!areArrays && isTypedArray$1(a)) {
-        var byteLength = getByteLength(a);
-        if (byteLength !== getByteLength(b)) return false;
-        if (a.buffer === b.buffer && a.byteOffset === b.byteOffset) return true;
-        areArrays = true;
-    }
-    if (!areArrays) {
-      if (typeof a != 'object' || typeof b != 'object') return false;
-
-      // Objects with different constructors are not equivalent, but `Object`s or `Array`s
-      // from different frames are.
-      var aCtor = a.constructor, bCtor = b.constructor;
-      if (aCtor !== bCtor && !(isFunction$1(aCtor) && aCtor instanceof aCtor &&
-                               isFunction$1(bCtor) && bCtor instanceof bCtor)
-                          && ('constructor' in a && 'constructor' in b)) {
-        return false;
-      }
-    }
-    // Assume equality for cyclic structures. The algorithm for detecting cyclic
-    // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
-
-    // Initializing stack of traversed objects.
-    // It's done here since we only need them for objects and arrays comparison.
-    aStack = aStack || [];
-    bStack = bStack || [];
-    var length = aStack.length;
-    while (length--) {
-      // Linear search. Performance is inversely proportional to the number of
-      // unique nested structures.
-      if (aStack[length] === a) return bStack[length] === b;
-    }
-
-    // Add the first object to the stack of traversed objects.
-    aStack.push(a);
-    bStack.push(b);
-
-    // Recursively compare objects and arrays.
-    if (areArrays) {
-      // Compare array lengths to determine if a deep comparison is necessary.
-      length = a.length;
-      if (length !== b.length) return false;
-      // Deep compare the contents, ignoring non-numeric properties.
-      while (length--) {
-        if (!eq(a[length], b[length], aStack, bStack)) return false;
-      }
-    } else {
-      // Deep compare objects.
-      var _keys = keys(a), key;
-      length = _keys.length;
-      // Ensure that both objects contain the same number of properties before comparing deep equality.
-      if (keys(b).length !== length) return false;
-      while (length--) {
-        // Deep compare each member
-        key = _keys[length];
-        if (!(has$1(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
-      }
-    }
-    // Remove the first object from the stack of traversed objects.
-    aStack.pop();
-    bStack.pop();
-    return true;
-  }
-
-  // Perform a deep comparison to check if two objects are equal.
-  function isEqual(a, b) {
-    return eq(a, b);
-  }
-
-  // Retrieve all the enumerable property names of an object.
-  function allKeys(obj) {
-    if (!isObject(obj)) return [];
-    var keys = [];
-    for (var key in obj) keys.push(key);
-    // Ahem, IE < 9.
-    if (hasEnumBug) collectNonEnumProps(obj, keys);
-    return keys;
-  }
-
-  // Since the regular `Object.prototype.toString` type tests don't work for
-  // some types in IE 11, we use a fingerprinting heuristic instead, based
-  // on the methods. It's not great, but it's the best we got.
-  // The fingerprint method lists are defined below.
-  function ie11fingerprint(methods) {
-    var length = getLength(methods);
-    return function(obj) {
-      if (obj == null) return false;
-      // `Map`, `WeakMap` and `Set` have no enumerable keys.
-      var keys = allKeys(obj);
-      if (getLength(keys)) return false;
-      for (var i = 0; i < length; i++) {
-        if (!isFunction$1(obj[methods[i]])) return false;
-      }
-      // If we are testing against `WeakMap`, we need to ensure that
-      // `obj` doesn't have a `forEach` method in order to distinguish
-      // it from a regular `Map`.
-      return methods !== weakMapMethods || !isFunction$1(obj[forEachName]);
-    };
-  }
-
-  // In the interest of compact minification, we write
-  // each string in the fingerprints only once.
-  var forEachName = 'forEach',
-      hasName = 'has',
-      commonInit = ['clear', 'delete'],
-      mapTail = ['get', hasName, 'set'];
-
-  // `Map`, `WeakMap` and `Set` each have slightly different
-  // combinations of the above sublists.
-  var mapMethods = commonInit.concat(forEachName, mapTail),
-      weakMapMethods = commonInit.concat(mapTail),
-      setMethods = ['add'].concat(commonInit, forEachName, hasName);
-
-  var isMap = isIE11 ? ie11fingerprint(mapMethods) : tagTester('Map');
-
-  var isWeakMap = isIE11 ? ie11fingerprint(weakMapMethods) : tagTester('WeakMap');
-
-  var isSet = isIE11 ? ie11fingerprint(setMethods) : tagTester('Set');
-
-  var isWeakSet = tagTester('WeakSet');
-
-  // Retrieve the values of an object's properties.
-  function values(obj) {
-    var _keys = keys(obj);
-    var length = _keys.length;
-    var values = Array(length);
-    for (var i = 0; i < length; i++) {
-      values[i] = obj[_keys[i]];
-    }
-    return values;
-  }
-
-  // Convert an object into a list of `[key, value]` pairs.
-  // The opposite of `_.object` with one argument.
-  function pairs(obj) {
-    var _keys = keys(obj);
-    var length = _keys.length;
-    var pairs = Array(length);
-    for (var i = 0; i < length; i++) {
-      pairs[i] = [_keys[i], obj[_keys[i]]];
-    }
-    return pairs;
-  }
-
-  // Invert the keys and values of an object. The values must be serializable.
-  function invert(obj) {
-    var result = {};
-    var _keys = keys(obj);
-    for (var i = 0, length = _keys.length; i < length; i++) {
-      result[obj[_keys[i]]] = _keys[i];
-    }
-    return result;
-  }
-
-  // Return a sorted list of the function names available on the object.
-  function functions(obj) {
-    var names = [];
-    for (var key in obj) {
-      if (isFunction$1(obj[key])) names.push(key);
-    }
-    return names.sort();
-  }
-
-  // An internal function for creating assigner functions.
-  function createAssigner(keysFunc, defaults) {
-    return function(obj) {
-      var length = arguments.length;
-      if (defaults) obj = Object(obj);
-      if (length < 2 || obj == null) return obj;
-      for (var index = 1; index < length; index++) {
-        var source = arguments[index],
-            keys = keysFunc(source),
-            l = keys.length;
-        for (var i = 0; i < l; i++) {
-          var key = keys[i];
-          if (!defaults || obj[key] === void 0) obj[key] = source[key];
-        }
-      }
-      return obj;
-    };
-  }
-
-  // Extend a given object with all the properties in passed-in object(s).
-  var extend = createAssigner(allKeys);
-
-  // Assigns a given object with all the own properties in the passed-in
-  // object(s).
-  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
-  var extendOwn = createAssigner(keys);
-
-  // Fill in a given object with default properties.
-  var defaults = createAssigner(allKeys, true);
-
-  // Create a naked function reference for surrogate-prototype-swapping.
-  function ctor() {
-    return function(){};
-  }
-
-  // An internal function for creating a new object that inherits from another.
-  function baseCreate(prototype) {
-    if (!isObject(prototype)) return {};
-    if (nativeCreate) return nativeCreate(prototype);
-    var Ctor = ctor();
-    Ctor.prototype = prototype;
-    var result = new Ctor;
-    Ctor.prototype = null;
-    return result;
-  }
-
-  // Creates an object that inherits from the given prototype object.
-  // If additional properties are provided then they will be added to the
-  // created object.
-  function create(prototype, props) {
-    var result = baseCreate(prototype);
-    if (props) extendOwn(result, props);
-    return result;
-  }
-
-  // Create a (shallow-cloned) duplicate of an object.
-  function clone(obj) {
-    if (!isObject(obj)) return obj;
-    return isArray(obj) ? obj.slice() : extend({}, obj);
-  }
-
-  // Invokes `interceptor` with the `obj` and then returns `obj`.
-  // The primary purpose of this method is to "tap into" a method chain, in
-  // order to perform operations on intermediate results within the chain.
-  function tap(obj, interceptor) {
-    interceptor(obj);
-    return obj;
-  }
-
-  // Normalize a (deep) property `path` to array.
-  // Like `_.iteratee`, this function can be customized.
-  function toPath$1(path) {
-    return isArray(path) ? path : [path];
-  }
-  _$1.toPath = toPath$1;
-
-  // Internal wrapper for `_.toPath` to enable minification.
-  // Similar to `cb` for `_.iteratee`.
-  function toPath(path) {
-    return _$1.toPath(path);
-  }
-
-  // Internal function to obtain a nested property in `obj` along `path`.
-  function deepGet(obj, path) {
-    var length = path.length;
-    for (var i = 0; i < length; i++) {
-      if (obj == null) return void 0;
-      obj = obj[path[i]];
-    }
-    return length ? obj : void 0;
-  }
-
-  // Get the value of the (deep) property on `path` from `object`.
-  // If any property in `path` does not exist or if the value is
-  // `undefined`, return `defaultValue` instead.
-  // The `path` is normalized through `_.toPath`.
-  function get(object, path, defaultValue) {
-    var value = deepGet(object, toPath(path));
-    return isUndefined(value) ? defaultValue : value;
-  }
-
-  // Shortcut function for checking if an object has a given property directly on
-  // itself (in other words, not on a prototype). Unlike the internal `has`
-  // function, this public version can also traverse nested properties.
-  function has(obj, path) {
-    path = toPath(path);
-    var length = path.length;
-    for (var i = 0; i < length; i++) {
-      var key = path[i];
-      if (!has$1(obj, key)) return false;
-      obj = obj[key];
-    }
-    return !!length;
-  }
-
-  // Keep the identity function around for default iteratees.
-  function identity(value) {
-    return value;
-  }
-
-  // Returns a predicate for checking whether an object has a given set of
-  // `key:value` pairs.
-  function matcher(attrs) {
-    attrs = extendOwn({}, attrs);
-    return function(obj) {
-      return isMatch(obj, attrs);
-    };
-  }
-
-  // Creates a function that, when passed an object, will traverse that object’s
-  // properties down the given `path`, specified as an array of keys or indices.
-  function property(path) {
-    path = toPath(path);
-    return function(obj) {
-      return deepGet(obj, path);
-    };
-  }
-
-  // Internal function that returns an efficient (for current engines) version
-  // of the passed-in callback, to be repeatedly applied in other Underscore
-  // functions.
-  function optimizeCb(func, context, argCount) {
-    if (context === void 0) return func;
-    switch (argCount == null ? 3 : argCount) {
-      case 1: return function(value) {
-        return func.call(context, value);
-      };
-      // The 2-argument case is omitted because we’re not using it.
-      case 3: return function(value, index, collection) {
-        return func.call(context, value, index, collection);
-      };
-      case 4: return function(accumulator, value, index, collection) {
-        return func.call(context, accumulator, value, index, collection);
-      };
-    }
-    return function() {
-      return func.apply(context, arguments);
-    };
-  }
-
-  // An internal function to generate callbacks that can be applied to each
-  // element in a collection, returning the desired result — either `_.identity`,
-  // an arbitrary callback, a property matcher, or a property accessor.
-  function baseIteratee(value, context, argCount) {
-    if (value == null) return identity;
-    if (isFunction$1(value)) return optimizeCb(value, context, argCount);
-    if (isObject(value) && !isArray(value)) return matcher(value);
-    return property(value);
-  }
-
-  // External wrapper for our callback generator. Users may customize
-  // `_.iteratee` if they want additional predicate/iteratee shorthand styles.
-  // This abstraction hides the internal-only `argCount` argument.
-  function iteratee(value, context) {
-    return baseIteratee(value, context, Infinity);
-  }
-  _$1.iteratee = iteratee;
-
-  // The function we call internally to generate a callback. It invokes
-  // `_.iteratee` if overridden, otherwise `baseIteratee`.
-  function cb(value, context, argCount) {
-    if (_$1.iteratee !== iteratee) return _$1.iteratee(value, context);
-    return baseIteratee(value, context, argCount);
-  }
-
-  // Returns the results of applying the `iteratee` to each element of `obj`.
-  // In contrast to `_.map` it returns an object.
-  function mapObject(obj, iteratee, context) {
-    iteratee = cb(iteratee, context);
-    var _keys = keys(obj),
-        length = _keys.length,
-        results = {};
-    for (var index = 0; index < length; index++) {
-      var currentKey = _keys[index];
-      results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
-    }
-    return results;
-  }
-
-  // Predicate-generating function. Often useful outside of Underscore.
-  function noop(){}
-
-  // Generates a function for a given object that returns a given property.
-  function propertyOf(obj) {
-    if (obj == null) return noop;
-    return function(path) {
-      return get(obj, path);
-    };
-  }
-
-  // Run a function **n** times.
-  function times(n, iteratee, context) {
-    var accum = Array(Math.max(0, n));
-    iteratee = optimizeCb(iteratee, context, 1);
-    for (var i = 0; i < n; i++) accum[i] = iteratee(i);
-    return accum;
-  }
-
-  // Return a random integer between `min` and `max` (inclusive).
-  function random(min, max) {
-    if (max == null) {
-      max = min;
-      min = 0;
-    }
-    return min + Math.floor(Math.random() * (max - min + 1));
-  }
-
-  // A (possibly faster) way to get the current timestamp as an integer.
-  var now = Date.now || function() {
-    return new Date().getTime();
-  };
-
-  // Internal helper to generate functions for escaping and unescaping strings
-  // to/from HTML interpolation.
-  function createEscaper(map) {
-    var escaper = function(match) {
-      return map[match];
-    };
-    // Regexes for identifying a key that needs to be escaped.
-    var source = '(?:' + keys(map).join('|') + ')';
-    var testRegexp = RegExp(source);
-    var replaceRegexp = RegExp(source, 'g');
-    return function(string) {
-      string = string == null ? '' : '' + string;
-      return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
-    };
-  }
-
-  // Internal list of HTML entities for escaping.
-  var escapeMap = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '`': '&#x60;'
-  };
-
-  // Function for escaping strings to HTML interpolation.
-  var _escape = createEscaper(escapeMap);
-
-  // Internal list of HTML entities for unescaping.
-  var unescapeMap = invert(escapeMap);
-
-  // Function for unescaping strings from HTML interpolation.
-  var _unescape = createEscaper(unescapeMap);
-
-  // By default, Underscore uses ERB-style template delimiters. Change the
-  // following template settings to use alternative delimiters.
-  var templateSettings = _$1.templateSettings = {
-    evaluate: /<%([\s\S]+?)%>/g,
-    interpolate: /<%=([\s\S]+?)%>/g,
-    escape: /<%-([\s\S]+?)%>/g
-  };
-
-  // When customizing `_.templateSettings`, if you don't want to define an
-  // interpolation, evaluation or escaping regex, we need one that is
-  // guaranteed not to match.
-  var noMatch = /(.)^/;
-
-  // Certain characters need to be escaped so that they can be put into a
-  // string literal.
-  var escapes = {
-    "'": "'",
-    '\\': '\\',
-    '\r': 'r',
-    '\n': 'n',
-    '\u2028': 'u2028',
-    '\u2029': 'u2029'
-  };
-
-  var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
-
-  function escapeChar(match) {
-    return '\\' + escapes[match];
-  }
-
-  // In order to prevent third-party code injection through
-  // `_.templateSettings.variable`, we test it against the following regular
-  // expression. It is intentionally a bit more liberal than just matching valid
-  // identifiers, but still prevents possible loopholes through defaults or
-  // destructuring assignment.
-  var bareIdentifier = /^\s*(\w|\$)+\s*$/;
-
-  // JavaScript micro-templating, similar to John Resig's implementation.
-  // Underscore templating handles arbitrary delimiters, preserves whitespace,
-  // and correctly escapes quotes within interpolated code.
-  // NB: `oldSettings` only exists for backwards compatibility.
-  function template(text, settings, oldSettings) {
-    if (!settings && oldSettings) settings = oldSettings;
-    settings = defaults({}, settings, _$1.templateSettings);
-
-    // Combine delimiters into one regular expression via alternation.
-    var matcher = RegExp([
-      (settings.escape || noMatch).source,
-      (settings.interpolate || noMatch).source,
-      (settings.evaluate || noMatch).source
-    ].join('|') + '|$', 'g');
-
-    // Compile the template source, escaping string literals appropriately.
-    var index = 0;
-    var source = "__p+='";
-    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
-      source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
-      index = offset + match.length;
-
-      if (escape) {
-        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
-      } else if (interpolate) {
-        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
-      } else if (evaluate) {
-        source += "';\n" + evaluate + "\n__p+='";
-      }
-
-      // Adobe VMs need the match returned to produce the correct offset.
-      return match;
-    });
-    source += "';\n";
-
-    var argument = settings.variable;
-    if (argument) {
-      // Insure against third-party code injection. (CVE-2021-23358)
-      if (!bareIdentifier.test(argument)) throw new Error(
-        'variable is not a bare identifier: ' + argument
-      );
-    } else {
-      // If a variable is not specified, place data values in local scope.
-      source = 'with(obj||{}){\n' + source + '}\n';
-      argument = 'obj';
-    }
-
-    source = "var __t,__p='',__j=Array.prototype.join," +
-      "print=function(){__p+=__j.call(arguments,'');};\n" +
-      source + 'return __p;\n';
-
-    var render;
-    try {
-      render = new Function(argument, '_', source);
-    } catch (e) {
-      e.source = source;
-      throw e;
-    }
-
-    var template = function(data) {
-      return render.call(this, data, _$1);
-    };
-
-    // Provide the compiled source as a convenience for precompilation.
-    template.source = 'function(' + argument + '){\n' + source + '}';
-
-    return template;
-  }
-
-  // Traverses the children of `obj` along `path`. If a child is a function, it
-  // is invoked with its parent as context. Returns the value of the final
-  // child, or `fallback` if any child is undefined.
-  function result(obj, path, fallback) {
-    path = toPath(path);
-    var length = path.length;
-    if (!length) {
-      return isFunction$1(fallback) ? fallback.call(obj) : fallback;
-    }
-    for (var i = 0; i < length; i++) {
-      var prop = obj == null ? void 0 : obj[path[i]];
-      if (prop === void 0) {
-        prop = fallback;
-        i = length; // Ensure we don't continue iterating.
-      }
-      obj = isFunction$1(prop) ? prop.call(obj) : prop;
-    }
-    return obj;
-  }
-
-  // Generate a unique integer id (unique within the entire client session).
-  // Useful for temporary DOM ids.
-  var idCounter = 0;
-  function uniqueId(prefix) {
-    var id = ++idCounter + '';
-    return prefix ? prefix + id : id;
-  }
-
-  // Start chaining a wrapped Underscore object.
-  function chain(obj) {
-    var instance = _$1(obj);
-    instance._chain = true;
-    return instance;
-  }
-
-  // Internal function to execute `sourceFunc` bound to `context` with optional
-  // `args`. Determines whether to execute a function as a constructor or as a
-  // normal function.
-  function executeBound(sourceFunc, boundFunc, context, callingContext, args) {
-    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
-    var self = baseCreate(sourceFunc.prototype);
-    var result = sourceFunc.apply(self, args);
-    if (isObject(result)) return result;
-    return self;
-  }
-
-  // Partially apply a function by creating a version that has had some of its
-  // arguments pre-filled, without changing its dynamic `this` context. `_` acts
-  // as a placeholder by default, allowing any combination of arguments to be
-  // pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
-  var partial = restArguments(function(func, boundArgs) {
-    var placeholder = partial.placeholder;
-    var bound = function() {
-      var position = 0, length = boundArgs.length;
-      var args = Array(length);
-      for (var i = 0; i < length; i++) {
-        args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
-      }
-      while (position < arguments.length) args.push(arguments[position++]);
-      return executeBound(func, bound, this, this, args);
-    };
-    return bound;
-  });
-
-  partial.placeholder = _$1;
-
-  // Create a function bound to a given object (assigning `this`, and arguments,
-  // optionally).
-  var bind = restArguments(function(func, context, args) {
-    if (!isFunction$1(func)) throw new TypeError('Bind must be called on a function');
-    var bound = restArguments(function(callArgs) {
-      return executeBound(func, bound, context, this, args.concat(callArgs));
-    });
-    return bound;
-  });
-
-  // Internal helper for collection methods to determine whether a collection
-  // should be iterated as an array or as an object.
-  // Related: https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
-  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
-  var isArrayLike = createSizePropertyCheck(getLength);
-
-  // Internal implementation of a recursive `flatten` function.
-  function flatten$1(input, depth, strict, output) {
-    output = output || [];
-    if (!depth && depth !== 0) {
-      depth = Infinity;
-    } else if (depth <= 0) {
-      return output.concat(input);
-    }
-    var idx = output.length;
-    for (var i = 0, length = getLength(input); i < length; i++) {
-      var value = input[i];
-      if (isArrayLike(value) && (isArray(value) || isArguments$1(value))) {
-        // Flatten current level of array or arguments object.
-        if (depth > 1) {
-          flatten$1(value, depth - 1, strict, output);
-          idx = output.length;
-        } else {
-          var j = 0, len = value.length;
-          while (j < len) output[idx++] = value[j++];
-        }
-      } else if (!strict) {
-        output[idx++] = value;
-      }
-    }
-    return output;
-  }
-
-  // Bind a number of an object's methods to that object. Remaining arguments
-  // are the method names to be bound. Useful for ensuring that all callbacks
-  // defined on an object belong to it.
-  var bindAll = restArguments(function(obj, keys) {
-    keys = flatten$1(keys, false, false);
-    var index = keys.length;
-    if (index < 1) throw new Error('bindAll must be passed function names');
-    while (index--) {
-      var key = keys[index];
-      obj[key] = bind(obj[key], obj);
-    }
-    return obj;
-  });
-
-  // Memoize an expensive function by storing its results.
-  function memoize(func, hasher) {
-    var memoize = function(key) {
-      var cache = memoize.cache;
-      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
-      if (!has$1(cache, address)) cache[address] = func.apply(this, arguments);
-      return cache[address];
-    };
-    memoize.cache = {};
-    return memoize;
-  }
-
-  // Delays a function for the given number of milliseconds, and then calls
-  // it with the arguments supplied.
-  var delay = restArguments(function(func, wait, args) {
-    return setTimeout(function() {
-      return func.apply(null, args);
-    }, wait);
-  });
-
-  // Defers a function, scheduling it to run after the current call stack has
-  // cleared.
-  var defer = partial(delay, _$1, 1);
-
-  // Returns a function, that, when invoked, will only be triggered at most once
-  // during a given window of time. Normally, the throttled function will run
-  // as much as it can, without ever going more than once per `wait` duration;
-  // but if you'd like to disable the execution on the leading edge, pass
-  // `{leading: false}`. To disable execution on the trailing edge, ditto.
-  function throttle(func, wait, options) {
-    var timeout, context, args, result;
-    var previous = 0;
-    if (!options) options = {};
-
-    var later = function() {
-      previous = options.leading === false ? 0 : now();
-      timeout = null;
-      result = func.apply(context, args);
-      if (!timeout) context = args = null;
-    };
-
-    var throttled = function() {
-      var _now = now();
-      if (!previous && options.leading === false) previous = _now;
-      var remaining = wait - (_now - previous);
-      context = this;
-      args = arguments;
-      if (remaining <= 0 || remaining > wait) {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = null;
-        }
-        previous = _now;
-        result = func.apply(context, args);
-        if (!timeout) context = args = null;
-      } else if (!timeout && options.trailing !== false) {
-        timeout = setTimeout(later, remaining);
-      }
-      return result;
-    };
-
-    throttled.cancel = function() {
-      clearTimeout(timeout);
-      previous = 0;
-      timeout = context = args = null;
-    };
-
-    return throttled;
-  }
-
-  // When a sequence of calls of the returned function ends, the argument
-  // function is triggered. The end of a sequence is defined by the `wait`
-  // parameter. If `immediate` is passed, the argument function will be
-  // triggered at the beginning of the sequence instead of at the end.
-  function debounce(func, wait, immediate) {
-    var timeout, previous, args, result, context;
-
-    var later = function() {
-      var passed = now() - previous;
-      if (wait > passed) {
-        timeout = setTimeout(later, wait - passed);
-      } else {
-        timeout = null;
-        if (!immediate) result = func.apply(context, args);
-        // This check is needed because `func` can recursively invoke `debounced`.
-        if (!timeout) args = context = null;
-      }
-    };
-
-    var debounced = restArguments(function(_args) {
-      context = this;
-      args = _args;
-      previous = now();
-      if (!timeout) {
-        timeout = setTimeout(later, wait);
-        if (immediate) result = func.apply(context, args);
-      }
-      return result;
-    });
-
-    debounced.cancel = function() {
-      clearTimeout(timeout);
-      timeout = args = context = null;
-    };
-
-    return debounced;
-  }
-
-  // Returns the first function passed as an argument to the second,
-  // allowing you to adjust arguments, run code before and after, and
-  // conditionally execute the original function.
-  function wrap(func, wrapper) {
-    return partial(wrapper, func);
-  }
-
-  // Returns a negated version of the passed-in predicate.
-  function negate(predicate) {
-    return function() {
-      return !predicate.apply(this, arguments);
-    };
-  }
-
-  // Returns a function that is the composition of a list of functions, each
-  // consuming the return value of the function that follows.
-  function compose() {
-    var args = arguments;
-    var start = args.length - 1;
-    return function() {
-      var i = start;
-      var result = args[start].apply(this, arguments);
-      while (i--) result = args[i].call(this, result);
-      return result;
-    };
-  }
-
-  // Returns a function that will only be executed on and after the Nth call.
-  function after(times, func) {
-    return function() {
-      if (--times < 1) {
-        return func.apply(this, arguments);
-      }
-    };
-  }
-
-  // Returns a function that will only be executed up to (but not including) the
-  // Nth call.
-  function before(times, func) {
-    var memo;
-    return function() {
-      if (--times > 0) {
-        memo = func.apply(this, arguments);
-      }
-      if (times <= 1) func = null;
-      return memo;
-    };
-  }
-
-  // Returns a function that will be executed at most one time, no matter how
-  // often you call it. Useful for lazy initialization.
-  var once = partial(before, 2);
-
-  // Returns the first key on an object that passes a truth test.
-  function findKey(obj, predicate, context) {
-    predicate = cb(predicate, context);
-    var _keys = keys(obj), key;
-    for (var i = 0, length = _keys.length; i < length; i++) {
-      key = _keys[i];
-      if (predicate(obj[key], key, obj)) return key;
-    }
-  }
-
-  // Internal function to generate `_.findIndex` and `_.findLastIndex`.
-  function createPredicateIndexFinder(dir) {
-    return function(array, predicate, context) {
-      predicate = cb(predicate, context);
-      var length = getLength(array);
-      var index = dir > 0 ? 0 : length - 1;
-      for (; index >= 0 && index < length; index += dir) {
-        if (predicate(array[index], index, array)) return index;
-      }
-      return -1;
-    };
-  }
-
-  // Returns the first index on an array-like that passes a truth test.
-  var findIndex = createPredicateIndexFinder(1);
-
-  // Returns the last index on an array-like that passes a truth test.
-  var findLastIndex = createPredicateIndexFinder(-1);
-
-  // Use a comparator function to figure out the smallest index at which
-  // an object should be inserted so as to maintain order. Uses binary search.
-  function sortedIndex(array, obj, iteratee, context) {
-    iteratee = cb(iteratee, context, 1);
-    var value = iteratee(obj);
-    var low = 0, high = getLength(array);
-    while (low < high) {
-      var mid = Math.floor((low + high) / 2);
-      if (iteratee(array[mid]) < value) low = mid + 1; else high = mid;
-    }
-    return low;
-  }
-
-  // Internal function to generate the `_.indexOf` and `_.lastIndexOf` functions.
-  function createIndexFinder(dir, predicateFind, sortedIndex) {
-    return function(array, item, idx) {
-      var i = 0, length = getLength(array);
-      if (typeof idx == 'number') {
-        if (dir > 0) {
-          i = idx >= 0 ? idx : Math.max(idx + length, i);
-        } else {
-          length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
-        }
-      } else if (sortedIndex && idx && length) {
-        idx = sortedIndex(array, item);
-        return array[idx] === item ? idx : -1;
-      }
-      if (item !== item) {
-        idx = predicateFind(slice.call(array, i, length), isNaN$1);
-        return idx >= 0 ? idx + i : -1;
-      }
-      for (idx = dir > 0 ? i : length - 1; idx >= 0 && idx < length; idx += dir) {
-        if (array[idx] === item) return idx;
-      }
-      return -1;
-    };
-  }
-
-  // Return the position of the first occurrence of an item in an array,
-  // or -1 if the item is not included in the array.
-  // If the array is large and already in sort order, pass `true`
-  // for **isSorted** to use binary search.
-  var indexOf = createIndexFinder(1, findIndex, sortedIndex);
-
-  // Return the position of the last occurrence of an item in an array,
-  // or -1 if the item is not included in the array.
-  var lastIndexOf = createIndexFinder(-1, findLastIndex);
-
-  // Return the first value which passes a truth test.
-  function find(obj, predicate, context) {
-    var keyFinder = isArrayLike(obj) ? findIndex : findKey;
-    var key = keyFinder(obj, predicate, context);
-    if (key !== void 0 && key !== -1) return obj[key];
-  }
-
-  // Convenience version of a common use case of `_.find`: getting the first
-  // object containing specific `key:value` pairs.
-  function findWhere(obj, attrs) {
-    return find(obj, matcher(attrs));
-  }
-
-  // The cornerstone for collection functions, an `each`
-  // implementation, aka `forEach`.
-  // Handles raw objects in addition to array-likes. Treats all
-  // sparse array-likes as if they were dense.
-  function each(obj, iteratee, context) {
-    iteratee = optimizeCb(iteratee, context);
-    var i, length;
-    if (isArrayLike(obj)) {
-      for (i = 0, length = obj.length; i < length; i++) {
-        iteratee(obj[i], i, obj);
-      }
-    } else {
-      var _keys = keys(obj);
-      for (i = 0, length = _keys.length; i < length; i++) {
-        iteratee(obj[_keys[i]], _keys[i], obj);
-      }
-    }
-    return obj;
-  }
-
-  // Return the results of applying the iteratee to each element.
-  function map(obj, iteratee, context) {
-    iteratee = cb(iteratee, context);
-    var _keys = !isArrayLike(obj) && keys(obj),
-        length = (_keys || obj).length,
-        results = Array(length);
-    for (var index = 0; index < length; index++) {
-      var currentKey = _keys ? _keys[index] : index;
-      results[index] = iteratee(obj[currentKey], currentKey, obj);
-    }
-    return results;
-  }
-
-  // Internal helper to create a reducing function, iterating left or right.
-  function createReduce(dir) {
-    // Wrap code that reassigns argument variables in a separate function than
-    // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
-    var reducer = function(obj, iteratee, memo, initial) {
-      var _keys = !isArrayLike(obj) && keys(obj),
-          length = (_keys || obj).length,
-          index = dir > 0 ? 0 : length - 1;
-      if (!initial) {
-        memo = obj[_keys ? _keys[index] : index];
-        index += dir;
-      }
-      for (; index >= 0 && index < length; index += dir) {
-        var currentKey = _keys ? _keys[index] : index;
-        memo = iteratee(memo, obj[currentKey], currentKey, obj);
-      }
-      return memo;
-    };
-
-    return function(obj, iteratee, memo, context) {
-      var initial = arguments.length >= 3;
-      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
-    };
-  }
-
-  // **Reduce** builds up a single result from a list of values, aka `inject`,
-  // or `foldl`.
-  var reduce = createReduce(1);
-
-  // The right-associative version of reduce, also known as `foldr`.
-  var reduceRight = createReduce(-1);
-
-  // Return all the elements that pass a truth test.
-  function filter(obj, predicate, context) {
-    var results = [];
-    predicate = cb(predicate, context);
-    each(obj, function(value, index, list) {
-      if (predicate(value, index, list)) results.push(value);
-    });
-    return results;
-  }
-
-  // Return all the elements for which a truth test fails.
-  function reject(obj, predicate, context) {
-    return filter(obj, negate(cb(predicate)), context);
-  }
-
-  // Determine whether all of the elements pass a truth test.
-  function every(obj, predicate, context) {
-    predicate = cb(predicate, context);
-    var _keys = !isArrayLike(obj) && keys(obj),
-        length = (_keys || obj).length;
-    for (var index = 0; index < length; index++) {
-      var currentKey = _keys ? _keys[index] : index;
-      if (!predicate(obj[currentKey], currentKey, obj)) return false;
-    }
-    return true;
-  }
-
-  // Determine if at least one element in the object passes a truth test.
-  function some(obj, predicate, context) {
-    predicate = cb(predicate, context);
-    var _keys = !isArrayLike(obj) && keys(obj),
-        length = (_keys || obj).length;
-    for (var index = 0; index < length; index++) {
-      var currentKey = _keys ? _keys[index] : index;
-      if (predicate(obj[currentKey], currentKey, obj)) return true;
-    }
-    return false;
-  }
-
-  // Determine if the array or object contains a given item (using `===`).
-  function contains(obj, item, fromIndex, guard) {
-    if (!isArrayLike(obj)) obj = values(obj);
-    if (typeof fromIndex != 'number' || guard) fromIndex = 0;
-    return indexOf(obj, item, fromIndex) >= 0;
-  }
-
-  // Invoke a method (with arguments) on every item in a collection.
-  var invoke = restArguments(function(obj, path, args) {
-    var contextPath, func;
-    if (isFunction$1(path)) {
-      func = path;
-    } else {
-      path = toPath(path);
-      contextPath = path.slice(0, -1);
-      path = path[path.length - 1];
-    }
-    return map(obj, function(context) {
-      var method = func;
-      if (!method) {
-        if (contextPath && contextPath.length) {
-          context = deepGet(context, contextPath);
-        }
-        if (context == null) return void 0;
-        method = context[path];
-      }
-      return method == null ? method : method.apply(context, args);
-    });
-  });
-
-  // Convenience version of a common use case of `_.map`: fetching a property.
-  function pluck(obj, key) {
-    return map(obj, property(key));
-  }
-
-  // Convenience version of a common use case of `_.filter`: selecting only
-  // objects containing specific `key:value` pairs.
-  function where(obj, attrs) {
-    return filter(obj, matcher(attrs));
-  }
-
-  // Return the maximum element (or element-based computation).
-  function max(obj, iteratee, context) {
-    var result = -Infinity, lastComputed = -Infinity,
-        value, computed;
-    if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null)) {
-      obj = isArrayLike(obj) ? obj : values(obj);
-      for (var i = 0, length = obj.length; i < length; i++) {
-        value = obj[i];
-        if (value != null && value > result) {
-          result = value;
-        }
-      }
-    } else {
-      iteratee = cb(iteratee, context);
-      each(obj, function(v, index, list) {
-        computed = iteratee(v, index, list);
-        if (computed > lastComputed || (computed === -Infinity && result === -Infinity)) {
-          result = v;
-          lastComputed = computed;
-        }
-      });
-    }
-    return result;
-  }
-
-  // Return the minimum element (or element-based computation).
-  function min(obj, iteratee, context) {
-    var result = Infinity, lastComputed = Infinity,
-        value, computed;
-    if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null)) {
-      obj = isArrayLike(obj) ? obj : values(obj);
-      for (var i = 0, length = obj.length; i < length; i++) {
-        value = obj[i];
-        if (value != null && value < result) {
-          result = value;
-        }
-      }
-    } else {
-      iteratee = cb(iteratee, context);
-      each(obj, function(v, index, list) {
-        computed = iteratee(v, index, list);
-        if (computed < lastComputed || (computed === Infinity && result === Infinity)) {
-          result = v;
-          lastComputed = computed;
-        }
-      });
-    }
-    return result;
-  }
-
-  // Safely create a real, live array from anything iterable.
-  var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
-  function toArray(obj) {
-    if (!obj) return [];
-    if (isArray(obj)) return slice.call(obj);
-    if (isString(obj)) {
-      // Keep surrogate pair characters together.
-      return obj.match(reStrSymbol);
-    }
-    if (isArrayLike(obj)) return map(obj, identity);
-    return values(obj);
-  }
-
-  // Sample **n** random values from a collection using the modern version of the
-  // [Fisher-Yates shuffle](https://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
-  // If **n** is not specified, returns a single random element.
-  // The internal `guard` argument allows it to work with `_.map`.
-  function sample(obj, n, guard) {
-    if (n == null || guard) {
-      if (!isArrayLike(obj)) obj = values(obj);
-      return obj[random(obj.length - 1)];
-    }
-    var sample = toArray(obj);
-    var length = getLength(sample);
-    n = Math.max(Math.min(n, length), 0);
-    var last = length - 1;
-    for (var index = 0; index < n; index++) {
-      var rand = random(index, last);
-      var temp = sample[index];
-      sample[index] = sample[rand];
-      sample[rand] = temp;
-    }
-    return sample.slice(0, n);
-  }
-
-  // Shuffle a collection.
-  function shuffle(obj) {
-    return sample(obj, Infinity);
-  }
-
-  // Sort the object's values by a criterion produced by an iteratee.
-  function sortBy(obj, iteratee, context) {
-    var index = 0;
-    iteratee = cb(iteratee, context);
-    return pluck(map(obj, function(value, key, list) {
-      return {
-        value: value,
-        index: index++,
-        criteria: iteratee(value, key, list)
-      };
-    }).sort(function(left, right) {
-      var a = left.criteria;
-      var b = right.criteria;
-      if (a !== b) {
-        if (a > b || a === void 0) return 1;
-        if (a < b || b === void 0) return -1;
-      }
-      return left.index - right.index;
-    }), 'value');
-  }
-
-  // An internal function used for aggregate "group by" operations.
-  function group(behavior, partition) {
-    return function(obj, iteratee, context) {
-      var result = partition ? [[], []] : {};
-      iteratee = cb(iteratee, context);
-      each(obj, function(value, index) {
-        var key = iteratee(value, index, obj);
-        behavior(result, value, key);
-      });
-      return result;
-    };
-  }
-
-  // Groups the object's values by a criterion. Pass either a string attribute
-  // to group by, or a function that returns the criterion.
-  var groupBy = group(function(result, value, key) {
-    if (has$1(result, key)) result[key].push(value); else result[key] = [value];
-  });
-
-  // Indexes the object's values by a criterion, similar to `_.groupBy`, but for
-  // when you know that your index values will be unique.
-  var indexBy = group(function(result, value, key) {
-    result[key] = value;
-  });
-
-  // Counts instances of an object that group by a certain criterion. Pass
-  // either a string attribute to count by, or a function that returns the
-  // criterion.
-  var countBy = group(function(result, value, key) {
-    if (has$1(result, key)) result[key]++; else result[key] = 1;
-  });
-
-  // Split a collection into two arrays: one whose elements all pass the given
-  // truth test, and one whose elements all do not pass the truth test.
-  var partition = group(function(result, value, pass) {
-    result[pass ? 0 : 1].push(value);
-  }, true);
-
-  // Return the number of elements in a collection.
-  function size(obj) {
-    if (obj == null) return 0;
-    return isArrayLike(obj) ? obj.length : keys(obj).length;
-  }
-
-  // Internal `_.pick` helper function to determine whether `key` is an enumerable
-  // property name of `obj`.
-  function keyInObj(value, key, obj) {
-    return key in obj;
-  }
-
-  // Return a copy of the object only containing the allowed properties.
-  var pick = restArguments(function(obj, keys) {
-    var result = {}, iteratee = keys[0];
-    if (obj == null) return result;
-    if (isFunction$1(iteratee)) {
-      if (keys.length > 1) iteratee = optimizeCb(iteratee, keys[1]);
-      keys = allKeys(obj);
-    } else {
-      iteratee = keyInObj;
-      keys = flatten$1(keys, false, false);
-      obj = Object(obj);
-    }
-    for (var i = 0, length = keys.length; i < length; i++) {
-      var key = keys[i];
-      var value = obj[key];
-      if (iteratee(value, key, obj)) result[key] = value;
-    }
-    return result;
-  });
-
-  // Return a copy of the object without the disallowed properties.
-  var omit = restArguments(function(obj, keys) {
-    var iteratee = keys[0], context;
-    if (isFunction$1(iteratee)) {
-      iteratee = negate(iteratee);
-      if (keys.length > 1) context = keys[1];
-    } else {
-      keys = map(flatten$1(keys, false, false), String);
-      iteratee = function(value, key) {
-        return !contains(keys, key);
-      };
-    }
-    return pick(obj, iteratee, context);
-  });
-
-  // Returns everything but the last entry of the array. Especially useful on
-  // the arguments object. Passing **n** will return all the values in
-  // the array, excluding the last N.
-  function initial(array, n, guard) {
-    return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
-  }
-
-  // Get the first element of an array. Passing **n** will return the first N
-  // values in the array. The **guard** check allows it to work with `_.map`.
-  function first(array, n, guard) {
-    if (array == null || array.length < 1) return n == null || guard ? void 0 : [];
-    if (n == null || guard) return array[0];
-    return initial(array, array.length - n);
-  }
-
-  // Returns everything but the first entry of the `array`. Especially useful on
-  // the `arguments` object. Passing an **n** will return the rest N values in the
-  // `array`.
-  function rest(array, n, guard) {
-    return slice.call(array, n == null || guard ? 1 : n);
-  }
-
-  // Get the last element of an array. Passing **n** will return the last N
-  // values in the array.
-  function last(array, n, guard) {
-    if (array == null || array.length < 1) return n == null || guard ? void 0 : [];
-    if (n == null || guard) return array[array.length - 1];
-    return rest(array, Math.max(0, array.length - n));
-  }
-
-  // Trim out all falsy values from an array.
-  function compact(array) {
-    return filter(array, Boolean);
-  }
-
-  // Flatten out an array, either recursively (by default), or up to `depth`.
-  // Passing `true` or `false` as `depth` means `1` or `Infinity`, respectively.
-  function flatten(array, depth) {
-    return flatten$1(array, depth, false);
-  }
-
-  // Take the difference between one array and a number of other arrays.
-  // Only the elements present in just the first array will remain.
-  var difference = restArguments(function(array, rest) {
-    rest = flatten$1(rest, true, true);
-    return filter(array, function(value){
-      return !contains(rest, value);
-    });
-  });
-
-  // Return a version of the array that does not contain the specified value(s).
-  var without = restArguments(function(array, otherArrays) {
-    return difference(array, otherArrays);
-  });
-
-  // Produce a duplicate-free version of the array. If the array has already
-  // been sorted, you have the option of using a faster algorithm.
-  // The faster algorithm will not work with an iteratee if the iteratee
-  // is not a one-to-one function, so providing an iteratee will disable
-  // the faster algorithm.
-  function uniq(array, isSorted, iteratee, context) {
-    if (!isBoolean(isSorted)) {
-      context = iteratee;
-      iteratee = isSorted;
-      isSorted = false;
-    }
-    if (iteratee != null) iteratee = cb(iteratee, context);
-    var result = [];
-    var seen = [];
-    for (var i = 0, length = getLength(array); i < length; i++) {
-      var value = array[i],
-          computed = iteratee ? iteratee(value, i, array) : value;
-      if (isSorted && !iteratee) {
-        if (!i || seen !== computed) result.push(value);
-        seen = computed;
-      } else if (iteratee) {
-        if (!contains(seen, computed)) {
-          seen.push(computed);
-          result.push(value);
-        }
-      } else if (!contains(result, value)) {
-        result.push(value);
-      }
-    }
-    return result;
-  }
-
-  // Produce an array that contains the union: each distinct element from all of
-  // the passed-in arrays.
-  var union = restArguments(function(arrays) {
-    return uniq(flatten$1(arrays, true, true));
-  });
-
-  // Produce an array that contains every item shared between all the
-  // passed-in arrays.
-  function intersection(array) {
-    var result = [];
-    var argsLength = arguments.length;
-    for (var i = 0, length = getLength(array); i < length; i++) {
-      var item = array[i];
-      if (contains(result, item)) continue;
-      var j;
-      for (j = 1; j < argsLength; j++) {
-        if (!contains(arguments[j], item)) break;
-      }
-      if (j === argsLength) result.push(item);
-    }
-    return result;
-  }
-
-  // Complement of zip. Unzip accepts an array of arrays and groups
-  // each array's elements on shared indices.
-  function unzip(array) {
-    var length = (array && max(array, getLength).length) || 0;
-    var result = Array(length);
-
-    for (var index = 0; index < length; index++) {
-      result[index] = pluck(array, index);
-    }
-    return result;
-  }
-
-  // Zip together multiple lists into a single array -- elements that share
-  // an index go together.
-  var zip = restArguments(unzip);
-
-  // Converts lists into objects. Pass either a single array of `[key, value]`
-  // pairs, or two parallel arrays of the same length -- one of keys, and one of
-  // the corresponding values. Passing by pairs is the reverse of `_.pairs`.
-  function object(list, values) {
-    var result = {};
-    for (var i = 0, length = getLength(list); i < length; i++) {
-      if (values) {
-        result[list[i]] = values[i];
-      } else {
-        result[list[i][0]] = list[i][1];
-      }
-    }
-    return result;
-  }
-
-  // Generate an integer Array containing an arithmetic progression. A port of
-  // the native Python `range()` function. See
-  // [the Python documentation](https://docs.python.org/library/functions.html#range).
-  function range(start, stop, step) {
-    if (stop == null) {
-      stop = start || 0;
-      start = 0;
-    }
-    if (!step) {
-      step = stop < start ? -1 : 1;
-    }
-
-    var length = Math.max(Math.ceil((stop - start) / step), 0);
-    var range = Array(length);
-
-    for (var idx = 0; idx < length; idx++, start += step) {
-      range[idx] = start;
-    }
-
-    return range;
-  }
-
-  // Chunk a single array into multiple arrays, each containing `count` or fewer
-  // items.
-  function chunk(array, count) {
-    if (count == null || count < 1) return [];
-    var result = [];
-    var i = 0, length = array.length;
-    while (i < length) {
-      result.push(slice.call(array, i, i += count));
-    }
-    return result;
-  }
-
-  // Helper function to continue chaining intermediate results.
-  function chainResult(instance, obj) {
-    return instance._chain ? _$1(obj).chain() : obj;
-  }
-
-  // Add your own custom functions to the Underscore object.
-  function mixin(obj) {
-    each(functions(obj), function(name) {
-      var func = _$1[name] = obj[name];
-      _$1.prototype[name] = function() {
-        var args = [this._wrapped];
-        push.apply(args, arguments);
-        return chainResult(this, func.apply(_$1, args));
-      };
-    });
-    return _$1;
-  }
-
-  // Add all mutator `Array` functions to the wrapper.
-  each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
-    var method = ArrayProto[name];
-    _$1.prototype[name] = function() {
-      var obj = this._wrapped;
-      if (obj != null) {
-        method.apply(obj, arguments);
-        if ((name === 'shift' || name === 'splice') && obj.length === 0) {
-          delete obj[0];
-        }
-      }
-      return chainResult(this, obj);
-    };
-  });
-
-  // Add all accessor `Array` functions to the wrapper.
-  each(['concat', 'join', 'slice'], function(name) {
-    var method = ArrayProto[name];
-    _$1.prototype[name] = function() {
-      var obj = this._wrapped;
-      if (obj != null) obj = method.apply(obj, arguments);
-      return chainResult(this, obj);
-    };
-  });
-
-  // Named Exports
-
-  var allExports = {
-    __proto__: null,
-    VERSION: VERSION,
-    restArguments: restArguments,
-    isObject: isObject,
-    isNull: isNull,
-    isUndefined: isUndefined,
-    isBoolean: isBoolean,
-    isElement: isElement,
-    isString: isString,
-    isNumber: isNumber,
-    isDate: isDate,
-    isRegExp: isRegExp,
-    isError: isError,
-    isSymbol: isSymbol,
-    isArrayBuffer: isArrayBuffer,
-    isDataView: isDataView$1,
-    isArray: isArray,
-    isFunction: isFunction$1,
-    isArguments: isArguments$1,
-    isFinite: isFinite$1,
-    isNaN: isNaN$1,
-    isTypedArray: isTypedArray$1,
-    isEmpty: isEmpty,
-    isMatch: isMatch,
-    isEqual: isEqual,
-    isMap: isMap,
-    isWeakMap: isWeakMap,
-    isSet: isSet,
-    isWeakSet: isWeakSet,
-    keys: keys,
-    allKeys: allKeys,
-    values: values,
-    pairs: pairs,
-    invert: invert,
-    functions: functions,
-    methods: functions,
-    extend: extend,
-    extendOwn: extendOwn,
-    assign: extendOwn,
-    defaults: defaults,
-    create: create,
-    clone: clone,
-    tap: tap,
-    get: get,
-    has: has,
-    mapObject: mapObject,
-    identity: identity,
-    constant: constant,
-    noop: noop,
-    toPath: toPath$1,
-    property: property,
-    propertyOf: propertyOf,
-    matcher: matcher,
-    matches: matcher,
-    times: times,
-    random: random,
-    now: now,
-    escape: _escape,
-    unescape: _unescape,
-    templateSettings: templateSettings,
-    template: template,
-    result: result,
-    uniqueId: uniqueId,
-    chain: chain,
-    iteratee: iteratee,
-    partial: partial,
-    bind: bind,
-    bindAll: bindAll,
-    memoize: memoize,
-    delay: delay,
-    defer: defer,
-    throttle: throttle,
-    debounce: debounce,
-    wrap: wrap,
-    negate: negate,
-    compose: compose,
-    after: after,
-    before: before,
-    once: once,
-    findKey: findKey,
-    findIndex: findIndex,
-    findLastIndex: findLastIndex,
-    sortedIndex: sortedIndex,
-    indexOf: indexOf,
-    lastIndexOf: lastIndexOf,
-    find: find,
-    detect: find,
-    findWhere: findWhere,
-    each: each,
-    forEach: each,
-    map: map,
-    collect: map,
-    reduce: reduce,
-    foldl: reduce,
-    inject: reduce,
-    reduceRight: reduceRight,
-    foldr: reduceRight,
-    filter: filter,
-    select: filter,
-    reject: reject,
-    every: every,
-    all: every,
-    some: some,
-    any: some,
-    contains: contains,
-    includes: contains,
-    include: contains,
-    invoke: invoke,
-    pluck: pluck,
-    where: where,
-    max: max,
-    min: min,
-    shuffle: shuffle,
-    sample: sample,
-    sortBy: sortBy,
-    groupBy: groupBy,
-    indexBy: indexBy,
-    countBy: countBy,
-    partition: partition,
-    toArray: toArray,
-    size: size,
-    pick: pick,
-    omit: omit,
-    first: first,
-    head: first,
-    take: first,
-    initial: initial,
-    last: last,
-    rest: rest,
-    tail: rest,
-    drop: rest,
-    compact: compact,
-    flatten: flatten,
-    without: without,
-    uniq: uniq,
-    unique: uniq,
-    union: union,
-    intersection: intersection,
-    difference: difference,
-    unzip: unzip,
-    transpose: unzip,
-    zip: zip,
-    object: object,
-    range: range,
-    chunk: chunk,
-    mixin: mixin,
-    'default': _$1
-  };
-
-  // Default Export
-
-  // Add all of the Underscore functions to the wrapper object.
-  var _ = mixin(allExports);
-  // Legacy Node.js API.
-  _._ = _;
-
-  return _;
-
-})));
-//# sourceMappingURL=underscore-umd.js.map
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/from-markdown.js":
-/*!***********************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/from-markdown.js ***!
-  \***********************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ handler)
-/* harmony export */ });
-/* harmony import */ var mdast_util_from_markdown__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-from-markdown */ "./node_modules/mdast-util-from-markdown/dev/lib/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
-/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-/* eslint-disable no-underscore-dangle */
-
-
-
-
-function unescapeDelimsInCode(tree) {
-  (0,unist_util_visit__WEBPACK_IMPORTED_MODULE_1__.visit)(tree, (node) => {
-    if (node.type === 'inlineCode' || node.type === 'code') {
-      // eslint-disable-next-line no-param-reassign
-      node.value = node.value.replace(/\\([+|])/gm, '$1');
-    }
-    return unist_util_visit__WEBPACK_IMPORTED_MODULE_2__.CONTINUE;
-  });
-}
-
-function multiline(lines) {
-  // remove empty trailing lines
-  while (lines.length > 0 && lines[lines.length - 1].match(/^\s*$/)) {
-    lines.pop();
-  }
-
-  // calculate common indent
-  const prefixLen = lines
-    .filter((line) => !line.match(/^\s*$/))
-    .map((line) => line.match(/^ */)[0].length)
-    .reduce((min, len) => Math.min(len, min), Infinity);
-
-  // remove prefix
-  return lines
-    .map((line) => line.substring(prefixLen).trimEnd());
-}
-
-function getColSpan(info, token) {
-  const i0 = info.cols.indexOf(token._colStart);
-  const i1 = info.cols.indexOf(token._colEnd);
-  return i1 - i0;
-}
-
-function enterTable(token) {
-  this.enter({ type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE, children: [] }, token);
-  this.setData('tableInfo', {
-    // the column positions of the table
-    cols: token._cols,
-    // the current column
-    colPos: 0,
-    // list of all cells
-    allCells: [],
-    // cells that are still open via rowSpan
-    pendingCells: [],
-    // the current cells of a row
-    cells: [],
-    // the grid dividers use for align the cells
-    dividers: [],
-    // the link/image reference definitions
-    definitions: token._definitions,
-  });
-}
-
-function createExitTable(options) {
-  const { processor } = options;
-
-  return function exitTable(token) {
-    // render cells
-    const info = this.getData('tableInfo');
-    for (const cell of info.allCells) {
-      const {
-        node, lines, colSpan, rowSpan,
-        align, valign,
-      } = cell;
-
-      // add fake definitions...
-      const sanitizedLines = multiline(lines);
-      for (const def of info.definitions) {
-        sanitizedLines.push('');
-        sanitizedLines.push(`[${def}]: dummy`);
-      }
-      const cellContent = sanitizedLines.join('\n');
-
-      const tree = (0,mdast_util_from_markdown__WEBPACK_IMPORTED_MODULE_3__.fromMarkdown)(cellContent, {
-        extensions: processor.data('micromarkExtensions'),
-        mdastExtensions: processor.data('fromMarkdownExtensions'),
-      });
-
-      // remove previously added definitions
-      for (let i = 0; i < tree.children.length; i += 1) {
-        const child = tree.children[i];
-        if (child.type === 'definition' && info.definitions.includes(child.label)) {
-          tree.children.splice(i, 1);
-          i -= 1;
-        }
-      }
-
-      // remove escaped pipes and plusses in code
-      unescapeDelimsInCode(tree);
-
-      node.children = tree.children;
-      if (colSpan > 1) {
-        node.colSpan = colSpan;
-      }
-      if (rowSpan > 1) {
-        node.rowSpan = rowSpan;
-      }
-      if (align) {
-        node.align = align;
-      }
-      if (valign) {
-        node.valign = valign;
-      }
-    }
-    this.exit(token);
-  };
-}
-
-function enter(token) {
-  this.enter({ type: token.type, children: [] }, token);
-}
-
-function enterCell() {
-  this.buffer();
-}
-
-function exitCell(token) {
-  this.config.enter.data.call(this, token);
-  this.config.exit.data.call(this, token);
-  const data = this.resume();
-  const info = this.getData('tableInfo');
-  const colSpan = getColSpan(info, token);
-
-  let cell = info.pendingCells[info.colPos];
-
-  // open rowspan if we are on a divider line
-  if (info.isDivider) {
-    if (!cell) {
-      cell = info.cells[info.colPos];
-      info.pendingCells[info.colPos] = cell;
-    }
-    if (!cell) {
-      // throw Error('no matching rowspan');
-    } else {
-      cell.rowSpan += 1;
-    }
-  }
-
-  // if a rowspan is open, append to its cell
-  if (cell) {
-    cell.lines.push(data);
-    info.colPos += colSpan;
-    return;
-  }
-
-  // otherwise append to regular cell
-  cell = info.cells[info.colPos];
-  if (!cell) {
-    const div = info.dividers[info.colPos];
-    cell = {
-      rowSpan: 1,
-      colSpan,
-      align: div?._align,
-      valign: div?._valign,
-      node: {
-        type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL,
-      },
-      lines: [],
-    };
-    info.cells[info.colPos] = cell;
-    info.allCells.push(cell);
-  }
-  cell.lines.push(data);
-  info.colPos += colSpan;
-}
-
-function enterGridDivider(token) {
-  const info = this.getData('tableInfo');
-  // clear pending rowspans and set divider info
-  let colSpan = getColSpan(info, token);
-  while (colSpan > 0) {
-    colSpan -= 1;
-    info.pendingCells[info.colPos] = null;
-    info.dividers[info.colPos] = token;
-    info.colPos += 1;
-  }
-}
-
-function enterRowLine(token) {
-  const info = this.getData('tableInfo');
-  info.isDivider = token._type;
-  info.colPos = 0;
-  if (info.isDivider) {
-    info.dividers = [];
-  }
-}
-
-function commitRow(info) {
-  // create fake token for 'gtRow'
-  const rowToken = {
-    type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW,
-    start: { line: 0, column: 0, offset: 0 },
-    end: { line: 0, column: 0, offset: 0 },
-  };
-  this.enter({ type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW, children: [] }, rowToken);
-
-  // emit cells
-  for (const cell of info.cells) {
-    if (cell) {
-      const cellToken = {
-        type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL,
-        start: { line: 0, column: 0, offset: 0 },
-        end: { line: 0, column: 0, offset: 0 },
-      };
-      this.enter(cell.node, cellToken);
-      this.exit(cellToken);
-    }
-  }
-
-  this.exit(rowToken);
-  // eslint-disable-next-line no-param-reassign
-  info.cells = [];
-}
-
-function exitHeader(token) {
-  const info = this.getData('tableInfo');
-  // commit row  has some cells
-  if (info.cells.length) {
-    commitRow.call(this, info);
-    // also close all rowspans.
-    info.pendingCells = [];
-  }
-  this.exit(token);
-}
-
-function exitRowLine() {
-  const info = this.getData('tableInfo');
-  // commit row if on a divider and has some cells
-  if (info.isDivider && info.cells.length) {
-    commitRow.call(this, info);
-  }
-}
-
-// eslint-disable-next-line no-unused-vars
-function handler(options = {}) {
-  return {
-    enter: {
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE]: enterTable,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER]: enter,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY]: enter,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER]: enter,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL]: enterCell,
-      gridDivider: enterGridDivider,
-      rowLine: enterRowLine,
-    },
-    exit: {
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE]: createExitTable(options),
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER]: exitHeader,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY]: exitHeader,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER]: exitHeader,
-      [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL]: exitCell,
-      rowLine: exitRowLine,
-    },
-  };
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js ***!
-  \***************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TYPE_BODY": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY),
-/* harmony export */   "TYPE_CELL": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL),
-/* harmony export */   "TYPE_FOOTER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER),
-/* harmony export */   "TYPE_HEADER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER),
-/* harmony export */   "TYPE_ROW": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW),
-/* harmony export */   "TYPE_TABLE": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE),
-/* harmony export */   "mdast2hastGridTableHandler": () => (/* reexport safe */ _mdast2hast_handler_js__WEBPACK_IMPORTED_MODULE_2__["default"]),
-/* harmony export */   "remarkGridTable": () => (/* reexport safe */ _remark_plugin_js__WEBPACK_IMPORTED_MODULE_1__["default"])
-/* harmony export */ });
-/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js");
-/* harmony import */ var _remark_plugin_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./remark-plugin.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/remark-plugin.js");
-/* harmony import */ var _mdast2hast_handler_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mdast2hast-handler.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/mdast2hast-handler.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-/**
- * GridTables remark plugin and micromark extension.
- *
- * GridTables look like this:
- *
- * ```
- * +-------------------+------+
- * | Table Headings    | Here |
- * +--------+----------+------+
- * | Sub    | Headings | Too  |
- * +========+=================+
- * | cell   | column spanning |
- * | spans  +---------:+------+
- * | rows   |   normal | cell |
- * +---v----+:---------------:+
- * |        | cells can be    |
- * |        | *formatted*     |
- * |        | **paragraphs**  |
- * |        | ```             |
- * | multi  | and contain     |
- * | line   | blocks          |
- * | cells  | ```             |
- * +========+=========<+======+
- * | footer |    cells |      |
- * +--------+----------+------+
- * ```
- *
- * - the top of a cell must be indicated by `+-` followed by some `-` or `+` and finished by `-+`.
- * - if the table contains a footer but no header, the top row should use `=` as grid line.
- * - col spans are indicated by missing column (`|`) delimiters
- * - row spans are indicated by missing row (`-`) delimiters
- * - cells can be left, center, right, or justify aligned; indicated by the placement of `:` or `><`
- * - cells can be top, middle, or bottom v-aligned;
- *   indicated by the placement of arrows (`v` `^` `x`)
- * - the header and footer sections are delimited by section delimiters (`=`).
- * - if no section delimiters are present, all cells are placed in the table body.
- * - if only 1 section delimiter is present, it delimits header from body.
- * - the content in cells can be a full Markdown document again.
- *   note, that the cell boundaries (`|`)
- *   need to exactly match with the column markers (`+`) in the row delimiters, if the cell content
- *   contains `|`, otherwise the correct layout of the table can't be guaranteed.
- *
- * Layout
- * ======
- *
- * The table layout tries to keep the table within a certain width (default 120). For example,
- * if the table has 3 columns, each column will be max 40 characters wide. If all text in a column
- * is smaller, it will shrink the columns. However, cells have a minimum width (default 10) when
- * text needs to be broken. If the cell contents need more space, e.g. with a nested table or
- * code block, it will grow accordingly.
- *
- * Align
- * =====
- *
- * Horizontal align is indicated by placing markers at the grid line above the cell:
- *
- * ```
- * Justify     Center     Left       Right
- * +>-----<+  +:-----:+  +:------+  +------:+
- * | A b C |  |  ABC  |  | ABC   |  |   ABC |
- * +-------+  +-------+  +-------+  +-------+
- * ```
- *
- * Vertical align is indicated by placing markers at the center of the grid line above the cell:
- *
- * ```
- * Top        Middle     Bottom
- * +---^---+  +---x---+  +---v---+
- * | Larum |  |       |  |       |
- * | Ipsum |  | Larum |  |       |
- * |       |  | Ipsum |  | Larum |
- * |       |  |       |  | Ipsum |
- * +-------+  +-------+  +-------+
- * ```
- *
- */
-
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/mdast2hast-handler.js":
-/*!****************************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/mdast2hast-handler.js ***!
-  \****************************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ gridTableHandler)
-/* harmony export */ });
-/* harmony import */ var mdast_util_to_hast__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-hast */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
-/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-
-
-
-/**
- * @typedef GridTableHandlerOptions
- * @property {boolean} noHeader if true, <thead> and <tbody> elements are suppressed.
- */
-
-/**
- * Handles a row (i.e. the `gtRow` node)
- * @return {HastNode} the 'tr' node
- */
-function handleRow(h, node, cellElementName) {
-  const cells = [];
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
-      const props = {};
-      for (const p of ['colSpan', 'rowSpan', 'align', 'valign']) {
-        if (p in child) {
-          props[p] = child[p];
-        }
-      }
-      // if cell contains only 1 single paragraph, unwrap it
-      if (child.children?.length === 1 && child.children[0].type === 'paragraph') {
-        child.children = child.children[0].children;
-      }
-      const cell = h(child, cellElementName, props, (0,mdast_util_to_hast__WEBPACK_IMPORTED_MODULE_1__.all)(h, child));
-      cells.push(cell);
-
-      // clean text elements
-      (0,unist_util_visit__WEBPACK_IMPORTED_MODULE_2__.visit)(cell, (n) => {
-        if (n.tagName === 'code') {
-          return unist_util_visit__WEBPACK_IMPORTED_MODULE_3__.SKIP;
-        }
-        if (n.type === 'text') {
-          // eslint-disable-next-line no-param-reassign
-          n.value = n.value.replace(/\r?\n/mg, ' ');
-        }
-        return unist_util_visit__WEBPACK_IMPORTED_MODULE_3__.CONTINUE;
-      });
-    }
-  }
-
-  return h(node, 'tr', cells);
-}
-
-/**
- * Handles a group (array) of rows. eg the children of a `gtBody`.
- * @return {HastNode[]} the array of rows
- */
-function createRows(h, node, cellElementName) {
-  const rows = [];
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-      rows.push(handleRow(h, child, cellElementName));
-    }
-  }
-  return rows;
-}
-
-/**
- * Transforms the gridTable to a hast table
- *
- * @param {GridTableHandlerOptions} opts
- * @return {function} A mdast-to-hast handler.
- */
-function gridTableHandler(opts = {}) {
-  const { noHeader } = opts;
-
-  return function handleTable(h, node) {
-    let headerRows = [];
-    let bodyRows = [];
-    let footerRows = [];
-
-    for (const child of node.children) {
-      if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER) {
-        headerRows = createRows(h, child, 'th');
-      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
-        bodyRows = createRows(h, child, 'td');
-      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER) {
-        footerRows = createRows(h, child, 'td');
-      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-        bodyRows.push(handleRow(h, child, 'td'));
-      }
-    }
-
-    let inner;
-    if (noHeader && footerRows.length === 0) {
-      inner = [...headerRows, ...bodyRows];
-    } else {
-      inner = [];
-      if (headerRows.length) {
-        inner.push(h(null, 'thead', headerRows));
-      }
-      if (bodyRows.length) {
-        inner.push(h(null, 'tbody', bodyRows));
-      }
-      if (footerRows.length) {
-        inner.push(h(null, 'tfoot', footerRows));
-      }
-    }
-
-    return h(node, 'table', inner);
-  };
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/remark-plugin.js":
-/*!***********************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/remark-plugin.js ***!
-  \***********************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ remarkPlugin)
-/* harmony export */ });
-/* harmony import */ var _from_markdown_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./from-markdown.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/from-markdown.js");
-/* harmony import */ var _to_markdown_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./to-markdown.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/to-markdown.js");
-/* harmony import */ var _syntax_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./syntax.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/syntax.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-
-
-
-function remarkPlugin(options = {}) {
-  const data = this.data();
-
-  function add(field, value) {
-    /* c8 ignore next 2 */
-    if (data[field]) {
-      data[field].push(value);
-    } else {
-      data[field] = [value];
-    }
-  }
-
-  const opts = {
-    processor: this,
-    ...options,
-  };
-
-  add('micromarkExtensions', (0,_syntax_js__WEBPACK_IMPORTED_MODULE_2__["default"])(options));
-  add('fromMarkdownExtensions', (0,_from_markdown_js__WEBPACK_IMPORTED_MODULE_0__["default"])(opts));
-  add('toMarkdownExtensions', (0,_to_markdown_js__WEBPACK_IMPORTED_MODULE_1__["default"])(options));
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/syntax.js":
-/*!****************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/syntax.js ***!
-  \****************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ create)
-/* harmony export */ });
-/* harmony import */ var micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-util-symbol/codes.js */ "./node_modules/micromark-util-symbol/codes.js");
-/* harmony import */ var micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! micromark-util-symbol/types.js */ "./node_modules/micromark-util-symbol/types.js");
-/* harmony import */ var micromark_util_character__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark-util-character */ "./node_modules/micromark-util-character/dev/index.js");
-/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-/* eslint-disable no-use-before-define,no-underscore-dangle,no-param-reassign */
-
-
-
-
-
-// the cell divider: | or +
-const TYPE_CELL_DIVIDER = 'cellDivider';
-
-// a line within a row. can have cells or dividers or both, in case of row spans
-const TYPE_ROW_LINE = 'rowLine';
-
-// the grid divider: - / =
-const TYPE_GRID_DIVIDER = 'gridDivider';
-
-const V_ALIGN_CODES = {
-  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lowercaseV]: 'bottom',
-  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lowercaseX]: 'middle',
-  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.caret]: 'top',
-};
-
-function parse() {
-  return {
-    tokenize: tokenizeTable,
-    resolve: resolveTable,
-    resolveAll: resolveAllTable,
-    concrete: true,
-  };
-
-  function tokenizeTable(effects, ok, nok) {
-    // positions of columns
-    const cols = [0];
-    let numRows = 0;
-    let numCols = 0;
-    let colPos = 0;
-    let rowLine = null;
-    let align = '';
-    let valign = '';
-    return start;
-
-    function start(code) {
-      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE)._cols = cols;
-      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
-      return lineStart(code);
-    }
-
-    function lineStart(code) {
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
-        rowLine = effects.enter(TYPE_ROW_LINE);
-        effects.enter(TYPE_CELL_DIVIDER);
-        effects.consume(code);
-        effects.exit(TYPE_CELL_DIVIDER);
-        colPos = 0;
-        numCols = 0;
-        return cellOrGridStart;
-      }
-      if (numRows < 3) {
-        return nok(code);
-      }
-      effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
-      effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
-      return ok(code);
-    }
-
-    function cellOrGridStart(code) {
-      align = '';
-      valign = '';
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.dash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo
-        || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.greaterThan) {
-        effects.enter(TYPE_GRID_DIVIDER)._colStart = colPos;
-        colPos += 1;
-        if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon) {
-          align = 'left';
-        } else if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.greaterThan) {
-          align = 'justify';
-        }
-        effects.consume(code);
-        return gridDivider;
-      }
-
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof || (0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
-        return lineEnd(code);
-      }
-
-      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._colStart = colPos;
-      colPos += 1;
-      effects.consume(code);
-
-      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownSpace)(code)) {
-        return cellSpace;
-      }
-      return cell;
-    }
-
-    function cellSpace(code) {
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof || (0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
-        // mark as discarded, will be filtered out in transform
-        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._discard = true;
-        return lineEnd(code);
-      }
-      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownSpace)(code)) {
-        colPos += 1;
-        effects.consume(code);
-        return cellSpace;
-      }
-      return cell(code);
-    }
-
-    function lineEnd(code) {
-      if (numCols === 0) {
-        return nok(code);
-      }
-      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
-        effects.enter(micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__.types.lineEnding);
-        effects.consume(code);
-        effects.exit(micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__.types.lineEnding);
-      }
-      effects.exit(TYPE_ROW_LINE);
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof) {
-        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
-        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
-        return ok(code);
-      }
-      numRows += 1;
-      return lineStart;
-    }
-
-    function gridDivider(code) {
-      colPos += 1;
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.dash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo) {
-        if (!rowLine._type) {
-          rowLine._type = code;
-        }
-        effects.consume(code);
-        return gridDivider;
-      }
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon) {
-        if (!align) {
-          align = 'right';
-        } else if (align === 'left') {
-          align = 'center';
-        } else {
-          return nok(code);
-        }
-        effects.consume(code);
-        return gridDividerEnd;
-      }
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lessThan) {
-        if (align !== 'justify') {
-          return nok(code);
-        }
-        effects.consume(code);
-        return gridDividerEnd;
-      }
-
-      if (V_ALIGN_CODES[code]) {
-        if (valign) {
-          return nok(code);
-        }
-        valign = V_ALIGN_CODES[code];
-        effects.consume(code);
-        return gridDivider;
-      }
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
-        colPos -= 1;
-        return gridDividerEnd(code);
-      }
-      return nok(code);
-    }
-
-    function gridDividerEnd(code) {
-      if (code !== micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign && code !== micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
-        return nok(code);
-      }
-      // for a super small column, assume dash
-      if (!rowLine._type) {
-        rowLine._type = code.dash;
-      }
-      colPos += 1;
-      // remember cols
-      const idx = cols.indexOf(colPos);
-      if (idx < 0) {
-        cols.push(colPos);
-        cols.sort((c0, c1) => c0 - c1);
-      }
-      const token = effects.exit(TYPE_GRID_DIVIDER);
-      token._colEnd = colPos;
-      token._align = align;
-      token._valign = valign;
-      effects.enter(TYPE_CELL_DIVIDER);
-      effects.consume(code);
-      effects.exit(TYPE_CELL_DIVIDER);
-      numCols += 1;
-      return cellOrGridStart;
-    }
-
-    function cell(code) {
-      colPos += 1;
-      // find existing col
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign) {
-        const idx = cols.indexOf(colPos);
-        if (idx >= 0) {
-          effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._colEnd = colPos;
-          effects.enter(TYPE_CELL_DIVIDER);
-          effects.consume(code);
-          effects.exit(TYPE_CELL_DIVIDER);
-          numCols += 1;
-          return cellOrGridStart;
-        }
-        effects.consume(code);
-        return cell;
-      }
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof) {
-        // row with cells never terminate eof
-        return nok(code);
-      }
-
-      effects.consume(code);
-      return (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.backslash)
-        ? cellEscaped
-        : cell;
-    }
-
-    function cellEscaped(code) {
-      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.backslash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign) {
-        colPos += 1;
-        effects.consume(code);
-        return cell;
-      }
-      return cell(code);
-    }
-  }
-
-  function resolveHeaderAndFooter(events, context) {
-    // detect headers:
-    // no `=` lines -> only body
-    // 1 `=` line -> header + body
-    // 2 `=` lines -> header + body + footer
-    const fatLines = [];
-    let bodyStart = -1; // should default to 1. but just be sure
-
-    for (let idx = 0; idx < events.length; idx += 1) {
-      const [e, node] = events[idx];
-      const { type } = node;
-      if (type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
-        if (e === 'enter') {
-          bodyStart = idx;
-        } else {
-          // eslint-disable-next-line prefer-const
-          let [hdrIdx, ftrIdx] = fatLines;
-          const bdy = node;
-          if (hdrIdx > bodyStart + 1) {
-            // insert header above body
-            const hdr = {
-              type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER,
-              start: bdy.start,
-              end: events[hdrIdx][1].end,
-            };
-            bdy.start = hdr.end;
-            events[bodyStart][1] = hdr;
-            events.splice(
-              hdrIdx,
-              0,
-              ['exit', hdr, context],
-              ['enter', bdy, context],
-            );
-            idx += 2;
-            ftrIdx += 2;
-          }
-
-          if (ftrIdx) {
-            // insert footer below body
-            const ftr = {
-              type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER,
-              start: events[ftrIdx][1].start,
-              end: bdy.end,
-            };
-            bdy.end = ftr.start;
-            events.splice(
-              ftrIdx,
-              0,
-              ['exit', bdy, context],
-              ['enter', ftr, context],
-            );
-            idx += 2;
-            events[idx][1] = ftr;
-          }
-        }
-      } else if (type === TYPE_ROW_LINE && e === 'enter' && node._type === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo) {
-        fatLines.push(idx);
-      }
-    }
-    return events;
-  }
-
-  function resolveTable(events, context) {
-    // remove discarded
-    events = events.filter(([, node]) => !node._discard);
-
-    events = resolveHeaderAndFooter(events, context);
-    // let i = 0;
-    // for (const [d, { type }] of events) {
-    //   if (d === 'exit') {
-    //     i -= 2;
-    //   }
-    //   console.log(' '.repeat(i), d, type);
-    //   if (d === 'enter') {
-    //     i += 2;
-    //   }
-    // }
-    return events;
-  }
-
-  function resolveAllTable(events, context) {
-    // since we create a detached parser for each cell content later (in from-markdown.js)
-    // we need to remember the definitions of the overall document. otherwise the cell parsers
-    // would not detect the image and link references.
-    const { defined } = context.parser;
-
-    // find all grid tables and remember the definitions
-    for (const [evt, node] of events) {
-      if (evt === 'enter' && node.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE) {
-        node._definitions = defined;
-      }
-    }
-    return events;
-  }
-}
-
-function create(options = {}) {
-  return {
-    flow: {
-      [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign]: parse(options),
-    },
-  };
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/to-markdown.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/to-markdown.js ***!
-  \*********************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ toMarkdown),
-/* harmony export */   "lineWrapTextHandler": () => (/* binding */ lineWrapTextHandler)
-/* harmony export */ });
-/* harmony import */ var mdast_util_to_markdown_lib_handle_text_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-markdown/lib/handle/text.js */ "./node_modules/mdast-util-to-markdown/lib/handle/text.js");
-/* harmony import */ var mdast_util_to_markdown_lib_handle_inline_code_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-to-markdown/lib/handle/inline-code.js */ "./node_modules/mdast-util-to-markdown/lib/handle/inline-code.js");
-/* harmony import */ var mdast_util_to_markdown_lib_handle_code_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-to-markdown/lib/handle/code.js */ "./node_modules/mdast-util-to-markdown/lib/handle/code.js");
-/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js");
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-/* eslint-disable no-unused-vars,no-param-reassign */
-
-
-
-
-
-
-function* distribute(size, times) {
-  const delta = size / times;
-  let len = delta;
-  let prevLen = 0;
-  for (let i = 0; i < times - 1; i += 1) {
-    yield [Math.round(len - prevLen), i];
-    prevLen = Math.round(len);
-    len += delta;
-  }
-  yield [Math.round(size - prevLen), times - 1];
-}
-
-function spanWidth(cols, idx, cell) {
-  let width = 0;
-  for (let i = 0; i < cell.colSpan; i += 1) {
-    width += cols[idx + i].width;
-  }
-  return width;
-}
-
-function lineWrapTextHandler(node, parent, context, safeOptions) {
-  const textNode = {
-    ...node,
-    value: node.value.replace(/[ \t\v\r\n]/g, ' '),
-  };
-  let value = (0,mdast_util_to_markdown_lib_handle_text_js__WEBPACK_IMPORTED_MODULE_1__.text)(textNode, parent, context, safeOptions);
-  const { lineWidth } = context.options;
-  if (lineWidth && value.length > lineWidth) {
-    // check if in heading
-    if (context.stack.includes('headingAtx')) {
-      return value;
-    }
-    const lines = [];
-    const words = value.split(' ');
-    let len = safeOptions.now.column - 1;
-    let line = [];
-    for (const word of words) {
-      const wordLen = word.length;
-      if (len + wordLen > lineWidth && line.length > 0) {
-        lines.push(line.join(' '));
-        line = [];
-        len = 0;
-      }
-      line.push(word);
-      len += wordLen + 1;
-    }
-    if (line.length) {
-      lines.push(line.join(' '));
-    }
-    value = lines.join('\n');
-  }
-  return value;
-}
-// don't wrap for peek operations
-lineWrapTextHandler.peek = mdast_util_to_markdown_lib_handle_text_js__WEBPACK_IMPORTED_MODULE_1__.text;
-
-class Table {
-  constructor() {
-    Object.assign(this, {
-      lastRow: null,
-      rows: [],
-      headerSize: 0,
-      footerSize: 0,
-      opts: {
-        // default desired width of a table (including delimiters)
-        width: 120,
-        // minimum cell content width (excluding delimiters)
-        minCellWidth: 12,
-      },
-    });
-  }
-
-  addHeaderRow(row) {
-    this.addRow(row, this.headerSize);
-    this.headerSize += 1;
-  }
-
-  addRow(cells, idx = this.rows.length - this.footerSize) {
-    const row = {
-      height: 0,
-      cells: [],
-    };
-    this.rows.splice(idx, 0, row);
-    this.lastRow = this.rows[this.rows.length - 1];
-    for (const cell of cells) {
-      this.addCell(cell, row);
-    }
-  }
-
-  addFooterRow(row) {
-    this.addRow(row, this.rows.length);
-    this.footerSize += 1;
-  }
-
-  addCell(cell, row) {
-    if (!this.lastRow) {
-      this.lastRow = {
-        height: 0,
-        cells: [],
-      };
-      this.rows.push(this.lastRow);
-    }
-    row = row || this.lastRow;
-    row.cells.push(cell);
-    for (let i = 1; i < cell.colSpan; i += 1) {
-      row.cells.push({
-        align: cell.align,
-      });
-    }
-  }
-
-  renderCell(cell, context, maxWidth) {
-    // set line wrap to width
-    const oldWidth = context.options.lineWidth;
-    // it's easier to calculate in the padding (+2) and border (+1) here than everywhere else.
-    // so the column width is equal to the cell.width
-    context.options.lineWidth = maxWidth - 3;
-    context.options.minLineWidth = this.opts.minCellWidth;
-
-    // enter cell construct in order to escape unsafe characters
-    const exit = context.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL);
-
-    cell.value = context.handle(cell.tree, null, context, {
-      before: '\n',
-      after: '\n',
-      now: { line: 1, column: 1 },
-      lineShift: 0,
-    });
-
-    exit();
-
-    context.options.lineWidth = oldWidth;
-    // calculate actual width and height of cell
-    const lines = cell.value.split('\n');
-    // trim leading empty cells
-    while (lines.length > 1 && lines[0].match(/^\s*$/)) {
-      lines.shift();
-    }
-    // trim trailing empty cells
-    while (lines.length > 1 && lines[lines.length - 1].match(/^\s*$/)) {
-      lines.pop();
-    }
-
-    cell.lines = lines;
-    cell.height = lines.length;
-    cell.width = 0;
-    for (const line of lines) {
-      cell.width = Math.max(cell.width, line.length);
-    }
-    cell.width += 3;
-    return cell;
-  }
-
-  toMarkdown(context) {
-    // populate the matrix with the rowspans and compute max width
-    // (the empty cells for the colspans are already created during insert).
-    let realNumCols = 0;
-    const cols = [];
-    for (let y = 0; y < this.rows.length; y += 1) {
-      const row = this.rows[y];
-      for (let x = 0; x < row.cells.length; x += 1) {
-        let col = cols[x];
-        if (!col) {
-          col = {
-            width: 3,
-          };
-          cols[x] = col;
-        }
-        const cell = row.cells[x];
-        if (cell.tree) {
-          realNumCols = Math.max(realNumCols, x + 1);
-        }
-        if (cell.rowSpan > 1) {
-          // insert colspan amount of null cells below
-          for (let i = 1; i < cell.rowSpan; i += 1) {
-            const yy = i + y;
-            // create empty linked cells for the rows, so that it can render the lines correctly.
-            const empty = new Array(cell.colSpan).fill({});
-            empty[0] = { linked: cell };
-            this.rows[yy].cells.splice(x, 0, ...empty);
-          }
-        }
-      }
-    }
-
-    // now trim tailing colspans
-    if (cols.length > realNumCols) {
-      cols.length = realNumCols;
-      for (const { cells } of this.rows) {
-        if (cells.length > realNumCols) {
-          cells.length = realNumCols;
-          // find trailing colspan
-          let x = cells.length - 1;
-          while (x >= 0 && !cells[x].tree) {
-            x -= 1;
-          }
-          if (x >= 0) {
-            cells[x].colSpan = realNumCols - x;
-          }
-        }
-      }
-    }
-
-    const numCols = cols.length;
-
-    // add empty cells if needed
-    for (const row of this.rows) {
-      for (let i = row.cells.length; i < numCols; i += 1) {
-        row.cells.push({ tree: { type: 'root' }, colSpan: 1, rowSpan: 1 });
-      }
-    }
-
-    // populate the columns with default max widths
-    for (const [d, idx] of distribute(this.opts.width, numCols)) {
-      cols[idx].maxWidth = d;
-    }
-
-    // render cells
-    for (const row of this.rows) {
-      for (let x = 0; x < row.cells.length; x += 1) {
-        const cell = row.cells[x];
-        if (cell.tree) {
-          // get the max width from the columns it spans
-          let maxWidth = 0;
-          for (let i = 0; i < cell.colSpan; i += 1) {
-            maxWidth += cols[x + i].maxWidth;
-          }
-          this.renderCell(cell, context, maxWidth);
-          // distribute effective cell.width among the columns it spans
-          for (const [avgColWidth, idx] of distribute(cell.width, cell.colSpan)) {
-            const col = cols[x + idx];
-            col.width = Math.max(col.width, avgColWidth);
-          }
-          // if valign, the col needs to be at least 4 (3 + delim) wide
-          if (cell.valign) {
-            cols[x].width = Math.max(4, cols[x].width);
-          }
-        }
-      }
-    }
-    // re-render cells where elements dictated the min-width (eg, large headings)
-    for (const row of this.rows) {
-      row.minHeight = 0;
-      row.height = 0;
-      for (let x = 0; x < row.cells.length; x += 1) {
-        const cell = row.cells[x];
-        if (cell.tree) {
-          // get the max width from the columns it spans
-          const width = spanWidth(cols, x, cell);
-          if (width >= cell.width) {
-            this.renderCell(cell, context, width);
-            // if the new cell width is bigger now (most probably due to a problem in the line
-            // break renderer), fix the columns.
-            if (cell.width > width) {
-              for (const [avgColWidth, idx] of distribute(cell.width, cell.colSpan)) {
-                const col = cols[x + idx];
-                col.width = Math.max(col.width, avgColWidth);
-              }
-            } else {
-              cell.width = width;
-            }
-          }
-          if (cell.rowSpan === 1) {
-            row.height = Math.max(row.height, cell.height);
-          }
-        }
-      }
-    }
-
-    // distribute row spans
-    for (let y = 0; y < this.rows.length; y += 1) {
-      const row = this.rows[y];
-      for (let x = 0; x < row.cells.length; x += 1) {
-        const cell = row.cells[x];
-        if (cell.rowSpan > 1) {
-          const distHeight = Math.max(cell.rowSpan, cell.height - cell.rowSpan + 1);
-          for (const [d, idx] of distribute(distHeight, cell.rowSpan)) {
-            this.rows[y + idx].height = Math.max(this.rows[y + idx].height, d);
-          }
-        }
-      }
-    }
-
-    // create grid and table
-    const gtVLineEnds = '+';
-    const gtHLineEnds = '+';
-    const align = {
-      left: { b: ':', e: '', len: 1 },
-      right: { b: '', e: ':', len: 1 },
-      center: { b: ':', e: ':', len: 2 },
-      justify: { b: '>', e: '<', len: 2 },
-      top: '^',
-      bottom: 'v',
-      middle: 'x',
-    };
-    const lines = [];
-    // eslint-disable-next-line no-nested-ternary
-    const headerIdx = this.headerSize
-      ? this.headerSize
-      : (this.footerSize ? 0 : -1);
-    const footerIdx = this.rows.length - this.footerSize;
-    for (let y = 0; y < this.rows.length; y += 1) {
-      const row = this.rows[y];
-
-      // first, draw the grid line
-      const grid = [];
-      const c = y === headerIdx || y === footerIdx ? '=' : '-';
-      let prevCell;
-      let pendingGrid = 0;
-      let pendingAlign = null;
-      let pendingVAlign = null;
-
-      const commitInnerGridLine = () => {
-        if (pendingVAlign) {
-          const middle = Math.floor((pendingGrid - 1) / 2);
-          grid.push(c.repeat(middle));
-          grid.push(pendingVAlign);
-          grid.push(c.repeat(pendingGrid - middle - 1));
-        } else {
-          grid.push(c.repeat(pendingGrid));
-        }
-      };
-
-      const commitGridLine = () => {
-        if (pendingGrid) {
-          if (pendingAlign) {
-            pendingGrid -= pendingAlign.len;
-            grid.push(pendingAlign.b);
-            commitInnerGridLine();
-            grid.push(pendingAlign.e);
-          } else {
-            commitInnerGridLine();
-          }
-          pendingGrid = 0;
-        }
-      };
-
-      for (let x = 0; x < row.cells.length; x += 1) {
-        let d0 = '+';
-        if (x === 0 && y > 0) {
-          d0 = gtHLineEnds;
-        }
-        if (y === 0 && x > 0) {
-          d0 = gtVLineEnds;
-        }
-        const cell = row.cells[x];
-        const col = cols[x];
-        if (cell.tree) {
-          commitGridLine();
-          grid.push(d0);
-          pendingGrid = col.width - 1;
-          pendingAlign = align[cell.align];
-          pendingVAlign = align[cell.valign];
-        } else if (cell.linked) {
-          commitGridLine();
-          const width = spanWidth(cols, x, cell.linked);
-          const text = cell.linked.lines.shift() || '';
-          grid.push(`| ${text.padEnd(width - 3, ' ')} `);
-          x += cell.linked.colSpan - 1;
-        } else {
-          pendingGrid += col.width;
-        }
-        prevCell = cell;
-      }
-      commitGridLine();
-
-      // if last col was a rowspan, draw a |
-      let d3 = prevCell?.linked ? '|' : gtHLineEnds;
-      if (y === 0) {
-        d3 = '+';
-      }
-      lines.push(`${grid.join('')}${d3}`);
-
-      // then draw the cells
-      for (let yy = 0; yy < row.height; yy += 1) {
-        const line = [];
-        for (let x = 0; x < row.cells.length; x += 1) {
-          let cell = row.cells[x];
-          if (cell.linked) {
-            cell = cell.linked;
-          }
-          if (cell.tree) {
-            const width = spanWidth(cols, x, cell);
-            let text = '';
-            if (!cell.valign
-              || cell.valign === 'top'
-              || (cell.valign === 'middle' && yy >= Math.floor(row.height - cell.height) / 2)
-              || (cell.valign === 'bottom' && yy >= row.height - cell.height)) {
-              text = cell.lines.shift() || '';
-            }
-            line.push(`| ${text.padEnd(width - 3, ' ')} `);
-          }
-        }
-        lines.push(`${line.join('')}|`);
-      }
-    }
-
-    // add last grid line
-    const d = this.rows.length === this.headerSize ? '=' : '-'; // special case: only header
-    const grid = [];
-    const lastRow = this.rows[this.rows.length - 1];
-    for (let x = 0; x < cols.length; x += 1) {
-      const col = cols[x];
-      // if the cell above was a colspan, and we are on the last line, don't draw the `+`
-      const aboveCell = lastRow.cells[x];
-      let c = aboveCell.tree || aboveCell.linked ? gtVLineEnds : d;
-      if (x === 0) {
-        c = '+';
-      }
-      grid.push(`${c}${d.repeat(col.width - 1)}`);
-    }
-    lines.push(`${grid.join('')}+`);
-
-    return lines.join('\n');
-  }
-}
-
-function pushTable(context, table) {
-  if (!context.gridTables) {
-    context.gridTables = [];
-  }
-  context.gridTables.push(table);
-  return table;
-}
-
-function popTable(context) {
-  return context.gridTables.pop();
-}
-
-function peekTable(context) {
-  return context.gridTables[context.gridTables.length - 1];
-}
-
-function handleCell(node, parent, context, safeOptions) {
-  return {
-    tree: {
-      type: 'root',
-      children: node.children,
-    },
-    colSpan: node.colSpan || 1,
-    rowSpan: node.rowSpan || 1,
-    align: node.align,
-    valign: node.valign,
-  };
-}
-
-function handleRow(node, parent, context, safeOptions) {
-  const row = [];
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
-      row.push(handleCell(child, node, context, safeOptions));
-    }
-  }
-  return row;
-}
-
-function handleHeader(node, parent, context, safeOptions) {
-  const table = peekTable(context);
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-      table.addHeaderRow(handleRow(child, node, context, safeOptions));
-    }
-  }
-}
-
-function handleBody(node, parent, context, safeOptions) {
-  const table = peekTable(context);
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-      table.addRow(handleRow(child, node, context, safeOptions));
-    }
-  }
-}
-
-function handleFooter(node, parent, context, safeOptions) {
-  const table = peekTable(context);
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-      table.addFooterRow(handleRow(child, node, context, safeOptions));
-    }
-  }
-}
-
-function gridTable(node, parent, context, safeOptions) {
-  const exit = context.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
-
-  const table = pushTable(context, new Table());
-
-  for (const child of node.children) {
-    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER) {
-      handleHeader(child, node, context, safeOptions);
-    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
-      handleBody(child, node, context, safeOptions);
-    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER) {
-      handleFooter(child, node, context, safeOptions);
-    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
-      table.addRow(handleRow(child, node, context, safeOptions));
-    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
-      table.addCell(handleCell(child, node, context, safeOptions));
-    }
-  }
-
-  exit();
-
-  return popTable(context).toMarkdown(context);
-}
-
-/**
- * Escapes cell delimiters in (block)) code
- */
-function blockCodeWithTable(node, parent, context) {
-  let value = (0,mdast_util_to_markdown_lib_handle_code_js__WEBPACK_IMPORTED_MODULE_2__.code)(node, parent, context);
-
-  if (context.stack.includes(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)) {
-    value = value.replace(/[|+]/mg, '\\$&');
-  }
-
-  return value;
-}
-
-/**
- * Escapes cell delimiters in inline code
- */
-function inlineCodeWithTable(node, parent, context) {
-  let value = (0,mdast_util_to_markdown_lib_handle_inline_code_js__WEBPACK_IMPORTED_MODULE_3__.inlineCode)(node, parent, context);
-
-  if (context.stack.includes(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)) {
-    value = value.replace(/[|+]/g, '\\$&');
-  }
-
-  return value;
-}
-
-function toMarkdown() {
-  return {
-    unsafe: [
-      // A pipe or a + in a cell must be encoded.
-      { character: '|', inConstruct: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL },
-      { character: '+', inConstruct: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL },
-    ],
-    handlers: {
-      // for now, we only line wrap 'text' nodes. all other would need more support in
-      // the default mdast-to-markdown handlers
-      text: lineWrapTextHandler,
-      gridTable,
-      inlineCode: inlineCodeWithTable,
-      code: blockCodeWithTable,
-    },
-  };
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/@adobe/helix-markdown-support/src/gridtable/types.js ***!
-  \***************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TYPE_BODY": () => (/* binding */ TYPE_BODY),
-/* harmony export */   "TYPE_CELL": () => (/* binding */ TYPE_CELL),
-/* harmony export */   "TYPE_FOOTER": () => (/* binding */ TYPE_FOOTER),
-/* harmony export */   "TYPE_HEADER": () => (/* binding */ TYPE_HEADER),
-/* harmony export */   "TYPE_ROW": () => (/* binding */ TYPE_ROW),
-/* harmony export */   "TYPE_TABLE": () => (/* binding */ TYPE_TABLE)
-/* harmony export */ });
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-const TYPE_TABLE = 'gridTable';
-const TYPE_HEADER = 'gtHeader';
-const TYPE_BODY = 'gtBody';
-const TYPE_FOOTER = 'gtFooter';
-const TYPE_ROW = 'gtRow';
-const TYPE_CELL = 'gtCell';
-
-
-/***/ }),
-
 /***/ "./node_modules/@adobe/helix-markdown-support/src/index.js":
 /*!*****************************************************************!*\
   !*** ./node_modules/@adobe/helix-markdown-support/src/index.js ***!
@@ -41429,15 +37851,17 @@ const TYPE_CELL = 'gtCell';
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "breaksAsSpaces": () => (/* reexport safe */ _remark_breaks_as_spaces_js__WEBPACK_IMPORTED_MODULE_1__["default"]),
-/* harmony export */   "dereference": () => (/* reexport safe */ _mdast_dereference_js__WEBPACK_IMPORTED_MODULE_10__["default"]),
+/* harmony export */   "dereference": () => (/* reexport safe */ _mdast_dereference_js__WEBPACK_IMPORTED_MODULE_11__["default"]),
 /* harmony export */   "fixCodeFlow": () => (/* reexport safe */ _mdast_fix_code_flow_js__WEBPACK_IMPORTED_MODULE_5__["default"]),
-/* harmony export */   "imageReferences": () => (/* reexport safe */ _mdast_image_references_js__WEBPACK_IMPORTED_MODULE_9__["default"]),
+/* harmony export */   "fixRootPhrasing": () => (/* reexport safe */ _mdast_fix_root_phrasing_js__WEBPACK_IMPORTED_MODULE_6__["default"]),
+/* harmony export */   "imageReferences": () => (/* reexport safe */ _mdast_image_references_js__WEBPACK_IMPORTED_MODULE_10__["default"]),
+/* harmony export */   "remarkGfmNoLink": () => (/* reexport safe */ _remark_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_12__["default"]),
 /* harmony export */   "robustTables": () => (/* reexport safe */ _mdast_robust_tables_js__WEBPACK_IMPORTED_MODULE_0__["default"]),
 /* harmony export */   "sanitizeFormats": () => (/* reexport safe */ _mdast_sanitize_formats_js__WEBPACK_IMPORTED_MODULE_4__["default"]),
 /* harmony export */   "sanitizeHeading": () => (/* reexport safe */ _mdast_sanitize_heading_js__WEBPACK_IMPORTED_MODULE_2__["default"]),
-/* harmony export */   "sanitizeLinks": () => (/* reexport safe */ _mdast_sanitize_links_js__WEBPACK_IMPORTED_MODULE_6__["default"]),
-/* harmony export */   "sanitizeText": () => (/* reexport safe */ _mdast_sanitize_text_js__WEBPACK_IMPORTED_MODULE_7__["default"]),
-/* harmony export */   "sanitizeTextAndFormats": () => (/* reexport safe */ _mdast_sanitize_text_and_formats_js__WEBPACK_IMPORTED_MODULE_8__["default"]),
+/* harmony export */   "sanitizeLinks": () => (/* reexport safe */ _mdast_sanitize_links_js__WEBPACK_IMPORTED_MODULE_7__["default"]),
+/* harmony export */   "sanitizeText": () => (/* reexport safe */ _mdast_sanitize_text_js__WEBPACK_IMPORTED_MODULE_8__["default"]),
+/* harmony export */   "sanitizeTextAndFormats": () => (/* reexport safe */ _mdast_sanitize_text_and_formats_js__WEBPACK_IMPORTED_MODULE_9__["default"]),
 /* harmony export */   "suppressSpaceCode": () => (/* reexport safe */ _mdast_suppress_spacecode_js__WEBPACK_IMPORTED_MODULE_3__["default"])
 /* harmony export */ });
 /* harmony import */ var _mdast_robust_tables_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mdast-robust-tables.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-robust-tables.js");
@@ -41446,11 +37870,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _mdast_suppress_spacecode_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mdast-suppress-spacecode.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-suppress-spacecode.js");
 /* harmony import */ var _mdast_sanitize_formats_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./mdast-sanitize-formats.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-formats.js");
 /* harmony import */ var _mdast_fix_code_flow_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./mdast-fix-code-flow.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-fix-code-flow.js");
-/* harmony import */ var _mdast_sanitize_links_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mdast-sanitize-links.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-links.js");
-/* harmony import */ var _mdast_sanitize_text_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mdast-sanitize-text.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-text.js");
-/* harmony import */ var _mdast_sanitize_text_and_formats_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./mdast-sanitize-text-and-formats.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-text-and-formats.js");
-/* harmony import */ var _mdast_image_references_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./mdast-image-references.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-image-references.js");
-/* harmony import */ var _mdast_dereference_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./mdast-dereference.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-dereference.js");
+/* harmony import */ var _mdast_fix_root_phrasing_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mdast-fix-root-phrasing.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-fix-root-phrasing.js");
+/* harmony import */ var _mdast_sanitize_links_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./mdast-sanitize-links.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-links.js");
+/* harmony import */ var _mdast_sanitize_text_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./mdast-sanitize-text.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-text.js");
+/* harmony import */ var _mdast_sanitize_text_and_formats_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./mdast-sanitize-text-and-formats.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-sanitize-text-and-formats.js");
+/* harmony import */ var _mdast_image_references_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./mdast-image-references.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-image-references.js");
+/* harmony import */ var _mdast_dereference_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./mdast-dereference.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-dereference.js");
+/* harmony import */ var _remark_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./remark-gfm-nolink.js */ "./node_modules/@adobe/helix-markdown-support/src/remark-gfm-nolink.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -41462,6 +37888,8 @@ __webpack_require__.r(__webpack_exports__);
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+
 
 
 
@@ -42064,8 +38492,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ dDereference)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42145,8 +38573,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ fixCodeFlow)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2021 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42207,6 +38635,66 @@ function fixCodeFlow(tree) {
 
 /***/ }),
 
+/***/ "./node_modules/@adobe/helix-markdown-support/src/mdast-fix-root-phrasing.js":
+/*!***********************************************************************************!*\
+  !*** ./node_modules/@adobe/helix-markdown-support/src/mdast-fix-root-phrasing.js ***!
+  \***********************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ fixRootPhrasing)
+/* harmony export */ });
+/* harmony import */ var mdast_util_phrasing__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-phrasing */ "./node_modules/mdast-util-phrasing/lib/index.js");
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+function wrap(children, from, to) {
+  const para = {
+    type: 'paragraph',
+  };
+  para.children = children.splice(from, to - from, para);
+}
+
+/**
+ * ensures that the root node has no phrasing children.
+ *
+ * @param {object} tree
+ * @returns {object} The modified (original) tree.
+ */
+function fixRootPhrasing(tree) {
+  const { children } = tree;
+  let firstPhrasing = -1;
+  for (let i = 0; i < children.length; i += 1) {
+    if ((0,mdast_util_phrasing__WEBPACK_IMPORTED_MODULE_0__.phrasing)(children[i])) {
+      if (firstPhrasing < 0) {
+        firstPhrasing = i;
+      }
+    } else if (firstPhrasing >= 0) {
+      wrap(children, firstPhrasing, i);
+      i = firstPhrasing;
+      firstPhrasing = -1;
+    }
+  }
+  if (firstPhrasing >= 0) {
+    wrap(children, firstPhrasing, children.length);
+  }
+  return tree;
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/@adobe/helix-markdown-support/src/mdast-image-references.js":
 /*!**********************************************************************************!*\
   !*** ./node_modules/@adobe/helix-markdown-support/src/mdast-image-references.js ***!
@@ -42217,8 +38705,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ imageReferences)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42290,8 +38778,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var mdast_util_to_hast__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-to-hast */ "./node_modules/mdast-util-to-hast/lib/index.js");
 /* harmony import */ var hast_util_to_html__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! hast-util-to-html */ "./node_modules/hast-util-to-html/lib/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42390,8 +38878,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeFormats)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42455,7 +38943,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeHeading)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -42556,8 +39044,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeLinks)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /* harmony import */ var unist_util_find__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-find */ "./node_modules/unist-util-find/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
@@ -42667,8 +39155,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeTextAndFormats)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /* harmony import */ var micromark_util_character__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-util-character */ "./node_modules/micromark-util-character/dev/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
@@ -42879,8 +39367,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeText)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -43008,8 +39496,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ suppressSpaceCode)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -43042,6 +39530,237 @@ function suppressSpaceCode(tree) {
     return unist_util_visit__WEBPACK_IMPORTED_MODULE_1__.CONTINUE;
   });
   return tree;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/helix-markdown-support/src/mdast-util-gfm-nolink.js":
+/*!*********************************************************************************!*\
+  !*** ./node_modules/@adobe/helix-markdown-support/src/mdast-util-gfm-nolink.js ***!
+  \*********************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gfmFromMarkdown": () => (/* binding */ gfmFromMarkdown),
+/* harmony export */   "gfmToMarkdown": () => (/* binding */ gfmToMarkdown)
+/* harmony export */ });
+/* harmony import */ var mdast_util_gfm_footnote__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-gfm-footnote */ "./node_modules/mdast-util-gfm-footnote/lib/index.js");
+/* harmony import */ var mdast_util_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-gfm-strikethrough */ "./node_modules/mdast-util-gfm-strikethrough/index.js");
+/* harmony import */ var mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-gfm-table */ "./node_modules/mdast-util-gfm-table/lib/index.js");
+/* harmony import */ var mdast_util_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-gfm-task-list-item */ "./node_modules/mdast-util-gfm-task-list-item/lib/index.js");
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+copied from
+https://github.com/micromark/micromark-extension-gfm/blob/7bc6b6f3baf941f877d7b2111e9257b21b13b37e/index.js
+
+(The MIT License)
+
+Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/**
+ * @typedef {import('mdast-util-from-markdown').Extension} FromMarkdownExtension
+ * @typedef {import('mdast-util-to-markdown').Options} ToMarkdownExtension
+ *
+ * @typedef {import('mdast-util-gfm-table').Options} Options
+ */
+
+// import {
+//   gfmAutolinkLiteralFromMarkdown,
+//   gfmAutolinkLiteralToMarkdown
+// } from 'mdast-util-gfm-autolink-literal'
+
+
+
+
+
+/**
+ * @returns {Array.<FromMarkdownExtension>}
+ */
+function gfmFromMarkdown() {
+  return [
+    (0,mdast_util_gfm_footnote__WEBPACK_IMPORTED_MODULE_0__.gfmFootnoteFromMarkdown)(),
+    mdast_util_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_1__.gfmStrikethroughFromMarkdown,
+    mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_2__.gfmTableFromMarkdown,
+    // gfmAutolinkLiteralFromMarkdown,
+    mdast_util_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_3__.gfmTaskListItemFromMarkdown,
+  ];
+}
+
+/**
+ * @param {Options} [options]
+ * @returns {ToMarkdownExtension}
+ */
+function gfmToMarkdown(options) {
+  return {
+    extensions: [
+      // gfmAutolinkLiteralToMarkdown,
+      (0,mdast_util_gfm_footnote__WEBPACK_IMPORTED_MODULE_0__.gfmFootnoteToMarkdown)(),
+      mdast_util_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_1__.gfmStrikethroughToMarkdown,
+      (0,mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_2__.gfmTableToMarkdown)(options),
+      mdast_util_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_3__.gfmTaskListItemToMarkdown,
+    ],
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/helix-markdown-support/src/micromark-extension-gfm-nolink.js":
+/*!******************************************************************************************!*\
+  !*** ./node_modules/@adobe/helix-markdown-support/src/micromark-extension-gfm-nolink.js ***!
+  \******************************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gfm": () => (/* binding */ gfm),
+/* harmony export */   "gfmHtml": () => (/* binding */ gfmHtml)
+/* harmony export */ });
+/* harmony import */ var micromark_util_combine_extensions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! micromark-util-combine-extensions */ "./node_modules/micromark-util-combine-extensions/index.js");
+/* harmony import */ var micromark_extension_gfm_footnote__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-extension-gfm-footnote */ "./node_modules/micromark-extension-gfm-footnote/dev/lib/syntax.js");
+/* harmony import */ var micromark_extension_gfm_footnote__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! micromark-extension-gfm-footnote */ "./node_modules/micromark-extension-gfm-footnote/dev/lib/html.js");
+/* harmony import */ var micromark_extension_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark-extension-gfm-strikethrough */ "./node_modules/micromark-extension-gfm-strikethrough/dev/lib/syntax.js");
+/* harmony import */ var micromark_extension_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! micromark-extension-gfm-strikethrough */ "./node_modules/micromark-extension-gfm-strikethrough/dev/lib/html.js");
+/* harmony import */ var micromark_extension_gfm_table__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! micromark-extension-gfm-table */ "./node_modules/micromark-extension-gfm-table/dev/lib/syntax.js");
+/* harmony import */ var micromark_extension_gfm_table__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! micromark-extension-gfm-table */ "./node_modules/micromark-extension-gfm-table/dev/lib/html.js");
+/* harmony import */ var micromark_extension_gfm_tagfilter__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! micromark-extension-gfm-tagfilter */ "./node_modules/micromark-extension-gfm-tagfilter/index.js");
+/* harmony import */ var micromark_extension_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! micromark-extension-gfm-task-list-item */ "./node_modules/micromark-extension-gfm-task-list-item/dev/lib/syntax.js");
+/* harmony import */ var micromark_extension_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! micromark-extension-gfm-task-list-item */ "./node_modules/micromark-extension-gfm-task-list-item/dev/lib/html.js");
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+copied from
+https://github.com/micromark/micromark-extension-gfm/blob/942585eba9ec22fd9818638d42a7c8e62a7208b0/index.js
+
+(The MIT License)
+
+Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/**
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('micromark-extension-gfm-strikethrough').Options} Options
+ * @typedef {import('micromark-extension-gfm-footnote').HtmlOptions} HtmlOptions
+ */
+
+
+// import {
+//   gfmAutolinkLiteral,
+//   gfmAutolinkLiteralHtml,
+// } from 'micromark-extension-gfm-autolink-literal';
+
+
+
+
+
+
+/**
+ * Add support for parsing GFM in markdown.
+ *
+ * Function that can be called to get a syntax extension for micromark (passed
+ * in `extensions`).
+ *
+ * @param {Options} [options]
+ *   Configuration (optional).
+ *   Passed to `micromark-extens-gfm-strikethrough`.
+ * @returns {Extension}
+ *   Syntax extension for micromark (passed in `extensions`).
+ */
+function gfm(options) {
+  return (0,micromark_util_combine_extensions__WEBPACK_IMPORTED_MODULE_0__.combineExtensions)([
+    // gfmAutolinkLiteral,
+    (0,micromark_extension_gfm_footnote__WEBPACK_IMPORTED_MODULE_1__.gfmFootnote)(),
+    (0,micromark_extension_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_2__.gfmStrikethrough)(options),
+    micromark_extension_gfm_table__WEBPACK_IMPORTED_MODULE_3__.gfmTable,
+    micromark_extension_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_4__.gfmTaskListItem,
+  ]);
+}
+
+/**
+ * Add support for turning GFM in markdown to HTML.
+ *
+ * Function that can be called to get an HTML extension for micromark (passed
+ * in `htmlExtensions`).
+ *
+ * @param {HtmlOptions} [options]
+ *   Configuration (optional).
+ *   Passed to `micromark-extens-gfm-footnote`.
+ * @returns {HtmlExtension}
+ *   HTML extension for micromark (passed in `htmlExtensions`).
+ */
+/* c8 ignore next 10 */
+function gfmHtml(options) {
+  return (0,micromark_util_combine_extensions__WEBPACK_IMPORTED_MODULE_0__.combineHtmlExtensions)([
+    // gfmAutolinkLiteralHtml,
+    (0,micromark_extension_gfm_footnote__WEBPACK_IMPORTED_MODULE_5__.gfmFootnoteHtml)(options),
+    micromark_extension_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_6__.gfmStrikethroughHtml,
+    micromark_extension_gfm_table__WEBPACK_IMPORTED_MODULE_7__.gfmTableHtml,
+    micromark_extension_gfm_tagfilter__WEBPACK_IMPORTED_MODULE_8__.gfmTagfilterHtml,
+    micromark_extension_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_9__.gfmTaskListItemHtml,
+  ]);
 }
 
 
@@ -43089,6 +39808,2261 @@ function softBreak() {
       break: handleBreak,
     },
   });
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/helix-markdown-support/src/remark-gfm-nolink.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/@adobe/helix-markdown-support/src/remark-gfm-nolink.js ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ remarkGfm)
+/* harmony export */ });
+/* harmony import */ var _micromark_extension_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./micromark-extension-gfm-nolink.js */ "./node_modules/@adobe/helix-markdown-support/src/micromark-extension-gfm-nolink.js");
+/* harmony import */ var _mdast_util_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mdast-util-gfm-nolink.js */ "./node_modules/@adobe/helix-markdown-support/src/mdast-util-gfm-nolink.js");
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+copied from
+https://github.com/remarkjs/remark-gfm/blob/82542ee281b8aa1e113578a4a254717d0120fcb7/index.js
+
+(The MIT License)
+
+Copyright (c) 2020 Titus Wormer <tituswormer@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/* eslint-disable no-unused-vars */
+/**
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('micromark-extension-gfm').Options & import('mdast-util-gfm').Options} Options
+ */
+
+
+
+
+/**
+ * Plugin to support GFM (autolink literals, footnotes, strikethrough, tables, tasklists).
+ *
+ * @this {import('unified').Processor}
+ * @type {import('unified').Plugin<[Options?]|void[], Root>}
+ */
+function remarkGfm(options = {}) {
+  const data = this.data();
+
+  /**
+   * @param {string} field
+   * @param {unknown} value
+   */
+  function add(field, value) {
+    const list = /** @type {unknown[]} */ (
+      // Other extensions
+      /* c8 ignore next 2 */
+      data[field] ? data[field] : (data[field] = [])
+    );
+
+    list.push(value);
+  }
+
+  add('micromarkExtensions', (0,_micromark_extension_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_0__.gfm)(options));
+  add('fromMarkdownExtensions', (0,_mdast_util_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_1__.gfmFromMarkdown)());
+  add('toMarkdownExtensions', (0,_mdast_util_gfm_nolink_js__WEBPACK_IMPORTED_MODULE_1__.gfmToMarkdown)(options));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/from-markdown.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/from-markdown.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gridTablesFromMarkdown": () => (/* binding */ gridTablesFromMarkdown)
+/* harmony export */ });
+/* harmony import */ var mdast_util_from_markdown__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! mdast-util-from-markdown */ "./node_modules/mdast-util-from-markdown/dev/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/* harmony import */ var _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/micromark-extension-gridtables */ "./node_modules/@adobe/micromark-extension-gridtables/src/index.js");
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/mdast-util-gridtables/src/types.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+/* eslint-disable no-underscore-dangle */
+
+
+
+
+
+function unescapeDelimsInCode(tree) {
+  (0,unist_util_visit__WEBPACK_IMPORTED_MODULE_2__.visit)(tree, (node) => {
+    if (node.type === 'inlineCode' || node.type === 'code') {
+      // eslint-disable-next-line no-param-reassign
+      node.value = node.value.replace(/\\([+|])/gm, '$1');
+    }
+    return unist_util_visit__WEBPACK_IMPORTED_MODULE_3__.CONTINUE;
+  });
+}
+
+function multiline(lines) {
+  // remove empty trailing lines
+  while (lines.length > 0 && lines[lines.length - 1].match(/^\s*$/)) {
+    lines.pop();
+  }
+
+  // calculate common indent
+  const prefixLen = lines
+    .filter((line) => !line.match(/^\s*$/))
+    .map((line) => line.match(/^ */)[0].length)
+    .reduce((min, len) => Math.min(len, min), Infinity);
+
+  // remove prefix
+  return lines
+    .map((line) => line.substring(prefixLen).trimEnd());
+}
+
+function getColSpan(info, token) {
+  const i0 = info.cols.indexOf(token._colStart);
+  const i1 = info.cols.indexOf(token._colEnd);
+  return i1 - i0;
+}
+
+function enterTable(token) {
+  this.enter({ type: _types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_TABLE, children: [] }, token);
+  this.setData('tableInfo', {
+    // the column positions of the table
+    cols: token._cols,
+    // the current column
+    colPos: 0,
+    // list of all cells
+    allCells: [],
+    // cells that are still open via rowSpan
+    pendingCells: [],
+    // the current cells of a row
+    cells: [],
+    // the grid dividers use for align the cells
+    dividers: [],
+    // the link/image reference definitions
+    definitions: token._definitions,
+  });
+}
+
+function createExitTable(options) {
+  let { processor } = options;
+  // create fake remark processor in case invoked recursively
+  if (!processor) {
+    processor = {
+      data(key) {
+        if (key === 'micromarkExtensions') {
+          return options.extensions;
+        }
+        if (key === 'fromMarkdownExtensions') {
+          return options.mdastExtensions;
+        }
+        /* c8 ignore next */
+        return undefined;
+      },
+    };
+  }
+
+  return function exitTable(token) {
+    // render cells
+    const info = this.getData('tableInfo');
+    for (const cell of info.allCells) {
+      const {
+        node, lines, colSpan, rowSpan,
+        align, valign,
+      } = cell;
+
+      const sanitizedLines = multiline(lines);
+
+      // add fake definitions from the main document
+      for (const def of info.definitions) {
+        sanitizedLines.push('');
+        sanitizedLines.push(`[${def}]: dummy`);
+      }
+      const cellContent = sanitizedLines.join('\n');
+
+      const tree = (0,mdast_util_from_markdown__WEBPACK_IMPORTED_MODULE_4__.fromMarkdown)(cellContent, {
+        extensions: processor.data('micromarkExtensions'),
+        mdastExtensions: processor.data('fromMarkdownExtensions'),
+      });
+
+      // remove previously added definitions
+      for (let i = 0; i < tree.children.length; i += 1) {
+        const child = tree.children[i];
+        if (child.type === 'definition' && info.definitions.includes(child.label)) {
+          tree.children.splice(i, 1);
+          i -= 1;
+        }
+      }
+
+      // remove escaped pipes and plusses in code
+      unescapeDelimsInCode(tree);
+
+      node.children = tree.children;
+      if (colSpan > 1) {
+        node.colSpan = colSpan;
+      }
+      if (rowSpan > 1) {
+        node.rowSpan = rowSpan;
+      }
+      if (align) {
+        node.align = align;
+      }
+      if (valign) {
+        node.valign = valign;
+      }
+    }
+    this.exit(token);
+  };
+}
+
+function enter(token) {
+  this.enter({ type: token.type, children: [] }, token);
+}
+
+function enterCell() {
+  this.buffer();
+}
+
+function exitCell(token) {
+  this.config.enter.data.call(this, token);
+  this.config.exit.data.call(this, token);
+  const data = this.resume();
+  const info = this.getData('tableInfo');
+  const colSpan = getColSpan(info, token);
+
+  let cell = info.pendingCells[info.colPos];
+
+  // open rowspan if we are on a divider line
+  if (info.isDivider) {
+    if (!cell) {
+      cell = info.cells[info.colPos];
+      info.pendingCells[info.colPos] = cell;
+    }
+    if (!cell) {
+      // throw Error('no matching rowspan');
+    } else {
+      cell.rowSpan += 1;
+    }
+  }
+
+  // if a rowspan is open, append to its cell
+  if (cell) {
+    cell.lines.push(data);
+    info.colPos += colSpan;
+    return;
+  }
+
+  // otherwise append to regular cell
+  cell = info.cells[info.colPos];
+  if (!cell) {
+    const div = info.dividers[info.colPos];
+    cell = {
+      rowSpan: 1,
+      colSpan,
+      align: div?._align,
+      valign: div?._valign,
+      node: {
+        type: _types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_CELL,
+      },
+      lines: [],
+    };
+    info.cells[info.colPos] = cell;
+    info.allCells.push(cell);
+  }
+  cell.lines.push(data);
+  info.colPos += colSpan;
+}
+
+function enterGridDivider(token) {
+  const info = this.getData('tableInfo');
+  // clear pending rowspans and set divider info
+  let colSpan = getColSpan(info, token);
+  while (colSpan > 0) {
+    colSpan -= 1;
+    info.pendingCells[info.colPos] = null;
+    info.dividers[info.colPos] = token;
+    info.colPos += 1;
+  }
+}
+
+function enterRowLine(token) {
+  const info = this.getData('tableInfo');
+  info.isDivider = token._type;
+  info.colPos = 0;
+  if (info.isDivider) {
+    info.dividers = [];
+  }
+}
+
+function commitRow(info) {
+  // create fake token for 'gtRow'
+  const rowToken = {
+    type: _types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_ROW,
+    start: { line: 0, column: 0, offset: 0 },
+    end: { line: 0, column: 0, offset: 0 },
+  };
+  this.enter({ type: _types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_ROW, children: [] }, rowToken);
+
+  // emit cells
+  for (const cell of info.cells) {
+    if (cell) {
+      const cellToken = {
+        type: _types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_CELL,
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      };
+      this.enter(cell.node, cellToken);
+      this.exit(cellToken);
+    }
+  }
+
+  this.exit(rowToken);
+  // eslint-disable-next-line no-param-reassign
+  info.cells = [];
+}
+
+function exitHeader(token) {
+  const info = this.getData('tableInfo');
+  // commit row  has some cells
+  if (info.cells.length) {
+    commitRow.call(this, info);
+    // also close all rowspans.
+    info.pendingCells = [];
+  }
+  this.exit(token);
+}
+
+function exitRowLine() {
+  const info = this.getData('tableInfo');
+  // commit row if on a divider and has some cells
+  if (info.isDivider && info.cells.length) {
+    commitRow.call(this, info);
+  }
+}
+
+function gridTablesFromMarkdown(options = {}) {
+  return {
+    enter: {
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_TABLE]: enterTable,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_HEADER]: enter,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_BODY]: enter,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_FOOTER]: enter,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_CELL]: enterCell,
+      [_adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_GRID_DIVIDER]: enterGridDivider,
+      [_adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE]: enterRowLine,
+    },
+    exit: {
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_TABLE]: createExitTable(options),
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_HEADER]: exitHeader,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_BODY]: exitHeader,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_FOOTER]: exitHeader,
+      [_types_js__WEBPACK_IMPORTED_MODULE_1__.TYPE_CELL]: exitCell,
+      [_adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE]: exitRowLine,
+    },
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/index.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/index.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TYPE_BODY": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY),
+/* harmony export */   "TYPE_CELL": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL),
+/* harmony export */   "TYPE_FOOTER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER),
+/* harmony export */   "TYPE_HEADER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER),
+/* harmony export */   "TYPE_ROW": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW),
+/* harmony export */   "TYPE_TABLE": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE),
+/* harmony export */   "gridTablesFromMarkdown": () => (/* reexport safe */ _from_markdown_js__WEBPACK_IMPORTED_MODULE_1__.gridTablesFromMarkdown),
+/* harmony export */   "gridTablesToMarkdown": () => (/* reexport safe */ _to_markdown_js__WEBPACK_IMPORTED_MODULE_2__.gridTablesToMarkdown),
+/* harmony export */   "mdast2hastGridTablesHandler": () => (/* reexport safe */ _mdast2hast_handler_js__WEBPACK_IMPORTED_MODULE_3__["default"])
+/* harmony export */ });
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/mdast-util-gridtables/src/types.js");
+/* harmony import */ var _from_markdown_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./from-markdown.js */ "./node_modules/@adobe/mdast-util-gridtables/src/from-markdown.js");
+/* harmony import */ var _to_markdown_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./to-markdown.js */ "./node_modules/@adobe/mdast-util-gridtables/src/to-markdown.js");
+/* harmony import */ var _mdast2hast_handler_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mdast2hast-handler.js */ "./node_modules/@adobe/mdast-util-gridtables/src/mdast2hast-handler.js");
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/mdast-clean-breaks.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/mdast-clean-breaks.js ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ sanitizeBreaks)
+/* harmony export */ });
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+function isFormat(type) {
+  return type === 'strong' || type === 'emphasis' || type === 'delete';
+}
+
+/**
+ * Sanitizes text:
+ * - trims ends of texts before break
+ * - trims ends of texts at the end
+ * - removes trailing breaks in containers
+ *   see https://github.com/micromark/micromark/issues/118#issuecomment-1238225086
+ * - removes empty text blocks, formats, paragraphs
+ *
+ * @param {object} tree
+ * @returns {object} The modified (original) tree.
+ */
+function sanitizeBreaks(tree) {
+  (0,unist_util_visit__WEBPACK_IMPORTED_MODULE_0__.visit)(tree, (node, index, parent) => {
+    const { children: siblings = [] } = parent || {};
+
+    if (node.type === 'text') {
+      // remove trailing whitespace if last text block
+      if (index === siblings.length - 1) {
+        // eslint-disable-next-line no-param-reassign
+        node.value = node.value.trimEnd();
+      }
+
+      // remove trailing whitespace before break
+      if (siblings[index + 1]?.type === 'break') {
+        // eslint-disable-next-line no-param-reassign
+        node.value = node.value.trimEnd();
+      }
+
+      // remove leading whitespace in paragraphs
+      if (index === 0 && parent?.type === 'paragraph') {
+        // eslint-disable-next-line no-param-reassign
+        node.value = node.value.trimStart();
+      }
+
+      // remove empty text nodes
+      if (!node.value) {
+        siblings.splice(index, 1);
+        return index - 1;
+      }
+    }
+
+    // remove trailing breaks altogether
+    if (node.type === 'break') {
+      if (index === siblings.length - 1) {
+        siblings.splice(index, 1);
+        return index - 1;
+      }
+
+      // eslint-disable-next-line no-param-reassign
+      delete node.value;
+    }
+
+    return unist_util_visit__WEBPACK_IMPORTED_MODULE_1__.CONTINUE;
+  });
+
+  // remove text, formats and paragraphs
+  function prune(node) {
+    const { children, type } = node;
+    if (type === 'text') {
+      return !node.value;
+    }
+    if (!children) {
+      return false;
+    }
+    for (let i = 0; i < children.length; i += 1) {
+      if (prune(children[i])) {
+        children.splice(i, 1);
+        i -= 1;
+      }
+    }
+    if (type === 'paragraph' || isFormat(type)) {
+      return children.length === 0;
+    }
+    return false;
+  }
+  prune(tree);
+
+  return tree;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/mdast2hast-handler.js":
+/*!*****************************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/mdast2hast-handler.js ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ gridTableHandler)
+/* harmony export */ });
+/* harmony import */ var mdast_util_to_hast__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-hast */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/mdast-util-gridtables/src/types.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+
+
+/**
+ * @typedef GridTableHandlerOptions
+ * @property {boolean} noHeader if true, <thead> and <tbody> elements are suppressed.
+ */
+
+/**
+ * Handles a row (i.e. the `gtRow` node)
+ * @return {HastNode} the 'tr' node
+ */
+function handleRow(h, node, cellElementName) {
+  const cells = [];
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
+      const props = {};
+      for (const p of ['colSpan', 'rowSpan', 'align', 'valign']) {
+        if (p in child) {
+          props[p] = child[p];
+        }
+      }
+      // if cell contains only 1 single paragraph, unwrap it
+      if (child.children?.length === 1 && child.children[0].type === 'paragraph') {
+        child.children = child.children[0].children;
+      }
+      const cell = h(child, cellElementName, props, (0,mdast_util_to_hast__WEBPACK_IMPORTED_MODULE_1__.all)(h, child));
+      cells.push(cell);
+
+      // clean text elements
+      (0,unist_util_visit__WEBPACK_IMPORTED_MODULE_2__.visit)(cell, (n) => {
+        if (n.tagName === 'code') {
+          return unist_util_visit__WEBPACK_IMPORTED_MODULE_3__.SKIP;
+        }
+        if (n.type === 'text') {
+          // eslint-disable-next-line no-param-reassign
+          n.value = n.value.replace(/\r?\n/mg, ' ');
+        }
+        return unist_util_visit__WEBPACK_IMPORTED_MODULE_3__.CONTINUE;
+      });
+    }
+  }
+
+  return h(node, 'tr', cells);
+}
+
+/**
+ * Handles a group (array) of rows. eg the children of a `gtBody`.
+ * @return {HastNode[]} the array of rows
+ */
+function createRows(h, node, cellElementName) {
+  const rows = [];
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+      rows.push(handleRow(h, child, cellElementName));
+    }
+  }
+  return rows;
+}
+
+/**
+ * Transforms the gridTable to a hast table
+ *
+ * @param {GridTableHandlerOptions} opts
+ * @return {function} A mdast-to-hast handler.
+ */
+function gridTableHandler(opts = {}) {
+  const { noHeader } = opts;
+
+  return function handleTable(h, node) {
+    let headerRows = [];
+    let bodyRows = [];
+    let footerRows = [];
+
+    for (const child of node.children) {
+      if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER) {
+        headerRows = createRows(h, child, 'th');
+      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
+        bodyRows = createRows(h, child, 'td');
+      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER) {
+        footerRows = createRows(h, child, 'td');
+      } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+        bodyRows.push(handleRow(h, child, 'td'));
+      }
+    }
+
+    let inner;
+    if (noHeader && footerRows.length === 0) {
+      inner = [...headerRows, ...bodyRows];
+    } else {
+      inner = [];
+      if (headerRows.length) {
+        inner.push(h(null, 'thead', headerRows));
+      }
+      if (bodyRows.length) {
+        inner.push(h(null, 'tbody', bodyRows));
+      }
+      if (footerRows.length) {
+        inner.push(h(null, 'tfoot', footerRows));
+      }
+    }
+
+    return h(node, 'table', inner);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/to-markdown.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/to-markdown.js ***!
+  \**********************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gridTablesToMarkdown": () => (/* binding */ gridTablesToMarkdown),
+/* harmony export */   "lineWrapTextHandler": () => (/* binding */ lineWrapTextHandler)
+/* harmony export */ });
+/* harmony import */ var mdast_util_to_markdown__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-to-markdown */ "./node_modules/mdast-util-to-markdown/lib/handle/index.js");
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/mdast-util-gridtables/src/types.js");
+/* harmony import */ var _mdast_clean_breaks_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mdast-clean-breaks.js */ "./node_modules/@adobe/mdast-util-gridtables/src/mdast-clean-breaks.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+/* eslint-disable no-unused-vars,no-param-reassign */
+
+
+
+
+const {
+  text: textHandler,
+  inlineCode,
+  code,
+} = mdast_util_to_markdown__WEBPACK_IMPORTED_MODULE_2__.handle;
+
+function* distribute(size, times) {
+  const delta = size / times;
+  let len = delta;
+  let prevLen = 0;
+  for (let i = 0; i < times - 1; i += 1) {
+    yield [Math.round(len - prevLen), i];
+    prevLen = Math.round(len);
+    len += delta;
+  }
+  yield [Math.round(size - prevLen), times - 1];
+}
+
+function spanWidth(cols, idx, cell) {
+  let width = 0;
+  for (let i = 0; i < cell.colSpan; i += 1) {
+    width += cols[idx + i].width;
+  }
+  return width;
+}
+
+function lineWrapTextHandler(node, parent, context, safeOptions) {
+  const textNode = {
+    ...node,
+    value: node.value.replace(/[ \t\v\r\n]/g, ' '),
+  };
+  let value = textHandler(textNode, parent, context, safeOptions);
+  const { lineWidth } = context.options;
+  if (lineWidth && value.length > lineWidth) {
+    // check if in heading
+    if (context.stack.includes('headingAtx')) {
+      return value;
+    }
+    const lines = [];
+    const words = value.split(' ');
+    let len = safeOptions.now.column - 1;
+    let line = [];
+    for (let word of words) {
+      const wordLen = word.length;
+      if (len + wordLen > lineWidth && line.length > 0) {
+        lines.push(line.join(' '));
+        line = [];
+        len = 0;
+      }
+      // escape the dot if the line-start looks like an ordered list
+      if (line.length === 0 && word.match(/^\d+\./)) {
+        word = word.replace('.', '\\.');
+      }
+      line.push(word);
+      len += wordLen + 1;
+    }
+    if (line.length) {
+      lines.push(line.join(' '));
+    }
+    value = lines.join('\n');
+  }
+  return value;
+}
+// don't wrap for peek operations
+lineWrapTextHandler.peek = textHandler;
+
+class Table {
+  constructor() {
+    Object.assign(this, {
+      lastRow: null,
+      rows: [],
+      headerSize: 0,
+      footerSize: 0,
+      opts: {
+        // default desired width of a table (including delimiters)
+        width: 120,
+        // minimum cell content width (excluding delimiters)
+        minCellWidth: 12,
+      },
+    });
+  }
+
+  addHeaderRow(row) {
+    this.addRow(row, this.headerSize);
+    this.headerSize += 1;
+  }
+
+  addRow(cells, idx = this.rows.length - this.footerSize) {
+    const row = {
+      height: 0,
+      cells: [],
+    };
+    this.rows.splice(idx, 0, row);
+    this.lastRow = this.rows[this.rows.length - 1];
+    for (const cell of cells) {
+      this.addCell(cell, row);
+    }
+  }
+
+  addFooterRow(row) {
+    this.addRow(row, this.rows.length);
+    this.footerSize += 1;
+  }
+
+  addCell(cell, row) {
+    if (!this.lastRow) {
+      this.lastRow = {
+        height: 0,
+        cells: [],
+      };
+      this.rows.push(this.lastRow);
+    }
+    row = row || this.lastRow;
+    row.cells.push(cell);
+    for (let i = 1; i < cell.colSpan; i += 1) {
+      row.cells.push({
+        align: cell.align,
+      });
+    }
+  }
+
+  renderCell(cell, state, maxWidth) {
+    // set line wrap to width
+    const oldWidth = state.options.lineWidth;
+    // it's easier to calculate in the padding (+2) and border (+1) here than everywhere else.
+    // so the column width is equal to the cell.width
+    state.options.lineWidth = maxWidth - 3;
+    state.options.minLineWidth = this.opts.minCellWidth;
+
+    // enter cell construct in order to escape unsafe characters
+    const exit = state.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL);
+    const subexit = state.enter('phrasing');
+
+    // should probably create a clone and not alter the original mdast
+    (0,_mdast_clean_breaks_js__WEBPACK_IMPORTED_MODULE_1__["default"])(cell.tree);
+
+    cell.value = state.containerFlow(cell.tree, {
+      before: '\n',
+      after: '\n',
+      now: { line: 1, column: 1 },
+      lineShift: 0,
+    });
+
+    subexit();
+    exit();
+
+    state.options.lineWidth = oldWidth;
+    // calculate actual width and height of cell
+    const lines = cell.value.split('\n');
+    cell.lines = lines;
+    cell.height = lines.length;
+    cell.width = 0;
+    for (const line of lines) {
+      cell.width = Math.max(cell.width, line.length);
+    }
+    cell.width += 3;
+    return cell;
+  }
+
+  toMarkdown(context) {
+    // populate the matrix with the rowspans and compute max width
+    // (the empty cells for the colspans are already created during insert).
+    let realNumCols = 0;
+    const cols = [];
+    for (let y = 0; y < this.rows.length; y += 1) {
+      const row = this.rows[y];
+      for (let x = 0; x < row.cells.length; x += 1) {
+        let col = cols[x];
+        if (!col) {
+          col = {
+            width: 3,
+          };
+          cols[x] = col;
+        }
+        const cell = row.cells[x];
+        if (cell.tree) {
+          realNumCols = Math.max(realNumCols, x + 1);
+        }
+        if (cell.rowSpan > 1) {
+          // insert colspan amount of null cells below
+          for (let i = 1; i < cell.rowSpan; i += 1) {
+            const yy = i + y;
+            // create empty linked cells for the rows, so that it can render the lines correctly.
+            const empty = new Array(cell.colSpan).fill({});
+            empty[0] = { linked: cell };
+            this.rows[yy].cells.splice(x, 0, ...empty);
+          }
+        }
+      }
+    }
+
+    // now trim tailing colspans
+    if (cols.length > realNumCols) {
+      cols.length = realNumCols;
+      for (const { cells } of this.rows) {
+        if (cells.length > realNumCols) {
+          cells.length = realNumCols;
+          // find trailing colspan
+          let x = cells.length - 1;
+          while (x >= 0 && !cells[x].tree) {
+            x -= 1;
+          }
+          if (x >= 0) {
+            cells[x].colSpan = realNumCols - x;
+          }
+        }
+      }
+    }
+
+    // stop processing if no columns found
+    if (cols.length === 0) {
+      return '';
+    }
+
+    const numCols = cols.length;
+
+    // add empty cells if needed
+    for (const row of this.rows) {
+      for (let i = row.cells.length; i < numCols; i += 1) {
+        row.cells.push({ tree: { type: 'root', children: [] }, colSpan: 1, rowSpan: 1 });
+      }
+    }
+
+    // populate the columns with default max widths
+    for (const [d, idx] of distribute(this.opts.width, numCols)) {
+      cols[idx].maxWidth = d;
+    }
+
+    // render cells
+    for (const row of this.rows) {
+      for (let x = 0; x < row.cells.length; x += 1) {
+        const cell = row.cells[x];
+        if (cell.tree) {
+          // get the max width from the columns it spans
+          let maxWidth = 0;
+          for (let i = 0; i < cell.colSpan; i += 1) {
+            maxWidth += cols[x + i].maxWidth;
+          }
+          this.renderCell(cell, context, maxWidth);
+          // distribute effective cell.width among the columns it spans
+          for (const [avgColWidth, idx] of distribute(cell.width, cell.colSpan)) {
+            const col = cols[x + idx];
+            col.width = Math.max(col.width, avgColWidth);
+          }
+          // if valign, the col needs to be at least 4 (3 + delim) wide
+          if (cell.valign) {
+            cols[x].width = Math.max(4, cols[x].width);
+          }
+        }
+      }
+    }
+    // re-render cells where elements dictated the min-width (eg, large headings)
+    for (const row of this.rows) {
+      row.minHeight = 0;
+      row.height = 0;
+      for (let x = 0; x < row.cells.length; x += 1) {
+        const cell = row.cells[x];
+        if (cell.tree) {
+          // get the max width from the columns it spans
+          const width = spanWidth(cols, x, cell);
+          if (width >= cell.width) {
+            this.renderCell(cell, context, width);
+            // if the new cell width is bigger now (most probably due to a problem in the line
+            // break renderer), fix the columns.
+            if (cell.width > width) {
+              for (const [avgColWidth, idx] of distribute(cell.width, cell.colSpan)) {
+                const col = cols[x + idx];
+                col.width = Math.max(col.width, avgColWidth);
+              }
+            } else {
+              cell.width = width;
+            }
+          }
+          if (cell.rowSpan === 1) {
+            row.height = Math.max(row.height, cell.height);
+          }
+        }
+      }
+    }
+
+    // distribute row spans
+    for (let y = 0; y < this.rows.length; y += 1) {
+      const row = this.rows[y];
+      for (let x = 0; x < row.cells.length; x += 1) {
+        const cell = row.cells[x];
+        if (cell.rowSpan > 1) {
+          const distHeight = Math.max(cell.rowSpan, cell.height - cell.rowSpan + 1);
+          for (const [d, idx] of distribute(distHeight, cell.rowSpan)) {
+            this.rows[y + idx].height = Math.max(this.rows[y + idx].height, d);
+          }
+        }
+      }
+    }
+
+    // create grid and table
+    const gtVLineEnds = '+';
+    const gtHLineEnds = '+';
+    const align = {
+      left: { b: ':', e: '', len: 1 },
+      right: { b: '', e: ':', len: 1 },
+      center: { b: ':', e: ':', len: 2 },
+      justify: { b: '>', e: '<', len: 2 },
+      top: '^',
+      bottom: 'v',
+      middle: 'x',
+    };
+    const lines = [];
+    // eslint-disable-next-line no-nested-ternary
+    const headerIdx = this.headerSize
+      ? this.headerSize
+      : (this.footerSize ? 0 : -1);
+    const footerIdx = this.rows.length - this.footerSize;
+    for (let y = 0; y < this.rows.length; y += 1) {
+      const row = this.rows[y];
+
+      // first, draw the grid line
+      const grid = [];
+      const c = y === headerIdx || y === footerIdx ? '=' : '-';
+      let prevCell;
+      let pendingGrid = 0;
+      let pendingAlign = null;
+      let pendingVAlign = null;
+
+      const commitInnerGridLine = () => {
+        if (pendingVAlign) {
+          const middle = Math.floor((pendingGrid - 1) / 2);
+          grid.push(c.repeat(middle));
+          grid.push(pendingVAlign);
+          grid.push(c.repeat(pendingGrid - middle - 1));
+        } else {
+          grid.push(c.repeat(pendingGrid));
+        }
+      };
+
+      const commitGridLine = () => {
+        if (pendingGrid) {
+          if (pendingAlign) {
+            pendingGrid -= pendingAlign.len;
+            grid.push(pendingAlign.b);
+            commitInnerGridLine();
+            grid.push(pendingAlign.e);
+          } else {
+            commitInnerGridLine();
+          }
+          pendingGrid = 0;
+        }
+      };
+
+      for (let x = 0; x < row.cells.length; x += 1) {
+        let d0 = '+';
+        if (x === 0 && y > 0) {
+          d0 = gtHLineEnds;
+        }
+        if (y === 0 && x > 0) {
+          d0 = gtVLineEnds;
+        }
+        const cell = row.cells[x];
+        const col = cols[x];
+        if (cell.tree) {
+          commitGridLine();
+          grid.push(d0);
+          pendingGrid = col.width - 1;
+          pendingAlign = align[cell.align];
+          pendingVAlign = align[cell.valign];
+        } else if (cell.linked) {
+          commitGridLine();
+          const width = spanWidth(cols, x, cell.linked);
+          const text = cell.linked.lines.shift() || '';
+          grid.push(`| ${text.padEnd(width - 3, ' ')} `);
+          x += cell.linked.colSpan - 1;
+        } else {
+          pendingGrid += col.width;
+        }
+        prevCell = cell;
+      }
+      commitGridLine();
+
+      // if last col was a rowspan, draw a |
+      let d3 = prevCell?.linked ? '|' : gtHLineEnds;
+      if (y === 0) {
+        d3 = '+';
+      }
+      lines.push(`${grid.join('')}${d3}`);
+
+      // then draw the cells
+      for (let yy = 0; yy < row.height; yy += 1) {
+        const line = [];
+        for (let x = 0; x < row.cells.length; x += 1) {
+          let cell = row.cells[x];
+          if (cell.linked) {
+            cell = cell.linked;
+          }
+          if (cell.tree) {
+            const width = spanWidth(cols, x, cell);
+            let text = '';
+            if (!cell.valign
+              || cell.valign === 'top'
+              || (cell.valign === 'middle' && yy >= Math.floor(row.height - cell.height) / 2)
+              || (cell.valign === 'bottom' && yy >= row.height - cell.height)) {
+              text = cell.lines.shift() || '';
+            }
+            line.push(`| ${text.padEnd(width - 3, ' ')} `);
+          }
+        }
+        lines.push(`${line.join('')}|`);
+      }
+    }
+
+    // add last grid line
+    const d = this.rows.length === this.headerSize ? '=' : '-'; // special case: only header
+    const grid = [];
+    const lastRow = this.rows[this.rows.length - 1];
+    for (let x = 0; x < cols.length; x += 1) {
+      const col = cols[x];
+      // if the cell above was a colspan, and we are on the last line, don't draw the `+`
+      const aboveCell = lastRow.cells[x];
+      let c = aboveCell.tree || aboveCell.linked ? gtVLineEnds : d;
+      if (x === 0) {
+        c = '+';
+      }
+      grid.push(`${c}${d.repeat(col.width - 1)}`);
+    }
+    lines.push(`${grid.join('')}+`);
+
+    return lines.join('\n');
+  }
+}
+
+function pushTable(context, table) {
+  if (!context.gridTables) {
+    context.gridTables = [];
+  }
+  context.gridTables.push(table);
+  return table;
+}
+
+function popTable(context) {
+  return context.gridTables.pop();
+}
+
+function peekTable(context) {
+  return context.gridTables[context.gridTables.length - 1];
+}
+
+function handleCell(node, parent, context, safeOptions) {
+  return {
+    tree: {
+      type: 'root',
+      children: node.children,
+    },
+    colSpan: node.colSpan || 1,
+    rowSpan: node.rowSpan || 1,
+    align: node.align,
+    valign: node.valign,
+  };
+}
+
+function handleRow(node, parent, context, safeOptions) {
+  const row = [];
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
+      row.push(handleCell(child, node, context, safeOptions));
+    }
+  }
+  return row;
+}
+
+function handleHeader(node, parent, context, safeOptions) {
+  const table = peekTable(context);
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+      table.addHeaderRow(handleRow(child, node, context, safeOptions));
+    }
+  }
+}
+
+function handleBody(node, parent, context, safeOptions) {
+  const table = peekTable(context);
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+      table.addRow(handleRow(child, node, context, safeOptions));
+    }
+  }
+}
+
+function handleFooter(node, parent, context, safeOptions) {
+  const table = peekTable(context);
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+      table.addFooterRow(handleRow(child, node, context, safeOptions));
+    }
+  }
+}
+
+function gridTable(node, parent, context, safeOptions) {
+  const exit = context.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
+
+  const table = pushTable(context, new Table());
+
+  for (const child of node.children) {
+    if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER) {
+      handleHeader(child, node, context, safeOptions);
+    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
+      handleBody(child, node, context, safeOptions);
+    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER) {
+      handleFooter(child, node, context, safeOptions);
+    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW) {
+      table.addRow(handleRow(child, node, context, safeOptions));
+    } else if (child.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL) {
+      table.addCell(handleCell(child, node, context, safeOptions));
+    }
+  }
+
+  exit();
+
+  return popTable(context).toMarkdown(context);
+}
+
+/**
+ * Escapes cell delimiters in (block)) code
+ */
+function blockCodeWithTable(node, parent, context) {
+  let value = code(node, parent, context);
+
+  if (context.stack.includes(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)) {
+    value = value.replace(/[|+]/mg, '\\$&');
+  }
+
+  return value;
+}
+
+/**
+ * Escapes cell delimiters in inline code
+ */
+function inlineCodeWithTable(node, parent, context) {
+  let value = inlineCode(node, parent, context);
+
+  if (context.stack.includes(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)) {
+    value = value.replace(/[|+]/g, '\\$&');
+  }
+
+  return value;
+}
+
+function gridTablesToMarkdown() {
+  return {
+    unsafe: [
+      // A pipe or a + in a cell must be encoded.
+      { character: '|', inConstruct: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL },
+      { character: '+', inConstruct: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL },
+    ],
+    handlers: {
+      // for now, we only line wrap 'text' nodes. all other would need more support in
+      // the default mdast-to-markdown handlers
+      text: lineWrapTextHandler,
+      gridTable,
+      inlineCode: inlineCodeWithTable,
+      code: blockCodeWithTable,
+    },
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/mdast-util-gridtables/src/types.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/@adobe/mdast-util-gridtables/src/types.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TYPE_BODY": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY),
+/* harmony export */   "TYPE_CELL": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL),
+/* harmony export */   "TYPE_FOOTER": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER),
+/* harmony export */   "TYPE_HEADER": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER),
+/* harmony export */   "TYPE_ROW": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW),
+/* harmony export */   "TYPE_TABLE": () => (/* reexport safe */ _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE)
+/* harmony export */ });
+/* harmony import */ var _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/micromark-extension-gridtables */ "./node_modules/@adobe/micromark-extension-gridtables/src/index.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/micromark-extension-gridtables/src/html.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/@adobe/micromark-extension-gridtables/src/html.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gridTablesHtml": () => (/* binding */ gridTablesHtml)
+/* harmony export */ });
+/* harmony import */ var micromark__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark */ "./node_modules/micromark/dev/index.js");
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/micromark-extension-gridtables/src/types.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/* eslint-disable no-underscore-dangle */
+
+
+
+/**
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('./syntax.js').Align} Align
+ */
+
+function multiline(lines) {
+  // remove empty trailing lines
+  while (lines.length > 0 && lines[lines.length - 1].match(/^\s*$/)) {
+    lines.pop();
+  }
+
+  // calculate common indent
+  const prefixLen = lines
+    .filter((line) => !line.match(/^\s*$/))
+    .map((line) => line.match(/^ */)[0].length)
+    .reduce((min, len) => Math.min(len, min), Infinity);
+
+  // remove prefix
+  return lines
+    .map((line) => line.substring(prefixLen).trimEnd());
+}
+
+function getColSpan(info, token) {
+  const i0 = info.cols.indexOf(token._colStart);
+  const i1 = info.cols.indexOf(token._colEnd);
+  return i1 - i0;
+}
+
+function enterTable(token) {
+  this.lineEndingIfNeeded();
+  this.tag('<table>');
+  this.buffer();
+  this.setData('tableInfo', {
+    // the column positions of the table
+    cols: token._cols,
+    // the current column
+    colPos: 0,
+    // list of all cells
+    allCells: [],
+    // cells that are still open via rowSpan
+    pendingCells: [],
+    // the current cells of a row
+    cells: [],
+    // the grid dividers use for align the cells
+    dividers: [],
+    // the link/image reference definitions
+    definitions: token._definitions,
+    // the tables rows
+    rows: [],
+    // the current section type (header, body, footer)
+    type: 'tbody',
+  });
+}
+
+/**
+ * Extension that unescapes pipes and plusses in inine and block code
+ * @type HtmlExtension
+ */
+const unescapeCodeExtension = {
+  exit: {
+    codeTextData(token) {
+      let value = this.sliceSerialize(token);
+      value = value.replace(/\\([+|])/gm, '$1');
+      this.raw(this.encode(value));
+    },
+    codeFlowValue(token) {
+      unescapeCodeExtension.exit.codeTextData.call(this, token);
+      this.setData('flowCodeSeenData', true);
+    },
+  },
+};
+
+function exitTable() {
+  // render cells
+  this.resume();
+  const info = this.getData('tableInfo');
+  for (const cell of info.allCells) {
+    const sanitizedLines = multiline(cell.lines);
+
+    // add the definitions from the main document maybe they could be injected dynamically...
+    const definitions = this.getData('definitions');
+    if (definitions) {
+      for (const def of Object.values(definitions)) {
+        const title = def.title ? ` ${JSON.stringify(def.title)}` : '';
+        sanitizedLines.push('');
+        sanitizedLines.push(`[${def.labelId}]: ${def.destination}${title}`);
+      }
+    }
+    const cellContent = sanitizedLines.join('\n');
+
+    // add extension to unescape pipes and plusses since the content is considered in a table
+    let { htmlExtensions } = this.options;
+    if (htmlExtensions.indexOf(unescapeCodeExtension) < 0) {
+      htmlExtensions = [
+        ...this.options.htmlExtensions,
+        unescapeCodeExtension,
+      ];
+    }
+
+    let html = (0,micromark__WEBPACK_IMPORTED_MODULE_1__.micromark)(cellContent, {
+      ...this.options,
+      htmlExtensions,
+    }).trim();
+
+    // remove surrounding <p> if it's the only one
+    const first = html.lastIndexOf('<p>');
+    const last = html.indexOf('</p>');
+    if (first === 0 && last === html.length - 4) {
+      html = html.substring(3, last);
+    }
+    cell.html = html;
+  }
+  let type = '';
+  let indent = 4;
+  for (const row of info.rows) {
+    if (type !== row.type) {
+      if (type) {
+        indent -= 4;
+        this.lineEndingIfNeeded();
+        this.raw(' '.repeat(indent));
+        this.tag(`</${type}>`);
+      }
+      type = row.type;
+      this.lineEndingIfNeeded();
+      this.raw(' '.repeat(indent));
+      this.tag(`<${type}>`);
+      indent += 4;
+    }
+    this.lineEndingIfNeeded();
+    this.raw(' '.repeat(indent));
+    this.tag('<tr>');
+    indent += 4;
+    const tag = row.type === 'thead' ? 'th' : 'td';
+    for (const cell of row.cells) {
+      const {
+        colSpan, rowSpan, align, valign,
+      } = cell;
+      const attrs = [];
+      if (colSpan > 1) {
+        attrs.push(`colspan="${colSpan}"`);
+      }
+      if (rowSpan > 1) {
+        attrs.push(`rowspan="${rowSpan}"`);
+      }
+      if (align) {
+        attrs.push(`align="${align}"`);
+      }
+      if (valign) {
+        attrs.push(`valign="${valign}"`);
+      }
+      const attrStr = attrs.length ? ` ${attrs.join(' ')}` : '';
+      this.lineEndingIfNeeded();
+      this.raw(' '.repeat(indent));
+      this.tag(`<${tag}${attrStr}>`);
+      if (cell.html.startsWith('<') && cell.html.indexOf('<pre>') < 0) {
+        // indent all html
+        const html = cell.html.split('\n').join(`\n${' '.repeat(indent + 4)}`);
+        this.lineEndingIfNeeded();
+        this.raw(' '.repeat(indent + 4));
+        this.raw(html);
+        this.lineEndingIfNeeded();
+        this.raw(' '.repeat(indent));
+      } else {
+        this.raw(cell.html);
+      }
+      this.tag(`</${tag}>`);
+    }
+    this.lineEndingIfNeeded();
+    indent -= 4;
+    this.raw(' '.repeat(indent));
+    this.tag('</tr>');
+  }
+  // this.exit(token);
+  if (type) {
+    this.lineEndingIfNeeded();
+    indent -= 4;
+    this.raw(' '.repeat(indent));
+    this.tag(`</${type}>`);
+  }
+  this.lineEndingIfNeeded();
+  this.tag('</table>');
+}
+
+function enterSection(type) {
+  return function enter() {
+    const info = this.getData('tableInfo');
+    info.type = type;
+  };
+}
+
+function exitCell(token) {
+  // this.config.enter.data.call(this, token);
+  // this.config.exit.data.call(this, token);
+  const data = this.sliceSerialize(token); // this.resume();
+  const info = this.getData('tableInfo');
+  const colSpan = getColSpan(info, token);
+
+  let cell = info.pendingCells[info.colPos];
+
+  // open rowspan if we are on a divider line
+  if (info.isDivider) {
+    if (!cell) {
+      cell = info.cells[info.colPos];
+      info.pendingCells[info.colPos] = cell;
+    }
+    if (!cell) {
+      // throw Error('no matching rowspan');
+    } else {
+      cell.rowSpan += 1;
+    }
+  }
+
+  // if a rowspan is open, append to its cell
+  if (cell) {
+    cell.lines.push(data);
+    info.colPos += colSpan;
+    return;
+  }
+
+  // otherwise append to regular cell
+  cell = info.cells[info.colPos];
+  if (!cell) {
+    const div = info.dividers[info.colPos];
+    cell = {
+      rowSpan: 1,
+      colSpan,
+      align: div?._align,
+      valign: div?._valign,
+      node: {
+        type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL,
+      },
+      lines: [],
+    };
+    info.cells[info.colPos] = cell;
+    info.allCells.push(cell);
+  }
+  cell.lines.push(data);
+  info.colPos += colSpan;
+}
+
+function enterGridDivider(token) {
+  const info = this.getData('tableInfo');
+  // clear pending rowspans and set divider info
+  let colSpan = getColSpan(info, token);
+  while (colSpan > 0) {
+    colSpan -= 1;
+    info.pendingCells[info.colPos] = null;
+    info.dividers[info.colPos] = token;
+    info.colPos += 1;
+  }
+}
+
+function enterRowLine(token) {
+  const info = this.getData('tableInfo');
+  info.isDivider = token._type;
+  info.colPos = 0;
+  if (info.isDivider) {
+    info.dividers = [];
+  }
+}
+
+function commitRow(info) {
+  const row = { type: info.type, cells: [] };
+
+  // emit cells
+  for (const cell of info.cells) {
+    if (cell) {
+      row.cells.push(cell);
+    }
+  }
+
+  // this.exit(rowToken);
+  this.getData('tableInfo').rows.push(row);
+  // eslint-disable-next-line no-param-reassign
+  info.cells = [];
+}
+
+function exitHeader() {
+  const info = this.getData('tableInfo');
+  // commit row  has some cells
+  if (info.cells.length) {
+    commitRow.call(this, info);
+    // also close all rowspans.
+    info.pendingCells = [];
+  }
+}
+
+function exitRowLine() {
+  const info = this.getData('tableInfo');
+  // commit row if on a divider and has some cells
+  if (info.isDivider && info.cells.length) {
+    commitRow.call(this, info);
+  }
+}
+
+const gridTablesHtml = {
+  enter: {
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE]: enterTable,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER]: enterSection('thead'),
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY]: enterSection('tbody'),
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER]: enterSection('tfoot'),
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_GRID_DIVIDER]: enterGridDivider,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE]: enterRowLine,
+  },
+  exit: {
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE]: exitTable,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER]: exitHeader,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY]: exitHeader,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER]: exitHeader,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL]: exitCell,
+    [_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE]: exitRowLine,
+  },
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/micromark-extension-gridtables/src/index.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/@adobe/micromark-extension-gridtables/src/index.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TYPE_BODY": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY),
+/* harmony export */   "TYPE_CELL": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL),
+/* harmony export */   "TYPE_FOOTER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER),
+/* harmony export */   "TYPE_GRID_DIVIDER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_GRID_DIVIDER),
+/* harmony export */   "TYPE_HEADER": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER),
+/* harmony export */   "TYPE_ROW": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW),
+/* harmony export */   "TYPE_ROW_LINE": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE),
+/* harmony export */   "TYPE_TABLE": () => (/* reexport safe */ _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE),
+/* harmony export */   "gridTables": () => (/* reexport safe */ _syntax_js__WEBPACK_IMPORTED_MODULE_1__.gridTables),
+/* harmony export */   "gridTablesHtml": () => (/* reexport safe */ _html_js__WEBPACK_IMPORTED_MODULE_2__.gridTablesHtml)
+/* harmony export */ });
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/micromark-extension-gridtables/src/types.js");
+/* harmony import */ var _syntax_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./syntax.js */ "./node_modules/@adobe/micromark-extension-gridtables/src/syntax.js");
+/* harmony import */ var _html_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./html.js */ "./node_modules/@adobe/micromark-extension-gridtables/src/html.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/**
+ * GridTables remark plugin and micromark extension.
+ *
+ * GridTables look like this:
+ *
+ * ```
+ * +-------------------+------+
+ * | Table Headings    | Here |
+ * +--------+----------+------+
+ * | Sub    | Headings | Too  |
+ * +========+=================+
+ * | cell   | column spanning |
+ * | spans  +---------:+------+
+ * | rows   |   normal | cell |
+ * +---v----+:---------------:+
+ * |        | cells can be    |
+ * |        | *formatted*     |
+ * |        | **paragraphs**  |
+ * |        | ```             |
+ * | multi  | and contain     |
+ * | line   | blocks          |
+ * | cells  | ```             |
+ * +========+=========<+======+
+ * | footer |    cells |      |
+ * +--------+----------+------+
+ * ```
+ *
+ * - the top of a cell must be indicated by `+-` followed by some `-` or `+` and finished by `-+`.
+ * - if the table contains a footer but no header, the top row should use `=` as grid line.
+ * - col spans are indicated by missing column (`|`) delimiters
+ * - row spans are indicated by missing row (`-`) delimiters
+ * - cells can be left, center, right, or justify aligned; indicated by the placement of `:` or `><`
+ * - cells can be top, middle, or bottom v-aligned;
+ *   indicated by the placement of arrows (`v` `^` `x`)
+ * - the header and footer sections are delimited by section delimiters (`=`).
+ * - if no section delimiters are present, all cells are placed in the table body.
+ * - if only 1 section delimiter is present, it delimits header from body.
+ * - the content in cells can be a full Markdown document again.
+ *   note, that the cell boundaries (`|`)
+ *   need to exactly match with the column markers (`+`) in the row delimiters, if the cell content
+ *   contains `|`, otherwise the correct layout of the table can't be guaranteed.
+ *
+ * Layout
+ * ======
+ *
+ * The table layout tries to keep the table within a certain width (default 120). For example,
+ * if the table has 3 columns, each column will be max 40 characters wide. If all text in a column
+ * is smaller, it will shrink the columns. However, cells have a minimum width (default 10) when
+ * text needs to be broken. If the cell contents need more space, e.g. with a nested table or
+ * code block, it will grow accordingly.
+ *
+ * Align
+ * =====
+ *
+ * Horizontal align is indicated by placing markers at the grid line above the cell:
+ *
+ * ```
+ * Justify     Center     Left       Right
+ * +>-----<+  +:-----:+  +:------+  +------:+
+ * | A b C |  |  ABC  |  | ABC   |  |   ABC |
+ * +-------+  +-------+  +-------+  +-------+
+ * ```
+ *
+ * Vertical align is indicated by placing markers at the center of the grid line above the cell:
+ *
+ * ```
+ * Top        Middle     Bottom
+ * +---^---+  +---x---+  +---v---+
+ * | Larum |  |       |  |       |
+ * | Ipsum |  | Larum |  |       |
+ * |       |  | Ipsum |  | Larum |
+ * |       |  |       |  | Ipsum |
+ * +-------+  +-------+  +-------+
+ * ```
+ *
+ */
+
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/micromark-extension-gridtables/src/syntax.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/@adobe/micromark-extension-gridtables/src/syntax.js ***!
+  \**************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "gridTables": () => (/* binding */ gridTables)
+/* harmony export */ });
+/* harmony import */ var micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-util-symbol/codes.js */ "./node_modules/micromark-util-symbol/codes.js");
+/* harmony import */ var micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! micromark-util-symbol/types.js */ "./node_modules/micromark-util-symbol/types.js");
+/* harmony import */ var micromark_util_character__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark-util-character */ "./node_modules/micromark-util-character/dev/index.js");
+/* harmony import */ var _types_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./types.js */ "./node_modules/@adobe/micromark-extension-gridtables/src/types.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+/* eslint-disable no-use-before-define,no-underscore-dangle,no-param-reassign */
+
+
+
+
+
+// the cell divider: | or +
+const TYPE_CELL_DIVIDER = 'cellDivider';
+
+const V_ALIGN_CODES = {
+  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lowercaseV]: 'bottom',
+  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lowercaseX]: 'middle',
+  [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.caret]: 'top',
+};
+
+function parse() {
+  return {
+    tokenize: tokenizeTable,
+    resolve: resolveTable,
+    resolveAll: resolveAllTable,
+    concrete: true,
+  };
+
+  function tokenizeTable(effects, ok, nok) {
+    // positions of columns
+    const cols = [0];
+    let numRows = 0;
+    let numCols = 0;
+    let colPos = 0;
+    let rowLine = null;
+    let align = '';
+    let valign = '';
+    return start;
+
+    function start(code) {
+      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE)._cols = cols;
+      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
+      return lineStart(code);
+    }
+
+    function lineStart(code) {
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
+        rowLine = effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE);
+        effects.enter(TYPE_CELL_DIVIDER);
+        effects.consume(code);
+        effects.exit(TYPE_CELL_DIVIDER);
+        colPos = 0;
+        numCols = 0;
+        return cellOrGridStart;
+      }
+      if (numRows < 3) {
+        return nok(code);
+      }
+      effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
+      effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
+      return ok(code);
+    }
+
+    function cellOrGridStart(code) {
+      align = '';
+      valign = '';
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.dash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo
+        || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.greaterThan) {
+        effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_GRID_DIVIDER)._colStart = colPos;
+        colPos += 1;
+        if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon) {
+          align = 'left';
+        } else if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.greaterThan) {
+          align = 'justify';
+        }
+        effects.consume(code);
+        return gridDivider;
+      }
+
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof || (0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
+        return lineEnd(code);
+      }
+
+      effects.enter(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._colStart = colPos;
+      colPos += 1;
+      effects.consume(code);
+
+      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownSpace)(code)) {
+        return cellSpace;
+      }
+      return cell;
+    }
+
+    function cellSpace(code) {
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof || (0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
+        // mark as discarded, will be filtered out in transform
+        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._discard = true;
+        return lineEnd(code);
+      }
+      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownSpace)(code)) {
+        colPos += 1;
+        effects.consume(code);
+        return cellSpace;
+      }
+      return cell(code);
+    }
+
+    function lineEnd(code) {
+      if (numCols === 0) {
+        return nok(code);
+      }
+      if ((0,micromark_util_character__WEBPACK_IMPORTED_MODULE_2__.markdownLineEnding)(code)) {
+        effects.enter(micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__.types.lineEnding);
+        effects.consume(code);
+        effects.exit(micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_3__.types.lineEnding);
+      }
+      effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE);
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof) {
+        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY);
+        effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE);
+        return ok(code);
+      }
+      numRows += 1;
+      return lineStart;
+    }
+
+    function gridDivider(code) {
+      colPos += 1;
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.dash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo) {
+        if (!rowLine._type) {
+          rowLine._type = code;
+        }
+        effects.consume(code);
+        return gridDivider;
+      }
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.colon) {
+        if (!align) {
+          align = 'right';
+        } else if (align === 'left') {
+          align = 'center';
+        } else {
+          return nok(code);
+        }
+        effects.consume(code);
+        return gridDividerEnd;
+      }
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.lessThan) {
+        if (align !== 'justify') {
+          return nok(code);
+        }
+        effects.consume(code);
+        return gridDividerEnd;
+      }
+
+      if (V_ALIGN_CODES[code]) {
+        if (valign) {
+          return nok(code);
+        }
+        valign = V_ALIGN_CODES[code];
+        effects.consume(code);
+        return gridDivider;
+      }
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
+        colPos -= 1;
+        return gridDividerEnd(code);
+      }
+      return nok(code);
+    }
+
+    function gridDividerEnd(code) {
+      if (code !== micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign && code !== micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar) {
+        return nok(code);
+      }
+      // for a super small column, assume dash
+      if (!rowLine._type) {
+        rowLine._type = code.dash;
+      }
+      colPos += 1;
+      // remember cols
+      const idx = cols.indexOf(colPos);
+      if (idx < 0) {
+        cols.push(colPos);
+        cols.sort((c0, c1) => c0 - c1);
+      }
+      const token = effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_GRID_DIVIDER);
+      token._colEnd = colPos;
+      token._align = align;
+      token._valign = valign;
+      effects.enter(TYPE_CELL_DIVIDER);
+      effects.consume(code);
+      effects.exit(TYPE_CELL_DIVIDER);
+      numCols += 1;
+      return cellOrGridStart;
+    }
+
+    function cell(code) {
+      colPos += 1;
+      // find existing col
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign) {
+        const idx = cols.indexOf(colPos);
+        if (idx >= 0) {
+          effects.exit(_types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL)._colEnd = colPos;
+          effects.enter(TYPE_CELL_DIVIDER);
+          effects.consume(code);
+          effects.exit(TYPE_CELL_DIVIDER);
+          numCols += 1;
+          return cellOrGridStart;
+        }
+        effects.consume(code);
+        return cell;
+      }
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.eof) {
+        // row with cells never terminate eof
+        return nok(code);
+      }
+
+      effects.consume(code);
+      return (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.backslash)
+        ? cellEscaped
+        : cell;
+    }
+
+    function cellEscaped(code) {
+      if (code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.backslash || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.verticalBar || code === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign) {
+        colPos += 1;
+        effects.consume(code);
+        return cell;
+      }
+      return cell(code);
+    }
+  }
+
+  function resolveHeaderAndFooter(events, context) {
+    // detect headers:
+    // no `=` lines -> only body
+    // 1 `=` line -> header + body
+    // 2 `=` lines -> header + body + footer
+    const fatLines = [];
+    let bodyStart = -1; // should default to 1. but just be sure
+
+    for (let idx = 0; idx < events.length; idx += 1) {
+      const [e, node] = events[idx];
+      const { type } = node;
+      if (type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY) {
+        if (e === 'enter') {
+          bodyStart = idx;
+        } else {
+          // eslint-disable-next-line prefer-const
+          let [hdrIdx, ftrIdx] = fatLines;
+          const bdy = node;
+          if (hdrIdx > bodyStart + 1) {
+            // insert header above body
+            const hdr = {
+              type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER,
+              start: bdy.start,
+              end: events[hdrIdx][1].end,
+            };
+            bdy.start = hdr.end;
+            events[bodyStart][1] = hdr;
+            events.splice(
+              hdrIdx,
+              0,
+              ['exit', hdr, context],
+              ['enter', bdy, context],
+            );
+            idx += 2;
+            ftrIdx += 2;
+          }
+
+          if (ftrIdx) {
+            // insert footer below body
+            const ftr = {
+              type: _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_FOOTER,
+              start: events[ftrIdx][1].start,
+              end: bdy.end,
+            };
+            bdy.end = ftr.start;
+            events.splice(
+              ftrIdx,
+              0,
+              ['exit', bdy, context],
+              ['enter', ftr, context],
+            );
+            idx += 2;
+            events[idx][1] = ftr;
+          }
+        }
+      } else if (type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW_LINE && e === 'enter' && node._type === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.equalsTo) {
+        fatLines.push(idx);
+      }
+    }
+    return events;
+  }
+
+  function resolveTable(events, context) {
+    // remove discarded
+    events = events.filter(([, node]) => !node._discard);
+    events = resolveHeaderAndFooter(events, context);
+    return events;
+  }
+
+  function resolveAllTable(events, context) {
+    // since we create a detached parser for each cell content later (in from-markdown.js)
+    // we need to remember the definitions of the overall document. otherwise the cell parsers
+    // would not detect the image and link references.
+    const { defined } = context.parser;
+
+    // find all grid tables and remember the definitions
+    for (const [evt, node] of events) {
+      if (evt === 'enter' && node.type === _types_js__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE) {
+        node._definitions = defined;
+      }
+    }
+    return events;
+  }
+}
+
+const gridTables = {
+  flow: {
+    [micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_1__.codes.plusSign]: parse(),
+  },
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/micromark-extension-gridtables/src/types.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/@adobe/micromark-extension-gridtables/src/types.js ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TYPE_BODY": () => (/* binding */ TYPE_BODY),
+/* harmony export */   "TYPE_CELL": () => (/* binding */ TYPE_CELL),
+/* harmony export */   "TYPE_FOOTER": () => (/* binding */ TYPE_FOOTER),
+/* harmony export */   "TYPE_GRID_DIVIDER": () => (/* binding */ TYPE_GRID_DIVIDER),
+/* harmony export */   "TYPE_HEADER": () => (/* binding */ TYPE_HEADER),
+/* harmony export */   "TYPE_ROW": () => (/* binding */ TYPE_ROW),
+/* harmony export */   "TYPE_ROW_LINE": () => (/* binding */ TYPE_ROW_LINE),
+/* harmony export */   "TYPE_TABLE": () => (/* binding */ TYPE_TABLE)
+/* harmony export */ });
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/**
+ * token and mdast node type for the grid table
+ * @type {string}
+ */
+const TYPE_TABLE = 'gridTable';
+
+/**
+ * token and mdast node type for the grid table header
+ * @type {string}
+ */
+const TYPE_HEADER = 'gtHeader';
+
+/**
+ * token and mdast node type for the grid table body
+ * @type {string}
+ */
+const TYPE_BODY = 'gtBody';
+
+/**
+ * token and mdast node type for the grid table footer
+ * @type {string}
+ */
+const TYPE_FOOTER = 'gtFooter';
+
+/**
+ * mdast node type for a grid table row
+ * @type {string}
+ */
+const TYPE_ROW = 'gtRow';
+
+/**
+ * mdast node type for a grid table cell
+ * @type {string}
+ */
+const TYPE_CELL = 'gtCell';
+
+/**
+ * token type for a grid table row-line. The row line represents a line within a row.
+ * It can have cells or dividers or both (in case of row spans).
+ * @type {string}
+ */
+const TYPE_ROW_LINE = 'gtRowLine';
+
+/**
+ * token type for a grid table grid-divider. The grid divider is the section of `-` and `=` of a
+ * grid line between to grid delimiters `|`.
+ *
+ * @type {string}
+ */
+const TYPE_GRID_DIVIDER = 'gtGridDivider';
+
+
+/***/ }),
+
+/***/ "./node_modules/@adobe/remark-gridtables/src/index.js":
+/*!************************************************************!*\
+  !*** ./node_modules/@adobe/remark-gridtables/src/index.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ remarkGridtables)
+/* harmony export */ });
+/* harmony import */ var _adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/mdast-util-gridtables */ "./node_modules/@adobe/mdast-util-gridtables/src/index.js");
+/* harmony import */ var _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @adobe/micromark-extension-gridtables */ "./node_modules/@adobe/micromark-extension-gridtables/src/index.js");
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+
+
+function remarkGridtables(options = {}) {
+  const data = this.data();
+
+  function add(field, value) {
+    /* c8 ignore next 2 */
+    if (data[field]) {
+      data[field].push(value);
+    } else {
+      data[field] = [value];
+    }
+  }
+
+  const opts = {
+    processor: this,
+    ...options,
+  };
+
+  add('micromarkExtensions', _adobe_micromark_extension_gridtables__WEBPACK_IMPORTED_MODULE_1__.gridTables);
+  add('fromMarkdownExtensions', (0,_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.gridTablesFromMarkdown)(opts));
+  add('toMarkdownExtensions', (0,_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.gridTablesToMarkdown)(options));
 }
 
 
@@ -43573,27 +42547,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "stringify": () => (/* binding */ stringify)
 /* harmony export */ });
 /**
- * @typedef {Object} StringifyOptions
- * @property {boolean} [padLeft=true] Whether to pad a space before a token (`boolean`, default: `true`).
- * @property {boolean} [padRight=false] Whether to pad a space after a token (`boolean`, default: `false`).
+ * @typedef Options
+ *   Configuration for `stringify`.
+ * @property {boolean} [padLeft=true]
+ *   Whether to pad a space before a token.
+ * @property {boolean} [padRight=false]
+ *   Whether to pad a space after a token.
  */
 
 /**
- * Parse comma separated tokens to an array.
+ * @typedef {Options} StringifyOptions
+ *   Please use `StringifyOptions` instead.
+ */
+
+/**
+ * Parse comma-separated tokens to an array.
  *
  * @param {string} value
- * @returns {Array.<string>}
+ *   Comma-separated tokens.
+ * @returns {Array<string>}
+ *   List of tokens.
  */
 function parse(value) {
-  /** @type {Array.<string>} */
-  var tokens = []
-  var input = String(value || '')
-  var index = input.indexOf(',')
-  var start = 0
+  /** @type {Array<string>} */
+  const tokens = []
+  const input = String(value || '')
+  let index = input.indexOf(',')
+  let start = 0
   /** @type {boolean} */
-  var end
-  /** @type {string} */
-  var token
+  let end = false
 
   while (!end) {
     if (index === -1) {
@@ -43601,7 +42583,7 @@ function parse(value) {
       end = true
     }
 
-    token = input.slice(start, index).trim()
+    const token = input.slice(start, index).trim()
 
     if (token || !end) {
       tokens.push(token)
@@ -43615,21 +42597,22 @@ function parse(value) {
 }
 
 /**
- * Serialize an array of strings to comma separated tokens.
+ * Serialize an array of strings or numbers to comma-separated tokens.
  *
- * @param {Array.<string|number>} values
- * @param {StringifyOptions} [options]
+ * @param {Array<string|number>} values
+ *   List of tokens.
+ * @param {Options} [options]
+ *   Configuration for `stringify` (optional).
  * @returns {string}
+ *   Comma-separated tokens.
  */
 function stringify(values, options) {
-  var settings = options || {}
+  const settings = options || {}
 
   // Ensure the last empty entry is seen.
-  if (values[values.length - 1] === '') {
-    values = values.concat('')
-  }
+  const input = values[values.length - 1] === '' ? [...values, ''] : values
 
-  return values
+  return input
     .join(
       (settings.padRight ? ' ' : '') +
         ',' +
@@ -45482,271 +44465,10 @@ const regex = /[\0-\x1F!-,\.\/:-@\[-\^`\{-\xA9\xAB-\xB4\xB6-\xB9\xBB-\xBF\xD7\xF
 
 /***/ }),
 
-/***/ "./node_modules/hast-util-is-element/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/hast-util-is-element/index.js ***!
-  \****************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "convertElement": () => (/* binding */ convertElement),
-/* harmony export */   "isElement": () => (/* binding */ isElement)
-/* harmony export */ });
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Parent} Parent
- * @typedef {import('hast').Element} Element
- *
- * @typedef {string} TagName
- * @typedef {null|undefined|TagName|TestFunctionAnything|Array.<TagName|TestFunctionAnything>} Test
- */
-
-/**
- * @template {Element} T
- * @typedef {null|undefined|T['tagName']|TestFunctionPredicate<T>|Array.<T['tagName']|TestFunctionPredicate<T>>} PredicateTest
- */
-
-/**
- * Check if an element passes a test
- *
- * @callback TestFunctionAnything
- * @param {Element} element
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {boolean|void}
- */
-
-/**
- * Check if an element passes a certain node test
- *
- * @template {Element} X
- * @callback TestFunctionPredicate
- * @param {Element} element
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {element is X}
- */
-
-/**
- * Check if a node is an element and passes a certain node test
- *
- * @callback AssertAnything
- * @param {unknown} [node]
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {boolean}
- */
-
-/**
- * Check if a node is an element and passes a certain node test
- *
- * @template {Element} Y
- * @callback AssertPredicate
- * @param {unknown} [node]
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {node is Y}
- */
-
-// Check if `node` is an `element` and whether it passes the given test.
-const isElement =
-  /**
-   * Check if a node is an element and passes a test.
-   * When a `parent` node is known the `index` of node should also be given.
-   *
-   * @type {(
-   *   (() => false) &
-   *   (<T extends Element = Element>(node: unknown, test?: PredicateTest<T>, index?: number, parent?: Parent, context?: unknown) => node is T) &
-   *   ((node: unknown, test: Test, index?: number, parent?: Parent, context?: unknown) => boolean)
-   * )}
-   */
-  (
-    /**
-     * Check if a node passes a test.
-     * When a `parent` node is known the `index` of node should also be given.
-     *
-     * @param {unknown} [node] Node to check
-     * @param {Test} [test] When nullish, checks if `node` is a `Node`.
-     * When `string`, works like passing `function (node) {return node.type === test}`.
-     * When `function` checks if function passed the node is true.
-     * When `array`, checks any one of the subtests pass.
-     * @param {number} [index] Position of `node` in `parent`
-     * @param {Parent} [parent] Parent of `node`
-     * @param {unknown} [context] Context object to invoke `test` with
-     * @returns {boolean} Whether test passed and `node` is an `Element` (object with `type` set to `element` and `tagName` set to a non-empty string).
-     */
-    // eslint-disable-next-line max-params
-    function (node, test, index, parent, context) {
-      const check = convertElement(test)
-
-      if (
-        index !== undefined &&
-        index !== null &&
-        (typeof index !== 'number' ||
-          index < 0 ||
-          index === Number.POSITIVE_INFINITY)
-      ) {
-        throw new Error('Expected positive finite index for child node')
-      }
-
-      if (
-        parent !== undefined &&
-        parent !== null &&
-        (!parent.type || !parent.children)
-      ) {
-        throw new Error('Expected parent node')
-      }
-
-      // @ts-expect-error Looks like a node.
-      if (!node || !node.type || typeof node.type !== 'string') {
-        return false
-      }
-
-      if (
-        (parent === undefined || parent === null) !==
-        (index === undefined || index === null)
-      ) {
-        throw new Error('Expected both parent and index')
-      }
-
-      return check.call(context, node, index, parent)
-    }
-  )
-
-const convertElement =
-  /**
-   * @type {(
-   *   (<T extends Element>(test: T['tagName']|TestFunctionPredicate<T>) => AssertPredicate<T>) &
-   *   ((test?: Test) => AssertAnything)
-   * )}
-   */
-  (
-    /**
-     * Generate an assertion from a check.
-     * @param {Test} [test]
-     * When nullish, checks if `node` is a `Node`.
-     * When `string`, works like passing `function (node) {return node.type === test}`.
-     * When `function` checks if function passed the node is true.
-     * When `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
-     * When `array`, checks any one of the subtests pass.
-     * @returns {AssertAnything}
-     */
-    function (test) {
-      if (test === undefined || test === null) {
-        return element
-      }
-
-      if (typeof test === 'string') {
-        return tagNameFactory(test)
-      }
-
-      if (typeof test === 'object') {
-        return anyFactory(test)
-      }
-
-      if (typeof test === 'function') {
-        return castFactory(test)
-      }
-
-      throw new Error('Expected function, string, or array as test')
-    }
-  )
-
-/**
- * @param {Array.<TagName|TestFunctionAnything>} tests
- * @returns {AssertAnything}
- */
-function anyFactory(tests) {
-  /** @type {Array.<AssertAnything>} */
-  const checks = []
-  let index = -1
-
-  while (++index < tests.length) {
-    checks[index] = convertElement(tests[index])
-  }
-
-  return castFactory(any)
-
-  /**
-   * @this {unknown}
-   * @param {unknown[]} parameters
-   * @returns {boolean}
-   */
-  function any(...parameters) {
-    let index = -1
-
-    while (++index < checks.length) {
-      if (checks[index].call(this, ...parameters)) {
-        return true
-      }
-    }
-
-    return false
-  }
-}
-
-/**
- * Utility to convert a string into a function which checks a given node’s tag
- * name for said string.
- *
- * @param {TagName} check
- * @returns {AssertAnything}
- */
-function tagNameFactory(check) {
-  return tagName
-
-  /**
-   * @param {unknown} node
-   * @returns {boolean}
-   */
-  function tagName(node) {
-    return element(node) && node.tagName === check
-  }
-}
-
-/**
- * @param {TestFunctionAnything} check
- * @returns {AssertAnything}
- */
-function castFactory(check) {
-  return assertion
-
-  /**
-   * @this {unknown}
-   * @param {unknown} node
-   * @param {Array.<unknown>} parameters
-   * @returns {boolean}
-   */
-  function assertion(node, ...parameters) {
-    // @ts-expect-error: fine.
-    return element(node) && Boolean(check.call(this, node, ...parameters))
-  }
-}
-
-/**
- * Utility to return true if this is an element.
- * @param {unknown} node
- * @returns {node is Element}
- */
-function element(node) {
-  return Boolean(
-    node &&
-      typeof node === 'object' &&
-      // @ts-expect-error Looks like a node.
-      node.type === 'element' &&
-      // @ts-expect-error Looks like an element.
-      typeof node.tagName === 'string'
-  )
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/comment.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/comment.js ***!
-  \*******************************************************/
+/***/ "./node_modules/hast-util-to-html/lib/handle/comment.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/comment.js ***!
+  \**************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -45755,23 +44477,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var stringify_entities__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! stringify-entities */ "./node_modules/stringify-entities/lib/index.js");
 /**
- * @typedef {import('./types.js').Handle} Handle
- * @typedef {import('./types.js').Comment} Comment
+ * @typedef {import('../types.js').Comment} Comment
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
  */
 
 
 
 /**
- * @type {Handle}
+ * Serialize a comment.
+ *
  * @param {Comment} node
+ *   Node to handle.
+ * @param {number | undefined} _1
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} _2
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
  */
-function comment(ctx, node) {
+function comment(node, _1, _2, state) {
   // See: <https://html.spec.whatwg.org/multipage/syntax.html#comments>
-  return ctx.bogusComments
+  return state.settings.bogusComments
     ? '<?' +
         (0,stringify_entities__WEBPACK_IMPORTED_MODULE_0__.stringifyEntities)(
           node.value,
-          Object.assign({}, ctx.entities, {subset: ['>']})
+          Object.assign({}, state.settings.characterReferences, {subset: ['>']})
         ) +
         '>'
     : '<!--' + node.value.replace(/^>|^->|<!--|-->|--!>|<!-$/g, encode) + '-->'
@@ -45782,7 +44515,9 @@ function comment(ctx, node) {
   function encode($0) {
     return (0,stringify_entities__WEBPACK_IMPORTED_MODULE_0__.stringifyEntities)(
       $0,
-      Object.assign({}, ctx.entities, {subset: ['<', '>']})
+      Object.assign({}, state.settings.characterReferences, {
+        subset: ['<', '>']
+      })
     )
   }
 }
@@ -45790,20 +44525,91 @@ function comment(ctx, node) {
 
 /***/ }),
 
-/***/ "./node_modules/hast-util-to-html/lib/constants.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/constants.js ***!
-  \*********************************************************/
+/***/ "./node_modules/hast-util-to-html/lib/handle/doctype.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/doctype.js ***!
+  \**************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "constants": () => (/* binding */ constants)
+/* harmony export */   "doctype": () => (/* binding */ doctype)
 /* harmony export */ });
-// Maps of subsets.
-// Each value is a matrix of tuples.
-// The first value causes parse errors, the second is valid.
-// Of both values, the first value is unsafe, and the second is safe.
+/**
+ * @typedef {import('../types.js').DocType} DocType
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ */
+
+/**
+ * Serialize a doctype.
+ *
+ * @param {DocType} _1
+ *   Node to handle.
+ * @param {number | undefined} _2
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} _3
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
+ */
+function doctype(_1, _2, _3, state) {
+  return (
+    '<!' +
+    (state.settings.upperDoctype ? 'DOCTYPE' : 'doctype') +
+    (state.settings.tightDoctype ? '' : ' ') +
+    'html>'
+  )
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/hast-util-to-html/lib/handle/element.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/element.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "element": () => (/* binding */ element)
+/* harmony export */ });
+/* harmony import */ var ccount__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ccount */ "./node_modules/ccount/index.js");
+/* harmony import */ var comma_separated_tokens__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! comma-separated-tokens */ "./node_modules/comma-separated-tokens/index.js");
+/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/index.js");
+/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/lib/find.js");
+/* harmony import */ var space_separated_tokens__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! space-separated-tokens */ "./node_modules/space-separated-tokens/index.js");
+/* harmony import */ var stringify_entities__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! stringify-entities */ "./node_modules/stringify-entities/lib/index.js");
+/* harmony import */ var _omission_opening_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../omission/opening.js */ "./node_modules/hast-util-to-html/lib/omission/opening.js");
+/* harmony import */ var _omission_closing_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../omission/closing.js */ "./node_modules/hast-util-to-html/lib/omission/closing.js");
+/**
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').Element} Element
+ * @typedef {import('../types.js').Properties} Properties
+ * @typedef {import('../types.js').PropertyValue} PropertyValue
+ */
+
+
+
+
+
+
+
+
+
+/**
+ * Maps of subsets.
+ *
+ * Each value is a matrix of tuples.
+ * The value at `0` causes parse errors, the value at `1` is valid.
+ * Of both, the value at `0` is unsafe, and the value at `1` is safe.
+ *
+ * @type {Record<'name' | 'unquoted' | 'single' | 'double', Array<[Array<string>, Array<string>]>>}
+ */
 const constants = {
   // See: <https://html.spec.whatwg.org/#attribute-name-state>.
   name: [
@@ -45827,33 +44633,423 @@ const constants = {
   ]
 }
 
+/**
+ * Serialize an element node.
+ *
+ * @param {Element} node
+ *   Node to handle.
+ * @param {number | undefined} index
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} parent
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
+ */
+// eslint-disable-next-line complexity
+function element(node, index, parent, state) {
+  const schema = state.schema
+  const omit = schema.space === 'svg' ? false : state.settings.omitOptionalTags
+  let selfClosing =
+    schema.space === 'svg'
+      ? state.settings.closeEmptyElements
+      : state.settings.voids.includes(node.tagName.toLowerCase())
+  /** @type {Array<string>} */
+  const parts = []
+  /** @type {string} */
+  let last
+
+  if (schema.space === 'html' && node.tagName === 'svg') {
+    state.schema = property_information__WEBPACK_IMPORTED_MODULE_0__.svg
+  }
+
+  const attrs = serializeAttributes(state, node.properties)
+
+  const content = state.all(
+    schema.space === 'html' && node.tagName === 'template' ? node.content : node
+  )
+
+  state.schema = schema
+
+  // If the node is categorised as void, but it has children, remove the
+  // categorisation.
+  // This enables for example `menuitem`s, which are void in W3C HTML but not
+  // void in WHATWG HTML, to be stringified properly.
+  if (content) selfClosing = false
+
+  if (attrs || !omit || !(0,_omission_opening_js__WEBPACK_IMPORTED_MODULE_1__.opening)(node, index, parent)) {
+    parts.push('<', node.tagName, attrs ? ' ' + attrs : '')
+
+    if (
+      selfClosing &&
+      (schema.space === 'svg' || state.settings.closeSelfClosing)
+    ) {
+      last = attrs.charAt(attrs.length - 1)
+      if (
+        !state.settings.tightSelfClosing ||
+        last === '/' ||
+        (last && last !== '"' && last !== "'")
+      ) {
+        parts.push(' ')
+      }
+
+      parts.push('/')
+    }
+
+    parts.push('>')
+  }
+
+  parts.push(content)
+
+  if (!selfClosing && (!omit || !(0,_omission_closing_js__WEBPACK_IMPORTED_MODULE_2__.closing)(node, index, parent))) {
+    parts.push('</' + node.tagName + '>')
+  }
+
+  return parts.join('')
+}
+
+/**
+ * @param {State} state
+ * @param {Properties | null | undefined} props
+ * @returns {string}
+ */
+function serializeAttributes(state, props) {
+  /** @type {Array<string>} */
+  const values = []
+  let index = -1
+  /** @type {string} */
+  let key
+
+  if (props) {
+    for (key in props) {
+      if (props[key] !== undefined && props[key] !== null) {
+        const value = serializeAttribute(state, key, props[key])
+        if (value) values.push(value)
+      }
+    }
+  }
+
+  while (++index < values.length) {
+    const last = state.settings.tightAttributes
+      ? values[index].charAt(values[index].length - 1)
+      : null
+
+    // In tight mode, don’t add a space after quoted attributes.
+    if (index !== values.length - 1 && last !== '"' && last !== "'") {
+      values[index] += ' '
+    }
+  }
+
+  return values.join('')
+}
+
+/**
+ * @param {State} state
+ * @param {string} key
+ * @param {PropertyValue} value
+ * @returns {string}
+ */
+// eslint-disable-next-line complexity
+function serializeAttribute(state, key, value) {
+  const info = (0,property_information__WEBPACK_IMPORTED_MODULE_3__.find)(state.schema, key)
+  const x =
+    state.settings.allowParseErrors && state.schema.space === 'html' ? 0 : 1
+  const y = state.settings.allowDangerousCharacters ? 0 : 1
+  let quote = state.quote
+  /** @type {string | undefined} */
+  let result
+
+  if (info.overloadedBoolean && (value === info.attribute || value === '')) {
+    value = true
+  } else if (
+    info.boolean ||
+    (info.overloadedBoolean && typeof value !== 'string')
+  ) {
+    value = Boolean(value)
+  }
+
+  if (
+    value === undefined ||
+    value === null ||
+    value === false ||
+    (typeof value === 'number' && Number.isNaN(value))
+  ) {
+    return ''
+  }
+
+  const name = (0,stringify_entities__WEBPACK_IMPORTED_MODULE_4__.stringifyEntities)(
+    info.attribute,
+    Object.assign({}, state.settings.characterReferences, {
+      // Always encode without parse errors in non-HTML.
+      subset: constants.name[x][y]
+    })
+  )
+
+  // No value.
+  // There is currently only one boolean property in SVG: `[download]` on
+  // `<a>`.
+  // This property does not seem to work in browsers (Firefox, Safari, Chrome),
+  // so I can’t test if dropping the value works.
+  // But I assume that it should:
+  //
+  // ```html
+  // <!doctype html>
+  // <svg viewBox="0 0 100 100">
+  //   <a href=https://example.com download>
+  //     <circle cx=50 cy=40 r=35 />
+  //   </a>
+  // </svg>
+  // ```
+  //
+  // See: <https://github.com/wooorm/property-information/blob/main/lib/svg.js>
+  if (value === true) return name
+
+  // `spaces` doesn’t accept a second argument, but it’s given here just to
+  // keep the code cleaner.
+  value = Array.isArray(value)
+    ? (info.commaSeparated ? comma_separated_tokens__WEBPACK_IMPORTED_MODULE_5__.stringify : space_separated_tokens__WEBPACK_IMPORTED_MODULE_6__.stringify)(value, {
+        padLeft: !state.settings.tightCommaSeparatedLists
+      })
+    : String(value)
+
+  if (state.settings.collapseEmptyAttributes && !value) return name
+
+  // Check unquoted value.
+  if (state.settings.preferUnquoted) {
+    result = (0,stringify_entities__WEBPACK_IMPORTED_MODULE_4__.stringifyEntities)(
+      value,
+      Object.assign({}, state.settings.characterReferences, {
+        subset: constants.unquoted[x][y],
+        attribute: true
+      })
+    )
+  }
+
+  // If we don’t want unquoted, or if `value` contains character references when
+  // unquoted…
+  if (result !== value) {
+    // If the alternative is less common than `quote`, switch.
+    if (
+      state.settings.quoteSmart &&
+      (0,ccount__WEBPACK_IMPORTED_MODULE_7__.ccount)(value, quote) > (0,ccount__WEBPACK_IMPORTED_MODULE_7__.ccount)(value, state.alternative)
+    ) {
+      quote = state.alternative
+    }
+
+    result =
+      quote +
+      (0,stringify_entities__WEBPACK_IMPORTED_MODULE_4__.stringifyEntities)(
+        value,
+        Object.assign({}, state.settings.characterReferences, {
+          // Always encode without parse errors in non-HTML.
+          subset: (quote === "'" ? constants.single : constants.double)[x][y],
+          attribute: true
+        })
+      ) +
+      quote
+  }
+
+  // Don’t add a `=` for unquoted empties.
+  return name + (result ? '=' + result : result)
+}
+
 
 /***/ }),
 
-/***/ "./node_modules/hast-util-to-html/lib/doctype.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/doctype.js ***!
-  \*******************************************************/
+/***/ "./node_modules/hast-util-to-html/lib/handle/index.js":
+/*!************************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/index.js ***!
+  \************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "doctype": () => (/* binding */ doctype)
+/* harmony export */   "handle": () => (/* binding */ handle)
+/* harmony export */ });
+/* harmony import */ var zwitch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! zwitch */ "./node_modules/zwitch/index.js");
+/* harmony import */ var _comment_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./comment.js */ "./node_modules/hast-util-to-html/lib/handle/comment.js");
+/* harmony import */ var _doctype_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./doctype.js */ "./node_modules/hast-util-to-html/lib/handle/doctype.js");
+/* harmony import */ var _element_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./element.js */ "./node_modules/hast-util-to-html/lib/handle/element.js");
+/* harmony import */ var _raw_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./raw.js */ "./node_modules/hast-util-to-html/lib/handle/raw.js");
+/* harmony import */ var _root_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./root.js */ "./node_modules/hast-util-to-html/lib/handle/root.js");
+/* harmony import */ var _text_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./text.js */ "./node_modules/hast-util-to-html/lib/handle/text.js");
+/**
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Node} Node
+ * @typedef {import('../types.js').Parent} Parent
+ */
+
+
+
+
+
+
+
+
+
+/**
+ * @type {(node: Node, index: number | undefined, parent: Parent | undefined, state: State) => string}
+ */
+const handle = (0,zwitch__WEBPACK_IMPORTED_MODULE_0__.zwitch)('type', {
+  invalid,
+  unknown,
+  handlers: {comment: _comment_js__WEBPACK_IMPORTED_MODULE_1__.comment, doctype: _doctype_js__WEBPACK_IMPORTED_MODULE_2__.doctype, element: _element_js__WEBPACK_IMPORTED_MODULE_3__.element, raw: _raw_js__WEBPACK_IMPORTED_MODULE_4__.raw, root: _root_js__WEBPACK_IMPORTED_MODULE_5__.root, text: _text_js__WEBPACK_IMPORTED_MODULE_6__.text}
+})
+
+/**
+ * Fail when a non-node is found in the tree.
+ *
+ * @param {unknown} node
+ *   Unknown value.
+ * @returns {never}
+ *   Never.
+ */
+function invalid(node) {
+  throw new Error('Expected node, not `' + node + '`')
+}
+
+/**
+ * Fail when a node with an unknown type is found in the tree.
+ *
+ * @param {unknown} node
+ *  Unknown node.
+ * @returns {never}
+ *   Never.
+ */
+function unknown(node) {
+  // @ts-expect-error: `type` is defined.
+  throw new Error('Cannot compile unknown node `' + node.type + '`')
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/hast-util-to-html/lib/handle/raw.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/raw.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "raw": () => (/* binding */ raw)
+/* harmony export */ });
+/* harmony import */ var _text_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./text.js */ "./node_modules/hast-util-to-html/lib/handle/text.js");
+/**
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').Raw} Raw
+ */
+
+
+
+/**
+ * Serialize a raw node.
+ *
+ * @param {Raw} node
+ *   Node to handle.
+ * @param {number | undefined} index
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} parent
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
+ */
+function raw(node, index, parent, state) {
+  return state.settings.allowDangerousHtml
+    ? node.value
+    : (0,_text_js__WEBPACK_IMPORTED_MODULE_0__.text)(node, index, parent, state)
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/hast-util-to-html/lib/handle/root.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/root.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "root": () => (/* binding */ root)
 /* harmony export */ });
 /**
- * @typedef {import('./types.js').Handle} Handle
+ * @typedef {import('../types.js').Root} Root
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
  */
 
 /**
- * @type {Handle}
+ * Serialize a root.
+ *
+ * @param {Root} node
+ *   Node to handle.
+ * @param {number | undefined} _1
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} _2
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
  */
-function doctype(ctx) {
-  return (
-    '<!' +
-    (ctx.upperDoctype ? 'DOCTYPE' : 'doctype') +
-    (ctx.tightDoctype ? '' : ' ') +
-    'html>'
-  )
+function root(node, _1, _2, state) {
+  return state.all(node)
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/hast-util-to-html/lib/handle/text.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/hast-util-to-html/lib/handle/text.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "text": () => (/* binding */ text)
+/* harmony export */ });
+/* harmony import */ var stringify_entities__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! stringify-entities */ "./node_modules/stringify-entities/lib/index.js");
+/**
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').Raw} Raw
+ * @typedef {import('../types.js').Text} Text
+ */
+
+
+
+/**
+ * Serialize a text node.
+ *
+ * @param {Text | Raw} node
+ *   Node to handle.
+ * @param {number | undefined} _
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} parent
+ *   Parent of `node`.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @returns {string}
+ *   Serialized node.
+ */
+function text(node, _, parent, state) {
+  // Check if content of `node` should be escaped.
+  return parent &&
+    parent.type === 'element' &&
+    (parent.tagName === 'script' || parent.tagName === 'style')
+    ? node.value
+    : (0,stringify_entities__WEBPACK_IMPORTED_MODULE_0__.stringifyEntities)(
+        node.value,
+        Object.assign({}, state.settings.characterReferences, {
+          subset: ['<', '&']
+        })
+      )
 }
 
 
@@ -45867,69 +45063,118 @@ function doctype(ctx) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "all": () => (/* binding */ all),
 /* harmony export */   "toHtml": () => (/* binding */ toHtml)
 /* harmony export */ });
-/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/index.js");
-/* harmony import */ var html_void_elements__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! html-void-elements */ "./node_modules/html-void-elements/index.js");
-/* harmony import */ var _omission_index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./omission/index.js */ "./node_modules/hast-util-to-html/lib/omission/index.js");
-/* harmony import */ var _tree_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./tree.js */ "./node_modules/hast-util-to-html/lib/tree.js");
+/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/index.js");
+/* harmony import */ var html_void_elements__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! html-void-elements */ "./node_modules/html-void-elements/index.js");
+/* harmony import */ var _handle_index_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./handle/index.js */ "./node_modules/hast-util-to-html/lib/handle/index.js");
 /**
  * @typedef {import('./types.js').Node} Node
+ * @typedef {import('./types.js').Parent} Parent
+ * @typedef {import('./types.js').Content} Content
  * @typedef {import('./types.js').Options} Options
- * @typedef {import('./types.js').Context} Context
- * @typedef {import('./types.js').Quote} Quote
+ * @typedef {import('./types.js').State} State
  */
-
 
 
 
 
 
 /**
- * @param {Node|Array.<Node>} node
- * @param {Options} [options]
+ * Serialize hast as HTML.
+ *
+ * @param {Node | Array<Content>} tree
+ *   Tree to serialize.
+ * @param {Options | null | undefined} [options]
+ *   Configuration.
  * @returns {string}
+ *   Serialized HTML.
  */
-function toHtml(node, options = {}) {
-  const quote = options.quote || '"'
-  /** @type {Quote} */
+// eslint-disable-next-line complexity
+function toHtml(tree, options) {
+  const options_ = options || {}
+  const quote = options_.quote || '"'
   const alternative = quote === '"' ? "'" : '"'
 
   if (quote !== '"' && quote !== "'") {
     throw new Error('Invalid quote `' + quote + '`, expected `\'` or `"`')
   }
 
-  /** @type {Context} */
-  const context = {
-    valid: options.allowParseErrors ? 0 : 1,
-    safe: options.allowDangerousCharacters ? 0 : 1,
-    schema: options.space === 'svg' ? property_information__WEBPACK_IMPORTED_MODULE_0__.svg : property_information__WEBPACK_IMPORTED_MODULE_0__.html,
-    omit: options.omitOptionalTags ? _omission_index_js__WEBPACK_IMPORTED_MODULE_1__.omission : undefined,
+  /** @type {State} */
+  const state = {
+    one,
+    all,
+    settings: {
+      omitOptionalTags: options_.omitOptionalTags || false,
+      allowParseErrors: options_.allowParseErrors || false,
+      allowDangerousCharacters: options_.allowDangerousCharacters || false,
+      quoteSmart: options_.quoteSmart || false,
+      preferUnquoted: options_.preferUnquoted || false,
+      tightAttributes: options_.tightAttributes || false,
+      upperDoctype: options_.upperDoctype || false,
+      tightDoctype: options_.tightDoctype || false,
+      bogusComments: options_.bogusComments || false,
+      tightCommaSeparatedLists: options_.tightCommaSeparatedLists || false,
+      tightSelfClosing: options_.tightSelfClosing || false,
+      collapseEmptyAttributes: options_.collapseEmptyAttributes || false,
+      allowDangerousHtml: options_.allowDangerousHtml || false,
+      voids: options_.voids || html_void_elements__WEBPACK_IMPORTED_MODULE_0__.htmlVoidElements,
+      characterReferences:
+        options_.characterReferences || options_.entities || {},
+      closeSelfClosing: options_.closeSelfClosing || false,
+      closeEmptyElements: options_.closeEmptyElements || false
+    },
+    schema: options_.space === 'svg' ? property_information__WEBPACK_IMPORTED_MODULE_1__.svg : property_information__WEBPACK_IMPORTED_MODULE_1__.html,
     quote,
-    alternative,
-    smart: options.quoteSmart,
-    unquoted: options.preferUnquoted,
-    tight: options.tightAttributes,
-    upperDoctype: options.upperDoctype,
-    tightDoctype: options.tightDoctype,
-    bogusComments: options.bogusComments,
-    tightLists: options.tightCommaSeparatedLists,
-    tightClose: options.tightSelfClosing,
-    collapseEmpty: options.collapseEmptyAttributes,
-    dangerous: options.allowDangerousHtml,
-    voids: options.voids || html_void_elements__WEBPACK_IMPORTED_MODULE_2__.htmlVoidElements.concat(),
-    entities: options.entities || {},
-    close: options.closeSelfClosing,
-    closeEmpty: options.closeEmptyElements
+    alternative
   }
 
-  return (0,_tree_js__WEBPACK_IMPORTED_MODULE_3__.one)(
-    context,
-    // @ts-ignore Assume `node` does not contain a root.
-    Array.isArray(node) ? {type: 'root', children: node} : node,
-    null,
-    null
+  return state.one(
+    Array.isArray(tree) ? {type: 'root', children: tree} : tree,
+    undefined,
+    undefined
   )
+}
+
+/**
+ * Serialize a node.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {Node} node
+ *   Node to handle.
+ * @param {number | undefined} index
+ *   Index of `node` in `parent.
+ * @param {Parent | undefined} parent
+ *   Parent of `node`.
+ * @returns {string}
+ *   Serialized node.
+ */
+function one(node, index, parent) {
+  return (0,_handle_index_js__WEBPACK_IMPORTED_MODULE_2__.handle)(node, index, parent, this)
+}
+
+/**
+ * Serialize all children of `parent`.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {Parent | undefined} parent
+ *   Parent whose children to serialize.
+ * @returns {string}
+ */
+function all(parent) {
+  /** @type {Array<string>} */
+  const results = []
+  const children = (parent && parent.children) || []
+  let index = -1
+
+  while (++index < children.length) {
+    results[index] = this.one(children[index], index, parent)
+  }
+
+  return results.join('')
 }
 
 
@@ -45945,16 +45190,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "closing": () => (/* binding */ closing)
 /* harmony export */ });
-/* harmony import */ var hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! hast-util-is-element */ "./node_modules/hast-util-is-element/index.js");
-/* harmony import */ var _util_comment_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./util/comment.js */ "./node_modules/hast-util-to-html/lib/omission/util/comment.js");
+/* harmony import */ var hast_util_whitespace__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! hast-util-whitespace */ "./node_modules/hast-util-whitespace/index.js");
 /* harmony import */ var _util_siblings_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util/siblings.js */ "./node_modules/hast-util-to-html/lib/omission/util/siblings.js");
-/* harmony import */ var _util_whitespace_start_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util/whitespace-start.js */ "./node_modules/hast-util-to-html/lib/omission/util/whitespace-start.js");
 /* harmony import */ var _omission_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./omission.js */ "./node_modules/hast-util-to-html/lib/omission/omission.js");
 /**
- * @typedef {import('../types.js').OmitHandle} OmitHandle
+ * @typedef {import('../types.js').Element} Element
+ * @typedef {import('../types.js').Parent} Parent
  */
-
-
 
 
 
@@ -45986,180 +45228,313 @@ const closing = (0,_omission_js__WEBPACK_IMPORTED_MODULE_0__.omission)({
 /**
  * Macro for `</head>`, `</colgroup>`, and `</caption>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function headOrColgroupOrCaption(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index, true)
-  return !next || (!(0,_util_comment_js__WEBPACK_IMPORTED_MODULE_2__.comment)(next) && !(0,_util_whitespace_start_js__WEBPACK_IMPORTED_MODULE_3__.whitespaceStart)(next))
+  return (
+    !next ||
+    (next.type !== 'comment' &&
+      !(next.type === 'text' && (0,hast_util_whitespace__WEBPACK_IMPORTED_MODULE_2__.whitespace)(next.value.charAt(0))))
+  )
 }
 
 /**
  * Whether to omit `</html>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function html(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || !(0,_util_comment_js__WEBPACK_IMPORTED_MODULE_2__.comment)(next)
+  return !next || next.type !== 'comment'
 }
 
 /**
  * Whether to omit `</body>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function body(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || !(0,_util_comment_js__WEBPACK_IMPORTED_MODULE_2__.comment)(next)
+  return !next || next.type !== 'comment'
 }
 
 /**
  * Whether to omit `</p>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
+// eslint-disable-next-line complexity
 function p(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
   return next
-    ? (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, [
-        'address',
-        'article',
-        'aside',
-        'blockquote',
-        'details',
-        'div',
-        'dl',
-        'fieldset',
-        'figcaption',
-        'figure',
-        'footer',
-        'form',
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-        'header',
-        'hgroup',
-        'hr',
-        'main',
-        'menu',
-        'nav',
-        'ol',
-        'p',
-        'pre',
-        'section',
-        'table',
-        'ul'
-      ])
+    ? next.type === 'element' &&
+        (next.tagName === 'address' ||
+          next.tagName === 'article' ||
+          next.tagName === 'aside' ||
+          next.tagName === 'blockquote' ||
+          next.tagName === 'details' ||
+          next.tagName === 'div' ||
+          next.tagName === 'dl' ||
+          next.tagName === 'fieldset' ||
+          next.tagName === 'figcaption' ||
+          next.tagName === 'figure' ||
+          next.tagName === 'footer' ||
+          next.tagName === 'form' ||
+          next.tagName === 'h1' ||
+          next.tagName === 'h2' ||
+          next.tagName === 'h3' ||
+          next.tagName === 'h4' ||
+          next.tagName === 'h5' ||
+          next.tagName === 'h6' ||
+          next.tagName === 'header' ||
+          next.tagName === 'hgroup' ||
+          next.tagName === 'hr' ||
+          next.tagName === 'main' ||
+          next.tagName === 'menu' ||
+          next.tagName === 'nav' ||
+          next.tagName === 'ol' ||
+          next.tagName === 'p' ||
+          next.tagName === 'pre' ||
+          next.tagName === 'section' ||
+          next.tagName === 'table' ||
+          next.tagName === 'ul')
     : !parent ||
         // Confusing parent.
-        !(0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(parent, [
-          'a',
-          'audio',
-          'del',
-          'ins',
-          'map',
-          'noscript',
-          'video'
-        ])
+        !(
+          parent.type === 'element' &&
+          (parent.tagName === 'a' ||
+            parent.tagName === 'audio' ||
+            parent.tagName === 'del' ||
+            parent.tagName === 'ins' ||
+            parent.tagName === 'map' ||
+            parent.tagName === 'noscript' ||
+            parent.tagName === 'video')
+        )
 }
 
 /**
  * Whether to omit `</li>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function li(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, 'li')
+  return !next || (next.type === 'element' && next.tagName === 'li')
 }
 
 /**
  * Whether to omit `</dt>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function dt(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return next && (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['dt', 'dd'])
+  return (
+    next &&
+    next.type === 'element' &&
+    (next.tagName === 'dt' || next.tagName === 'dd')
+  )
 }
 
 /**
  * Whether to omit `</dd>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function dd(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['dt', 'dd'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'dt' || next.tagName === 'dd'))
+  )
 }
 
 /**
  * Whether to omit `</rt>` or `</rp>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function rubyElement(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['rp', 'rt'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'rp' || next.tagName === 'rt'))
+  )
 }
 
 /**
  * Whether to omit `</optgroup>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function optgroup(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, 'optgroup')
+  return !next || (next.type === 'element' && next.tagName === 'optgroup')
 }
 
 /**
  * Whether to omit `</option>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function option(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['option', 'optgroup'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'option' || next.tagName === 'optgroup'))
+  )
 }
 
 /**
  * Whether to omit `</menuitem>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function menuitem(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['menuitem', 'hr', 'menu'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'menuitem' ||
+        next.tagName === 'hr' ||
+        next.tagName === 'menu'))
+  )
 }
 
 /**
  * Whether to omit `</thead>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function thead(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return next && (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['tbody', 'tfoot'])
+  return (
+    next &&
+    next.type === 'element' &&
+    (next.tagName === 'tbody' || next.tagName === 'tfoot')
+  )
 }
 
 /**
  * Whether to omit `</tbody>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function tbody(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['tbody', 'tfoot'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'tbody' || next.tagName === 'tfoot'))
+  )
 }
 
 /**
  * Whether to omit `</tfoot>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function tfoot(_, index, parent) {
   return !(0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
@@ -46168,47 +45543,40 @@ function tfoot(_, index, parent) {
 /**
  * Whether to omit `</tr>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function tr(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, 'tr')
+  return !next || (next.type === 'element' && next.tagName === 'tr')
 }
 
 /**
  * Whether to omit `</td>` or `</th>`.
  *
- * @type {OmitHandle}
+ * @param {Element} _
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the closing tag can be omitted.
  */
 function cells(_, index, parent) {
   const next = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(parent, index)
-  return !next || (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_4__.isElement)(next, ['td', 'th'])
+  return (
+    !next ||
+    (next.type === 'element' &&
+      (next.tagName === 'td' || next.tagName === 'th'))
+  )
 }
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/omission/index.js":
-/*!**************************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/omission/index.js ***!
-  \**************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "omission": () => (/* binding */ omission)
-/* harmony export */ });
-/* harmony import */ var _opening_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./opening.js */ "./node_modules/hast-util-to-html/lib/omission/opening.js");
-/* harmony import */ var _closing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./closing.js */ "./node_modules/hast-util-to-html/lib/omission/closing.js");
-/**
- * @typedef {import('../types.js').Omission} Omission
- */
-
-
-
-
-/** @type {Omission} */
-const omission = {opening: _opening_js__WEBPACK_IMPORTED_MODULE_0__.opening, closing: _closing_js__WEBPACK_IMPORTED_MODULE_1__.closing}
 
 
 /***/ }),
@@ -46232,8 +45600,11 @@ const own = {}.hasOwnProperty
 /**
  * Factory to check if a given node can have a tag omitted.
  *
- * @param {Object.<string, OmitHandle>} handlers
+ * @param {Record<string, OmitHandle>} handlers
+ *   Omission handlers, where each key is a tag name, and each value is the
+ *   corresponding handler.
  * @returns {OmitHandle}
+ *   Whether to omit a tag of an element.
  */
 function omission(handlers) {
   return omit
@@ -46264,18 +45635,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "opening": () => (/* binding */ opening)
 /* harmony export */ });
-/* harmony import */ var hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! hast-util-is-element */ "./node_modules/hast-util-is-element/index.js");
-/* harmony import */ var _util_comment_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./util/comment.js */ "./node_modules/hast-util-to-html/lib/omission/util/comment.js");
+/* harmony import */ var hast_util_whitespace__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! hast-util-whitespace */ "./node_modules/hast-util-whitespace/index.js");
 /* harmony import */ var _util_siblings_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util/siblings.js */ "./node_modules/hast-util-to-html/lib/omission/util/siblings.js");
-/* harmony import */ var _util_whitespace_start_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./util/whitespace-start.js */ "./node_modules/hast-util-to-html/lib/omission/util/whitespace-start.js");
-/* harmony import */ var _closing_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./closing.js */ "./node_modules/hast-util-to-html/lib/omission/closing.js");
+/* harmony import */ var _closing_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./closing.js */ "./node_modules/hast-util-to-html/lib/omission/closing.js");
 /* harmony import */ var _omission_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./omission.js */ "./node_modules/hast-util-to-html/lib/omission/omission.js");
 /**
- * @typedef {import('../types.js').OmitHandle} OmitHandle
- * @typedef {import('../types.js').Child} Child
+ * @typedef {import('../types.js').Element} Element
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').Content} Content
  */
-
-
 
 
 
@@ -46293,29 +45661,36 @@ const opening = (0,_omission_js__WEBPACK_IMPORTED_MODULE_0__.omission)({
 /**
  * Whether to omit `<html>`.
  *
- * @type {OmitHandle}
+ * @param {Element} node
+ *   Element.
+ * @returns {boolean}
+ *   Whether the opening tag can be omitted.
  */
 function html(node) {
   const head = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(node, -1)
-  return !head || !(0,_util_comment_js__WEBPACK_IMPORTED_MODULE_2__.comment)(head)
+  return !head || head.type !== 'comment'
 }
 
 /**
  * Whether to omit `<head>`.
  *
- * @type {OmitHandle}
+ * @param {Element} node
+ *   Element.
+ * @returns {boolean}
+ *   Whether the opening tag can be omitted.
  */
 function head(node) {
   const children = node.children
-  /** @type {Array.<string>} */
+  /** @type {Array<string>} */
   const seen = []
   let index = -1
-  /** @type {Child} */
-  let child
 
   while (++index < children.length) {
-    child = children[index]
-    if ((0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(child, ['title', 'base'])) {
+    const child = children[index]
+    if (
+      child.type === 'element' &&
+      (child.tagName === 'title' || child.tagName === 'base')
+    ) {
       if (seen.includes(child.tagName)) return false
       seen.push(child.tagName)
     }
@@ -46327,16 +45702,26 @@ function head(node) {
 /**
  * Whether to omit `<body>`.
  *
- * @type {OmitHandle}
+ * @param {Element} node
+ *   Element.
+ * @returns {boolean}
+ *   Whether the opening tag can be omitted.
  */
 function body(node) {
   const head = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingAfter)(node, -1, true)
 
   return (
     !head ||
-    (!(0,_util_comment_js__WEBPACK_IMPORTED_MODULE_2__.comment)(head) &&
-      !(0,_util_whitespace_start_js__WEBPACK_IMPORTED_MODULE_4__.whitespaceStart)(head) &&
-      !(0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(head, ['meta', 'link', 'script', 'style', 'template']))
+    (head.type !== 'comment' &&
+      !(head.type === 'text' && (0,hast_util_whitespace__WEBPACK_IMPORTED_MODULE_2__.whitespace)(head.value.charAt(0))) &&
+      !(
+        head.type === 'element' &&
+        (head.tagName === 'meta' ||
+          head.tagName === 'link' ||
+          head.tagName === 'script' ||
+          head.tagName === 'style' ||
+          head.tagName === 'template')
+      ))
   )
 }
 
@@ -46346,7 +45731,14 @@ function body(node) {
  * implement in the closing tag, to the same effect, so we handle it there
  * instead.
  *
- * @type {OmitHandle}
+ * @param {Element} node
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the opening tag can be omitted.
  */
 function colgroup(node, index, parent) {
   const previous = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingBefore)(parent, index)
@@ -46354,19 +45746,29 @@ function colgroup(node, index, parent) {
 
   // Previous colgroup was already omitted.
   if (
-    (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(previous, 'colgroup') &&
-    (0,_closing_js__WEBPACK_IMPORTED_MODULE_5__.closing)(previous, parent.children.indexOf(previous), parent)
+    parent &&
+    previous &&
+    previous.type === 'element' &&
+    previous.tagName === 'colgroup' &&
+    (0,_closing_js__WEBPACK_IMPORTED_MODULE_3__.closing)(previous, parent.children.indexOf(previous), parent)
   ) {
     return false
   }
 
-  return head && (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(head, 'col')
+  return head && head.type === 'element' && head.tagName === 'col'
 }
 
 /**
  * Whether to omit `<tbody>`.
  *
- * @type {OmitHandle}
+ * @param {Element} node
+ *   Element.
+ * @param {number | undefined} index
+ *   Index of element in parent.
+ * @param {Parent | undefined} parent
+ *   Parent of element.
+ * @returns {boolean}
+ *   Whether the opening tag can be omitted.
  */
 function tbody(node, index, parent) {
   const previous = (0,_util_siblings_js__WEBPACK_IMPORTED_MODULE_1__.siblingBefore)(parent, index)
@@ -46374,38 +45776,17 @@ function tbody(node, index, parent) {
 
   // Previous table section was already omitted.
   if (
-    (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(previous, ['thead', 'tbody']) &&
-    (0,_closing_js__WEBPACK_IMPORTED_MODULE_5__.closing)(previous, parent.children.indexOf(previous), parent)
+    parent &&
+    previous &&
+    previous.type === 'element' &&
+    (previous.tagName === 'thead' || previous.tagName === 'tbody') &&
+    (0,_closing_js__WEBPACK_IMPORTED_MODULE_3__.closing)(previous, parent.children.indexOf(previous), parent)
   ) {
     return false
   }
 
-  return head && (0,hast_util_is_element__WEBPACK_IMPORTED_MODULE_3__.isElement)(head, 'tr')
+  return head && head.type === 'element' && head.tagName === 'tr'
 }
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/omission/util/comment.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/omission/util/comment.js ***!
-  \*********************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "comment": () => (/* binding */ comment)
-/* harmony export */ });
-/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/index.js");
-/**
- * @typedef {import('../../types.js').Comment} Comment
- */
-
-
-
-/** @type {import('unist-util-is').AssertPredicate<Comment>} */
-// @ts-ignore
-const comment = (0,unist_util_is__WEBPACK_IMPORTED_MODULE_0__.convert)('comment')
 
 
 /***/ }),
@@ -46424,7 +45805,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var hast_util_whitespace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! hast-util-whitespace */ "./node_modules/hast-util-whitespace/index.js");
 /**
  * @typedef {import('../../types.js').Parent} Parent
- * @typedef {import('../../types.js').Child} Child
+ * @typedef {import('../../types.js').Content} Content
  */
 
 
@@ -46443,14 +45824,14 @@ function siblings(increment) {
   /**
    * Find applicable siblings in a direction.
    *
-   * @param {Parent} parent
-   * @param {number} index
-   * @param {boolean} [includeWhitespace=false]
-   * @returns {Child}
+   * @param {Parent | null | undefined} parent
+   * @param {number | null | undefined} index
+   * @param {boolean | null | undefined} [includeWhitespace=false]
+   * @returns {Content}
    */
   function sibling(parent, index, includeWhitespace) {
-    const siblings = parent && parent.children
-    let offset = index + increment
+    const siblings = parent ? parent.children : []
+    let offset = (index || 0) + increment
     let next = siblings && siblings[offset]
 
     if (!includeWhitespace) {
@@ -46467,414 +45848,6 @@ function siblings(increment) {
 
 /***/ }),
 
-/***/ "./node_modules/hast-util-to-html/lib/omission/util/whitespace-start.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/omission/util/whitespace-start.js ***!
-  \******************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "whitespaceStart": () => (/* binding */ whitespaceStart)
-/* harmony export */ });
-/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/index.js");
-/* harmony import */ var hast_util_whitespace__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! hast-util-whitespace */ "./node_modules/hast-util-whitespace/index.js");
-/**
- * @typedef {import('../../types.js').Node} Node
- * @typedef {import('../../types.js').Text} Text
- */
-
-
-
-
-/** @type {import('unist-util-is').AssertPredicate<Text>} */
-// @ts-ignore
-const isText = (0,unist_util_is__WEBPACK_IMPORTED_MODULE_0__.convert)('text')
-
-/**
- * Check if `node` starts with whitespace.
- *
- * @param {Node} node
- * @returns {boolean}
- */
-function whitespaceStart(node) {
-  return isText(node) && (0,hast_util_whitespace__WEBPACK_IMPORTED_MODULE_1__.whitespace)(node.value.charAt(0))
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/raw.js":
-/*!***************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/raw.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "raw": () => (/* binding */ raw)
-/* harmony export */ });
-/* harmony import */ var _text_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./text.js */ "./node_modules/hast-util-to-html/lib/text.js");
-/**
- * @typedef {import('./types.js').Handle} Handle
- * @typedef {import('./types.js').Raw} Raw
- */
-
-
-
-/**
- * @type {Handle}
- * @param {Raw} node
- */
-function raw(ctx, node, index, parent) {
-  // @ts-ignore Hush.
-  return ctx.dangerous ? node.value : (0,_text_js__WEBPACK_IMPORTED_MODULE_0__.text)(ctx, node, index, parent)
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/text.js":
-/*!****************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/text.js ***!
-  \****************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "text": () => (/* binding */ text)
-/* harmony export */ });
-/* harmony import */ var stringify_entities__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! stringify-entities */ "./node_modules/stringify-entities/lib/index.js");
-/**
- * @typedef {import('./types.js').Handle} Handle
- * @typedef {import('./types.js').Text} Text
- */
-
-
-
-/**
- * @type {Handle}
- * @param {Text} node
- */
-function text(ctx, node, _, parent) {
-  // Check if content of `node` should be escaped.
-  return parent &&
-    parent.type === 'element' &&
-    // @ts-expect-error: hush.
-    (parent.tagName === 'script' || parent.tagName === 'style')
-    ? node.value
-    : (0,stringify_entities__WEBPACK_IMPORTED_MODULE_0__.stringifyEntities)(
-        node.value,
-        Object.assign({}, ctx.entities, {subset: ['<', '&']})
-      )
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/hast-util-to-html/lib/tree.js":
-/*!****************************************************!*\
-  !*** ./node_modules/hast-util-to-html/lib/tree.js ***!
-  \****************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "all": () => (/* binding */ all),
-/* harmony export */   "element": () => (/* binding */ element),
-/* harmony export */   "one": () => (/* binding */ one)
-/* harmony export */ });
-/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/index.js");
-/* harmony import */ var property_information__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! property-information */ "./node_modules/property-information/lib/find.js");
-/* harmony import */ var space_separated_tokens__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! space-separated-tokens */ "./node_modules/space-separated-tokens/index.js");
-/* harmony import */ var comma_separated_tokens__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! comma-separated-tokens */ "./node_modules/comma-separated-tokens/index.js");
-/* harmony import */ var stringify_entities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! stringify-entities */ "./node_modules/stringify-entities/lib/index.js");
-/* harmony import */ var ccount__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ccount */ "./node_modules/ccount/index.js");
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./constants.js */ "./node_modules/hast-util-to-html/lib/constants.js");
-/* harmony import */ var _comment_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./comment.js */ "./node_modules/hast-util-to-html/lib/comment.js");
-/* harmony import */ var _doctype_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./doctype.js */ "./node_modules/hast-util-to-html/lib/doctype.js");
-/* harmony import */ var _raw_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./raw.js */ "./node_modules/hast-util-to-html/lib/raw.js");
-/* harmony import */ var _text_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./text.js */ "./node_modules/hast-util-to-html/lib/text.js");
-/**
- * @typedef {import('./types.js').Handle} Handle
- * @typedef {import('./types.js').Element} Element
- * @typedef {import('./types.js').Context} Context
- * @typedef {import('./types.js').Properties} Properties
- * @typedef {import('./types.js').PropertyValue} PropertyValue
- * @typedef {import('./types.js').Parent} Parent
- */
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * @type {Object.<string, Handle>}
- */
-const handlers = {
-  comment: _comment_js__WEBPACK_IMPORTED_MODULE_0__.comment,
-  doctype: _doctype_js__WEBPACK_IMPORTED_MODULE_1__.doctype,
-  element,
-  // @ts-ignore `raw` is nonstandard
-  raw: _raw_js__WEBPACK_IMPORTED_MODULE_2__.raw,
-  // @ts-ignore `root` is a parent.
-  root: all,
-  text: _text_js__WEBPACK_IMPORTED_MODULE_3__.text
-}
-
-const own = {}.hasOwnProperty
-
-/**
- * @type {Handle}
- */
-function one(ctx, node, index, parent) {
-  if (!node || !node.type) {
-    throw new Error('Expected node, not `' + node + '`')
-  }
-
-  if (!own.call(handlers, node.type)) {
-    throw new Error('Cannot compile unknown node `' + node.type + '`')
-  }
-
-  return handlers[node.type](ctx, node, index, parent)
-}
-
-/**
- * Serialize all children of `parent`.
- *
- * @type {Handle}
- * @param {Parent} parent
- */
-function all(ctx, parent) {
-  /** @type {Array.<string>} */
-  const results = []
-  const children = (parent && parent.children) || []
-  let index = -1
-
-  while (++index < children.length) {
-    results[index] = one(ctx, children[index], index, parent)
-  }
-
-  return results.join('')
-}
-
-/**
- * @type {Handle}
- * @param {Element} node
- */
-// eslint-disable-next-line complexity
-function element(ctx, node, index, parent) {
-  const schema = ctx.schema
-  const omit = schema.space === 'svg' ? undefined : ctx.omit
-  let selfClosing =
-    schema.space === 'svg'
-      ? ctx.closeEmpty
-      : ctx.voids.includes(node.tagName.toLowerCase())
-  /** @type {Array.<string>} */
-  const parts = []
-  /** @type {string} */
-  let last
-
-  if (schema.space === 'html' && node.tagName === 'svg') {
-    ctx.schema = property_information__WEBPACK_IMPORTED_MODULE_4__.svg
-  }
-
-  const attrs = serializeAttributes(ctx, node.properties)
-
-  const content = all(
-    ctx,
-    schema.space === 'html' && node.tagName === 'template' ? node.content : node
-  )
-
-  ctx.schema = schema
-
-  // If the node is categorised as void, but it has children, remove the
-  // categorisation.
-  // This enables for example `menuitem`s, which are void in W3C HTML but not
-  // void in WHATWG HTML, to be stringified properly.
-  if (content) selfClosing = false
-
-  if (attrs || !omit || !omit.opening(node, index, parent)) {
-    parts.push('<', node.tagName, attrs ? ' ' + attrs : '')
-
-    if (selfClosing && (schema.space === 'svg' || ctx.close)) {
-      last = attrs.charAt(attrs.length - 1)
-      if (
-        !ctx.tightClose ||
-        last === '/' ||
-        (last && last !== '"' && last !== "'")
-      ) {
-        parts.push(' ')
-      }
-
-      parts.push('/')
-    }
-
-    parts.push('>')
-  }
-
-  parts.push(content)
-
-  if (!selfClosing && (!omit || !omit.closing(node, index, parent))) {
-    parts.push('</' + node.tagName + '>')
-  }
-
-  return parts.join('')
-}
-
-/**
- * @param {Context} ctx
- * @param {Properties} props
- * @returns {string}
- */
-function serializeAttributes(ctx, props) {
-  /** @type {Array.<string>} */
-  const values = []
-  let index = -1
-  /** @type {string} */
-  let key
-  /** @type {string} */
-  let value
-  /** @type {string} */
-  let last
-
-  for (key in props) {
-    if (props[key] !== undefined && props[key] !== null) {
-      value = serializeAttribute(ctx, key, props[key])
-      if (value) values.push(value)
-    }
-  }
-
-  while (++index < values.length) {
-    last = ctx.tight ? values[index].charAt(values[index].length - 1) : null
-
-    // In tight mode, don’t add a space after quoted attributes.
-    if (index !== values.length - 1 && last !== '"' && last !== "'") {
-      values[index] += ' '
-    }
-  }
-
-  return values.join('')
-}
-
-/**
- * @param {Context} ctx
- * @param {string} key
- * @param {PropertyValue} value
- * @returns {string}
- */
-// eslint-disable-next-line complexity
-function serializeAttribute(ctx, key, value) {
-  const info = (0,property_information__WEBPACK_IMPORTED_MODULE_5__.find)(ctx.schema, key)
-  let quote = ctx.quote
-  /** @type {string} */
-  let result
-
-  if (info.overloadedBoolean && (value === info.attribute || value === '')) {
-    value = true
-  } else if (
-    info.boolean ||
-    (info.overloadedBoolean && typeof value !== 'string')
-  ) {
-    value = Boolean(value)
-  }
-
-  if (
-    value === undefined ||
-    value === null ||
-    value === false ||
-    (typeof value === 'number' && Number.isNaN(value))
-  ) {
-    return ''
-  }
-
-  const name = (0,stringify_entities__WEBPACK_IMPORTED_MODULE_6__.stringifyEntities)(
-    info.attribute,
-    Object.assign({}, ctx.entities, {
-      // Always encode without parse errors in non-HTML.
-      subset:
-        _constants_js__WEBPACK_IMPORTED_MODULE_7__.constants.name[ctx.schema.space === 'html' ? ctx.valid : 1][ctx.safe]
-    })
-  )
-
-  // No value.
-  // There is currently only one boolean property in SVG: `[download]` on
-  // `<a>`.
-  // This property does not seem to work in browsers (FF, Sa, Ch), so I can’t
-  // test if dropping the value works.
-  // But I assume that it should:
-  //
-  // ```html
-  // <!doctype html>
-  // <svg viewBox="0 0 100 100">
-  //   <a href=https://example.com download>
-  //     <circle cx=50 cy=40 r=35 />
-  //   </a>
-  // </svg>
-  // ```
-  //
-  // See: <https://github.com/wooorm/property-information/blob/main/lib/svg.js>
-  if (value === true) return name
-
-  value =
-    typeof value === 'object' && 'length' in value
-      ? // `spaces` doesn’t accept a second argument, but it’s given here just to
-        // keep the code cleaner.
-        (info.commaSeparated ? comma_separated_tokens__WEBPACK_IMPORTED_MODULE_8__.stringify : space_separated_tokens__WEBPACK_IMPORTED_MODULE_9__.stringify)(value, {
-          padLeft: !ctx.tightLists
-        })
-      : String(value)
-
-  if (ctx.collapseEmpty && !value) return name
-
-  // Check unquoted value.
-  if (ctx.unquoted) {
-    result = (0,stringify_entities__WEBPACK_IMPORTED_MODULE_6__.stringifyEntities)(
-      value,
-      Object.assign({}, ctx.entities, {
-        subset: _constants_js__WEBPACK_IMPORTED_MODULE_7__.constants.unquoted[ctx.valid][ctx.safe],
-        attribute: true
-      })
-    )
-  }
-
-  // If we don’t want unquoted, or if `value` contains character references when
-  // unquoted…
-  if (result !== value) {
-    // If the alternative is less common than `quote`, switch.
-    if (ctx.smart && (0,ccount__WEBPACK_IMPORTED_MODULE_10__.ccount)(value, quote) > (0,ccount__WEBPACK_IMPORTED_MODULE_10__.ccount)(value, ctx.alternative)) {
-      quote = ctx.alternative
-    }
-
-    result =
-      quote +
-      (0,stringify_entities__WEBPACK_IMPORTED_MODULE_6__.stringifyEntities)(
-        value,
-        Object.assign({}, ctx.entities, {
-          // Always encode without parse errors in non-HTML.
-          subset: (quote === "'" ? _constants_js__WEBPACK_IMPORTED_MODULE_7__.constants.single : _constants_js__WEBPACK_IMPORTED_MODULE_7__.constants.double)[
-            ctx.schema.space === 'html' ? ctx.valid : 1
-          ][ctx.safe],
-          attribute: true
-        })
-      ) +
-      quote
-  }
-
-  // Don’t add a `=` for unquoted empties.
-  return name + (result ? '=' + result : result)
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/hast-util-whitespace/index.js":
 /*!****************************************************!*\
   !*** ./node_modules/hast-util-whitespace/index.js ***!
@@ -46886,20 +45859,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "whitespace": () => (/* binding */ whitespace)
 /* harmony export */ });
 /**
+ * Check if the given value is *inter-element whitespace*.
+ *
  * @param {unknown} thing
+ *   Thing to check (typically `Node` or `string`).
  * @returns {boolean}
+ *   Whether the `value` is inter-element whitespace (`boolean`): consisting of
+ *   zero or more of space, tab (`\t`), line feed (`\n`), carriage return
+ *   (`\r`), or form feed (`\f`).
+ *   If a node is passed it must be a `Text` node, whose `value` field is
+ *   checked.
  */
 function whitespace(thing) {
   /** @type {string} */
-  var value =
-    // @ts-ignore looks like a node.
+  const value =
+    // @ts-expect-error looks like a node.
     thing && typeof thing === 'object' && thing.type === 'text'
-      ? // @ts-ignore looks like a text.
+      ? // @ts-expect-error looks like a text.
         thing.value || ''
       : thing
 
   // HTML whitespace expression.
-  // See <https://html.spec.whatwg.org/#space-character>.
+  // See <https://infra.spec.whatwg.org/#ascii-whitespace>.
   return typeof value === 'string' && value.replace(/[ \t\n\f\r]/g, '') === ''
 }
 
@@ -50844,7 +49825,7 @@ __webpack_require__.r(__webpack_exports__);
 
 let FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM, isTTY=true;
 if (typeof process !== 'undefined') {
-	({ FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM } = process.env);
+	({ FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM } = process.env || {});
 	isTTY = process.stdout && process.stdout.isTTY;
 }
 
@@ -50965,24 +49946,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "longestStreak": () => (/* binding */ longestStreak)
 /* harmony export */ });
 /**
- * Get the count of the longest repeating streak of `character` in `value`.
+ * Get the count of the longest repeating streak of `substring` in `value`.
  *
  * @param {string} value
  *   Content to search in.
- * @param {string} character
- *   Single character to look for.
+ * @param {string} substring
+ *   Substring to look for, typically one character.
  * @returns {number}
- *   Count of most frequent adjacent `character`s in `value`.
+ *   Count of most frequent adjacent `substring`s in `value`.
  */
-function longestStreak(value, character) {
+function longestStreak(value, substring) {
   const source = String(value)
-  let index = source.indexOf(character)
+  let index = source.indexOf(substring)
   let expected = index
   let count = 0
   let max = 0
 
-  if (typeof character !== 'string' || character.length !== 1) {
-    throw new Error('Expected character')
+  if (typeof substring !== 'string') {
+    throw new TypeError('Expected substring')
   }
 
   while (index !== -1) {
@@ -50994,8 +49975,8 @@ function longestStreak(value, character) {
       count = 1
     }
 
-    expected = index + 1
-    index = source.indexOf(character, expected)
+    expected = index + substring.length
+    index = source.indexOf(substring, expected)
   }
 
   return max
@@ -51017,7 +49998,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef Options
  *   Configuration (optional).
- * @property {string|null|Array<string|null|undefined>} [align]
+ * @property {string|null|ReadonlyArray<string|null|undefined>} [align]
  *   One style for all columns, or styles for their respective columns.
  *   Each style is either `'l'` (left), `'r'` (right), or `'c'` (center).
  *   Other values are treated as `''`, which doesn’t place the colon in the
@@ -51162,7 +50143,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Generate a markdown ([GFM](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/organizing-information-with-tables)) table..
  *
- * @param {Array<Array<string|null|undefined>>} table
+ * @param {ReadonlyArray<ReadonlyArray<string|null|undefined>>} table
  *   Table data (matrix of strings).
  * @param {Options} [options]
  *   Configuration (optional).
@@ -51408,7 +50389,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "definitions": () => (/* binding */ definitions)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
 /**
  * @typedef {import('mdast').Root|import('mdast').Content} Node
  * @typedef {import('mdast').Definition} Definition
@@ -51465,10 +50446,10 @@ function clean(value) {
 
 /***/ }),
 
-/***/ "./node_modules/mdast-util-find-and-replace/index.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/mdast-util-find-and-replace/index.js ***!
-  \***********************************************************/
+/***/ "./node_modules/mdast-util-find-and-replace/lib/index.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/mdast-util-find-and-replace/lib/index.js ***!
+  \***************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -51476,18 +50457,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "findAndReplace": () => (/* binding */ findAndReplace)
 /* harmony export */ });
 /* harmony import */ var escape_string_regexp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! escape-string-regexp */ "./node_modules/mdast-util-find-and-replace/node_modules/escape-string-regexp/index.js");
-/* harmony import */ var unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit-parents */ "./node_modules/unist-util-visit-parents/index.js");
-/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/index.js");
+/* harmony import */ var unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit-parents */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/lib/index.js");
 /**
- * @typedef Options Configuration.
- * @property {Test} [ignore] `unist-util-is` test used to assert parents
+ * @typedef Options
+ *   Configuration (optional).
+ * @property {Test} [ignore]
+ *   `unist-util-is` test used to assert parents
  *
  * @typedef {import('mdast').Root} Root
  * @typedef {import('mdast').Content} Content
  * @typedef {import('mdast').PhrasingContent} PhrasingContent
  * @typedef {import('mdast').Text} Text
  * @typedef {Content|Root} Node
- * @typedef {Extract<Node, import('mdast').Parent>} Parent
+ * @typedef {Exclude<Extract<Node, import('mdast').Parent>, Root>} Parent
  *
  * @typedef {import('unist-util-visit-parents').Test} Test
  * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
@@ -51495,22 +50478,23 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef RegExpMatchObject
  * @property {number} index
  * @property {string} input
+ * @property {[Root, ...Array<Parent>, Text]} stack
  *
  * @typedef {string|RegExp} Find
  * @typedef {string|ReplaceFunction} Replace
  *
  * @typedef {[Find, Replace]} FindAndReplaceTuple
- * @typedef {Object.<string, Replace>} FindAndReplaceSchema
- * @typedef {Array.<FindAndReplaceTuple>} FindAndReplaceList
+ * @typedef {Record<string, Replace>} FindAndReplaceSchema
+ * @typedef {Array<FindAndReplaceTuple>} FindAndReplaceList
  *
  * @typedef {[RegExp, ReplaceFunction]} Pair
- * @typedef {Array.<Pair>} Pairs
+ * @typedef {Array<Pair>} Pairs
  */
 
 /**
  * @callback ReplaceFunction
  * @param {...any} parameters
- * @returns {Array.<PhrasingContent>|PhrasingContent|string|false|undefined|null}
+ * @returns {Array<PhrasingContent>|PhrasingContent|string|false|undefined|null}
  */
 
 
@@ -51573,7 +50557,7 @@ const findAndReplace =
 
       return tree
 
-      /** @type {import('unist-util-visit-parents').Visitor<Text>} */
+      /** @type {import('unist-util-visit-parents/complex-types').BuildVisitor<Root, 'text'>} */
       function visitor(node, parents) {
         let index = -1
         /** @type {Parent|undefined} */
@@ -51597,22 +50581,25 @@ const findAndReplace =
         }
 
         if (grandparent) {
-          return handler(node, grandparent)
+          // @ts-expect-error: stack is fine.
+          return handler(node, parents)
         }
       }
 
       /**
        * @param {Text} node
-       * @param {Parent} parent
+       * @param {[Root, ...Array<Parent>]} parents
        * @returns {VisitorResult}
        */
-      function handler(node, parent) {
+      function handler(node, parents) {
+        const parent = parents[parents.length - 1]
         const find = pairs[pairIndex][0]
         const replace = pairs[pairIndex][1]
         let start = 0
         // @ts-expect-error: TS is wrong, some of these children can be text.
-        let index = parent.children.indexOf(node)
-        /** @type {Array.<PhrasingContent>} */
+        const index = parent.children.indexOf(node)
+        let change = false
+        /** @type {Array<PhrasingContent>} */
         let nodes = []
         /** @type {number|undefined} */
         let position
@@ -51623,11 +50610,13 @@ const findAndReplace =
 
         while (match) {
           position = match.index
-          // @ts-expect-error this is perfectly fine, typescript.
-          let value = replace(...match, {
+          /** @type {RegExpMatchObject} */
+          const matchObject = {
             index: match.index,
-            input: match.input
-          })
+            input: match.input,
+            stack: [...parents, node]
+          }
+          let value = replace(...match, matchObject)
 
           if (typeof value === 'string') {
             value = value.length > 0 ? {type: 'text', value} : undefined
@@ -51648,6 +50637,7 @@ const findAndReplace =
             }
 
             start = position + match[0].length
+            change = true
           }
 
           if (!find.global) {
@@ -51657,18 +50647,17 @@ const findAndReplace =
           match = find.exec(node.value)
         }
 
-        if (position === undefined) {
-          nodes = [node]
-          index--
-        } else {
+        if (change) {
           if (start < node.value.length) {
             nodes.push({type: 'text', value: node.value.slice(start)})
           }
 
           parent.children.splice(index, 1, ...nodes)
+        } else {
+          nodes = [node]
         }
 
-        return index + nodes.length + 1
+        return index + nodes.length
       }
     }
   )
@@ -51763,7 +50752,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "fromMarkdown": () => (/* binding */ fromMarkdown)
 /* harmony export */ });
 /* harmony import */ var uvu_assert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! uvu/assert */ "./node_modules/uvu/assert/index.mjs");
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /* harmony import */ var micromark_lib_parse_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark/lib/parse.js */ "./node_modules/micromark/dev/lib/parse.js");
 /* harmony import */ var micromark_lib_preprocess_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! micromark/lib/preprocess.js */ "./node_modules/micromark/dev/lib/preprocess.js");
 /* harmony import */ var micromark_lib_postprocess_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark/lib/postprocess.js */ "./node_modules/micromark/dev/lib/postprocess.js");
@@ -51774,7 +50763,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! micromark-util-symbol/constants.js */ "./node_modules/micromark-util-symbol/constants.js");
 /* harmony import */ var micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! micromark-util-symbol/types.js */ "./node_modules/micromark-util-symbol/types.js");
 /* harmony import */ var decode_named_character_reference__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! decode-named-character-reference */ "./node_modules/decode-named-character-reference/index.dom.js");
-/* harmony import */ var unist_util_stringify_position__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! unist-util-stringify-position */ "./node_modules/unist-util-stringify-position/index.js");
+/* harmony import */ var unist_util_stringify_position__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! unist-util-stringify-position */ "./node_modules/unist-util-stringify-position/lib/index.js");
 /**
  * @typedef {import('micromark-util-types').Encoding} Encoding
  * @typedef {import('micromark-util-types').Event} Event
@@ -51782,12 +50771,13 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef {import('micromark-util-types').Token} Token
  * @typedef {import('micromark-util-types').TokenizeContext} TokenizeContext
  * @typedef {import('micromark-util-types').Value} Value
+ *
  * @typedef {import('unist').Parent} UnistParent
  * @typedef {import('unist').Point} Point
+ *
  * @typedef {import('mdast').PhrasingContent} PhrasingContent
+ * @typedef {import('mdast').StaticPhrasingContent} StaticPhrasingContent
  * @typedef {import('mdast').Content} Content
- * @typedef {Root|Content} Node
- * @typedef {Extract<Node, UnistParent>} Parent
  * @typedef {import('mdast').Break} Break
  * @typedef {import('mdast').Blockquote} Blockquote
  * @typedef {import('mdast').Code} Code
@@ -51807,57 +50797,118 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef {import('mdast').Strong} Strong
  * @typedef {import('mdast').Text} Text
  * @typedef {import('mdast').ThematicBreak} ThematicBreak
- *
- * @typedef {UnistParent & {type: 'fragment', children: Array<PhrasingContent>}} Fragment
+ * @typedef {import('mdast').ReferenceType} ReferenceType
+ * @typedef {import('../index.js').CompileData} CompileData
  */
 
 /**
- * @typedef _CompileDataFields
- * @property {boolean|undefined} expectingFirstListItemValue
- * @property {boolean|undefined} flowCodeInside
- * @property {boolean|undefined} setextHeadingSlurpLineEnding
- * @property {boolean|undefined} atHardBreak
- * @property {'collapsed'|'full'} referenceType
- * @property {boolean|undefined} inReference
- * @property {'characterReferenceMarkerHexadecimal'|'characterReferenceMarkerNumeric'} characterReferenceType
+ * @typedef {Root | Content} Node
+ * @typedef {Extract<Node, UnistParent>} Parent
  *
- * @typedef {Record<string, unknown> & Partial<_CompileDataFields>} CompileData
+ * @typedef {Omit<UnistParent, 'type' | 'children'> & {type: 'fragment', children: Array<PhrasingContent>}} Fragment
+ */
+
+/**
+ * @callback Transform
+ *   Extra transform, to change the AST afterwards.
+ * @param {Root} tree
+ *   Tree to transform.
+ * @returns {Root | undefined | null | void}
+ *   New tree or nothing (in which case the current tree is used).
  *
- * @typedef {(tree: Root) => Root|void} Transform
- * @typedef {(this: CompileContext, token: Token) => void} Handle
+ * @callback Handle
+ *   Handle a token.
+ * @param {CompileContext} this
+ *   Context.
+ * @param {Token} token
+ *   Current token.
+ * @returns {void}
+ *   Nothing.
+ *
  * @typedef {Record<string, Handle>} Handles
  *   Token types mapping to handles
- * @typedef {Record<string, Record<string, unknown>|Array<unknown>> & {canContainEols: Array<string>, transforms: Array<Transform>, enter: Handles, exit: Handles}} NormalizedExtension
- * @typedef {Partial<NormalizedExtension>} Extension
- *   An mdast extension changes how markdown tokens are turned into mdast.
  *
- * @typedef {(this: Omit<CompileContext, 'sliceSerialize'>, left: Token|undefined, right: Token) => void} OnEnterError
- * @typedef {(this: Omit<CompileContext, 'sliceSerialize'>, left: Token, right: Token) => void} OnExitError
+ * @callback OnEnterError
+ *   Handle the case where the `right` token is open, but it is closed (by the
+ *   `left` token) or because we reached the end of the document.
+ * @param {Omit<CompileContext, 'sliceSerialize'>} this
+ *   Context.
+ * @param {Token | undefined} left
+ *   Left token.
+ * @param {Token} right
+ *   Right token.
+ * @returns {void}
+ *   Nothing.
+ *
+ * @callback OnExitError
+ *   Handle the case where the `right` token is open but it is closed by
+ *   exiting the `left` token.
+ * @param {Omit<CompileContext, 'sliceSerialize'>} this
+ *   Context.
+ * @param {Token} left
+ *   Left token.
+ * @param {Token} right
+ *   Right token.
+ * @returns {void}
+ *   Nothing.
+ *
+ * @typedef {[Token, OnEnterError | undefined]} TokenTuple
+ *   Open token on the stack, with an optional error handler for when
+ *   that token isn’t closed properly.
+ */
+
+/**
+ * @typedef Config
+ *   Configuration.
+ *
+ *   We have our defaults, but extensions will add more.
+ * @property {Array<string>} canContainEols
+ *   Token types where line endings are used.
+ * @property {Handles} enter
+ *   Opening handles.
+ * @property {Handles} exit
+ *   Closing handles.
+ * @property {Array<Transform>} transforms
+ *   Tree transforms.
+ *
+ * @typedef {Partial<Config>} Extension
+ *   Change how markdown tokens from micromark are turned into mdast.
  *
  * @typedef CompileContext
- *   mdast compiler context
+ *   mdast compiler context.
  * @property {Array<Node | Fragment>} stack
- * @property {Array<[Token, OnEnterError|undefined]>} tokenStack
- * @property {(key: string, value?: unknown) => void} setData
- *   Set data into the key-value store.
- * @property {<K extends string>(key: K) => CompileData[K]} getData
- *   Get data from the key-value store.
+ *   Stack of nodes.
+ * @property {Array<TokenTuple>} tokenStack
+ *   Stack of tokens.
+ * @property {<Key extends keyof CompileData>(key: Key) => CompileData[Key]} getData
+ *   Get data from the key/value store.
+ * @property {<Key extends keyof CompileData>(key: Key, value?: CompileData[Key]) => void} setData
+ *   Set data into the key/value store.
  * @property {(this: CompileContext) => void} buffer
  *   Capture some of the output data.
  * @property {(this: CompileContext) => string} resume
  *   Stop capturing and access the output data.
- * @property {<N extends Node>(this: CompileContext, node: N, token: Token, onError?: OnEnterError) => N} enter
+ * @property {<Kind extends Node>(this: CompileContext, node: Kind, token: Token, onError?: OnEnterError) => Kind} enter
  *   Enter a token.
  * @property {(this: CompileContext, token: Token, onError?: OnExitError) => Node} exit
  *   Exit a token.
  * @property {TokenizeContext['sliceSerialize']} sliceSerialize
  *   Get the string value of a token.
- * @property {NormalizedExtension} config
+ * @property {Config} config
  *   Configuration.
  *
- * @typedef {{mdastExtensions?: Array<Extension|Array<Extension>>}} FromMarkdownOptions
+ * @typedef FromMarkdownOptions
+ *   Configuration for how to build mdast.
+ * @property {Array<Extension | Array<Extension>> | null | undefined} [mdastExtensions]
+ *   Extensions for this utility to change how tokens are turned into a tree.
+ *
  * @typedef {ParseOptions & FromMarkdownOptions} Options
+ *   Configuration.
  */
+
+// To do: micromark: create a registry of tokens?
+// To do: next major: don’t return given `Node` from `enter`.
+// To do: next major: remove setter/getter.
 
 
 
@@ -51876,22 +50927,27 @@ __webpack_require__.r(__webpack_exports__);
 const own = {}.hasOwnProperty
 
 /**
- * @param value Markdown to parse (`string` or `Buffer`).
- * @param [encoding] Character encoding to understand `value` as when it’s a `Buffer` (`string`, default: `'utf8'`).
- * @param [options] Configuration
+ * @param value
+ *   Markdown to parse.
+ * @param encoding
+ *   Character encoding for when `value` is `Buffer`.
+ * @param options
+ *   Configuration.
+ * @returns
+ *   mdast tree.
  */
 const fromMarkdown =
   /**
    * @type {(
-   *   ((value: Value, encoding: Encoding, options?: Options) => Root) &
-   *   ((value: Value, options?: Options) => Root)
+   *   ((value: Value, encoding: Encoding, options?: Options | null | undefined) => Root) &
+   *   ((value: Value, options?: Options | null | undefined) => Root)
    * )}
    */
   (
     /**
      * @param {Value} value
-     * @param {Encoding} [encoding]
-     * @param {Options} [options]
+     * @param {Encoding | Options | null | undefined} [encoding]
+     * @param {Options | null | undefined} [options]
      * @returns {Root}
      */
     function (value, encoding, options) {
@@ -51902,6 +50958,7 @@ const fromMarkdown =
 
       return compiler(options)(
         (0,micromark_lib_postprocess_js__WEBPACK_IMPORTED_MODULE_1__.postprocess)(
+          // @ts-expect-error: micromark types need to accept `null`.
           (0,micromark_lib_parse_js__WEBPACK_IMPORTED_MODULE_2__.parse)(options).document().write((0,micromark_lib_preprocess_js__WEBPACK_IMPORTED_MODULE_3__.preprocess)()(value, encoding, true))
         )
       )
@@ -51911,117 +50968,109 @@ const fromMarkdown =
 /**
  * Note this compiler only understand complete buffering, not streaming.
  *
- * @param {Options} [options]
+ * @param {Options | null | undefined} [options]
  */
-function compiler(options = {}) {
-  /** @type {NormalizedExtension} */
-  // @ts-expect-error: our base has all required fields, so the result will too.
-  const config = configure(
-    {
-      transforms: [],
-      canContainEols: [
-        'emphasis',
-        'fragment',
-        'heading',
-        'paragraph',
-        'strong'
-      ],
-      enter: {
-        autolink: opener(link),
-        autolinkProtocol: onenterdata,
-        autolinkEmail: onenterdata,
-        atxHeading: opener(heading),
-        blockQuote: opener(blockQuote),
-        characterEscape: onenterdata,
-        characterReference: onenterdata,
-        codeFenced: opener(codeFlow),
-        codeFencedFenceInfo: buffer,
-        codeFencedFenceMeta: buffer,
-        codeIndented: opener(codeFlow, buffer),
-        codeText: opener(codeText, buffer),
-        codeTextData: onenterdata,
-        data: onenterdata,
-        codeFlowValue: onenterdata,
-        definition: opener(definition),
-        definitionDestinationString: buffer,
-        definitionLabelString: buffer,
-        definitionTitleString: buffer,
-        emphasis: opener(emphasis),
-        hardBreakEscape: opener(hardBreak),
-        hardBreakTrailing: opener(hardBreak),
-        htmlFlow: opener(html, buffer),
-        htmlFlowData: onenterdata,
-        htmlText: opener(html, buffer),
-        htmlTextData: onenterdata,
-        image: opener(image),
-        label: buffer,
-        link: opener(link),
-        listItem: opener(listItem),
-        listItemValue: onenterlistitemvalue,
-        listOrdered: opener(list, onenterlistordered),
-        listUnordered: opener(list),
-        paragraph: opener(paragraph),
-        reference: onenterreference,
-        referenceString: buffer,
-        resourceDestinationString: buffer,
-        resourceTitleString: buffer,
-        setextHeading: opener(heading),
-        strong: opener(strong),
-        thematicBreak: opener(thematicBreak)
-      },
-      exit: {
-        atxHeading: closer(),
-        atxHeadingSequence: onexitatxheadingsequence,
-        autolink: closer(),
-        autolinkEmail: onexitautolinkemail,
-        autolinkProtocol: onexitautolinkprotocol,
-        blockQuote: closer(),
-        characterEscapeValue: onexitdata,
-        characterReferenceMarkerHexadecimal: onexitcharacterreferencemarker,
-        characterReferenceMarkerNumeric: onexitcharacterreferencemarker,
-        characterReferenceValue: onexitcharacterreferencevalue,
-        codeFenced: closer(onexitcodefenced),
-        codeFencedFence: onexitcodefencedfence,
-        codeFencedFenceInfo: onexitcodefencedfenceinfo,
-        codeFencedFenceMeta: onexitcodefencedfencemeta,
-        codeFlowValue: onexitdata,
-        codeIndented: closer(onexitcodeindented),
-        codeText: closer(onexitcodetext),
-        codeTextData: onexitdata,
-        data: onexitdata,
-        definition: closer(),
-        definitionDestinationString: onexitdefinitiondestinationstring,
-        definitionLabelString: onexitdefinitionlabelstring,
-        definitionTitleString: onexitdefinitiontitlestring,
-        emphasis: closer(),
-        hardBreakEscape: closer(onexithardbreak),
-        hardBreakTrailing: closer(onexithardbreak),
-        htmlFlow: closer(onexithtmlflow),
-        htmlFlowData: onexitdata,
-        htmlText: closer(onexithtmltext),
-        htmlTextData: onexitdata,
-        image: closer(onexitimage),
-        label: onexitlabel,
-        labelText: onexitlabeltext,
-        lineEnding: onexitlineending,
-        link: closer(onexitlink),
-        listItem: closer(),
-        listOrdered: closer(),
-        listUnordered: closer(),
-        paragraph: closer(),
-        referenceString: onexitreferencestring,
-        resourceDestinationString: onexitresourcedestinationstring,
-        resourceTitleString: onexitresourcetitlestring,
-        resource: onexitresource,
-        setextHeading: closer(onexitsetextheading),
-        setextHeadingLineSequence: onexitsetextheadinglinesequence,
-        setextHeadingText: onexitsetextheadingtext,
-        strong: closer(),
-        thematicBreak: closer()
-      }
+function compiler(options) {
+  /** @type {Config} */
+  const config = {
+    transforms: [],
+    canContainEols: ['emphasis', 'fragment', 'heading', 'paragraph', 'strong'],
+    enter: {
+      autolink: opener(link),
+      autolinkProtocol: onenterdata,
+      autolinkEmail: onenterdata,
+      atxHeading: opener(heading),
+      blockQuote: opener(blockQuote),
+      characterEscape: onenterdata,
+      characterReference: onenterdata,
+      codeFenced: opener(codeFlow),
+      codeFencedFenceInfo: buffer,
+      codeFencedFenceMeta: buffer,
+      codeIndented: opener(codeFlow, buffer),
+      codeText: opener(codeText, buffer),
+      codeTextData: onenterdata,
+      data: onenterdata,
+      codeFlowValue: onenterdata,
+      definition: opener(definition),
+      definitionDestinationString: buffer,
+      definitionLabelString: buffer,
+      definitionTitleString: buffer,
+      emphasis: opener(emphasis),
+      hardBreakEscape: opener(hardBreak),
+      hardBreakTrailing: opener(hardBreak),
+      htmlFlow: opener(html, buffer),
+      htmlFlowData: onenterdata,
+      htmlText: opener(html, buffer),
+      htmlTextData: onenterdata,
+      image: opener(image),
+      label: buffer,
+      link: opener(link),
+      listItem: opener(listItem),
+      listItemValue: onenterlistitemvalue,
+      listOrdered: opener(list, onenterlistordered),
+      listUnordered: opener(list),
+      paragraph: opener(paragraph),
+      reference: onenterreference,
+      referenceString: buffer,
+      resourceDestinationString: buffer,
+      resourceTitleString: buffer,
+      setextHeading: opener(heading),
+      strong: opener(strong),
+      thematicBreak: opener(thematicBreak)
     },
-    options.mdastExtensions || []
-  )
+    exit: {
+      atxHeading: closer(),
+      atxHeadingSequence: onexitatxheadingsequence,
+      autolink: closer(),
+      autolinkEmail: onexitautolinkemail,
+      autolinkProtocol: onexitautolinkprotocol,
+      blockQuote: closer(),
+      characterEscapeValue: onexitdata,
+      characterReferenceMarkerHexadecimal: onexitcharacterreferencemarker,
+      characterReferenceMarkerNumeric: onexitcharacterreferencemarker,
+      characterReferenceValue: onexitcharacterreferencevalue,
+      codeFenced: closer(onexitcodefenced),
+      codeFencedFence: onexitcodefencedfence,
+      codeFencedFenceInfo: onexitcodefencedfenceinfo,
+      codeFencedFenceMeta: onexitcodefencedfencemeta,
+      codeFlowValue: onexitdata,
+      codeIndented: closer(onexitcodeindented),
+      codeText: closer(onexitcodetext),
+      codeTextData: onexitdata,
+      data: onexitdata,
+      definition: closer(),
+      definitionDestinationString: onexitdefinitiondestinationstring,
+      definitionLabelString: onexitdefinitionlabelstring,
+      definitionTitleString: onexitdefinitiontitlestring,
+      emphasis: closer(),
+      hardBreakEscape: closer(onexithardbreak),
+      hardBreakTrailing: closer(onexithardbreak),
+      htmlFlow: closer(onexithtmlflow),
+      htmlFlowData: onexitdata,
+      htmlText: closer(onexithtmltext),
+      htmlTextData: onexitdata,
+      image: closer(onexitimage),
+      label: onexitlabel,
+      labelText: onexitlabeltext,
+      lineEnding: onexitlineending,
+      link: closer(onexitlink),
+      listItem: closer(),
+      listOrdered: closer(),
+      listUnordered: closer(),
+      paragraph: closer(),
+      referenceString: onexitreferencestring,
+      resourceDestinationString: onexitresourcedestinationstring,
+      resourceTitleString: onexitresourcetitlestring,
+      resource: onexitresource,
+      setextHeading: closer(onexitsetextheading),
+      setextHeadingLineSequence: onexitsetextheadinglinesequence,
+      setextHeadingText: onexitsetextheadingtext,
+      strong: closer(),
+      thematicBreak: closer()
+    }
+  }
+
+  configure(config, (options || {}).mdastExtensions || [])
 
   /** @type {CompileData} */
   const data = {}
@@ -52029,22 +51078,20 @@ function compiler(options = {}) {
   return compile
 
   /**
+   * Turn micromark events into an mdast tree.
+   *
    * @param {Array<Event>} events
+   *   Events.
    * @returns {Root}
+   *   mdast tree.
    */
   function compile(events) {
     /** @type {Root} */
     let tree = {type: 'root', children: []}
-    /** @type {CompileContext['stack']} */
-    const stack = [tree]
-    /** @type {CompileContext['tokenStack']} */
-    const tokenStack = []
-    /** @type {Array<number>} */
-    const listStack = []
     /** @type {Omit<CompileContext, 'sliceSerialize'>} */
     const context = {
-      stack,
-      tokenStack,
+      stack: [tree],
+      tokenStack: [],
       config,
       enter,
       exit,
@@ -52053,6 +51100,8 @@ function compiler(options = {}) {
       setData,
       getData
     }
+    /** @type {Array<number>} */
+    const listStack = []
     let index = -1
 
     while (++index < events.length) {
@@ -52088,8 +51137,9 @@ function compiler(options = {}) {
       }
     }
 
-    if (tokenStack.length > 0) {
-      const tail = tokenStack[tokenStack.length - 1]
+    // Handle tokens still being open.
+    if (context.tokenStack.length > 0) {
+      const tail = context.tokenStack[context.tokenStack.length - 1]
       const handler = tail[1] || defaultOnError
       handler.call(context, undefined, tail[0])
     }
@@ -52106,6 +51156,7 @@ function compiler(options = {}) {
       )
     }
 
+    // Call transforms.
     index = -1
     while (++index < config.transforms.length) {
       tree = config.transforms[index](tree) || tree
@@ -52124,13 +51175,13 @@ function compiler(options = {}) {
     let index = start - 1
     let containerBalance = -1
     let listSpread = false
-    /** @type {Token|undefined} */
+    /** @type {Token | undefined} */
     let listItem
-    /** @type {number|undefined} */
+    /** @type {number | undefined} */
     let lineIndex
-    /** @type {number|undefined} */
+    /** @type {number | undefined} */
     let firstBlankLineIndex
-    /** @type {boolean|undefined} */
+    /** @type {boolean | undefined} */
     let atMarker
 
     while (++index <= length) {
@@ -52258,35 +51309,44 @@ function compiler(options = {}) {
   }
 
   /**
-   * @type {CompileContext['setData']}
-   * @param [value]
+   * Set data.
+   *
+   * @template {keyof CompileData} Key
+   *   Field type.
+   * @param {Key} key
+   *   Key of field.
+   * @param {CompileData[Key]} [value]
+   *   New value.
+   * @returns {void}
+   *   Nothing.
    */
   function setData(key, value) {
     data[key] = value
   }
 
   /**
-   * @type {CompileContext['getData']}
-   * @template {string} K
-   * @param {K} key
-   * @returns {CompileData[K]}
+   * Get data.
+   *
+   * @template {keyof CompileData} Key
+   *   Field type.
+   * @param {Key} key
+   *   Key of field.
+   * @returns {CompileData[Key]}
+   *   Value.
    */
   function getData(key) {
     return data[key]
   }
 
   /**
-   * @param {Point} d
-   * @returns {Point}
-   */
-  function point(d) {
-    return {line: d.line, column: d.column, offset: d.offset}
-  }
-
-  /**
+   * Create an opener handle.
+   *
    * @param {(token: Token) => Node} create
+   *   Create a node.
    * @param {Handle} [and]
+   *   Optional function to also run.
    * @returns {Handle}
+   *   Handle.
    */
   function opener(create, and) {
     return open
@@ -52302,19 +51362,27 @@ function compiler(options = {}) {
     }
   }
 
-  /** @type {CompileContext['buffer']} */
+  /**
+   * @this {CompileContext}
+   * @returns {void}
+   */
   function buffer() {
     this.stack.push({type: 'fragment', children: []})
   }
 
   /**
-   * @type {CompileContext['enter']}
-   * @template {Node} N
+   * @template {Node} Kind
+   *   Node type.
    * @this {CompileContext}
-   * @param {N} node
+   *   Context.
+   * @param {Kind} node
+   *   Node to enter.
    * @param {Token} token
-   * @param {OnEnterError} [errorHandler]
-   * @returns {N}
+   *   Corresponding token.
+   * @param {OnEnterError | undefined} [errorHandler]
+   *   Handle the case where this token is open, but it is closed by something else.
+   * @returns {Kind}
+   *   The given node.
    */
   function enter(node, token, errorHandler) {
     const parent = this.stack[this.stack.length - 1]
@@ -52330,8 +51398,12 @@ function compiler(options = {}) {
   }
 
   /**
+   * Create a closer handle.
+   *
    * @param {Handle} [and]
+   *   Optional function to also run.
    * @returns {Handle}
+   *   Handle.
    */
   function closer(and) {
     return close
@@ -52348,11 +51420,14 @@ function compiler(options = {}) {
   }
 
   /**
-   * @type {CompileContext['exit']}
    * @this {CompileContext}
+   *   Context.
    * @param {Token} token
-   * @param {OnExitError} [onExitError]
+   *   Corresponding token.
+   * @param {OnExitError | undefined} [onExitError]
+   *   Handle the case where another token is open.
    * @returns {Node}
+   *   The closed node.
    */
   function exit(token, onExitError) {
     const node = this.stack.pop()
@@ -52394,15 +51469,23 @@ function compiler(options = {}) {
   // Handlers.
   //
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onenterlistordered() {
     setData('expectingFirstListItemValue', true)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onenterlistitemvalue(token) {
     if (getData('expectingFirstListItemValue')) {
-      const ancestor = /** @type {List} */ (this.stack[this.stack.length - 2])
+      const ancestor = this.stack[this.stack.length - 2]
+      ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(ancestor, 'expected nodes on stack')
+      ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(ancestor.type === 'list', 'expected list on stack')
       ancestor.start = Number.parseInt(
         this.sliceSerialize(token),
         micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_7__.constants.numericBaseDecimal
@@ -52411,21 +51494,34 @@ function compiler(options = {}) {
     }
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcodefencedfenceinfo() {
     const data = this.resume()
-    const node = /** @type {Code} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'code', 'expected code on stack')
     node.lang = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcodefencedfencemeta() {
     const data = this.resume()
-    const node = /** @type {Code} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'code', 'expected code on stack')
     node.meta = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcodefencedfence() {
     // Exit if this is the closing fence.
     if (getData('flowCodeInside')) return
@@ -52433,52 +51529,84 @@ function compiler(options = {}) {
     setData('flowCodeInside', true)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcodefenced() {
     const data = this.resume()
-    const node = /** @type {Code} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'code', 'expected code on stack')
 
     node.value = data.replace(/^(\r?\n|\r)|(\r?\n|\r)$/g, '')
-
     setData('flowCodeInside')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcodeindented() {
     const data = this.resume()
-    const node = /** @type {Code} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'code', 'expected code on stack')
 
     node.value = data.replace(/(\r?\n|\r)$/g, '')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitdefinitionlabelstring(token) {
-    // Discard label, use the source content instead.
     const label = this.resume()
-    const node = /** @type {Definition} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'definition', 'expected definition on stack')
+
     node.label = label
     node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_8__.normalizeIdentifier)(
       this.sliceSerialize(token)
     ).toLowerCase()
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitdefinitiontitlestring() {
     const data = this.resume()
-    const node = /** @type {Definition} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'definition', 'expected definition on stack')
+
     node.title = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitdefinitiondestinationstring() {
     const data = this.resume()
-    const node = /** @type {Definition} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'definition', 'expected definition on stack')
+
     node.url = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitatxheadingsequence(token) {
-    const node = /** @type {Heading} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'heading', 'expected heading on stack')
+
     if (!node.depth) {
       const depth = this.sliceSerialize(token).length
 
@@ -52496,29 +51624,46 @@ function compiler(options = {}) {
     }
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitsetextheadingtext() {
     setData('setextHeadingSlurpLineEnding', true)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitsetextheadinglinesequence(token) {
-    const node = /** @type {Heading} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'heading', 'expected heading on stack')
 
     node.depth =
       this.sliceSerialize(token).charCodeAt(0) === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_9__.codes.equalsTo ? 1 : 2
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitsetextheading() {
     setData('setextHeadingSlurpLineEnding')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onenterdata(token) {
-    const parent = /** @type {Parent} */ (this.stack[this.stack.length - 1])
-    /** @type {Node} */
-    let tail = parent.children[parent.children.length - 1]
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)('children' in node, 'expected parent on stack')
+
+    let tail = node.children[node.children.length - 1]
 
     if (!tail || tail.type !== 'text') {
       // Add a new text node.
@@ -52526,13 +51671,17 @@ function compiler(options = {}) {
       // @ts-expect-error: we’ll add `end` later.
       tail.position = {start: point(token.start)}
       // @ts-expect-error: Assume `parent` accepts `text`.
-      parent.children.push(tail)
+      node.children.push(tail)
     }
 
     this.stack.push(tail)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitdata(token) {
     const tail = this.stack.pop()
     ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(tail, 'expected a `node` to be on the stack')
@@ -52542,7 +51691,11 @@ function compiler(options = {}) {
     tail.position.end = point(token.end)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitlineending(token) {
     const context = this.stack[this.stack.length - 1]
     ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(context, 'expected `node`')
@@ -52566,155 +51719,268 @@ function compiler(options = {}) {
     }
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexithardbreak() {
     setData('atHardBreak', true)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexithtmlflow() {
     const data = this.resume()
-    const node = /** @type {HTML} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'html', 'expected html on stack')
+
     node.value = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexithtmltext() {
     const data = this.resume()
-    const node = /** @type {HTML} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'html', 'expected html on stack')
+
     node.value = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitcodetext() {
     const data = this.resume()
-    const node = /** @type {InlineCode} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'inlineCode', 'expected inline code on stack')
+
     node.value = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitlink() {
-    const context = /** @type {Link & {identifier: string, label: string}} */ (
-      this.stack[this.stack.length - 1]
-    )
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'link', 'expected link on stack')
+
+    // Note: there are also `identifier` and `label` fields on this link node!
+    // These are used / cleaned here.
 
     // To do: clean.
     if (getData('inReference')) {
-      context.type += 'Reference'
+      /** @type {ReferenceType} */
+      const referenceType = getData('referenceType') || 'shortcut'
+
+      node.type += 'Reference'
       // @ts-expect-error: mutate.
-      context.referenceType = getData('referenceType') || 'shortcut'
+      node.referenceType = referenceType
       // @ts-expect-error: mutate.
-      delete context.url
-      delete context.title
+      delete node.url
+      delete node.title
     } else {
       // @ts-expect-error: mutate.
-      delete context.identifier
+      delete node.identifier
       // @ts-expect-error: mutate.
-      delete context.label
+      delete node.label
     }
 
     setData('referenceType')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitimage() {
-    const context = /** @type {Image & {identifier: string, label: string}} */ (
-      this.stack[this.stack.length - 1]
-    )
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'image', 'expected image on stack')
+
+    // Note: there are also `identifier` and `label` fields on this link node!
+    // These are used / cleaned here.
 
     // To do: clean.
     if (getData('inReference')) {
-      context.type += 'Reference'
+      /** @type {ReferenceType} */
+      const referenceType = getData('referenceType') || 'shortcut'
+
+      node.type += 'Reference'
       // @ts-expect-error: mutate.
-      context.referenceType = getData('referenceType') || 'shortcut'
+      node.referenceType = referenceType
       // @ts-expect-error: mutate.
-      delete context.url
-      delete context.title
+      delete node.url
+      delete node.title
     } else {
       // @ts-expect-error: mutate.
-      delete context.identifier
+      delete node.identifier
       // @ts-expect-error: mutate.
-      delete context.label
+      delete node.label
     }
 
     setData('referenceType')
   }
 
-  /** @type {Handle} */
-  function onexitlabeltext(token) {
-    const ancestor =
-      /** @type {(Link|Image) & {identifier: string, label: string}} */ (
-        this.stack[this.stack.length - 2]
-      )
-    const string = this.sliceSerialize(token)
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
 
+  function onexitlabeltext(token) {
+    const string = this.sliceSerialize(token)
+    const ancestor = this.stack[this.stack.length - 2]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(ancestor, 'expected ancestor on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      ancestor.type === 'image' || ancestor.type === 'link',
+      'expected image or link on stack'
+    )
+
+    // @ts-expect-error: stash this on the node, as it might become a reference
+    // later.
     ancestor.label = (0,micromark_util_decode_string__WEBPACK_IMPORTED_MODULE_10__.decodeString)(string)
+    // @ts-expect-error: same as above.
     ancestor.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_8__.normalizeIdentifier)(string).toLowerCase()
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitlabel() {
-    const fragment = /** @type {Fragment} */ (this.stack[this.stack.length - 1])
+    const fragment = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(fragment, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(fragment.type === 'fragment', 'expected fragment on stack')
     const value = this.resume()
-    const node =
-      /** @type {(Link|Image) & {identifier: string, label: string}} */ (
-        this.stack[this.stack.length - 1]
-      )
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      node.type === 'image' || node.type === 'link',
+      'expected image or link on stack'
+    )
 
     // Assume a reference.
     setData('inReference', true)
 
     if (node.type === 'link') {
+      /** @type {Array<StaticPhrasingContent>} */
       // @ts-expect-error: Assume static phrasing content.
-      node.children = fragment.children
+      const children = fragment.children
+
+      node.children = children
     } else {
       node.alt = value
     }
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitresourcedestinationstring() {
     const data = this.resume()
-    const node = /** @type {Link|Image} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      node.type === 'image' || node.type === 'link',
+      'expected image or link on stack'
+    )
     node.url = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitresourcetitlestring() {
     const data = this.resume()
-    const node = /** @type {Link|Image} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      node.type === 'image' || node.type === 'link',
+      'expected image or link on stack'
+    )
     node.title = data
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitresource() {
     setData('inReference')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onenterreference() {
     setData('referenceType', 'collapsed')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitreferencestring(token) {
     const label = this.resume()
-    const node = /** @type {LinkReference|ImageReference} */ (
-      this.stack[this.stack.length - 1]
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      node.type === 'image' || node.type === 'link',
+      'expected image reference or link reference on stack'
     )
+
+    // @ts-expect-error: stash this on the node, as it might become a reference
+    // later.
     node.label = label
+    // @ts-expect-error: same as above.
     node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_8__.normalizeIdentifier)(
       this.sliceSerialize(token)
     ).toLowerCase()
     setData('referenceType', 'full')
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
+
   function onexitcharacterreferencemarker(token) {
+    (0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(
+      token.type === 'characterReferenceMarkerNumeric' ||
+        token.type === 'characterReferenceMarkerHexadecimal'
+    )
     setData('characterReferenceType', token.type)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitcharacterreferencevalue(token) {
     const data = this.sliceSerialize(token)
     const type = getData('characterReferenceType')
@@ -52730,10 +51996,9 @@ function compiler(options = {}) {
       )
       setData('characterReferenceType')
     } else {
-      // @ts-expect-error `decodeNamedCharacterReference` can return false for
-      // invalid named character references, but everything we’ve tokenized is
-      // valid.
-      value = (0,decode_named_character_reference__WEBPACK_IMPORTED_MODULE_12__.decodeNamedCharacterReference)(data)
+      const result = (0,decode_named_character_reference__WEBPACK_IMPORTED_MODULE_12__.decodeNamedCharacterReference)(data)
+      ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(result !== false, 'expected reference to decode')
+      value = result
     }
 
     const tail = this.stack.pop()
@@ -52744,17 +52009,29 @@ function compiler(options = {}) {
     tail.position.end = point(token.end)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitautolinkprotocol(token) {
     onexitdata.call(this, token)
-    const node = /** @type {Link} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'link', 'expected link on stack')
+
     node.url = this.sliceSerialize(token)
   }
 
-  /** @type {Handle} */
+  /**
+   * @this {CompileContext}
+   * @type {Handle}
+   */
   function onexitautolinkemail(token) {
     onexitdata.call(this, token)
-    const node = /** @type {Link} */ (this.stack[this.stack.length - 1])
+    const node = this.stack[this.stack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node, 'expected node on stack')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(node.type === 'link', 'expected link on stack')
+
     node.url = 'mailto:' + this.sliceSerialize(token)
   }
 
@@ -52870,9 +52147,21 @@ function compiler(options = {}) {
 }
 
 /**
- * @param {Extension} combined
- * @param {Array<Extension|Array<Extension>>} extensions
- * @returns {Extension}
+ * Copy a point-like value.
+ *
+ * @param {Point} d
+ *   Point-like value.
+ * @returns {Point}
+ *   unist point.
+ */
+function point(d) {
+  return {line: d.line, column: d.column, offset: d.offset}
+}
+
+/**
+ * @param {Config} combined
+ * @param {Array<Extension | Array<Extension>>} extensions
+ * @returns {void}
  */
 function configure(combined, extensions) {
   let index = -1
@@ -52886,33 +52175,33 @@ function configure(combined, extensions) {
       extension(combined, value)
     }
   }
-
-  return combined
 }
 
 /**
- * @param {Extension} combined
+ * @param {Config} combined
  * @param {Extension} extension
  * @returns {void}
  */
 function extension(combined, extension) {
-  /** @type {string} */
+  /** @type {keyof Extension} */
   let key
 
   for (key in extension) {
     if (own.call(extension, key)) {
-      const list = key === 'canContainEols' || key === 'transforms'
-      const maybe = own.call(combined, key) ? combined[key] : undefined
-      /* c8 ignore next */
-      const left = maybe || (combined[key] = list ? [] : {})
-      const right = extension[key]
-
-      if (right) {
-        if (list) {
-          // @ts-expect-error: `left` is an array.
-          combined[key] = [...left, ...right]
-        } else {
-          Object.assign(left, right)
+      if (key === 'canContainEols') {
+        const right = extension[key]
+        if (right) {
+          combined[key].push(...right)
+        }
+      } else if (key === 'transforms') {
+        const right = extension[key]
+        if (right) {
+          combined[key].push(...right)
+        }
+      } else if (key === 'enter' || key === 'exit') {
+        const right = extension[key]
+        if (right) {
+          Object.assign(combined[key], right)
         }
       }
     }
@@ -52959,7 +52248,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "gfmAutolinkLiteralToMarkdown": () => (/* binding */ gfmAutolinkLiteralToMarkdown)
 /* harmony export */ });
 /* harmony import */ var ccount__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ccount */ "./node_modules/ccount/index.js");
-/* harmony import */ var mdast_util_find_and_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-find-and-replace */ "./node_modules/mdast-util-find-and-replace/index.js");
+/* harmony import */ var mdast_util_find_and_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-find-and-replace */ "./node_modules/mdast-util-find-and-replace/lib/index.js");
 /* harmony import */ var micromark_util_character__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark-util-character */ "./node_modules/micromark-util-character/dev/index.js");
 /**
  * @typedef {import('mdast').Link} Link
@@ -53207,10 +52496,10 @@ function previous(match, email) {
 
 /***/ }),
 
-/***/ "./node_modules/mdast-util-gfm-footnote/index.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/mdast-util-gfm-footnote/index.js ***!
-  \*******************************************************/
+/***/ "./node_modules/mdast-util-gfm-footnote/lib/index.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/mdast-util-gfm-footnote/lib/index.js ***!
+  \***********************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -53227,6 +52516,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('mdast').FootnoteReference} FootnoteReference
  * @typedef {import('mdast').FootnoteDefinition} FootnoteDefinition
+ * @typedef {import('mdast-util-from-markdown').CompileContext} CompileContext
  * @typedef {import('mdast-util-from-markdown').Extension} FromMarkdownExtension
  * @typedef {import('mdast-util-from-markdown').Handle} FromMarkdownHandle
  * @typedef {import('mdast-util-to-markdown').Options} ToMarkdownExtension
@@ -53241,8 +52531,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+footnoteReference.peek = footnoteReferencePeek
+
+// To do: next major: rename `context` -> `state`, `safeOptions` to `info`, use
+// utilities on `state`.
+
 /**
+ * Create an extension for `mdast-util-from-markdown` to enable GFM footnotes
+ * in markdown.
+ *
  * @returns {FromMarkdownExtension}
+ *   Extension for `mdast-util-from-markdown`.
  */
 function gfmFootnoteFromMarkdown() {
   return {
@@ -53259,141 +52558,167 @@ function gfmFootnoteFromMarkdown() {
       gfmFootnoteCallString: exitFootnoteCallString
     }
   }
-
-  /** @type {FromMarkdownHandle} */
-  function enterFootnoteDefinition(token) {
-    this.enter(
-      {type: 'footnoteDefinition', identifier: '', label: '', children: []},
-      token
-    )
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function enterFootnoteDefinitionLabelString() {
-    this.buffer()
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function exitFootnoteDefinitionLabelString(token) {
-    const label = this.resume()
-    const node = /** @type {FootnoteDefinition} */ (
-      this.stack[this.stack.length - 1]
-    )
-    node.label = label
-    node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_0__.normalizeIdentifier)(
-      this.sliceSerialize(token)
-    ).toLowerCase()
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function exitFootnoteDefinition(token) {
-    this.exit(token)
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function enterFootnoteCall(token) {
-    this.enter({type: 'footnoteReference', identifier: '', label: ''}, token)
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function enterFootnoteCallString() {
-    this.buffer()
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function exitFootnoteCallString(token) {
-    const label = this.resume()
-    const node = /** @type {FootnoteDefinition} */ (
-      this.stack[this.stack.length - 1]
-    )
-    node.label = label
-    node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_0__.normalizeIdentifier)(
-      this.sliceSerialize(token)
-    ).toLowerCase()
-  }
-
-  /** @type {FromMarkdownHandle} */
-  function exitFootnoteCall(token) {
-    this.exit(token)
-  }
 }
 
 /**
+ * Create an extension for `mdast-util-to-markdown` to enable GFM footnotes
+ * in markdown.
+ *
  * @returns {ToMarkdownExtension}
+ *   Extension for `mdast-util-to-markdown`.
  */
 function gfmFootnoteToMarkdown() {
-  footnoteReference.peek = footnoteReferencePeek
-
   return {
     // This is on by default already.
     unsafe: [{character: '[', inConstruct: ['phrasing', 'label', 'reference']}],
     handlers: {footnoteDefinition, footnoteReference}
   }
+}
 
-  /**
-   * @type {ToMarkdownHandle}
-   * @param {FootnoteReference} node
-   */
-  function footnoteReference(node, _, context, safeOptions) {
-    const tracker = (0,mdast_util_to_markdown_lib_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
-    let value = tracker.move('[^')
-    const exit = context.enter('footnoteReference')
-    const subexit = context.enter('reference')
-    value += tracker.move(
-      (0,mdast_util_to_markdown_lib_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,mdast_util_to_markdown_lib_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
-        ...tracker.current(),
-        before: value,
-        after: ']'
-      })
-    )
-    subexit()
-    exit()
-    value += tracker.move(']')
-    return value
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterFootnoteDefinition(token) {
+  this.enter(
+    {type: 'footnoteDefinition', identifier: '', label: '', children: []},
+    token
+  )
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterFootnoteDefinitionLabelString() {
+  this.buffer()
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitFootnoteDefinitionLabelString(token) {
+  const label = this.resume()
+  const node = /** @type {FootnoteDefinition} */ (
+    this.stack[this.stack.length - 1]
+  )
+  node.label = label
+  node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_0__.normalizeIdentifier)(
+    this.sliceSerialize(token)
+  ).toLowerCase()
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitFootnoteDefinition(token) {
+  this.exit(token)
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterFootnoteCall(token) {
+  this.enter({type: 'footnoteReference', identifier: '', label: ''}, token)
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function enterFootnoteCallString() {
+  this.buffer()
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitFootnoteCallString(token) {
+  const label = this.resume()
+  const node = /** @type {FootnoteDefinition} */ (
+    this.stack[this.stack.length - 1]
+  )
+  node.label = label
+  node.identifier = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_0__.normalizeIdentifier)(
+    this.sliceSerialize(token)
+  ).toLowerCase()
+}
+
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
+function exitFootnoteCall(token) {
+  this.exit(token)
+}
+
+/**
+ * @type {ToMarkdownHandle}
+ * @param {FootnoteReference} node
+ */
+function footnoteReference(node, _, context, safeOptions) {
+  const tracker = (0,mdast_util_to_markdown_lib_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+  let value = tracker.move('[^')
+  const exit = context.enter('footnoteReference')
+  const subexit = context.enter('reference')
+  value += tracker.move(
+    (0,mdast_util_to_markdown_lib_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,mdast_util_to_markdown_lib_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
+      ...tracker.current(),
+      before: value,
+      after: ']'
+    })
+  )
+  subexit()
+  exit()
+  value += tracker.move(']')
+  return value
+}
+
+/** @type {ToMarkdownHandle} */
+function footnoteReferencePeek() {
+  return '['
+}
+
+/**
+ * @type {ToMarkdownHandle}
+ * @param {FootnoteDefinition} node
+ */
+function footnoteDefinition(node, _, context, safeOptions) {
+  const tracker = (0,mdast_util_to_markdown_lib_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+  let value = tracker.move('[^')
+  const exit = context.enter('footnoteDefinition')
+  const subexit = context.enter('label')
+  value += tracker.move(
+    (0,mdast_util_to_markdown_lib_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,mdast_util_to_markdown_lib_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
+      ...tracker.current(),
+      before: value,
+      after: ']'
+    })
+  )
+  subexit()
+  value += tracker.move(
+    ']:' + (node.children && node.children.length > 0 ? ' ' : '')
+  )
+  tracker.shift(4)
+  value += tracker.move(
+    (0,mdast_util_to_markdown_lib_util_indent_lines_js__WEBPACK_IMPORTED_MODULE_4__.indentLines)((0,mdast_util_to_markdown_lib_util_container_flow_js__WEBPACK_IMPORTED_MODULE_5__.containerFlow)(node, context, tracker.current()), map)
+  )
+  exit()
+
+  return value
+}
+
+/** @type {Map} */
+function map(line, index, blank) {
+  if (index === 0) {
+    return line
   }
 
-  /** @type {ToMarkdownHandle} */
-  function footnoteReferencePeek() {
-    return '['
-  }
-
-  /**
-   * @type {ToMarkdownHandle}
-   * @param {FootnoteDefinition} node
-   */
-  function footnoteDefinition(node, _, context, safeOptions) {
-    const tracker = (0,mdast_util_to_markdown_lib_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
-    let value = tracker.move('[^')
-    const exit = context.enter('footnoteDefinition')
-    const subexit = context.enter('label')
-    value += tracker.move(
-      (0,mdast_util_to_markdown_lib_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,mdast_util_to_markdown_lib_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
-        ...tracker.current(),
-        before: value,
-        after: ']'
-      })
-    )
-    subexit()
-    value += tracker.move(
-      ']:' + (node.children && node.children.length > 0 ? ' ' : '')
-    )
-    tracker.shift(4)
-    value += tracker.move(
-      (0,mdast_util_to_markdown_lib_util_indent_lines_js__WEBPACK_IMPORTED_MODULE_4__.indentLines)((0,mdast_util_to_markdown_lib_util_container_flow_js__WEBPACK_IMPORTED_MODULE_5__.containerFlow)(node, context, tracker.current()), map)
-    )
-    exit()
-
-    return value
-
-    /** @type {Map} */
-    function map(line, index, blank) {
-      if (index) {
-        return (blank ? '' : '    ') + line
-      }
-
-      return line
-    }
-  }
+  return (blank ? '' : '    ') + line
 }
 
 
@@ -53430,9 +52755,30 @@ const gfmStrikethroughFromMarkdown = {
   exit: {strikethrough: exitStrikethrough}
 }
 
+/**
+ * List of constructs that occur in phrasing (paragraphs, headings), but cannot
+ * contain strikethroughs. So they sort of cancel each other out.
+ *
+ * Note: keep in sync with: <https://github.com/syntax-tree/mdast-util-to-markdown/blob/c47743b/lib/unsafe.js#L11>
+ */
+const constructsWithoutStrikethrough = [
+  'autolink',
+  'destinationLiteral',
+  'destinationRaw',
+  'reference',
+  'titleQuote',
+  'titleApostrophe'
+]
+
 /** @type {ToMarkdownExtension} */
 const gfmStrikethroughToMarkdown = {
-  unsafe: [{character: '~', inConstruct: 'phrasing'}],
+  unsafe: [
+    {
+      character: '~',
+      inConstruct: 'phrasing',
+      notInConstruct: constructsWithoutStrikethrough
+    }
+  ],
   handlers: {delete: handleDelete}
 }
 
@@ -53758,10 +53104,10 @@ function gfmTableToMarkdown(options) {
 
 /***/ }),
 
-/***/ "./node_modules/mdast-util-gfm-task-list-item/index.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/mdast-util-gfm-task-list-item/index.js ***!
-  \*************************************************************/
+/***/ "./node_modules/mdast-util-gfm-task-list-item/lib/index.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/mdast-util-gfm-task-list-item/lib/index.js ***!
+  \*****************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -53772,20 +53118,35 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var mdast_util_to_markdown_lib_handle_list_item_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-markdown/lib/handle/list-item.js */ "./node_modules/mdast-util-to-markdown/lib/handle/list-item.js");
 /* harmony import */ var mdast_util_to_markdown_lib_util_track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-to-markdown/lib/util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
- * @typedef {Extract<import('mdast').Root|import('mdast').Content, import('unist').Parent>} Parent
+ * @typedef {import('mdast').Content} Content
  * @typedef {import('mdast').ListItem} ListItem
  * @typedef {import('mdast').Paragraph} Paragraph
- * @typedef {import('mdast').BlockContent} BlockContent
+ * @typedef {import('mdast').Parent} Parent
+ * @typedef {import('mdast').Root} Root
+ * @typedef {import('mdast-util-from-markdown').CompileContext} CompileContext
  * @typedef {import('mdast-util-from-markdown').Extension} FromMarkdownExtension
  * @typedef {import('mdast-util-from-markdown').Handle} FromMarkdownHandle
  * @typedef {import('mdast-util-to-markdown').Options} ToMarkdownExtension
  * @typedef {import('mdast-util-to-markdown').Handle} ToMarkdownHandle
  */
 
+/**
+ * @typedef {Extract<Root | Content, Parent>} Parents
+ */
 
 
 
-/** @type {FromMarkdownExtension} */
+
+// To do: next major: rename `context` -> `state`, `safeOptions` -> `info`, use
+// `track` from `state`.
+// To do: next major: replace exports with functions.
+// To do: next major: use `defaulthandlers.listItem`.
+
+/**
+ * Extension for `mdast-util-from-markdown` to enable GFM task list items.
+ *
+ * @type {FromMarkdownExtension}
+ */
 const gfmTaskListItemFromMarkdown = {
   exit: {
     taskListCheckValueChecked: exitCheck,
@@ -53794,58 +53155,70 @@ const gfmTaskListItemFromMarkdown = {
   }
 }
 
-/** @type {ToMarkdownExtension} */
+/**
+ * Extension for `mdast-util-to-markdown` to enable GFM task list items.
+ *
+ * @type {ToMarkdownExtension}
+ */
 const gfmTaskListItemToMarkdown = {
   unsafe: [{atBreak: true, character: '-', after: '[:|-]'}],
   handlers: {listItem: listItemWithTaskListItem}
 }
 
-/** @type {FromMarkdownHandle} */
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
 function exitCheck(token) {
   const node = /** @type {ListItem} */ (this.stack[this.stack.length - 2])
   // We’re always in a paragraph, in a list item.
   node.checked = token.type === 'taskListCheckValueChecked'
 }
 
-/** @type {FromMarkdownHandle} */
+/**
+ * @this {CompileContext}
+ * @type {FromMarkdownHandle}
+ */
 function exitParagraphWithTaskListItem(token) {
-  const parent = /** @type {Parent} */ (this.stack[this.stack.length - 2])
-  const node = /** @type {Paragraph} */ (this.stack[this.stack.length - 1])
-  const siblings = parent.children
-  const head = node.children[0]
-  let index = -1
-  /** @type {Paragraph|undefined} */
-  let firstParaghraph
+  const parent = /** @type {Parents} */ (this.stack[this.stack.length - 2])
 
   if (
     parent &&
     parent.type === 'listItem' &&
-    typeof parent.checked === 'boolean' &&
-    head &&
-    head.type === 'text'
+    typeof parent.checked === 'boolean'
   ) {
-    while (++index < siblings.length) {
-      const sibling = siblings[index]
-      if (sibling.type === 'paragraph') {
-        firstParaghraph = sibling
-        break
+    const node = /** @type {Paragraph} */ (this.stack[this.stack.length - 1])
+    const head = node.children[0]
+
+    if (head && head.type === 'text') {
+      const siblings = parent.children
+      let index = -1
+      /** @type {Paragraph | undefined} */
+      let firstParaghraph
+
+      while (++index < siblings.length) {
+        const sibling = siblings[index]
+        if (sibling.type === 'paragraph') {
+          firstParaghraph = sibling
+          break
+        }
       }
-    }
 
-    if (firstParaghraph === node) {
-      // Must start with a space or a tab.
-      head.value = head.value.slice(1)
+      if (firstParaghraph === node) {
+        // Must start with a space or a tab.
+        head.value = head.value.slice(1)
 
-      if (head.value.length === 0) {
-        node.children.shift()
-      } else if (
-        node.position &&
-        head.position &&
-        typeof head.position.start.offset === 'number'
-      ) {
-        head.position.start.column++
-        head.position.start.offset++
-        node.position.start = Object.assign({}, head.position.start)
+        if (head.value.length === 0) {
+          node.children.shift()
+        } else if (
+          node.position &&
+          head.position &&
+          typeof head.position.start.offset === 'number'
+        ) {
+          head.position.start.column++
+          head.position.start.offset++
+          node.position.start = Object.assign({}, head.position.start)
+        }
       }
     }
   }
@@ -53903,10 +53276,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "gfmToMarkdown": () => (/* binding */ gfmToMarkdown)
 /* harmony export */ });
 /* harmony import */ var mdast_util_gfm_autolink_literal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-gfm-autolink-literal */ "./node_modules/mdast-util-gfm-autolink-literal/index.js");
-/* harmony import */ var mdast_util_gfm_footnote__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-gfm-footnote */ "./node_modules/mdast-util-gfm-footnote/index.js");
+/* harmony import */ var mdast_util_gfm_footnote__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-gfm-footnote */ "./node_modules/mdast-util-gfm-footnote/lib/index.js");
 /* harmony import */ var mdast_util_gfm_strikethrough__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-gfm-strikethrough */ "./node_modules/mdast-util-gfm-strikethrough/index.js");
 /* harmony import */ var mdast_util_gfm_table__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-gfm-table */ "./node_modules/mdast-util-gfm-table/lib/index.js");
-/* harmony import */ var mdast_util_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! mdast-util-gfm-task-list-item */ "./node_modules/mdast-util-gfm-task-list-item/index.js");
+/* harmony import */ var mdast_util_gfm_task_list_item__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! mdast-util-gfm-task-list-item */ "./node_modules/mdast-util-gfm-task-list-item/lib/index.js");
 /**
  * @typedef {import('mdast-util-from-markdown').Extension} FromMarkdownExtension
  * @typedef {import('mdast-util-to-markdown').Options} ToMarkdownExtension
@@ -53952,6 +53325,52 @@ function gfmToMarkdown(options) {
 
 /***/ }),
 
+/***/ "./node_modules/mdast-util-phrasing/lib/index.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/mdast-util-phrasing/lib/index.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "phrasing": () => (/* binding */ phrasing)
+/* harmony export */ });
+/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/lib/index.js");
+/**
+ * @typedef {import('mdast').PhrasingContent} PhrasingContent
+ * @typedef {import('unist-util-is').AssertPredicate<PhrasingContent>} AssertPredicatePhrasing
+ */
+
+
+
+/**
+ * Check if the given value is *phrasing content*.
+ *
+ * @param
+ *   Thing to check, typically `Node`.
+ * @returns
+ *   Whether `value` is phrasing content.
+ */
+const phrasing = /** @type {AssertPredicatePhrasing} */ (
+  (0,unist_util_is__WEBPACK_IMPORTED_MODULE_0__.convert)([
+    'break',
+    'delete',
+    'emphasis',
+    'footnote',
+    'footnoteReference',
+    'image',
+    'imageReference',
+    'inlineCode',
+    'link',
+    'linkReference',
+    'strong',
+    'text'
+  ])
+)
+
+
+/***/ }),
+
 /***/ "./node_modules/mdast-util-to-hast/lib/footer.js":
 /*!*******************************************************!*\
   !*** ./node_modules/mdast-util-to-hast/lib/footer.js ***!
@@ -53963,7 +53382,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "footer": () => (/* binding */ footer)
 /* harmony export */ });
 /* harmony import */ var micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-util-sanitize-uri */ "./node_modules/micromark-util-sanitize-uri/dev/index.js");
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /* harmony import */ var _wrap_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./wrap.js */ "./node_modules/mdast-util-to-hast/lib/wrap.js");
 /**
@@ -54111,14 +53530,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Blockquote} Blockquote
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Blockquote} node
  */
 function blockquote(h, node) {
@@ -54138,18 +53557,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "hardBreak": () => (/* binding */ hardBreak)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('hast').Element} Element
  * @typedef {import('hast').Text} Text
  * @typedef {import('mdast').Break} Break
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Break} node
  * @returns {Array<Element|Text>}
  */
@@ -54170,17 +53589,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "code": () => (/* binding */ code)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('mdast').Code} Code
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
+
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Code} node
  */
 function code(h, node) {
@@ -54220,13 +53640,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Delete} Delete
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
+
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Delete} node
  */
 function strikethrough(h, node) {
@@ -54249,13 +53670,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Emphasis} Emphasis
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Emphasis} node
  */
 function emphasis(h, node) {
@@ -54276,17 +53697,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "footnoteReference": () => (/* binding */ footnoteReference)
 /* harmony export */ });
 /* harmony import */ var micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! micromark-util-sanitize-uri */ "./node_modules/micromark-util-sanitize-uri/dev/index.js");
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('mdast').FootnoteReference} FootnoteReference
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {FootnoteReference} node
  */
 function footnoteReference(h, node) {
@@ -54342,7 +53763,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _footnote_reference_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./footnote-reference.js */ "./node_modules/mdast-util-to-hast/lib/handlers/footnote-reference.js");
 /**
  * @typedef {import('mdast').Footnote} Footnote
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  *
  * @todo
  *   `footnote` (or “inline note”) are a pandoc footnotes feature (`^[a note]`)
@@ -54355,7 +53776,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Footnote} node
  */
 function footnote(h, node) {
@@ -54396,13 +53817,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Heading} Heading
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Heading} node
  */
 function heading(h, node) {
@@ -54422,10 +53843,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "html": () => (/* binding */ html)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('mdast').HTML} HTML
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
@@ -54433,7 +53854,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Return either a `raw` node in dangerous mode, otherwise nothing.
  *
- * @type {Handler}
+ * @param {H} h
  * @param {HTML} node
  */
 function html(h, node) {
@@ -54457,15 +53878,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _revert_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../revert.js */ "./node_modules/mdast-util-to-hast/lib/revert.js");
 /**
  * @typedef {import('mdast').ImageReference} ImageReference
+ * @typedef {import('mdast').Parent} Parent
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {ImageReference} node
  */
 function imageReference(h, node) {
@@ -54502,13 +53924,13 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('mdast').Image} Image
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Image} node
  */
 function image(h, node) {
@@ -54627,16 +54049,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "inlineCode": () => (/* binding */ inlineCode)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('mdast').InlineCode} InlineCode
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {InlineCode} node
  */
 function inlineCode(h, node) {
@@ -54662,7 +54084,8 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('mdast').LinkReference} LinkReference
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
+ * @typedef {import('mdast').Parent} Parent
  */
 
 
@@ -54670,7 +54093,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {LinkReference} node
  */
 function linkReference(h, node) {
@@ -54708,14 +54131,14 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('mdast').Link} Link
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Link} node
  */
 function link(h, node) {
@@ -54742,14 +54165,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "listItem": () => (/* binding */ listItem)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').ListItem} ListItem
  * @typedef {import('mdast').List} List
  * @typedef {import('hast').Properties} Properties
  * @typedef {import('hast').Element} Element
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  * @typedef {import('../index.js').Content} Content
  */
 
@@ -54757,7 +54180,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {ListItem} node
  * @param {List} parent
  */
@@ -54880,16 +54303,15 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef {import('mdast').List} List
  * @typedef {import('hast').Element} Element
  * @typedef {import('hast').Properties} Properties
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {List} node
- * @returns {Element}
  */
 function list(h, node) {
   /** @type {Properties} */
@@ -54937,13 +54359,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Paragraph} Paragraph
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Paragraph} node
  */
 function paragraph(h, node) {
@@ -54963,12 +54385,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "root": () => (/* binding */ root)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /* harmony import */ var _wrap_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../wrap.js */ "./node_modules/mdast-util-to-hast/lib/wrap.js");
 /**
  * @typedef {import('mdast').Root} Root
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
@@ -54976,7 +54398,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Root} node
  */
 function root(h, node) {
@@ -55000,13 +54422,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Strong} Strong
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Strong} node
  */
 function strong(h, node) {
@@ -55026,13 +54448,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "table": () => (/* binding */ table)
 /* harmony export */ });
-/* harmony import */ var unist_util_position__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-position */ "./node_modules/unist-util-position/index.js");
+/* harmony import */ var unist_util_position__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-position */ "./node_modules/unist-util-position/lib/index.js");
 /* harmony import */ var _wrap_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../wrap.js */ "./node_modules/mdast-util-to-hast/lib/wrap.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').Table} Table
  * @typedef {import('hast').Element} Element
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  * @typedef {import('../index.js').Content} Content
  */
 
@@ -55041,7 +54463,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Table} node
  */
 function table(h, node) {
@@ -55104,17 +54526,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "text": () => (/* binding */ text)
 /* harmony export */ });
 /* harmony import */ var trim_lines__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! trim-lines */ "./node_modules/trim-lines/index.js");
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('mdast').Text} Text
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 
 
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {Text} node
  */
 function text(h, node) {
@@ -55137,13 +54559,12 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('mdast').ThematicBreak} ThematicBreak
  * @typedef {import('hast').Element} Element
- * @typedef {import('../index.js').Handler} Handler
+ * @typedef {import('../index.js').H} H
  */
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {ThematicBreak} [node]
- * @returns {Element}
  */
 function thematicBreak(h, node) {
   return h(node, 'hr')
@@ -55163,10 +54584,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "defaultHandlers": () => (/* reexport safe */ _handlers_index_js__WEBPACK_IMPORTED_MODULE_1__.handlers),
 /* harmony export */   "toHast": () => (/* binding */ toHast)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_position__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! unist-util-position */ "./node_modules/unist-util-position/index.js");
-/* harmony import */ var unist_util_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-util-generated */ "./node_modules/unist-util-generated/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_position__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! unist-util-position */ "./node_modules/unist-util-position/lib/index.js");
+/* harmony import */ var unist_util_generated__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! unist-util-generated */ "./node_modules/unist-util-generated/lib/index.js");
 /* harmony import */ var mdast_util_definitions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-definitions */ "./node_modules/mdast-util-definitions/index.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /* harmony import */ var _footer_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./footer.js */ "./node_modules/mdast-util-to-hast/lib/footer.js");
@@ -55180,7 +54601,6 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef {import('hast').Properties} Properties
  * @typedef {import('hast').Element} Element
  * @typedef {import('hast').ElementContent} Content
- * @typedef {import('unist-util-position').PositionLike} PositionLike
  *
  * @typedef EmbeddedHastFields
  * @property {string} [hName]
@@ -55195,6 +54615,15 @@ __webpack_require__.r(__webpack_exports__);
  *
  * @typedef {MdastNode & {data?: Data}} NodeWithData
  *   unist node with embedded hast data.
+ *
+ * @typedef PositionLike
+ * @property {PointLike | null | undefined} [start]
+ * @property {PointLike | null | undefined} [end]
+ *
+ * @typedef PointLike
+ * @property {number | null | undefined} [line]
+ * @property {number | null | undefined} [column]
+ * @property {number | null | undefined} [offset]
  *
  * @callback Handler
  *   Handle a node.
@@ -55470,12 +54899,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "revert": () => (/* binding */ revert)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /* harmony import */ var _traverse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./traverse.js */ "./node_modules/mdast-util-to-hast/lib/traverse.js");
 /**
  * @typedef {import('mdast').LinkReference} LinkReference
  * @typedef {import('mdast').ImageReference} ImageReference
- * @typedef {import('./index.js').Handler} Handler
+ * @typedef {import('./index.js').H} H
  * @typedef {import('./index.js').Content} Content
  */
 
@@ -55485,7 +54914,7 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * Return the content of a reference without definition as plain text.
  *
- * @type {Handler}
+ * @param {H} h
  * @param {ImageReference|LinkReference} node
  * @returns {Content|Array<Content>}
  */
@@ -55537,11 +54966,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "all": () => (/* binding */ all),
 /* harmony export */   "one": () => (/* binding */ one)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
- * @typedef {import('mdast').Root|import('mdast').Parent['children'][number]} MdastNode
- * @typedef {import('./index.js').H} H
+ * @typedef {import('mdast').Root|import('mdast').Content} MdastNode
+ * @typedef {Extract<MdastNode, import('mdast').Parent>} MdastParent
  * @typedef {import('./index.js').Handler} Handler
+ * @typedef {import('./index.js').H} H
  * @typedef {import('./index.js').Content} Content
  */
 
@@ -55551,7 +54981,8 @@ const own = {}.hasOwnProperty
 
 /**
  * Transform an unknown node.
- * @type {Handler}
+ *
+ * @param {H} h
  * @param {MdastNode} node
  */
 function unknown(h, node) {
@@ -55572,8 +55003,9 @@ function unknown(h, node) {
 }
 
 /**
- * @type {Handler}
+ * @param {H} h
  * @param {MdastNode} node
+ * @param {MdastParent | null} parent
  */
 function one(h, node, parent) {
   const type = node && node.type
@@ -55597,11 +55029,12 @@ function one(h, node, parent) {
 }
 
 /**
- * @type {Handler}
- * @param {MdastNode} node
+ * @template {MdastNode} Node
+ * @param {H} h
+ * @param {Node} node
+ * @returns {Node}
  */
 function returnNode(h, node) {
-  // @ts-expect-error: Pass through custom node.
   return 'children' in node ? {...node, children: all(h, node)} : node
 }
 
@@ -55660,7 +55093,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "wrap": () => (/* binding */ wrap)
 /* harmony export */ });
-/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/index.js");
+/* harmony import */ var unist_builder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-builder */ "./node_modules/unist-builder/lib/index.js");
 /**
  * @typedef {import('./index.js').Content} Content
  */
@@ -55711,17 +55144,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('./types.js').Options} Options
- * @typedef {import('./types.js').Context} Context
+ * @typedef {import('./types.js').State} State
  */
 
 /**
- * @param {Context} base
+ * @param {State} base
  * @param {Options} extension
- * @returns {Context}
+ * @returns {State}
  */
 function configure(base, extension) {
   let index = -1
-  /** @type {string} */
+  /** @type {keyof Options} */
   let key
 
   // First do subextensions.
@@ -55762,30 +55195,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "blockquote": () => (/* binding */ blockquote)
 /* harmony export */ });
-/* harmony import */ var _util_container_flow_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/container-flow.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-flow.js");
-/* harmony import */ var _util_indent_lines_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/indent-lines.js */ "./node_modules/mdast-util-to-markdown/lib/util/indent-lines.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Blockquote} Blockquote
- * @typedef {import('../types.js').Handle} Handle
- * @typedef {import('../util/indent-lines.js').Map} Map
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').Map} Map
  */
-
-
-
-
 
 /**
- * @type {Handle}
  * @param {Blockquote} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function blockquote(node, _, context, safeOptions) {
-  const exit = context.enter('blockquote')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+function blockquote(node, _, state, info) {
+  const exit = state.enter('blockquote')
+  const tracker = state.createTracker(info)
   tracker.move('> ')
   tracker.shift(2)
-  const value = (0,_util_indent_lines_js__WEBPACK_IMPORTED_MODULE_1__.indentLines)(
-    (0,_util_container_flow_js__WEBPACK_IMPORTED_MODULE_2__.containerFlow)(node, context, tracker.current()),
+  const value = state.indentLines(
+    state.containerFlow(node, tracker.current()),
     map
   )
   exit()
@@ -55812,27 +55243,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _util_pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/pattern-in-scope.js */ "./node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js");
 /**
- * @typedef {import('../types.js').Handle} Handle
  * @typedef {import('mdast').Break} Break
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
 
 
 
 /**
- * @type {Handle}
  * @param {Break} _
+ * @param {Parent | undefined} _1
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function hardBreak(_, _1, context, safe) {
+function hardBreak(_, _1, state, info) {
   let index = -1
 
-  while (++index < context.unsafe.length) {
+  while (++index < state.unsafe.length) {
     // If we can’t put eols in this construct (setext headings, tables), use a
     // space instead.
     if (
-      context.unsafe[index].character === '\n' &&
-      (0,_util_pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__.patternInScope)(context.stack, context.unsafe[index])
+      state.unsafe[index].character === '\n' &&
+      (0,_util_pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__.patternInScope)(state.stack, state.unsafe[index])
     ) {
-      return /[ \t]/.test(safe.before) ? '' : ' '
+      return /[ \t]/.test(info.before) ? '' : ' '
     }
   }
 
@@ -55852,51 +55288,49 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "code": () => (/* binding */ code)
 /* harmony export */ });
-/* harmony import */ var longest_streak__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! longest-streak */ "./node_modules/longest-streak/index.js");
+/* harmony import */ var longest_streak__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! longest-streak */ "./node_modules/longest-streak/index.js");
 /* harmony import */ var _util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/format-code-as-indented.js */ "./node_modules/mdast-util-to-markdown/lib/util/format-code-as-indented.js");
 /* harmony import */ var _util_check_fence_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-fence.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-fence.js");
-/* harmony import */ var _util_indent_lines_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/indent-lines.js */ "./node_modules/mdast-util-to-markdown/lib/util/indent-lines.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Code} Code
- * @typedef {import('../types.js').Handle} Handle
- * @typedef {import('../types.js').Exit} Exit
- * @typedef {import('../util/indent-lines.js').Map} Map
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
+ * @typedef {import('../types.js').Map} Map
  */
-
-
-
 
 
 
 
 
 /**
- * @type {Handle}
  * @param {Code} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function code(node, _, context, safeOptions) {
-  const marker = (0,_util_check_fence_js__WEBPACK_IMPORTED_MODULE_0__.checkFence)(context)
+function code(node, _, state, info) {
+  const marker = (0,_util_check_fence_js__WEBPACK_IMPORTED_MODULE_0__.checkFence)(state)
   const raw = node.value || ''
   const suffix = marker === '`' ? 'GraveAccent' : 'Tilde'
 
-  if ((0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_1__.formatCodeAsIndented)(node, context)) {
-    const exit = context.enter('codeIndented')
-    const value = (0,_util_indent_lines_js__WEBPACK_IMPORTED_MODULE_2__.indentLines)(raw, map)
+  if ((0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_1__.formatCodeAsIndented)(node, state)) {
+    const exit = state.enter('codeIndented')
+    const value = state.indentLines(raw, map)
     exit()
     return value
   }
 
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_3__.track)(safeOptions)
-  const sequence = marker.repeat(Math.max((0,longest_streak__WEBPACK_IMPORTED_MODULE_4__.longestStreak)(raw, marker) + 1, 3))
-  const exit = context.enter('codeFenced')
+  const tracker = state.createTracker(info)
+  const sequence = marker.repeat(Math.max((0,longest_streak__WEBPACK_IMPORTED_MODULE_2__.longestStreak)(raw, marker) + 1, 3))
+  const exit = state.enter('codeFenced')
   let value = tracker.move(sequence)
 
   if (node.lang) {
-    const subexit = context.enter('codeFencedLang' + suffix)
+    const subexit = state.enter(`codeFencedLang${suffix}`)
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_5__.safe)(context, node.lang, {
+      state.safe(node.lang, {
         before: value,
         after: ' ',
         encode: ['`'],
@@ -55907,10 +55341,10 @@ function code(node, _, context, safeOptions) {
   }
 
   if (node.lang && node.meta) {
-    const subexit = context.enter('codeFencedMeta' + suffix)
+    const subexit = state.enter(`codeFencedMeta${suffix}`)
     value += tracker.move(' ')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_5__.safe)(context, node.meta, {
+      state.safe(node.meta, {
         before: value,
         after: '\n',
         encode: ['`'],
@@ -55949,33 +55383,32 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "definition": () => (/* binding */ definition)
 /* harmony export */ });
-/* harmony import */ var _util_association_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/association.js */ "./node_modules/mdast-util-to-markdown/lib/util/association.js");
 /* harmony import */ var _util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-quote.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-quote.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Definition} Definition
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
-
 
 
 
 /**
- * @type {Handle}
  * @param {Definition} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function definition(node, _, context, safeOptions) {
-  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(context)
+function definition(node, _, state, info) {
+  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(state)
   const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
-  const exit = context.enter('definition')
-  let subexit = context.enter('label')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+  const exit = state.enter('definition')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
   let value = tracker.move('[')
   value += tracker.move(
-    (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
+    state.safe(state.associationId(node), {
       before: value,
       after: ']',
       ...tracker.current()
@@ -55991,17 +55424,17 @@ function definition(node, _, context, safeOptions) {
     // If there are control characters or whitespace.
     /[\0- \u007F]/.test(node.url)
   ) {
-    subexit = context.enter('destinationLiteral')
+    subexit = state.enter('destinationLiteral')
     value += tracker.move('<')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.url, {before: value, after: '>', ...tracker.current()})
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
     )
     value += tracker.move('>')
   } else {
     // No whitespace, raw is prettier.
-    subexit = context.enter('destinationRaw')
+    subexit = state.enter('destinationRaw')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.url, {
+      state.safe(node.url, {
         before: value,
         after: node.title ? ' ' : '\n',
         ...tracker.current()
@@ -56012,10 +55445,10 @@ function definition(node, _, context, safeOptions) {
   subexit()
 
   if (node.title) {
-    subexit = context.enter('title' + suffix)
+    subexit = state.enter(`title${suffix}`)
     value += tracker.move(' ' + quote)
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.title, {
+      state.safe(node.title, {
         before: value,
         after: quote,
         ...tracker.current()
@@ -56044,14 +55477,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "emphasis": () => (/* binding */ emphasis)
 /* harmony export */ });
 /* harmony import */ var _util_check_emphasis_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-emphasis.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-emphasis.js");
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Emphasis} Emphasis
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 
 
@@ -56062,16 +55493,19 @@ emphasis.peek = emphasisPeek
 // There’s no way around that though, except for injecting zero-width stuff.
 // Do we need to safeguard against that?
 /**
- * @type {Handle}
  * @param {Emphasis} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function emphasis(node, _, context, safeOptions) {
-  const marker = (0,_util_check_emphasis_js__WEBPACK_IMPORTED_MODULE_0__.checkEmphasis)(context)
-  const exit = context.enter('emphasis')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+function emphasis(node, _, state, info) {
+  const marker = (0,_util_check_emphasis_js__WEBPACK_IMPORTED_MODULE_0__.checkEmphasis)(state)
+  const exit = state.enter('emphasis')
+  const tracker = state.createTracker(info)
   let value = tracker.move(marker)
   value += tracker.move(
-    (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__.containerPhrasing)(node, context, {
+    state.containerPhrasing(node, {
       before: value,
       after: marker,
       ...tracker.current()
@@ -56083,11 +55517,13 @@ function emphasis(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
  * @param {Emphasis} _
+ * @param {Parent | undefined} _1
+ * @param {State} state
+ * @returns {string}
  */
-function emphasisPeek(_, _1, context) {
-  return context.options.emphasis || '*'
+function emphasisPeek(_, _1, state) {
+  return state.options.emphasis || '*'
 }
 
 
@@ -56103,31 +55539,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "heading": () => (/* binding */ heading)
 /* harmony export */ });
-/* harmony import */ var _util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/format-heading-as-setext.js */ "./node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js");
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
+/* harmony import */ var _util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/format-heading-as-setext.js */ "./node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js");
 /**
  * @typedef {import('mdast').Heading} Heading
- * @typedef {import('../types.js').Handle} Handle
- * @typedef {import('../types.js').Exit} Exit
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 
 
 /**
- * @type {Handle}
  * @param {Heading} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function heading(node, _, context, safeOptions) {
+function heading(node, _, state, info) {
   const rank = Math.max(Math.min(6, node.depth || 1), 1)
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+  const tracker = state.createTracker(info)
 
-  if ((0,_util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_1__.formatHeadingAsSetext)(node, context)) {
-    const exit = context.enter('headingSetext')
-    const subexit = context.enter('phrasing')
-    const value = (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__.containerPhrasing)(node, context, {
+  if ((0,_util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_0__.formatHeadingAsSetext)(node, state)) {
+    const exit = state.enter('headingSetext')
+    const subexit = state.enter('phrasing')
+    const value = state.containerPhrasing(node, {
       ...tracker.current(),
       before: '\n',
       after: '\n'
@@ -56149,8 +55585,8 @@ function heading(node, _, context, safeOptions) {
   }
 
   const sequence = '#'.repeat(rank)
-  const exit = context.enter('headingAtx')
-  const subexit = context.enter('phrasing')
+  const exit = state.enter('headingAtx')
+  const subexit = state.enter('phrasing')
 
   // Note: for proper tracking, we should reset the output positions when there
   // is no content returned, because then the space is not output.
@@ -56158,7 +55594,7 @@ function heading(node, _, context, safeOptions) {
   // we’ve tracked one too many characters.
   tracker.move(sequence + ' ')
 
-  let value = (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__.containerPhrasing)(node, context, {
+  let value = state.containerPhrasing(node, {
     before: '# ',
     after: '\n',
     ...tracker.current()
@@ -56175,7 +55611,7 @@ function heading(node, _, context, safeOptions) {
 
   value = value ? sequence + ' ' + value : sequence
 
-  if (context.options.closeAtx) {
+  if (state.options.closeAtx) {
     value += ' ' + sequence
   }
 
@@ -56200,21 +55636,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('mdast').HTML} HTML
- * @typedef {import('../types.js').Handle} Handle
  */
 
 html.peek = htmlPeek
 
 /**
- * @type {Handle}
  * @param {HTML} node
+ * @returns {string}
  */
 function html(node) {
   return node.value || ''
 }
 
 /**
- * @type {Handle}
+ * @returns {string}
  */
 function htmlPeek() {
   return '<'
@@ -56233,31 +55668,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "imageReference": () => (/* binding */ imageReference)
 /* harmony export */ });
-/* harmony import */ var _util_association_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/association.js */ "./node_modules/mdast-util-to-markdown/lib/util/association.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').ImageReference} ImageReference
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
-
-
 
 imageReference.peek = imageReferencePeek
 
 /**
- * @type {Handle}
  * @param {ImageReference} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function imageReference(node, _, context, safeOptions) {
+function imageReference(node, _, state, info) {
   const type = node.referenceType
-  const exit = context.enter('imageReference')
-  let subexit = context.enter('label')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+  const exit = state.enter('imageReference')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
   let value = tracker.move('![')
-  const alt = (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_1__.safe)(context, node.alt, {
+  const alt = state.safe(node.alt, {
     before: value,
     after: ']',
     ...tracker.current()
@@ -56266,20 +55699,20 @@ function imageReference(node, _, context, safeOptions) {
 
   subexit()
   // Hide the fact that we’re in phrasing, because escapes don’t work.
-  const stack = context.stack
-  context.stack = []
-  subexit = context.enter('reference')
+  const stack = state.stack
+  state.stack = []
+  subexit = state.enter('reference')
   // Note: for proper tracking, we should reset the output positions when we end
   // up making a `shortcut` reference, because then there is no brace output.
   // Practically, in that case, there is no content, so it doesn’t matter that
   // we’ve tracked one too many characters.
-  const reference = (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_1__.safe)(context, (0,_util_association_js__WEBPACK_IMPORTED_MODULE_2__.association)(node), {
+  const reference = state.safe(state.associationId(node), {
     before: value,
     after: ']',
     ...tracker.current()
   })
   subexit()
-  context.stack = stack
+  state.stack = stack
   exit()
 
   if (type === 'full' || !alt || alt !== reference) {
@@ -56295,7 +55728,7 @@ function imageReference(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
+ * @returns {string}
  */
 function imageReferencePeek() {
   return '!'
@@ -56315,32 +55748,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "image": () => (/* binding */ image)
 /* harmony export */ });
 /* harmony import */ var _util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-quote.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-quote.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Image} Image
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 
 
 image.peek = imagePeek
 
 /**
- * @type {Handle}
  * @param {Image} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function image(node, _, context, safeOptions) {
-  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(context)
+function image(node, _, state, info) {
+  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(state)
   const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
-  const exit = context.enter('image')
-  let subexit = context.enter('label')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+  const exit = state.enter('image')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
   let value = tracker.move('![')
   value += tracker.move(
-    (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.alt, {before: value, after: ']', ...tracker.current()})
+    state.safe(node.alt, {before: value, after: ']', ...tracker.current()})
   )
   value += tracker.move('](')
 
@@ -56352,17 +55786,17 @@ function image(node, _, context, safeOptions) {
     // If there are control characters or whitespace.
     /[\0- \u007F]/.test(node.url)
   ) {
-    subexit = context.enter('destinationLiteral')
+    subexit = state.enter('destinationLiteral')
     value += tracker.move('<')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.url, {before: value, after: '>', ...tracker.current()})
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
     )
     value += tracker.move('>')
   } else {
     // No whitespace, raw is prettier.
-    subexit = context.enter('destinationRaw')
+    subexit = state.enter('destinationRaw')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.url, {
+      state.safe(node.url, {
         before: value,
         after: node.title ? ' ' : ')',
         ...tracker.current()
@@ -56373,10 +55807,10 @@ function image(node, _, context, safeOptions) {
   subexit()
 
   if (node.title) {
-    subexit = context.enter('title' + suffix)
+    subexit = state.enter(`title${suffix}`)
     value += tracker.move(' ' + quote)
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, node.title, {
+      state.safe(node.title, {
         before: value,
         after: quote,
         ...tracker.current()
@@ -56393,7 +55827,7 @@ function image(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
+ * @returns {string}
  */
 function imagePeek() {
   return '!'
@@ -56451,6 +55885,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/**
+ * Default (CommonMark) handlers.
+ */
 const handle = {
   blockquote: _blockquote_js__WEBPACK_IMPORTED_MODULE_0__.blockquote,
   break: _break_js__WEBPACK_IMPORTED_MODULE_1__.hardBreak,
@@ -56490,7 +55927,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util_pattern_compile_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/pattern-compile.js */ "./node_modules/mdast-util-to-markdown/lib/util/pattern-compile.js");
 /**
  * @typedef {import('mdast').InlineCode} InlineCode
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
  */
 
 
@@ -56498,10 +55936,12 @@ __webpack_require__.r(__webpack_exports__);
 inlineCode.peek = inlineCodePeek
 
 /**
- * @type {Handle}
  * @param {InlineCode} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @returns {string}
  */
-function inlineCode(node, _, context) {
+function inlineCode(node, _, state) {
   let value = node.value || ''
   let sequence = '`'
   let index = -1
@@ -56529,10 +55969,10 @@ function inlineCode(node, _, context) {
   // We can’t escape characters in `inlineCode`, but because eols are
   // transformed to spaces when going from markdown to HTML anyway, we can swap
   // them out.
-  while (++index < context.unsafe.length) {
-    const pattern = context.unsafe[index]
+  while (++index < state.unsafe.length) {
+    const pattern = state.unsafe[index]
     const expression = (0,_util_pattern_compile_js__WEBPACK_IMPORTED_MODULE_0__.patternCompile)(pattern)
-    /** @type {RegExpExecArray|null} */
+    /** @type {RegExpExecArray | null} */
     let match
 
     // Only look for `atBreak`s.
@@ -56559,7 +55999,7 @@ function inlineCode(node, _, context) {
 }
 
 /**
- * @type {Handle}
+ * @returns {string}
  */
 function inlineCodePeek() {
   return '`'
@@ -56578,33 +56018,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "linkReference": () => (/* binding */ linkReference)
 /* harmony export */ });
-/* harmony import */ var _util_association_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/association.js */ "./node_modules/mdast-util-to-markdown/lib/util/association.js");
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').LinkReference} LinkReference
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
-
-
-
 
 linkReference.peek = linkReferencePeek
 
 /**
- * @type {Handle}
  * @param {LinkReference} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function linkReference(node, _, context, safeOptions) {
+function linkReference(node, _, state, info) {
   const type = node.referenceType
-  const exit = context.enter('linkReference')
-  let subexit = context.enter('label')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+  const exit = state.enter('linkReference')
+  let subexit = state.enter('label')
+  const tracker = state.createTracker(info)
   let value = tracker.move('[')
-  const text = (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_1__.containerPhrasing)(node, context, {
+  const text = state.containerPhrasing(node, {
     before: value,
     after: ']',
     ...tracker.current()
@@ -56613,20 +56049,20 @@ function linkReference(node, _, context, safeOptions) {
 
   subexit()
   // Hide the fact that we’re in phrasing, because escapes don’t work.
-  const stack = context.stack
-  context.stack = []
-  subexit = context.enter('reference')
+  const stack = state.stack
+  state.stack = []
+  subexit = state.enter('reference')
   // Note: for proper tracking, we should reset the output positions when we end
   // up making a `shortcut` reference, because then there is no brace output.
   // Practically, in that case, there is no content, so it doesn’t matter that
   // we’ve tracked one too many characters.
-  const reference = (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_2__.safe)(context, (0,_util_association_js__WEBPACK_IMPORTED_MODULE_3__.association)(node), {
+  const reference = state.safe(state.associationId(node), {
     before: value,
     after: ']',
     ...tracker.current()
   })
   subexit()
-  context.stack = stack
+  state.stack = stack
   exit()
 
   if (type === 'full' || !text || text !== reference) {
@@ -56642,7 +56078,7 @@ function linkReference(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
+ * @returns {string}
  */
 function linkReferencePeek() {
   return '['
@@ -56662,18 +56098,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "link": () => (/* binding */ link)
 /* harmony export */ });
 /* harmony import */ var _util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-quote.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-quote.js");
-/* harmony import */ var _util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/format-link-as-autolink.js */ "./node_modules/mdast-util-to-markdown/lib/util/format-link-as-autolink.js");
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
+/* harmony import */ var _util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/format-link-as-autolink.js */ "./node_modules/mdast-util-to-markdown/lib/util/format-link-as-autolink.js");
 /**
  * @typedef {import('mdast').Link} Link
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  * @typedef {import('../types.js').Exit} Exit
  */
-
-
-
 
 
 
@@ -56681,26 +56113,29 @@ __webpack_require__.r(__webpack_exports__);
 link.peek = linkPeek
 
 /**
- * @type {Handle}
  * @param {Link} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function link(node, _, context, safeOptions) {
-  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(context)
+function link(node, _, state, info) {
+  const quote = (0,_util_check_quote_js__WEBPACK_IMPORTED_MODULE_0__.checkQuote)(state)
   const suffix = quote === '"' ? 'Quote' : 'Apostrophe'
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+  const tracker = state.createTracker(info)
   /** @type {Exit} */
   let exit
   /** @type {Exit} */
   let subexit
 
-  if ((0,_util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_2__.formatLinkAsAutolink)(node, context)) {
+  if ((0,_util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_1__.formatLinkAsAutolink)(node, state)) {
     // Hide the fact that we’re in phrasing, because escapes don’t work.
-    const stack = context.stack
-    context.stack = []
-    exit = context.enter('autolink')
+    const stack = state.stack
+    state.stack = []
+    exit = state.enter('autolink')
     let value = tracker.move('<')
     value += tracker.move(
-      (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_3__.containerPhrasing)(node, context, {
+      state.containerPhrasing(node, {
         before: value,
         after: '>',
         ...tracker.current()
@@ -56708,15 +56143,15 @@ function link(node, _, context, safeOptions) {
     )
     value += tracker.move('>')
     exit()
-    context.stack = stack
+    state.stack = stack
     return value
   }
 
-  exit = context.enter('link')
-  subexit = context.enter('label')
+  exit = state.enter('link')
+  subexit = state.enter('label')
   let value = tracker.move('[')
   value += tracker.move(
-    (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_3__.containerPhrasing)(node, context, {
+    state.containerPhrasing(node, {
       before: value,
       after: '](',
       ...tracker.current()
@@ -56731,17 +56166,17 @@ function link(node, _, context, safeOptions) {
     // If there are control characters or whitespace.
     /[\0- \u007F]/.test(node.url)
   ) {
-    subexit = context.enter('destinationLiteral')
+    subexit = state.enter('destinationLiteral')
     value += tracker.move('<')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_4__.safe)(context, node.url, {before: value, after: '>', ...tracker.current()})
+      state.safe(node.url, {before: value, after: '>', ...tracker.current()})
     )
     value += tracker.move('>')
   } else {
     // No whitespace, raw is prettier.
-    subexit = context.enter('destinationRaw')
+    subexit = state.enter('destinationRaw')
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_4__.safe)(context, node.url, {
+      state.safe(node.url, {
         before: value,
         after: node.title ? ' ' : ')',
         ...tracker.current()
@@ -56752,10 +56187,10 @@ function link(node, _, context, safeOptions) {
   subexit()
 
   if (node.title) {
-    subexit = context.enter('title' + suffix)
+    subexit = state.enter(`title${suffix}`)
     value += tracker.move(' ' + quote)
     value += tracker.move(
-      (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_4__.safe)(context, node.title, {
+      state.safe(node.title, {
         before: value,
         after: quote,
         ...tracker.current()
@@ -56772,11 +56207,13 @@ function link(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
  * @param {Link} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @returns {string}
  */
-function linkPeek(node, _, context) {
-  return (0,_util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_2__.formatLinkAsAutolink)(node, context) ? '<' : '['
+function linkPeek(node, _, state) {
+  return (0,_util_format_link_as_autolink_js__WEBPACK_IMPORTED_MODULE_1__.formatLinkAsAutolink)(node, state) ? '<' : '['
 }
 
 
@@ -56794,30 +56231,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/check-bullet.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet.js");
 /* harmony import */ var _util_check_list_item_indent_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-list-item-indent.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-list-item-indent.js");
-/* harmony import */ var _util_container_flow_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../util/container-flow.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-flow.js");
-/* harmony import */ var _util_indent_lines_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/indent-lines.js */ "./node_modules/mdast-util-to-markdown/lib/util/indent-lines.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').ListItem} ListItem
- * @typedef {import('mdast').List} List
- * @typedef {import('../util/indent-lines.js').Map} Map
- * @typedef {import('../types.js').Options} Options
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Map} Map
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
-
 
 
 
 
 /**
- * @type {Handle}
  * @param {ListItem} node
+ * @param {Parent | undefined} parent
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function listItem(node, parent, context, safeOptions) {
-  const listItemIndent = (0,_util_check_list_item_indent_js__WEBPACK_IMPORTED_MODULE_0__.checkListItemIndent)(context)
-  let bullet = context.bulletCurrent || (0,_util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__.checkBullet)(context)
+function listItem(node, parent, state, info) {
+  const listItemIndent = (0,_util_check_list_item_indent_js__WEBPACK_IMPORTED_MODULE_0__.checkListItemIndent)(state)
+  let bullet = state.bulletCurrent || (0,_util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__.checkBullet)(state)
 
   // Add the marker value for ordered lists.
   if (parent && parent.type === 'list' && parent.ordered) {
@@ -56825,7 +56259,7 @@ function listItem(node, parent, context, safeOptions) {
       (typeof parent.start === 'number' && parent.start > -1
         ? parent.start
         : 1) +
-      (context.options.incrementListMarker === false
+      (state.options.incrementListMarker === false
         ? 0
         : parent.children.indexOf(node)) +
       bullet
@@ -56841,12 +56275,12 @@ function listItem(node, parent, context, safeOptions) {
     size = Math.ceil(size / 4) * 4
   }
 
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_2__.track)(safeOptions)
+  const tracker = state.createTracker(info)
   tracker.move(bullet + ' '.repeat(size - bullet.length))
   tracker.shift(size)
-  const exit = context.enter('listItem')
-  const value = (0,_util_indent_lines_js__WEBPACK_IMPORTED_MODULE_3__.indentLines)(
-    (0,_util_container_flow_js__WEBPACK_IMPORTED_MODULE_4__.containerFlow)(node, context, tracker.current()),
+  const exit = state.enter('listItem')
+  const value = state.indentLines(
+    state.containerFlow(node, tracker.current()),
     map
   )
   exit()
@@ -56876,7 +56310,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "list": () => (/* binding */ list)
 /* harmony export */ });
-/* harmony import */ var _util_container_flow_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../util/container-flow.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-flow.js");
 /* harmony import */ var _util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/check-bullet.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet.js");
 /* harmony import */ var _util_check_bullet_other_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../util/check-bullet-other.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet-other.js");
 /* harmony import */ var _util_check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-bullet-ordered.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet-ordered.js");
@@ -56884,9 +56317,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util_check_rule_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../util/check-rule.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-rule.js");
 /**
  * @typedef {import('mdast').List} List
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
 
 
 
@@ -56895,27 +56329,30 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @type {Handle}
  * @param {List} node
+ * @param {Parent | undefined} parent
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function list(node, parent, context, safeOptions) {
-  const exit = context.enter('list')
-  const bulletCurrent = context.bulletCurrent
+function list(node, parent, state, info) {
+  const exit = state.enter('list')
+  const bulletCurrent = state.bulletCurrent
   /** @type {string} */
-  let bullet = node.ordered ? (0,_util_check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__.checkBulletOrdered)(context) : (0,_util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__.checkBullet)(context)
+  let bullet = node.ordered ? (0,_util_check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__.checkBulletOrdered)(state) : (0,_util_check_bullet_js__WEBPACK_IMPORTED_MODULE_1__.checkBullet)(state)
   /** @type {string} */
   const bulletOther = node.ordered
-    ? (0,_util_check_bullet_ordered_other_js__WEBPACK_IMPORTED_MODULE_2__.checkBulletOrderedOther)(context)
-    : (0,_util_check_bullet_other_js__WEBPACK_IMPORTED_MODULE_3__.checkBulletOther)(context)
-  const bulletLastUsed = context.bulletLastUsed
+    ? (0,_util_check_bullet_ordered_other_js__WEBPACK_IMPORTED_MODULE_2__.checkBulletOrderedOther)(state)
+    : (0,_util_check_bullet_other_js__WEBPACK_IMPORTED_MODULE_3__.checkBulletOther)(state)
+  const bulletLastUsed = state.bulletLastUsed
   let useDifferentMarker = false
 
   if (
     parent &&
     // Explicit `other` set.
     (node.ordered
-      ? context.options.bulletOrderedOther
-      : context.options.bulletOther) &&
+      ? state.options.bulletOrderedOther
+      : state.options.bulletOther) &&
     bulletLastUsed &&
     bullet === bulletLastUsed
   ) {
@@ -56940,14 +56377,14 @@ function list(node, parent, context, safeOptions) {
       firstListItem &&
       (!firstListItem.children || !firstListItem.children[0]) &&
       // Directly in two other list items:
-      context.stack[context.stack.length - 1] === 'list' &&
-      context.stack[context.stack.length - 2] === 'listItem' &&
-      context.stack[context.stack.length - 3] === 'list' &&
-      context.stack[context.stack.length - 4] === 'listItem' &&
+      state.stack[state.stack.length - 1] === 'list' &&
+      state.stack[state.stack.length - 2] === 'listItem' &&
+      state.stack[state.stack.length - 3] === 'list' &&
+      state.stack[state.stack.length - 4] === 'listItem' &&
       // That are each the first child.
-      context.indexStack[context.indexStack.length - 1] === 0 &&
-      context.indexStack[context.indexStack.length - 2] === 0 &&
-      context.indexStack[context.indexStack.length - 3] === 0
+      state.indexStack[state.indexStack.length - 1] === 0 &&
+      state.indexStack[state.indexStack.length - 2] === 0 &&
+      state.indexStack[state.indexStack.length - 3] === 0
     ) {
       useDifferentMarker = true
     }
@@ -56960,7 +56397,7 @@ function list(node, parent, context, safeOptions) {
     // ```
     //
     // …because otherwise it would become one big thematic break.
-    if ((0,_util_check_rule_js__WEBPACK_IMPORTED_MODULE_4__.checkRule)(context) === bullet && firstListItem) {
+    if ((0,_util_check_rule_js__WEBPACK_IMPORTED_MODULE_4__.checkRule)(state) === bullet && firstListItem) {
       let index = -1
 
       while (++index < node.children.length) {
@@ -56984,10 +56421,10 @@ function list(node, parent, context, safeOptions) {
     bullet = bulletOther
   }
 
-  context.bulletCurrent = bullet
-  const value = (0,_util_container_flow_js__WEBPACK_IMPORTED_MODULE_5__.containerFlow)(node, context, safeOptions)
-  context.bulletLastUsed = bullet
-  context.bulletCurrent = bulletCurrent
+  state.bulletCurrent = bullet
+  const value = state.containerFlow(node, info)
+  state.bulletLastUsed = bullet
+  state.bulletCurrent = bulletCurrent
   exit()
   return value
 }
@@ -57005,22 +56442,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "paragraph": () => (/* binding */ paragraph)
 /* harmony export */ });
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
 /**
  * @typedef {import('mdast').Paragraph} Paragraph
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 /**
- * @type {Handle}
  * @param {Paragraph} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function paragraph(node, _, context, safeOptions) {
-  const exit = context.enter('paragraph')
-  const subexit = context.enter('phrasing')
-  const value = (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_0__.containerPhrasing)(node, context, safeOptions)
+function paragraph(node, _, state, info) {
+  const exit = state.enter('paragraph')
+  const subexit = state.enter('phrasing')
+  const value = state.containerPhrasing(node, info)
   subexit()
   exit()
   return value
@@ -57039,20 +56478,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "root": () => (/* binding */ root)
 /* harmony export */ });
-/* harmony import */ var _util_container_flow_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/container-flow.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-flow.js");
+/* harmony import */ var mdast_util_phrasing__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-phrasing */ "./node_modules/mdast-util-phrasing/lib/index.js");
 /**
  * @typedef {import('mdast').Root} Root
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
 
 
 
 /**
- * @type {Handle}
  * @param {Root} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function root(node, _, context, safeOptions) {
-  return (0,_util_container_flow_js__WEBPACK_IMPORTED_MODULE_0__.containerFlow)(node, context, safeOptions)
+function root(node, _, state, info) {
+  // Note: `html` nodes are ambiguous.
+  const hasPhrasing = node.children.some((d) => (0,mdast_util_phrasing__WEBPACK_IMPORTED_MODULE_0__.phrasing)(d))
+  const fn = hasPhrasing ? state.containerPhrasing : state.containerFlow
+  // @ts-expect-error: `root`s are supposed to have one type of content
+  return fn.call(state, node, info)
 }
 
 
@@ -57069,14 +56517,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "strong": () => (/* binding */ strong)
 /* harmony export */ });
 /* harmony import */ var _util_check_strong_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-strong.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-strong.js");
-/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
-/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
  * @typedef {import('mdast').Strong} Strong
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 
 
@@ -57087,16 +56533,19 @@ strong.peek = strongPeek
 // There’s no way around that though, except for injecting zero-width stuff.
 // Do we need to safeguard against that?
 /**
- * @type {Handle}
  * @param {Strong} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function strong(node, _, context, safeOptions) {
-  const marker = (0,_util_check_strong_js__WEBPACK_IMPORTED_MODULE_0__.checkStrong)(context)
-  const exit = context.enter('strong')
-  const tracker = (0,_util_track_js__WEBPACK_IMPORTED_MODULE_1__.track)(safeOptions)
+function strong(node, _, state, info) {
+  const marker = (0,_util_check_strong_js__WEBPACK_IMPORTED_MODULE_0__.checkStrong)(state)
+  const exit = state.enter('strong')
+  const tracker = state.createTracker(info)
   let value = tracker.move(marker + marker)
   value += tracker.move(
-    (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_2__.containerPhrasing)(node, context, {
+    state.containerPhrasing(node, {
       before: value,
       after: marker,
       ...tracker.current()
@@ -57108,11 +56557,13 @@ function strong(node, _, context, safeOptions) {
 }
 
 /**
- * @type {Handle}
  * @param {Strong} _
+ * @param {Parent | undefined} _1
+ * @param {State} state
+ * @returns {string}
  */
-function strongPeek(_, _1, context) {
-  return context.options.strong || '*'
+function strongPeek(_, _1, state) {
+  return state.options.strong || '*'
 }
 
 
@@ -57128,20 +56579,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "text": () => (/* binding */ text)
 /* harmony export */ });
-/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
 /**
  * @typedef {import('mdast').Text} Text
- * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').Info} Info
  */
-
-
 
 /**
- * @type {Handle}
  * @param {Text} node
+ * @param {Parent | undefined} _
+ * @param {State} state
+ * @param {Info} info
+ * @returns {string}
  */
-function text(node, _, context, safeOptions) {
-  return (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_0__.safe)(context, node.value, safeOptions)
+function text(node, _, state, info) {
+  return state.safe(node.value, info)
 }
 
 
@@ -57160,23 +56613,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util_check_rule_repetition_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/check-rule-repetition.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-rule-repetition.js");
 /* harmony import */ var _util_check_rule_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util/check-rule.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-rule.js");
 /**
- * @typedef {import('../types.js').Handle} Handle
  * @typedef {import('mdast').ThematicBreak} ThematicBreak
+ * @typedef {import('../types.js').Parent} Parent
+ * @typedef {import('../types.js').State} State
  */
 
 
 
 
 /**
- * @type {Handle}
  * @param {ThematicBreak} _
+ * @param {Parent | undefined} _1
+ * @param {State} state
+ * @returns {string}
  */
-function thematicBreak(_, _1, context) {
+function thematicBreak(_, _1, state) {
   const value = (
-    (0,_util_check_rule_js__WEBPACK_IMPORTED_MODULE_0__.checkRule)(context) + (context.options.ruleSpaces ? ' ' : '')
-  ).repeat((0,_util_check_rule_repetition_js__WEBPACK_IMPORTED_MODULE_1__.checkRuleRepetition)(context))
+    (0,_util_check_rule_js__WEBPACK_IMPORTED_MODULE_0__.checkRule)(state) + (state.options.ruleSpaces ? ' ' : '')
+  ).repeat((0,_util_check_rule_repetition_js__WEBPACK_IMPORTED_MODULE_1__.checkRuleRepetition)(state))
 
-  return context.options.ruleSpaces ? value.slice(0, -1) : value
+  return state.options.ruleSpaces ? value.slice(0, -1) : value
 }
 
 
@@ -57192,19 +56648,36 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "toMarkdown": () => (/* binding */ toMarkdown)
 /* harmony export */ });
-/* harmony import */ var zwitch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! zwitch */ "./node_modules/zwitch/index.js");
-/* harmony import */ var _configure_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./configure.js */ "./node_modules/mdast-util-to-markdown/lib/configure.js");
-/* harmony import */ var _handle_index_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./handle/index.js */ "./node_modules/mdast-util-to-markdown/lib/handle/index.js");
-/* harmony import */ var _join_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./join.js */ "./node_modules/mdast-util-to-markdown/lib/join.js");
-/* harmony import */ var _unsafe_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./unsafe.js */ "./node_modules/mdast-util-to-markdown/lib/unsafe.js");
+/* harmony import */ var zwitch__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! zwitch */ "./node_modules/zwitch/index.js");
+/* harmony import */ var _configure_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./configure.js */ "./node_modules/mdast-util-to-markdown/lib/configure.js");
+/* harmony import */ var _handle_index_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./handle/index.js */ "./node_modules/mdast-util-to-markdown/lib/handle/index.js");
+/* harmony import */ var _join_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./join.js */ "./node_modules/mdast-util-to-markdown/lib/join.js");
+/* harmony import */ var _unsafe_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./unsafe.js */ "./node_modules/mdast-util-to-markdown/lib/unsafe.js");
+/* harmony import */ var _util_association_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util/association.js */ "./node_modules/mdast-util-to-markdown/lib/util/association.js");
+/* harmony import */ var _util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./util/container-phrasing.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js");
+/* harmony import */ var _util_container_flow_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./util/container-flow.js */ "./node_modules/mdast-util-to-markdown/lib/util/container-flow.js");
+/* harmony import */ var _util_indent_lines_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util/indent-lines.js */ "./node_modules/mdast-util-to-markdown/lib/util/indent-lines.js");
+/* harmony import */ var _util_safe_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./util/safe.js */ "./node_modules/mdast-util-to-markdown/lib/util/safe.js");
+/* harmony import */ var _util_track_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./util/track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
+ * @typedef {import('./types.js').Enter} Enter
+ * @typedef {import('./types.js').Info} Info
+ * @typedef {import('./types.js').Join} Join
+ * @typedef {import('./types.js').FlowContent} FlowContent
  * @typedef {import('./types.js').Node} Node
  * @typedef {import('./types.js').Options} Options
- * @typedef {import('./types.js').Context} Context
- * @typedef {import('./types.js').Handle} Handle
- * @typedef {import('./types.js').Join} Join
- * @typedef {import('./types.js').Unsafe} Unsafe
+ * @typedef {import('./types.js').Parent} Parent
+ * @typedef {import('./types.js').PhrasingContent} PhrasingContent
+ * @typedef {import('./types.js').SafeConfig} SafeConfig
+ * @typedef {import('./types.js').State} State
+ * @typedef {import('./types.js').TrackFields} TrackFields
  */
+
+
+
+
+
+
 
 
 
@@ -57213,40 +56686,50 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
+ * Turn an mdast syntax tree into markdown.
+ *
  * @param {Node} tree
+ *   Tree to serialize.
  * @param {Options} [options]
+ *   Configuration (optional).
  * @returns {string}
+ *   Serialized markdown representing `tree`.
  */
 function toMarkdown(tree, options = {}) {
-  /** @type {Context} */
-  // @ts-expect-error: we’ll add `handle` later.
-  const context = {
+  /** @type {State} */
+  const state = {
     enter,
+    indentLines: _util_indent_lines_js__WEBPACK_IMPORTED_MODULE_0__.indentLines,
+    associationId: _util_association_js__WEBPACK_IMPORTED_MODULE_1__.association,
+    containerPhrasing: containerPhrasingBound,
+    containerFlow: containerFlowBound,
+    createTracker: _util_track_js__WEBPACK_IMPORTED_MODULE_2__.track,
+    safe: safeBound,
     stack: [],
     unsafe: [],
     join: [],
+    // @ts-expect-error: we’ll fill it next.
     handlers: {},
     options: {},
-    indexStack: []
+    indexStack: [],
+    // @ts-expect-error: we’ll add `handle` later.
+    handle: undefined
   }
 
-  ;(0,_configure_js__WEBPACK_IMPORTED_MODULE_0__.configure)(context, {unsafe: _unsafe_js__WEBPACK_IMPORTED_MODULE_1__.unsafe, join: _join_js__WEBPACK_IMPORTED_MODULE_2__.join, handlers: _handle_index_js__WEBPACK_IMPORTED_MODULE_3__.handle})
-  ;(0,_configure_js__WEBPACK_IMPORTED_MODULE_0__.configure)(context, options)
+  ;(0,_configure_js__WEBPACK_IMPORTED_MODULE_3__.configure)(state, {unsafe: _unsafe_js__WEBPACK_IMPORTED_MODULE_4__.unsafe, join: _join_js__WEBPACK_IMPORTED_MODULE_5__.join, handlers: _handle_index_js__WEBPACK_IMPORTED_MODULE_6__.handle})
+  ;(0,_configure_js__WEBPACK_IMPORTED_MODULE_3__.configure)(state, options)
 
-  if (context.options.tightDefinitions) {
-    (0,_configure_js__WEBPACK_IMPORTED_MODULE_0__.configure)(context, {join: [joinDefinition]})
+  if (state.options.tightDefinitions) {
+    (0,_configure_js__WEBPACK_IMPORTED_MODULE_3__.configure)(state, {join: [joinDefinition]})
   }
 
-  /** @type {Handle} */
-  context.handle = (0,zwitch__WEBPACK_IMPORTED_MODULE_4__.zwitch)('type', {
+  state.handle = (0,zwitch__WEBPACK_IMPORTED_MODULE_7__.zwitch)('type', {
     invalid,
-    // @ts-expect-error: hush.
     unknown,
-    // @ts-expect-error: hush.
-    handlers: context.handlers
+    handlers: state.handlers
   })
 
-  let result = context.handle(tree, null, context, {
+  let result = state.handle(tree, undefined, state, {
     before: '\n',
     after: '\n',
     now: {line: 1, column: 1},
@@ -57263,30 +56746,31 @@ function toMarkdown(tree, options = {}) {
 
   return result
 
-  /** @type {Context['enter']} */
+  /** @type {Enter} */
   function enter(name) {
-    context.stack.push(name)
+    state.stack.push(name)
     return exit
 
     function exit() {
-      context.stack.pop()
+      state.stack.pop()
     }
   }
 }
 
 /**
- * @type {Handle}
  * @param {unknown} value
+ * @returns {never}
  */
 function invalid(value) {
   throw new Error('Cannot handle value `' + value + '`, expected node')
 }
 
 /**
- * @type {Handle}
- * @param {Node} node
+ * @param {unknown} node
+ * @returns {never}
  */
 function unknown(node) {
+  // @ts-expect-error: fine.
   throw new Error('Cannot handle unknown node `' + node.type + '`')
 }
 
@@ -57296,6 +56780,72 @@ function joinDefinition(left, right) {
   if (left.type === 'definition' && left.type === right.type) {
     return 0
   }
+}
+
+/**
+ * Serialize the children of a parent that contains phrasing children.
+ *
+ * These children will be joined flush together.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {Parent & {children: Array<PhrasingContent>}} parent
+ *   Parent of flow nodes.
+ * @param {Info} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined together.
+ */
+function containerPhrasingBound(parent, info) {
+  return (0,_util_container_phrasing_js__WEBPACK_IMPORTED_MODULE_8__.containerPhrasing)(parent, this, info)
+}
+
+/**
+ * Serialize the children of a parent that contains flow children.
+ *
+ * These children will typically be joined by blank lines.
+ * What they are joined by exactly is defined by `Join` functions.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {Parent & {children: Array<FlowContent>}} parent
+ *   Parent of flow nodes.
+ * @param {TrackFields} info
+ *   Info on where we are in the document we are generating.
+ * @returns {string}
+ *   Serialized children, joined by (blank) lines.
+ */
+function containerFlowBound(parent, info) {
+  return (0,_util_container_flow_js__WEBPACK_IMPORTED_MODULE_9__.containerFlow)(parent, this, info)
+}
+
+/**
+ * Make a string safe for embedding in markdown constructs.
+ *
+ * In markdown, almost all punctuation characters can, in certain cases,
+ * result in something.
+ * Whether they do is highly subjective to where they happen and in what
+ * they happen.
+ *
+ * To solve this, `mdast-util-to-markdown` tracks:
+ *
+ * * Characters before and after something;
+ * * What “constructs” we are in.
+ *
+ * This information is then used by this function to escape or encode
+ * special characters.
+ *
+ * @this {State}
+ *   Info passed around about the current state.
+ * @param {string | null | undefined} value
+ *   Raw value to make safe.
+ * @param {SafeConfig} config
+ *   Configuration.
+ * @returns {string}
+ *   Serialized markdown safe for embedding.
+ */
+function safeBound(value, config) {
+  return (0,_util_safe_js__WEBPACK_IMPORTED_MODULE_10__.safe)(this, value, config)
 }
 
 
@@ -57324,13 +56874,13 @@ __webpack_require__.r(__webpack_exports__);
 const join = [joinDefaults]
 
 /** @type {Join} */
-function joinDefaults(left, right, parent, context) {
+function joinDefaults(left, right, parent, state) {
   // Indented code after list or another indented code.
   if (
     right.type === 'code' &&
-    (0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_0__.formatCodeAsIndented)(right, context) &&
+    (0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_0__.formatCodeAsIndented)(right, state) &&
     (left.type === 'list' ||
-      (left.type === right.type && (0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_0__.formatCodeAsIndented)(left, context)))
+      (left.type === right.type && (0,_util_format_code_as_indented_js__WEBPACK_IMPORTED_MODULE_0__.formatCodeAsIndented)(left, state)))
   ) {
     return false
   }
@@ -57341,8 +56891,8 @@ function joinDefaults(left, right, parent, context) {
     left.type === right.type &&
     Boolean(left.ordered) === Boolean(right.ordered) &&
     !(left.ordered
-      ? context.options.bulletOrderedOther
-      : context.options.bulletOther)
+      ? state.options.bulletOrderedOther
+      : state.options.bulletOther)
   ) {
     return false
   }
@@ -57356,7 +56906,7 @@ function joinDefaults(left, right, parent, context) {
       (left.type === right.type ||
         right.type === 'definition' ||
         // Paragraph followed by a setext heading.
-        (right.type === 'heading' && (0,_util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_1__.formatHeadingAsSetext)(right, context)))
+        (right.type === 'heading' && (0,_util_format_heading_as_setext_js__WEBPACK_IMPORTED_MODULE_1__.formatHeadingAsSetext)(right, state)))
     ) {
       return
     }
@@ -57380,6 +56930,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('./types.js').Unsafe} Unsafe
+ * @typedef {import('./types.js').ConstructName} ConstructName
  */
 
 /**
@@ -57387,6 +56938,8 @@ __webpack_require__.r(__webpack_exports__);
  * contain things like attention (emphasis, strong), images, or links.
  * So they sort of cancel each other out.
  * Note: could use a better name.
+ *
+ * @type {Array<ConstructName>}
  */
 const fullPhrasingSpans = [
   'autolink',
@@ -57465,13 +57018,13 @@ const unsafe = [
   {atBreak: true, before: '\\d+', character: ')'},
   {character: ')', inConstruct: 'destinationRaw'},
   // An asterisk can start thematic breaks, list items, emphasis, strong.
-  {atBreak: true, character: '*'},
+  {atBreak: true, character: '*', after: '(?:[ \t\r\n*])'},
   {character: '*', inConstruct: 'phrasing', notInConstruct: fullPhrasingSpans},
   // A plus sign could start a list item.
-  {atBreak: true, character: '+'},
+  {atBreak: true, character: '+', after: '(?:[ \t\r\n])'},
   // A dash can start thematic breaks, list items, and setext heading
   // underlines.
-  {atBreak: true, character: '-'},
+  {atBreak: true, character: '-', after: '(?:[ \t\r\n-])'},
   // A dot could start a list item.
   {atBreak: true, before: '\\d+', character: '.', after: '(?:[ \t\r\n]|$)'},
   // Slash, colon, and semicolon are not used in markdown for constructs.
@@ -57538,25 +57091,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var micromark_util_decode_string__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! micromark-util-decode-string */ "./node_modules/micromark-util-decode-string/dev/index.js");
 /**
- * @typedef {import('mdast').Association} Association
+ * @typedef {import('../types.js').AssociationId} AssociationId
  */
 
 
 
 /**
+ * Get an identifier from an association to match it to others.
+ *
+ * Associations are nodes that match to something else through an ID:
+ * <https://github.com/syntax-tree/mdast#association>.
+ *
  * The `label` of an association is the string value: character escapes and
  * references work, and casing is intact.
- * The `identifier` is used to match one association to another: controversially,
- * character escapes and references don’t work in this matching: `&copy;` does
- * not match `©`, and `\+` does not match `+`.
+ * The `identifier` is used to match one association to another:
+ * controversially, character escapes and references don’t work in this
+ * matching: `&copy;` does not match `©`, and `\+` does not match `+`.
+ *
  * But casing is ignored (and whitespace) is trimmed and collapsed: ` A\nb`
  * matches `a b`.
  * So, we do prefer the label when figuring out how we’re going to serialize:
- * it has whitespace, casing, and we can ignore most useless character escapes
- * and all character references.
+ * it has whitespace, casing, and we can ignore most useless character
+ * escapes and all character references.
  *
- * @param {Association} node
- * @returns {string}
+ * @type {AssociationId}
  */
 function association(node) {
   if (node.label || !node.identifier) {
@@ -57581,19 +57139,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./check-bullet-ordered.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet-ordered.js");
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['bulletOrdered'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['bulletOrdered'], null | undefined>}
  */
-function checkBulletOrderedOther(context) {
-  const bulletOrdered = (0,_check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__.checkBulletOrdered)(context)
-  const bulletOrderedOther = context.options.bulletOrderedOther
+function checkBulletOrderedOther(state) {
+  const bulletOrdered = (0,_check_bullet_ordered_js__WEBPACK_IMPORTED_MODULE_0__.checkBulletOrdered)(state)
+  const bulletOrderedOther = state.options.bulletOrderedOther
 
   if (!bulletOrderedOther) {
     return bulletOrdered === '.' ? ')' : '.'
@@ -57634,16 +57192,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkBulletOrdered": () => (/* binding */ checkBulletOrdered)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['bulletOrdered'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['bulletOrdered'], null | undefined>}
  */
-function checkBulletOrdered(context) {
-  const marker = context.options.bulletOrdered || '.'
+function checkBulletOrdered(state) {
+  const marker = state.options.bulletOrdered || '.'
 
   if (marker !== '.' && marker !== ')') {
     throw new Error(
@@ -57671,19 +57229,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _check_bullet_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./check-bullet.js */ "./node_modules/mdast-util-to-markdown/lib/util/check-bullet.js");
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['bullet'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['bullet'], null | undefined>}
  */
-function checkBulletOther(context) {
-  const bullet = (0,_check_bullet_js__WEBPACK_IMPORTED_MODULE_0__.checkBullet)(context)
-  const bulletOther = context.options.bulletOther
+function checkBulletOther(state) {
+  const bullet = (0,_check_bullet_js__WEBPACK_IMPORTED_MODULE_0__.checkBullet)(state)
+  const bulletOther = state.options.bulletOther
 
   if (!bulletOther) {
     return bullet === '*' ? '-' : '*'
@@ -57724,16 +57282,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkBullet": () => (/* binding */ checkBullet)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['bullet'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['bullet'], null | undefined>}
  */
-function checkBullet(context) {
-  const marker = context.options.bullet || '*'
+function checkBullet(state) {
+  const marker = state.options.bullet || '*'
 
   if (marker !== '*' && marker !== '+' && marker !== '-') {
     throw new Error(
@@ -57760,16 +57318,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkEmphasis": () => (/* binding */ checkEmphasis)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['emphasis'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['emphasis'], null | undefined>}
  */
-function checkEmphasis(context) {
-  const marker = context.options.emphasis || '*'
+function checkEmphasis(state) {
+  const marker = state.options.emphasis || '*'
 
   if (marker !== '*' && marker !== '_') {
     throw new Error(
@@ -57796,16 +57354,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkFence": () => (/* binding */ checkFence)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['fence'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['fence'], null | undefined>}
  */
-function checkFence(context) {
-  const marker = context.options.fence || '`'
+function checkFence(state) {
+  const marker = state.options.fence || '`'
 
   if (marker !== '`' && marker !== '~') {
     throw new Error(
@@ -57832,16 +57390,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkListItemIndent": () => (/* binding */ checkListItemIndent)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['listItemIndent'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['listItemIndent'], null | undefined>}
  */
-function checkListItemIndent(context) {
-  const style = context.options.listItemIndent || 'tab'
+function checkListItemIndent(state) {
+  const style = state.options.listItemIndent || 'tab'
 
   // To do: remove in a major.
   // @ts-expect-error: deprecated.
@@ -57874,16 +57432,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkQuote": () => (/* binding */ checkQuote)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['quote'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['quote'], null | undefined>}
  */
-function checkQuote(context) {
-  const marker = context.options.quote || '"'
+function checkQuote(state) {
+  const marker = state.options.quote || '"'
 
   if (marker !== '"' && marker !== "'") {
     throw new Error(
@@ -57910,16 +57468,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkRuleRepetition": () => (/* binding */ checkRuleRepetition)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['ruleRepetition'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['ruleRepetition'], null | undefined>}
  */
-function checkRuleRepetition(context) {
-  const repetition = context.options.ruleRepetition || 3
+function checkRuleRepetition(state) {
+  const repetition = state.options.ruleRepetition || 3
 
   if (repetition < 3) {
     throw new Error(
@@ -57946,16 +57504,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkRule": () => (/* binding */ checkRule)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['rule'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['rule'], null | undefined>}
  */
-function checkRule(context) {
-  const marker = context.options.rule || '*'
+function checkRule(state) {
+  const marker = state.options.rule || '*'
 
   if (marker !== '*' && marker !== '-' && marker !== '_') {
     throw new Error(
@@ -57982,16 +57540,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "checkStrong": () => (/* binding */ checkStrong)
 /* harmony export */ });
 /**
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').Options} Options
  */
 
 /**
- * @param {Context} context
- * @returns {Exclude<Options['strong'], undefined>}
+ * @param {State} state
+ * @returns {Exclude<Options['strong'], null | undefined>}
  */
-function checkStrong(context) {
-  const marker = context.options.strong || '*'
+function checkStrong(state) {
+  const marker = state.options.strong || '*'
 
   if (marker !== '*' && marker !== '_') {
     throw new Error(
@@ -58017,27 +57575,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "containerFlow": () => (/* binding */ containerFlow)
 /* harmony export */ });
-/* harmony import */ var _track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
+ * @typedef {import('../types.js').FlowContent} FlowContent
  * @typedef {import('../types.js').Node} Node
  * @typedef {import('../types.js').Parent} Parent
- * @typedef {import('../types.js').Join} Join
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  * @typedef {import('../types.js').TrackFields} TrackFields
  */
 
-
-
 /**
- * @param {Parent} parent
- * @param {Context} context
- * @param {TrackFields} safeOptions
+ * @param {Parent & {children: Array<FlowContent>}} parent
+ *   Parent of flow nodes.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {TrackFields} info
+ *   Info on where we are in the document we are generating.
  * @returns {string}
+ *   Serialized children, joined by (blank) lines.
  */
-function containerFlow(parent, context, safeOptions) {
-  const indexStack = context.indexStack
+function containerFlow(parent, state, info) {
+  const indexStack = state.indexStack
   const children = parent.children || []
-  const tracker = (0,_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+  const tracker = state.createTracker(info)
   /** @type {Array<string>} */
   const results = []
   let index = -1
@@ -58051,7 +57610,7 @@ function containerFlow(parent, context, safeOptions) {
 
     results.push(
       tracker.move(
-        context.handle(child, parent, context, {
+        state.handle(child, parent, state, {
           before: '\n',
           after: '\n',
           ...tracker.current()
@@ -58060,44 +57619,48 @@ function containerFlow(parent, context, safeOptions) {
     )
 
     if (child.type !== 'list') {
-      context.bulletLastUsed = undefined
+      state.bulletLastUsed = undefined
     }
 
     if (index < children.length - 1) {
-      results.push(tracker.move(between(child, children[index + 1])))
+      results.push(
+        tracker.move(between(child, children[index + 1], parent, state))
+      )
     }
   }
 
   indexStack.pop()
 
   return results.join('')
+}
 
-  /**
-   * @param {Node} left
-   * @param {Node} right
-   * @returns {string}
-   */
-  function between(left, right) {
-    let index = context.join.length
+/**
+ * @param {Node} left
+ * @param {Node} right
+ * @param {Parent} parent
+ * @param {State} state
+ * @returns {string}
+ */
+function between(left, right, parent, state) {
+  let index = state.join.length
 
-    while (index--) {
-      const result = context.join[index](left, right, parent, context)
+  while (index--) {
+    const result = state.join[index](left, right, parent, state)
 
-      if (result === true || result === 1) {
-        break
-      }
-
-      if (typeof result === 'number') {
-        return '\n'.repeat(1 + result)
-      }
-
-      if (result === false) {
-        return '\n\n<!---->\n\n'
-      }
+    if (result === true || result === 1) {
+      break
     }
 
-    return '\n\n'
+    if (typeof result === 'number') {
+      return '\n'.repeat(1 + result)
+    }
+
+    if (result === false) {
+      return '\n\n<!---->\n\n'
+    }
   }
+
+  return '\n\n'
 }
 
 
@@ -58113,32 +57676,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "containerPhrasing": () => (/* binding */ containerPhrasing)
 /* harmony export */ });
-/* harmony import */ var _track_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./track.js */ "./node_modules/mdast-util-to-markdown/lib/util/track.js");
 /**
- * @typedef {import('../types.js').Node} Node
+ * @typedef {import('../types.js').Handle} Handle
+ * @typedef {import('../types.js').Info} Info
  * @typedef {import('../types.js').Parent} Parent
- * @typedef {import('../types.js').SafeOptions} SafeOptions
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').PhrasingContent} PhrasingContent
+ * @typedef {import('../types.js').State} State
  */
-
-
 
 /**
- * @param {Parent} parent
- * @param {Context} context
- * @param {SafeOptions} safeOptions
+ * Serialize the children of a parent that contains phrasing children.
+ *
+ * These children will be joined flush together.
+ *
+ * @param {Parent & {children: Array<PhrasingContent>}} parent
+ *   Parent of flow nodes.
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {Info} info
+ *   Info on where we are in the document we are generating.
  * @returns {string}
+ *   Serialized children, joined together.
  */
-function containerPhrasing(parent, context, safeOptions) {
-  const indexStack = context.indexStack
+function containerPhrasing(parent, state, info) {
+  const indexStack = state.indexStack
   const children = parent.children || []
   /** @type {Array<string>} */
   const results = []
   let index = -1
-  let before = safeOptions.before
+  let before = info.before
 
   indexStack.push(-1)
-  let tracker = (0,_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+  let tracker = state.createTracker(info)
 
   while (++index < children.length) {
     const child = children[index]
@@ -58148,18 +57717,21 @@ function containerPhrasing(parent, context, safeOptions) {
     indexStack[indexStack.length - 1] = index
 
     if (index + 1 < children.length) {
+      /** @type {Handle} */
       // @ts-expect-error: hush, it’s actually a `zwitch`.
-      let handle = context.handle.handlers[children[index + 1].type]
+      let handle = state.handle.handlers[children[index + 1].type]
+      /** @type {Handle} */
+      // @ts-expect-error: hush, it’s actually a `zwitch`.
       if (handle && handle.peek) handle = handle.peek
       after = handle
-        ? handle(children[index + 1], parent, context, {
+        ? handle(children[index + 1], parent, state, {
             before: '',
             after: '',
             ...tracker.current()
           }).charAt(0)
         : ''
     } else {
-      after = safeOptions.after
+      after = info.after
     }
 
     // In some cases, html (text) can be found in phrasing right after an eol.
@@ -58180,13 +57752,13 @@ function containerPhrasing(parent, context, safeOptions) {
       before = ' '
 
       // To do: does this work to reset tracker?
-      tracker = (0,_track_js__WEBPACK_IMPORTED_MODULE_0__.track)(safeOptions)
+      tracker = state.createTracker(info)
       tracker.move(results.join(''))
     }
 
     results.push(
       tracker.move(
-        context.handle(child, parent, context, {
+        state.handle(child, parent, state, {
           ...tracker.current(),
           before,
           after
@@ -58217,17 +57789,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('mdast').Code} Code
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  */
 
 /**
  * @param {Code} node
- * @param {Context} context
+ * @param {State} state
  * @returns {boolean}
  */
-function formatCodeAsIndented(node, context) {
+function formatCodeAsIndented(node, state) {
   return Boolean(
-    !context.options.fences &&
+    !state.options.fences &&
       node.value &&
       // If there’s no info…
       !node.lang &&
@@ -58251,12 +57823,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "formatHeadingAsSetext": () => (/* binding */ formatHeadingAsSetext)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /**
  * @typedef {import('mdast').Heading} Heading
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  */
 
 
@@ -58264,10 +57836,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * @param {Heading} node
- * @param {Context} context
+ * @param {State} state
  * @returns {boolean}
  */
-function formatHeadingAsSetext(node, context) {
+function formatHeadingAsSetext(node, state) {
   let literalWithBreak = false
 
   // Look for literals with a line break.
@@ -58285,7 +57857,7 @@ function formatHeadingAsSetext(node, context) {
   return Boolean(
     (!node.depth || node.depth < 3) &&
       (0,mdast_util_to_string__WEBPACK_IMPORTED_MODULE_2__.toString)(node) &&
-      (context.options.setext || literalWithBreak)
+      (state.options.setext || literalWithBreak)
   )
 }
 
@@ -58302,24 +57874,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "formatLinkAsAutolink": () => (/* binding */ formatLinkAsAutolink)
 /* harmony export */ });
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /**
  * @typedef {import('mdast').Link} Link
- * @typedef {import('../types.js').Context} Context
+ * @typedef {import('../types.js').State} State
  */
 
 
 
 /**
  * @param {Link} node
- * @param {Context} context
+ * @param {State} state
  * @returns {boolean}
  */
-function formatLinkAsAutolink(node, context) {
+function formatLinkAsAutolink(node, state) {
   const raw = (0,mdast_util_to_string__WEBPACK_IMPORTED_MODULE_0__.toString)(node)
 
   return Boolean(
-    !context.options.resourceLink &&
+    !state.options.resourceLink &&
       // If there’s a url…
       node.url &&
       // And there’s a no title…
@@ -58352,26 +57924,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "indentLines": () => (/* binding */ indentLines)
 /* harmony export */ });
 /**
- * @callback Map
- * @param {string} value
- * @param {number} line
- * @param {boolean} blank
- * @returns {string}
+ * @typedef {import('../types.js').IndentLines} IndentLines
  */
 
 const eol = /\r?\n|\r/g
 
 /**
- * @param {string} value
- * @param {Map} map
- * @returns {string}
+ * @type {IndentLines}
  */
 function indentLines(value, map) {
   /** @type {Array<string>} */
   const result = []
   let start = 0
   let line = 0
-  /** @type {RegExpExecArray|null} */
+  /** @type {RegExpExecArray | null} */
   let match
 
   while ((match = eol.exec(value))) {
@@ -58447,10 +58013,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('../types.js').Unsafe} Unsafe
+ * @typedef {import('../types.js').ConstructName} ConstructName
  */
 
 /**
- * @param {Array<string>} stack
+ * @param {Array<ConstructName>} stack
  * @param {Unsafe} pattern
  * @returns {boolean}
  */
@@ -58462,18 +58029,18 @@ function patternInScope(stack, pattern) {
 }
 
 /**
- * @param {Array<string>} stack
+ * @param {Array<ConstructName>} stack
  * @param {Unsafe['inConstruct']} list
  * @param {boolean} none
  * @returns {boolean}
  */
 function listInScope(stack, list, none) {
-  if (!list) {
-    return none
-  }
-
   if (typeof list === 'string') {
     list = [list]
+  }
+
+  if (!list || list.length === 0) {
+    return none
   }
 
   let index = -1
@@ -58503,20 +58070,39 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pattern_compile_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pattern-compile.js */ "./node_modules/mdast-util-to-markdown/lib/util/pattern-compile.js");
 /* harmony import */ var _pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pattern-in-scope.js */ "./node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js");
 /**
- * @typedef {import('../types.js').Context} Context
- * @typedef {import('../types.js').SafeOptions} SafeOptions
+ * @typedef {import('../types.js').State} State
+ * @typedef {import('../types.js').SafeConfig} SafeConfig
  */
 
 
 
 
 /**
- * @param {Context} context
- * @param {string|null|undefined} input
- * @param {SafeOptions & {encode?: Array<string>}} config
+ * Make a string safe for embedding in markdown constructs.
+ *
+ * In markdown, almost all punctuation characters can, in certain cases,
+ * result in something.
+ * Whether they do is highly subjective to where they happen and in what
+ * they happen.
+ *
+ * To solve this, `mdast-util-to-markdown` tracks:
+ *
+ * * Characters before and after something;
+ * * What “constructs” we are in.
+ *
+ * This information is then used by this function to escape or encode
+ * special characters.
+ *
+ * @param {State} state
+ *   Info passed around about the current state.
+ * @param {string | null | undefined} input
+ *   Raw value to make safe.
+ * @param {SafeConfig} config
+ *   Configuration.
  * @returns {string}
+ *   Serialized markdown safe for embedding.
  */
-function safe(context, input, config) {
+function safe(state, input, config) {
   const value = (config.before || '') + (input || '') + (config.after || '')
   /** @type {Array<number>} */
   const positions = []
@@ -58526,15 +58112,15 @@ function safe(context, input, config) {
   const infos = {}
   let index = -1
 
-  while (++index < context.unsafe.length) {
-    const pattern = context.unsafe[index]
+  while (++index < state.unsafe.length) {
+    const pattern = state.unsafe[index]
 
-    if (!(0,_pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__.patternInScope)(context.stack, pattern)) {
+    if (!(0,_pattern_in_scope_js__WEBPACK_IMPORTED_MODULE_0__.patternInScope)(state.stack, pattern)) {
       continue
     }
 
     const expression = (0,_pattern_compile_js__WEBPACK_IMPORTED_MODULE_1__.patternCompile)(pattern)
-    /** @type {RegExpExecArray|null} */
+    /** @type {RegExpExecArray | null} */
     let match
 
     while ((match = expression.exec(value))) {
@@ -58640,7 +58226,7 @@ function escapeBackslashes(value, after) {
   const whole = value + after
   let index = -1
   let start = 0
-  /** @type {RegExpExecArray|null} */
+  /** @type {RegExpExecArray | null} */
   let match
 
   while ((match = expression.exec(whole))) {
@@ -58675,22 +58261,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "track": () => (/* binding */ track)
 /* harmony export */ });
 /**
- * @typedef {import('unist').Point} Point
- * @typedef {import('../types.js').TrackFields} TrackFields
+ * @typedef {import('../types.js').CreateTracker} CreateTracker
+ * @typedef {import('../types.js').TrackCurrent} TrackCurrent
+ * @typedef {import('../types.js').TrackMove} TrackMove
+ * @typedef {import('../types.js').TrackShift} TrackShift
  */
 
 /**
- * Functions to track output positions.
- * This info isn’t used yet but suchs functionality allows line wrapping,
- * and theoretically source maps (though, is there practical use in that?).
+ * Track positional info in the output.
  *
- * @param {TrackFields} options_
+ * @type {CreateTracker}
  */
-function track(options_) {
+function track(config) {
   // Defaults are used to prevent crashes when older utilities somehow activate
   // this code.
   /* c8 ignore next 5 */
-  const options = options_ || {}
+  const options = config || {}
   const now = options.now || {}
   let lineShift = options.lineShift || 0
   let line = now.line || 1
@@ -58701,7 +58287,7 @@ function track(options_) {
   /**
    * Get the current tracked info.
    *
-   * @returns {{now: Point, lineShift: number}}
+   * @type {TrackCurrent}
    */
   function current() {
     return {now: {line, column}, lineShift}
@@ -58710,19 +58296,20 @@ function track(options_) {
   /**
    * Define an increased line shift (the typical indent for lines).
    *
-   * @param {number} value
+   * @type {TrackShift}
    */
   function shift(value) {
     lineShift += value
   }
 
   /**
-   * Move past a string.
+   * Move past some generated markdown.
    *
-   * @param {string} value
-   * @returns {string}
+   * @type {TrackMove}
    */
-  function move(value = '') {
+  function move(input) {
+    // eslint-disable-next-line unicorn/prefer-default-parameters
+    const value = input || ''
     const chunks = value.split(/\r?\n|\r/g)
     const tail = chunks[chunks.length - 1]
     line += chunks.length - 1
@@ -58735,10 +58322,10 @@ function track(options_) {
 
 /***/ }),
 
-/***/ "./node_modules/mdast-util-to-string/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/mdast-util-to-string/index.js ***!
-  \****************************************************/
+/***/ "./node_modules/mdast-util-to-string/lib/index.js":
+/*!********************************************************!*\
+  !*** ./node_modules/mdast-util-to-string/lib/index.js ***!
+  \********************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -58746,59 +58333,88 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "toString": () => (/* binding */ toString)
 /* harmony export */ });
 /**
+ * @typedef {import('mdast').Root|import('mdast').Content} Node
+ *
  * @typedef Options
- * @property {boolean} [includeImageAlt=true]
+ *   Configuration (optional).
+ * @property {boolean | null | undefined} [includeImageAlt=true]
+ *   Whether to use `alt` for `image`s.
  */
 
 /**
- * Get the text content of a node.
- * Prefer the node’s plain-text fields, otherwise serialize its children,
+ * Get the text content of a node or list of nodes.
+ *
+ * Prefers the node’s plain-text fields, otherwise serializes its children,
  * and if the given value is an array, serialize the nodes in it.
  *
- * @param {unknown} node
- * @param {Options} [options]
+ * @param {unknown} value
+ *   Thing to serialize, typically `Node`.
+ * @param {Options | null | undefined} [options]
+ *   Configuration (optional).
  * @returns {string}
+ *   Serialized `value`.
  */
-function toString(node, options) {
-  var {includeImageAlt = true} = options || {}
-  return one(node, includeImageAlt)
+function toString(value, options) {
+  const includeImageAlt = (options || {}).includeImageAlt
+  return one(
+    value,
+    typeof includeImageAlt === 'boolean' ? includeImageAlt : true
+  )
 }
 
 /**
- * @param {unknown} node
+ * One node or several nodes.
+ *
+ * @param {unknown} value
+ *   Thing to serialize.
  * @param {boolean} includeImageAlt
+ *   Include image `alt`s.
  * @returns {string}
+ *   Serialized node.
  */
-function one(node, includeImageAlt) {
+function one(value, includeImageAlt) {
   return (
-    (node &&
-      typeof node === 'object' &&
-      // @ts-ignore looks like a literal.
-      (node.value ||
-        // @ts-ignore looks like an image.
-        (includeImageAlt ? node.alt : '') ||
-        // @ts-ignore looks like a parent.
-        ('children' in node && all(node.children, includeImageAlt)) ||
-        (Array.isArray(node) && all(node, includeImageAlt)))) ||
+    (node(value) &&
+      (('value' in value && value.value) ||
+        (includeImageAlt && 'alt' in value && value.alt) ||
+        ('children' in value && all(value.children, includeImageAlt)))) ||
+    (Array.isArray(value) && all(value, includeImageAlt)) ||
     ''
   )
 }
 
 /**
- * @param {Array.<unknown>} values
+ * Serialize a list of nodes.
+ *
+ * @param {Array<unknown>} values
+ *   Thing to serialize.
  * @param {boolean} includeImageAlt
+ *   Include image `alt`s.
  * @returns {string}
+ *   Serialized nodes.
  */
 function all(values, includeImageAlt) {
-  /** @type {Array.<string>} */
-  var result = []
-  var index = -1
+  /** @type {Array<string>} */
+  const result = []
+  let index = -1
 
   while (++index < values.length) {
     result[index] = one(values[index], includeImageAlt)
   }
 
   return result.join('')
+}
+
+/**
+ * Check if `value` looks like a node.
+ *
+ * @param {unknown} value
+ *   Thing.
+ * @returns {value is Node}
+ *   Whether `value` is a node.
+ */
+function node(value) {
+  return Boolean(value && typeof value === 'object')
 }
 
 
@@ -67013,7 +66629,7 @@ __webpack_require__.r(__webpack_exports__);
  * to detect whether the HTML-like syntax is seen as HTML (flow) or not.
  *
  * This is copied from:
- * <https://spec.commonmark.org/0.29/#html-blocks>.
+ * <https://spec.commonmark.org/0.30/#html-blocks>.
  */
 const htmlBlockNames = [
   'address',
@@ -67066,7 +66682,6 @@ const htmlBlockNames = [
   'p',
   'param',
   'section',
-  'source',
   'summary',
   'table',
   'tbody',
@@ -67086,11 +66701,9 @@ const htmlBlockNames = [
  * list is found (condition 1).
  *
  * This module is copied from:
- * <https://spec.commonmark.org/0.29/#html-blocks>.
+ * <https://spec.commonmark.org/0.30/#html-blocks>.
  *
- * Note that `textarea` is not available in `CommonMark@0.29` but has been
- * merged to the primary branch and is slated to be released in the next release
- * of CommonMark.
+ * Note that `textarea` was added in `CommonMark@0.30`.
  */
 const htmlRawNames = ['pre', 'script', 'style', 'textarea']
 
@@ -68413,6 +68026,1081 @@ const values = {
 
 /***/ }),
 
+/***/ "./node_modules/micromark/dev/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/micromark/dev/index.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "micromark": () => (/* binding */ micromark)
+/* harmony export */ });
+/* harmony import */ var _lib_compile_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lib/compile.js */ "./node_modules/micromark/dev/lib/compile.js");
+/* harmony import */ var _lib_parse_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./lib/parse.js */ "./node_modules/micromark/dev/lib/parse.js");
+/* harmony import */ var _lib_postprocess_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./lib/postprocess.js */ "./node_modules/micromark/dev/lib/postprocess.js");
+/* harmony import */ var _lib_preprocess_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./lib/preprocess.js */ "./node_modules/micromark/dev/lib/preprocess.js");
+/**
+ * @typedef {import('micromark-util-types').Options} Options
+ * @typedef {import('micromark-util-types').Value} Value
+ * @typedef {import('micromark-util-types').Encoding} Encoding
+ */
+
+
+
+
+
+
+/**
+ * @param value Markdown to parse (`string` or `Buffer`).
+ * @param [encoding] Character encoding to understand `value` as when it’s a `Buffer` (`string`, default: `'utf8'`).
+ * @param [options] Configuration
+ */
+const micromark =
+  /**
+   * @type {(
+   *   ((value: Value, encoding: Encoding, options?: Options) => string) &
+   *   ((value: Value, options?: Options) => string)
+   * )}
+   */
+  (
+    /**
+     * @param {Value} value
+     * @param {Encoding} [encoding]
+     * @param {Options} [options]
+     */
+    function (value, encoding, options) {
+      if (typeof encoding !== 'string') {
+        options = encoding
+        encoding = undefined
+      }
+
+      return (0,_lib_compile_js__WEBPACK_IMPORTED_MODULE_0__.compile)(options)(
+        (0,_lib_postprocess_js__WEBPACK_IMPORTED_MODULE_1__.postprocess)(
+          (0,_lib_parse_js__WEBPACK_IMPORTED_MODULE_2__.parse)(options).document().write((0,_lib_preprocess_js__WEBPACK_IMPORTED_MODULE_3__.preprocess)()(value, encoding, true))
+        )
+      )
+    }
+  )
+
+
+/***/ }),
+
+/***/ "./node_modules/micromark/dev/lib/compile.js":
+/*!***************************************************!*\
+  !*** ./node_modules/micromark/dev/lib/compile.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "compile": () => (/* binding */ compile)
+/* harmony export */ });
+/* harmony import */ var uvu_assert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! uvu/assert */ "./node_modules/uvu/assert/index.mjs");
+/* harmony import */ var decode_named_character_reference__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! decode-named-character-reference */ "./node_modules/decode-named-character-reference/index.dom.js");
+/* harmony import */ var micromark_util_combine_extensions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! micromark-util-combine-extensions */ "./node_modules/micromark-util-combine-extensions/index.js");
+/* harmony import */ var micromark_util_chunked__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! micromark-util-chunked */ "./node_modules/micromark-util-chunked/dev/index.js");
+/* harmony import */ var micromark_util_decode_numeric_character_reference__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! micromark-util-decode-numeric-character-reference */ "./node_modules/micromark-util-decode-numeric-character-reference/dev/index.js");
+/* harmony import */ var micromark_util_encode__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! micromark-util-encode */ "./node_modules/micromark-util-encode/index.js");
+/* harmony import */ var micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! micromark-util-normalize-identifier */ "./node_modules/micromark-util-normalize-identifier/dev/index.js");
+/* harmony import */ var micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! micromark-util-sanitize-uri */ "./node_modules/micromark-util-sanitize-uri/dev/index.js");
+/* harmony import */ var micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! micromark-util-symbol/codes.js */ "./node_modules/micromark-util-symbol/codes.js");
+/* harmony import */ var micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! micromark-util-symbol/constants.js */ "./node_modules/micromark-util-symbol/constants.js");
+/* harmony import */ var micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! micromark-util-symbol/types.js */ "./node_modules/micromark-util-symbol/types.js");
+/**
+ * While micromark is a lexer/tokenizer, the common case of going from markdown
+ * to html is currently built in as this module, even though the parts can be
+ * used separately to build ASTs, CSTs, or many other output formats.
+ *
+ * Having an HTML compiler built in is useful because it allows us to check for
+ * compliancy to CommonMark, the de facto norm of markdown, specified in roughly
+ * 600 input/output cases.
+ *
+ * This module has an interface that accepts lists of events instead of the
+ * whole at once, however, because markdown can’t be truly streaming, we buffer
+ * events before processing and outputting the final result.
+ */
+
+/**
+ * @typedef {import('micromark-util-types').Event} Event
+ * @typedef {import('micromark-util-types').CompileOptions} CompileOptions
+ * @typedef {import('micromark-util-types').CompileData} CompileData
+ * @typedef {import('micromark-util-types').CompileContext} CompileContext
+ * @typedef {import('micromark-util-types').Definition} Definition
+ * @typedef {import('micromark-util-types').Compile} Compile
+ * @typedef {import('micromark-util-types').Handle} Handle
+ * @typedef {import('micromark-util-types').HtmlExtension} HtmlExtension
+ * @typedef {import('micromark-util-types').NormalizedHtmlExtension} NormalizedHtmlExtension
+ */
+
+/**
+ * @typedef Media
+ * @property {boolean} [image]
+ * @property {string} [labelId]
+ * @property {string} [label]
+ * @property {string} [referenceId]
+ * @property {string} [destination]
+ * @property {string} [title]
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+const hasOwnProperty = {}.hasOwnProperty
+
+/**
+ * These two are allowlists of safe protocols for full URLs in respectively the
+ * `href` (on `<a>`) and `src` (on `<img>`) attributes.
+ * They are based on what is allowed on GitHub,
+ * <https://github.com/syntax-tree/hast-util-sanitize/blob/9275b21/lib/github.json#L31>
+ */
+const protocolHref = /^(https?|ircs?|mailto|xmpp)$/i
+const protocolSrc = /^https?$/i
+
+/**
+ * @param {CompileOptions} [options]
+ * @returns {Compile}
+ */
+function compile(options = {}) {
+  /**
+   * Tags is needed because according to markdown, links and emphasis and
+   * whatnot can exist in images, however, as HTML doesn’t allow content in
+   * images, the tags are ignored in the `alt` attribute, but the content
+   * remains.
+   *
+   * @type {boolean|undefined}
+   */
+  let tags = true
+
+  /**
+   * An object to track identifiers to media (URLs and titles) defined with
+   * definitions.
+   *
+   * @type {Record<string, Definition>}
+   */
+  const definitions = {}
+
+  /**
+   * A lot of the handlers need to capture some of the output data, modify it
+   * somehow, and then deal with it.
+   * We do that by tracking a stack of buffers, that can be opened (with
+   * `buffer`) and closed (with `resume`) to access them.
+   *
+   * @type {Array<Array<string>>}
+   */
+  const buffers = [[]]
+
+  /**
+   * As we can have links in images and the other way around, where the deepest
+   * ones are closed first, we need to track which one we’re in.
+   *
+   * @type {Array<Media>}
+   */
+  const mediaStack = []
+
+  /**
+   * Same as `mediaStack` for tightness, which is specific to lists.
+   * We need to track if we’re currently in a tight or loose container.
+   *
+   * @type {Array<boolean>}
+   */
+  const tightStack = []
+
+  /** @type {HtmlExtension} */
+  const defaultHandlers = {
+    enter: {
+      blockQuote: onenterblockquote,
+      codeFenced: onentercodefenced,
+      codeFencedFenceInfo: buffer,
+      codeFencedFenceMeta: buffer,
+      codeIndented: onentercodeindented,
+      codeText: onentercodetext,
+      content: onentercontent,
+      definition: onenterdefinition,
+      definitionDestinationString: onenterdefinitiondestinationstring,
+      definitionLabelString: buffer,
+      definitionTitleString: buffer,
+      emphasis: onenteremphasis,
+      htmlFlow: onenterhtmlflow,
+      htmlText: onenterhtml,
+      image: onenterimage,
+      label: buffer,
+      link: onenterlink,
+      listItemMarker: onenterlistitemmarker,
+      listItemValue: onenterlistitemvalue,
+      listOrdered: onenterlistordered,
+      listUnordered: onenterlistunordered,
+      paragraph: onenterparagraph,
+      reference: buffer,
+      resource: onenterresource,
+      resourceDestinationString: onenterresourcedestinationstring,
+      resourceTitleString: buffer,
+      setextHeading: onentersetextheading,
+      strong: onenterstrong
+    },
+    exit: {
+      atxHeading: onexitatxheading,
+      atxHeadingSequence: onexitatxheadingsequence,
+      autolinkEmail: onexitautolinkemail,
+      autolinkProtocol: onexitautolinkprotocol,
+      blockQuote: onexitblockquote,
+      characterEscapeValue: onexitdata,
+      characterReferenceMarkerHexadecimal: onexitcharacterreferencemarker,
+      characterReferenceMarkerNumeric: onexitcharacterreferencemarker,
+      characterReferenceValue: onexitcharacterreferencevalue,
+      codeFenced: onexitflowcode,
+      codeFencedFence: onexitcodefencedfence,
+      codeFencedFenceInfo: onexitcodefencedfenceinfo,
+      codeFencedFenceMeta: resume,
+      codeFlowValue: onexitcodeflowvalue,
+      codeIndented: onexitflowcode,
+      codeText: onexitcodetext,
+      codeTextData: onexitdata,
+      data: onexitdata,
+      definition: onexitdefinition,
+      definitionDestinationString: onexitdefinitiondestinationstring,
+      definitionLabelString: onexitdefinitionlabelstring,
+      definitionTitleString: onexitdefinitiontitlestring,
+      emphasis: onexitemphasis,
+      hardBreakEscape: onexithardbreak,
+      hardBreakTrailing: onexithardbreak,
+      htmlFlow: onexithtml,
+      htmlFlowData: onexitdata,
+      htmlText: onexithtml,
+      htmlTextData: onexitdata,
+      image: onexitmedia,
+      label: onexitlabel,
+      labelText: onexitlabeltext,
+      lineEnding: onexitlineending,
+      link: onexitmedia,
+      listOrdered: onexitlistordered,
+      listUnordered: onexitlistunordered,
+      paragraph: onexitparagraph,
+      reference: resume,
+      referenceString: onexitreferencestring,
+      resource: resume,
+      resourceDestinationString: onexitresourcedestinationstring,
+      resourceTitleString: onexitresourcetitlestring,
+      setextHeading: onexitsetextheading,
+      setextHeadingLineSequence: onexitsetextheadinglinesequence,
+      setextHeadingText: onexitsetextheadingtext,
+      strong: onexitstrong,
+      thematicBreak: onexitthematicbreak
+    }
+  }
+
+  /**
+   * Combine the HTML extensions with the default handlers.
+   * An HTML extension is an object whose fields are either `enter` or `exit`
+   * (reflecting whether a token is entered or exited).
+   * The values at such objects are names of tokens mapping to handlers.
+   * Handlers are called, respectively when a token is opener or closed, with
+   * that token, and a context as `this`.
+   *
+   * @type {NormalizedHtmlExtension}
+   */
+  // @ts-expect-error `defaultHandlers` is full, so the result will be too.
+  const handlers = (0,micromark_util_combine_extensions__WEBPACK_IMPORTED_MODULE_1__.combineHtmlExtensions)(
+    [defaultHandlers].concat(options.htmlExtensions || [])
+  )
+
+  /**
+   * Handlers do often need to keep track of some state.
+   * That state is provided here as a key-value store (an object).
+   *
+   * @type {CompileData}
+   */
+  const data = {
+    tightStack,
+    definitions
+  }
+
+  /**
+   * The context for handlers references a couple of useful functions.
+   * In handlers from extensions, those can be accessed at `this`.
+   * For the handlers here, they can be accessed directly.
+   *
+   * @type {Omit<CompileContext, 'sliceSerialize'>}
+   */
+  const context = {
+    lineEndingIfNeeded,
+    options,
+    encode,
+    raw,
+    tag,
+    buffer,
+    resume,
+    setData,
+    getData
+  }
+
+  /**
+   * Generally, micromark copies line endings (`'\r'`, `'\n'`, `'\r\n'`) in the
+   * markdown document over to the compiled HTML.
+   * In some cases, such as `> a`, CommonMark requires that extra line endings
+   * are added: `<blockquote>\n<p>a</p>\n</blockquote>`.
+   * This variable hold the default line ending when given (or `undefined`),
+   * and in the latter case will be updated to the first found line ending if
+   * there is one.
+   */
+  let lineEndingStyle = options.defaultLineEnding
+
+  // Return the function that handles a slice of events.
+  return compile
+
+  /**
+   * Deal w/ a slice of events.
+   * Return either the empty string if there’s nothing of note to return, or the
+   * result when done.
+   *
+   * @param {Array<Event>} events
+   * @returns {string}
+   */
+  function compile(events) {
+    let index = -1
+    let start = 0
+    /** @type {Array<number>} */
+    const listStack = []
+    // As definitions can come after references, we need to figure out the media
+    // (urls and titles) defined by them before handling the references.
+    // So, we do sort of what HTML does: put metadata at the start (in head), and
+    // then put content after (`body`).
+    /** @type {Array<Event>} */
+    let head = []
+    /** @type {Array<Event>} */
+    let body = []
+
+    while (++index < events.length) {
+      // Figure out the line ending style used in the document.
+      if (
+        !lineEndingStyle &&
+        (events[index][1].type === micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.lineEnding ||
+          events[index][1].type === micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.lineEndingBlank)
+      ) {
+        // @ts-expect-error Hush, it’s a line ending.
+        lineEndingStyle = events[index][2].sliceSerialize(events[index][1])
+      }
+
+      // Preprocess lists to infer whether the list is loose or not.
+      if (
+        events[index][1].type === micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.listOrdered ||
+        events[index][1].type === micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.listUnordered
+      ) {
+        if (events[index][0] === 'enter') {
+          listStack.push(index)
+        } else {
+          prepareList(events.slice(listStack.pop(), index))
+        }
+      }
+
+      // Move definitions to the front.
+      if (events[index][1].type === micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.definition) {
+        if (events[index][0] === 'enter') {
+          body = (0,micromark_util_chunked__WEBPACK_IMPORTED_MODULE_3__.push)(body, events.slice(start, index))
+          start = index
+        } else {
+          head = (0,micromark_util_chunked__WEBPACK_IMPORTED_MODULE_3__.push)(head, events.slice(start, index + 1))
+          start = index + 1
+        }
+      }
+    }
+
+    head = (0,micromark_util_chunked__WEBPACK_IMPORTED_MODULE_3__.push)(head, body)
+    head = (0,micromark_util_chunked__WEBPACK_IMPORTED_MODULE_3__.push)(head, events.slice(start))
+    index = -1
+    const result = head
+
+    // Handle the start of the document, if defined.
+    if (handlers.enter.null) {
+      handlers.enter.null.call(context)
+    }
+
+    // Handle all events.
+    while (++index < events.length) {
+      const handler = handlers[result[index][0]]
+
+      if (hasOwnProperty.call(handler, result[index][1].type)) {
+        handler[result[index][1].type].call(
+          Object.assign(
+            {sliceSerialize: result[index][2].sliceSerialize},
+            context
+          ),
+          result[index][1]
+        )
+      }
+    }
+
+    // Handle the end of the document, if defined.
+    if (handlers.exit.null) {
+      handlers.exit.null.call(context)
+    }
+
+    return buffers[0].join('')
+  }
+
+  /**
+   * Figure out whether lists are loose or not.
+   *
+   * @param {Array<Event>} slice
+   * @returns {void}
+   */
+  function prepareList(slice) {
+    const length = slice.length
+    let index = 0 // Skip open.
+    let containerBalance = 0
+    let loose = false
+    /** @type {boolean|undefined} */
+    let atMarker
+
+    while (++index < length) {
+      const event = slice[index]
+
+      if (event[1]._container) {
+        atMarker = undefined
+
+        if (event[0] === 'enter') {
+          containerBalance++
+        } else {
+          containerBalance--
+        }
+      } else
+        switch (event[1].type) {
+          case micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.listItemPrefix: {
+            if (event[0] === 'exit') {
+              atMarker = true
+            }
+
+            break
+          }
+
+          case micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.linePrefix: {
+            // Ignore
+
+            break
+          }
+
+          case micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.lineEndingBlank: {
+            if (event[0] === 'enter' && !containerBalance) {
+              if (atMarker) {
+                atMarker = undefined
+              } else {
+                loose = true
+              }
+            }
+
+            break
+          }
+
+          default: {
+            atMarker = undefined
+          }
+        }
+    }
+
+    slice[0][1]._loose = loose
+  }
+
+  /**
+   * @type {CompileContext['setData']}
+   * @param [value]
+   */
+  function setData(key, value) {
+    data[key] = value
+  }
+
+  /**
+   * @type {CompileContext['getData']}
+   * @template {string} K
+   * @param {K} key
+   * @returns {CompileData[K]}
+   */
+  function getData(key) {
+    return data[key]
+  }
+
+  /** @type {CompileContext['buffer']} */
+  function buffer() {
+    buffers.push([])
+  }
+
+  /** @type {CompileContext['resume']} */
+  function resume() {
+    const buf = buffers.pop()
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(buf !== undefined, 'Cannot resume w/o buffer')
+    return buf.join('')
+  }
+
+  /** @type {CompileContext['tag']} */
+  function tag(value) {
+    if (!tags) return
+    setData('lastWasTag', true)
+    buffers[buffers.length - 1].push(value)
+  }
+
+  /** @type {CompileContext['raw']} */
+  function raw(value) {
+    setData('lastWasTag')
+    buffers[buffers.length - 1].push(value)
+  }
+
+  /**
+   * Output an extra line ending.
+   *
+   * @returns {void}
+   */
+  function lineEnding() {
+    raw(lineEndingStyle || '\n')
+  }
+
+  /** @type {CompileContext['lineEndingIfNeeded']} */
+  function lineEndingIfNeeded() {
+    const buffer = buffers[buffers.length - 1]
+    const slice = buffer[buffer.length - 1]
+    const previous = slice ? slice.charCodeAt(slice.length - 1) : micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__.codes.eof
+
+    if (
+      previous === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__.codes.lf ||
+      previous === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__.codes.cr ||
+      previous === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__.codes.eof
+    ) {
+      return
+    }
+
+    lineEnding()
+  }
+
+  /** @type {CompileContext['encode']} */
+  function encode(value) {
+    return getData('ignoreEncode') ? value : (0,micromark_util_encode__WEBPACK_IMPORTED_MODULE_5__.encode)(value)
+  }
+
+  //
+  // Handlers.
+  //
+
+  /** @type {Handle} */
+  function onenterlistordered(token) {
+    tightStack.push(!token._loose)
+    lineEndingIfNeeded()
+    tag('<ol')
+    setData('expectFirstItem', true)
+  }
+
+  /** @type {Handle} */
+  function onenterlistunordered(token) {
+    tightStack.push(!token._loose)
+    lineEndingIfNeeded()
+    tag('<ul')
+    setData('expectFirstItem', true)
+  }
+
+  /** @type {Handle} */
+  function onenterlistitemvalue(token) {
+    if (getData('expectFirstItem')) {
+      const value = Number.parseInt(
+        this.sliceSerialize(token),
+        micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_6__.constants.numericBaseDecimal
+      )
+
+      if (value !== 1) {
+        tag(' start="' + encode(String(value)) + '"')
+      }
+    }
+  }
+
+  /** @type {Handle} */
+  function onenterlistitemmarker() {
+    if (getData('expectFirstItem')) {
+      tag('>')
+    } else {
+      onexitlistitem()
+    }
+
+    lineEndingIfNeeded()
+    tag('<li>')
+    setData('expectFirstItem')
+    // “Hack” to prevent a line ending from showing up if the item is empty.
+    setData('lastWasTag')
+  }
+
+  /** @type {Handle} */
+  function onexitlistordered() {
+    onexitlistitem()
+    tightStack.pop()
+    lineEnding()
+    tag('</ol>')
+  }
+
+  /** @type {Handle} */
+  function onexitlistunordered() {
+    onexitlistitem()
+    tightStack.pop()
+    lineEnding()
+    tag('</ul>')
+  }
+
+  /** @type {Handle} */
+  function onexitlistitem() {
+    if (getData('lastWasTag') && !getData('slurpAllLineEndings')) {
+      lineEndingIfNeeded()
+    }
+
+    tag('</li>')
+    setData('slurpAllLineEndings')
+  }
+
+  /** @type {Handle} */
+  function onenterblockquote() {
+    tightStack.push(false)
+    lineEndingIfNeeded()
+    tag('<blockquote>')
+  }
+
+  /** @type {Handle} */
+  function onexitblockquote() {
+    tightStack.pop()
+    lineEndingIfNeeded()
+    tag('</blockquote>')
+    setData('slurpAllLineEndings')
+  }
+
+  /** @type {Handle} */
+  function onenterparagraph() {
+    if (!tightStack[tightStack.length - 1]) {
+      lineEndingIfNeeded()
+      tag('<p>')
+    }
+
+    setData('slurpAllLineEndings')
+  }
+
+  /** @type {Handle} */
+  function onexitparagraph() {
+    if (tightStack[tightStack.length - 1]) {
+      setData('slurpAllLineEndings', true)
+    } else {
+      tag('</p>')
+    }
+  }
+
+  /** @type {Handle} */
+  function onentercodefenced() {
+    lineEndingIfNeeded()
+    tag('<pre><code')
+    setData('fencesCount', 0)
+  }
+
+  /** @type {Handle} */
+  function onexitcodefencedfenceinfo() {
+    const value = resume()
+    tag(' class="language-' + value + '"')
+  }
+
+  /** @type {Handle} */
+  function onexitcodefencedfence() {
+    const count = getData('fencesCount') || 0
+
+    if (!count) {
+      tag('>')
+      setData('slurpOneLineEnding', true)
+    }
+
+    setData('fencesCount', count + 1)
+  }
+
+  /** @type {Handle} */
+  function onentercodeindented() {
+    lineEndingIfNeeded()
+    tag('<pre><code>')
+  }
+
+  /** @type {Handle} */
+  function onexitflowcode() {
+    const count = getData('fencesCount')
+
+    // One special case is if we are inside a container, and the fenced code was
+    // not closed (meaning it runs to the end).
+    // In that case, the following line ending, is considered *outside* the
+    // fenced code and block quote by micromark, but CM wants to treat that
+    // ending as part of the code.
+    if (
+      count !== undefined &&
+      count < 2 &&
+      // @ts-expect-error `tightStack` is always set.
+      data.tightStack.length > 0 &&
+      !getData('lastWasTag')
+    ) {
+      lineEnding()
+    }
+
+    // But in most cases, it’s simpler: when we’ve seen some data, emit an extra
+    // line ending when needed.
+    if (getData('flowCodeSeenData')) {
+      lineEndingIfNeeded()
+    }
+
+    tag('</code></pre>')
+    if (count !== undefined && count < 2) lineEndingIfNeeded()
+    setData('flowCodeSeenData')
+    setData('fencesCount')
+    setData('slurpOneLineEnding')
+  }
+
+  /** @type {Handle} */
+  function onenterimage() {
+    mediaStack.push({image: true})
+    tags = undefined // Disallow tags.
+  }
+
+  /** @type {Handle} */
+  function onenterlink() {
+    mediaStack.push({})
+  }
+
+  /** @type {Handle} */
+  function onexitlabeltext(token) {
+    mediaStack[mediaStack.length - 1].labelId = this.sliceSerialize(token)
+  }
+
+  /** @type {Handle} */
+  function onexitlabel() {
+    mediaStack[mediaStack.length - 1].label = resume()
+  }
+
+  /** @type {Handle} */
+  function onexitreferencestring(token) {
+    mediaStack[mediaStack.length - 1].referenceId = this.sliceSerialize(token)
+  }
+
+  /** @type {Handle} */
+  function onenterresource() {
+    buffer() // We can have line endings in the resource, ignore them.
+    mediaStack[mediaStack.length - 1].destination = ''
+  }
+
+  /** @type {Handle} */
+  function onenterresourcedestinationstring() {
+    buffer()
+    // Ignore encoding the result, as we’ll first percent encode the url and
+    // encode manually after.
+    setData('ignoreEncode', true)
+  }
+
+  /** @type {Handle} */
+  function onexitresourcedestinationstring() {
+    mediaStack[mediaStack.length - 1].destination = resume()
+    setData('ignoreEncode')
+  }
+
+  /** @type {Handle} */
+  function onexitresourcetitlestring() {
+    mediaStack[mediaStack.length - 1].title = resume()
+  }
+
+  /** @type {Handle} */
+  function onexitmedia() {
+    let index = mediaStack.length - 1 // Skip current.
+    const media = mediaStack[index]
+    const id = media.referenceId || media.labelId
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(id !== undefined, 'media should have `referenceId` or `labelId`')
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(media.label !== undefined, 'media should have `label`')
+    const context =
+      media.destination === undefined
+        ? definitions[(0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_7__.normalizeIdentifier)(id)]
+        : media
+
+    tags = true
+
+    while (index--) {
+      if (mediaStack[index].image) {
+        tags = undefined
+        break
+      }
+    }
+
+    if (media.image) {
+      tag(
+        '<img src="' +
+          (0,micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_8__.sanitizeUri)(
+            context.destination,
+            options.allowDangerousProtocol ? undefined : protocolSrc
+          ) +
+          '" alt="'
+      )
+      raw(media.label)
+      tag('"')
+    } else {
+      tag(
+        '<a href="' +
+          (0,micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_8__.sanitizeUri)(
+            context.destination,
+            options.allowDangerousProtocol ? undefined : protocolHref
+          ) +
+          '"'
+      )
+    }
+
+    tag(context.title ? ' title="' + context.title + '"' : '')
+
+    if (media.image) {
+      tag(' />')
+    } else {
+      tag('>')
+      raw(media.label)
+      tag('</a>')
+    }
+
+    mediaStack.pop()
+  }
+
+  /** @type {Handle} */
+  function onenterdefinition() {
+    buffer()
+    mediaStack.push({})
+  }
+
+  /** @type {Handle} */
+  function onexitdefinitionlabelstring(token) {
+    // Discard label, use the source content instead.
+    resume()
+    mediaStack[mediaStack.length - 1].labelId = this.sliceSerialize(token)
+  }
+
+  /** @type {Handle} */
+  function onenterdefinitiondestinationstring() {
+    buffer()
+    setData('ignoreEncode', true)
+  }
+
+  /** @type {Handle} */
+  function onexitdefinitiondestinationstring() {
+    mediaStack[mediaStack.length - 1].destination = resume()
+    setData('ignoreEncode')
+  }
+
+  /** @type {Handle} */
+  function onexitdefinitiontitlestring() {
+    mediaStack[mediaStack.length - 1].title = resume()
+  }
+
+  /** @type {Handle} */
+  function onexitdefinition() {
+    const media = mediaStack[mediaStack.length - 1]
+    ;(0,uvu_assert__WEBPACK_IMPORTED_MODULE_0__.ok)(media.labelId !== undefined, 'media should have `labelId`')
+    const id = (0,micromark_util_normalize_identifier__WEBPACK_IMPORTED_MODULE_7__.normalizeIdentifier)(media.labelId)
+
+    resume()
+
+    if (!hasOwnProperty.call(definitions, id)) {
+      definitions[id] = mediaStack[mediaStack.length - 1]
+    }
+
+    mediaStack.pop()
+  }
+
+  /** @type {Handle} */
+  function onentercontent() {
+    setData('slurpAllLineEndings', true)
+  }
+
+  /** @type {Handle} */
+  function onexitatxheadingsequence(token) {
+    // Exit for further sequences.
+    if (getData('headingRank')) return
+    setData('headingRank', this.sliceSerialize(token).length)
+    lineEndingIfNeeded()
+    tag('<h' + getData('headingRank') + '>')
+  }
+
+  /** @type {Handle} */
+  function onentersetextheading() {
+    buffer()
+    setData('slurpAllLineEndings')
+  }
+
+  /** @type {Handle} */
+  function onexitsetextheadingtext() {
+    setData('slurpAllLineEndings', true)
+  }
+
+  /** @type {Handle} */
+  function onexitatxheading() {
+    tag('</h' + getData('headingRank') + '>')
+    setData('headingRank')
+  }
+
+  /** @type {Handle} */
+  function onexitsetextheadinglinesequence(token) {
+    setData(
+      'headingRank',
+      this.sliceSerialize(token).charCodeAt(0) === micromark_util_symbol_codes_js__WEBPACK_IMPORTED_MODULE_4__.codes.equalsTo ? 1 : 2
+    )
+  }
+
+  /** @type {Handle} */
+  function onexitsetextheading() {
+    const value = resume()
+    lineEndingIfNeeded()
+    tag('<h' + getData('headingRank') + '>')
+    raw(value)
+    tag('</h' + getData('headingRank') + '>')
+    setData('slurpAllLineEndings')
+    setData('headingRank')
+  }
+
+  /** @type {Handle} */
+  function onexitdata(token) {
+    raw(encode(this.sliceSerialize(token)))
+  }
+
+  /** @type {Handle} */
+  function onexitlineending(token) {
+    if (getData('slurpAllLineEndings')) {
+      return
+    }
+
+    if (getData('slurpOneLineEnding')) {
+      setData('slurpOneLineEnding')
+      return
+    }
+
+    if (getData('inCodeText')) {
+      raw(' ')
+      return
+    }
+
+    raw(encode(this.sliceSerialize(token)))
+  }
+
+  /** @type {Handle} */
+  function onexitcodeflowvalue(token) {
+    raw(encode(this.sliceSerialize(token)))
+    setData('flowCodeSeenData', true)
+  }
+
+  /** @type {Handle} */
+  function onexithardbreak() {
+    tag('<br />')
+  }
+
+  /** @type {Handle} */
+  function onenterhtmlflow() {
+    lineEndingIfNeeded()
+    onenterhtml()
+  }
+
+  /** @type {Handle} */
+  function onexithtml() {
+    setData('ignoreEncode')
+  }
+
+  /** @type {Handle} */
+  function onenterhtml() {
+    if (options.allowDangerousHtml) {
+      setData('ignoreEncode', true)
+    }
+  }
+
+  /** @type {Handle} */
+  function onenteremphasis() {
+    tag('<em>')
+  }
+
+  /** @type {Handle} */
+  function onenterstrong() {
+    tag('<strong>')
+  }
+
+  /** @type {Handle} */
+  function onentercodetext() {
+    setData('inCodeText', true)
+    tag('<code>')
+  }
+
+  /** @type {Handle} */
+  function onexitcodetext() {
+    setData('inCodeText')
+    tag('</code>')
+  }
+
+  /** @type {Handle} */
+  function onexitemphasis() {
+    tag('</em>')
+  }
+
+  /** @type {Handle} */
+  function onexitstrong() {
+    tag('</strong>')
+  }
+
+  /** @type {Handle} */
+  function onexitthematicbreak() {
+    lineEndingIfNeeded()
+    tag('<hr />')
+  }
+
+  /** @type {Handle} */
+  function onexitcharacterreferencemarker(token) {
+    setData('characterReferenceType', token.type)
+  }
+
+  /** @type {Handle} */
+  function onexitcharacterreferencevalue(token) {
+    let value = this.sliceSerialize(token)
+
+    // @ts-expect-error `decodeNamedCharacterReference` can return false for
+    // invalid named character references, but everything we’ve tokenized is
+    // valid.
+    value = getData('characterReferenceType')
+      ? (0,micromark_util_decode_numeric_character_reference__WEBPACK_IMPORTED_MODULE_9__.decodeNumericCharacterReference)(
+          value,
+          getData('characterReferenceType') ===
+            micromark_util_symbol_types_js__WEBPACK_IMPORTED_MODULE_2__.types.characterReferenceMarkerNumeric
+            ? micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_6__.constants.numericBaseDecimal
+            : micromark_util_symbol_constants_js__WEBPACK_IMPORTED_MODULE_6__.constants.numericBaseHexadecimal
+        )
+      : (0,decode_named_character_reference__WEBPACK_IMPORTED_MODULE_10__.decodeNamedCharacterReference)(value)
+
+    raw(encode(value))
+    setData('characterReferenceType')
+  }
+
+  /** @type {Handle} */
+  function onexitautolinkprotocol(token) {
+    const uri = this.sliceSerialize(token)
+    tag(
+      '<a href="' +
+        (0,micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_8__.sanitizeUri)(
+          uri,
+          options.allowDangerousProtocol ? undefined : protocolHref
+        ) +
+        '">'
+    )
+    raw(encode(uri))
+    tag('</a>')
+  }
+
+  /** @type {Handle} */
+  function onexitautolinkemail(token) {
+    const uri = this.sliceSerialize(token)
+    tag('<a href="' + (0,micromark_util_sanitize_uri__WEBPACK_IMPORTED_MODULE_8__.sanitizeUri)('mailto:' + uri) + '">')
+    raw(encode(uri))
+    tag('</a>')
+  }
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/micromark/dev/lib/constructs.js":
 /*!******************************************************!*\
   !*** ./node_modules/micromark/dev/lib/constructs.js ***!
@@ -68612,11 +69300,11 @@ function createTokenizer(parser, initialize, from) {
   )
   /** @type {Record<string, number>} */
   const columnStart = {}
-  /** @type {Construct[]} */
+  /** @type {Array<Construct>} */
   const resolveAllConstructs = []
-  /** @type {Chunk[]} */
+  /** @type {Array<Chunk>} */
   let chunks = []
-  /** @type {Token[]} */
+  /** @type {Array<Token>} */
   let stack = []
   /** @type {boolean|undefined} */
   let consumed = true
@@ -68900,13 +69588,13 @@ function createTokenizer(parser, initialize, from) {
      * Handle either an object mapping codes to constructs, a list of
      * constructs, or a single construct.
      *
-     * @param {Construct|Construct[]|ConstructRecord} constructs
+     * @param {Construct|Array<Construct>|ConstructRecord} constructs
      * @param {State} returnState
      * @param {State} [bogusState]
      * @returns {State}
      */
     function hook(constructs, returnState, bogusState) {
-      /** @type {Construct[]} */
+      /** @type {Array<Construct>} */
       let listOfConstructs
       /** @type {number} */
       let constructIndex
@@ -68950,7 +69638,7 @@ function createTokenizer(parser, initialize, from) {
       /**
        * Handle a list of construct.
        *
-       * @param {Construct[]} list
+       * @param {Array<Construct>} list
        * @returns {State}
        */
       function handleListOfConstructs(list) {
@@ -69107,16 +69795,16 @@ function createTokenizer(parser, initialize, from) {
 /**
  * Get the chunks from a slice of chunks in the range of a token.
  *
- * @param {Chunk[]} chunks
+ * @param {Array<Chunk>} chunks
  * @param {Pick<Token, 'start'|'end'>} token
- * @returns {Chunk[]}
+ * @returns {Array<Chunk>}
  */
 function sliceChunks(chunks, token) {
   const startIndex = token.start._index
   const startBufferIndex = token.start._bufferIndex
   const endIndex = token.end._index
   const endBufferIndex = token.end._bufferIndex
-  /** @type {Chunk[]} */
+  /** @type {Array<Chunk>} */
   let view
 
   if (startIndex === endIndex) {
@@ -69144,13 +69832,13 @@ function sliceChunks(chunks, token) {
 /**
  * Get the string value of a slice of chunks.
  *
- * @param {Chunk[]} chunks
+ * @param {Array<Chunk>} chunks
  * @param {boolean} [expandTabs=false]
  * @returns {string}
  */
 function serializeChunks(chunks, expandTabs) {
   let index = -1
-  /** @type {string[]} */
+  /** @type {Array<string>} */
   const result = []
   /** @type {boolean|undefined} */
   let atTab
@@ -69375,7 +70063,7 @@ const containerConstruct = {tokenize: tokenizeContainer}
 /** @type {Initializer} */
 function initializeDocument(effects) {
   const self = this
-  /** @type {StackItem[]} */
+  /** @type {Array<StackItem>} */
   const stack = []
   let continued = 0
   /** @type {TokenizeContext|undefined} */
@@ -70203,8 +70891,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * @param {Event[]} events
- * @returns {Event[]}
+ * @param {Array<Event>} events
+ * @returns {Array<Event>}
  */
 function postprocess(events) {
   while (!(0,micromark_util_subtokenize__WEBPACK_IMPORTED_MODULE_0__.subtokenize)(events)) {
@@ -70241,7 +70929,7 @@ __webpack_require__.r(__webpack_exports__);
  * @param {Value} value
  * @param {Encoding} [encoding]
  * @param {boolean} [end=false]
- * @returns {Chunk[]}
+ * @returns {Array<Chunk>}
  */
 
 
@@ -70264,7 +70952,7 @@ function preprocess() {
 
   /** @type {Preprocessor} */
   function preprocessor(value, encoding, end) {
-    /** @type {Chunk[]} */
+    /** @type {Array<Chunk>} */
     const chunks = []
     /** @type {RegExpMatchArray|null} */
     let match
@@ -70582,6 +71270,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "hastToReact": () => (/* binding */ hastToReact)
 /* harmony export */ });
+/**
+ * `hast` is close to `React`, but differs in a couple of cases.
+ *
+ * To get a React property from a hast property, check if it is in
+ * `hastToReact`, if it is, then use the corresponding value,
+ * otherwise, use the hast property.
+ *
+ * @type {Record<string, string>}
+ */
 const hastToReact = {
   classId: 'classID',
   dataType: 'datatype',
@@ -70725,6 +71422,7 @@ const html = (0,_util_create_js__WEBPACK_IMPORTED_MODULE_0__.create)({
     onAbort: null,
     onAfterPrint: null,
     onAuxClick: null,
+    onBeforeMatch: null,
     onBeforePrint: null,
     onBeforeUnload: null,
     onBlur: null,
@@ -70791,6 +71489,7 @@ const html = (0,_util_create_js__WEBPACK_IMPORTED_MODULE_0__.create)({
     onReset: null,
     onResize: null,
     onScroll: null,
+    onScrollEnd: null,
     onSecurityPolicyViolation: null,
     onSeeked: null,
     onSeeking: null,
@@ -72065,10 +72764,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "stringify": () => (/* binding */ stringify)
 /* harmony export */ });
 /**
- * Parse space separated tokens to an array of strings.
+ * Parse space-separated tokens to an array of strings.
  *
- * @param {string} value Space separated tokens
- * @returns {Array.<string>} Tokens
+ * @param {string} value
+ *   Space-separated tokens.
+ * @returns {Array<string>}
+ *   List of tokens.
  */
 function parse(value) {
   const input = String(value || '').trim()
@@ -72076,10 +72777,12 @@ function parse(value) {
 }
 
 /**
- * Serialize an array of strings as space separated tokens.
+ * Serialize an array of strings as space separated-tokens.
  *
- * @param {Array.<string|number>} values Tokens
- * @returns {string} Space separated tokens
+ * @param {Array<string|number>} values
+ *   List of tokens.
+ * @returns {string}
+ *   Space-separated tokens.
  */
 function stringify(values) {
   return values.join(' ').trim()
@@ -72102,7 +72805,7 @@ __webpack_require__.r(__webpack_exports__);
  * List of legacy (that don’t need a trailing `;`) named references which could,
  * depending on what follows them, turn into a different meaning
  *
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 const dangerous = [
   'cent',
@@ -72129,14 +72832,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "core": () => (/* binding */ core)
 /* harmony export */ });
 /**
- * @typedef {Object} CoreOptions
- * @property {string[]} [subset=[]]
+ * @typedef CoreOptions
+ * @property {Array<string>} [subset=[]]
  *   Whether to only escape the given subset of characters.
  * @property {boolean} [escapeOnly=false]
  *   Whether to only escape possibly dangerous characters.
  *   Those characters are `"`, `&`, `'`, `<`, `>`, and `` ` ``.
  *
- * @typedef {Object} FormatOptions
+ * @typedef FormatOptions
  * @property {(code: number, next: number, options: CoreWithFormatOptions) => string} format
  *   Format strategy.
  *
@@ -72204,11 +72907,11 @@ function core(value, options) {
 }
 
 /**
- * @param {string[]} subset
+ * @param {Array<string>} subset
  * @returns {RegExp}
  */
 function charactersToExpression(subset) {
-  /** @type {string[]} */
+  /** @type {Array<string>} */
   const groups = []
   let index = -1
 
@@ -72313,7 +73016,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _to_decimal_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./to-decimal.js */ "./node_modules/stringify-entities/lib/util/to-decimal.js");
 /* harmony import */ var _to_named_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./to-named.js */ "./node_modules/stringify-entities/lib/util/to-named.js");
 /**
- * @typedef {Object} FormatSmartOptions
+ * @typedef FormatSmartOptions
  * @property {boolean} [useNamedReferences=false]
  *   Prefer named character references (`&amp;`) where possible.
  * @property {boolean} [useShortestReferences=false]
@@ -72463,7 +73166,7 @@ const own = {}.hasOwnProperty
 /**
  * `characterEntitiesHtml4` but inverted.
  *
- * @type {Object.<string, string>}
+ * @type {Record<string, string>}
  */
 const characters = {}
 
@@ -72767,6 +73470,5383 @@ function wrap(middleware, callback) {
     done(null, value)
   }
 }
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_baseCreate.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/_baseCreate.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ baseCreate)
+/* harmony export */ });
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+
+// Create a naked function reference for surrogate-prototype-swapping.
+function ctor() {
+  return function(){};
+}
+
+// An internal function for creating a new object that inherits from another.
+function baseCreate(prototype) {
+  if (!(0,_isObject_js__WEBPACK_IMPORTED_MODULE_0__["default"])(prototype)) return {};
+  if (_setup_js__WEBPACK_IMPORTED_MODULE_1__.nativeCreate) return (0,_setup_js__WEBPACK_IMPORTED_MODULE_1__.nativeCreate)(prototype);
+  var Ctor = ctor();
+  Ctor.prototype = prototype;
+  var result = new Ctor;
+  Ctor.prototype = null;
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_baseIteratee.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_baseIteratee.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ baseIteratee)
+/* harmony export */ });
+/* harmony import */ var _identity_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./identity.js */ "./node_modules/underscore/modules/identity.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./matcher.js */ "./node_modules/underscore/modules/matcher.js");
+/* harmony import */ var _property_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./property.js */ "./node_modules/underscore/modules/property.js");
+/* harmony import */ var _optimizeCb_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./_optimizeCb.js */ "./node_modules/underscore/modules/_optimizeCb.js");
+
+
+
+
+
+
+
+
+// An internal function to generate callbacks that can be applied to each
+// element in a collection, returning the desired result — either `_.identity`,
+// an arbitrary callback, a property matcher, or a property accessor.
+function baseIteratee(value, context, argCount) {
+  if (value == null) return _identity_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+  if ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(value)) return (0,_optimizeCb_js__WEBPACK_IMPORTED_MODULE_6__["default"])(value, context, argCount);
+  if ((0,_isObject_js__WEBPACK_IMPORTED_MODULE_2__["default"])(value) && !(0,_isArray_js__WEBPACK_IMPORTED_MODULE_3__["default"])(value)) return (0,_matcher_js__WEBPACK_IMPORTED_MODULE_4__["default"])(value);
+  return (0,_property_js__WEBPACK_IMPORTED_MODULE_5__["default"])(value);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_cb.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/_cb.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ cb)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _baseIteratee_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_baseIteratee.js */ "./node_modules/underscore/modules/_baseIteratee.js");
+/* harmony import */ var _iteratee_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./iteratee.js */ "./node_modules/underscore/modules/iteratee.js");
+
+
+
+
+// The function we call internally to generate a callback. It invokes
+// `_.iteratee` if overridden, otherwise `baseIteratee`.
+function cb(value, context, argCount) {
+  if (_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].iteratee !== _iteratee_js__WEBPACK_IMPORTED_MODULE_2__["default"]) return _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].iteratee(value, context);
+  return (0,_baseIteratee_js__WEBPACK_IMPORTED_MODULE_1__["default"])(value, context, argCount);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_chainResult.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/underscore/modules/_chainResult.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ chainResult)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+
+
+// Helper function to continue chaining intermediate results.
+function chainResult(instance, obj) {
+  return instance._chain ? (0,_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj).chain() : obj;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_collectNonEnumProps.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/underscore/modules/_collectNonEnumProps.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ collectNonEnumProps)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+
+
+
+
+// Internal helper to create a simple lookup structure.
+// `collectNonEnumProps` used to depend on `_.contains`, but this led to
+// circular imports. `emulatedSet` is a one-off solution that only works for
+// arrays of strings.
+function emulatedSet(keys) {
+  var hash = {};
+  for (var l = keys.length, i = 0; i < l; ++i) hash[keys[i]] = true;
+  return {
+    contains: function(key) { return hash[key] === true; },
+    push: function(key) {
+      hash[key] = true;
+      return keys.push(key);
+    }
+  };
+}
+
+// Internal helper. Checks `keys` for the presence of keys in IE < 9 that won't
+// be iterated by `for key in ...` and thus missed. Extends `keys` in place if
+// needed.
+function collectNonEnumProps(obj, keys) {
+  keys = emulatedSet(keys);
+  var nonEnumIdx = _setup_js__WEBPACK_IMPORTED_MODULE_0__.nonEnumerableProps.length;
+  var constructor = obj.constructor;
+  var proto = ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(constructor) && constructor.prototype) || _setup_js__WEBPACK_IMPORTED_MODULE_0__.ObjProto;
+
+  // Constructor is a special case.
+  var prop = 'constructor';
+  if ((0,_has_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, prop) && !keys.contains(prop)) keys.push(prop);
+
+  while (nonEnumIdx--) {
+    prop = _setup_js__WEBPACK_IMPORTED_MODULE_0__.nonEnumerableProps[nonEnumIdx];
+    if (prop in obj && obj[prop] !== proto[prop] && !keys.contains(prop)) {
+      keys.push(prop);
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createAssigner.js":
+/*!************************************************************!*\
+  !*** ./node_modules/underscore/modules/_createAssigner.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createAssigner)
+/* harmony export */ });
+// An internal function for creating assigner functions.
+function createAssigner(keysFunc, defaults) {
+  return function(obj) {
+    var length = arguments.length;
+    if (defaults) obj = Object(obj);
+    if (length < 2 || obj == null) return obj;
+    for (var index = 1; index < length; index++) {
+      var source = arguments[index],
+          keys = keysFunc(source),
+          l = keys.length;
+      for (var i = 0; i < l; i++) {
+        var key = keys[i];
+        if (!defaults || obj[key] === void 0) obj[key] = source[key];
+      }
+    }
+    return obj;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createEscaper.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/underscore/modules/_createEscaper.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createEscaper)
+/* harmony export */ });
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+// Internal helper to generate functions for escaping and unescaping strings
+// to/from HTML interpolation.
+function createEscaper(map) {
+  var escaper = function(match) {
+    return map[match];
+  };
+  // Regexes for identifying a key that needs to be escaped.
+  var source = '(?:' + (0,_keys_js__WEBPACK_IMPORTED_MODULE_0__["default"])(map).join('|') + ')';
+  var testRegexp = RegExp(source);
+  var replaceRegexp = RegExp(source, 'g');
+  return function(string) {
+    string = string == null ? '' : '' + string;
+    return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createIndexFinder.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/underscore/modules/_createIndexFinder.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createIndexFinder)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isNaN_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isNaN.js */ "./node_modules/underscore/modules/isNaN.js");
+
+
+
+
+// Internal function to generate the `_.indexOf` and `_.lastIndexOf` functions.
+function createIndexFinder(dir, predicateFind, sortedIndex) {
+  return function(array, item, idx) {
+    var i = 0, length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array);
+    if (typeof idx == 'number') {
+      if (dir > 0) {
+        i = idx >= 0 ? idx : Math.max(idx + length, i);
+      } else {
+        length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+      }
+    } else if (sortedIndex && idx && length) {
+      idx = sortedIndex(array, item);
+      return array[idx] === item ? idx : -1;
+    }
+    if (item !== item) {
+      idx = predicateFind(_setup_js__WEBPACK_IMPORTED_MODULE_1__.slice.call(array, i, length), _isNaN_js__WEBPACK_IMPORTED_MODULE_2__["default"]);
+      return idx >= 0 ? idx + i : -1;
+    }
+    for (idx = dir > 0 ? i : length - 1; idx >= 0 && idx < length; idx += dir) {
+      if (array[idx] === item) return idx;
+    }
+    return -1;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createPredicateIndexFinder.js":
+/*!************************************************************************!*\
+  !*** ./node_modules/underscore/modules/_createPredicateIndexFinder.js ***!
+  \************************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createPredicateIndexFinder)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+
+
+
+// Internal function to generate `_.findIndex` and `_.findLastIndex`.
+function createPredicateIndexFinder(dir) {
+  return function(array, predicate, context) {
+    predicate = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(predicate, context);
+    var length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_1__["default"])(array);
+    var index = dir > 0 ? 0 : length - 1;
+    for (; index >= 0 && index < length; index += dir) {
+      if (predicate(array[index], index, array)) return index;
+    }
+    return -1;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createReduce.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_createReduce.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createReduce)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+/* harmony import */ var _optimizeCb_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_optimizeCb.js */ "./node_modules/underscore/modules/_optimizeCb.js");
+
+
+
+
+// Internal helper to create a reducing function, iterating left or right.
+function createReduce(dir) {
+  // Wrap code that reassigns argument variables in a separate function than
+  // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+  var reducer = function(obj, iteratee, memo, initial) {
+    var _keys = !(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj) && (0,_keys_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj),
+        length = (_keys || obj).length,
+        index = dir > 0 ? 0 : length - 1;
+    if (!initial) {
+      memo = obj[_keys ? _keys[index] : index];
+      index += dir;
+    }
+    for (; index >= 0 && index < length; index += dir) {
+      var currentKey = _keys ? _keys[index] : index;
+      memo = iteratee(memo, obj[currentKey], currentKey, obj);
+    }
+    return memo;
+  };
+
+  return function(obj, iteratee, memo, context) {
+    var initial = arguments.length >= 3;
+    return reducer(obj, (0,_optimizeCb_js__WEBPACK_IMPORTED_MODULE_2__["default"])(iteratee, context, 4), memo, initial);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_createSizePropertyCheck.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/underscore/modules/_createSizePropertyCheck.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createSizePropertyCheck)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Common internal logic for `isArrayLike` and `isBufferLike`.
+function createSizePropertyCheck(getSizeProperty) {
+  return function(collection) {
+    var sizeProperty = getSizeProperty(collection);
+    return typeof sizeProperty == 'number' && sizeProperty >= 0 && sizeProperty <= _setup_js__WEBPACK_IMPORTED_MODULE_0__.MAX_ARRAY_INDEX;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_deepGet.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/_deepGet.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ deepGet)
+/* harmony export */ });
+// Internal function to obtain a nested property in `obj` along `path`.
+function deepGet(obj, path) {
+  var length = path.length;
+  for (var i = 0; i < length; i++) {
+    if (obj == null) return void 0;
+    obj = obj[path[i]];
+  }
+  return length ? obj : void 0;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_escapeMap.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/_escapeMap.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+// Internal list of HTML entities for escaping.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+  '`': '&#x60;'
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_executeBound.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_executeBound.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ executeBound)
+/* harmony export */ });
+/* harmony import */ var _baseCreate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_baseCreate.js */ "./node_modules/underscore/modules/_baseCreate.js");
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+
+
+
+// Internal function to execute `sourceFunc` bound to `context` with optional
+// `args`. Determines whether to execute a function as a constructor or as a
+// normal function.
+function executeBound(sourceFunc, boundFunc, context, callingContext, args) {
+  if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
+  var self = (0,_baseCreate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(sourceFunc.prototype);
+  var result = sourceFunc.apply(self, args);
+  if ((0,_isObject_js__WEBPACK_IMPORTED_MODULE_1__["default"])(result)) return result;
+  return self;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_flatten.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/_flatten.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ flatten)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _isArguments_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./isArguments.js */ "./node_modules/underscore/modules/isArguments.js");
+
+
+
+
+
+// Internal implementation of a recursive `flatten` function.
+function flatten(input, depth, strict, output) {
+  output = output || [];
+  if (!depth && depth !== 0) {
+    depth = Infinity;
+  } else if (depth <= 0) {
+    return output.concat(input);
+  }
+  var idx = output.length;
+  for (var i = 0, length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(input); i < length; i++) {
+    var value = input[i];
+    if ((0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__["default"])(value) && ((0,_isArray_js__WEBPACK_IMPORTED_MODULE_2__["default"])(value) || (0,_isArguments_js__WEBPACK_IMPORTED_MODULE_3__["default"])(value))) {
+      // Flatten current level of array or arguments object.
+      if (depth > 1) {
+        flatten(value, depth - 1, strict, output);
+        idx = output.length;
+      } else {
+        var j = 0, len = value.length;
+        while (j < len) output[idx++] = value[j++];
+      }
+    } else if (!strict) {
+      output[idx++] = value;
+    }
+  }
+  return output;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_getByteLength.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/underscore/modules/_getByteLength.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _shallowProperty_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_shallowProperty.js */ "./node_modules/underscore/modules/_shallowProperty.js");
+
+
+// Internal helper to obtain the `byteLength` property of an object.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_shallowProperty_js__WEBPACK_IMPORTED_MODULE_0__["default"])('byteLength'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_getLength.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/_getLength.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _shallowProperty_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_shallowProperty.js */ "./node_modules/underscore/modules/_shallowProperty.js");
+
+
+// Internal helper to obtain the `length` property of an object.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_shallowProperty_js__WEBPACK_IMPORTED_MODULE_0__["default"])('length'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_group.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/_group.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ group)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+
+
+
+// An internal function used for aggregate "group by" operations.
+function group(behavior, partition) {
+  return function(obj, iteratee, context) {
+    var result = partition ? [[], []] : {};
+    iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context);
+    (0,_each_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj, function(value, index) {
+      var key = iteratee(value, index, obj);
+      behavior(result, value, key);
+    });
+    return result;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_has.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/_has.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ has)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Internal function to check whether `key` is an own property name of `obj`.
+function has(obj, key) {
+  return obj != null && _setup_js__WEBPACK_IMPORTED_MODULE_0__.hasOwnProperty.call(obj, key);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_hasObjectTag.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_hasObjectTag.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Object'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_isArrayLike.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/underscore/modules/_isArrayLike.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createSizePropertyCheck_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createSizePropertyCheck.js */ "./node_modules/underscore/modules/_createSizePropertyCheck.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+
+
+
+// Internal helper for collection methods to determine whether a collection
+// should be iterated as an array or as an object.
+// Related: https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+// Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createSizePropertyCheck_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_getLength_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_isBufferLike.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_isBufferLike.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createSizePropertyCheck_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createSizePropertyCheck.js */ "./node_modules/underscore/modules/_createSizePropertyCheck.js");
+/* harmony import */ var _getByteLength_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_getByteLength.js */ "./node_modules/underscore/modules/_getByteLength.js");
+
+
+
+// Internal helper to determine whether we should spend extensive checks against
+// `ArrayBuffer` et al.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createSizePropertyCheck_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_getByteLength_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_keyInObj.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/_keyInObj.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ keyInObj)
+/* harmony export */ });
+// Internal `_.pick` helper function to determine whether `key` is an enumerable
+// property name of `obj`.
+function keyInObj(value, key, obj) {
+  return key in obj;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_methodFingerprint.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/underscore/modules/_methodFingerprint.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ie11fingerprint": () => (/* binding */ ie11fingerprint),
+/* harmony export */   "mapMethods": () => (/* binding */ mapMethods),
+/* harmony export */   "setMethods": () => (/* binding */ setMethods),
+/* harmony export */   "weakMapMethods": () => (/* binding */ weakMapMethods)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _allKeys_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./allKeys.js */ "./node_modules/underscore/modules/allKeys.js");
+
+
+
+
+// Since the regular `Object.prototype.toString` type tests don't work for
+// some types in IE 11, we use a fingerprinting heuristic instead, based
+// on the methods. It's not great, but it's the best we got.
+// The fingerprint method lists are defined below.
+function ie11fingerprint(methods) {
+  var length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(methods);
+  return function(obj) {
+    if (obj == null) return false;
+    // `Map`, `WeakMap` and `Set` have no enumerable keys.
+    var keys = (0,_allKeys_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj);
+    if ((0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(keys)) return false;
+    for (var i = 0; i < length; i++) {
+      if (!(0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj[methods[i]])) return false;
+    }
+    // If we are testing against `WeakMap`, we need to ensure that
+    // `obj` doesn't have a `forEach` method in order to distinguish
+    // it from a regular `Map`.
+    return methods !== weakMapMethods || !(0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj[forEachName]);
+  };
+}
+
+// In the interest of compact minification, we write
+// each string in the fingerprints only once.
+var forEachName = 'forEach',
+    hasName = 'has',
+    commonInit = ['clear', 'delete'],
+    mapTail = ['get', hasName, 'set'];
+
+// `Map`, `WeakMap` and `Set` each have slightly different
+// combinations of the above sublists.
+var mapMethods = commonInit.concat(forEachName, mapTail),
+    weakMapMethods = commonInit.concat(mapTail),
+    setMethods = ['add'].concat(commonInit, forEachName, hasName);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_optimizeCb.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/_optimizeCb.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ optimizeCb)
+/* harmony export */ });
+// Internal function that returns an efficient (for current engines) version
+// of the passed-in callback, to be repeatedly applied in other Underscore
+// functions.
+function optimizeCb(func, context, argCount) {
+  if (context === void 0) return func;
+  switch (argCount == null ? 3 : argCount) {
+    case 1: return function(value) {
+      return func.call(context, value);
+    };
+    // The 2-argument case is omitted because we’re not using it.
+    case 3: return function(value, index, collection) {
+      return func.call(context, value, index, collection);
+    };
+    case 4: return function(accumulator, value, index, collection) {
+      return func.call(context, accumulator, value, index, collection);
+    };
+  }
+  return function() {
+    return func.apply(context, arguments);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_setup.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/_setup.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ArrayProto": () => (/* binding */ ArrayProto),
+/* harmony export */   "MAX_ARRAY_INDEX": () => (/* binding */ MAX_ARRAY_INDEX),
+/* harmony export */   "ObjProto": () => (/* binding */ ObjProto),
+/* harmony export */   "SymbolProto": () => (/* binding */ SymbolProto),
+/* harmony export */   "VERSION": () => (/* binding */ VERSION),
+/* harmony export */   "_isFinite": () => (/* binding */ _isFinite),
+/* harmony export */   "_isNaN": () => (/* binding */ _isNaN),
+/* harmony export */   "hasEnumBug": () => (/* binding */ hasEnumBug),
+/* harmony export */   "hasOwnProperty": () => (/* binding */ hasOwnProperty),
+/* harmony export */   "nativeCreate": () => (/* binding */ nativeCreate),
+/* harmony export */   "nativeIsArray": () => (/* binding */ nativeIsArray),
+/* harmony export */   "nativeIsView": () => (/* binding */ nativeIsView),
+/* harmony export */   "nativeKeys": () => (/* binding */ nativeKeys),
+/* harmony export */   "nonEnumerableProps": () => (/* binding */ nonEnumerableProps),
+/* harmony export */   "push": () => (/* binding */ push),
+/* harmony export */   "root": () => (/* binding */ root),
+/* harmony export */   "slice": () => (/* binding */ slice),
+/* harmony export */   "supportsArrayBuffer": () => (/* binding */ supportsArrayBuffer),
+/* harmony export */   "supportsDataView": () => (/* binding */ supportsDataView),
+/* harmony export */   "toString": () => (/* binding */ toString)
+/* harmony export */ });
+// Current version.
+var VERSION = '1.13.6';
+
+// Establish the root object, `window` (`self`) in the browser, `global`
+// on the server, or `this` in some virtual machines. We use `self`
+// instead of `window` for `WebWorker` support.
+var root = (typeof self == 'object' && self.self === self && self) ||
+          (typeof global == 'object' && global.global === global && global) ||
+          Function('return this')() ||
+          {};
+
+// Save bytes in the minified (but not gzipped) version:
+var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
+
+// Create quick reference variables for speed access to core prototypes.
+var push = ArrayProto.push,
+    slice = ArrayProto.slice,
+    toString = ObjProto.toString,
+    hasOwnProperty = ObjProto.hasOwnProperty;
+
+// Modern feature detection.
+var supportsArrayBuffer = typeof ArrayBuffer !== 'undefined',
+    supportsDataView = typeof DataView !== 'undefined';
+
+// All **ECMAScript 5+** native function implementations that we hope to use
+// are declared here.
+var nativeIsArray = Array.isArray,
+    nativeKeys = Object.keys,
+    nativeCreate = Object.create,
+    nativeIsView = supportsArrayBuffer && ArrayBuffer.isView;
+
+// Create references to these builtin functions because we override them.
+var _isNaN = isNaN,
+    _isFinite = isFinite;
+
+// Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+  'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+
+// The largest integer that can be represented exactly.
+var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_shallowProperty.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/underscore/modules/_shallowProperty.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ shallowProperty)
+/* harmony export */ });
+// Internal helper to generate a function to obtain property `key` from `obj`.
+function shallowProperty(key) {
+  return function(obj) {
+    return obj == null ? void 0 : obj[key];
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_stringTagBug.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_stringTagBug.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "hasStringTagBug": () => (/* binding */ hasStringTagBug),
+/* harmony export */   "isIE11": () => (/* binding */ isIE11)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _hasObjectTag_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_hasObjectTag.js */ "./node_modules/underscore/modules/_hasObjectTag.js");
+
+
+
+// In IE 10 - Edge 13, `DataView` has string tag `'[object Object]'`.
+// In IE 11, the most common among them, this problem also applies to
+// `Map`, `WeakMap` and `Set`.
+var hasStringTagBug = (
+      _setup_js__WEBPACK_IMPORTED_MODULE_0__.supportsDataView && (0,_hasObjectTag_js__WEBPACK_IMPORTED_MODULE_1__["default"])(new DataView(new ArrayBuffer(8)))
+    ),
+    isIE11 = (typeof Map !== 'undefined' && (0,_hasObjectTag_js__WEBPACK_IMPORTED_MODULE_1__["default"])(new Map));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_tagTester.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/_tagTester.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ tagTester)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Internal function for creating a `toString`-based type tester.
+function tagTester(name) {
+  var tag = '[object ' + name + ']';
+  return function(obj) {
+    return _setup_js__WEBPACK_IMPORTED_MODULE_0__.toString.call(obj) === tag;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_toBufferView.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/_toBufferView.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ toBufferView)
+/* harmony export */ });
+/* harmony import */ var _getByteLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getByteLength.js */ "./node_modules/underscore/modules/_getByteLength.js");
+
+
+// Internal function to wrap or shallow-copy an ArrayBuffer,
+// typed array or DataView to a new view, reusing the buffer.
+function toBufferView(bufferSource) {
+  return new Uint8Array(
+    bufferSource.buffer || bufferSource,
+    bufferSource.byteOffset || 0,
+    (0,_getByteLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(bufferSource)
+  );
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_toPath.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/_toPath.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ toPath)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./toPath.js */ "./node_modules/underscore/modules/toPath.js");
+
+
+
+// Internal wrapper for `_.toPath` to enable minification.
+// Similar to `cb` for `_.iteratee`.
+function toPath(path) {
+  return _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].toPath(path);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/_unescapeMap.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/underscore/modules/_unescapeMap.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _invert_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./invert.js */ "./node_modules/underscore/modules/invert.js");
+/* harmony import */ var _escapeMap_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_escapeMap.js */ "./node_modules/underscore/modules/_escapeMap.js");
+
+
+
+// Internal list of HTML entities for unescaping.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_invert_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_escapeMap_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/after.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/after.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ after)
+/* harmony export */ });
+// Returns a function that will only be executed on and after the Nth call.
+function after(times, func) {
+  return function() {
+    if (--times < 1) {
+      return func.apply(this, arguments);
+    }
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/allKeys.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/allKeys.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ allKeys)
+/* harmony export */ });
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _collectNonEnumProps_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_collectNonEnumProps.js */ "./node_modules/underscore/modules/_collectNonEnumProps.js");
+
+
+
+
+// Retrieve all the enumerable property names of an object.
+function allKeys(obj) {
+  if (!(0,_isObject_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) return [];
+  var keys = [];
+  for (var key in obj) keys.push(key);
+  // Ahem, IE < 9.
+  if (_setup_js__WEBPACK_IMPORTED_MODULE_1__.hasEnumBug) (0,_collectNonEnumProps_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, keys);
+  return keys;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/before.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/before.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ before)
+/* harmony export */ });
+// Returns a function that will only be executed up to (but not including) the
+// Nth call.
+function before(times, func) {
+  var memo;
+  return function() {
+    if (--times > 0) {
+      memo = func.apply(this, arguments);
+    }
+    if (times <= 1) func = null;
+    return memo;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/bind.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/bind.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _executeBound_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_executeBound.js */ "./node_modules/underscore/modules/_executeBound.js");
+
+
+
+
+// Create a function bound to a given object (assigning `this`, and arguments,
+// optionally).
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(func, context, args) {
+  if (!(0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(func)) throw new TypeError('Bind must be called on a function');
+  var bound = (0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(callArgs) {
+    return (0,_executeBound_js__WEBPACK_IMPORTED_MODULE_2__["default"])(func, bound, context, this, args.concat(callArgs));
+  });
+  return bound;
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/bindAll.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/bindAll.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+/* harmony import */ var _bind_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./bind.js */ "./node_modules/underscore/modules/bind.js");
+
+
+
+
+// Bind a number of an object's methods to that object. Remaining arguments
+// are the method names to be bound. Useful for ensuring that all callbacks
+// defined on an object belong to it.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(obj, keys) {
+  keys = (0,_flatten_js__WEBPACK_IMPORTED_MODULE_1__["default"])(keys, false, false);
+  var index = keys.length;
+  if (index < 1) throw new Error('bindAll must be passed function names');
+  while (index--) {
+    var key = keys[index];
+    obj[key] = (0,_bind_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj[key], obj);
+  }
+  return obj;
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/chain.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/chain.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ chain)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+
+
+// Start chaining a wrapped Underscore object.
+function chain(obj) {
+  var instance = (0,_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj);
+  instance._chain = true;
+  return instance;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/chunk.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/chunk.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ chunk)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Chunk a single array into multiple arrays, each containing `count` or fewer
+// items.
+function chunk(array, count) {
+  if (count == null || count < 1) return [];
+  var result = [];
+  var i = 0, length = array.length;
+  while (i < length) {
+    result.push(_setup_js__WEBPACK_IMPORTED_MODULE_0__.slice.call(array, i, i += count));
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/clone.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/clone.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ clone)
+/* harmony export */ });
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _extend_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./extend.js */ "./node_modules/underscore/modules/extend.js");
+
+
+
+
+// Create a (shallow-cloned) duplicate of an object.
+function clone(obj) {
+  if (!(0,_isObject_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) return obj;
+  return (0,_isArray_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) ? obj.slice() : (0,_extend_js__WEBPACK_IMPORTED_MODULE_2__["default"])({}, obj);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/compact.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/compact.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ compact)
+/* harmony export */ });
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./filter.js */ "./node_modules/underscore/modules/filter.js");
+
+
+// Trim out all falsy values from an array.
+function compact(array) {
+  return (0,_filter_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array, Boolean);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/compose.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/compose.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ compose)
+/* harmony export */ });
+// Returns a function that is the composition of a list of functions, each
+// consuming the return value of the function that follows.
+function compose() {
+  var args = arguments;
+  var start = args.length - 1;
+  return function() {
+    var i = start;
+    var result = args[start].apply(this, arguments);
+    while (i--) result = args[i].call(this, result);
+    return result;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/constant.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/constant.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ constant)
+/* harmony export */ });
+// Predicate-generating function. Often useful outside of Underscore.
+function constant(value) {
+  return function() {
+    return value;
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/contains.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/contains.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ contains)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+/* harmony import */ var _indexOf_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./indexOf.js */ "./node_modules/underscore/modules/indexOf.js");
+
+
+
+
+// Determine if the array or object contains a given item (using `===`).
+function contains(obj, item, fromIndex, guard) {
+  if (!(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) obj = (0,_values_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj);
+  if (typeof fromIndex != 'number' || guard) fromIndex = 0;
+  return (0,_indexOf_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, item, fromIndex) >= 0;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/countBy.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/countBy.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _group_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_group.js */ "./node_modules/underscore/modules/_group.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+
+
+
+// Counts instances of an object that group by a certain criterion. Pass
+// either a string attribute to count by, or a function that returns the
+// criterion.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_group_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(result, value, key) {
+  if ((0,_has_js__WEBPACK_IMPORTED_MODULE_1__["default"])(result, key)) result[key]++; else result[key] = 1;
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/create.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/create.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ create)
+/* harmony export */ });
+/* harmony import */ var _baseCreate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_baseCreate.js */ "./node_modules/underscore/modules/_baseCreate.js");
+/* harmony import */ var _extendOwn_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./extendOwn.js */ "./node_modules/underscore/modules/extendOwn.js");
+
+
+
+// Creates an object that inherits from the given prototype object.
+// If additional properties are provided then they will be added to the
+// created object.
+function create(prototype, props) {
+  var result = (0,_baseCreate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(prototype);
+  if (props) (0,_extendOwn_js__WEBPACK_IMPORTED_MODULE_1__["default"])(result, props);
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/debounce.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/debounce.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ debounce)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _now_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./now.js */ "./node_modules/underscore/modules/now.js");
+
+
+
+// When a sequence of calls of the returned function ends, the argument
+// function is triggered. The end of a sequence is defined by the `wait`
+// parameter. If `immediate` is passed, the argument function will be
+// triggered at the beginning of the sequence instead of at the end.
+function debounce(func, wait, immediate) {
+  var timeout, previous, args, result, context;
+
+  var later = function() {
+    var passed = (0,_now_js__WEBPACK_IMPORTED_MODULE_1__["default"])() - previous;
+    if (wait > passed) {
+      timeout = setTimeout(later, wait - passed);
+    } else {
+      timeout = null;
+      if (!immediate) result = func.apply(context, args);
+      // This check is needed because `func` can recursively invoke `debounced`.
+      if (!timeout) args = context = null;
+    }
+  };
+
+  var debounced = (0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(_args) {
+    context = this;
+    args = _args;
+    previous = (0,_now_js__WEBPACK_IMPORTED_MODULE_1__["default"])();
+    if (!timeout) {
+      timeout = setTimeout(later, wait);
+      if (immediate) result = func.apply(context, args);
+    }
+    return result;
+  });
+
+  debounced.cancel = function() {
+    clearTimeout(timeout);
+    timeout = args = context = null;
+  };
+
+  return debounced;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/defaults.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/defaults.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createAssigner_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createAssigner.js */ "./node_modules/underscore/modules/_createAssigner.js");
+/* harmony import */ var _allKeys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./allKeys.js */ "./node_modules/underscore/modules/allKeys.js");
+
+
+
+// Fill in a given object with default properties.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createAssigner_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_allKeys_js__WEBPACK_IMPORTED_MODULE_1__["default"], true));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/defer.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/defer.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _partial_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./partial.js */ "./node_modules/underscore/modules/partial.js");
+/* harmony import */ var _delay_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./delay.js */ "./node_modules/underscore/modules/delay.js");
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+
+
+
+
+// Defers a function, scheduling it to run after the current call stack has
+// cleared.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_partial_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_delay_js__WEBPACK_IMPORTED_MODULE_1__["default"], _underscore_js__WEBPACK_IMPORTED_MODULE_2__["default"], 1));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/delay.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/delay.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+
+
+// Delays a function for the given number of milliseconds, and then calls
+// it with the arguments supplied.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(func, wait, args) {
+  return setTimeout(function() {
+    return func.apply(null, args);
+  }, wait);
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/difference.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/difference.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./filter.js */ "./node_modules/underscore/modules/filter.js");
+/* harmony import */ var _contains_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./contains.js */ "./node_modules/underscore/modules/contains.js");
+
+
+
+
+
+// Take the difference between one array and a number of other arrays.
+// Only the elements present in just the first array will remain.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(array, rest) {
+  rest = (0,_flatten_js__WEBPACK_IMPORTED_MODULE_1__["default"])(rest, true, true);
+  return (0,_filter_js__WEBPACK_IMPORTED_MODULE_2__["default"])(array, function(value){
+    return !(0,_contains_js__WEBPACK_IMPORTED_MODULE_3__["default"])(rest, value);
+  });
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/each.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/each.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ each)
+/* harmony export */ });
+/* harmony import */ var _optimizeCb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_optimizeCb.js */ "./node_modules/underscore/modules/_optimizeCb.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+
+// The cornerstone for collection functions, an `each`
+// implementation, aka `forEach`.
+// Handles raw objects in addition to array-likes. Treats all
+// sparse array-likes as if they were dense.
+function each(obj, iteratee, context) {
+  iteratee = (0,_optimizeCb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context);
+  var i, length;
+  if ((0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj)) {
+    for (i = 0, length = obj.length; i < length; i++) {
+      iteratee(obj[i], i, obj);
+    }
+  } else {
+    var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj);
+    for (i = 0, length = _keys.length; i < length; i++) {
+      iteratee(obj[_keys[i]], _keys[i], obj);
+    }
+  }
+  return obj;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/escape.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/escape.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createEscaper_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createEscaper.js */ "./node_modules/underscore/modules/_createEscaper.js");
+/* harmony import */ var _escapeMap_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_escapeMap.js */ "./node_modules/underscore/modules/_escapeMap.js");
+
+
+
+// Function for escaping strings to HTML interpolation.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createEscaper_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_escapeMap_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/every.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/every.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ every)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+
+// Determine whether all of the elements pass a truth test.
+function every(obj, predicate, context) {
+  predicate = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(predicate, context);
+  var _keys = !(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) && (0,_keys_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj),
+      length = (_keys || obj).length;
+  for (var index = 0; index < length; index++) {
+    var currentKey = _keys ? _keys[index] : index;
+    if (!predicate(obj[currentKey], currentKey, obj)) return false;
+  }
+  return true;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/extend.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/extend.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createAssigner_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createAssigner.js */ "./node_modules/underscore/modules/_createAssigner.js");
+/* harmony import */ var _allKeys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./allKeys.js */ "./node_modules/underscore/modules/allKeys.js");
+
+
+
+// Extend a given object with all the properties in passed-in object(s).
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createAssigner_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_allKeys_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/extendOwn.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/extendOwn.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createAssigner_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createAssigner.js */ "./node_modules/underscore/modules/_createAssigner.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+// Assigns a given object with all the own properties in the passed-in
+// object(s).
+// (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createAssigner_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_keys_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/filter.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/filter.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ filter)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+
+
+
+// Return all the elements that pass a truth test.
+function filter(obj, predicate, context) {
+  var results = [];
+  predicate = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(predicate, context);
+  (0,_each_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj, function(value, index, list) {
+    if (predicate(value, index, list)) results.push(value);
+  });
+  return results;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/find.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/find.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ find)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _findIndex_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./findIndex.js */ "./node_modules/underscore/modules/findIndex.js");
+/* harmony import */ var _findKey_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./findKey.js */ "./node_modules/underscore/modules/findKey.js");
+
+
+
+
+// Return the first value which passes a truth test.
+function find(obj, predicate, context) {
+  var keyFinder = (0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj) ? _findIndex_js__WEBPACK_IMPORTED_MODULE_1__["default"] : _findKey_js__WEBPACK_IMPORTED_MODULE_2__["default"];
+  var key = keyFinder(obj, predicate, context);
+  if (key !== void 0 && key !== -1) return obj[key];
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/findIndex.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/findIndex.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createPredicateIndexFinder_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createPredicateIndexFinder.js */ "./node_modules/underscore/modules/_createPredicateIndexFinder.js");
+
+
+// Returns the first index on an array-like that passes a truth test.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createPredicateIndexFinder_js__WEBPACK_IMPORTED_MODULE_0__["default"])(1));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/findKey.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/findKey.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ findKey)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+// Returns the first key on an object that passes a truth test.
+function findKey(obj, predicate, context) {
+  predicate = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(predicate, context);
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj), key;
+  for (var i = 0, length = _keys.length; i < length; i++) {
+    key = _keys[i];
+    if (predicate(obj[key], key, obj)) return key;
+  }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/findLastIndex.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/findLastIndex.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createPredicateIndexFinder_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createPredicateIndexFinder.js */ "./node_modules/underscore/modules/_createPredicateIndexFinder.js");
+
+
+// Returns the last index on an array-like that passes a truth test.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createPredicateIndexFinder_js__WEBPACK_IMPORTED_MODULE_0__["default"])(-1));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/findWhere.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/findWhere.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ findWhere)
+/* harmony export */ });
+/* harmony import */ var _find_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./find.js */ "./node_modules/underscore/modules/find.js");
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./matcher.js */ "./node_modules/underscore/modules/matcher.js");
+
+
+
+// Convenience version of a common use case of `_.find`: getting the first
+// object containing specific `key:value` pairs.
+function findWhere(obj, attrs) {
+  return (0,_find_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, (0,_matcher_js__WEBPACK_IMPORTED_MODULE_1__["default"])(attrs));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/first.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/first.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ first)
+/* harmony export */ });
+/* harmony import */ var _initial_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./initial.js */ "./node_modules/underscore/modules/initial.js");
+
+
+// Get the first element of an array. Passing **n** will return the first N
+// values in the array. The **guard** check allows it to work with `_.map`.
+function first(array, n, guard) {
+  if (array == null || array.length < 1) return n == null || guard ? void 0 : [];
+  if (n == null || guard) return array[0];
+  return (0,_initial_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array, array.length - n);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/flatten.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/flatten.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ flatten)
+/* harmony export */ });
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+
+
+// Flatten out an array, either recursively (by default), or up to `depth`.
+// Passing `true` or `false` as `depth` means `1` or `Infinity`, respectively.
+function flatten(array, depth) {
+  return (0,_flatten_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array, depth, false);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/functions.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/functions.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ functions)
+/* harmony export */ });
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+
+
+// Return a sorted list of the function names available on the object.
+function functions(obj) {
+  var names = [];
+  for (var key in obj) {
+    if ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj[key])) names.push(key);
+  }
+  return names.sort();
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/get.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/get.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ get)
+/* harmony export */ });
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_toPath.js */ "./node_modules/underscore/modules/_toPath.js");
+/* harmony import */ var _deepGet_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_deepGet.js */ "./node_modules/underscore/modules/_deepGet.js");
+/* harmony import */ var _isUndefined_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isUndefined.js */ "./node_modules/underscore/modules/isUndefined.js");
+
+
+
+
+// Get the value of the (deep) property on `path` from `object`.
+// If any property in `path` does not exist or if the value is
+// `undefined`, return `defaultValue` instead.
+// The `path` is normalized through `_.toPath`.
+function get(object, path, defaultValue) {
+  var value = (0,_deepGet_js__WEBPACK_IMPORTED_MODULE_1__["default"])(object, (0,_toPath_js__WEBPACK_IMPORTED_MODULE_0__["default"])(path));
+  return (0,_isUndefined_js__WEBPACK_IMPORTED_MODULE_2__["default"])(value) ? defaultValue : value;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/groupBy.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/groupBy.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _group_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_group.js */ "./node_modules/underscore/modules/_group.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+
+
+
+// Groups the object's values by a criterion. Pass either a string attribute
+// to group by, or a function that returns the criterion.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_group_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(result, value, key) {
+  if ((0,_has_js__WEBPACK_IMPORTED_MODULE_1__["default"])(result, key)) result[key].push(value); else result[key] = [value];
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/has.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/has.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ has)
+/* harmony export */ });
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_toPath.js */ "./node_modules/underscore/modules/_toPath.js");
+
+
+
+// Shortcut function for checking if an object has a given property directly on
+// itself (in other words, not on a prototype). Unlike the internal `has`
+// function, this public version can also traverse nested properties.
+function has(obj, path) {
+  path = (0,_toPath_js__WEBPACK_IMPORTED_MODULE_1__["default"])(path);
+  var length = path.length;
+  for (var i = 0; i < length; i++) {
+    var key = path[i];
+    if (!(0,_has_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, key)) return false;
+    obj = obj[key];
+  }
+  return !!length;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/identity.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/identity.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ identity)
+/* harmony export */ });
+// Keep the identity function around for default iteratees.
+function identity(value) {
+  return value;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/index-all.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/index-all.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "VERSION": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.VERSION),
+/* harmony export */   "after": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.after),
+/* harmony export */   "all": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.all),
+/* harmony export */   "allKeys": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.allKeys),
+/* harmony export */   "any": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.any),
+/* harmony export */   "assign": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.assign),
+/* harmony export */   "before": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.before),
+/* harmony export */   "bind": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.bind),
+/* harmony export */   "bindAll": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.bindAll),
+/* harmony export */   "chain": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.chain),
+/* harmony export */   "chunk": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.chunk),
+/* harmony export */   "clone": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.clone),
+/* harmony export */   "collect": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.collect),
+/* harmony export */   "compact": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.compact),
+/* harmony export */   "compose": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.compose),
+/* harmony export */   "constant": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.constant),
+/* harmony export */   "contains": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.contains),
+/* harmony export */   "countBy": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.countBy),
+/* harmony export */   "create": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.create),
+/* harmony export */   "debounce": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.debounce),
+/* harmony export */   "default": () => (/* reexport safe */ _index_default_js__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "defaults": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.defaults),
+/* harmony export */   "defer": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.defer),
+/* harmony export */   "delay": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.delay),
+/* harmony export */   "detect": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.detect),
+/* harmony export */   "difference": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.difference),
+/* harmony export */   "drop": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.drop),
+/* harmony export */   "each": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.each),
+/* harmony export */   "escape": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.escape),
+/* harmony export */   "every": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.every),
+/* harmony export */   "extend": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.extend),
+/* harmony export */   "extendOwn": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.extendOwn),
+/* harmony export */   "filter": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.filter),
+/* harmony export */   "find": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.find),
+/* harmony export */   "findIndex": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.findIndex),
+/* harmony export */   "findKey": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.findKey),
+/* harmony export */   "findLastIndex": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.findLastIndex),
+/* harmony export */   "findWhere": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.findWhere),
+/* harmony export */   "first": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.first),
+/* harmony export */   "flatten": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.flatten),
+/* harmony export */   "foldl": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.foldl),
+/* harmony export */   "foldr": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.foldr),
+/* harmony export */   "forEach": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.forEach),
+/* harmony export */   "functions": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.functions),
+/* harmony export */   "get": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.get),
+/* harmony export */   "groupBy": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.groupBy),
+/* harmony export */   "has": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.has),
+/* harmony export */   "head": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.head),
+/* harmony export */   "identity": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.identity),
+/* harmony export */   "include": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.include),
+/* harmony export */   "includes": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.includes),
+/* harmony export */   "indexBy": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.indexBy),
+/* harmony export */   "indexOf": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.indexOf),
+/* harmony export */   "initial": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.initial),
+/* harmony export */   "inject": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.inject),
+/* harmony export */   "intersection": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.intersection),
+/* harmony export */   "invert": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.invert),
+/* harmony export */   "invoke": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.invoke),
+/* harmony export */   "isArguments": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isArguments),
+/* harmony export */   "isArray": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isArray),
+/* harmony export */   "isArrayBuffer": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isArrayBuffer),
+/* harmony export */   "isBoolean": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isBoolean),
+/* harmony export */   "isDataView": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isDataView),
+/* harmony export */   "isDate": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isDate),
+/* harmony export */   "isElement": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isElement),
+/* harmony export */   "isEmpty": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isEmpty),
+/* harmony export */   "isEqual": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isEqual),
+/* harmony export */   "isError": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isError),
+/* harmony export */   "isFinite": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isFinite),
+/* harmony export */   "isFunction": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isFunction),
+/* harmony export */   "isMap": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isMap),
+/* harmony export */   "isMatch": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isMatch),
+/* harmony export */   "isNaN": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isNaN),
+/* harmony export */   "isNull": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isNull),
+/* harmony export */   "isNumber": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isNumber),
+/* harmony export */   "isObject": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isObject),
+/* harmony export */   "isRegExp": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isRegExp),
+/* harmony export */   "isSet": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isSet),
+/* harmony export */   "isString": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isString),
+/* harmony export */   "isSymbol": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isSymbol),
+/* harmony export */   "isTypedArray": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isTypedArray),
+/* harmony export */   "isUndefined": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isUndefined),
+/* harmony export */   "isWeakMap": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isWeakMap),
+/* harmony export */   "isWeakSet": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.isWeakSet),
+/* harmony export */   "iteratee": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.iteratee),
+/* harmony export */   "keys": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.keys),
+/* harmony export */   "last": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.last),
+/* harmony export */   "lastIndexOf": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.lastIndexOf),
+/* harmony export */   "map": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.map),
+/* harmony export */   "mapObject": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.mapObject),
+/* harmony export */   "matcher": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.matcher),
+/* harmony export */   "matches": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.matches),
+/* harmony export */   "max": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.max),
+/* harmony export */   "memoize": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.memoize),
+/* harmony export */   "methods": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.methods),
+/* harmony export */   "min": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.min),
+/* harmony export */   "mixin": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.mixin),
+/* harmony export */   "negate": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.negate),
+/* harmony export */   "noop": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.noop),
+/* harmony export */   "now": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.now),
+/* harmony export */   "object": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.object),
+/* harmony export */   "omit": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.omit),
+/* harmony export */   "once": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.once),
+/* harmony export */   "pairs": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.pairs),
+/* harmony export */   "partial": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.partial),
+/* harmony export */   "partition": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.partition),
+/* harmony export */   "pick": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.pick),
+/* harmony export */   "pluck": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.pluck),
+/* harmony export */   "property": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.property),
+/* harmony export */   "propertyOf": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.propertyOf),
+/* harmony export */   "random": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.random),
+/* harmony export */   "range": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.range),
+/* harmony export */   "reduce": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.reduce),
+/* harmony export */   "reduceRight": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.reduceRight),
+/* harmony export */   "reject": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.reject),
+/* harmony export */   "rest": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.rest),
+/* harmony export */   "restArguments": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.restArguments),
+/* harmony export */   "result": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.result),
+/* harmony export */   "sample": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.sample),
+/* harmony export */   "select": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.select),
+/* harmony export */   "shuffle": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.shuffle),
+/* harmony export */   "size": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.size),
+/* harmony export */   "some": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.some),
+/* harmony export */   "sortBy": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.sortBy),
+/* harmony export */   "sortedIndex": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.sortedIndex),
+/* harmony export */   "tail": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.tail),
+/* harmony export */   "take": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.take),
+/* harmony export */   "tap": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.tap),
+/* harmony export */   "template": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.template),
+/* harmony export */   "templateSettings": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.templateSettings),
+/* harmony export */   "throttle": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.throttle),
+/* harmony export */   "times": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.times),
+/* harmony export */   "toArray": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.toArray),
+/* harmony export */   "toPath": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.toPath),
+/* harmony export */   "transpose": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.transpose),
+/* harmony export */   "unescape": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.unescape),
+/* harmony export */   "union": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.union),
+/* harmony export */   "uniq": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.uniq),
+/* harmony export */   "unique": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.unique),
+/* harmony export */   "uniqueId": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.uniqueId),
+/* harmony export */   "unzip": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.unzip),
+/* harmony export */   "values": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.values),
+/* harmony export */   "where": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.where),
+/* harmony export */   "without": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.without),
+/* harmony export */   "wrap": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.wrap),
+/* harmony export */   "zip": () => (/* reexport safe */ _index_js__WEBPACK_IMPORTED_MODULE_1__.zip)
+/* harmony export */ });
+/* harmony import */ var _index_default_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index-default.js */ "./node_modules/underscore/modules/index-default.js");
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./index.js */ "./node_modules/underscore/modules/index.js");
+// ESM Exports
+// ===========
+// This module is the package entry point for ES module users. In other words,
+// it is the module they are interfacing with when they import from the whole
+// package instead of from a submodule, like this:
+//
+// ```js
+// import { map } from 'underscore';
+// ```
+//
+// The difference with `./index-default`, which is the package entry point for
+// CommonJS, AMD and UMD users, is purely technical. In ES modules, named and
+// default exports are considered to be siblings, so when you have a default
+// export, its properties are not automatically available as named exports. For
+// this reason, we re-export the named exports in addition to providing the same
+// default export as in `./index-default`.
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/index-default.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/index-default.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.js */ "./node_modules/underscore/modules/index.js");
+// Default Export
+// ==============
+// In this module, we mix our bundled exports into the `_` object and export
+// the result. This is analogous to setting `module.exports = _` in CommonJS.
+// Hence, this module is also the entry point of our UMD bundle and the package
+// entry point for CommonJS and AMD users. In other words, this is (the source
+// of) the module you are interfacing with when you do any of the following:
+//
+// ```js
+// // CommonJS
+// var _ = require('underscore');
+//
+// // AMD
+// define(['underscore'], function(_) {...});
+//
+// // UMD in the browser
+// // _ is available as a global variable
+// ```
+
+
+
+// Add all of the Underscore functions to the wrapper object.
+var _ = (0,_index_js__WEBPACK_IMPORTED_MODULE_0__.mixin)(_index_js__WEBPACK_IMPORTED_MODULE_0__);
+// Legacy Node.js API.
+_._ = _;
+// Export the Underscore API.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/index.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/index.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "VERSION": () => (/* reexport safe */ _setup_js__WEBPACK_IMPORTED_MODULE_0__.VERSION),
+/* harmony export */   "after": () => (/* reexport safe */ _after_js__WEBPACK_IMPORTED_MODULE_72__["default"]),
+/* harmony export */   "all": () => (/* reexport safe */ _every_js__WEBPACK_IMPORTED_MODULE_89__["default"]),
+/* harmony export */   "allKeys": () => (/* reexport safe */ _allKeys_js__WEBPACK_IMPORTED_MODULE_29__["default"]),
+/* harmony export */   "any": () => (/* reexport safe */ _some_js__WEBPACK_IMPORTED_MODULE_90__["default"]),
+/* harmony export */   "assign": () => (/* reexport safe */ _extendOwn_js__WEBPACK_IMPORTED_MODULE_35__["default"]),
+/* harmony export */   "before": () => (/* reexport safe */ _before_js__WEBPACK_IMPORTED_MODULE_73__["default"]),
+/* harmony export */   "bind": () => (/* reexport safe */ _bind_js__WEBPACK_IMPORTED_MODULE_62__["default"]),
+/* harmony export */   "bindAll": () => (/* reexport safe */ _bindAll_js__WEBPACK_IMPORTED_MODULE_63__["default"]),
+/* harmony export */   "chain": () => (/* reexport safe */ _chain_js__WEBPACK_IMPORTED_MODULE_59__["default"]),
+/* harmony export */   "chunk": () => (/* reexport safe */ _chunk_js__WEBPACK_IMPORTED_MODULE_123__["default"]),
+/* harmony export */   "clone": () => (/* reexport safe */ _clone_js__WEBPACK_IMPORTED_MODULE_38__["default"]),
+/* harmony export */   "collect": () => (/* reexport safe */ _map_js__WEBPACK_IMPORTED_MODULE_84__["default"]),
+/* harmony export */   "compact": () => (/* reexport safe */ _compact_js__WEBPACK_IMPORTED_MODULE_112__["default"]),
+/* harmony export */   "compose": () => (/* reexport safe */ _compose_js__WEBPACK_IMPORTED_MODULE_71__["default"]),
+/* harmony export */   "constant": () => (/* reexport safe */ _constant_js__WEBPACK_IMPORTED_MODULE_44__["default"]),
+/* harmony export */   "contains": () => (/* reexport safe */ _contains_js__WEBPACK_IMPORTED_MODULE_91__["default"]),
+/* harmony export */   "countBy": () => (/* reexport safe */ _countBy_js__WEBPACK_IMPORTED_MODULE_102__["default"]),
+/* harmony export */   "create": () => (/* reexport safe */ _create_js__WEBPACK_IMPORTED_MODULE_37__["default"]),
+/* harmony export */   "debounce": () => (/* reexport safe */ _debounce_js__WEBPACK_IMPORTED_MODULE_68__["default"]),
+/* harmony export */   "default": () => (/* reexport safe */ _underscore_array_methods_js__WEBPACK_IMPORTED_MODULE_125__["default"]),
+/* harmony export */   "defaults": () => (/* reexport safe */ _defaults_js__WEBPACK_IMPORTED_MODULE_36__["default"]),
+/* harmony export */   "defer": () => (/* reexport safe */ _defer_js__WEBPACK_IMPORTED_MODULE_66__["default"]),
+/* harmony export */   "delay": () => (/* reexport safe */ _delay_js__WEBPACK_IMPORTED_MODULE_65__["default"]),
+/* harmony export */   "detect": () => (/* reexport safe */ _find_js__WEBPACK_IMPORTED_MODULE_81__["default"]),
+/* harmony export */   "difference": () => (/* reexport safe */ _difference_js__WEBPACK_IMPORTED_MODULE_118__["default"]),
+/* harmony export */   "drop": () => (/* reexport safe */ _rest_js__WEBPACK_IMPORTED_MODULE_111__["default"]),
+/* harmony export */   "each": () => (/* reexport safe */ _each_js__WEBPACK_IMPORTED_MODULE_83__["default"]),
+/* harmony export */   "escape": () => (/* reexport safe */ _escape_js__WEBPACK_IMPORTED_MODULE_53__["default"]),
+/* harmony export */   "every": () => (/* reexport safe */ _every_js__WEBPACK_IMPORTED_MODULE_89__["default"]),
+/* harmony export */   "extend": () => (/* reexport safe */ _extend_js__WEBPACK_IMPORTED_MODULE_34__["default"]),
+/* harmony export */   "extendOwn": () => (/* reexport safe */ _extendOwn_js__WEBPACK_IMPORTED_MODULE_35__["default"]),
+/* harmony export */   "filter": () => (/* reexport safe */ _filter_js__WEBPACK_IMPORTED_MODULE_87__["default"]),
+/* harmony export */   "find": () => (/* reexport safe */ _find_js__WEBPACK_IMPORTED_MODULE_81__["default"]),
+/* harmony export */   "findIndex": () => (/* reexport safe */ _findIndex_js__WEBPACK_IMPORTED_MODULE_76__["default"]),
+/* harmony export */   "findKey": () => (/* reexport safe */ _findKey_js__WEBPACK_IMPORTED_MODULE_75__["default"]),
+/* harmony export */   "findLastIndex": () => (/* reexport safe */ _findLastIndex_js__WEBPACK_IMPORTED_MODULE_77__["default"]),
+/* harmony export */   "findWhere": () => (/* reexport safe */ _findWhere_js__WEBPACK_IMPORTED_MODULE_82__["default"]),
+/* harmony export */   "first": () => (/* reexport safe */ _first_js__WEBPACK_IMPORTED_MODULE_108__["default"]),
+/* harmony export */   "flatten": () => (/* reexport safe */ _flatten_js__WEBPACK_IMPORTED_MODULE_113__["default"]),
+/* harmony export */   "foldl": () => (/* reexport safe */ _reduce_js__WEBPACK_IMPORTED_MODULE_85__["default"]),
+/* harmony export */   "foldr": () => (/* reexport safe */ _reduceRight_js__WEBPACK_IMPORTED_MODULE_86__["default"]),
+/* harmony export */   "forEach": () => (/* reexport safe */ _each_js__WEBPACK_IMPORTED_MODULE_83__["default"]),
+/* harmony export */   "functions": () => (/* reexport safe */ _functions_js__WEBPACK_IMPORTED_MODULE_33__["default"]),
+/* harmony export */   "get": () => (/* reexport safe */ _get_js__WEBPACK_IMPORTED_MODULE_40__["default"]),
+/* harmony export */   "groupBy": () => (/* reexport safe */ _groupBy_js__WEBPACK_IMPORTED_MODULE_100__["default"]),
+/* harmony export */   "has": () => (/* reexport safe */ _has_js__WEBPACK_IMPORTED_MODULE_41__["default"]),
+/* harmony export */   "head": () => (/* reexport safe */ _first_js__WEBPACK_IMPORTED_MODULE_108__["default"]),
+/* harmony export */   "identity": () => (/* reexport safe */ _identity_js__WEBPACK_IMPORTED_MODULE_43__["default"]),
+/* harmony export */   "include": () => (/* reexport safe */ _contains_js__WEBPACK_IMPORTED_MODULE_91__["default"]),
+/* harmony export */   "includes": () => (/* reexport safe */ _contains_js__WEBPACK_IMPORTED_MODULE_91__["default"]),
+/* harmony export */   "indexBy": () => (/* reexport safe */ _indexBy_js__WEBPACK_IMPORTED_MODULE_101__["default"]),
+/* harmony export */   "indexOf": () => (/* reexport safe */ _indexOf_js__WEBPACK_IMPORTED_MODULE_79__["default"]),
+/* harmony export */   "initial": () => (/* reexport safe */ _initial_js__WEBPACK_IMPORTED_MODULE_109__["default"]),
+/* harmony export */   "inject": () => (/* reexport safe */ _reduce_js__WEBPACK_IMPORTED_MODULE_85__["default"]),
+/* harmony export */   "intersection": () => (/* reexport safe */ _intersection_js__WEBPACK_IMPORTED_MODULE_117__["default"]),
+/* harmony export */   "invert": () => (/* reexport safe */ _invert_js__WEBPACK_IMPORTED_MODULE_32__["default"]),
+/* harmony export */   "invoke": () => (/* reexport safe */ _invoke_js__WEBPACK_IMPORTED_MODULE_92__["default"]),
+/* harmony export */   "isArguments": () => (/* reexport safe */ _isArguments_js__WEBPACK_IMPORTED_MODULE_17__["default"]),
+/* harmony export */   "isArray": () => (/* reexport safe */ _isArray_js__WEBPACK_IMPORTED_MODULE_15__["default"]),
+/* harmony export */   "isArrayBuffer": () => (/* reexport safe */ _isArrayBuffer_js__WEBPACK_IMPORTED_MODULE_13__["default"]),
+/* harmony export */   "isBoolean": () => (/* reexport safe */ _isBoolean_js__WEBPACK_IMPORTED_MODULE_5__["default"]),
+/* harmony export */   "isDataView": () => (/* reexport safe */ _isDataView_js__WEBPACK_IMPORTED_MODULE_14__["default"]),
+/* harmony export */   "isDate": () => (/* reexport safe */ _isDate_js__WEBPACK_IMPORTED_MODULE_9__["default"]),
+/* harmony export */   "isElement": () => (/* reexport safe */ _isElement_js__WEBPACK_IMPORTED_MODULE_6__["default"]),
+/* harmony export */   "isEmpty": () => (/* reexport safe */ _isEmpty_js__WEBPACK_IMPORTED_MODULE_21__["default"]),
+/* harmony export */   "isEqual": () => (/* reexport safe */ _isEqual_js__WEBPACK_IMPORTED_MODULE_23__["default"]),
+/* harmony export */   "isError": () => (/* reexport safe */ _isError_js__WEBPACK_IMPORTED_MODULE_11__["default"]),
+/* harmony export */   "isFinite": () => (/* reexport safe */ _isFinite_js__WEBPACK_IMPORTED_MODULE_18__["default"]),
+/* harmony export */   "isFunction": () => (/* reexport safe */ _isFunction_js__WEBPACK_IMPORTED_MODULE_16__["default"]),
+/* harmony export */   "isMap": () => (/* reexport safe */ _isMap_js__WEBPACK_IMPORTED_MODULE_24__["default"]),
+/* harmony export */   "isMatch": () => (/* reexport safe */ _isMatch_js__WEBPACK_IMPORTED_MODULE_22__["default"]),
+/* harmony export */   "isNaN": () => (/* reexport safe */ _isNaN_js__WEBPACK_IMPORTED_MODULE_19__["default"]),
+/* harmony export */   "isNull": () => (/* reexport safe */ _isNull_js__WEBPACK_IMPORTED_MODULE_3__["default"]),
+/* harmony export */   "isNumber": () => (/* reexport safe */ _isNumber_js__WEBPACK_IMPORTED_MODULE_8__["default"]),
+/* harmony export */   "isObject": () => (/* reexport safe */ _isObject_js__WEBPACK_IMPORTED_MODULE_2__["default"]),
+/* harmony export */   "isRegExp": () => (/* reexport safe */ _isRegExp_js__WEBPACK_IMPORTED_MODULE_10__["default"]),
+/* harmony export */   "isSet": () => (/* reexport safe */ _isSet_js__WEBPACK_IMPORTED_MODULE_26__["default"]),
+/* harmony export */   "isString": () => (/* reexport safe */ _isString_js__WEBPACK_IMPORTED_MODULE_7__["default"]),
+/* harmony export */   "isSymbol": () => (/* reexport safe */ _isSymbol_js__WEBPACK_IMPORTED_MODULE_12__["default"]),
+/* harmony export */   "isTypedArray": () => (/* reexport safe */ _isTypedArray_js__WEBPACK_IMPORTED_MODULE_20__["default"]),
+/* harmony export */   "isUndefined": () => (/* reexport safe */ _isUndefined_js__WEBPACK_IMPORTED_MODULE_4__["default"]),
+/* harmony export */   "isWeakMap": () => (/* reexport safe */ _isWeakMap_js__WEBPACK_IMPORTED_MODULE_25__["default"]),
+/* harmony export */   "isWeakSet": () => (/* reexport safe */ _isWeakSet_js__WEBPACK_IMPORTED_MODULE_27__["default"]),
+/* harmony export */   "iteratee": () => (/* reexport safe */ _iteratee_js__WEBPACK_IMPORTED_MODULE_60__["default"]),
+/* harmony export */   "keys": () => (/* reexport safe */ _keys_js__WEBPACK_IMPORTED_MODULE_28__["default"]),
+/* harmony export */   "last": () => (/* reexport safe */ _last_js__WEBPACK_IMPORTED_MODULE_110__["default"]),
+/* harmony export */   "lastIndexOf": () => (/* reexport safe */ _lastIndexOf_js__WEBPACK_IMPORTED_MODULE_80__["default"]),
+/* harmony export */   "map": () => (/* reexport safe */ _map_js__WEBPACK_IMPORTED_MODULE_84__["default"]),
+/* harmony export */   "mapObject": () => (/* reexport safe */ _mapObject_js__WEBPACK_IMPORTED_MODULE_42__["default"]),
+/* harmony export */   "matcher": () => (/* reexport safe */ _matcher_js__WEBPACK_IMPORTED_MODULE_49__["default"]),
+/* harmony export */   "matches": () => (/* reexport safe */ _matcher_js__WEBPACK_IMPORTED_MODULE_49__["default"]),
+/* harmony export */   "max": () => (/* reexport safe */ _max_js__WEBPACK_IMPORTED_MODULE_95__["default"]),
+/* harmony export */   "memoize": () => (/* reexport safe */ _memoize_js__WEBPACK_IMPORTED_MODULE_64__["default"]),
+/* harmony export */   "methods": () => (/* reexport safe */ _functions_js__WEBPACK_IMPORTED_MODULE_33__["default"]),
+/* harmony export */   "min": () => (/* reexport safe */ _min_js__WEBPACK_IMPORTED_MODULE_96__["default"]),
+/* harmony export */   "mixin": () => (/* reexport safe */ _mixin_js__WEBPACK_IMPORTED_MODULE_124__["default"]),
+/* harmony export */   "negate": () => (/* reexport safe */ _negate_js__WEBPACK_IMPORTED_MODULE_70__["default"]),
+/* harmony export */   "noop": () => (/* reexport safe */ _noop_js__WEBPACK_IMPORTED_MODULE_45__["default"]),
+/* harmony export */   "now": () => (/* reexport safe */ _now_js__WEBPACK_IMPORTED_MODULE_52__["default"]),
+/* harmony export */   "object": () => (/* reexport safe */ _object_js__WEBPACK_IMPORTED_MODULE_121__["default"]),
+/* harmony export */   "omit": () => (/* reexport safe */ _omit_js__WEBPACK_IMPORTED_MODULE_107__["default"]),
+/* harmony export */   "once": () => (/* reexport safe */ _once_js__WEBPACK_IMPORTED_MODULE_74__["default"]),
+/* harmony export */   "pairs": () => (/* reexport safe */ _pairs_js__WEBPACK_IMPORTED_MODULE_31__["default"]),
+/* harmony export */   "partial": () => (/* reexport safe */ _partial_js__WEBPACK_IMPORTED_MODULE_61__["default"]),
+/* harmony export */   "partition": () => (/* reexport safe */ _partition_js__WEBPACK_IMPORTED_MODULE_103__["default"]),
+/* harmony export */   "pick": () => (/* reexport safe */ _pick_js__WEBPACK_IMPORTED_MODULE_106__["default"]),
+/* harmony export */   "pluck": () => (/* reexport safe */ _pluck_js__WEBPACK_IMPORTED_MODULE_93__["default"]),
+/* harmony export */   "property": () => (/* reexport safe */ _property_js__WEBPACK_IMPORTED_MODULE_47__["default"]),
+/* harmony export */   "propertyOf": () => (/* reexport safe */ _propertyOf_js__WEBPACK_IMPORTED_MODULE_48__["default"]),
+/* harmony export */   "random": () => (/* reexport safe */ _random_js__WEBPACK_IMPORTED_MODULE_51__["default"]),
+/* harmony export */   "range": () => (/* reexport safe */ _range_js__WEBPACK_IMPORTED_MODULE_122__["default"]),
+/* harmony export */   "reduce": () => (/* reexport safe */ _reduce_js__WEBPACK_IMPORTED_MODULE_85__["default"]),
+/* harmony export */   "reduceRight": () => (/* reexport safe */ _reduceRight_js__WEBPACK_IMPORTED_MODULE_86__["default"]),
+/* harmony export */   "reject": () => (/* reexport safe */ _reject_js__WEBPACK_IMPORTED_MODULE_88__["default"]),
+/* harmony export */   "rest": () => (/* reexport safe */ _rest_js__WEBPACK_IMPORTED_MODULE_111__["default"]),
+/* harmony export */   "restArguments": () => (/* reexport safe */ _restArguments_js__WEBPACK_IMPORTED_MODULE_1__["default"]),
+/* harmony export */   "result": () => (/* reexport safe */ _result_js__WEBPACK_IMPORTED_MODULE_57__["default"]),
+/* harmony export */   "sample": () => (/* reexport safe */ _sample_js__WEBPACK_IMPORTED_MODULE_98__["default"]),
+/* harmony export */   "select": () => (/* reexport safe */ _filter_js__WEBPACK_IMPORTED_MODULE_87__["default"]),
+/* harmony export */   "shuffle": () => (/* reexport safe */ _shuffle_js__WEBPACK_IMPORTED_MODULE_97__["default"]),
+/* harmony export */   "size": () => (/* reexport safe */ _size_js__WEBPACK_IMPORTED_MODULE_105__["default"]),
+/* harmony export */   "some": () => (/* reexport safe */ _some_js__WEBPACK_IMPORTED_MODULE_90__["default"]),
+/* harmony export */   "sortBy": () => (/* reexport safe */ _sortBy_js__WEBPACK_IMPORTED_MODULE_99__["default"]),
+/* harmony export */   "sortedIndex": () => (/* reexport safe */ _sortedIndex_js__WEBPACK_IMPORTED_MODULE_78__["default"]),
+/* harmony export */   "tail": () => (/* reexport safe */ _rest_js__WEBPACK_IMPORTED_MODULE_111__["default"]),
+/* harmony export */   "take": () => (/* reexport safe */ _first_js__WEBPACK_IMPORTED_MODULE_108__["default"]),
+/* harmony export */   "tap": () => (/* reexport safe */ _tap_js__WEBPACK_IMPORTED_MODULE_39__["default"]),
+/* harmony export */   "template": () => (/* reexport safe */ _template_js__WEBPACK_IMPORTED_MODULE_56__["default"]),
+/* harmony export */   "templateSettings": () => (/* reexport safe */ _templateSettings_js__WEBPACK_IMPORTED_MODULE_55__["default"]),
+/* harmony export */   "throttle": () => (/* reexport safe */ _throttle_js__WEBPACK_IMPORTED_MODULE_67__["default"]),
+/* harmony export */   "times": () => (/* reexport safe */ _times_js__WEBPACK_IMPORTED_MODULE_50__["default"]),
+/* harmony export */   "toArray": () => (/* reexport safe */ _toArray_js__WEBPACK_IMPORTED_MODULE_104__["default"]),
+/* harmony export */   "toPath": () => (/* reexport safe */ _toPath_js__WEBPACK_IMPORTED_MODULE_46__["default"]),
+/* harmony export */   "transpose": () => (/* reexport safe */ _unzip_js__WEBPACK_IMPORTED_MODULE_119__["default"]),
+/* harmony export */   "unescape": () => (/* reexport safe */ _unescape_js__WEBPACK_IMPORTED_MODULE_54__["default"]),
+/* harmony export */   "union": () => (/* reexport safe */ _union_js__WEBPACK_IMPORTED_MODULE_116__["default"]),
+/* harmony export */   "uniq": () => (/* reexport safe */ _uniq_js__WEBPACK_IMPORTED_MODULE_115__["default"]),
+/* harmony export */   "unique": () => (/* reexport safe */ _uniq_js__WEBPACK_IMPORTED_MODULE_115__["default"]),
+/* harmony export */   "uniqueId": () => (/* reexport safe */ _uniqueId_js__WEBPACK_IMPORTED_MODULE_58__["default"]),
+/* harmony export */   "unzip": () => (/* reexport safe */ _unzip_js__WEBPACK_IMPORTED_MODULE_119__["default"]),
+/* harmony export */   "values": () => (/* reexport safe */ _values_js__WEBPACK_IMPORTED_MODULE_30__["default"]),
+/* harmony export */   "where": () => (/* reexport safe */ _where_js__WEBPACK_IMPORTED_MODULE_94__["default"]),
+/* harmony export */   "without": () => (/* reexport safe */ _without_js__WEBPACK_IMPORTED_MODULE_114__["default"]),
+/* harmony export */   "wrap": () => (/* reexport safe */ _wrap_js__WEBPACK_IMPORTED_MODULE_69__["default"]),
+/* harmony export */   "zip": () => (/* reexport safe */ _zip_js__WEBPACK_IMPORTED_MODULE_120__["default"])
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _isNull_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./isNull.js */ "./node_modules/underscore/modules/isNull.js");
+/* harmony import */ var _isUndefined_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./isUndefined.js */ "./node_modules/underscore/modules/isUndefined.js");
+/* harmony import */ var _isBoolean_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./isBoolean.js */ "./node_modules/underscore/modules/isBoolean.js");
+/* harmony import */ var _isElement_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./isElement.js */ "./node_modules/underscore/modules/isElement.js");
+/* harmony import */ var _isString_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./isString.js */ "./node_modules/underscore/modules/isString.js");
+/* harmony import */ var _isNumber_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./isNumber.js */ "./node_modules/underscore/modules/isNumber.js");
+/* harmony import */ var _isDate_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./isDate.js */ "./node_modules/underscore/modules/isDate.js");
+/* harmony import */ var _isRegExp_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./isRegExp.js */ "./node_modules/underscore/modules/isRegExp.js");
+/* harmony import */ var _isError_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./isError.js */ "./node_modules/underscore/modules/isError.js");
+/* harmony import */ var _isSymbol_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./isSymbol.js */ "./node_modules/underscore/modules/isSymbol.js");
+/* harmony import */ var _isArrayBuffer_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./isArrayBuffer.js */ "./node_modules/underscore/modules/isArrayBuffer.js");
+/* harmony import */ var _isDataView_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./isDataView.js */ "./node_modules/underscore/modules/isDataView.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _isArguments_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./isArguments.js */ "./node_modules/underscore/modules/isArguments.js");
+/* harmony import */ var _isFinite_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./isFinite.js */ "./node_modules/underscore/modules/isFinite.js");
+/* harmony import */ var _isNaN_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./isNaN.js */ "./node_modules/underscore/modules/isNaN.js");
+/* harmony import */ var _isTypedArray_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./isTypedArray.js */ "./node_modules/underscore/modules/isTypedArray.js");
+/* harmony import */ var _isEmpty_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./isEmpty.js */ "./node_modules/underscore/modules/isEmpty.js");
+/* harmony import */ var _isMatch_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./isMatch.js */ "./node_modules/underscore/modules/isMatch.js");
+/* harmony import */ var _isEqual_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./isEqual.js */ "./node_modules/underscore/modules/isEqual.js");
+/* harmony import */ var _isMap_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./isMap.js */ "./node_modules/underscore/modules/isMap.js");
+/* harmony import */ var _isWeakMap_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./isWeakMap.js */ "./node_modules/underscore/modules/isWeakMap.js");
+/* harmony import */ var _isSet_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./isSet.js */ "./node_modules/underscore/modules/isSet.js");
+/* harmony import */ var _isWeakSet_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./isWeakSet.js */ "./node_modules/underscore/modules/isWeakSet.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+/* harmony import */ var _allKeys_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./allKeys.js */ "./node_modules/underscore/modules/allKeys.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+/* harmony import */ var _pairs_js__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./pairs.js */ "./node_modules/underscore/modules/pairs.js");
+/* harmony import */ var _invert_js__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./invert.js */ "./node_modules/underscore/modules/invert.js");
+/* harmony import */ var _functions_js__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./functions.js */ "./node_modules/underscore/modules/functions.js");
+/* harmony import */ var _extend_js__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./extend.js */ "./node_modules/underscore/modules/extend.js");
+/* harmony import */ var _extendOwn_js__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./extendOwn.js */ "./node_modules/underscore/modules/extendOwn.js");
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/underscore/modules/defaults.js");
+/* harmony import */ var _create_js__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./create.js */ "./node_modules/underscore/modules/create.js");
+/* harmony import */ var _clone_js__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./clone.js */ "./node_modules/underscore/modules/clone.js");
+/* harmony import */ var _tap_js__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./tap.js */ "./node_modules/underscore/modules/tap.js");
+/* harmony import */ var _get_js__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./get.js */ "./node_modules/underscore/modules/get.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./has.js */ "./node_modules/underscore/modules/has.js");
+/* harmony import */ var _mapObject_js__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./mapObject.js */ "./node_modules/underscore/modules/mapObject.js");
+/* harmony import */ var _identity_js__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./identity.js */ "./node_modules/underscore/modules/identity.js");
+/* harmony import */ var _constant_js__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./constant.js */ "./node_modules/underscore/modules/constant.js");
+/* harmony import */ var _noop_js__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./noop.js */ "./node_modules/underscore/modules/noop.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./toPath.js */ "./node_modules/underscore/modules/toPath.js");
+/* harmony import */ var _property_js__WEBPACK_IMPORTED_MODULE_47__ = __webpack_require__(/*! ./property.js */ "./node_modules/underscore/modules/property.js");
+/* harmony import */ var _propertyOf_js__WEBPACK_IMPORTED_MODULE_48__ = __webpack_require__(/*! ./propertyOf.js */ "./node_modules/underscore/modules/propertyOf.js");
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_49__ = __webpack_require__(/*! ./matcher.js */ "./node_modules/underscore/modules/matcher.js");
+/* harmony import */ var _times_js__WEBPACK_IMPORTED_MODULE_50__ = __webpack_require__(/*! ./times.js */ "./node_modules/underscore/modules/times.js");
+/* harmony import */ var _random_js__WEBPACK_IMPORTED_MODULE_51__ = __webpack_require__(/*! ./random.js */ "./node_modules/underscore/modules/random.js");
+/* harmony import */ var _now_js__WEBPACK_IMPORTED_MODULE_52__ = __webpack_require__(/*! ./now.js */ "./node_modules/underscore/modules/now.js");
+/* harmony import */ var _escape_js__WEBPACK_IMPORTED_MODULE_53__ = __webpack_require__(/*! ./escape.js */ "./node_modules/underscore/modules/escape.js");
+/* harmony import */ var _unescape_js__WEBPACK_IMPORTED_MODULE_54__ = __webpack_require__(/*! ./unescape.js */ "./node_modules/underscore/modules/unescape.js");
+/* harmony import */ var _templateSettings_js__WEBPACK_IMPORTED_MODULE_55__ = __webpack_require__(/*! ./templateSettings.js */ "./node_modules/underscore/modules/templateSettings.js");
+/* harmony import */ var _template_js__WEBPACK_IMPORTED_MODULE_56__ = __webpack_require__(/*! ./template.js */ "./node_modules/underscore/modules/template.js");
+/* harmony import */ var _result_js__WEBPACK_IMPORTED_MODULE_57__ = __webpack_require__(/*! ./result.js */ "./node_modules/underscore/modules/result.js");
+/* harmony import */ var _uniqueId_js__WEBPACK_IMPORTED_MODULE_58__ = __webpack_require__(/*! ./uniqueId.js */ "./node_modules/underscore/modules/uniqueId.js");
+/* harmony import */ var _chain_js__WEBPACK_IMPORTED_MODULE_59__ = __webpack_require__(/*! ./chain.js */ "./node_modules/underscore/modules/chain.js");
+/* harmony import */ var _iteratee_js__WEBPACK_IMPORTED_MODULE_60__ = __webpack_require__(/*! ./iteratee.js */ "./node_modules/underscore/modules/iteratee.js");
+/* harmony import */ var _partial_js__WEBPACK_IMPORTED_MODULE_61__ = __webpack_require__(/*! ./partial.js */ "./node_modules/underscore/modules/partial.js");
+/* harmony import */ var _bind_js__WEBPACK_IMPORTED_MODULE_62__ = __webpack_require__(/*! ./bind.js */ "./node_modules/underscore/modules/bind.js");
+/* harmony import */ var _bindAll_js__WEBPACK_IMPORTED_MODULE_63__ = __webpack_require__(/*! ./bindAll.js */ "./node_modules/underscore/modules/bindAll.js");
+/* harmony import */ var _memoize_js__WEBPACK_IMPORTED_MODULE_64__ = __webpack_require__(/*! ./memoize.js */ "./node_modules/underscore/modules/memoize.js");
+/* harmony import */ var _delay_js__WEBPACK_IMPORTED_MODULE_65__ = __webpack_require__(/*! ./delay.js */ "./node_modules/underscore/modules/delay.js");
+/* harmony import */ var _defer_js__WEBPACK_IMPORTED_MODULE_66__ = __webpack_require__(/*! ./defer.js */ "./node_modules/underscore/modules/defer.js");
+/* harmony import */ var _throttle_js__WEBPACK_IMPORTED_MODULE_67__ = __webpack_require__(/*! ./throttle.js */ "./node_modules/underscore/modules/throttle.js");
+/* harmony import */ var _debounce_js__WEBPACK_IMPORTED_MODULE_68__ = __webpack_require__(/*! ./debounce.js */ "./node_modules/underscore/modules/debounce.js");
+/* harmony import */ var _wrap_js__WEBPACK_IMPORTED_MODULE_69__ = __webpack_require__(/*! ./wrap.js */ "./node_modules/underscore/modules/wrap.js");
+/* harmony import */ var _negate_js__WEBPACK_IMPORTED_MODULE_70__ = __webpack_require__(/*! ./negate.js */ "./node_modules/underscore/modules/negate.js");
+/* harmony import */ var _compose_js__WEBPACK_IMPORTED_MODULE_71__ = __webpack_require__(/*! ./compose.js */ "./node_modules/underscore/modules/compose.js");
+/* harmony import */ var _after_js__WEBPACK_IMPORTED_MODULE_72__ = __webpack_require__(/*! ./after.js */ "./node_modules/underscore/modules/after.js");
+/* harmony import */ var _before_js__WEBPACK_IMPORTED_MODULE_73__ = __webpack_require__(/*! ./before.js */ "./node_modules/underscore/modules/before.js");
+/* harmony import */ var _once_js__WEBPACK_IMPORTED_MODULE_74__ = __webpack_require__(/*! ./once.js */ "./node_modules/underscore/modules/once.js");
+/* harmony import */ var _findKey_js__WEBPACK_IMPORTED_MODULE_75__ = __webpack_require__(/*! ./findKey.js */ "./node_modules/underscore/modules/findKey.js");
+/* harmony import */ var _findIndex_js__WEBPACK_IMPORTED_MODULE_76__ = __webpack_require__(/*! ./findIndex.js */ "./node_modules/underscore/modules/findIndex.js");
+/* harmony import */ var _findLastIndex_js__WEBPACK_IMPORTED_MODULE_77__ = __webpack_require__(/*! ./findLastIndex.js */ "./node_modules/underscore/modules/findLastIndex.js");
+/* harmony import */ var _sortedIndex_js__WEBPACK_IMPORTED_MODULE_78__ = __webpack_require__(/*! ./sortedIndex.js */ "./node_modules/underscore/modules/sortedIndex.js");
+/* harmony import */ var _indexOf_js__WEBPACK_IMPORTED_MODULE_79__ = __webpack_require__(/*! ./indexOf.js */ "./node_modules/underscore/modules/indexOf.js");
+/* harmony import */ var _lastIndexOf_js__WEBPACK_IMPORTED_MODULE_80__ = __webpack_require__(/*! ./lastIndexOf.js */ "./node_modules/underscore/modules/lastIndexOf.js");
+/* harmony import */ var _find_js__WEBPACK_IMPORTED_MODULE_81__ = __webpack_require__(/*! ./find.js */ "./node_modules/underscore/modules/find.js");
+/* harmony import */ var _findWhere_js__WEBPACK_IMPORTED_MODULE_82__ = __webpack_require__(/*! ./findWhere.js */ "./node_modules/underscore/modules/findWhere.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_83__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_84__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+/* harmony import */ var _reduce_js__WEBPACK_IMPORTED_MODULE_85__ = __webpack_require__(/*! ./reduce.js */ "./node_modules/underscore/modules/reduce.js");
+/* harmony import */ var _reduceRight_js__WEBPACK_IMPORTED_MODULE_86__ = __webpack_require__(/*! ./reduceRight.js */ "./node_modules/underscore/modules/reduceRight.js");
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_87__ = __webpack_require__(/*! ./filter.js */ "./node_modules/underscore/modules/filter.js");
+/* harmony import */ var _reject_js__WEBPACK_IMPORTED_MODULE_88__ = __webpack_require__(/*! ./reject.js */ "./node_modules/underscore/modules/reject.js");
+/* harmony import */ var _every_js__WEBPACK_IMPORTED_MODULE_89__ = __webpack_require__(/*! ./every.js */ "./node_modules/underscore/modules/every.js");
+/* harmony import */ var _some_js__WEBPACK_IMPORTED_MODULE_90__ = __webpack_require__(/*! ./some.js */ "./node_modules/underscore/modules/some.js");
+/* harmony import */ var _contains_js__WEBPACK_IMPORTED_MODULE_91__ = __webpack_require__(/*! ./contains.js */ "./node_modules/underscore/modules/contains.js");
+/* harmony import */ var _invoke_js__WEBPACK_IMPORTED_MODULE_92__ = __webpack_require__(/*! ./invoke.js */ "./node_modules/underscore/modules/invoke.js");
+/* harmony import */ var _pluck_js__WEBPACK_IMPORTED_MODULE_93__ = __webpack_require__(/*! ./pluck.js */ "./node_modules/underscore/modules/pluck.js");
+/* harmony import */ var _where_js__WEBPACK_IMPORTED_MODULE_94__ = __webpack_require__(/*! ./where.js */ "./node_modules/underscore/modules/where.js");
+/* harmony import */ var _max_js__WEBPACK_IMPORTED_MODULE_95__ = __webpack_require__(/*! ./max.js */ "./node_modules/underscore/modules/max.js");
+/* harmony import */ var _min_js__WEBPACK_IMPORTED_MODULE_96__ = __webpack_require__(/*! ./min.js */ "./node_modules/underscore/modules/min.js");
+/* harmony import */ var _shuffle_js__WEBPACK_IMPORTED_MODULE_97__ = __webpack_require__(/*! ./shuffle.js */ "./node_modules/underscore/modules/shuffle.js");
+/* harmony import */ var _sample_js__WEBPACK_IMPORTED_MODULE_98__ = __webpack_require__(/*! ./sample.js */ "./node_modules/underscore/modules/sample.js");
+/* harmony import */ var _sortBy_js__WEBPACK_IMPORTED_MODULE_99__ = __webpack_require__(/*! ./sortBy.js */ "./node_modules/underscore/modules/sortBy.js");
+/* harmony import */ var _groupBy_js__WEBPACK_IMPORTED_MODULE_100__ = __webpack_require__(/*! ./groupBy.js */ "./node_modules/underscore/modules/groupBy.js");
+/* harmony import */ var _indexBy_js__WEBPACK_IMPORTED_MODULE_101__ = __webpack_require__(/*! ./indexBy.js */ "./node_modules/underscore/modules/indexBy.js");
+/* harmony import */ var _countBy_js__WEBPACK_IMPORTED_MODULE_102__ = __webpack_require__(/*! ./countBy.js */ "./node_modules/underscore/modules/countBy.js");
+/* harmony import */ var _partition_js__WEBPACK_IMPORTED_MODULE_103__ = __webpack_require__(/*! ./partition.js */ "./node_modules/underscore/modules/partition.js");
+/* harmony import */ var _toArray_js__WEBPACK_IMPORTED_MODULE_104__ = __webpack_require__(/*! ./toArray.js */ "./node_modules/underscore/modules/toArray.js");
+/* harmony import */ var _size_js__WEBPACK_IMPORTED_MODULE_105__ = __webpack_require__(/*! ./size.js */ "./node_modules/underscore/modules/size.js");
+/* harmony import */ var _pick_js__WEBPACK_IMPORTED_MODULE_106__ = __webpack_require__(/*! ./pick.js */ "./node_modules/underscore/modules/pick.js");
+/* harmony import */ var _omit_js__WEBPACK_IMPORTED_MODULE_107__ = __webpack_require__(/*! ./omit.js */ "./node_modules/underscore/modules/omit.js");
+/* harmony import */ var _first_js__WEBPACK_IMPORTED_MODULE_108__ = __webpack_require__(/*! ./first.js */ "./node_modules/underscore/modules/first.js");
+/* harmony import */ var _initial_js__WEBPACK_IMPORTED_MODULE_109__ = __webpack_require__(/*! ./initial.js */ "./node_modules/underscore/modules/initial.js");
+/* harmony import */ var _last_js__WEBPACK_IMPORTED_MODULE_110__ = __webpack_require__(/*! ./last.js */ "./node_modules/underscore/modules/last.js");
+/* harmony import */ var _rest_js__WEBPACK_IMPORTED_MODULE_111__ = __webpack_require__(/*! ./rest.js */ "./node_modules/underscore/modules/rest.js");
+/* harmony import */ var _compact_js__WEBPACK_IMPORTED_MODULE_112__ = __webpack_require__(/*! ./compact.js */ "./node_modules/underscore/modules/compact.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_113__ = __webpack_require__(/*! ./flatten.js */ "./node_modules/underscore/modules/flatten.js");
+/* harmony import */ var _without_js__WEBPACK_IMPORTED_MODULE_114__ = __webpack_require__(/*! ./without.js */ "./node_modules/underscore/modules/without.js");
+/* harmony import */ var _uniq_js__WEBPACK_IMPORTED_MODULE_115__ = __webpack_require__(/*! ./uniq.js */ "./node_modules/underscore/modules/uniq.js");
+/* harmony import */ var _union_js__WEBPACK_IMPORTED_MODULE_116__ = __webpack_require__(/*! ./union.js */ "./node_modules/underscore/modules/union.js");
+/* harmony import */ var _intersection_js__WEBPACK_IMPORTED_MODULE_117__ = __webpack_require__(/*! ./intersection.js */ "./node_modules/underscore/modules/intersection.js");
+/* harmony import */ var _difference_js__WEBPACK_IMPORTED_MODULE_118__ = __webpack_require__(/*! ./difference.js */ "./node_modules/underscore/modules/difference.js");
+/* harmony import */ var _unzip_js__WEBPACK_IMPORTED_MODULE_119__ = __webpack_require__(/*! ./unzip.js */ "./node_modules/underscore/modules/unzip.js");
+/* harmony import */ var _zip_js__WEBPACK_IMPORTED_MODULE_120__ = __webpack_require__(/*! ./zip.js */ "./node_modules/underscore/modules/zip.js");
+/* harmony import */ var _object_js__WEBPACK_IMPORTED_MODULE_121__ = __webpack_require__(/*! ./object.js */ "./node_modules/underscore/modules/object.js");
+/* harmony import */ var _range_js__WEBPACK_IMPORTED_MODULE_122__ = __webpack_require__(/*! ./range.js */ "./node_modules/underscore/modules/range.js");
+/* harmony import */ var _chunk_js__WEBPACK_IMPORTED_MODULE_123__ = __webpack_require__(/*! ./chunk.js */ "./node_modules/underscore/modules/chunk.js");
+/* harmony import */ var _mixin_js__WEBPACK_IMPORTED_MODULE_124__ = __webpack_require__(/*! ./mixin.js */ "./node_modules/underscore/modules/mixin.js");
+/* harmony import */ var _underscore_array_methods_js__WEBPACK_IMPORTED_MODULE_125__ = __webpack_require__(/*! ./underscore-array-methods.js */ "./node_modules/underscore/modules/underscore-array-methods.js");
+// Named Exports
+// =============
+
+//     Underscore.js 1.13.6
+//     https://underscorejs.org
+//     (c) 2009-2022 Jeremy Ashkenas, Julian Gonggrijp, and DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
+
+// Baseline setup.
+
+
+
+// Object Functions
+// ----------------
+// Our most fundamental functions operate on any JavaScript object.
+// Most functions in Underscore depend on at least one function in this section.
+
+// A group of functions that check the types of core JavaScript values.
+// These are often informally referred to as the "isType" functions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Functions that treat an object as a dictionary of key-value pairs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Utility Functions
+// -----------------
+// A bit of a grab bag: Predicate-generating functions for use with filters and
+// loops, string escaping and templating, create random numbers and unique ids,
+// and functions that facilitate Underscore's chaining and iteration conventions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Function (ahem) Functions
+// -------------------------
+// These functions take a function as an argument and return a new function
+// as the result. Also known as higher-order functions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Finders
+// -------
+// Functions that extract (the position of) a single element from an object
+// or array based on some criterion.
+
+
+
+
+
+
+
+
+
+// Collection Functions
+// --------------------
+// Functions that work on any collection of elements: either an array, or
+// an object of key-value pairs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// `_.pick` and `_.omit` are actually object functions, but we put
+// them here in order to create a more natural reading order in the
+// monolithic build as they depend on `_.contains`.
+
+
+
+// Array Functions
+// ---------------
+// Functions that operate on arrays (and array-likes) only, because they’re
+// expressed in terms of operations on an ordered list of values.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// OOP
+// ---
+// These modules support the "object-oriented" calling style. See also
+// `underscore.js` and `index-default.js`.
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/indexBy.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/indexBy.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _group_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_group.js */ "./node_modules/underscore/modules/_group.js");
+
+
+// Indexes the object's values by a criterion, similar to `_.groupBy`, but for
+// when you know that your index values will be unique.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_group_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(result, value, key) {
+  result[key] = value;
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/indexOf.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/indexOf.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _sortedIndex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./sortedIndex.js */ "./node_modules/underscore/modules/sortedIndex.js");
+/* harmony import */ var _findIndex_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./findIndex.js */ "./node_modules/underscore/modules/findIndex.js");
+/* harmony import */ var _createIndexFinder_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_createIndexFinder.js */ "./node_modules/underscore/modules/_createIndexFinder.js");
+
+
+
+
+// Return the position of the first occurrence of an item in an array,
+// or -1 if the item is not included in the array.
+// If the array is large and already in sort order, pass `true`
+// for **isSorted** to use binary search.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createIndexFinder_js__WEBPACK_IMPORTED_MODULE_2__["default"])(1, _findIndex_js__WEBPACK_IMPORTED_MODULE_1__["default"], _sortedIndex_js__WEBPACK_IMPORTED_MODULE_0__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/initial.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/initial.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ initial)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Returns everything but the last entry of the array. Especially useful on
+// the arguments object. Passing **n** will return all the values in
+// the array, excluding the last N.
+function initial(array, n, guard) {
+  return _setup_js__WEBPACK_IMPORTED_MODULE_0__.slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/intersection.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/underscore/modules/intersection.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ intersection)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _contains_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./contains.js */ "./node_modules/underscore/modules/contains.js");
+
+
+
+// Produce an array that contains every item shared between all the
+// passed-in arrays.
+function intersection(array) {
+  var result = [];
+  var argsLength = arguments.length;
+  for (var i = 0, length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array); i < length; i++) {
+    var item = array[i];
+    if ((0,_contains_js__WEBPACK_IMPORTED_MODULE_1__["default"])(result, item)) continue;
+    var j;
+    for (j = 1; j < argsLength; j++) {
+      if (!(0,_contains_js__WEBPACK_IMPORTED_MODULE_1__["default"])(arguments[j], item)) break;
+    }
+    if (j === argsLength) result.push(item);
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/invert.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/invert.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ invert)
+/* harmony export */ });
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+// Invert the keys and values of an object. The values must be serializable.
+function invert(obj) {
+  var result = {};
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj);
+  for (var i = 0, length = _keys.length; i < length; i++) {
+    result[obj[_keys[i]]] = _keys[i];
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/invoke.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/invoke.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+/* harmony import */ var _deepGet_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_deepGet.js */ "./node_modules/underscore/modules/_deepGet.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./_toPath.js */ "./node_modules/underscore/modules/_toPath.js");
+
+
+
+
+
+
+// Invoke a method (with arguments) on every item in a collection.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(obj, path, args) {
+  var contextPath, func;
+  if ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(path)) {
+    func = path;
+  } else {
+    path = (0,_toPath_js__WEBPACK_IMPORTED_MODULE_4__["default"])(path);
+    contextPath = path.slice(0, -1);
+    path = path[path.length - 1];
+  }
+  return (0,_map_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, function(context) {
+    var method = func;
+    if (!method) {
+      if (contextPath && contextPath.length) {
+        context = (0,_deepGet_js__WEBPACK_IMPORTED_MODULE_3__["default"])(context, contextPath);
+      }
+      if (context == null) return void 0;
+      method = context[path];
+    }
+    return method == null ? method : method.apply(context, args);
+  });
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isArguments.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/isArguments.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+
+
+
+var isArguments = (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Arguments');
+
+// Define a fallback version of the method in browsers (ahem, IE < 9), where
+// there isn't any inspectable "Arguments" type.
+(function() {
+  if (!isArguments(arguments)) {
+    isArguments = function(obj) {
+      return (0,_has_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj, 'callee');
+    };
+  }
+}());
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (isArguments);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isArray.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/isArray.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+
+// Is a given value an array?
+// Delegates to ECMA5's native `Array.isArray`.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_setup_js__WEBPACK_IMPORTED_MODULE_0__.nativeIsArray || (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_1__["default"])('Array'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isArrayBuffer.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/isArrayBuffer.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('ArrayBuffer'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isBoolean.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/isBoolean.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isBoolean)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Is a given value a boolean?
+function isBoolean(obj) {
+  return obj === true || obj === false || _setup_js__WEBPACK_IMPORTED_MODULE_0__.toString.call(obj) === '[object Boolean]';
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isDataView.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/isDataView.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _isArrayBuffer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isArrayBuffer.js */ "./node_modules/underscore/modules/isArrayBuffer.js");
+/* harmony import */ var _stringTagBug_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_stringTagBug.js */ "./node_modules/underscore/modules/_stringTagBug.js");
+
+
+
+
+
+var isDataView = (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('DataView');
+
+// In IE 10 - Edge 13, we need a different heuristic
+// to determine whether an object is a `DataView`.
+function ie10IsDataView(obj) {
+  return obj != null && (0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj.getInt8) && (0,_isArrayBuffer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj.buffer);
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_stringTagBug_js__WEBPACK_IMPORTED_MODULE_3__.hasStringTagBug ? ie10IsDataView : isDataView);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isDate.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/isDate.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Date'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isElement.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/isElement.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isElement)
+/* harmony export */ });
+// Is a given value a DOM element?
+function isElement(obj) {
+  return !!(obj && obj.nodeType === 1);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isEmpty.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/isEmpty.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isEmpty)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _isString_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isString.js */ "./node_modules/underscore/modules/isString.js");
+/* harmony import */ var _isArguments_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./isArguments.js */ "./node_modules/underscore/modules/isArguments.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+
+
+
+// Is a given array, string, or object empty?
+// An "empty" object has no enumerable own-properties.
+function isEmpty(obj) {
+  if (obj == null) return true;
+  // Skip the more expensive `toString`-based type checks if `obj` has no
+  // `.length`.
+  var length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj);
+  if (typeof length == 'number' && (
+    (0,_isArray_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) || (0,_isString_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj) || (0,_isArguments_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj)
+  )) return length === 0;
+  return (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])((0,_keys_js__WEBPACK_IMPORTED_MODULE_4__["default"])(obj)) === 0;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isEqual.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/isEqual.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isEqual)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _getByteLength_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_getByteLength.js */ "./node_modules/underscore/modules/_getByteLength.js");
+/* harmony import */ var _isTypedArray_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./isTypedArray.js */ "./node_modules/underscore/modules/isTypedArray.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _stringTagBug_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./_stringTagBug.js */ "./node_modules/underscore/modules/_stringTagBug.js");
+/* harmony import */ var _isDataView_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./isDataView.js */ "./node_modules/underscore/modules/isDataView.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+/* harmony import */ var _toBufferView_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./_toBufferView.js */ "./node_modules/underscore/modules/_toBufferView.js");
+
+
+
+
+
+
+
+
+
+
+
+// We use this string twice, so give it a name for minification.
+var tagDataView = '[object DataView]';
+
+// Internal recursive comparison function for `_.isEqual`.
+function eq(a, b, aStack, bStack) {
+  // Identical objects are equal. `0 === -0`, but they aren't identical.
+  // See the [Harmony `egal` proposal](https://wiki.ecmascript.org/doku.php?id=harmony:egal).
+  if (a === b) return a !== 0 || 1 / a === 1 / b;
+  // `null` or `undefined` only equal to itself (strict comparison).
+  if (a == null || b == null) return false;
+  // `NaN`s are equivalent, but non-reflexive.
+  if (a !== a) return b !== b;
+  // Exhaust primitive checks
+  var type = typeof a;
+  if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
+  return deepEq(a, b, aStack, bStack);
+}
+
+// Internal recursive comparison function for `_.isEqual`.
+function deepEq(a, b, aStack, bStack) {
+  // Unwrap any wrapped objects.
+  if (a instanceof _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"]) a = a._wrapped;
+  if (b instanceof _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"]) b = b._wrapped;
+  // Compare `[[Class]]` names.
+  var className = _setup_js__WEBPACK_IMPORTED_MODULE_1__.toString.call(a);
+  if (className !== _setup_js__WEBPACK_IMPORTED_MODULE_1__.toString.call(b)) return false;
+  // Work around a bug in IE 10 - Edge 13.
+  if (_stringTagBug_js__WEBPACK_IMPORTED_MODULE_5__.hasStringTagBug && className == '[object Object]' && (0,_isDataView_js__WEBPACK_IMPORTED_MODULE_6__["default"])(a)) {
+    if (!(0,_isDataView_js__WEBPACK_IMPORTED_MODULE_6__["default"])(b)) return false;
+    className = tagDataView;
+  }
+  switch (className) {
+    // These types are compared by value.
+    case '[object RegExp]':
+      // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
+    case '[object String]':
+      // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
+      // equivalent to `new String("5")`.
+      return '' + a === '' + b;
+    case '[object Number]':
+      // `NaN`s are equivalent, but non-reflexive.
+      // Object(NaN) is equivalent to NaN.
+      if (+a !== +a) return +b !== +b;
+      // An `egal` comparison is performed for other numeric values.
+      return +a === 0 ? 1 / +a === 1 / b : +a === +b;
+    case '[object Date]':
+    case '[object Boolean]':
+      // Coerce dates and booleans to numeric primitive values. Dates are compared by their
+      // millisecond representations. Note that invalid dates with millisecond representations
+      // of `NaN` are not equivalent.
+      return +a === +b;
+    case '[object Symbol]':
+      return _setup_js__WEBPACK_IMPORTED_MODULE_1__.SymbolProto.valueOf.call(a) === _setup_js__WEBPACK_IMPORTED_MODULE_1__.SymbolProto.valueOf.call(b);
+    case '[object ArrayBuffer]':
+    case tagDataView:
+      // Coerce to typed array so we can fall through.
+      return deepEq((0,_toBufferView_js__WEBPACK_IMPORTED_MODULE_9__["default"])(a), (0,_toBufferView_js__WEBPACK_IMPORTED_MODULE_9__["default"])(b), aStack, bStack);
+  }
+
+  var areArrays = className === '[object Array]';
+  if (!areArrays && (0,_isTypedArray_js__WEBPACK_IMPORTED_MODULE_3__["default"])(a)) {
+      var byteLength = (0,_getByteLength_js__WEBPACK_IMPORTED_MODULE_2__["default"])(a);
+      if (byteLength !== (0,_getByteLength_js__WEBPACK_IMPORTED_MODULE_2__["default"])(b)) return false;
+      if (a.buffer === b.buffer && a.byteOffset === b.byteOffset) return true;
+      areArrays = true;
+  }
+  if (!areArrays) {
+    if (typeof a != 'object' || typeof b != 'object') return false;
+
+    // Objects with different constructors are not equivalent, but `Object`s or `Array`s
+    // from different frames are.
+    var aCtor = a.constructor, bCtor = b.constructor;
+    if (aCtor !== bCtor && !((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_4__["default"])(aCtor) && aCtor instanceof aCtor &&
+                             (0,_isFunction_js__WEBPACK_IMPORTED_MODULE_4__["default"])(bCtor) && bCtor instanceof bCtor)
+                        && ('constructor' in a && 'constructor' in b)) {
+      return false;
+    }
+  }
+  // Assume equality for cyclic structures. The algorithm for detecting cyclic
+  // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
+
+  // Initializing stack of traversed objects.
+  // It's done here since we only need them for objects and arrays comparison.
+  aStack = aStack || [];
+  bStack = bStack || [];
+  var length = aStack.length;
+  while (length--) {
+    // Linear search. Performance is inversely proportional to the number of
+    // unique nested structures.
+    if (aStack[length] === a) return bStack[length] === b;
+  }
+
+  // Add the first object to the stack of traversed objects.
+  aStack.push(a);
+  bStack.push(b);
+
+  // Recursively compare objects and arrays.
+  if (areArrays) {
+    // Compare array lengths to determine if a deep comparison is necessary.
+    length = a.length;
+    if (length !== b.length) return false;
+    // Deep compare the contents, ignoring non-numeric properties.
+    while (length--) {
+      if (!eq(a[length], b[length], aStack, bStack)) return false;
+    }
+  } else {
+    // Deep compare objects.
+    var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_7__["default"])(a), key;
+    length = _keys.length;
+    // Ensure that both objects contain the same number of properties before comparing deep equality.
+    if ((0,_keys_js__WEBPACK_IMPORTED_MODULE_7__["default"])(b).length !== length) return false;
+    while (length--) {
+      // Deep compare each member
+      key = _keys[length];
+      if (!((0,_has_js__WEBPACK_IMPORTED_MODULE_8__["default"])(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+    }
+  }
+  // Remove the first object from the stack of traversed objects.
+  aStack.pop();
+  bStack.pop();
+  return true;
+}
+
+// Perform a deep comparison to check if two objects are equal.
+function isEqual(a, b) {
+  return eq(a, b);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isError.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/isError.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Error'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isFinite.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isFinite.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isFinite)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isSymbol_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isSymbol.js */ "./node_modules/underscore/modules/isSymbol.js");
+
+
+
+// Is a given object a finite number?
+function isFinite(obj) {
+  return !(0,_isSymbol_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) && (0,_setup_js__WEBPACK_IMPORTED_MODULE_0__._isFinite)(obj) && !isNaN(parseFloat(obj));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isFunction.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/isFunction.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+
+var isFunction = (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Function');
+
+// Optimize `isFunction` if appropriate. Work around some `typeof` bugs in old
+// v8, IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
+var nodelist = _setup_js__WEBPACK_IMPORTED_MODULE_1__.root.document && _setup_js__WEBPACK_IMPORTED_MODULE_1__.root.document.childNodes;
+if ( true && typeof Int8Array != 'object' && typeof nodelist != 'function') {
+  isFunction = function(obj) {
+    return typeof obj == 'function' || false;
+  };
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (isFunction);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isMap.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/isMap.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_stringTagBug.js */ "./node_modules/underscore/modules/_stringTagBug.js");
+/* harmony import */ var _methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_methodFingerprint.js */ "./node_modules/underscore/modules/_methodFingerprint.js");
+
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__.isIE11 ? (0,_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.ie11fingerprint)(_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.mapMethods) : (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Map'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isMatch.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/isMatch.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isMatch)
+/* harmony export */ });
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+// Returns whether an object has a given set of `key:value` pairs.
+function isMatch(object, attrs) {
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_0__["default"])(attrs), length = _keys.length;
+  if (object == null) return !length;
+  var obj = Object(object);
+  for (var i = 0; i < length; i++) {
+    var key = _keys[i];
+    if (attrs[key] !== obj[key] || !(key in obj)) return false;
+  }
+  return true;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isNaN.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/isNaN.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isNaN)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isNumber_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isNumber.js */ "./node_modules/underscore/modules/isNumber.js");
+
+
+
+// Is the given value `NaN`?
+function isNaN(obj) {
+  return (0,_isNumber_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) && (0,_setup_js__WEBPACK_IMPORTED_MODULE_0__._isNaN)(obj);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isNull.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/isNull.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isNull)
+/* harmony export */ });
+// Is a given value equal to null?
+function isNull(obj) {
+  return obj === null;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isNumber.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isNumber.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Number'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isObject.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isObject.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isObject)
+/* harmony export */ });
+// Is a given variable an object?
+function isObject(obj) {
+  var type = typeof obj;
+  return type === 'function' || (type === 'object' && !!obj);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isRegExp.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isRegExp.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('RegExp'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isSet.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/isSet.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_stringTagBug.js */ "./node_modules/underscore/modules/_stringTagBug.js");
+/* harmony import */ var _methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_methodFingerprint.js */ "./node_modules/underscore/modules/_methodFingerprint.js");
+
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__.isIE11 ? (0,_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.ie11fingerprint)(_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.setMethods) : (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Set'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isString.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isString.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('String'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isSymbol.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/isSymbol.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('Symbol'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isTypedArray.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/underscore/modules/isTypedArray.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isDataView_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isDataView.js */ "./node_modules/underscore/modules/isDataView.js");
+/* harmony import */ var _constant_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./constant.js */ "./node_modules/underscore/modules/constant.js");
+/* harmony import */ var _isBufferLike_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_isBufferLike.js */ "./node_modules/underscore/modules/_isBufferLike.js");
+
+
+
+
+
+// Is a given value a typed array?
+var typedArrayPattern = /\[object ((I|Ui)nt(8|16|32)|Float(32|64)|Uint8Clamped|Big(I|Ui)nt64)Array\]/;
+function isTypedArray(obj) {
+  // `ArrayBuffer.isView` is the most future-proof, so use it when available.
+  // Otherwise, fall back on the above regular expression.
+  return _setup_js__WEBPACK_IMPORTED_MODULE_0__.nativeIsView ? ((0,_setup_js__WEBPACK_IMPORTED_MODULE_0__.nativeIsView)(obj) && !(0,_isDataView_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj)) :
+                (0,_isBufferLike_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj) && typedArrayPattern.test(_setup_js__WEBPACK_IMPORTED_MODULE_0__.toString.call(obj));
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_setup_js__WEBPACK_IMPORTED_MODULE_0__.supportsArrayBuffer ? isTypedArray : (0,_constant_js__WEBPACK_IMPORTED_MODULE_2__["default"])(false));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isUndefined.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/isUndefined.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ isUndefined)
+/* harmony export */ });
+// Is a given variable undefined?
+function isUndefined(obj) {
+  return obj === void 0;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isWeakMap.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/isWeakMap.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+/* harmony import */ var _stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_stringTagBug.js */ "./node_modules/underscore/modules/_stringTagBug.js");
+/* harmony import */ var _methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_methodFingerprint.js */ "./node_modules/underscore/modules/_methodFingerprint.js");
+
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_stringTagBug_js__WEBPACK_IMPORTED_MODULE_1__.isIE11 ? (0,_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.ie11fingerprint)(_methodFingerprint_js__WEBPACK_IMPORTED_MODULE_2__.weakMapMethods) : (0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('WeakMap'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/isWeakSet.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/isWeakSet.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _tagTester_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_tagTester.js */ "./node_modules/underscore/modules/_tagTester.js");
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_tagTester_js__WEBPACK_IMPORTED_MODULE_0__["default"])('WeakSet'));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/iteratee.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/iteratee.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ iteratee)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _baseIteratee_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_baseIteratee.js */ "./node_modules/underscore/modules/_baseIteratee.js");
+
+
+
+// External wrapper for our callback generator. Users may customize
+// `_.iteratee` if they want additional predicate/iteratee shorthand styles.
+// This abstraction hides the internal-only `argCount` argument.
+function iteratee(value, context) {
+  return (0,_baseIteratee_js__WEBPACK_IMPORTED_MODULE_1__["default"])(value, context, Infinity);
+}
+_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].iteratee = iteratee;
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/keys.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/keys.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ keys)
+/* harmony export */ });
+/* harmony import */ var _isObject_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isObject.js */ "./node_modules/underscore/modules/isObject.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+/* harmony import */ var _collectNonEnumProps_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_collectNonEnumProps.js */ "./node_modules/underscore/modules/_collectNonEnumProps.js");
+
+
+
+
+
+// Retrieve the names of an object's own properties.
+// Delegates to **ECMAScript 5**'s native `Object.keys`.
+function keys(obj) {
+  if (!(0,_isObject_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) return [];
+  if (_setup_js__WEBPACK_IMPORTED_MODULE_1__.nativeKeys) return (0,_setup_js__WEBPACK_IMPORTED_MODULE_1__.nativeKeys)(obj);
+  var keys = [];
+  for (var key in obj) if ((0,_has_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, key)) keys.push(key);
+  // Ahem, IE < 9.
+  if (_setup_js__WEBPACK_IMPORTED_MODULE_1__.hasEnumBug) (0,_collectNonEnumProps_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj, keys);
+  return keys;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/last.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/last.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ last)
+/* harmony export */ });
+/* harmony import */ var _rest_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rest.js */ "./node_modules/underscore/modules/rest.js");
+
+
+// Get the last element of an array. Passing **n** will return the last N
+// values in the array.
+function last(array, n, guard) {
+  if (array == null || array.length < 1) return n == null || guard ? void 0 : [];
+  if (n == null || guard) return array[array.length - 1];
+  return (0,_rest_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array, Math.max(0, array.length - n));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/lastIndexOf.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/lastIndexOf.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _findLastIndex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./findLastIndex.js */ "./node_modules/underscore/modules/findLastIndex.js");
+/* harmony import */ var _createIndexFinder_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_createIndexFinder.js */ "./node_modules/underscore/modules/_createIndexFinder.js");
+
+
+
+// Return the position of the last occurrence of an item in an array,
+// or -1 if the item is not included in the array.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createIndexFinder_js__WEBPACK_IMPORTED_MODULE_1__["default"])(-1, _findLastIndex_js__WEBPACK_IMPORTED_MODULE_0__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/map.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/map.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ map)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+
+// Return the results of applying the iteratee to each element.
+function map(obj, iteratee, context) {
+  iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context);
+  var _keys = !(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) && (0,_keys_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj),
+      length = (_keys || obj).length,
+      results = Array(length);
+  for (var index = 0; index < length; index++) {
+    var currentKey = _keys ? _keys[index] : index;
+    results[index] = iteratee(obj[currentKey], currentKey, obj);
+  }
+  return results;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/mapObject.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/mapObject.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mapObject)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+// Returns the results of applying the `iteratee` to each element of `obj`.
+// In contrast to `_.map` it returns an object.
+function mapObject(obj, iteratee, context) {
+  iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context);
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj),
+      length = _keys.length,
+      results = {};
+  for (var index = 0; index < length; index++) {
+    var currentKey = _keys[index];
+    results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+  }
+  return results;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/matcher.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/matcher.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ matcher)
+/* harmony export */ });
+/* harmony import */ var _extendOwn_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./extendOwn.js */ "./node_modules/underscore/modules/extendOwn.js");
+/* harmony import */ var _isMatch_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isMatch.js */ "./node_modules/underscore/modules/isMatch.js");
+
+
+
+// Returns a predicate for checking whether an object has a given set of
+// `key:value` pairs.
+function matcher(attrs) {
+  attrs = (0,_extendOwn_js__WEBPACK_IMPORTED_MODULE_0__["default"])({}, attrs);
+  return function(obj) {
+    return (0,_isMatch_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj, attrs);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/max.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/max.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ max)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+
+
+
+
+
+// Return the maximum element (or element-based computation).
+function max(obj, iteratee, context) {
+  var result = -Infinity, lastComputed = -Infinity,
+      value, computed;
+  if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null)) {
+    obj = (0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj) ? obj : (0,_values_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj);
+    for (var i = 0, length = obj.length; i < length; i++) {
+      value = obj[i];
+      if (value != null && value > result) {
+        result = value;
+      }
+    }
+  } else {
+    iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_2__["default"])(iteratee, context);
+    (0,_each_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj, function(v, index, list) {
+      computed = iteratee(v, index, list);
+      if (computed > lastComputed || (computed === -Infinity && result === -Infinity)) {
+        result = v;
+        lastComputed = computed;
+      }
+    });
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/memoize.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/memoize.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ memoize)
+/* harmony export */ });
+/* harmony import */ var _has_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_has.js */ "./node_modules/underscore/modules/_has.js");
+
+
+// Memoize an expensive function by storing its results.
+function memoize(func, hasher) {
+  var memoize = function(key) {
+    var cache = memoize.cache;
+    var address = '' + (hasher ? hasher.apply(this, arguments) : key);
+    if (!(0,_has_js__WEBPACK_IMPORTED_MODULE_0__["default"])(cache, address)) cache[address] = func.apply(this, arguments);
+    return cache[address];
+  };
+  memoize.cache = {};
+  return memoize;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/min.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/min.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ min)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+
+
+
+
+
+// Return the minimum element (or element-based computation).
+function min(obj, iteratee, context) {
+  var result = Infinity, lastComputed = Infinity,
+      value, computed;
+  if (iteratee == null || (typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null)) {
+    obj = (0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj) ? obj : (0,_values_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj);
+    for (var i = 0, length = obj.length; i < length; i++) {
+      value = obj[i];
+      if (value != null && value < result) {
+        result = value;
+      }
+    }
+  } else {
+    iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_2__["default"])(iteratee, context);
+    (0,_each_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj, function(v, index, list) {
+      computed = iteratee(v, index, list);
+      if (computed < lastComputed || (computed === Infinity && result === Infinity)) {
+        result = v;
+        lastComputed = computed;
+      }
+    });
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/mixin.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/mixin.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mixin)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+/* harmony import */ var _functions_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./functions.js */ "./node_modules/underscore/modules/functions.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _chainResult_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./_chainResult.js */ "./node_modules/underscore/modules/_chainResult.js");
+
+
+
+
+
+
+// Add your own custom functions to the Underscore object.
+function mixin(obj) {
+  (0,_each_js__WEBPACK_IMPORTED_MODULE_1__["default"])((0,_functions_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj), function(name) {
+    var func = _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"][name] = obj[name];
+    _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].prototype[name] = function() {
+      var args = [this._wrapped];
+      _setup_js__WEBPACK_IMPORTED_MODULE_3__.push.apply(args, arguments);
+      return (0,_chainResult_js__WEBPACK_IMPORTED_MODULE_4__["default"])(this, func.apply(_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"], args));
+    };
+  });
+  return _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/negate.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/negate.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ negate)
+/* harmony export */ });
+// Returns a negated version of the passed-in predicate.
+function negate(predicate) {
+  return function() {
+    return !predicate.apply(this, arguments);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/noop.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/noop.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ noop)
+/* harmony export */ });
+// Predicate-generating function. Often useful outside of Underscore.
+function noop(){}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/now.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/now.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+// A (possibly faster) way to get the current timestamp as an integer.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Date.now || function() {
+  return new Date().getTime();
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/object.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/object.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ object)
+/* harmony export */ });
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+
+
+// Converts lists into objects. Pass either a single array of `[key, value]`
+// pairs, or two parallel arrays of the same length -- one of keys, and one of
+// the corresponding values. Passing by pairs is the reverse of `_.pairs`.
+function object(list, values) {
+  var result = {};
+  for (var i = 0, length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_0__["default"])(list); i < length; i++) {
+    if (values) {
+      result[list[i]] = values[i];
+    } else {
+      result[list[i][0]] = list[i][1];
+    }
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/omit.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/omit.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _negate_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./negate.js */ "./node_modules/underscore/modules/negate.js");
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+/* harmony import */ var _contains_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./contains.js */ "./node_modules/underscore/modules/contains.js");
+/* harmony import */ var _pick_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pick.js */ "./node_modules/underscore/modules/pick.js");
+
+
+
+
+
+
+
+
+// Return a copy of the object without the disallowed properties.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(obj, keys) {
+  var iteratee = keys[0], context;
+  if ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(iteratee)) {
+    iteratee = (0,_negate_js__WEBPACK_IMPORTED_MODULE_2__["default"])(iteratee);
+    if (keys.length > 1) context = keys[1];
+  } else {
+    keys = (0,_map_js__WEBPACK_IMPORTED_MODULE_3__["default"])((0,_flatten_js__WEBPACK_IMPORTED_MODULE_4__["default"])(keys, false, false), String);
+    iteratee = function(value, key) {
+      return !(0,_contains_js__WEBPACK_IMPORTED_MODULE_5__["default"])(keys, key);
+    };
+  }
+  return (0,_pick_js__WEBPACK_IMPORTED_MODULE_6__["default"])(obj, iteratee, context);
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/once.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/once.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _partial_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./partial.js */ "./node_modules/underscore/modules/partial.js");
+/* harmony import */ var _before_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./before.js */ "./node_modules/underscore/modules/before.js");
+
+
+
+// Returns a function that will be executed at most one time, no matter how
+// often you call it. Useful for lazy initialization.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_partial_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_before_js__WEBPACK_IMPORTED_MODULE_1__["default"], 2));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/pairs.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/pairs.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ pairs)
+/* harmony export */ });
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+// Convert an object into a list of `[key, value]` pairs.
+// The opposite of `_.object` with one argument.
+function pairs(obj) {
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj);
+  var length = _keys.length;
+  var pairs = Array(length);
+  for (var i = 0; i < length; i++) {
+    pairs[i] = [_keys[i], obj[_keys[i]]];
+  }
+  return pairs;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/partial.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/partial.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _executeBound_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_executeBound.js */ "./node_modules/underscore/modules/_executeBound.js");
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+
+
+
+
+// Partially apply a function by creating a version that has had some of its
+// arguments pre-filled, without changing its dynamic `this` context. `_` acts
+// as a placeholder by default, allowing any combination of arguments to be
+// pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
+var partial = (0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(func, boundArgs) {
+  var placeholder = partial.placeholder;
+  var bound = function() {
+    var position = 0, length = boundArgs.length;
+    var args = Array(length);
+    for (var i = 0; i < length; i++) {
+      args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
+    }
+    while (position < arguments.length) args.push(arguments[position++]);
+    return (0,_executeBound_js__WEBPACK_IMPORTED_MODULE_1__["default"])(func, bound, this, this, args);
+  };
+  return bound;
+});
+
+partial.placeholder = _underscore_js__WEBPACK_IMPORTED_MODULE_2__["default"];
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (partial);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/partition.js":
+/*!******************************************************!*\
+  !*** ./node_modules/underscore/modules/partition.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _group_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_group.js */ "./node_modules/underscore/modules/_group.js");
+
+
+// Split a collection into two arrays: one whose elements all pass the given
+// truth test, and one whose elements all do not pass the truth test.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_group_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(result, value, pass) {
+  result[pass ? 0 : 1].push(value);
+}, true));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/pick.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/pick.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _optimizeCb_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_optimizeCb.js */ "./node_modules/underscore/modules/_optimizeCb.js");
+/* harmony import */ var _allKeys_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./allKeys.js */ "./node_modules/underscore/modules/allKeys.js");
+/* harmony import */ var _keyInObj_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./_keyInObj.js */ "./node_modules/underscore/modules/_keyInObj.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+
+
+
+
+
+
+
+// Return a copy of the object only containing the allowed properties.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(obj, keys) {
+  var result = {}, iteratee = keys[0];
+  if (obj == null) return result;
+  if ((0,_isFunction_js__WEBPACK_IMPORTED_MODULE_1__["default"])(iteratee)) {
+    if (keys.length > 1) iteratee = (0,_optimizeCb_js__WEBPACK_IMPORTED_MODULE_2__["default"])(iteratee, keys[1]);
+    keys = (0,_allKeys_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj);
+  } else {
+    iteratee = _keyInObj_js__WEBPACK_IMPORTED_MODULE_4__["default"];
+    keys = (0,_flatten_js__WEBPACK_IMPORTED_MODULE_5__["default"])(keys, false, false);
+    obj = Object(obj);
+  }
+  for (var i = 0, length = keys.length; i < length; i++) {
+    var key = keys[i];
+    var value = obj[key];
+    if (iteratee(value, key, obj)) result[key] = value;
+  }
+  return result;
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/pluck.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/pluck.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ pluck)
+/* harmony export */ });
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+/* harmony import */ var _property_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./property.js */ "./node_modules/underscore/modules/property.js");
+
+
+
+// Convenience version of a common use case of `_.map`: fetching a property.
+function pluck(obj, key) {
+  return (0,_map_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, (0,_property_js__WEBPACK_IMPORTED_MODULE_1__["default"])(key));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/property.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/property.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ property)
+/* harmony export */ });
+/* harmony import */ var _deepGet_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_deepGet.js */ "./node_modules/underscore/modules/_deepGet.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_toPath.js */ "./node_modules/underscore/modules/_toPath.js");
+
+
+
+// Creates a function that, when passed an object, will traverse that object’s
+// properties down the given `path`, specified as an array of keys or indices.
+function property(path) {
+  path = (0,_toPath_js__WEBPACK_IMPORTED_MODULE_1__["default"])(path);
+  return function(obj) {
+    return (0,_deepGet_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, path);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/propertyOf.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/propertyOf.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ propertyOf)
+/* harmony export */ });
+/* harmony import */ var _noop_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./noop.js */ "./node_modules/underscore/modules/noop.js");
+/* harmony import */ var _get_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./get.js */ "./node_modules/underscore/modules/get.js");
+
+
+
+// Generates a function for a given object that returns a given property.
+function propertyOf(obj) {
+  if (obj == null) return _noop_js__WEBPACK_IMPORTED_MODULE_0__["default"];
+  return function(path) {
+    return (0,_get_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj, path);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/random.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/random.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ random)
+/* harmony export */ });
+// Return a random integer between `min` and `max` (inclusive).
+function random(min, max) {
+  if (max == null) {
+    max = min;
+    min = 0;
+  }
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/range.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/range.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ range)
+/* harmony export */ });
+// Generate an integer Array containing an arithmetic progression. A port of
+// the native Python `range()` function. See
+// [the Python documentation](https://docs.python.org/library/functions.html#range).
+function range(start, stop, step) {
+  if (stop == null) {
+    stop = start || 0;
+    start = 0;
+  }
+  if (!step) {
+    step = stop < start ? -1 : 1;
+  }
+
+  var length = Math.max(Math.ceil((stop - start) / step), 0);
+  var range = Array(length);
+
+  for (var idx = 0; idx < length; idx++, start += step) {
+    range[idx] = start;
+  }
+
+  return range;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/reduce.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/reduce.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createReduce_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createReduce.js */ "./node_modules/underscore/modules/_createReduce.js");
+
+
+// **Reduce** builds up a single result from a list of values, aka `inject`,
+// or `foldl`.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createReduce_js__WEBPACK_IMPORTED_MODULE_0__["default"])(1));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/reduceRight.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/reduceRight.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createReduce_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createReduce.js */ "./node_modules/underscore/modules/_createReduce.js");
+
+
+// The right-associative version of reduce, also known as `foldr`.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createReduce_js__WEBPACK_IMPORTED_MODULE_0__["default"])(-1));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/reject.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/reject.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ reject)
+/* harmony export */ });
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./filter.js */ "./node_modules/underscore/modules/filter.js");
+/* harmony import */ var _negate_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./negate.js */ "./node_modules/underscore/modules/negate.js");
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+
+
+
+
+// Return all the elements for which a truth test fails.
+function reject(obj, predicate, context) {
+  return (0,_filter_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, (0,_negate_js__WEBPACK_IMPORTED_MODULE_1__["default"])((0,_cb_js__WEBPACK_IMPORTED_MODULE_2__["default"])(predicate)), context);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/rest.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/rest.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ rest)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// Returns everything but the first entry of the `array`. Especially useful on
+// the `arguments` object. Passing an **n** will return the rest N values in the
+// `array`.
+function rest(array, n, guard) {
+  return _setup_js__WEBPACK_IMPORTED_MODULE_0__.slice.call(array, n == null || guard ? 1 : n);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/restArguments.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/underscore/modules/restArguments.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ restArguments)
+/* harmony export */ });
+// Some functions take a variable number of arguments, or a few expected
+// arguments at the beginning and then a variable number of values to operate
+// on. This helper accumulates all remaining arguments past the function’s
+// argument length (or an explicit `startIndex`), into an array that becomes
+// the last argument. Similar to ES6’s "rest parameter".
+function restArguments(func, startIndex) {
+  startIndex = startIndex == null ? func.length - 1 : +startIndex;
+  return function() {
+    var length = Math.max(arguments.length - startIndex, 0),
+        rest = Array(length),
+        index = 0;
+    for (; index < length; index++) {
+      rest[index] = arguments[index + startIndex];
+    }
+    switch (startIndex) {
+      case 0: return func.call(this, rest);
+      case 1: return func.call(this, arguments[0], rest);
+      case 2: return func.call(this, arguments[0], arguments[1], rest);
+    }
+    var args = Array(startIndex + 1);
+    for (index = 0; index < startIndex; index++) {
+      args[index] = arguments[index];
+    }
+    args[startIndex] = rest;
+    return func.apply(this, args);
+  };
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/result.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/result.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ result)
+/* harmony export */ });
+/* harmony import */ var _isFunction_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isFunction.js */ "./node_modules/underscore/modules/isFunction.js");
+/* harmony import */ var _toPath_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_toPath.js */ "./node_modules/underscore/modules/_toPath.js");
+
+
+
+// Traverses the children of `obj` along `path`. If a child is a function, it
+// is invoked with its parent as context. Returns the value of the final
+// child, or `fallback` if any child is undefined.
+function result(obj, path, fallback) {
+  path = (0,_toPath_js__WEBPACK_IMPORTED_MODULE_1__["default"])(path);
+  var length = path.length;
+  if (!length) {
+    return (0,_isFunction_js__WEBPACK_IMPORTED_MODULE_0__["default"])(fallback) ? fallback.call(obj) : fallback;
+  }
+  for (var i = 0; i < length; i++) {
+    var prop = obj == null ? void 0 : obj[path[i]];
+    if (prop === void 0) {
+      prop = fallback;
+      i = length; // Ensure we don't continue iterating.
+    }
+    obj = (0,_isFunction_js__WEBPACK_IMPORTED_MODULE_0__["default"])(prop) ? prop.call(obj) : prop;
+  }
+  return obj;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/sample.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/sample.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ sample)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _random_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./random.js */ "./node_modules/underscore/modules/random.js");
+/* harmony import */ var _toArray_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./toArray.js */ "./node_modules/underscore/modules/toArray.js");
+
+
+
+
+
+
+// Sample **n** random values from a collection using the modern version of the
+// [Fisher-Yates shuffle](https://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+// If **n** is not specified, returns a single random element.
+// The internal `guard` argument allows it to work with `_.map`.
+function sample(obj, n, guard) {
+  if (n == null || guard) {
+    if (!(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) obj = (0,_values_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj);
+    return obj[(0,_random_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj.length - 1)];
+  }
+  var sample = (0,_toArray_js__WEBPACK_IMPORTED_MODULE_4__["default"])(obj);
+  var length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_2__["default"])(sample);
+  n = Math.max(Math.min(n, length), 0);
+  var last = length - 1;
+  for (var index = 0; index < n; index++) {
+    var rand = (0,_random_js__WEBPACK_IMPORTED_MODULE_3__["default"])(index, last);
+    var temp = sample[index];
+    sample[index] = sample[rand];
+    sample[rand] = temp;
+  }
+  return sample.slice(0, n);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/shuffle.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/shuffle.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ shuffle)
+/* harmony export */ });
+/* harmony import */ var _sample_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./sample.js */ "./node_modules/underscore/modules/sample.js");
+
+
+// Shuffle a collection.
+function shuffle(obj) {
+  return (0,_sample_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, Infinity);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/size.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/size.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ size)
+/* harmony export */ });
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+// Return the number of elements in a collection.
+function size(obj) {
+  if (obj == null) return 0;
+  return (0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj) ? obj.length : (0,_keys_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj).length;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/some.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/some.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ some)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+
+
+// Determine if at least one element in the object passes a truth test.
+function some(obj, predicate, context) {
+  predicate = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(predicate, context);
+  var _keys = !(0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_1__["default"])(obj) && (0,_keys_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj),
+      length = (_keys || obj).length;
+  for (var index = 0; index < length; index++) {
+    var currentKey = _keys ? _keys[index] : index;
+    if (predicate(obj[currentKey], currentKey, obj)) return true;
+  }
+  return false;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/sortBy.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/sortBy.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ sortBy)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _pluck_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pluck.js */ "./node_modules/underscore/modules/pluck.js");
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+
+
+
+
+// Sort the object's values by a criterion produced by an iteratee.
+function sortBy(obj, iteratee, context) {
+  var index = 0;
+  iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context);
+  return (0,_pluck_js__WEBPACK_IMPORTED_MODULE_1__["default"])((0,_map_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj, function(value, key, list) {
+    return {
+      value: value,
+      index: index++,
+      criteria: iteratee(value, key, list)
+    };
+  }).sort(function(left, right) {
+    var a = left.criteria;
+    var b = right.criteria;
+    if (a !== b) {
+      if (a > b || a === void 0) return 1;
+      if (a < b || b === void 0) return -1;
+    }
+    return left.index - right.index;
+  }), 'value');
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/sortedIndex.js":
+/*!********************************************************!*\
+  !*** ./node_modules/underscore/modules/sortedIndex.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ sortedIndex)
+/* harmony export */ });
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+
+
+
+// Use a comparator function to figure out the smallest index at which
+// an object should be inserted so as to maintain order. Uses binary search.
+function sortedIndex(array, obj, iteratee, context) {
+  iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context, 1);
+  var value = iteratee(obj);
+  var low = 0, high = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_1__["default"])(array);
+  while (low < high) {
+    var mid = Math.floor((low + high) / 2);
+    if (iteratee(array[mid]) < value) low = mid + 1; else high = mid;
+  }
+  return low;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/tap.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/tap.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ tap)
+/* harmony export */ });
+// Invokes `interceptor` with the `obj` and then returns `obj`.
+// The primary purpose of this method is to "tap into" a method chain, in
+// order to perform operations on intermediate results within the chain.
+function tap(obj, interceptor) {
+  interceptor(obj);
+  return obj;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/template.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/template.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ template)
+/* harmony export */ });
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/underscore/modules/defaults.js");
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _templateSettings_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./templateSettings.js */ "./node_modules/underscore/modules/templateSettings.js");
+
+
+
+
+// When customizing `_.templateSettings`, if you don't want to define an
+// interpolation, evaluation or escaping regex, we need one that is
+// guaranteed not to match.
+var noMatch = /(.)^/;
+
+// Certain characters need to be escaped so that they can be put into a
+// string literal.
+var escapes = {
+  "'": "'",
+  '\\': '\\',
+  '\r': 'r',
+  '\n': 'n',
+  '\u2028': 'u2028',
+  '\u2029': 'u2029'
+};
+
+var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
+
+function escapeChar(match) {
+  return '\\' + escapes[match];
+}
+
+// In order to prevent third-party code injection through
+// `_.templateSettings.variable`, we test it against the following regular
+// expression. It is intentionally a bit more liberal than just matching valid
+// identifiers, but still prevents possible loopholes through defaults or
+// destructuring assignment.
+var bareIdentifier = /^\s*(\w|\$)+\s*$/;
+
+// JavaScript micro-templating, similar to John Resig's implementation.
+// Underscore templating handles arbitrary delimiters, preserves whitespace,
+// and correctly escapes quotes within interpolated code.
+// NB: `oldSettings` only exists for backwards compatibility.
+function template(text, settings, oldSettings) {
+  if (!settings && oldSettings) settings = oldSettings;
+  settings = (0,_defaults_js__WEBPACK_IMPORTED_MODULE_0__["default"])({}, settings, _underscore_js__WEBPACK_IMPORTED_MODULE_1__["default"].templateSettings);
+
+  // Combine delimiters into one regular expression via alternation.
+  var matcher = RegExp([
+    (settings.escape || noMatch).source,
+    (settings.interpolate || noMatch).source,
+    (settings.evaluate || noMatch).source
+  ].join('|') + '|$', 'g');
+
+  // Compile the template source, escaping string literals appropriately.
+  var index = 0;
+  var source = "__p+='";
+  text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+    source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
+    index = offset + match.length;
+
+    if (escape) {
+      source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+    } else if (interpolate) {
+      source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+    } else if (evaluate) {
+      source += "';\n" + evaluate + "\n__p+='";
+    }
+
+    // Adobe VMs need the match returned to produce the correct offset.
+    return match;
+  });
+  source += "';\n";
+
+  var argument = settings.variable;
+  if (argument) {
+    // Insure against third-party code injection. (CVE-2021-23358)
+    if (!bareIdentifier.test(argument)) throw new Error(
+      'variable is not a bare identifier: ' + argument
+    );
+  } else {
+    // If a variable is not specified, place data values in local scope.
+    source = 'with(obj||{}){\n' + source + '}\n';
+    argument = 'obj';
+  }
+
+  source = "var __t,__p='',__j=Array.prototype.join," +
+    "print=function(){__p+=__j.call(arguments,'');};\n" +
+    source + 'return __p;\n';
+
+  var render;
+  try {
+    render = new Function(argument, '_', source);
+  } catch (e) {
+    e.source = source;
+    throw e;
+  }
+
+  var template = function(data) {
+    return render.call(this, data, _underscore_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
+  };
+
+  // Provide the compiled source as a convenience for precompilation.
+  template.source = 'function(' + argument + '){\n' + source + '}';
+
+  return template;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/templateSettings.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/underscore/modules/templateSettings.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+
+
+// By default, Underscore uses ERB-style template delimiters. Change the
+// following template settings to use alternative delimiters.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].templateSettings = {
+  evaluate: /<%([\s\S]+?)%>/g,
+  interpolate: /<%=([\s\S]+?)%>/g,
+  escape: /<%-([\s\S]+?)%>/g
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/throttle.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/throttle.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ throttle)
+/* harmony export */ });
+/* harmony import */ var _now_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./now.js */ "./node_modules/underscore/modules/now.js");
+
+
+// Returns a function, that, when invoked, will only be triggered at most once
+// during a given window of time. Normally, the throttled function will run
+// as much as it can, without ever going more than once per `wait` duration;
+// but if you'd like to disable the execution on the leading edge, pass
+// `{leading: false}`. To disable execution on the trailing edge, ditto.
+function throttle(func, wait, options) {
+  var timeout, context, args, result;
+  var previous = 0;
+  if (!options) options = {};
+
+  var later = function() {
+    previous = options.leading === false ? 0 : (0,_now_js__WEBPACK_IMPORTED_MODULE_0__["default"])();
+    timeout = null;
+    result = func.apply(context, args);
+    if (!timeout) context = args = null;
+  };
+
+  var throttled = function() {
+    var _now = (0,_now_js__WEBPACK_IMPORTED_MODULE_0__["default"])();
+    if (!previous && options.leading === false) previous = _now;
+    var remaining = wait - (_now - previous);
+    context = this;
+    args = arguments;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = _now;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    } else if (!timeout && options.trailing !== false) {
+      timeout = setTimeout(later, remaining);
+    }
+    return result;
+  };
+
+  throttled.cancel = function() {
+    clearTimeout(timeout);
+    previous = 0;
+    timeout = context = args = null;
+  };
+
+  return throttled;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/times.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/times.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ times)
+/* harmony export */ });
+/* harmony import */ var _optimizeCb_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_optimizeCb.js */ "./node_modules/underscore/modules/_optimizeCb.js");
+
+
+// Run a function **n** times.
+function times(n, iteratee, context) {
+  var accum = Array(Math.max(0, n));
+  iteratee = (0,_optimizeCb_js__WEBPACK_IMPORTED_MODULE_0__["default"])(iteratee, context, 1);
+  for (var i = 0; i < n; i++) accum[i] = iteratee(i);
+  return accum;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/toArray.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/toArray.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ toArray)
+/* harmony export */ });
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _isString_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./isString.js */ "./node_modules/underscore/modules/isString.js");
+/* harmony import */ var _isArrayLike_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_isArrayLike.js */ "./node_modules/underscore/modules/_isArrayLike.js");
+/* harmony import */ var _map_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./map.js */ "./node_modules/underscore/modules/map.js");
+/* harmony import */ var _identity_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./identity.js */ "./node_modules/underscore/modules/identity.js");
+/* harmony import */ var _values_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./values.js */ "./node_modules/underscore/modules/values.js");
+
+
+
+
+
+
+
+
+// Safely create a real, live array from anything iterable.
+var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
+function toArray(obj) {
+  if (!obj) return [];
+  if ((0,_isArray_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj)) return _setup_js__WEBPACK_IMPORTED_MODULE_1__.slice.call(obj);
+  if ((0,_isString_js__WEBPACK_IMPORTED_MODULE_2__["default"])(obj)) {
+    // Keep surrogate pair characters together.
+    return obj.match(reStrSymbol);
+  }
+  if ((0,_isArrayLike_js__WEBPACK_IMPORTED_MODULE_3__["default"])(obj)) return (0,_map_js__WEBPACK_IMPORTED_MODULE_4__["default"])(obj, _identity_js__WEBPACK_IMPORTED_MODULE_5__["default"]);
+  return (0,_values_js__WEBPACK_IMPORTED_MODULE_6__["default"])(obj);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/toPath.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/toPath.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ toPath)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _isArray_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./isArray.js */ "./node_modules/underscore/modules/isArray.js");
+
+
+
+// Normalize a (deep) property `path` to array.
+// Like `_.iteratee`, this function can be customized.
+function toPath(path) {
+  return (0,_isArray_js__WEBPACK_IMPORTED_MODULE_1__["default"])(path) ? path : [path];
+}
+_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].toPath = toPath;
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/underscore-array-methods.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/underscore/modules/underscore-array-methods.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _underscore_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./underscore.js */ "./node_modules/underscore/modules/underscore.js");
+/* harmony import */ var _each_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./each.js */ "./node_modules/underscore/modules/each.js");
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+/* harmony import */ var _chainResult_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./_chainResult.js */ "./node_modules/underscore/modules/_chainResult.js");
+
+
+
+
+
+// Add all mutator `Array` functions to the wrapper.
+(0,_each_js__WEBPACK_IMPORTED_MODULE_1__["default"])(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
+  var method = _setup_js__WEBPACK_IMPORTED_MODULE_2__.ArrayProto[name];
+  _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].prototype[name] = function() {
+    var obj = this._wrapped;
+    if (obj != null) {
+      method.apply(obj, arguments);
+      if ((name === 'shift' || name === 'splice') && obj.length === 0) {
+        delete obj[0];
+      }
+    }
+    return (0,_chainResult_js__WEBPACK_IMPORTED_MODULE_3__["default"])(this, obj);
+  };
+});
+
+// Add all accessor `Array` functions to the wrapper.
+(0,_each_js__WEBPACK_IMPORTED_MODULE_1__["default"])(['concat', 'join', 'slice'], function(name) {
+  var method = _setup_js__WEBPACK_IMPORTED_MODULE_2__.ArrayProto[name];
+  _underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"].prototype[name] = function() {
+    var obj = this._wrapped;
+    if (obj != null) obj = method.apply(obj, arguments);
+    return (0,_chainResult_js__WEBPACK_IMPORTED_MODULE_3__["default"])(this, obj);
+  };
+});
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_underscore_js__WEBPACK_IMPORTED_MODULE_0__["default"]);
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/underscore.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/underscore/modules/underscore.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ _)
+/* harmony export */ });
+/* harmony import */ var _setup_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_setup.js */ "./node_modules/underscore/modules/_setup.js");
+
+
+// If Underscore is called as a function, it returns a wrapped object that can
+// be used OO-style. This wrapper holds altered versions of all functions added
+// through `_.mixin`. Wrapped objects may be chained.
+function _(obj) {
+  if (obj instanceof _) return obj;
+  if (!(this instanceof _)) return new _(obj);
+  this._wrapped = obj;
+}
+
+_.VERSION = _setup_js__WEBPACK_IMPORTED_MODULE_0__.VERSION;
+
+// Extracts the result from a wrapped and chained object.
+_.prototype.value = function() {
+  return this._wrapped;
+};
+
+// Provide unwrapping proxies for some methods used in engine operations
+// such as arithmetic and JSON stringification.
+_.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
+
+_.prototype.toString = function() {
+  return String(this._wrapped);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/unescape.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/unescape.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _createEscaper_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_createEscaper.js */ "./node_modules/underscore/modules/_createEscaper.js");
+/* harmony import */ var _unescapeMap_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_unescapeMap.js */ "./node_modules/underscore/modules/_unescapeMap.js");
+
+
+
+// Function for unescaping strings from HTML interpolation.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_createEscaper_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_unescapeMap_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/union.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/union.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _uniq_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./uniq.js */ "./node_modules/underscore/modules/uniq.js");
+/* harmony import */ var _flatten_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_flatten.js */ "./node_modules/underscore/modules/_flatten.js");
+
+
+
+
+// Produce an array that contains the union: each distinct element from all of
+// the passed-in arrays.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(arrays) {
+  return (0,_uniq_js__WEBPACK_IMPORTED_MODULE_1__["default"])((0,_flatten_js__WEBPACK_IMPORTED_MODULE_2__["default"])(arrays, true, true));
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/uniq.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/uniq.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ uniq)
+/* harmony export */ });
+/* harmony import */ var _isBoolean_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./isBoolean.js */ "./node_modules/underscore/modules/isBoolean.js");
+/* harmony import */ var _cb_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_cb.js */ "./node_modules/underscore/modules/_cb.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _contains_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./contains.js */ "./node_modules/underscore/modules/contains.js");
+
+
+
+
+
+// Produce a duplicate-free version of the array. If the array has already
+// been sorted, you have the option of using a faster algorithm.
+// The faster algorithm will not work with an iteratee if the iteratee
+// is not a one-to-one function, so providing an iteratee will disable
+// the faster algorithm.
+function uniq(array, isSorted, iteratee, context) {
+  if (!(0,_isBoolean_js__WEBPACK_IMPORTED_MODULE_0__["default"])(isSorted)) {
+    context = iteratee;
+    iteratee = isSorted;
+    isSorted = false;
+  }
+  if (iteratee != null) iteratee = (0,_cb_js__WEBPACK_IMPORTED_MODULE_1__["default"])(iteratee, context);
+  var result = [];
+  var seen = [];
+  for (var i = 0, length = (0,_getLength_js__WEBPACK_IMPORTED_MODULE_2__["default"])(array); i < length; i++) {
+    var value = array[i],
+        computed = iteratee ? iteratee(value, i, array) : value;
+    if (isSorted && !iteratee) {
+      if (!i || seen !== computed) result.push(value);
+      seen = computed;
+    } else if (iteratee) {
+      if (!(0,_contains_js__WEBPACK_IMPORTED_MODULE_3__["default"])(seen, computed)) {
+        seen.push(computed);
+        result.push(value);
+      }
+    } else if (!(0,_contains_js__WEBPACK_IMPORTED_MODULE_3__["default"])(result, value)) {
+      result.push(value);
+    }
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/uniqueId.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/underscore/modules/uniqueId.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ uniqueId)
+/* harmony export */ });
+// Generate a unique integer id (unique within the entire client session).
+// Useful for temporary DOM ids.
+var idCounter = 0;
+function uniqueId(prefix) {
+  var id = ++idCounter + '';
+  return prefix ? prefix + id : id;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/unzip.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/unzip.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ unzip)
+/* harmony export */ });
+/* harmony import */ var _max_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./max.js */ "./node_modules/underscore/modules/max.js");
+/* harmony import */ var _getLength_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_getLength.js */ "./node_modules/underscore/modules/_getLength.js");
+/* harmony import */ var _pluck_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./pluck.js */ "./node_modules/underscore/modules/pluck.js");
+
+
+
+
+// Complement of zip. Unzip accepts an array of arrays and groups
+// each array's elements on shared indices.
+function unzip(array) {
+  var length = (array && (0,_max_js__WEBPACK_IMPORTED_MODULE_0__["default"])(array, _getLength_js__WEBPACK_IMPORTED_MODULE_1__["default"]).length) || 0;
+  var result = Array(length);
+
+  for (var index = 0; index < length; index++) {
+    result[index] = (0,_pluck_js__WEBPACK_IMPORTED_MODULE_2__["default"])(array, index);
+  }
+  return result;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/values.js":
+/*!***************************************************!*\
+  !*** ./node_modules/underscore/modules/values.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ values)
+/* harmony export */ });
+/* harmony import */ var _keys_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keys.js */ "./node_modules/underscore/modules/keys.js");
+
+
+// Retrieve the values of an object's properties.
+function values(obj) {
+  var _keys = (0,_keys_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj);
+  var length = _keys.length;
+  var values = Array(length);
+  for (var i = 0; i < length; i++) {
+    values[i] = obj[_keys[i]];
+  }
+  return values;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/where.js":
+/*!**************************************************!*\
+  !*** ./node_modules/underscore/modules/where.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ where)
+/* harmony export */ });
+/* harmony import */ var _filter_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./filter.js */ "./node_modules/underscore/modules/filter.js");
+/* harmony import */ var _matcher_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./matcher.js */ "./node_modules/underscore/modules/matcher.js");
+
+
+
+// Convenience version of a common use case of `_.filter`: selecting only
+// objects containing specific `key:value` pairs.
+function where(obj, attrs) {
+  return (0,_filter_js__WEBPACK_IMPORTED_MODULE_0__["default"])(obj, (0,_matcher_js__WEBPACK_IMPORTED_MODULE_1__["default"])(attrs));
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/without.js":
+/*!****************************************************!*\
+  !*** ./node_modules/underscore/modules/without.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _difference_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./difference.js */ "./node_modules/underscore/modules/difference.js");
+
+
+
+// Return a version of the array that does not contain the specified value(s).
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(function(array, otherArrays) {
+  return (0,_difference_js__WEBPACK_IMPORTED_MODULE_1__["default"])(array, otherArrays);
+}));
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/wrap.js":
+/*!*************************************************!*\
+  !*** ./node_modules/underscore/modules/wrap.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ wrap)
+/* harmony export */ });
+/* harmony import */ var _partial_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./partial.js */ "./node_modules/underscore/modules/partial.js");
+
+
+// Returns the first function passed as an argument to the second,
+// allowing you to adjust arguments, run code before and after, and
+// conditionally execute the original function.
+function wrap(func, wrapper) {
+  return (0,_partial_js__WEBPACK_IMPORTED_MODULE_0__["default"])(wrapper, func);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/underscore/modules/zip.js":
+/*!************************************************!*\
+  !*** ./node_modules/underscore/modules/zip.js ***!
+  \************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _restArguments_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./restArguments.js */ "./node_modules/underscore/modules/restArguments.js");
+/* harmony import */ var _unzip_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./unzip.js */ "./node_modules/underscore/modules/unzip.js");
+
+
+
+// Zip together multiple lists into a single array -- elements that share
+// an index go together.
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_restArguments_js__WEBPACK_IMPORTED_MODULE_0__["default"])(_unzip_js__WEBPACK_IMPORTED_MODULE_1__["default"]));
 
 
 /***/ }),
@@ -73401,21 +79481,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ isPlainObject)
 /* harmony export */ });
 function isPlainObject(value) {
-	if (Object.prototype.toString.call(value) !== '[object Object]') {
+	if (typeof value !== 'object' || value === null) {
 		return false;
 	}
 
 	const prototype = Object.getPrototypeOf(value);
-	return prototype === null || prototype === Object.prototype;
+	return (prototype === null || prototype === Object.prototype || Object.getPrototypeOf(prototype) === null) && !(Symbol.toStringTag in value) && !(Symbol.iterator in value);
 }
 
 
 /***/ }),
 
-/***/ "./node_modules/unist-builder/index.js":
-/*!*********************************************!*\
-  !*** ./node_modules/unist-builder/index.js ***!
-  \*********************************************/
+/***/ "./node_modules/unist-builder/lib/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/unist-builder/lib/index.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73424,58 +79504,78 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Parent} Parent
- * @typedef {import('unist').Literal} Literal
- * @typedef {Object.<string, unknown>} Props
- * @typedef {Array.<Node>|string} ChildrenOrValue
- *
- * @typedef {(<T extends string, P extends Record<string, unknown>, C extends Node[]>(type: T, props: P, children: C) => {type: T, children: C} & P)} BuildParentWithProps
- * @typedef {(<T extends string, P extends Record<string, unknown>>(type: T, props: P, value: string) => {type: T, value: string} & P)} BuildLiteralWithProps
- * @typedef {(<T extends string, P extends Record<string, unknown>>(type: T, props: P) => {type: T} & P)} BuildVoidWithProps
- * @typedef {(<T extends string, C extends Node[]>(type: T, children: C) => {type: T, children: C})} BuildParent
- * @typedef {(<T extends string>(type: T, value: string) => {type: T, value: string})} BuildLiteral
- * @typedef {(<T extends string>(type: T) => {type: T})} BuildVoid
  */
 
-var u = /**
- * @type {BuildVoid & BuildVoidWithProps & BuildLiteral & BuildLiteralWithProps & BuildParent & BuildParentWithProps}
- */ (
+/**
+ * @typedef {Array<Node> | string} ChildrenOrValue
+ *   List to use as `children` or value to use as `value`.
+ *
+ * @typedef {Record<string, unknown>} Props
+ *   Other fields to add to the node.
+ */
+
+/**
+ * Build a node.
+ *
+ * @param type
+ *   Node type.
+ * @param props
+ *   Fields assigned to node.
+ * @param value
+ *   Children of node or value of `node` (cast to string).
+ * @returns
+ *   Built node.
+ */
+const u =
   /**
-   * @param {string} type Type of node
-   * @param {Props|ChildrenOrValue} [props] Additional properties for node (or `children` or `value`)
-   * @param {ChildrenOrValue} [value] `children` or `value` of node
-   * @returns {Node}
+   * @type {(
+   *   (<T extends string>(type: T) => {type: T}) &
+   *   (<T extends string, P extends Props>(type: T, props: P) => {type: T} & P) &
+   *   (<T extends string>(type: T, value: string) => {type: T, value: string}) &
+   *   (<T extends string, P extends Props>(type: T, props: P, value: string) => {type: T, value: string} & P) &
+   *   (<T extends string, C extends Array<Node>>(type: T, children: C) => {type: T, children: C}) &
+   *   (<T extends string, P extends Props, C extends Array<Node>>(type: T, props: P, children: C) => {type: T, children: C} & P)
+   * )}
    */
-  function (type, props, value) {
-    /** @type {Node} */
-    var node = {type: String(type)}
+  (
+    /**
+     * @param {string} type
+     * @param {Props | ChildrenOrValue | null | undefined} [props]
+     * @param {ChildrenOrValue | null | undefined} [value]
+     * @returns {Node}
+     */
+    function (type, props, value) {
+      /** @type {Node} */
+      const node = {type: String(type)}
 
-    if (
-      (value === undefined || value === null) &&
-      (typeof props === 'string' || Array.isArray(props))
-    ) {
-      value = props
-    } else {
-      Object.assign(node, props)
+      if (
+        (value === undefined || value === null) &&
+        (typeof props === 'string' || Array.isArray(props))
+      ) {
+        value = props
+      } else {
+        Object.assign(node, props)
+      }
+
+      if (Array.isArray(value)) {
+        // @ts-expect-error: create a parent.
+        node.children = value
+      } else if (value !== undefined && value !== null) {
+        // @ts-expect-error: create a literal.
+        node.value = String(value)
+      }
+
+      return node
     }
-
-    if (Array.isArray(value)) {
-      node.children = value
-    } else if (value !== undefined && value !== null) {
-      node.value = String(value)
-    }
-
-    return node
-  }
-)
+  )
 
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-generated/index.js":
-/*!****************************************************!*\
-  !*** ./node_modules/unist-util-generated/index.js ***!
-  \****************************************************/
+/***/ "./node_modules/unist-util-generated/lib/index.js":
+/*!********************************************************!*\
+  !*** ./node_modules/unist-util-generated/lib/index.js ***!
+  \********************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73483,24 +79583,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "generated": () => (/* binding */ generated)
 /* harmony export */ });
 /**
- * @typedef {Object} PointLike
- * @property {number} [line]
- * @property {number} [column]
- * @property {number} [offset]
+ * @typedef PointLike
+ * @property {number | null | undefined} [line]
+ * @property {number | null | undefined} [column]
+ * @property {number | null | undefined} [offset]
  *
- * @typedef {Object} PositionLike
- * @property {PointLike} [start]
- * @property {PointLike} [end]
+ * @typedef PositionLike
+ * @property {PointLike | null | undefined} [start]
+ * @property {PointLike | null | undefined} [end]
  *
- * @typedef {Object} NodeLike
- * @property {PositionLike} [position]
+ * @typedef NodeLike
+ * @property {PositionLike | null | undefined} [position]
  */
 
 /**
- * Check if `node` is *generated*.
+ * Check if `node` is generated.
  *
- * @param {NodeLike} [node]
+ * @param {NodeLike | null | undefined} [node]
+ *   Node to check.
  * @returns {boolean}
+ *   Whether `node` is generated (does not have positional info).
  */
 function generated(node) {
   return (
@@ -73518,10 +79620,10 @@ function generated(node) {
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-is/index.js":
-/*!*********************************************!*\
-  !*** ./node_modules/unist-util-is/index.js ***!
-  \*********************************************/
+/***/ "./node_modules/unist-util-is/lib/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/unist-util-is/lib/index.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73532,79 +79634,113 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Parent} Parent
- *
- * @typedef {string} Type
- * @typedef {Object<string, unknown>} Props
- *
- * @typedef {null|undefined|Type|Props|TestFunctionAnything|Array.<Type|Props|TestFunctionAnything>} Test
  */
 
 /**
- * Check if a node passes a test
+ * @typedef {Record<string, unknown>} Props
+ * @typedef {null | undefined | string | Props | TestFunctionAnything | Array<string | Props | TestFunctionAnything>} Test
+ *   Check for an arbitrary node, unaware of TypeScript inferral.
  *
  * @callback TestFunctionAnything
+ *   Check if a node passes a test, unaware of TypeScript inferral.
+ * @param {unknown} this
+ *   The given context.
  * @param {Node} node
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {boolean|void}
+ *   A node.
+ * @param {number | null | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} [parent]
+ *   The node’s parent.
+ * @returns {boolean | void}
+ *   Whether this node passes the test.
  */
 
 /**
- * Check if a node passes a certain node test
+ * @template {Node} Kind
+ *   Node type.
+ * @typedef {Kind['type'] | Partial<Kind> | TestFunctionPredicate<Kind> | Array<Kind['type'] | Partial<Kind> | TestFunctionPredicate<Kind>>} PredicateTest
+ *   Check for a node that can be inferred by TypeScript.
+ */
+
+/**
+ * Check if a node passes a certain test.
  *
- * @template {Node} X
+ * @template {Node} Kind
+ *   Node type.
  * @callback TestFunctionPredicate
+ *   Complex test function for a node that can be inferred by TypeScript.
  * @param {Node} node
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {node is X}
+ *   A node.
+ * @param {number | null | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} [parent]
+ *   The node’s parent.
+ * @returns {node is Kind}
+ *   Whether this node passes the test.
  */
 
 /**
  * @callback AssertAnything
+ *   Check that an arbitrary value is a node, unaware of TypeScript inferral.
  * @param {unknown} [node]
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
+ *   Anything (typically a node).
+ * @param {number | null | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} [parent]
+ *   The node’s parent.
  * @returns {boolean}
+ *   Whether this is a node and passes a test.
  */
 
 /**
- * Check if a node passes a certain node test
+ * Check if a node is a node and passes a certain node test.
  *
- * @template {Node} Y
+ * @template {Node} Kind
+ *   Node type.
  * @callback AssertPredicate
+ *   Check that an arbitrary value is a specific node, aware of TypeScript.
  * @param {unknown} [node]
- * @param {number|null|undefined} [index]
- * @param {Parent|null|undefined} [parent]
- * @returns {node is Y}
+ *   Anything (typically a node).
+ * @param {number | null | undefined} [index]
+ *   The node’s position in its parent.
+ * @param {Parent | null | undefined} [parent]
+ *   The node’s parent.
+ * @returns {node is Kind}
+ *   Whether this is a node and passes a test.
  */
 
+/**
+ * Check if `node` is a `Node` and whether it passes the given test.
+ *
+ * @param node
+ *   Thing to check, typically `Node`.
+ * @param test
+ *   A check for a specific node.
+ * @param index
+ *   The node’s position in its parent.
+ * @param parent
+ *   The node’s parent.
+ * @returns
+ *   Whether `node` is a node and passes a test.
+ */
 const is =
   /**
-   * Check if a node passes a test.
-   * When a `parent` node is known the `index` of node should also be given.
-   *
    * @type {(
-   *   (<T extends Node>(node: unknown, test: T['type']|Partial<T>|TestFunctionPredicate<T>|Array.<T['type']|Partial<T>|TestFunctionPredicate<T>>, index?: number|null|undefined, parent?: Parent|null|undefined, context?: unknown) => node is T) &
-   *   ((node?: unknown, test?: Test, index?: number|null|undefined, parent?: Parent|null|undefined, context?: unknown) => boolean)
+   *   (() => false) &
+   *   (<Kind extends Node = Node>(node: unknown, test: PredicateTest<Kind>, index: number, parent: Parent, context?: unknown) => node is Kind) &
+   *   (<Kind extends Node = Node>(node: unknown, test: PredicateTest<Kind>, index?: null | undefined, parent?: null | undefined, context?: unknown) => node is Kind) &
+   *   ((node: unknown, test: Test, index: number, parent: Parent, context?: unknown) => boolean) &
+   *   ((node: unknown, test?: Test, index?: null | undefined, parent?: null | undefined, context?: unknown) => boolean)
    * )}
    */
   (
     /**
-     * Check if a node passes a test.
-     * When a `parent` node is known the `index` of node should also be given.
-     *
-     * @param {unknown} [node] Node to check
+     * @param {unknown} [node]
      * @param {Test} [test]
-     * When nullish, checks if `node` is a `Node`.
-     * When `string`, works like passing `function (node) {return node.type === test}`.
-     * When `function` checks if function passed the node is true.
-     * When `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
-     * When `array`, checks any one of the subtests pass.
-     * @param {number|null|undefined} [index] Position of `node` in `parent`
-     * @param {Parent|null|undefined} [parent] Parent of `node`
-     * @param {unknown} [context] Context object to invoke `test` with
-     * @returns {boolean} Whether test passed and `node` is a `Node` (object with `type` set to non-empty `string`).
+     * @param {number | null | undefined} [index]
+     * @param {Parent | null | undefined} [parent]
+     * @param {unknown} [context]
+     * @returns {boolean}
      */
     // eslint-disable-next-line max-params
     function is(node, test, index, parent, context) {
@@ -73642,22 +79778,34 @@ const is =
     }
   )
 
+/**
+ * Generate an assertion from a test.
+ *
+ * Useful if you’re going to test many nodes, for example when creating a
+ * utility where something else passes a compatible test.
+ *
+ * The created function is a bit faster because it expects valid input only:
+ * a `node`, `index`, and `parent`.
+ *
+ * @param test
+ *   *   when nullish, checks if `node` is a `Node`.
+ *   *   when `string`, works like passing `(node) => node.type === test`.
+ *   *   when `function` checks if function passed the node is true.
+ *   *   when `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
+ *   *   when `array`, checks if any one of the subtests pass.
+ * @returns
+ *   An assertion.
+ */
 const convert =
   /**
    * @type {(
-   *   (<T extends Node>(test: T['type']|Partial<T>|TestFunctionPredicate<T>) => AssertPredicate<T>) &
+   *   (<Kind extends Node>(test: PredicateTest<Kind>) => AssertPredicate<Kind>) &
    *   ((test?: Test) => AssertAnything)
    * )}
    */
   (
     /**
-     * Generate an assertion from a check.
      * @param {Test} [test]
-     * When nullish, checks if `node` is a `Node`.
-     * When `string`, works like passing `function (node) {return node.type === test}`.
-     * When `function` checks if function passed the node is true.
-     * When `object`, checks that all keys in test are in node, and that they have (strictly) equal values.
-     * When `array`, checks any one of the subtests pass.
      * @returns {AssertAnything}
      */
     function (test) {
@@ -73680,12 +79828,13 @@ const convert =
       throw new Error('Expected function, string, or object as test')
     }
   )
+
 /**
- * @param {Array.<Type|Props|TestFunctionAnything>} tests
+ * @param {Array<string | Props | TestFunctionAnything>} tests
  * @returns {AssertAnything}
  */
 function anyFactory(tests) {
-  /** @type {Array.<AssertAnything>} */
+  /** @type {Array<AssertAnything>} */
   const checks = []
   let index = -1
 
@@ -73697,7 +79846,7 @@ function anyFactory(tests) {
 
   /**
    * @this {unknown}
-   * @param {unknown[]} parameters
+   * @param {Array<unknown>} parameters
    * @returns {boolean}
    */
   function any(...parameters) {
@@ -73712,8 +79861,7 @@ function anyFactory(tests) {
 }
 
 /**
- * Utility to assert each property in `test` is represented in `node`, and each
- * values are strictly equal.
+ * Turn an object into a test for a node with a certain fields.
  *
  * @param {Props} check
  * @returns {AssertAnything}
@@ -73739,10 +79887,9 @@ function propsFactory(check) {
 }
 
 /**
- * Utility to convert a string into a function which checks a given node’s type
- * for said string.
+ * Turn a string into a test for a node with a certain type.
  *
- * @param {Type} check
+ * @param {string} check
  * @returns {AssertAnything}
  */
 function typeFactory(check) {
@@ -73757,8 +79904,8 @@ function typeFactory(check) {
 }
 
 /**
- * Utility to convert a string into a function which checks a given node’s type
- * for said string.
+ * Turn a custom test into a test for a node that passes that test.
+ *
  * @param {TestFunctionAnything} check
  * @returns {AssertAnything}
  */
@@ -73767,16 +79914,21 @@ function castFactory(check) {
 
   /**
    * @this {unknown}
-   * @param {Array.<unknown>} parameters
+   * @param {unknown} node
+   * @param {Array<unknown>} parameters
    * @returns {boolean}
    */
-  function assertion(...parameters) {
-    // @ts-expect-error: spreading is fine.
-    return Boolean(check.call(this, ...parameters))
+  function assertion(node, ...parameters) {
+    return Boolean(
+      node &&
+        typeof node === 'object' &&
+        'type' in node &&
+        // @ts-expect-error: fine.
+        Boolean(check.call(this, node, ...parameters))
+    )
   }
 }
 
-// Utility to return true.
 function ok() {
   return true
 }
@@ -73784,10 +79936,10 @@ function ok() {
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-position/index.js":
-/*!***************************************************!*\
-  !*** ./node_modules/unist-util-position/index.js ***!
-  \***************************************************/
+/***/ "./node_modules/unist-util-position/lib/index.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/unist-util-position/lib/index.js ***!
+  \*******************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73799,24 +79951,51 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @typedef {import('unist').Position} Position
  * @typedef {import('unist').Node} Node
- * @typedef {Record<string, unknown> & {type: string, position?: PositionLike|undefined}} NodeLike
  * @typedef {import('unist').Point} Point
- *
- * @typedef {Partial<Point>} PointLike
- *
- * @typedef PositionLike
- * @property {PointLike} [start]
- * @property {PointLike} [end]
  */
 
+/**
+ * @typedef NodeLike
+ * @property {string} type
+ * @property {PositionLike | null | undefined} [position]
+ *
+ * @typedef PositionLike
+ * @property {PointLike | null | undefined} [start]
+ * @property {PointLike | null | undefined} [end]
+ *
+ * @typedef PointLike
+ * @property {number | null | undefined} [line]
+ * @property {number | null | undefined} [column]
+ * @property {number | null | undefined} [offset]
+ */
+
+/**
+ * Get the starting point of `node`.
+ *
+ * @param node
+ *   Node.
+ * @returns
+ *   Point.
+ */
 const pointStart = point('start')
+
+/**
+ * Get the ending point of `node`.
+ *
+ * @param node
+ *   Node.
+ * @returns
+ *   Point.
+ */
 const pointEnd = point('end')
 
 /**
  * Get the positional info of `node`.
  *
- * @param {NodeLike|Node} [node]
+ * @param {NodeLike | Node | null | undefined} [node]
+ *   Node.
  * @returns {Position}
+ *   Position.
  */
 function position(node) {
   return {start: pointStart(node), end: pointEnd(node)}
@@ -73825,23 +80004,30 @@ function position(node) {
 /**
  * Get the positional info of `node`.
  *
- * @param {'start'|'end'} type
+ * @param {'start' | 'end'} type
+ *   Side.
+ * @returns
+ *   Getter.
  */
 function point(type) {
   return point
 
   /**
-   * Get the positional info of `node`.
+   * Get the point info of `node` at a bound side.
    *
-   * @param {NodeLike|Node} [node]
+   * @param {NodeLike | Node | null | undefined} [node]
    * @returns {Point}
    */
   function point(node) {
     const point = (node && node.position && node.position[type]) || {}
 
+    // To do: next major: don’t return points when invalid.
     return {
+      // @ts-expect-error: in practice, null is allowed.
       line: point.line || null,
+      // @ts-expect-error: in practice, null is allowed.
       column: point.column || null,
+      // @ts-expect-error: in practice, null is allowed.
       offset: point.offset > -1 ? point.offset : null
     }
   }
@@ -73850,10 +80036,10 @@ function point(type) {
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-stringify-position/index.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/unist-util-stringify-position/index.js ***!
-  \*************************************************************/
+/***/ "./node_modules/unist-util-stringify-position/lib/index.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/unist-util-stringify-position/lib/index.js ***!
+  \*****************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73861,18 +80047,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "stringifyPosition": () => (/* binding */ stringifyPosition)
 /* harmony export */ });
 /**
- * @typedef {import('unist').Point} Point
  * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Point} Point
  * @typedef {import('unist').Position} Position
- * @typedef {object & {type: string, position?: Position|undefined}} NodeLike
  */
 
 /**
- * Stringify one point, a position (start and end points), or a node’s
- * positional information.
+ * @typedef NodeLike
+ * @property {string} type
+ * @property {PositionLike | null | undefined} [position]
  *
- * @param {Node|NodeLike|Position|Point|null} [value]
+ * @typedef PositionLike
+ * @property {PointLike | null | undefined} [start]
+ * @property {PointLike | null | undefined} [end]
+ *
+ * @typedef PointLike
+ * @property {number | null | undefined} [line]
+ * @property {number | null | undefined} [column]
+ * @property {number | null | undefined} [offset]
+ */
+
+/**
+ * Serialize the positional info of a point, position (start and end points),
+ * or node.
+ *
+ * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
+ *   Node, position, or point.
  * @returns {string}
+ *   Pretty printed positional info of a node (`string`).
+ *
+ *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
+ *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
+ *   column, `s` for `start`, and `e` for end.
+ *   An empty string (`''`) is returned if the given value is neither `node`,
+ *   `position`, nor `point`.
  */
 function stringifyPosition(value) {
   // Nothing.
@@ -73900,7 +80108,7 @@ function stringifyPosition(value) {
 }
 
 /**
- * @param {Point|undefined} point
+ * @param {Point | PointLike | null | undefined} point
  * @returns {string}
  */
 function point(point) {
@@ -73908,7 +80116,7 @@ function point(point) {
 }
 
 /**
- * @param {Position|undefined} pos
+ * @param {Position | PositionLike | null | undefined} pos
  * @returns {string}
  */
 function position(pos) {
@@ -73916,7 +80124,7 @@ function position(pos) {
 }
 
 /**
- * @param {number|undefined} value
+ * @param {number | null | undefined} value
  * @returns {number}
  */
 function index(value) {
@@ -73926,10 +80134,10 @@ function index(value) {
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-visit-parents/color.browser.js":
-/*!****************************************************************!*\
-  !*** ./node_modules/unist-util-visit-parents/color.browser.js ***!
-  \****************************************************************/
+/***/ "./node_modules/unist-util-visit-parents/lib/color.browser.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/unist-util-visit-parents/lib/color.browser.js ***!
+  \********************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73947,10 +80155,10 @@ function color(d) {
 
 /***/ }),
 
-/***/ "./node_modules/unist-util-visit-parents/index.js":
-/*!********************************************************!*\
-  !*** ./node_modules/unist-util-visit-parents/index.js ***!
-  \********************************************************/
+/***/ "./node_modules/unist-util-visit-parents/lib/index.js":
+/*!************************************************************!*\
+  !*** ./node_modules/unist-util-visit-parents/lib/index.js ***!
+  \************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -73960,8 +80168,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "SKIP": () => (/* binding */ SKIP),
 /* harmony export */   "visitParents": () => (/* binding */ visitParents)
 /* harmony export */ });
-/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/index.js");
-/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color.js */ "./node_modules/unist-util-visit-parents/color.browser.js");
+/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/lib/index.js");
+/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color.js */ "./node_modules/unist-util-visit-parents/lib/color.browser.js");
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Parent} Parent
@@ -73969,334 +80177,134 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 /**
- * @typedef {CONTINUE|SKIP|EXIT} Action Union of the action types
- * @typedef {number} Index Move to the sibling at index next (after node itself is completely traversed). Useful if mutating the tree, such as removing the node the visitor is currently on, or any of its previous siblings (or next siblings, in case of reverse) Results less than 0 or greater than or equal to children.length stop traversing the parent
- * @typedef {[(Action|null|undefined|void)?, (Index|null|undefined)?]} ActionTuple List with one or two values, the first an action, the second an index.
- * @typedef {null|undefined|Action|Index|ActionTuple|void} VisitorResult Any value that can be returned from a visitor
+ * @typedef {boolean | 'skip'} Action
+ *   Union of the action types.
+ *
+ * @typedef {number} Index
+ *   Move to the sibling at `index` next (after node itself is completely
+ *   traversed).
+ *
+ *   Useful if mutating the tree, such as removing the node the visitor is
+ *   currently on, or any of its previous siblings.
+ *   Results less than 0 or greater than or equal to `children.length` stop
+ *   traversing the parent.
+ *
+ * @typedef {[(Action | null | undefined | void)?, (Index | null | undefined)?]} ActionTuple
+ *   List with one or two values, the first an action, the second an index.
+ *
+ * @typedef {Action | ActionTuple | Index | null | undefined | void} VisitorResult
+ *   Any value that can be returned from a visitor.
  */
 
 /**
- * Invoked when a node (matching test, if given) is found.
- * Visitors are free to transform node.
- * They can also transform the parent of node (the last of ancestors).
- * Replacing node itself, if `SKIP` is not returned, still causes its descendants to be visited.
- * If adding or removing previous siblings (or next siblings, in case of reverse) of node,
- * visitor should return a new index (number) to specify the sibling to traverse after node is traversed.
- * Adding or removing next siblings of node (or previous siblings, in case of reverse)
- * is handled as expected without needing to return a new index.
- * Removing the children property of an ancestor still results in them being traversed.
- *
- * @template {Node} V
+ * @template {Node} [Visited=Node]
+ *   Visited node type.
+ * @template {Parent} [Ancestor=Parent]
+ *   Ancestor type.
  * @callback Visitor
- * @param {V} node Found node
- * @param {Array.<Parent>} ancestors Ancestors of node
+ *   Handle a node (matching `test`, if given).
+ *
+ *   Visitors are free to transform `node`.
+ *   They can also transform the parent of node (the last of `ancestors`).
+ *
+ *   Replacing `node` itself, if `SKIP` is not returned, still causes its
+ *   descendants to be walked (which is a bug).
+ *
+ *   When adding or removing previous siblings of `node` (or next siblings, in
+ *   case of reverse), the `Visitor` should return a new `Index` to specify the
+ *   sibling to traverse after `node` is traversed.
+ *   Adding or removing next siblings of `node` (or previous siblings, in case
+ *   of reverse) is handled as expected without needing to return a new `Index`.
+ *
+ *   Removing the children property of an ancestor still results in them being
+ *   traversed.
+ * @param {Visited} node
+ *   Found node.
+ * @param {Array<Ancestor>} ancestors
+ *   Ancestors of `node`.
  * @returns {VisitorResult}
+ *   What to do next.
+ *
+ *   An `Index` is treated as a tuple of `[CONTINUE, Index]`.
+ *   An `Action` is treated as a tuple of `[Action]`.
+ *
+ *   Passing a tuple back only makes sense if the `Action` is `SKIP`.
+ *   When the `Action` is `EXIT`, that action can be returned.
+ *   When the `Action` is `CONTINUE`, `Index` can be returned.
+ */
+
+/**
+ * @template {Node} [Tree=Node]
+ *   Tree type.
+ * @template {Test} [Check=string]
+ *   Test type.
+ * @typedef {Visitor<import('./complex-types.js').Matches<import('./complex-types.js').InclusiveDescendant<Tree>, Check>, Extract<import('./complex-types.js').InclusiveDescendant<Tree>, Parent>>} BuildVisitor
+ *   Build a typed `Visitor` function from a tree and a test.
+ *
+ *   It will infer which values are passed as `node` and which as `parents`.
  */
 
 
 
 
 /**
- * Continue traversing as normal
+ * Continue traversing as normal.
  */
 const CONTINUE = true
+
 /**
- * Do not traverse this node’s children
- */
-const SKIP = 'skip'
-/**
- * Stop traversing immediately
+ * Stop traversing immediately.
  */
 const EXIT = false
 
-const visitParents =
-  /**
-   * @type {(
-   *   (<T extends Node>(tree: Node, test: T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>|Array.<T['type']|Partial<T>|import('unist-util-is').TestFunctionPredicate<T>>, visitor: Visitor<T>, reverse?: boolean) => void) &
-   *   ((tree: Node, test: Test, visitor: Visitor<Node>, reverse?: boolean) => void) &
-   *   ((tree: Node, visitor: Visitor<Node>, reverse?: boolean) => void)
-   * )}
-   */
-  (
-    /**
-     * Visit children of tree which pass a test
-     *
-     * @param {Node} tree Abstract syntax tree to walk
-     * @param {Test} test test Test node
-     * @param {Visitor<Node>} visitor Function to run for each node
-     * @param {boolean} [reverse] Fisit the tree in reverse, defaults to false
-     */
-    function (tree, test, visitor, reverse) {
-      if (typeof test === 'function' && typeof visitor !== 'function') {
-        reverse = visitor
-        // @ts-ignore no visitor given, so `visitor` is test.
-        visitor = test
-        test = null
-      }
-
-      var is = (0,unist_util_is__WEBPACK_IMPORTED_MODULE_0__.convert)(test)
-      var step = reverse ? -1 : 1
-
-      factory(tree, null, [])()
-
-      /**
-       * @param {Node} node
-       * @param {number?} index
-       * @param {Array.<Parent>} parents
-       */
-      function factory(node, index, parents) {
-        /** @type {Object.<string, unknown>} */
-        var value = typeof node === 'object' && node !== null ? node : {}
-        /** @type {string} */
-        var name
-
-        if (typeof value.type === 'string') {
-          name =
-            typeof value.tagName === 'string'
-              ? value.tagName
-              : typeof value.name === 'string'
-              ? value.name
-              : undefined
-
-          Object.defineProperty(visit, 'name', {
-            value:
-              'node (' +
-              (0,_color_js__WEBPACK_IMPORTED_MODULE_1__.color)(value.type + (name ? '<' + name + '>' : '')) +
-              ')'
-          })
-        }
-
-        return visit
-
-        function visit() {
-          /** @type {ActionTuple} */
-          var result = []
-          /** @type {ActionTuple} */
-          var subresult
-          /** @type {number} */
-          var offset
-          /** @type {Array.<Parent>} */
-          var grandparents
-
-          if (!test || is(node, index, parents[parents.length - 1] || null)) {
-            result = toResult(visitor(node, parents))
-
-            if (result[0] === EXIT) {
-              return result
-            }
-          }
-
-          if (node.children && result[0] !== SKIP) {
-            // @ts-ignore looks like a parent.
-            offset = (reverse ? node.children.length : -1) + step
-            // @ts-ignore looks like a parent.
-            grandparents = parents.concat(node)
-
-            // @ts-ignore looks like a parent.
-            while (offset > -1 && offset < node.children.length) {
-              subresult = factory(node.children[offset], offset, grandparents)()
-
-              if (subresult[0] === EXIT) {
-                return subresult
-              }
-
-              offset =
-                typeof subresult[1] === 'number' ? subresult[1] : offset + step
-            }
-          }
-
-          return result
-        }
-      }
-    }
-  )
-
 /**
- * @param {VisitorResult} value
- * @returns {ActionTuple}
+ * Do not traverse this node’s children.
  */
-function toResult(value) {
-  if (Array.isArray(value)) {
-    return value
-  }
-
-  if (typeof value === 'number') {
-    return [CONTINUE, value]
-  }
-
-  return [value]
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/unist-util-visit/index.js":
-/*!************************************************!*\
-  !*** ./node_modules/unist-util-visit/index.js ***!
-  \************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CONTINUE": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.CONTINUE),
-/* harmony export */   "EXIT": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.EXIT),
-/* harmony export */   "SKIP": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.SKIP),
-/* harmony export */   "visit": () => (/* binding */ visit)
-/* harmony export */ });
-/* harmony import */ var unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit-parents */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js");
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Parent} Parent
- * @typedef {import('unist-util-is').Test} Test
- * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
- * @typedef {import('./complex-types.js').Visitor} Visitor
- */
-
-
+const SKIP = 'skip'
 
 /**
- * Visit children of tree which pass test.
+ * Visit nodes, with ancestral information.
+ *
+ * This algorithm performs *depth-first* *tree traversal* in *preorder*
+ * (**NLR**) or if `reverse` is given, in *reverse preorder* (**NRL**).
+ *
+ * You can choose for which nodes `visitor` is called by passing a `test`.
+ * For complex tests, you should test yourself in `visitor`, as it will be
+ * faster and will have improved type information.
+ *
+ * Walking the tree is an intensive task.
+ * Make use of the return values of the visitor when possible.
+ * Instead of walking a tree multiple times, walk it once, use `unist-util-is`
+ * to check if a node matches, and then perform different operations.
+ *
+ * You can change the tree.
+ * See `Visitor` for more info.
  *
  * @param tree
- *   Tree to walk
- * @param [test]
+ *   Tree to traverse.
+ * @param test
  *   `unist-util-is`-compatible test
  * @param visitor
- *   Function called for nodes that pass `test`.
+ *   Handle each node.
  * @param reverse
- *   Traverse in reverse preorder (NRL) instead of preorder (NLR) (default).
- */
-const visit =
-  /**
-   * @type {(
-   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: import('./complex-types.js').BuildVisitor<Tree, Check>, reverse?: boolean) => void) &
-   *   (<Tree extends Node>(tree: Tree, visitor: import('./complex-types.js').BuildVisitor<Tree>, reverse?: boolean) => void)
-   * )}
-   */
-  (
-    /**
-     * @param {Node} tree
-     * @param {Test} test
-     * @param {import('./complex-types.js').Visitor} visitor
-     * @param {boolean} [reverse]
-     */
-    function (tree, test, visitor, reverse) {
-      if (typeof test === 'function' && typeof visitor !== 'function') {
-        reverse = visitor
-        visitor = test
-        test = null
-      }
-
-      (0,unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.visitParents)(tree, test, overload, reverse)
-
-      /**
-       * @param {Node} node
-       * @param {Array<Parent>} parents
-       */
-      function overload(node, parents) {
-        const parent = parents[parents.length - 1]
-        return visitor(
-          node,
-          parent ? parent.children.indexOf(node) : null,
-          parent
-        )
-      }
-    }
-  )
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/color.browser.js":
-/*!**********************************************************************************************!*\
-  !*** ./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/color.browser.js ***!
-  \**********************************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "color": () => (/* binding */ color)
-/* harmony export */ });
-/**
- * @param {string} d
- * @returns {string}
- */
-function color(d) {
-  return d
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js":
-/*!**************************************************************************************!*\
-  !*** ./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/index.js ***!
-  \**************************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CONTINUE": () => (/* binding */ CONTINUE),
-/* harmony export */   "EXIT": () => (/* binding */ EXIT),
-/* harmony export */   "SKIP": () => (/* binding */ SKIP),
-/* harmony export */   "visitParents": () => (/* binding */ visitParents)
-/* harmony export */ });
-/* harmony import */ var unist_util_is__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-is */ "./node_modules/unist-util-is/index.js");
-/* harmony import */ var _color_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color.js */ "./node_modules/unist-util-visit/node_modules/unist-util-visit-parents/color.browser.js");
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Parent} Parent
- * @typedef {import('unist-util-is').Test} Test
- * @typedef {import('./complex-types.js').Action} Action
- * @typedef {import('./complex-types.js').Index} Index
- * @typedef {import('./complex-types.js').ActionTuple} ActionTuple
- * @typedef {import('./complex-types.js').VisitorResult} VisitorResult
- * @typedef {import('./complex-types.js').Visitor} Visitor
- */
-
-
-
-
-/**
- * Continue traversing as normal
- */
-const CONTINUE = true
-/**
- * Do not traverse this node’s children
- */
-const SKIP = 'skip'
-/**
- * Stop traversing immediately
- */
-const EXIT = false
-
-/**
- * Visit children of tree which pass test.
- *
- * @param tree
- *   Tree to walk
- * @param [test]
- *   `unist-util-is`-compatible test
- * @param visitor
- *   Function called for nodes that pass `test`.
- * @param [reverse=false]
- *   Traverse in reverse preorder (NRL) instead of preorder (NLR) (default).
+ *   Traverse in reverse preorder (NRL) instead of the default preorder (NLR).
+ * @returns
+ *   Nothing.
  */
 const visitParents =
   /**
    * @type {(
-   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: import('./complex-types.js').BuildVisitor<Tree, Check>, reverse?: boolean) => void) &
-   *   (<Tree extends Node>(tree: Tree, visitor: import('./complex-types.js').BuildVisitor<Tree>, reverse?: boolean) => void)
+   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: BuildVisitor<Tree, Check>, reverse?: boolean | null | undefined) => void) &
+   *   (<Tree extends Node>(tree: Tree, visitor: BuildVisitor<Tree>, reverse?: boolean | null | undefined) => void)
    * )}
    */
   (
     /**
      * @param {Node} tree
      * @param {Test} test
-     * @param {import('./complex-types.js').Visitor<Node>} visitor
-     * @param {boolean} [reverse=false]
+     * @param {Visitor<Node>} visitor
+     * @param {boolean | null | undefined} [reverse]
+     * @returns {void}
      */
     function (tree, test, visitor, reverse) {
       if (typeof test === 'function' && typeof visitor !== 'function') {
@@ -74309,33 +80317,31 @@ const visitParents =
       const is = (0,unist_util_is__WEBPACK_IMPORTED_MODULE_0__.convert)(test)
       const step = reverse ? -1 : 1
 
-      factory(tree, null, [])()
+      factory(tree, undefined, [])()
 
       /**
        * @param {Node} node
-       * @param {number?} index
+       * @param {number | undefined} index
        * @param {Array<Parent>} parents
        */
       function factory(node, index, parents) {
         /** @type {Record<string, unknown>} */
         // @ts-expect-error: hush
-        const value = typeof node === 'object' && node !== null ? node : {}
-        /** @type {string|undefined} */
-        let name
+        const value = node && typeof node === 'object' ? node : {}
 
         if (typeof value.type === 'string') {
-          name =
+          const name =
+            // `hast`
             typeof value.tagName === 'string'
               ? value.tagName
-              : typeof value.name === 'string'
+              : // `xast`
+              typeof value.name === 'string'
               ? value.name
               : undefined
 
           Object.defineProperty(visit, 'name', {
             value:
-              'node (' +
-              (0,_color_js__WEBPACK_IMPORTED_MODULE_1__.color)(value.type + (name ? '<' + name + '>' : '')) +
-              ')'
+              'node (' + (0,_color_js__WEBPACK_IMPORTED_MODULE_1__.color)(node.type + (name ? '<' + name + '>' : '')) + ')'
           })
         }
 
@@ -74387,8 +80393,12 @@ const visitParents =
   )
 
 /**
+ * Turn a return value into a clean result.
+ *
  * @param {VisitorResult} value
+ *   Valid return values from visitors.
  * @returns {ActionTuple}
+ *   Clean result.
  */
 function toResult(value) {
   if (Array.isArray(value)) {
@@ -74401,6 +80411,206 @@ function toResult(value) {
 
   return [value]
 }
+
+
+/***/ }),
+
+/***/ "./node_modules/unist-util-visit/lib/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/unist-util-visit/lib/index.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CONTINUE": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.CONTINUE),
+/* harmony export */   "EXIT": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.EXIT),
+/* harmony export */   "SKIP": () => (/* reexport safe */ unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.SKIP),
+/* harmony export */   "visit": () => (/* binding */ visit)
+/* harmony export */ });
+/* harmony import */ var unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-visit-parents */ "./node_modules/unist-util-visit-parents/lib/index.js");
+/**
+ * @typedef {import('unist').Node} Node
+ * @typedef {import('unist').Parent} Parent
+ * @typedef {import('unist-util-is').Test} Test
+ * @typedef {import('unist-util-visit-parents').VisitorResult} VisitorResult
+ */
+
+/**
+ * Check if `Child` can be a child of `Ancestor`.
+ *
+ * Returns the ancestor when `Child` can be a child of `Ancestor`, or returns
+ * `never`.
+ *
+ * @template {Node} Ancestor
+ *   Node type.
+ * @template {Node} Child
+ *   Node type.
+ * @typedef {(
+ *   Ancestor extends Parent
+ *     ? Child extends Ancestor['children'][number]
+ *       ? Ancestor
+ *       : never
+ *     : never
+ * )} ParentsOf
+ */
+
+/**
+ * @template {Node} [Visited=Node]
+ *   Visited node type.
+ * @template {Parent} [Ancestor=Parent]
+ *   Ancestor type.
+ * @callback Visitor
+ *   Handle a node (matching `test`, if given).
+ *
+ *   Visitors are free to transform `node`.
+ *   They can also transform `parent`.
+ *
+ *   Replacing `node` itself, if `SKIP` is not returned, still causes its
+ *   descendants to be walked (which is a bug).
+ *
+ *   When adding or removing previous siblings of `node` (or next siblings, in
+ *   case of reverse), the `Visitor` should return a new `Index` to specify the
+ *   sibling to traverse after `node` is traversed.
+ *   Adding or removing next siblings of `node` (or previous siblings, in case
+ *   of reverse) is handled as expected without needing to return a new `Index`.
+ *
+ *   Removing the children property of `parent` still results in them being
+ *   traversed.
+ * @param {Visited} node
+ *   Found node.
+ * @param {Visited extends Node ? number | null : never} index
+ *   Index of `node` in `parent`.
+ * @param {Ancestor extends Node ? Ancestor | null : never} parent
+ *   Parent of `node`.
+ * @returns {VisitorResult}
+ *   What to do next.
+ *
+ *   An `Index` is treated as a tuple of `[CONTINUE, Index]`.
+ *   An `Action` is treated as a tuple of `[Action]`.
+ *
+ *   Passing a tuple back only makes sense if the `Action` is `SKIP`.
+ *   When the `Action` is `EXIT`, that action can be returned.
+ *   When the `Action` is `CONTINUE`, `Index` can be returned.
+ */
+
+/**
+ * Build a typed `Visitor` function from a node and all possible parents.
+ *
+ * It will infer which values are passed as `node` and which as `parent`.
+ *
+ * @template {Node} Visited
+ *   Node type.
+ * @template {Parent} Ancestor
+ *   Parent type.
+ * @typedef {Visitor<Visited, ParentsOf<Ancestor, Visited>>} BuildVisitorFromMatch
+ */
+
+/**
+ * Build a typed `Visitor` function from a list of descendants and a test.
+ *
+ * It will infer which values are passed as `node` and which as `parent`.
+ *
+ * @template {Node} Descendant
+ *   Node type.
+ * @template {Test} Check
+ *   Test type.
+ * @typedef {(
+ *   BuildVisitorFromMatch<
+ *     import('unist-util-visit-parents/complex-types.js').Matches<Descendant, Check>,
+ *     Extract<Descendant, Parent>
+ *   >
+ * )} BuildVisitorFromDescendants
+ */
+
+/**
+ * Build a typed `Visitor` function from a tree and a test.
+ *
+ * It will infer which values are passed as `node` and which as `parent`.
+ *
+ * @template {Node} [Tree=Node]
+ *   Node type.
+ * @template {Test} [Check=string]
+ *   Test type.
+ * @typedef {(
+ *   BuildVisitorFromDescendants<
+ *     import('unist-util-visit-parents/complex-types.js').InclusiveDescendant<Tree>,
+ *     Check
+ *   >
+ * )} BuildVisitor
+ */
+
+
+
+/**
+ * Visit nodes.
+ *
+ * This algorithm performs *depth-first* *tree traversal* in *preorder*
+ * (**NLR**) or if `reverse` is given, in *reverse preorder* (**NRL**).
+ *
+ * You can choose for which nodes `visitor` is called by passing a `test`.
+ * For complex tests, you should test yourself in `visitor`, as it will be
+ * faster and will have improved type information.
+ *
+ * Walking the tree is an intensive task.
+ * Make use of the return values of the visitor when possible.
+ * Instead of walking a tree multiple times, walk it once, use `unist-util-is`
+ * to check if a node matches, and then perform different operations.
+ *
+ * You can change the tree.
+ * See `Visitor` for more info.
+ *
+ * @param tree
+ *   Tree to traverse.
+ * @param test
+ *   `unist-util-is`-compatible test
+ * @param visitor
+ *   Handle each node.
+ * @param reverse
+ *   Traverse in reverse preorder (NRL) instead of the default preorder (NLR).
+ * @returns
+ *   Nothing.
+ */
+const visit =
+  /**
+   * @type {(
+   *   (<Tree extends Node, Check extends Test>(tree: Tree, test: Check, visitor: BuildVisitor<Tree, Check>, reverse?: boolean | null | undefined) => void) &
+   *   (<Tree extends Node>(tree: Tree, visitor: BuildVisitor<Tree>, reverse?: boolean | null | undefined) => void)
+   * )}
+   */
+  (
+    /**
+     * @param {Node} tree
+     * @param {Test} test
+     * @param {Visitor} visitor
+     * @param {boolean | null | undefined} [reverse]
+     * @returns {void}
+     */
+    function (tree, test, visitor, reverse) {
+      if (typeof test === 'function' && typeof visitor !== 'function') {
+        reverse = visitor
+        visitor = test
+        test = null
+      }
+
+      (0,unist_util_visit_parents__WEBPACK_IMPORTED_MODULE_0__.visitParents)(tree, test, overload, reverse)
+
+      /**
+       * @param {Node} node
+       * @param {Array<Parent>} parents
+       */
+      function overload(node, parents) {
+        const parent = parents[parents.length - 1]
+        return visitor(
+          node,
+          parent ? parent.children.indexOf(node) : null,
+          parent
+        )
+      }
+    }
+  )
+
+
 
 
 /***/ }),
@@ -74794,6 +81004,7 @@ function circular() {
 	return function print(key, val) {
 		if (val === void 0) return '[__VOID__]';
 		if (typeof val === 'number' && val !== val) return '[__NAN__]';
+		if (typeof val === 'bigint') return val.toString();
 		if (!val || typeof val !== 'object') return val;
 		if (cache.has(val)) return '[Circular]';
 		cache.add(val); return val;
@@ -74843,7 +81054,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "VFileMessage": () => (/* binding */ VFileMessage)
 /* harmony export */ });
-/* harmony import */ var unist_util_stringify_position__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-stringify-position */ "./node_modules/unist-util-stringify-position/index.js");
+/* harmony import */ var unist_util_stringify_position__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-stringify-position */ "./node_modules/unist-util-stringify-position/lib/index.js");
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Position} Position
@@ -74855,12 +81066,17 @@ __webpack_require__.r(__webpack_exports__);
 
 class VFileMessage extends Error {
   /**
-   * Constructor of a message for `reason` at `place` from `origin`.
-   * When an error is passed in as `reason`, copies the `stack`.
+   * Create a message for `reason` at `place` from `origin`.
    *
-   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
-   * @param {Node|NodeLike|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
-   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * When an error is passed in as `reason`, the `stack` is copied.
+   *
+   * @param {string|Error|VFileMessage} reason
+   *   Reason for message.
+   *   Uses the stack and message of the error if given.
+   * @param {Node|NodeLike|Position|Point} [place]
+   *   Place at which the message occurred in a file.
+   * @param {string} [origin]
+   *   Place in code the message originates from (example `'my-package:my-rule-name'`)
    */
   constructor(reason, place, origin) {
     /** @type {[string|null, string|null]} */
@@ -74895,11 +81111,13 @@ class VFileMessage extends Error {
       // Node.
       if ('type' in place || 'position' in place) {
         if (place.position) {
+          // @ts-expect-error: looks like a position.
           position = place.position
         }
       }
       // Position.
       else if ('start' in place || 'end' in place) {
+        // @ts-expect-error: looks like a position.
         position = place
       }
       // Point.
@@ -74910,76 +81128,109 @@ class VFileMessage extends Error {
 
     // Fields from `Error`
     this.name = (0,unist_util_stringify_position__WEBPACK_IMPORTED_MODULE_0__.stringifyPosition)(place) || '1:1'
+    /** @type {string} */
     this.message = typeof reason === 'object' ? reason.message : reason
-    this.stack = typeof reason === 'object' ? reason.stack : ''
+    /** @type {string} */
+    this.stack = ''
+
+    if (typeof reason === 'object' && reason.stack) {
+      this.stack = reason.stack
+    }
 
     /**
      * Reason for message.
+     *
      * @type {string}
      */
     this.reason = this.message
+
+    /* eslint-disable no-unused-expressions */
     /**
-     * If true, marks associated file as no longer processable.
+     * Whether this is a fatal problem that marks an associated file as no
+     * longer processable.
+     * If `true`, marks associated file as no longer processable.
+     * If `false`, necessitates a (potential) change.
+     * The value can also be `null` or `undefined`, for things that might not
+     * need changing.
+     *
      * @type {boolean?}
      */
-    // eslint-disable-next-line no-unused-expressions
     this.fatal
+
     /**
      * Starting line of error.
+     *
      * @type {number?}
      */
     this.line = position.start.line
+
     /**
      * Starting column of error.
+     *
      * @type {number?}
      */
     this.column = position.start.column
-    /**
-     * Namespace of warning.
-     * @type {string?}
-     */
-    this.source = parts[0]
-    /**
-     * Category of message.
-     * @type {string?}
-     */
-    this.ruleId = parts[1]
+
     /**
      * Full range information, when available.
-     * Has start and end properties, both set to an object with line and column, set to number?.
+     * Has `start` and `end` fields, both set to an object with `line` and
+     * `column`, set to `number?`.
+     *
      * @type {Position?}
      */
     this.position = position
+
+    /**
+     * Namespace of warning (example: `'my-package'`).
+     *
+     * @type {string?}
+     */
+    this.source = parts[0]
+
+    /**
+     * Category of message (example: `'my-rule-name'`).
+     *
+     * @type {string?}
+     */
+    this.ruleId = parts[1]
+
+    /**
+     * Path of a file (used throughout the VFile ecosystem).
+     *
+     * @type {string?}
+     */
+    this.file
 
     // The following fields are “well known”.
     // Not standard.
     // Feel free to add other non-standard fields to your messages.
 
-    /* eslint-disable no-unused-expressions */
     /**
-     * You can use this to specify the source value that’s being reported, which
-     * is deemed incorrect.
+     * Specify the source value that’s being reported, which is deemed
+     * incorrect.
+     *
      * @type {string?}
      */
     this.actual
+
     /**
-     * You can use this to suggest values that should be used instead of
-     * `actual`, one or more values that are deemed as acceptable.
+     * Suggest values that should be used instead of `actual`, one or more
+     * values that are deemed as acceptable.
+     *
      * @type {Array<string>?}
      */
     this.expected
+
     /**
-     * You may add a file property with a path of a file (used throughout the VFile ecosystem).
-     * @type {string?}
-     */
-    this.file
-    /**
-     * You may add a url property with a link to documentation for the message.
+     * Link to documentation for the message.
+     *
      * @type {string?}
      */
     this.url
+
     /**
-     * You may add a note property with a long form description of the message (supported by vfile-reporter).
+     * Long form description of the message (supported by `vfile-reporter`).
+     *
      * @type {string?}
      */
     this.note
@@ -75024,8 +81275,8 @@ __webpack_require__.r(__webpack_exports__);
  * @typedef {import('unist').Point} Point
  * @typedef {Record<string, unknown> & {type: string, position?: Position|undefined}} NodeLike
  * @typedef {import('./minurl.shared.js').URL} URL
- * @typedef {import('..').VFileData} VFileData
- * @typedef {import('..').VFileValue} VFileValue
+ * @typedef {import('../index.js').Data} Data
+ * @typedef {import('../index.js').Value} Value
  *
  * @typedef {'ascii'|'utf8'|'utf-8'|'utf16le'|'ucs2'|'ucs-2'|'base64'|'base64url'|'latin1'|'binary'|'hex'} BufferEncoding
  *   Encodings supported by the buffer class.
@@ -75033,11 +81284,11 @@ __webpack_require__.r(__webpack_exports__);
  *   being needed.
  *   Copied from: <https://github.com/DefinitelyTyped/DefinitelyTyped/blob/90a4ec8/types/node/buffer.d.ts#L170>
  *
- * @typedef {VFileValue|VFileOptions|VFile|URL} VFileCompatible
+ * @typedef {Value|Options|VFile|URL} Compatible
  *   Things that can be passed to the constructor.
  *
  * @typedef VFileCoreOptions
- * @property {VFileValue} [value]
+ * @property {Value} [value]
  * @property {string} [cwd]
  * @property {Array<string>} [history]
  * @property {string|URL} [path]
@@ -75045,7 +81296,7 @@ __webpack_require__.r(__webpack_exports__);
  * @property {string} [stem]
  * @property {string} [extname]
  * @property {string} [dirname]
- * @property {VFileData} [data]
+ * @property {Data} [data]
  *
  * @typedef Map
  *   Raw source map, see:
@@ -75058,12 +81309,12 @@ __webpack_require__.r(__webpack_exports__);
  * @property {string} mappings
  * @property {string} file
  *
- * @typedef {{[key: string]: unknown} & VFileCoreOptions} VFileOptions
+ * @typedef {{[key: string]: unknown} & VFileCoreOptions} Options
  *   Configuration: a bunch of keys that will be shallow copied over to the new
  *   file.
  *
- * @typedef {Record<string, unknown>} VFileReporterSettings
- * @typedef {<T = VFileReporterSettings>(files: Array<VFile>, options: T) => string} VFileReporter
+ * @typedef {Record<string, unknown>} ReporterSettings
+ * @typedef {<T = ReporterSettings>(files: Array<VFile>, options: T) => string} Reporter
  */
 
 
@@ -75081,21 +81332,22 @@ class VFile {
   /**
    * Create a new virtual file.
    *
-   * If `options` is `string` or `Buffer`, treats it as `{value: options}`.
+   * If `options` is `string` or `Buffer`, it’s treated as `{value: options}`.
+   * If `options` is a `URL`, it’s treated as `{path: options}`.
    * If `options` is a `VFile`, shallow copies its data over to the new file.
-   * All other given fields are set on the newly created `VFile`.
+   * All fields in `options` are set on the newly created `VFile`.
    *
-   * Path related properties are set in the following order (least specific to
+   * Path related fields are set in the following order (least specific to
    * most specific): `history`, `path`, `basename`, `stem`, `extname`,
    * `dirname`.
    *
    * It’s not possible to set either `dirname` or `extname` without setting
    * either `history`, `path`, `basename`, or `stem` as well.
    *
-   * @param {VFileCompatible} [value]
+   * @param {Compatible} [value]
    */
   constructor(value) {
-    /** @type {VFileOptions} */
+    /** @type {Options} */
     let options
 
     if (!value) {
@@ -75111,10 +81363,10 @@ class VFile {
     }
 
     /**
-     * Place to store custom information.
-     * It’s OK to store custom data directly on the file, moving it to `data`
-     * gives a little more privacy.
-     * @type {VFileData}
+     * Place to store custom information (default: `{}`).
+     * It’s OK to store custom data directly on the file but moving it to
+     * `data` is recommended.
+     * @type {Data}
      */
     this.data = {}
 
@@ -75125,14 +81377,14 @@ class VFile {
     this.messages = []
 
     /**
-     * List of file paths the file moved between.
+     * List of filepaths the file moved between.
+     * The first is the original path and the last is the current path.
      * @type {Array<string>}
      */
     this.history = []
 
     /**
-     * Base of `path`.
-     * Defaults to `process.cwd()` (`/` in browsers).
+     * Base of `path` (default: `process.cwd()` or `'/'` in browsers).
      * @type {string}
      */
     this.cwd = _minproc_js__WEBPACK_IMPORTED_MODULE_2__.proc.cwd()
@@ -75140,7 +81392,7 @@ class VFile {
     /* eslint-disable no-unused-expressions */
     /**
      * Raw value.
-     * @type {VFileValue}
+     * @type {Value}
      */
     this.value
 
@@ -75155,7 +81407,7 @@ class VFile {
     this.stored
 
     /**
-     * Sometimes files have a non-string representation.
+     * Sometimes files have a non-string, compiled, representation.
      * This can be stored in the `result` field.
      * One example is when turning markdown into React nodes.
      * This is used by unified to store non-string results.
@@ -75166,7 +81418,8 @@ class VFile {
     /**
      * Sometimes files have a source map associated with them.
      * This can be stored in the `map` field.
-     * This should be a `RawSourceMap` type from the `source-map` module.
+     * This should be a `Map` type, which is equivalent to the `RawSourceMap`
+     * type from the `source-map` module.
      * @type {Map|undefined}
      */
     this.map
@@ -75197,8 +81450,7 @@ class VFile {
   }
 
   /**
-   * Access full path (`~/index.min.js`).
-   *
+   * Get the full path (example: `'~/index.min.js'`).
    * @returns {string}
    */
   get path() {
@@ -75206,9 +81458,10 @@ class VFile {
   }
 
   /**
-   * Set full path (`~/index.min.js`).
+   * Set the full path (example: `'~/index.min.js'`).
    * Cannot be nullified.
-   *
+   * You can set a file URL (a `URL` object with a `file:` protocol) which will
+   * be turned into a path with `url.fileURLToPath`.
    * @param {string|URL} path
    */
   set path(path) {
@@ -75224,15 +81477,15 @@ class VFile {
   }
 
   /**
-   * Access parent path (`~`).
+   * Get the parent path (example: `'~'`).
    */
   get dirname() {
     return typeof this.path === 'string' ? _minpath_js__WEBPACK_IMPORTED_MODULE_4__.path.dirname(this.path) : undefined
   }
 
   /**
-   * Set parent path (`~`).
-   * Cannot be set if there's no `path` yet.
+   * Set the parent path (example: `'~'`).
+   * Cannot be set if there’s no `path` yet.
    */
   set dirname(dirname) {
     assertPath(this.basename, 'dirname')
@@ -75240,16 +81493,17 @@ class VFile {
   }
 
   /**
-   * Access basename (including extname) (`index.min.js`).
+   * Get the basename (including extname) (example: `'index.min.js'`).
    */
   get basename() {
     return typeof this.path === 'string' ? _minpath_js__WEBPACK_IMPORTED_MODULE_4__.path.basename(this.path) : undefined
   }
 
   /**
-   * Set basename (`index.min.js`).
-   * Cannot contain path separators.
-   * Cannot be nullified either (use `file.path = file.dirname` instead).
+   * Set basename (including extname) (`'index.min.js'`).
+   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
+   * on windows).
+   * Cannot be nullified (use `file.path = file.dirname` instead).
    */
   set basename(basename) {
     assertNonEmpty(basename, 'basename')
@@ -75258,15 +81512,17 @@ class VFile {
   }
 
   /**
-   * Access extname (including dot) (`.js`).
+   * Get the extname (including dot) (example: `'.js'`).
    */
   get extname() {
     return typeof this.path === 'string' ? _minpath_js__WEBPACK_IMPORTED_MODULE_4__.path.extname(this.path) : undefined
   }
 
   /**
-   * Set extname (including dot) (`.js`).
-   * Cannot be set if there's no `path` yet and cannot contain path separators.
+   * Set the extname (including dot) (example: `'.js'`).
+   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
+   * on windows).
+   * Cannot be set if there’s no `path` yet.
    */
   set extname(extname) {
     assertPart(extname, 'extname')
@@ -75286,7 +81542,7 @@ class VFile {
   }
 
   /**
-   * Access stem (w/o extname) (`index.min`).
+   * Get the stem (basename w/o extname) (example: `'index.min'`).
    */
   get stem() {
     return typeof this.path === 'string'
@@ -75295,8 +81551,10 @@ class VFile {
   }
 
   /**
-   * Set stem (w/o extname) (`index.min`).
-   * Cannot be nullified, and cannot contain path separators.
+   * Set the stem (basename w/o extname) (example: `'index.min'`).
+   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
+   * on windows).
+   * Cannot be nullified (use `file.path = file.dirname` instead).
    */
   set stem(stem) {
     assertNonEmpty(stem, 'stem')
@@ -75307,20 +81565,29 @@ class VFile {
   /**
    * Serialize the file.
    *
-   * @param {BufferEncoding} [encoding='utf8'] If `file.value` is a buffer, `encoding` is used to serialize buffers.
+   * @param {BufferEncoding} [encoding='utf8']
+   *   When `value` is a `Buffer`, `encoding` is a character encoding to
+   *   understand it as (default: `'utf8'`).
    * @returns {string}
+   *   Serialized file.
    */
   toString(encoding) {
     return (this.value || '').toString(encoding)
   }
 
   /**
-   * Create a message and associates it w/ the file.
+   * Constructs a new `VFileMessage`, where `fatal` is set to `false`, and
+   * associates it with the file by adding it to `vfile.messages` and setting
+   * `message.file` to the current filepath.
    *
-   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
-   * @param {Node|NodeLike|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
-   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * @param {string|Error|VFileMessage} reason
+   *   Human readable reason for the message, uses the stack and message of the error if given.
+   * @param {Node|NodeLike|Position|Point} [place]
+   *   Place where the message occurred in the file.
+   * @param {string} [origin]
+   *   Computer readable reason for the message
    * @returns {VFileMessage}
+   *   Message.
    */
   message(reason, place, origin) {
     const message = new vfile_message__WEBPACK_IMPORTED_MODULE_5__.VFileMessage(reason, place, origin)
@@ -75338,14 +81605,17 @@ class VFile {
   }
 
   /**
-   * Info: create a message, associate it with the file, and mark the fatality
-   * as `null`.
-   * Calls `message()` internally.
+   * Like `VFile#message()`, but associates an informational message where
+   * `fatal` is set to `null`.
    *
-   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
-   * @param {Node|NodeLike|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
-   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * @param {string|Error|VFileMessage} reason
+   *   Human readable reason for the message, uses the stack and message of the error if given.
+   * @param {Node|NodeLike|Position|Point} [place]
+   *   Place where the message occurred in the file.
+   * @param {string} [origin]
+   *   Computer readable reason for the message
    * @returns {VFileMessage}
+   *   Message.
    */
   info(reason, place, origin) {
     const message = this.message(reason, place, origin)
@@ -75356,15 +81626,19 @@ class VFile {
   }
 
   /**
-   * Fail: create a message, associate it with the file, mark the fatality as
-   * `true`.
-   * Note: fatal errors mean a file is no longer processable.
-   * Calls `message()` internally.
+   * Like `VFile#message()`, but associates a fatal message where `fatal` is
+   * set to `true`, and then immediately throws it.
    *
-   * @param {string|Error} reason Reason for message (`string` or `Error`). Uses the stack and message of the error if given.
-   * @param {Node|NodeLike|Position|Point} [place] Place at which the message occurred in a file (`Node`, `Position`, or `Point`, optional).
-   * @param {string} [origin] Place in code the message originates from (`string`, optional).
+   * > 👉 **Note**: a fatal error means that a file is no longer processable.
+   *
+   * @param {string|Error|VFileMessage} reason
+   *   Human readable reason for the message, uses the stack and message of the error if given.
+   * @param {Node|NodeLike|Position|Point} [place]
+   *   Place where the message occurred in the file.
+   * @param {string} [origin]
+   *   Computer readable reason for the message
    * @returns {never}
+   *   Message.
    */
   fail(reason, place, origin) {
     const message = this.message(reason, place, origin)
@@ -75992,32 +82266,75 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "zwitch": () => (/* binding */ zwitch)
 /* harmony export */ });
-var own = {}.hasOwnProperty
-
 /**
  * @callback Handler
- * @param {...unknown} value
- * @return {unknown}
- *
- * @typedef {Record<string, Handler>} Handlers
- *
- * @typedef {Object} Options
- * @property {Handler} [unknown]
- * @property {Handler} [invalid]
- * @property {Handlers} [handlers]
+ *   Handle a value, with a certain ID field set to a certain value.
+ *   The ID field is passed to `zwitch`, and it’s value is this function’s
+ *   place on the `handlers` record.
+ * @param {...any} parameters
+ *   Arbitrary parameters passed to the zwitch.
+ *   The first will be an object with a certain ID field set to a certain value.
+ * @returns {any}
+ *   Anything!
  */
 
 /**
- * Handle values based on a property.
+ * @callback UnknownHandler
+ *   Handle values that do have a certain ID field, but it’s set to a value
+ *   that is not listed in the `handlers` record.
+ * @param {unknown} value
+ *   An object with a certain ID field set to an unknown value.
+ * @param {...any} rest
+ *   Arbitrary parameters passed to the zwitch.
+ * @returns {any}
+ *   Anything!
+ */
+
+/**
+ * @callback InvalidHandler
+ *   Handle values that do not have a certain ID field.
+ * @param {unknown} value
+ *   Any unknown value.
+ * @param {...any} rest
+ *   Arbitrary parameters passed to the zwitch.
+ * @returns {void|null|undefined|never}
+ *   This should crash or return nothing.
+ */
+
+/**
+ * @template {InvalidHandler} [Invalid=InvalidHandler]
+ * @template {UnknownHandler} [Unknown=UnknownHandler]
+ * @template {Record<string, Handler>} [Handlers=Record<string, Handler>]
+ * @typedef Options
+ *   Configuration (required).
+ * @property {Invalid} [invalid]
+ *   Handler to use for invalid values.
+ * @property {Unknown} [unknown]
+ *   Handler to use for unknown values.
+ * @property {Handlers} [handlers]
+ *   Handlers to use.
+ */
+
+const own = {}.hasOwnProperty
+
+/**
+ * Handle values based on a field.
  *
+ * @template {InvalidHandler} [Invalid=InvalidHandler]
+ * @template {UnknownHandler} [Unknown=UnknownHandler]
+ * @template {Record<string, Handler>} [Handlers=Record<string, Handler>]
  * @param {string} key
- * @param {Options} [options]
+ *   Field to switch on.
+ * @param {Options<Invalid, Unknown, Handlers>} [options]
+ *   Configuration (required).
+ * @returns {{unknown: Unknown, invalid: Invalid, handlers: Handlers, (...parameters: Parameters<Handlers[keyof Handlers]>): ReturnType<Handlers[keyof Handlers]>, (...parameters: Parameters<Unknown>): ReturnType<Unknown>}}
  */
 function zwitch(key, options) {
-  var settings = options || {}
+  const settings = options || {}
 
   /**
    * Handle one value.
+   *
    * Based on the bound `key`, a respective handler will be called.
    * If `value` is not an object, or doesn’t have a `key` property, the special
    * “invalid” handler will be called.
@@ -76027,23 +82344,36 @@ function zwitch(key, options) {
    * All arguments, and the context object, are passed through to the handler,
    * and it’s result is returned.
    *
-   * @param {...unknown} [value]
    * @this {unknown}
-   * @returns {unknown}
+   *   Any context object.
+   * @param {unknown} [value]
+   *   Any value.
+   * @param {...unknown} parameters
+   *   Arbitrary parameters passed to the zwitch.
    * @property {Handler} invalid
+   *   Handle for values that do not have a certain ID field.
    * @property {Handler} unknown
+   *   Handle values that do have a certain ID field, but it’s set to a value
+   *   that is not listed in the `handlers` record.
    * @property {Handlers} handlers
+   *   Record of handlers.
+   * @returns {unknown}
+   *   Anything.
    */
-  function one(value) {
-    var fn = one.invalid
-    var handlers = one.handlers
+  function one(value, ...parameters) {
+    /** @type {Handler|undefined} */
+    let fn = one.invalid
+    const handlers = one.handlers
 
     if (value && own.call(value, key)) {
-      fn = own.call(handlers, value[key]) ? handlers[value[key]] : one.unknown
+      // @ts-expect-error Indexable.
+      const id = String(value[key])
+      // @ts-expect-error Indexable.
+      fn = own.call(handlers, id) ? handlers[id] : one.unknown
     }
 
     if (fn) {
-      return fn.apply(this, arguments)
+      return fn.call(this, value, ...parameters)
     }
   }
 
@@ -76051,6 +82381,7 @@ function zwitch(key, options) {
   one.invalid = settings.invalid
   one.unknown = settings.unknown
 
+  // @ts-expect-error: matches!
   return one
 }
 
@@ -76107,7 +82438,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ dast2mdast)
 /* harmony export */ });
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /* harmony import */ var _one_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./one.js */ "./src/dast2mdast/one.js");
 /* harmony import */ var _handlers_index_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./handlers/index.js */ "./src/dast2mdast/handlers/index.js");
 /* harmony import */ var _id_slugger_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./id-slugger.js */ "./src/dast2mdast/id-slugger.js");
@@ -76508,7 +82839,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ paragraph)
 /* harmony export */ });
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /* harmony import */ var _all_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../all.js */ "./src/dast2mdast/all.js");
 /*
  * Copyright 2019 Adobe. All rights reserved.
@@ -76790,7 +83121,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ run)
 /* harmony export */ });
-/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/index.js");
+/* harmony import */ var mdast_util_to_string__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! mdast-util-to-string */ "./node_modules/mdast-util-to-string/lib/index.js");
 /* harmony import */ var _all_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../all.js */ "./src/dast2mdast/all.js");
 /*
  * Copyright 2019 Adobe. All rights reserved.
@@ -76893,7 +83224,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ cell)
 /* harmony export */ });
-/* harmony import */ var _adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/helix-markdown-support/gridtable */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js");
+/* harmony import */ var _adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/mdast-util-gridtables */ "./node_modules/@adobe/mdast-util-gridtables/src/index.js");
 /* harmony import */ var _all_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../all.js */ "./src/dast2mdast/all.js");
 /*
  * Copyright 2019 Adobe. All rights reserved.
@@ -76938,7 +83269,7 @@ function gridTableCell(h, node) {
     props.colSpan = node.colSpan;
   }
   h.listContainers.unshift([]);
-  const c = h(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL, props, (0,_all_js__WEBPACK_IMPORTED_MODULE_1__["default"])(h, node));
+  const c = h(_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_CELL, props, (0,_all_js__WEBPACK_IMPORTED_MODULE_1__["default"])(h, node));
   h.listContainers.shift();
   return c;
 }
@@ -76977,7 +83308,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ row)
 /* harmony export */ });
-/* harmony import */ var _adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/helix-markdown-support/gridtable */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js");
+/* harmony import */ var _adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/mdast-util-gridtables */ "./node_modules/@adobe/mdast-util-gridtables/src/index.js");
 /* harmony import */ var _all_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../all.js */ "./src/dast2mdast/all.js");
 /*
  * Copyright 2019 Adobe. All rights reserved.
@@ -76998,7 +83329,7 @@ function gridTableRow(h, node) {
   if (node.isHeader) {
     props.isHeader = true;
   }
-  return h(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW, props, (0,_all_js__WEBPACK_IMPORTED_MODULE_1__["default"])(h, node));
+  return h(_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_ROW, props, (0,_all_js__WEBPACK_IMPORTED_MODULE_1__["default"])(h, node));
 }
 
 function row(h, node) {
@@ -77021,7 +83352,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ table)
 /* harmony export */ });
-/* harmony import */ var _adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/helix-markdown-support/gridtable */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js");
+/* harmony import */ var _adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/mdast-util-gridtables */ "./node_modules/@adobe/mdast-util-gridtables/src/index.js");
 /* harmony import */ var _all_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../all.js */ "./src/dast2mdast/all.js");
 /*
  * Copyright 2019 Adobe. All rights reserved.
@@ -77047,12 +83378,12 @@ function gridTable(h, node) {
       header.push(row);
     }
     rows = [
-      h(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER, header),
-      h(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY, rows),
+      h(_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_HEADER, header),
+      h(_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_BODY, rows),
     ];
   }
 
-  return h(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE, rows);
+  return h(_adobe_mdast_util_gridtables__WEBPACK_IMPORTED_MODULE_0__.TYPE_TABLE, rows);
 }
 
 function table(h, node) {
@@ -77435,7 +83766,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ processImages)
 /* harmony export */ });
 /* harmony import */ var assert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! assert */ "./node_modules/assert/build/assert.js");
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
 /* harmony import */ var _adobe_helix_shared_process_queue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @adobe/helix-shared-process-queue */ "./node_modules/@adobe/helix-shared-process-queue/src/process-queue.js");
 /* provided dependency */ var Buffer = __webpack_require__(/*! buffer */ "./node_modules/buffer/index.js")["Buffer"];
 /*
@@ -77553,7 +83884,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ sanitizeAutoEmbeds)
 /* harmony export */ });
-/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/index.js");
+/* harmony import */ var unist_util_visit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! unist-util-visit */ "./node_modules/unist-util-visit/lib/index.js");
 /* harmony import */ var unist_util_find__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! unist-util-find */ "./node_modules/unist-util-find/index.js");
 /*
  * Copyright 2022 Adobe. All rights reserved.
@@ -77683,7 +84014,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var remark_gfm__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! remark-gfm */ "./node_modules/remark-gfm/index.js");
 /* harmony import */ var _adobe_helix_markdown_support__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @adobe/helix-markdown-support */ "./node_modules/@adobe/helix-markdown-support/src/index.js");
 /* harmony import */ var _adobe_helix_markdown_support_matter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @adobe/helix-markdown-support/matter */ "./node_modules/@adobe/helix-markdown-support/src/matter/index.js");
-/* harmony import */ var _adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @adobe/helix-markdown-support/gridtable */ "./node_modules/@adobe/helix-markdown-support/src/gridtable/index.js");
+/* harmony import */ var _adobe_remark_gridtables__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @adobe/remark-gridtables */ "./node_modules/@adobe/remark-gridtables/src/index.js");
 /* harmony import */ var _mdast_process_images_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./mdast-process-images.js */ "./src/mdast2md/mdast-process-images.js");
 /* harmony import */ var _mdast_sanitize_autoembeds_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./mdast-sanitize-autoembeds.js */ "./src/mdast2md/mdast-sanitize-autoembeds.js");
 /* harmony import */ var _ordered_list_index_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ordered-list/index.js */ "./src/mdast2md/ordered-list/index.js");
@@ -77755,7 +84086,7 @@ async function mdast2md(mdast, opts = {}) {
     await (0,_mdast_sanitize_autoembeds_js__WEBPACK_IMPORTED_MODULE_4__["default"])(mdast);
     await (0,_mdast_process_images_js__WEBPACK_IMPORTED_MODULE_3__["default"])(log, mdast, opts.mediaHandler, opts.source);
     await (0,_adobe_helix_markdown_support__WEBPACK_IMPORTED_MODULE_0__.imageReferences)(mdast);
-    processor.use(_adobe_helix_markdown_support_gridtable__WEBPACK_IMPORTED_MODULE_2__.remarkGridTable);
+    processor.use(_adobe_remark_gridtables__WEBPACK_IMPORTED_MODULE_2__["default"]);
   } else {
     await (0,_adobe_helix_markdown_support__WEBPACK_IMPORTED_MODULE_0__.sanitizeHeading)(mdast);
     await (0,_adobe_helix_markdown_support__WEBPACK_IMPORTED_MODULE_0__.sanitizeFormats)(mdast); // collapse formats once
