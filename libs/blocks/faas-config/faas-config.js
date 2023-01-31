@@ -38,7 +38,7 @@ const getHashConfig = () => {
   hashConfig.pjs94 ||= hashConfig.p.js[94] || '';
   hashConfig[149] ||= hashConfig.p.js[149] || '';
   hashConfig[172] ||= hashConfig.p.js[172] || '';
-  hashConfig.q103 = hashConfig.q103 || hashConfig.q[103]?.c || {};
+  hashConfig.q103 ||= hashConfig.q[103]?.c || {};
   hashConfig.pc1 ||= hashConfig.pc[1] || false;
   hashConfig.pc2 ||= hashConfig.pc[2] || false;
   hashConfig.pc3 ||= hashConfig.pc[3] || false;
