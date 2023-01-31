@@ -472,8 +472,7 @@ export function decorateAutoBlock(a) {
 
 export async function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
-  await decorateLinksToButtons(anchors);
-  return [...anchors].reduce((rdx, a) => {
+  const links = [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -481,11 +480,13 @@ export async function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     const autoBLock = decorateAutoBlock(a);
-    if (autoBLock && !a.classList.contains('con-button')) {
+    if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
   }, []);
+  await decorateLinksToButtons(anchors);
+  return links;
 }
 
 function decorateContent(el) {
