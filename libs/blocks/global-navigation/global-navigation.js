@@ -148,7 +148,7 @@ class Gnav {
     if (profileRes.status !== 200) return this.decorateSignIn();
 
     if (blockEl.children.length > 1) decoratedEl.classList.add('has-menu');
-    decoratedEl.closest('nav.gnav').classList.add('signed-in');
+    decoratedEl.closest('nav.gnav')?.classList.add('signed-in');
     const { sections, user: { avatar } } = await profileRes.json();
     const avatarImgEl = toFragment`<img class="feds-profile-img" src="${avatar}"></img>`;
     const profileButtonEl = toFragment`
