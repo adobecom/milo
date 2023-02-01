@@ -1,6 +1,7 @@
-import { getConfig, createTag } from '../../../../utils/utils.js';
+import { getConfig } from '../../../../utils/utils.js';
+import { toFragment } from '../../utilities.js';
 
-function decorateEmail(email) {
+const decorateEmail = (email) => {
   const MAX_CHAR = 12;
   const emailParts = email.split('@');
   const username = emailParts[0].length <= MAX_CHAR ? emailParts[0] : `${emailParts[0].slice(0, MAX_CHAR)}…`;
@@ -9,87 +10,110 @@ function decorateEmail(email) {
   let domain = domainArr.join('.');
   domain = domain.length <= MAX_CHAR ? domain : `${domain.slice(0, MAX_CHAR)}…`;
   return `${username}@${domain}.${tld}`;
-}
+};
 
-function decorateProfileLink(href, service) {
-  const { env } = getConfig();
-  if (env.name === 'prod') return href;
+const decorateProfileLink = (href, service) => {
+  const env = getConfig();
+  const name = env.name || 'prod';
+  if (name === 'prod') return href;
   const url = new URL(href);
   url.hostname = env[service];
   return url.href;
-}
+};
 
-function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
-  const { displayName, email } = profiles.ims;
-  const { user, sections } = profiles.io;
-  const { avatar } = user;
+const decorateAction = (actionEl) => {
+  if (!actionEl) return '';
+  actionEl.href = decorateProfileLink(actionEl.href, 'adminconsole');
+  return toFragment`<li class="feds-profile-action">${actionEl}</li>`;
+};
 
-  const displayEmail = decorateEmail(email);
-  const avatarImg = createTag('img', { class: 'gnav-profile-img', src: avatar });
-  const accountLink = blockEl.querySelector('div > div > p:nth-child(2) a');
-
-  const profileButton = createTag(
-    'button',
-    {
-      class: 'gnav-profile-button',
-      'aria-label': displayName,
-      'aria-expanded': false,
-      'aria-controls': 'gnav-profile-menu',
-    },
-    avatarImg,
-  );
-  profileButton.addEventListener('click', () => { toggle(profileEl); });
-
-  const profileMenu = createTag('div', { id: 'gnav-profile-menu', class: 'gnav-profile-menu' });
-  const profileHeader = createTag('a', { class: 'gnav-profile-header' });
-  const profileDetails = createTag('div', { class: 'gnav-profile-details' });
-  const profileActions = createTag('ul', { class: 'gnav-profile-actions' });
-
-  profileHeader.href = decorateProfileLink(accountLink.href, 'account');
-  profileHeader.setAttribute('aria-label', accountLink.textContent);
-
-  const profileImg = avatarImg.cloneNode(true);
-  const profileName = createTag('p', { class: 'gnav-profile-name' }, displayName);
-  const profileEmail = createTag('p', { class: 'gnav-profile-email' }, displayEmail);
-  const accountText = blockEl.querySelector('div > div > p:nth-child(2) a').innerHTML;
-  const profileViewAccount = createTag('p', { class: 'gnav-profile-account' }, accountText);
-  profileDetails.append(profileName, profileEmail, profileViewAccount);
-
-  if (sections.manage.items.team?.id) {
-    const teamLink = blockEl.querySelector('div > div > p:nth-child(3) a');
-    teamLink.href = decorateProfileLink(teamLink.href, 'adminconsole');
-    const manageTeam = createTag('li', { class: 'gnav-profile-action' }, teamLink);
-    profileActions.append(manageTeam);
+class Profile {
+  constructor({
+    decoratedEl,
+    avatarImgEl,
+    sections,
+    toggleMenu,
+    profileButtonEl,
+    accountLinkEl,
+    signOutEl,
+    manageTeamsEl,
+    manageEnterpriseEl,
+    localMenu,
+  }) {
+    this.sections = sections;
+    this.avatarImgEl = avatarImgEl;
+    this.accountLinkEl = accountLinkEl;
+    this.signOutEl = signOutEl;
+    this.manageTeamsEl = manageTeamsEl;
+    this.manageEnterpriseEl = manageEnterpriseEl;
+    this.toggleMenu = toggleMenu;
+    this.profileButtonEl = profileButtonEl;
+    this.decoratedEl = decoratedEl;
+    this.localMenu = localMenu;
+    if (localMenu) {
+      localMenu.classList.add('feds-local-menu');
+    }
+    this.init();
   }
 
-  if (sections.manage.items.enterprise?.id) {
-    const manageLink = blockEl.querySelector('div > div > p:nth-child(4) a');
-    manageLink.href = decorateProfileLink(manageLink.href, 'adminconsole');
-    const manageEnt = createTag('li', { class: 'gnav-profile-action' }, manageLink);
-    profileActions.append(manageEnt);
+  async init() {
+    // TODO do some sanity checks if the user is logged in, the mandatory properties are set.
+    // If not there should be helpful logs providing guidance for developers
+    const { displayName, email } = await window.adobeIMS.getProfile();
+    if (this.profileButtonEl) this.profileButtonEl.setAttribute('aria-label', displayName);
+    this.displayName = displayName;
+    this.email = email;
+    this.decoratedEl.append(this.menu());
+    this.decoratedEl.addEventListener('click', () => this.toggleMenu(this.decoratedEl));
+    this.decoratedEl.dispatchEvent(new Event('feds:events:profileReady'));
   }
 
-  const signOutLink = blockEl.querySelector('div > div > p:nth-child(5) a');
-  signOutLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.adobeIMS.signOut();
-  });
-  const signOut = createTag('li', { class: 'gnav-profile-action' }, signOutLink);
-  profileActions.append(signOut);
+  decorateSignOut() {
+    // TODO integrate the placeholders here
+    const signOutLink = toFragment`
+      <li>
+        <a class="feds-profile-action" daa-ll="Sign Out">Sign Out</a>
+      </li>
+    `;
+    signOutLink.addEventListener('click', (e) => {
+      // TODO consumers might want to execute their own logic before a sign out
+      // we might want to provide them a way to do so here
+      e.preventDefault();
+      window.adobeIMS.signOut();
+    });
+    return signOutLink;
+  }
 
-  profileHeader.append(profileImg, profileDetails);
-  profileMenu.append(profileHeader, profileActions);
-  profileEl.append(profileButton, profileMenu);
+  menu() {
+    // TODO integrate placerholders here, for the view account // and profile actions
+    // TODO the account name and email might need a bit of adaptive behaviour
+    // historically we shrunk the fontsize and displayed the account name on two lines
+    // the email had some special logic as well
+    // we took a simpler approach ("Some very long name, very l...") for MVP
+    // also TODO, TAKE A GOOD LOOK AT THE TEMPLATE WHEN DOING THE PLACEHOLDERS.
+    return toFragment`
+      <div id="feds-profile-menu" class="feds-profile-menu">
+        <a 
+          href="${decorateProfileLink('https://account.adobe.com/', 'account')}" 
+          class="feds-profile-header"
+          daa-ll="View Account"
+          aria-label="${this.accountLinkText}"
+        >
+          ${this.avatarImgEl.cloneNode(true)}
+          <div class="feds-profile-details">
+            <p class="feds-profile-name">${this.displayName}</p>
+            <p class="feds-profile-email">${decorateEmail(this.email)}</p>
+            <p class="feds-profile-account">View Account</p>
+          </div>
+        </a>
+        ${this.localMenu}
+        <ul class="feds-profile-actions">
+          ${this.sections.manage.items.team?.id ? decorateAction(this.manageTeamsEl) : ''}
+          ${this.sections.manage.items.enterprise?.id ? decorateAction(this.manageEnterpriseEl) : ''}
+          ${this.decorateSignOut()}
+        </ul>
+      </div>
+    `;
+  }
 }
-
-async function profile(blockEl, profileEl, toggle, ioResp) {
-  const gnav = profileEl.closest('nav.gnav');
-  gnav.classList.add('signed-in');
-
-  const profiles = {};
-  profiles.ims = await window.adobeIMS.getProfile();
-  profiles.io = await ioResp.json();
-  decorateProfileMenu(blockEl, profileEl, profiles, toggle);
-}
-
-export default { profile };
+export default Profile;
