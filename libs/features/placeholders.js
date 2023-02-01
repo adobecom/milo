@@ -1,46 +1,65 @@
-const cachedPlaceholders = {};
+const fetchedPlaceholders = {};
 
-// eslint-disable-next-line no-async-promise-executor
-const fetchPlaceholders = (config, sheet) => new Promise(async (resolve) => {
-  if (cachedPlaceholders?.[config.locale.ietf]?.[sheet]) {
-    resolve(cachedPlaceholders[config.locale.ietf][sheet]);
-    return;
-  }
-
+const getPlaceholdersPath = (config, sheet) => {
   const path = `${config.locale.contentRoot}/placeholders.json`;
   const query = sheet !== 'default' && typeof sheet === 'string' && sheet.length ? `?sheet=${sheet}` : '';
-  const resp = await fetch(`${path}${query}`);
-  const json = resp.ok ? await resp.json() : { data: [] };
-  if (json.data.length === 0) { resolve({}); return; }
-  cachedPlaceholders[config.locale.ietf] = cachedPlaceholders[config.locale.ietf] || {};
-  cachedPlaceholders[config.locale.ietf][sheet] = {};
-  json.data.forEach((item) => {
-    cachedPlaceholders[config.locale.ietf][sheet][item.key] = item.value;
-  });
-  resolve(cachedPlaceholders[config.locale.ietf][sheet]);
-});
+  return `${path}${query}`;
+};
+
+const fetchPlaceholders = (config, sheet) => {
+  const placeholdersPath = getPlaceholdersPath(config, sheet);
+
+  fetchedPlaceholders[placeholdersPath] = fetchedPlaceholders[placeholdersPath]
+    // eslint-disable-next-line no-async-promise-executor
+    || new Promise(async (resolve) => {
+      const resp = await fetch(placeholdersPath).catch(() => ({}));
+      const json = resp.ok ? await resp.json() : { data: [] };
+      if (json.data.length === 0) { resolve({}); return; }
+      const placeholders = {};
+      json.data.forEach((item) => {
+        placeholders[item.key] = item.value;
+      });
+      resolve(placeholders);
+    });
+
+  return fetchedPlaceholders[placeholdersPath];
+};
 
 function keyToStr(key) {
   return key.replaceAll('-', ' ');
 }
 
 async function getPlaceholder(key, config, sheet) {
+  let defaultFetched = false;
   const defaultLocale = 'en-US';
 
+  const getDefaultContentRoot = () => {
+    const defaultContentRoot = config.locale.contentRoot;
+    const localePrefix = config.locale.prefix;
+
+    if (!localePrefix.length) return defaultContentRoot;
+
+    // Certain locale prefixes are common beginnings of words, such as /es
+    // This could also be part of a page path, such as '/esign'
+    if (defaultContentRoot.endsWith(localePrefix)) {
+      return defaultContentRoot.replace(localePrefix, '');
+    }
+
+    return defaultContentRoot.replace(`${localePrefix}/`, '/');
+  };
+
   const getDefaultPlaceholders = async () => {
-    // Maybe we should modify the getConfig() method to provide a default config?
-    // Could contentRoot be different than the origin?
     const defaultConfig = {
       locale: {
         ietf: defaultLocale,
-        contentRoot: window.location.origin,
+        contentRoot: getDefaultContentRoot(),
       },
     };
 
     const defaultPlaceholders = await fetchPlaceholders(defaultConfig, sheet)
-      .catch(() => keyToStr(key));
-    if (defaultPlaceholders?.[key]) return defaultPlaceholders?.[key];
-    return keyToStr(key);
+      .catch(() => ({}));
+    defaultFetched = true;
+    return defaultPlaceholders;
   };
 
   const placeholders = await fetchPlaceholders(config, sheet).catch(async () => {
@@ -48,11 +67,11 @@ async function getPlaceholder(key, config, sheet) {
     return defaultPlaceholders;
   });
 
-  if (placeholders?.[key]) return placeholders?.[key];
+  if (placeholders?.[key]) return placeholders[key];
 
-  if (config.locale.ietf !== defaultLocale) {
+  if (!defaultFetched && config.locale.ietf !== defaultLocale) {
     const defaultPlaceholders = await getDefaultPlaceholders();
-    return defaultPlaceholders;
+    if (defaultPlaceholders?.[key]) return defaultPlaceholders[key];
   }
 
   return keyToStr(key);
