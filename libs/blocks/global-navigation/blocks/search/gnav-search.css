@@ -1,3 +1,7 @@
+:root {
+  --background-nav--light: #fff;
+}
+
 .feds-search-bar {
   padding: 20px 12px;
   display: flex;

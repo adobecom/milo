@@ -1,0 +1,29 @@
+/* TODO just a POC. Copy of the css for the profile avatar from global-navigation.css */
+.feds-profile {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  position: relative;
+  justify-content: end;
+}
+
+.feds-signin {
+  padding: 4px var(--feds-spacing-utilityNav);
+  border-radius: var(--radius-utilityIcon);
+}
+
+.feds-profile-img {
+  height: 30px;
+  width: 30px;
+}
+
+.feds-profile-button {
+  padding: 2px var(--feds-spacing-utilityNav);
+  border-radius: var(--radius-utilityIcon);
+  border: none;
+}  
+
+.feds-profile {
+  grid-area: profile;
+}
