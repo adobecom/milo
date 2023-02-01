@@ -77,7 +77,7 @@ class MenuControls {
       // TODO: better logic to focus elements that have not been added yet
       if (el.querySelector('.feds-search-input')) {
         el.querySelector('.feds-search-input').focus();
-      };
+      }
     }
     this.state.openMenu = el;
   };
@@ -96,3 +96,4 @@ class MenuControls {
 }
 
 export default { MenuControls };
+export { MenuControls };
