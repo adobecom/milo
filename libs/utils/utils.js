@@ -153,7 +153,15 @@ export const [setConfig, getConfig] = (() => {
       const origin = conf.origin || window.location.origin;
       const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
-      config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+
+      if (conf.codeRoot) {
+        if (!config.codeRoot.startsWith(origin)) {
+          config.codeRoot = `${origin}${conf.codeRoot}`;
+        }
+      } else {
+        config.codeRoot = origin;
+      }
+
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
@@ -673,10 +681,64 @@ function decorateMeta() {
     if (details) getModal(details);
   });
 }
+const getExperiment = async () => {
+  if (navigator.userAgent.match(/bot|crawl|spider/i)) {
+    return {};
+  }
+
+  let experimentPath;
+  let variant;
+
+  const usp = new URLSearchParams(window.location.search);
+  if (usp.has('experiment')) {
+    const experimentParam = usp.get('experiment')?.toLowerCase();
+    if (experimentParam) {
+      const lastSlash = experimentParam.lastIndexOf('/');
+      variant = experimentParam.slice(lastSlash + 1);
+      experimentPath = experimentParam.slice(0, lastSlash);
+    }
+  }
+
+  // TODO VIVIAN: TARGET code here
+  // populate:
+  // experimentPath: path to manifest.json
+  // variant: variant name e.g: challenger-1
+
+  if (!experimentPath) {
+    experimentPath = getMetadata('experiment')?.toLowerCase();
+  }
+  const instantExperiment = getMetadata('instant-experiment')?.toLowerCase();
+
+  return {
+    experimentPath,
+    instantExperiment,
+    variant,
+  };
+};
+
+const checkForExperiments = async () => {
+  const { experimentPath, instantExperiment, variant } = await getExperiment();
+  console.log(experimentPath);
+  if (!experimentPath || !variant) return null;
+
+  const { getConfig, runExperiment } = await import('../scripts/experiments.js');
+  const experiment = await getConfig(experimentPath, variant, instantExperiment);
+  await runExperiment(experiment, document.querySelector('main'), createTag);
+  return experiment;
+};
+
 
 export async function loadArea(area = document) {
-  const config = getConfig();
   const isDoc = area === document;
+
+  if (isDoc) {
+    const experiment = await checkForExperiments();
+    if (experiment) {
+      setConfig({ ...getConfig(), experiment });
+    }
+  }
+
+  const config = getConfig();
 
   appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);

@@ -300,36 +300,37 @@ export async function getConfig(experiment, instantExperiment, config) {
   return experimentConfig;
 }
 
-export async function runExperiment(experimentConfig) {
+export async function runExperiment(experiment) {
   console.debug(`running experiment (${window.hlx.experiment.id}) -> ${window.hlx.experiment.selectedVariant}`);
 
-  if (experimentConfig.selectedVariant === experimentConfig.variantNames[0]) {
+  const controlName = experiment.variantNames[0];
+  if (experiment.selectedVariant === controlName) {
     return false;
   }
 
-  const { pages } = experimentConfig.variants[experimentConfig.selectedVariant];
+  const { pages } = experiment.variants[experiment.selectedVariant];
   if (!pages.length) {
     return false;
   }
 
   const currentPath = window.location.pathname;
-  const control = experimentConfig.variants[experimentConfig.variantNames[0]];
+  const control = experiment.variants[controlName];
   const index = control.pages.indexOf(currentPath);
   if (index < 0 || pages[index] === currentPath) {
     return false;
   }
 
   // Fullpage content experiment
-  document.body.classList.add(`experiment-${experimentConfig.id}`);
+  document.body.classList.add(`experiment-${experiment.id}`);
   const resut = await replaceInner(pages[0], document.querySelector('main'));
   if (!resut) {
-    console.debug(`failed to serve variant ${window.hlx.experiment.selectedVariant}. Falling back to ${experimentConfig.variantNames[0]}.`);
+    console.debug(`failed to serve variant ${window.hlx.experiment.selectedVariant}. Falling back to ${controlName}.`);
   }
-  document.body.classList.add(`variant-${resut ? experimentConfig.selectedVariant : experimentConfig.variantNames[0]}`);
+  document.body.classList.add(`variant-${resut ? experiment.selectedVariant : controlName}`);
   if (this.plugins && this.plugins.rum) {
     this.plugins.rum.sampleRUM('experiment', {
-      source: experimentConfig.id,
-      target: resut ? experimentConfig.selectedVariant : experimentConfig.variantNames[0],
+      source: experiment.id,
+      target: resut ? experiment.selectedVariant : controlName,
     });
   }
   return resut;
