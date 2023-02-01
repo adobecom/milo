@@ -1,3 +1,7 @@
+:root {
+  --apps-border-color: #cacaca;
+}
+
 header .gnav-navitem-menu {
   display: none;
   padding: 14px 0;
@@ -219,14 +223,13 @@ div {
     right: unset;
     gap: 40px;
   }
-
+  
   .gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > h5 {
     margin: 0 12px;
     padding: 18px 0 6px 0;
   }
 
-  .gnav-navitem.has-menu.is-open .gnav-navitem-menu,
-  .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
+  .gnav-navitem.has-menu.is-open .gnav-navitem-menu {
     position: fixed;
     margin-top: 64px;
     padding: 0;
