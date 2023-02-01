@@ -1,6 +1,7 @@
-import { createIntersectionObserver, createTag, loadScript } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, loadScript, isInTextNode } from '../../utils/utils.js';
 
 export default function init(a) {
+  if (isInTextNode(a)) return;
   const embedTiktok = () => {
     const url = new URL(a.href);
 

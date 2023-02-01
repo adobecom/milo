@@ -164,6 +164,11 @@
   display: flex;
 }
 
+.hlx-Review-commentFields .comment-counter {
+  color: #d3d3d3;
+  font-size: var(--type-body-xs-size);
+}
+
 .hlx-ReviewStats {
   display: none;
   font-size: 16px;
