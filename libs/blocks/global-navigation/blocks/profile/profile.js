@@ -65,7 +65,7 @@ class Profile {
     this.email = email;
     this.decoratedEl.append(this.menu());
     this.decoratedEl.addEventListener('click', () => this.toggleMenu(this.decoratedEl));
-    this.decoratedEl.dispatchEvent(new Event('profile_ready'));
+    this.decoratedEl.dispatchEvent(new Event('feds:events:profileReady'));
   }
 
   decorateSignOut() {

@@ -178,7 +178,7 @@ class Gnav {
 
       // Forward click on the profile button it was clicked. Otherwise users need to click twice
       if (event) {
-        decoratedEl.addEventListener('profile_ready', () => decoratedEl.click(), { once: true });
+        decoratedEl.addEventListener('feds:events:profileReady', () => decoratedEl.click(), { once: true });
       }
 
       // TODO integrate placeholders here
