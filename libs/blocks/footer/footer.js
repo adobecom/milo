@@ -315,12 +315,7 @@ async function fetchFooter(url) {
 
 export default async function init(block) {
   const { prefix } = locale;
-  let url = '';
-  if (contentRoot?.length) {
-    url = getMetadata('footer-source') || `${prefix}${contentRoot}/footer`;
-  } else {
-    url = getMetadata('footer-source') || `${prefix}/footer`;
-  }
+  const url = getMetadata('footer-source') || `${prefix}${contentRoot}/footer`;
   if (url) {
     const { html, error } = await fetchFooter(url);
     if (error) {
