@@ -17,7 +17,7 @@ export default async function init() {
   const ostRootContainer = document.querySelector('.ost');
   let url = new URL(window.location);
   let searchParams = new URLSearchParams(url.search);
-  let osiSearch = searchParams.get("osi");
+  let osiSearch = searchParams.get('osi');
   ostRootContainer.removeChild(ostRootContainer.firstElementChild);
   window.ost.openOfferSelectorTool({
     ostCountry,
@@ -28,14 +28,4 @@ export default async function init() {
     ostAosAccessToken,
     osiSearch
   });
-  setTimeout(() => {
-    //prevents page flickering/scrolling
-    document.addEventListener("click", function() {
-        window.scrollTo(0, 0);
-    });
-    window.addEventListener('beforeunload', function (e) {
-      e.preventDefault();
-      e.returnValue = '';
-    });
-  }, 3000);
 }
