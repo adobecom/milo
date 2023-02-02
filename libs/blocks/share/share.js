@@ -50,7 +50,7 @@ export default async function decorate(el) {
   let clipboardTitle;
   if (navigator.clipboard) {
     platforms.push('clipboard');
-    clipboardTitle = toSentenceCase(await replaceKey('Copy to Clipboard', config));
+    clipboardTitle = toSentenceCase(await replaceKey('copy-to-clipboard', config));
   }
   const getDetails = (name, url) => {
     switch (name) {
@@ -81,7 +81,7 @@ export default async function decorate(el) {
 
     const clipboard = (obj.title === clipboardTitle);
     const tag = (clipboard) ? 'button' : 'a';
-    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: `Copy to ${obj.title}` } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
+    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: obj.title } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
     const shareLink = createTag(tag, attrs, svg.svg);
     shareLink.addEventListener('click', (e) => {
       e.preventDefault();
