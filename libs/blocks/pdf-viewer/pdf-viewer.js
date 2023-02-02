@@ -61,7 +61,7 @@ const init = async (a) => {
 
     adobeDCView.registerCallback(
       AdobeDC.View.Enum.CallbackType.EVENT_LISTENER,
-      () => undefined,
+      (event) => console.log(event),
       {
         listenOn: [
           AdobeDC.View.Enum.PDFAnalyticsEvents.DOCUMENT_OPEN,
