@@ -73,12 +73,12 @@ export default async function decorate(el) {
   el.append(createTag('p', null, toSentenceCase(heading)));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach((svg) => {
-    const details = getDetails(svg.name, url);
-    if (!details) return;
+    const obj = getDetails(svg.name, url);
+    if (!obj) return;
 
-    const clipboard = (details.title === 'Clipboard');
+    const clipboard = (obj.title === 'Clipboard');
     const tag = (clipboard) ? 'button' : 'a';
-    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard' } : { target: '_blank', href: details.href, title: `Share to ${details.title}` }
+    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: `Copy to ${obj.title}` } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
     const shareLink = createTag(tag, attrs, svg.svg);
     shareLink.addEventListener('click', (e) => {
       e.preventDefault();
