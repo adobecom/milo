@@ -18,6 +18,8 @@ function findDetails(hash, el) {
 
 function closeModal(modal) {
   const { id } = modal;
+  const closeEvent = new Event('modal:closed');
+  window.dispatchEvent(closeEvent);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
@@ -66,6 +68,7 @@ export async function getModal(details, custom) {
   const { id } = details || custom;
 
   const dialog = createTag('div', { class: 'dialog-modal', id });
+  const loadedEvent = new Event('modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
@@ -116,6 +119,7 @@ export async function getModal(details, custom) {
   dialog.append(close);
   document.body.append(dialog);
   firstFocusable.focus(focusVisible);
+  window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
     const curtain = createTag('div', { class: 'modal-curtain is-open' });
