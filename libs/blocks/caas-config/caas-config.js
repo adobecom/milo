@@ -195,6 +195,7 @@ const getTagTree = (root) => {
 
 const Select = ({ label, options, prop }) => {
   const context = useContext(ConfiguratorContext);
+
   const onSelectChange = (val) => {
     context.dispatch({
       type: 'SELECT_CHANGE',
