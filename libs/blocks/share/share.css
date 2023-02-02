@@ -59,7 +59,7 @@
   bottom: 100%;
   left: 50%;
   transform: translate(-50%, -2px);
-  content: "Copy to clipboard";
+  content: attr(data-copy-to-clipboard);
   opacity: 0;
   transition: 0.2s opacity;
   background-color: var(--text-color);
@@ -75,5 +75,5 @@
 }
 
 .share .copy-to-clipboard.copy-to-clipboard-copied::before {
-  content: "Copied!";
+  content: attr(data-copied);
 }

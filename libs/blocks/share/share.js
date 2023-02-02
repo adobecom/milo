@@ -43,14 +43,23 @@ function getPlatforms(el) {
 }
 
 export default async function decorate(el) {
-  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  let clipboardTitle;
+  el.querySelector('div').remove();
+  const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
+  if (!svgs) return;
+  
+  let clipboardToolTip;
+  let copiedTooltip;
+  const copyToClipboardPlaceholder = 'copy-to-clipboard';
+  const copiedPlaceholder = 'copied';
+  const url = encodeURIComponent(window.location.href);
+  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   if (navigator.clipboard) {
     platforms.push('clipboard');
-    clipboardTitle = toSentenceCase(await replaceKey('copy-to-clipboard', config));
+    clipboardToolTip = toSentenceCase(await replaceKey(copyToClipboardPlaceholder, config));
+    copiedTooltip = toSentenceCase(await replaceKey(copiedPlaceholder, config));
   }
   const getDetails = (name, url) => {
     switch (name) {
@@ -63,14 +72,10 @@ export default async function decorate(el) {
       case 'pinterest':
         return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
       case 'clipboard':
-        return { title: clipboardTitle };
+        return { title: clipboardToolTip };
       default: return null;
     }
-  }
-  el.querySelector('div').remove();
-  const url = encodeURIComponent(window.location.href);
-  const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
-  if (!svgs) return;
+  };
   
   const heading = toSentenceCase(await replaceKey('share-this-page', config));
   el.append(createTag('p', null, ((heading))));
@@ -79,10 +84,14 @@ export default async function decorate(el) {
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const clipboard = (obj.title === clipboardTitle);
+    const clipboard = (obj.title === clipboardToolTip);
     const tag = (clipboard) ? 'button' : 'a';
     const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: obj.title } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
     const shareLink = createTag(tag, attrs, svg.svg);
+    if (clipboard) {
+      shareLink.setAttribute(`data-${copyToClipboardPlaceholder}`, clipboardToolTip);
+      shareLink.setAttribute(`data-${copiedPlaceholder}`, clipboardToolTip);
+    }
     shareLink.addEventListener('click', (e) => {
       e.preventDefault();
       if (clipboard) {
