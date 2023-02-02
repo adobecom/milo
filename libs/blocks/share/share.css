@@ -37,3 +37,38 @@
 .share p.icon-container > a:not(:last-child) {
   margin-right: 18px;
 }
+
+.copy-to-clipboard {
+  padding: 0;
+  border: none;
+  background: none;
+  margin: 0;
+  line-height: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.copy-to-clipboard::before {            
+  position : absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -2px);
+  content: "Copy to clipboard";
+  opacity: 0;
+  transition: 0.2s opacity;
+  background-color: var(--text-color);
+  color: var(--background-color);
+  padding: 2px 6px;
+  font-size: xx-small;
+  line-height: 1;
+}
+
+.copy-to-clipboard:hover::before,
+.copy-to-clipboard:focus::before {
+  pointer-events: none;
+  opacity: 1;
+}
+
+.copy-to-clipboard.copy-to-clipboard-copied::before {
+  content: "Copied!";
+}
