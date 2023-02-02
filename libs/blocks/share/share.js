@@ -47,20 +47,17 @@ export default async function decorate(el) {
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
   el.querySelector('div').remove();
+  const clipboardSupport = !!(navigator.clipboard)
+  if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
-  
-  let clipboardToolTip;
-  let copiedTooltip;
+
+  const shareToPlaceholder = 'share-to';
   const copyToClipboardPlaceholder = 'copy-to-clipboard';
   const copiedPlaceholder = 'copied';
-  const url = encodeURIComponent(window.location.href);
   const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
-  if (navigator.clipboard) {
-    platforms.push('clipboard');
-    clipboardToolTip = toSentenceCase(await replaceKey(copyToClipboardPlaceholder, config));
-    copiedTooltip = toSentenceCase(await replaceKey(copiedPlaceholder, config));
-  }
+  const shareToText = toSentenceCase(await replaceKey(shareToPlaceholder, config));
+  const url = encodeURIComponent(window.location.href);
   const getDetails = (name, url) => {
     switch (name) {
       case 'facebook':
@@ -72,7 +69,7 @@ export default async function decorate(el) {
       case 'pinterest':
         return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
       case 'clipboard':
-        return { title: clipboardToolTip };
+        return { title: 'Copy to clipboard' };
       default: return null;
     }
   };
@@ -80,20 +77,17 @@ export default async function decorate(el) {
   const heading = toSentenceCase(await replaceKey('share-this-page', config));
   el.append(createTag('p', null, ((heading))));
   const container = createTag('p', { class: 'icon-container' });
-  svgs.forEach((svg) => {
+  svgs.forEach(async (svg) => {
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const clipboard = (obj.title === clipboardToolTip);
+    const clipboardToolTip = toSentenceCase(await replaceKey(copyToClipboardPlaceholder, config));
+    const copiedTooltip = toSentenceCase(await replaceKey(copiedPlaceholder, config));
+    const clipboard = ((obj.title === clipboardToolTip) && clipboardSupport);
     const tag = (clipboard) ? 'button' : 'a';
-    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: obj.title } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
+    const attrs = (clipboard) ? {  title: obj.title, type:'button', class:'copy-to-clipboard' } : { title: `${shareToText} ${obj.title}`, target: '_blank', href: obj.href }
     const shareLink = createTag(tag, attrs, svg.svg);
-    if (clipboard) {
-      shareLink.setAttribute(`data-${copyToClipboardPlaceholder}`, clipboardToolTip);
-      shareLink.setAttribute(`data-${copiedPlaceholder}`, clipboardToolTip);
-    }
     shareLink.addEventListener('click', (e) => {
-      e.preventDefault();
       if (clipboard) {
         navigator.clipboard.writeText(window.location.href).then(() => {
           shareLink.classList.add('copy-to-clipboard-copied');
@@ -106,6 +100,10 @@ export default async function decorate(el) {
       }
     });
     container.append(shareLink);
+    if (clipboard) {
+      shareLink.setAttribute(`data-${copyToClipboardPlaceholder}`, clipboardToolTip);
+      shareLink.setAttribute(`data-${copiedPlaceholder}`, copiedTooltip);
+    }
   });
   el.append(container);
 }
