@@ -1,3 +1,7 @@
+/*
+Common styles for the block library
+*/
+
 .sk-library {
   width: 360px;
   height: 360px;
@@ -55,6 +59,51 @@
 
 .sk-library.allow-back .sk-library-back {
   display: block;
+}
+
+.sk-library-search {
+  display: flex;
+}
+
+.sk-library-search.is-hidden {
+  display: none;
+}
+
+.sk-library-search::before {
+  position: absolute;
+  content: '';
+  background: url('../../ui/img/spectrum-search.svg') no-repeat;
+  width: 20px;
+  height: 20px;
+  margin-left: 5px;
+  top: 10px;
+}
+
+input.sk-library-search-input {
+  width: 100%;
+  padding-left: 30px;
+  background: rgb(0 0 0 / 35%);
+  color: #FFF;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  font-size: 14px;
+  border: none;
+}
+
+input.sk-library-search-input:focus {
+  outline-width: 0;
+}
+
+.sk-library-search-clear {
+  background: url('../../ui/img/spectrum-close.svg') no-repeat;
+  width: 30px;
+  height: 30px;
+  margin-top: 8px;
+  margin-right: 8px;
+  margin-left: 8px;
+}
+
+.sk-library-search-clear.is-hidden {
+  visibility: hidden;
 }
 
 /* Content */
@@ -175,6 +224,10 @@
   font-weight: 700;
 }
 
+.sk-library .block-group.is-hidden {
+  display: none;
+}
+
 .sk-library .content-type:hover,
 .sk-library .block-group:hover,
 .sk-library button:hover {
@@ -191,6 +244,10 @@
 
 .sk-library .block-group.is-open + .block-group-list {
   display: block;
+}
+
+.sk-library .block-group-list li.is-hidden {
+  display: none;
 }
 
 .sk-library .block-group-list li:hover {

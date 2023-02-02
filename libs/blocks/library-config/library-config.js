@@ -2,9 +2,9 @@ import { createTag } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
-async function loadBlocks(content, list) {
+async function loadBlocks(content, list, query) {
   const { default: blocks } = await import('./lists/blocks.js');
-  blocks(content, list);
+  blocks(content, list, query);
 }
 
 async function loadPlaceholders(content, list) {
@@ -17,11 +17,43 @@ async function loadIcons(content, list) {
   icons(content, list);
 }
 
+function addSearch(content, list) {
+  const skLibrary = list.closest('.sk-library');
+  const header = skLibrary.querySelector('.sk-library-header');
+  let search = skLibrary.querySelector('.sk-library-search');
+  if (!search) {
+    search = createTag('div', { class: 'sk-library-search' });
+    const searchInput = createTag('input', { class: 'sk-library-search-input', placeholder: 'Search...' });
+    const clear = createTag('div', { class: 'sk-library-search-clear is-hidden' });
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      if (query === '') {
+        clear.classList.add('is-hidden');
+      } else {
+        clear.classList.remove('is-hidden');
+      }
+      loadBlocks(content, list, query);
+    });
+    clear.addEventListener('click', (e) => {
+      e.target.classList.add('is-hidden');
+      e.target.closest('.sk-library-search').querySelector('.sk-library-search-input').value = '';
+      loadBlocks(content, list);
+    });
+    search.append(searchInput);
+    search.append(clear);
+    header.append(search);
+  } else {
+    search.classList.remove('is-hidden');
+  }
+}
+
 async function loadList(type, content, list) {
   list.innerHTML = '';
+  const query = list.closest('.sk-library').querySelector('.sk-library-search-input')?.value;
   switch (type) {
     case 'blocks':
-      loadBlocks(content, list);
+      addSearch(content, list);
+      loadBlocks(content, list, query);
       break;
     case 'placeholders':
       loadPlaceholders(content, list);
@@ -104,6 +136,7 @@ function createHeader() {
 
   nav.addEventListener('click', (e) => {
     const skLibrary = e.target.closest('.sk-library');
+    skLibrary.querySelector('.sk-library-search')?.classList.add('is-hidden');
     skLibrary.querySelector('.sk-library-title-text').textContent = 'Pick a library';
     const insetEls = skLibrary.querySelectorAll('.inset');
     insetEls.forEach((el) => {
