@@ -38,7 +38,7 @@
   margin-right: 18px;
 }
 
-.copy-to-clipboard {
+.share .copy-to-clipboard {
   padding: 0;
   border: none;
   background: none;
@@ -46,9 +46,14 @@
   line-height: 0;
   cursor: pointer;
   position: relative;
+  transition: filter 0.3s;
 }
 
-.copy-to-clipboard::before {            
+.share .copy-to-clipboard:hover svg {
+  filter: brightness(0.7);
+}
+
+.share .copy-to-clipboard::before {            
   pointer-events: none;
   position : absolute;
   bottom: 100%;
@@ -64,11 +69,11 @@
   line-height: 1;
 }
 
-.copy-to-clipboard:hover::before,
-.copy-to-clipboard:focus::before {
+.share .copy-to-clipboard:hover::before,
+.share .copy-to-clipboard:focus::before {
   opacity: 1;
 }
 
-.copy-to-clipboard.copy-to-clipboard-copied::before {
+.share .copy-to-clipboard.copy-to-clipboard-copied::before {
   content: "Copied!";
 }
