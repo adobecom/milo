@@ -1,6 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
-import { getSectionMetadata } from '../../section-metadata/section-metadata.js';
+import { getMetadata } from '../../section-metadata/section-metadata.js';
 
 function getAuthorName(block) {
   const blockSib = block.previousElementSibling;
@@ -53,7 +53,7 @@ function getTable(block, name, path) {
 
 function getBlockTags(block) {
   if (block.nextElementSibling && block.nextElementSibling.className === 'section-metadata') {
-    const sectionMetadata = getSectionMetadata(block.nextElementSibling);
+    const sectionMetadata = getMetadata(block.nextElementSibling);
     return sectionMetadata ? `${sectionMetadata.searchtags} ${getBlockName(block)}` : getBlockName(block);
   }
   return getBlockName(block);
