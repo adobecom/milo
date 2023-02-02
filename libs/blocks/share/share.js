@@ -42,6 +42,10 @@ function getPlatforms(el) {
   });
 }
 
+function getClipboardTitle() {
+  return "Clipboard";
+}
+
 function getDetails(name, url) {
   switch (name) {
     case 'facebook':
@@ -53,7 +57,7 @@ function getDetails(name, url) {
     case 'pinterest':
       return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
     case 'clipboard':
-      return { title: 'Clipboard', href: `https://pinterest.com/pin/create/button/?url=${url}` };
+      return { title: getClipboardTitle(), href: `https://pinterest.com/pin/create/button/?url=${url}` };
     default: return null;
   }
 }
@@ -76,7 +80,7 @@ export default async function decorate(el) {
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const clipboard = (obj.title === 'Clipboard');
+    const clipboard = (obj.title === getClipboardTitle());
     const tag = (clipboard) ? 'button' : 'a';
     const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: `Copy to ${obj.title}` } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
     const shareLink = createTag(tag, attrs, svg.svg);
