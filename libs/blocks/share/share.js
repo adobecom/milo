@@ -73,31 +73,43 @@ export default async function decorate(el) {
   el.append(createTag('p', null, ((heading))));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
-    let clipboard = svg.name === 'clipboard';
+    if (svg.name === 'clipboard') return;
+    
     const obj = getDetails(svg.name, url);
-    if (!obj && !clipboard) return;
+    if (!obj) return;
 
-    let shareLink;
-    if (clipboard && clipboardSupport) {
-      const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
-      const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
-      shareLink = createTag('button', { title: clipboardToolTip, type:'button', class:'copy-to-clipboard', 'data-copy-to-clipboard': clipboardToolTip, 'data-copied': `${copiedTooltip}!` }, svg.svg);
-    } else if (!clipboard) {
-      shareLink = createTag('a', { title: `${shareToText} ${obj.title}`, target: '_blank', href: obj.href }, svg.svg);
-    }
-    if (shareLink) container.append(shareLink);
+    const shareLink = createTag('a', { 
+      title: `${shareToText} ${obj.title}`,
+      target: '_blank',
+      href: obj.href 
+    }, svg.svg);
+    container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
-      if (clipboard && clipboardSupport) {
-        navigator.clipboard.writeText(window.location.href).then(() => {
-          shareLink.classList.add('copy-to-clipboard-copied');
-          setTimeout(() => document.activeElement.blur(), 500);
-          setTimeout(() => shareLink.classList.remove('copy-to-clipboard-copied'), 2000);
-        });
-      } else {
-        /* c8 ignore next 2 */
-        window.open(shareLink.href, 'newwindow', 'width=600, height=400');
-      }
+      e.preventDefault();
+      window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
   });
+
+  const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
+  if (clipboardSvg && clipboardSupport) {
+    const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
+    const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
+    const copyButton = createTag('button', { 
+      title: clipboardToolTip, 
+      type:'button', 
+      class:'copy-to-clipboard', 
+      'data-copy-to-clipboard': clipboardToolTip, 
+      'data-copied': `${copiedTooltip}!` 
+    }, clipboardSvg.svg);
+    container.append(copyButton);
+    copyButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        copyButton.classList.add('copy-to-clipboard-copied');
+        setTimeout(() => document.activeElement.blur(), 500);
+        setTimeout(() => copyButton.classList.remove('copy-to-clipboard-copied'), 2000);
+      });
+    });
+  }
   el.append(container);
 }
