@@ -77,7 +77,7 @@ export default async function decorate(el) {
     const obj = getDetails(svg.name, url);
     if (!obj && !clipboard) return;
 
-    let shareLink, clipboardToolTip, copiedTooltip;
+    let shareLink;
     console.log((clipboard && clipboardSupport));
     if (clipboard && clipboardSupport) {
       const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
