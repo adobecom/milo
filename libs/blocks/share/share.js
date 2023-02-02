@@ -78,7 +78,6 @@ export default async function decorate(el) {
     if (!obj && !clipboard) return;
 
     let shareLink;
-    console.log((clipboard && clipboardSupport));
     if (clipboard && clipboardSupport) {
       const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
       const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
