@@ -1,0 +1,48 @@
+.walls-io {
+    max-width: 100%;
+    text-align: center;
+    padding-top: var(--spacing-xs);;
+    margin: 0 auto;
+}
+
+.walls-io .wallsio-load-more-button {
+    text-decoration: none;
+    border-radius: 44px;
+    padding: 6px var(--spacing-xs);
+    text-align: center;
+    font-size: var(--type-body-s-size);
+    font-style: normal;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: transparent;
+    border: solid 2px var(--color-info-accent);
+    color: var(--color-gray-700);
+    border-color: var(--color-gray-700);
+    margin: var(--spacing-xs) 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.walls-io .wallsio-load-more-button:hover,
+.walls-io .wallsio-load-more-button:focus {
+    background-color: var(--color-gray-800);
+    border-color: var(--color-gray-800);
+    color: var(--color-white);
+}
+
+@media (min-width: 700px) {
+    .walls-io {
+        width: calc(100% - 64px);
+        min-width: 568px;
+        max-width: 790px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .walls-io {
+        width: calc(100% - 64px);
+        max-width: 1200px;
+    }
+}
