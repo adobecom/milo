@@ -42,45 +42,44 @@ function getPlatforms(el) {
   });
 }
 
-function getClipboardTitle() {
-  return "Clipboard";
-}
-
-function getDetails(name, url) {
-  switch (name) {
-    case 'facebook':
-      return { title: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` };
-    case 'twitter':
-      return { title: 'Twitter', href: `https://twitter.com/share?&url=${url}` };
-    case 'linkedin':
-      return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
-    case 'pinterest':
-      return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
-    case 'clipboard':
-      return { title: getClipboardTitle(), href: `https://pinterest.com/pin/create/button/?url=${url}` };
-    default: return null;
-  }
-}
-
 export default async function decorate(el) {
+  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  if (navigator.clipboard) platforms.push('clipboard');
+  let clipboardTitle;
+  if (navigator.clipboard) {
+    platforms.push('clipboard');
+    clipboardTitle = toSentenceCase(await replaceKey('Copy to Clipboard', config));
+  }
+  const getDetails = (name, url) => {
+    switch (name) {
+      case 'facebook':
+        return { title: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` };
+      case 'twitter':
+        return { title: 'Twitter', href: `https://twitter.com/share?&url=${url}` };
+      case 'linkedin':
+        return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
+      case 'pinterest':
+        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
+      case 'clipboard':
+        return { title: clipboardTitle };
+      default: return null;
+    }
+  }
   el.querySelector('div').remove();
   const url = encodeURIComponent(window.location.href);
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
   
-  const heading = await replaceKey('share-this-page', config);
-  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
-  el.append(createTag('p', null, toSentenceCase(heading)));
+  const heading = toSentenceCase(await replaceKey('share-this-page', config));
+  el.append(createTag('p', null, ((heading))));
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach((svg) => {
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const clipboard = (obj.title === getClipboardTitle());
+    const clipboard = (obj.title === clipboardTitle);
     const tag = (clipboard) ? 'button' : 'a';
     const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard', title: `Copy to ${obj.title}` } : { target: '_blank', href: obj.href, title: `Share to ${obj.title}` }
     const shareLink = createTag(tag, attrs, svg.svg);
