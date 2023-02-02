@@ -52,6 +52,8 @@ function getDetails(name, url) {
       return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
     case 'pinterest':
       return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
+    case 'clipboard':
+      return { title: 'Clipboard', href: `https://pinterest.com/pin/create/button/?url=${url}` };
     default: return null;
   }
 }
@@ -60,11 +62,12 @@ export default async function decorate(el) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
+  if (navigator.clipboard) platforms.push('clipboard');
   el.querySelector('div').remove();
   const url = encodeURIComponent(window.location.href);
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
-
+  
   const heading = await replaceKey('share-this-page', config);
   const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   el.append(createTag('p', null, toSentenceCase(heading)));
@@ -72,11 +75,23 @@ export default async function decorate(el) {
   svgs.forEach((svg) => {
     const details = getDetails(svg.name, url);
     if (!details) return;
-    const shareLink = createTag('a', { target: '_blank', href: details.href, title: `Share to ${details.title}` }, svg.svg);
+
+    const clipboard = (details.title === 'Clipboard');
+    const tag = (clipboard) ? 'button' : 'a';
+    const attrs = (clipboard) ? { type:'button', class:'copy-to-clipboard' } : { target: '_blank', href: details.href, title: `Share to ${details.title}` }
+    const shareLink = createTag(tag, attrs, svg.svg);
     shareLink.addEventListener('click', (e) => {
-      /* c8 ignore next 2 */
       e.preventDefault();
-      window.open(shareLink.href, 'newwindow', 'width=600, height=400');
+      if (clipboard) {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          shareLink.classList.add('copy-to-clipboard-copied');
+          setTimeout(() => document.activeElement.blur(), 500);
+          setTimeout(() => shareLink.classList.remove('copy-to-clipboard-copied'), 2000);
+        });
+      } else {
+        /* c8 ignore next 2 */
+        window.open(shareLink.href, 'newwindow', 'width=600, height=400');
+      }
     });
     container.append(shareLink);
   });
