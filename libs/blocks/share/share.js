@@ -46,7 +46,7 @@ export default async function decorate(el) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  el.querySelector('div').remove();
+  el.innerHTML = '';
   const clipboardSupport = !!(navigator.clipboard)
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
