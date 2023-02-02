@@ -17,6 +17,11 @@ async function loadIcons(content, list) {
   icons(content, list);
 }
 
+async function loadAssets(content, list) {
+  const { default: assets } = await import('./lists/assets.js');
+  assets(content, list);
+}
+
 function addSearch(content, list) {
   const skLibrary = list.closest('.sk-library');
   const header = skLibrary.querySelector('.sk-library-header');
@@ -61,6 +66,9 @@ async function loadList(type, content, list) {
     case 'icons':
       loadIcons(content, list);
       break;
+    case 'assets':
+      loadAssets(content, list);
+      break;
     default:
       await import('../../utils/lana.js');
       window.lana.log(`Library type not supported: ${type}`, { clientId: 'milo', sampleRate: 100 });
@@ -68,7 +76,11 @@ async function loadList(type, content, list) {
 }
 
 async function fetchLibrary(domain) {
-  const resp = await fetch(`${domain}${LIBRARY_PATH}`);
+  const { searchParams } = new URL(window.location.href);
+  const suppliedLibrary = searchParams.get('library');
+  const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
+
+  const resp = await fetch(library);
   if (!resp.ok) return null;
   return resp.json();
 }
@@ -81,11 +93,26 @@ async function getSuppliedLibrary() {
   return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`);
 }
 
-function combineLibraries(base, supplied) {
+async function fetchAssetsData(path) {
+  if (!path) return null;
+  const resp = await fetch(path);
+  if (!resp.ok) return null;
+
+  const json = await resp.json();
+  const assetHrefs = json.entities.map((entity) => entity.links[0].href);
+  return assetHrefs;
+}
+
+async function combineLibraries(base, supplied) {
+  const url = new URL(window.location.href);
+
+  const assetsPath = url.searchParams.get('assets');
+
   const library = {
     blocks: base.blocks.data,
-    placeholders: base.placeholders.data,
-    icons: base.icons.data,
+    placeholders: base.placeholders?.data,
+    icons: base.icons?.data,
+    assets: await fetchAssetsData(assetsPath),
   };
 
   if (supplied) {
@@ -108,6 +135,8 @@ function createList(libraries) {
   container.append(libraryList);
 
   Object.keys(libraries).forEach((type) => {
+    if (!libraries[type] || libraries[type].length === 0) return;
+
     const item = createTag('li', { class: 'content-type' }, type);
     libraryList.append(item);
 
@@ -160,7 +189,7 @@ export default async function init(el) {
   // Get the data
   const base = await fetchLibrary(window.location.origin);
   const supplied = await getSuppliedLibrary();
-  const libraries = combineLibraries(base, supplied);
+  const libraries = await combineLibraries(base, supplied);
 
   // Create the UI
   const skLibrary = createTag('div', { class: 'sk-library' });
