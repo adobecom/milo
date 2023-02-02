@@ -389,6 +389,10 @@
   min-height: 160px;
 }
 
+.aside.notification.large {
+  min-height: 250px;
+}
+
 .aside.notification.medium .foreground.container {
   max-width: 800px;
   gap: var(--spacing-xs);
