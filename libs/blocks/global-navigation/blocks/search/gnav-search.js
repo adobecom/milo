@@ -4,6 +4,8 @@ import {
   getLocale,
   getCountry,
 } from '../../utilities.js';
+import { replaceKeyArray } from '../../../../features/placeholders.js';
+import { getConfig } from '../../../../utils/utils.js';
 
 const CONFIG = {
   suggestions: {
@@ -18,24 +20,31 @@ const CONFIG = {
 
 class Search {
   constructor(config) {
-    this.label = config.label;
     this.icon = config.icon;
     this.trigger = config.trigger;
     // TODO: could this elem be passed through config?
-    this.parent = this.trigger.closest('.mainnav-wrapper');
+    this.parent = this.trigger.closest('.feds-nav-wrapper');
 
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.getLabels();
     this.decorate();
     this.addEventListeners();
   }
 
+  async getLabels() {
+    const config = getConfig();
+    const sheet = 'feds';
+    this.labels = {};
+    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], config, sheet);
+  }
+
   decorate() {
-    this.input = toFragment`<input placeholder="${this.label}" aria-label="${this.label}" class="feds-search-input" autocomplete="off" aria-autocomplete="list" aria-controls="feds-search-results" daa-ll="search-results:standard search" />`;
+    this.input = toFragment`<input placeholder="${this.labels.search}" aria-label="${this.labels.search}" class="feds-search-input" autocomplete="off" aria-autocomplete="list" aria-controls="feds-search-results" daa-ll="search-results:standard search" />`;
     this.resultsList = toFragment`<ul class="feds-search-results" id="feds-search-results" role="region" daa-ll="search-results:suggested-search:click"></ul>`;
-    this.clearButton = toFragment`<button tabindex="0" class="feds-search-clear" aria-label="Clear results"></button>`;
+    this.clearButton = toFragment`<button tabindex="0" class="feds-search-clear" aria-label="${this.labels.clearResults}"></button>`;
     this.searchBar = toFragment`
       <aside class="feds-search-bar">
         <div class="feds-search-field">
@@ -54,7 +63,7 @@ class Search {
   }
 
   addEventListeners() {
-    this.input.addEventListener('input', (e) => {
+    this.input.addEventListener('input', () => {
       this.onSearchInput();
     });
 
@@ -94,14 +103,10 @@ class Search {
     // i.e.: adobesearch-stage.adobe.io
     const api = `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
 
-    return window.fetch(api, {
-        headers: {
-            'x-api-key': CONFIG.suggestions.apiKey,
-        },
-    })
-      .then(data => data.json())
+    return window.fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
+      .then((data) => data.json())
       .catch(() => {
-          // do nothing
+        // do nothing
       });
   }
 
@@ -128,16 +133,22 @@ class Search {
         if (!Array.isArray(suggestions)
           || !suggestions.length) {
           this.resultsList.replaceChildren(this.getNoResultsTemplate());
-          this.parent instanceof HTMLElement && this.parent.classList.remove(CONFIG.selectors.hasResults);
+          if (this.parent instanceof HTMLElement) {
+            this.parent.classList.remove(CONFIG.selectors.hasResults);
+          }
           return;
         }
 
         this.resultsList.replaceChildren(this.getResultsTemplate(suggestions));
-        this.parent instanceof HTMLElement && this.parent.classList.add(CONFIG.selectors.hasResults);
+        if (this.parent instanceof HTMLElement) {
+          this.parent.classList.add(CONFIG.selectors.hasResults);
+        }
       })
       .catch(() => {
         this.resultsList.replaceChildren(this.getNoResultsTemplate());
-        this.parent instanceof HTMLElement && this.parent.classList.remove(CONFIG.selectors.hasResults);
+        if (this.parent instanceof HTMLElement) {
+          this.parent.classList.remove(CONFIG.selectors.hasResults);
+        }
       });
   });
 
@@ -147,7 +158,9 @@ class Search {
     if (!query.length) {
       this.input.classList.remove(CONFIG.selectors.inputIsPopulated);
       this.resultsList.replaceChildren();
-      this.parent instanceof HTMLElement && this.parent.classList.remove(CONFIG.selectors.hasResults);
+      if (this.parent instanceof HTMLElement) {
+        this.parent.classList.remove(CONFIG.selectors.hasResults);
+      }
       return '';
     }
 
@@ -158,14 +171,15 @@ class Search {
 
   getResultsTemplate(results) {
     const resultsTemplate = document.createDocumentFragment();
-  
+
+    // eslint-disable-next-line array-callback-return
     results.map((result) => {
       const resultLabel = result.name;
-  
+
       if (!resultLabel.length) {
         return;
       }
-  
+
       // A longest common substring match between the original prefix and suggestion must be made
       // for cases when special characters are used. Say the user searches for 'pho-',
       // then the prefix will be 'pho-', while the suggestion will be 'photoshop'.
@@ -174,14 +188,14 @@ class Search {
       const matchPrefixToSuggestion = () => {
         let i = 0;
         const prefixLength = this.query.length;
-  
+
         while (i < prefixLength && this.query[i].toLowerCase() === resultLabel[i].toLowerCase()) {
           i += 1;
         }
-  
+
         return this.query.substring(0, i).trim();
       };
-  
+
       // The matched prefix can't be cached to be used for all of the suggestions in the set
       // because there are edge cases when there are significant differences between suggestions.
       // For example, the query 'max 20' will yield the suggestions 'max 2016' and 'maximize',
@@ -189,7 +203,7 @@ class Search {
       // * 'max 20' for the first suggestion
       // * 'max' for the second suggestion
       const matchedPrefix = matchPrefixToSuggestion();
-  
+
       // Say the user searched for 'PhOtOsHoP' and the suggested result is 'Photoshop Trial';
       // We don't want the suggestion to be rendered as '<b>PhOtOsHoP</b> Trial',
       // rather '<b>Photoshop</b> Trial', like the original suggestion formatting.
@@ -205,31 +219,27 @@ class Search {
         // Remove the matched string
         return '';
       });
-  
+
       const resultTemplate = toFragment`<li>
-          <a href="${this.getHelpxLink(resultLabel)}" class="feds-search-result" aria-label="${resultLabel}">
+          <a href="${Search.getHelpxLink(resultLabel)}" class="feds-search-result" aria-label="${resultLabel}">
             <span>${suggestionPrefix}</span>${suggestionWithoutPrefix}
           </a>
         </li>`;
-  
+
       resultsTemplate.appendChild(resultTemplate);
     });
-  
+
     return resultsTemplate;
   }
 
   getNoResultsTemplate(query = this.query) {
-    // TODO: replace static label with authored one;
-    // we need to work on a centralized labels POC
-    const label = 'Try our advanced search';
-
     // TODO: should we style this element different than regular results?
     return toFragment`<li>
-      <a href="${this.getHelpxLink(query)}" class="feds-search-result"><span>${label}</span></a>
+      <a href="${Search.getHelpxLink(query)}" class="feds-search-result"><span>${this.labels.tryAdvancedSearch}</span></a>
     </li>`;
   }
 
-  getHelpxLink(query) {
+  static getHelpxLink(query) {
     return `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(query.trim())}&start_index=0&country=${getCountry()}`;
   }
 }
