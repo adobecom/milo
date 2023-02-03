@@ -18,14 +18,16 @@ function findDetails(hash, el) {
 
 function closeModal(modal) {
   const { id } = modal;
-  const closeEvent = new Event('modal:closed');
+  const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
       mod.nextElementSibling.remove();
     }
-    mod.remove();
+    if (mod.classList.contains('dialog-modal')) {
+      mod.remove();
+    }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
 
@@ -68,7 +70,7 @@ export async function getModal(details, custom) {
   const { id } = details || custom;
 
   const dialog = createTag('div', { class: 'dialog-modal', id });
-  const loadedEvent = new Event('modal:loaded');
+  const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
