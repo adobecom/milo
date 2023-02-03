@@ -7,11 +7,15 @@ import {
 } from '../../utils/utils.js';
 import { analyticsGetLabel } from '../../martech/attributes.js';
 import { toFragment } from './utilities.js';
+import { replaceKey } from '../../features/placeholders.js';
 
-const CONFIG = { search: { icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>' } };
+const CONFIG = {
+  icons: {
+    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
+    search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
+  },
+};
 
-const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
-const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
 export const IS_OPEN = 'is-open';
 
 function getBlockClasses(className) {
@@ -48,8 +52,13 @@ class Gnav {
         blockEl: body.querySelector('.profile'),
         decoratedEl: toFragment`<div class="feds-profile"></div>`,
       },
-      search: {},
+      search: {
+        config: {
+          icon: CONFIG.icons.search,
+        },
+      },
     };
+
     this.el = el;
     this.body = body;
     this.desktop = window.matchMedia('(min-width: 1200px)');
@@ -60,27 +69,32 @@ class Gnav {
   }
 
   init = () => {
-    this.state = {};
-    this.curtain = toFragment`<div class="gnav-curtain"></div>`;
-    const nav = toFragment`
-      <div class="gnav-wrapper">
-        <nav class="gnav" aria-label="Main">
-          ${this.mobileToggle()}
-          ${this.decorateBrand()}
-          <div class="mainnav-wrapper">
-            ${this.decorateMainNav()}
-            ${this.decorateSearch()}
+    this.curtain = toFragment`<div class="feds-curtain"></div>`;
+
+    this.navWrapper = toFragment`
+      <div class="feds-nav-wrapper">
+        ${this.decorateBreadcrumbs()}
+        ${this.decorateMainNav()}
+        ${this.decorateSearch()}
+      </div>`;
+
+    this.nav = toFragment`
+      <div class="feds-topnav-wrapper">
+        <nav class="feds-topnav" aria-label="Main">
+          <div class="feds-brand-container">
+            ${this.mobileToggle()}
+            ${this.decorateBrand()}
           </div>
+          ${this.navWrapper}
           ${this.blocks.profile.blockEl && this.blocks.profile.decoratedEl}
           ${this.decorateLogo()}
         </nav>
-        ${this.decorateBreadcrumbs()}
       </div>
     `;
     this.el.addEventListener('click', this.loadDelayed);
     setTimeout(() => this.loadDelayed(), 3000);
     this.loadIMS();
-    this.el.append(this.curtain, nav);
+    this.el.append(this.curtain, this.nav);
   };
 
   loadDelayed = async () => {
@@ -103,7 +117,7 @@ class Gnav {
         loadStyles('navMenu/menu.css'),
         loadStyles('search/gnav-search.css'),
       ]);
-      this.menuControls = new MenuControls();
+      this.menuControls = new MenuControls(this.curtain);
       this.decorateMenu = decorateMenu;
       this.decorateLargeMenu = decorateLargeMenu;
       this.appLauncher = appLauncher;
@@ -214,6 +228,7 @@ class Gnav {
   loadSearch = () => {
     if (this.blocks?.search?.instance) return this.loadDelayed();
     return this.loadDelayed().then(() => {
+      // TODO: figure out if instance is actually needed for further use
       this.blocks.search.instance = new this.search(this.blocks.search.config);
     });
   };
@@ -221,14 +236,39 @@ class Gnav {
   mobileToggle = () => {
     const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`;
     const onMediaChange = (e) => e.matches && this.el.classList.remove(IS_OPEN);
+
+    // TODO: better bottom padding logic
+    let eventTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(eventTimeout);
+
+      eventTimeout = setTimeout(() => {
+        if (document.documentElement.scrollWidth < 900) {
+          const offset = this.nav.getBoundingClientRect().bottom;
+          this.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        } else {
+          this.mainNav.style.removeProperty('padding-bottom');
+        }
+      }, 100);
+    });
+
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
         this.desktop.removeEventListener('change', onMediaChange);
+
+        this.mainNav.style.removeProperty('padding-bottom');
       } else {
         this.el.classList.add(IS_OPEN);
         this.desktop.addEventListener('change', onMediaChange);
         this.loadSearch();
+
+        if (document.documentElement.scrollWidth < 900) {
+          const offset = this.nav.getBoundingClientRect().bottom;
+          this.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        } else {
+          this.mainNav.style.removeProperty('padding-bottom');
+        }
       }
     });
     return toggle;
@@ -237,19 +277,23 @@ class Gnav {
   decorateBrand = () => {
     const brandBlock = this.body.querySelector('[class^="gnav-brand"]');
     if (!brandBlock) return null;
+    const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)$/;
     const brandLinks = [...brandBlock.querySelectorAll('a')];
-    const brand = brandLinks.pop();
+    const image = brandLinks.find((brandLink) => imgRegex.test(brandLink.href));
+    const link = brandLinks.find((brandLink) => !imgRegex.test(brandLink.href));
+
+    // TODO: add alt text if authored
+    const imageEl = image ? toFragment`
+      <span class="feds-brand-image"><img src="${image.textContent}"/></span>` : '';
+    const labelEl = link ? toFragment`<span class="feds-brand-label">${link.textContent}</span>` : '';
+
+    if (!imageEl && !labelEl) return '';
+
     return toFragment`
-      <a
-        href="${brand.getAttribute('href')}"
-        class="${brandBlock.className}"
-        aria-label="${brand.textContent}"
-        daa-ll="Brand"
-      >
-        ${BRAND_IMG}
-        <span class="gnav-brand-title"> ${brand.textContent} </span>
-      </a>
-    `;
+      <a href="${link.getAttribute('href')}" class="feds-brand" daa-ll="Brand">
+        ${imageEl}
+        ${labelEl}
+      </a>`;
   };
 
   decorateLogo = () => {
@@ -262,17 +306,17 @@ class Gnav {
         aria-label="${logo.textContent}"
         daa-ll="Logo"
       >
-        ${COMPANY_IMG}
+        ${CONFIG.icons.company}
       </a>
     `;
   };
 
   decorateMainNav = () => {
-    const mainNav = toFragment`<div class="gnav-mainnav"></div>`;
+    this.mainNav = toFragment`<div class="feds-nav"></div>`;
     const links = this.body.querySelectorAll('h2 > a');
-    links.forEach((link, i) => mainNav.appendChild(this.navLink(link, i)));
-    mainNav.appendChild(this.decorateCta());
-    return mainNav;
+    links.forEach((link, i) => this.mainNav.appendChild(this.navLink(link, i)));
+    this.mainNav.appendChild(this.decorateCta());
+    return this.mainNav;
   };
 
   navLink = (navLink, idx) => {
@@ -349,15 +393,10 @@ class Gnav {
 
     if (!searchBlock) return null;
 
-    this.blocks = this.blocks || {};
-    this.blocks.search = { config: {} };
-
-    // TODO: Retrieve all types of labels through placeholders
-    this.blocks.search.config.label = searchBlock.querySelector('p').textContent;
-    this.blocks.search.config.icon = CONFIG.search.icon;
+    this.blocks.search.config.parent = this.navWrapper;
 
     this.blocks.search.config.trigger = toFragment`
-      <button class="feds-search-trigger" aria-label="${this.blocks.search.config.label}" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
+      <button class="feds-search-trigger" aria-label="Search" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
         ${this.blocks.search.config.icon}
         <span class="feds-search-close"></span>
       </button>`;
@@ -366,6 +405,15 @@ class Gnav {
       <div class="feds-search">
         ${this.blocks.search.config.trigger}
       </div>`;
+
+    const config = getConfig();
+    const sheet = 'feds';
+    // Replace the aria-label value once placeholder is fetched
+    replaceKey('search', config, sheet).then((placeholder) => {
+      if (placeholder && placeholder.length) {
+        this.blocks.search.config.trigger.setAttribute('aria-label', placeholder);
+      }
+    });
 
     this.blocks.search.config.trigger.addEventListener('click', async () => {
       await this.loadSearch();
@@ -379,7 +427,7 @@ class Gnav {
     const { blockEl, decoratedEl } = this.blocks.profile;
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
     // TODO use placeholders
-    const signIn = toFragment`<a daa-ll="Sign In" class="feds-signin">Sign in</a>`;
+    const signIn = toFragment`<a href="#" daa-ll="Sign In" class="feds-signin">Sign in</a>`;
     const id = `navmenu-${blockEl.className}`;
     const signInEl = dropDown?.querySelector('li:last-of-type a') || decoratedEl;
     decoratedEl.append(signIn);
@@ -447,11 +495,12 @@ class Gnav {
       const ul = parent.querySelector('ul');
       if (ul) {
         ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        const nav = toFragment`<nav class="breadcrumbs" aria-label="Breadcrumb">${ul}</nav>`;
+        const nav = toFragment`<nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>`;
         parent.remove();
         return nav;
       }
     }
+
     return null;
   };
   /* c8 ignore stop */
@@ -465,9 +514,6 @@ export default async function init(header) {
   if (!html) return null;
   try {
     const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
-    // TODO remove header.classList.add('gnav') as global-navigation gets renamed to gnav
-    // or rename the classes to global-navigation
-    header.classList.add('gnav');
     gnav.init();
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav${imsClientId ? `|${imsClientId}` : ''}`);
