@@ -16,7 +16,6 @@
 
 import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
-import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['XS', 'S', 'M'],
@@ -27,17 +26,15 @@ const blockTypeSizes = {
 
 export default function init(el) {
   decorateBlockAnalytics(el);
-  el.classList.add('con-block');
-  let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    el.classList.add('has-bg');
-    const [head, ...tail] = rows;
-    decorateBlockBg(el, head);
-    rows = tail;
+  const children = el.querySelectorAll(':scope > div');
+  if (children[0]?.childElementCount === 1) {
+    decorateBlockBg(el, children[0]);
   }
   const size = getBlockSize(el);
-  const container = createTag('div', { class: 'container foreground' });
-  rows.forEach((row) => {
+  const media = el.querySelectorAll(':scope > div:not([class])');
+  const container = document.createElement('div');
+  container.classList.add('container', 'foreground');
+  media.forEach((row) => {
     row.classList.add('media-row');
     const header = row.querySelector('h1, h2, h3, h4, h5, h6');
     if (header) {
