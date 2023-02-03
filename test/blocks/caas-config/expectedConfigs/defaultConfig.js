@@ -18,7 +18,7 @@ const defaultConfig = {
       onErrorTitle: 'Sorry there was a system error.',
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
-      titleHeadingLevel: 'h3',
+      titleHeadingLevel: [],
 
     },
     setCardBorders: false,
