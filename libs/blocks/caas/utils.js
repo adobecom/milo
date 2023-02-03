@@ -242,7 +242,7 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
-        titleHeadingLevel: state.titleHeadingLevel,
+        titleHeadingLevel: state.titleLevel,
         cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
