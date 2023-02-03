@@ -38,8 +38,10 @@
 
 /* TODO be removable with refactoring the menu CSS  */
 .feds-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
-  top: 0;
+  position: absolute;
+  top: 100%;
   left: auto;
+  margin-top: 0;
 }
 
 .feds-profile-header {
