@@ -1,9 +1,9 @@
 const IS_OPEN = 'is-open';
-const curtain = document.querySelector('.gnav-curtain');
 
 class MenuControls {
-  constructor() {
+  constructor(curtain) {
     this.state = {};
+    this.curtain = curtain;
   }
 
   toggleOnSpace = (e) => {
@@ -45,12 +45,12 @@ class MenuControls {
 
   closeOnDocClick = (e) => {
     const closest = e.target.closest(`.${IS_OPEN}`);
-    const isCurtain = e.target === curtain;
+    const isCurtain = e.target === this.curtain;
     if ((this.state.openMenu && !closest) || isCurtain) {
       this.toggleMenu(this.state.openMenu);
     }
     if (isCurtain) {
-      curtain.classList.remove('is-open');
+      this.curtain.classList.remove('is-open');
     }
   };
 
@@ -68,11 +68,11 @@ class MenuControls {
       if (desktop.matches) {
         document.addEventListener('scroll', this.closeOnScroll, { passive: true });
         if (el.classList.contains('large-menu')) {
-          curtain.classList.add('is-open', 'is-quiet');
+          this.curtain.classList.add('is-open');
         }
       }
     } else {
-      curtain.classList.add('is-open');
+      this.curtain.classList.add('is-open');
       // Search template is not available yet
       // TODO: better logic to focus elements that have not been added yet
       if (el.querySelector('.feds-search-input')) {
@@ -84,8 +84,7 @@ class MenuControls {
 
   closeMenu = () => {
     this.state.openMenu.classList.remove(IS_OPEN);
-    curtain.classList.remove('is-open');
-    curtain.classList.remove('is-quiet');
+    this.curtain.classList.remove('is-open');
     document.removeEventListener('click', this.closeOnDocClick);
     window.removeEventListener('keydown', this.closeOnEscape);
     const menuToggle = this.state.openMenu.querySelector('[aria-expanded]');
