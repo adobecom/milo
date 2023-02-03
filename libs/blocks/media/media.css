@@ -80,6 +80,19 @@
   width: 100%;
 }
 
+.media[class*="-up"] .foreground {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: var(--spacing-s) 0;
+  position: relative;
+}
+
+.media[class*="-up"] .foreground > .media-row {
+  width: 100%;
+  display: block;
+  max-width: 100%;
+}
+
 div[class*="-up"] .media .foreground {
   width: auto;
 }
@@ -88,6 +101,7 @@ div[class*="-up"] .media .foreground > .media-row {
   padding: 0 0 var(--spacing-m);
 }
 
+.media[class*="-up"] .foreground > .media-row .image,
 div[class*="-up"] .media .foreground > .media-row .image {
   margin-bottom: var(--spacing-s);
 }
@@ -117,11 +131,13 @@ div[class*="-up"] .media .foreground > .media-row .image {
     width: 50%;
   }
   
+  .media[class*="-up"].large > .foreground .media-row .text,
+  .media[class*="-up"].large > .foreground .media-row .image,
   div[class*="-up"] .media.large > .foreground .media-row .text,
   div[class*="-up"] .media.large > .foreground .media-row .image {
     width: 100%;
   }
-
+  
   .media.media-reversed .foreground .media-row > div:first-child {
     order: 2;
   }
@@ -129,10 +145,20 @@ div[class*="-up"] .media .foreground > .media-row .image {
   .media .text .icon-area {
     grid-template-columns: 1fr 1fr;
   }
-   
+  
+  .media[class*="-up"] .foreground > div.media-row, 
   div[class*="-up"] .media .foreground > div.media-row {
     padding: 0 0 var(--spacing-s);
     display: block;
+  }
+  
+  .media.two-up .foreground,
+  .media.three-up .foreground,
+  .media.four-up .foreground {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+    gap: var(--spacing-m);
   }
 }
 
@@ -151,7 +177,10 @@ div[class*="-up"] .media .foreground > .media-row .image {
   }
 
   .media.large > .foreground .media-row .image { min-width: 700px; }
+
+  .media[class*="-up"].large > .foreground .media-row .image,
   div[class*="-up"] .media.large > .foreground .media-row .image { min-width: 100%; }
   .media.three-up .foreground { grid-template-columns: repeat(3, 1fr); }
   .media.four-up .foreground { grid-template-columns: repeat(4, 1fr); }
+
 }
