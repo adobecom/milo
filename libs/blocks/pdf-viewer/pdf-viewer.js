@@ -61,7 +61,17 @@ const init = async (a) => {
 
     adobeDCView.registerCallback(
       AdobeDC.View.Enum.CallbackType.EVENT_LISTENER,
-      (event) => console.log(event),
+      (event) => {
+        console.log(event);
+        /* eslint-disable-next-line no-underscore-dangle */
+        window._satellite?.track('event', {
+          xdm: {},
+          data: {
+            web: { webInteraction: { name: event.type } },
+            _adobe_corpnew: { digitalData: event.data },
+          },
+        });
+      },
       {
         listenOn: [
           AdobeDC.View.Enum.PDFAnalyticsEvents.DOCUMENT_OPEN,
