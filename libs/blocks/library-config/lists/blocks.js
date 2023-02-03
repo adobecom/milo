@@ -52,11 +52,13 @@ function getTable(block, name, path) {
 }
 
 function getBlockTags(block) {
-  if (block.nextElementSibling && block.nextElementSibling.className === 'section-metadata') {
-    const sectionMetadata = getMetadata(block.nextElementSibling);
-    return sectionMetadata ? `${sectionMetadata.searchtags} ${getBlockName(block)}` : getBlockName(block);
+  if (block.nextElementSibling?.className !== 'section-metadata') {
+    return getBlockName(block);
   }
-  return getBlockName(block);
+  const sectionMetadata = getMetadata(block.nextElementSibling);
+  return sectionMetadata?.searchtags?.text
+    ? `${sectionMetadata?.searchtags?.text} ${getBlockName(block)}`
+    : getBlockName(block);
 }
 
 function isMatchingBlock(pageBlock, query) {
