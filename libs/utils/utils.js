@@ -640,7 +640,7 @@ export async function loadArea(area = document) {
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
-      const { addRichResults } = await import('../features/richresults.js');
+      const { default: addRichResults } = await import('../features/richresults.js');
       addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();

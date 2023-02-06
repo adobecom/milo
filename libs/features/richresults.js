@@ -22,14 +22,14 @@ function getRichResultsForSiteSearchBox(getMetadata) {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     url: getMetadata('url'),
-    potentialAction: {
+    potentialAction: [{
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: urlTemplate,
+        urlTemplate,
       },
       'query-input': `required name=${SEARCH_TERM_STRING}`,
-    },
+    }],
   };
 }
 
@@ -55,7 +55,7 @@ function addToDom(richResults, createTag) {
 }
 
 // createTag and getMetadata are passed in to avoid circular dependencies
-export function addRichResults(type, { createTag, getMetadata }) {
+export default function addRichResults(type, { createTag, getMetadata }) {
   const richResults = getRichResults(type, getMetadata);
   addToDom(richResults, createTag);
 }

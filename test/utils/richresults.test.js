@@ -33,7 +33,7 @@ describe('Rich Results', () => {
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.be.null;
   });
-  
+
   it('unsupported rich results type', async () => {
     sinon.stub(console, 'error');
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-unsupported-type.html' });
@@ -42,7 +42,7 @@ describe('Rich Results', () => {
     expect(script).to.be.null;
     expect( console.error.calledWith('Type Unsupported is not supported') ).to.be.true;
   });
-  
+
   it('add the Site Search Box rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-sitesearchbox.html' });
     await loadArea(document);
@@ -52,13 +52,14 @@ describe('Rich Results', () => {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       url: 'https://www.example.com/',
-      potentialAction: {
+      potentialAction: [{
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
           urlTemplate: 'https://query.example.com/search?q={search_term_string}'
         },
-        'query-input': 'required name=search_term_string'},
+        'query-input': 'required name=search_term_string'
+      }],
     };
     expect(actual).to.deep.equal(expected);
   });
