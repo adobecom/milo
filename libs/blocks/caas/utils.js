@@ -177,12 +177,20 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
 };
 
 const getFilterArray = async (state) => {
-  if (!state.showFilters || state.filters.length === 0) {
+  if (!state.showFilters || (state.filters.length === 0 && state.filtersCustom.length === 0)) {
     return [];
   }
 
   const { tags } = await getTags(state.tagsUrl);
-  const filters = state.filters
+  // const filters = state.filters
+  //   .map((filter) => getFilterObj(filter, tags))
+  //   .filter((filter) => filter !== null);
+  // return filters;
+
+  const selectedFilters = state.filterBuildPanel === 'automatic'
+    ? state.filters
+    : state.filtersCustom;  
+  const filters = selectedFilters
     .map((filter) => getFilterObj(filter, tags))
     .filter((filter) => filter !== null);
   return filters;
@@ -405,10 +413,11 @@ export const defaultState = {
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
-  filterBuildPanel: '',
+  filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
+  filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
   includeTags: [],

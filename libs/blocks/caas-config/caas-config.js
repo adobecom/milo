@@ -86,7 +86,7 @@ const defaultOptions = {
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
-    '': 'Automatic',
+    automatic: 'Automatic',
     custom: 'Custom',
   },
   filterEvent: {
@@ -461,17 +461,17 @@ const FilterPanel = ({ tagsData }) => {
     <//>
   `;
 
-  const CustomFilterBuildPanel = html`
+  const FilterCustomBuildPanel = html`
     <${FilterOptions}>
     <${MultiField}
-      onChange=${onChange('filters')}
-      className="filters"
-      values=${context.state.filters}
-      title="Custom Filter Tags"
+      onChange=${onChange('filtersCustom')}
+      className="filtersCustom"
+      values=${context.state.filtersCustom}
+      title="Filter Custom Tags"
       subTitle=""
     >
       <${FormInput} label="Add a label for a Group Of Tags" name="label" />
-      <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterCustomTag" options=${allTags} label="Main Tag" singleSelect />
       <${FormInput} label="Icon Path" name="icon" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
@@ -481,7 +481,7 @@ const FilterPanel = ({ tagsData }) => {
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
     ${state.showFilters
       && (state.filterBuildPanel === 'custom'
-        ? CustomFilterBuildPanel
+        ? FilterCustomBuildPanel
         : FilterBuildPanel)}
   `;
 };
