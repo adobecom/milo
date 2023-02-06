@@ -33,6 +33,7 @@ const {
   pieTooltipFormatter,
   pieSeriesOptions,
   getOversizedNumberSize,
+  getLabelDegree,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 const config = { codeRoot: '/libs' };
@@ -106,7 +107,7 @@ describe('chart', () => {
 
   it('getColors returns rotated color list if color provided ', () => {
     const authoredColor = 'indigo';
-    const colors = ['#4046CA', '#7326D3', '#147AF3', '#72E06A', '#7E84FA', '#DE3D82', '#008F5D', '#CB5D00', '#E8C600', '#BCE931', '#0FB5AE', '#F68511'];
+    const colors = ['#4046CA', '#F68511', '#DE3D82', '#7E84FA', '#72E06A', '#147AF3', '#7326D3', '#E8C600', '#CB5D00', '#008F5D', '#BCE931', '#0FB5AE'];
 
     expect(getColors(authoredColor)).to.eql(colors);
   });
@@ -433,44 +434,44 @@ describe('chart', () => {
   });
 
   it('getChartOptions', () => {
-    expect(typeof getChartOptions()).to.equal('object');
+    expect(typeof getChartOptions({})).to.equal('object');
   });
 
   it('getChartOptions tooltipFormatter', () => {
-    const options = getChartOptions();
+    const options = getChartOptions({});
     expect(typeof options.tooltip.formatter([{ seriesName: '', name: '', value: [''], encode: { y: [1] }, marker: '' }])).to.equal('string');
   });
 
   it('getChartOptions barTooltipFormatter', () => {
-    const options = getChartOptions('bar');
+    const options = getChartOptions({ chartType: 'bar' });
     expect(typeof options.tooltip.formatter({ seriesName: '', marker: '', value: [''], encode: {}, name: '' })).to.equal('string');
   });
 
   it('getChartOptions donutTooltipFormatter', () => {
-    const options = getChartOptions('donut');
+    const options = getChartOptions({ chartType: 'donut' });
     expect(typeof options.tooltip.formatter({ marker: '*', data: [''], encode: { value: [0] }, name: 'Mobile', percent: 0 }, '')).to.equal('string');
   });
 
   it('getChartOptions pieTooltipFormatter', () => {
-    const options = getChartOptions('pie');
+    const options = getChartOptions({ chartType: 'pie' });
     expect(typeof options.tooltip.formatter({ marker: '*', data: [''], encode: { value: [0] }, name: 'Chrome' }, '')).to.equal('string');
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    expect(typeof getChartOptions('bar')).to.equal('object');
+    expect(typeof getChartOptions({ chartType: 'bar' })).to.equal('object');
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions('', null, null, null, null, null, ['k', 'm']);
+    const options = getChartOptions({ processedData: { units: ['k', 'm'] } });
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
   it('fetchData returns json given an anchor tag', async () => {
     const link = document.createElement('a');
     const linkRel = '/drafts/data-viz/line.json';
-    link.href = `https://data-viz--milo--adobecom.hlx.page${linkRel}`;
+    link.href = `${linkRel}`;
     const goodResponse = { ok: true, json: () => true };
-    fetch.withArgs(linkRel).resolves(goodResponse);
+    fetch.withArgs(link.href).resolves(goodResponse);
     const response = await fetchData(link);
     expect(response).to.be.true;
   });
@@ -537,7 +538,8 @@ describe('chart', () => {
   it('lineSeriesOptions returns correct options with marks', () => {
     const series = [{ Type: 'markArea', Name: 'Weekend', Axis: 'xAxis', Value: 'Saturday-Sunday' }, { Type: 'markLine', Name: 'Standout', Axis: 'xAxis', Value: 'Tuesday' }, { Type: 'markLine', Name: 'Average', Axis: 'yAxis', Value: '200' }];
     const firstDataset = [100, 156, 160];
-    const units = ['K'];
+    const xUnit = '';
+    const yUnits = ['K'];
     const expected = [
       {
         type: 'line',
@@ -596,14 +598,14 @@ describe('chart', () => {
       },
     ];
 
-    expect(lineSeriesOptions(series, firstDataset, units)).to.eql(expected);
+    expect(lineSeriesOptions(series, firstDataset, xUnit, yUnits)).to.eql(expected);
   });
 
   it('init donut chart', async () => {
     document.body.innerHTML = '<div class="chart"><div>Title</div><div>Subtitle</div><div><div><a href="/drafts/data-viz/chart.json"></a></div></div><div>Footnote</div></div>';
     const el = document.querySelector('.chart');
     const data = await readFile({ path: './mocks/donutChart.json' });
-    fetch.withArgs('/drafts/data-viz/chart.json').resolves({ ok: true, json: () => JSON.parse(data) });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
     el.classList.add('donut');
     init(el);
     const svg = await waitForElement('svg');
@@ -616,11 +618,11 @@ describe('chart', () => {
 
   it('init generates list chart', async () => {
     const linkRel = '/drafts/data-viz/list.json';
-    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart list"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/listChartSingleTable.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const listWrapper = await waitForElement('.list-wrapper');
     expect(listWrapper).to.exist;
@@ -630,7 +632,7 @@ describe('chart', () => {
     document.body.innerHTML = await readFile({ path: './mocks/chart.html' });
     const el = document.querySelector('.chart');
     const data = await readFile({ path: './mocks/areaChart.json' });
-    fetch.withArgs('/test/blocks/chart/mocks/chart.json').resolves({ ok: true, json: () => JSON.parse(data) });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
     el.classList.add('area');
     init(el);
     const svg = await waitForElement('svg');
@@ -640,11 +642,11 @@ describe('chart', () => {
   it('init chart with echarts without intersection observer', async () => {
     window.IntersectionObserver = undefined;
     const linkRel = '/drafts/data-viz/column.json';
-    document.body.innerHTML = `<div class="chart column"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart column"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/columnChart.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const svg = await waitForElement('svg');
     expect(svg).to.exist;
@@ -682,11 +684,11 @@ describe('chart', () => {
 
   it('init generates oversized number chart', async () => {
     const linkRel = '/drafts/data-viz/oversized-number.json';
-    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="https://data-viz--milo--adobecom.hlx.page${linkRel}"></a></div></div><div>Footnote</div></div>`;
+    document.body.innerHTML = `<div class="chart oversized-number"><div>Title</div><div>Subtitle</div><div><div><a href="${linkRel}"></a></div></div><div>Footnote</div></div>`;
     const data = await readFile({ path: './mocks/oversized-number.json' });
     const parsedData = JSON.parse(data);
-    fetch.withArgs(linkRel).resolves({ ok: true, json: () => parsedData });
     const el = document.querySelector('.chart');
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => parsedData });
     init(el);
     const svg = await waitForElement('svg');
     expect(svg).to.exist;
@@ -702,5 +704,37 @@ describe('chart', () => {
 
   it('getOversizedNumberSize returns miniumum size for more than 6 characters', () => {
     expect(getOversizedNumberSize(100)).to.eql([90, 55, 65]);
+  });
+
+  it('Horizontal is the default label orientation', () => {
+    document.body.innerHTML = '<div class="chart line"></div>';
+    const styles = document.querySelector('.chart').classList;
+    expect(getLabelDegree(styles, true)).to.equal(0);
+  });
+
+  it('Sets degree for diagonal labels', () => {
+    document.body.innerHTML = '<div class="chart line mobile-diagonal-labels"></div>';
+    const styles = document.querySelector('.chart').classList;
+    expect(getLabelDegree(styles, false)).to.be.above(0);
+  });
+
+  it('sets default grid bottom', () => {
+    const options = getChartOptions({});
+    expect(options.grid.bottom).to.equal(90);
+  });
+
+  it('sets grid bottom for large chart with default labels', () => {
+    const options = getChartOptions({ size: 'large' });
+    expect(options.grid.bottom).to.equal(60);
+  });
+
+  it('sets grid bottom for large chart with diagonal labels', () => {
+    const options = getChartOptions({ size: 'large', labelDeg: 60 });
+    expect(options.grid.bottom).to.equal(30);
+  });
+
+  it('sets grid bottom for non-large chart with diagonal labels', () => {
+    const options = getChartOptions({ size: 'small', labelDeg: 60 });
+    expect(options.grid.bottom).to.equal(40);
   });
 });

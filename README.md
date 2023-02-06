@@ -6,23 +6,40 @@ Milo is a shared set of features and services to power Franklin-based websites o
 ## Environments
 [Preview](https://main--milo--adobecom.hlx.page) | [Live](https://milo.adobe.com)
 
-## Developing
+## Getting started
+
+### TL;DR
+1. Clone this repo to your computer.
 1. Install the [Helix CLI](https://github.com/adobe/helix-cli): `sudo npm install -g @adobe/helix-cli`
-1. Run `hlx up` this repo's folder. (opens your browser at `http://localhost:3000`)
-1. Open this repo's folder in your favorite editor and start coding.
+1. In a terminal, run `hlx up` this repo's folder.
+1. Start coding.
+
+### Detailed
+1. Fork this repo.
+1. Install the [Helix Bot](https://github.com/apps/helix-bot) on your forked repo.
+1. Clone your forked repo down to your computer.
+1. Install the [Helix CLI](https://github.com/adobe/helix-cli) using your terminal: `sudo npm install -g @adobe/helix-cli`
+1. In a terminal, run `hlx up` your repo's folder on your computer. It will open a browser.
+1. Open your repo's folder in your favorite code editor and start coding.
+
+### Even more detailed
+See the wiki for [more detailed instructions](https://github.com/adobecom/milo/wiki/Getting-started) on how to get started writing features for Milo.
+
+## Tooling
 
 ### NPM (Recommended)
-While milo *does not* require a build step to function, you will need to install npm packages (`npm install`) to:
+While milo *does not* require NPM to function, you will need to install npm packages (`npm install`) to:
 
 1. Lint
 2. Test
 3. Run libs
 
-### Tool recommendations
+### Recommendations
 You can use any text editor or IDE of your choice, but milo is highly optimized for VS Code. Milo provides recommended extensions (use the filters) and debugging tools.
 
-### Libs
-If you want to see how your milo changes impact a consuming site you will need to work on a different port.
+## Libs
+If you want to see how your local milo changes impact a consuming site you will need to work on a different port.
+
 ```
 npm run libs  
 ```
@@ -49,4 +66,5 @@ or:
 ```sh
 npm run test:watch
 ```
-This will give you several options to debug tests. Note: coverage may not be accurate.
+### Coverage
+`npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
