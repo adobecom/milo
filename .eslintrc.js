@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
-  extends: ['airbnb-base', 'plugin:react-hooks/recommended'],
+  extends: ['airbnb-base', 'plugin:react-hooks/recommended', 'plugin:compat/recommended', 'plugin:ecmalist/recommended'],
+  settings: { es: { aggressive: true } },
   env: { browser: true, mocha: true },
   parser: '@babel/eslint-parser',
   parserOptions: {

@@ -156,6 +156,9 @@ header .breadcrumbs {
 /* Show when header is open */
 header.is-open .breadcrumbs {
   display: block;
+  overflow-x: scroll;
+  margin-right: 12px;
+  width: auto;
 }
 
 header button.gnav-toggle::after {
@@ -172,6 +175,7 @@ header .breadcrumbs ul {
   margin: 0;
   list-style: none;
   display: flex;
+  white-space: nowrap;
 }
 
 header .breadcrumbs li {

@@ -145,7 +145,7 @@ class Gnav {
     if (brand.classList.contains('logo')) {
       if (brandLinks.length > 0) {
         decorateSVG(brandLinks[0]);
-        brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
+        brand.insertAdjacentElement('afterbegin', brandBlock.querySelector('img'));
       } else {
         brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
       }
@@ -454,6 +454,7 @@ class Gnav {
 
   decorateSignIn = (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    decorateLinks(blockEl);
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');

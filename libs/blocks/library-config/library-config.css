@@ -218,3 +218,30 @@
   align-items: center;
   height: 100vh;
 }
+
+
+ul.con-type-list.con-assets-list {
+  display: flex;
+  align-items: start;
+  width: 360px;
+  flex-wrap: wrap;
+}
+
+.con-assets-list li {
+  flex: 0 0 50%;
+  height: 180px;
+  text-align: middle;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.con-assets-list li:hover {
+  cursor: pointer;
+  background: #85858545;
+}
+
+.con-assets-list li:nth-child(odd) {
+  border-right: 1px solid #676767;
+}
