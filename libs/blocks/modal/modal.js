@@ -52,20 +52,12 @@ function getCustomModal(custom, dialog) {
   dialog.append(custom.content);
 }
 
-async function decorateModal(dialog) {
-  if (dialog.id === 'langnav') {
-    const { default: decorate } = await import('./decorators/langnav.js');
-    decorate(dialog);
-  }
-}
-
 async function getPathModal(path, dialog) {
   const block = createTag('a', { href: path });
   dialog.append(block);
 
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
-  await decorateModal(dialog);
 }
 
 export async function getModal(details, custom) {

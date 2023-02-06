@@ -1,4 +1,4 @@
-import { getConfig } from '../../../utils/utils.js';
+import { getConfig } from '../../utils/utils.js';
 
 function handleEvent(prefix, link, config) {
   document.cookie = `international=${prefix};path=/`;
@@ -28,12 +28,16 @@ function decorateLink(link, config, path) {
   });
 }
 
-export default function decorate(block) {
+export default function init(block) {
   const config = getConfig();
-  const regionSelectorBlock = block.querySelector('.region-selector');
-  const links = regionSelectorBlock?.querySelectorAll('a');
+  const divs = block.querySelectorAll(':scope > div');
+  if (divs.length < 2) return;
+  const links = divs[1].querySelectorAll('a');
   if (!links?.length) return;
   const { contentRoot } = config.locale;
-  const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
+  const removeElems = [...divs].filter((d) => d.children.length > 1 && d.children[0].textContent.toLowerCase() === 'remove');
+  const remove = removeElems?.length ? removeElems[0].children[1].textContent : '';
+  const path = window.location.href.replace(`${contentRoot}`, '').replace(remove, '');
+  removeElems[0].remove();
   links.forEach((l) => decorateLink(l, config, path));
 }

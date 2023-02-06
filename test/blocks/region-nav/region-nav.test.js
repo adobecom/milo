@@ -1,9 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement, waitForRemoval } from '../../../helpers/waitfor.js';
-import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
+import { waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-await import('../../../../libs/blocks/modal/modal.js');
+await import('../../../libs/blocks/modal/modal.js');
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 setConfig({ });
@@ -21,7 +21,8 @@ describe('Langnav Modal', () => {
     window.location.hash = '#langnav';
     await waitForElement('#langnav');
     const modal = document.getElementById('langnav');
-    const links = modal.querySelector('.region-selector').querySelectorAll('a');
+    debugger;
+    const links = modal.querySelector('.region-nav').querySelectorAll('a');
     const { contentRoot } = getConfig().locale;
     const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
     expect(links[0].href).to.be.equal(`${origin}/ar${path}`);
