@@ -34,8 +34,8 @@ const blockConfig = {
 };
 
 function getBlockData(el) {
-  const variant = variants.find((v) => el.classList.contains(v));
-  const size = sizes.find((sz) => el.classList.contains(sz));
+  const variant = variants.find((variantClass) => el.classList.contains(variantClass));
+  const size = sizes.find((sizeClass) => el.classList.contains(sizeClass));
   const blockData = variant ? blockConfig[variant] : blockConfig[Object.keys(blockConfig)[0]];
   return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
 }
