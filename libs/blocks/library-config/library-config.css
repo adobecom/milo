@@ -84,7 +84,7 @@ input.sk-library-search-input {
   padding-left: 30px;
   background: rgb(0 0 0 / 35%);
   color: #FFF;
-  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  font-family: inherit;
   font-size: 14px;
   border: none;
 }
