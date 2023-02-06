@@ -78,8 +78,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    _blank: 'blank',
-    _self: 'self',
+    '_blank': 'New Tab',
+    '_self': 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -321,7 +321,7 @@ const UiPanel = () => html`
   />
   <${Input} label="Custom Card HTML" prop="customCard" type="text" />
   <${Select}
-    label="Card Cta Action"
+    label="CTA Link Behavior"
     prop="ctaAction"
     options=${defaultOptions.ctaActions}
   />
