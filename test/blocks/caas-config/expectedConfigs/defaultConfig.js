@@ -41,7 +41,7 @@ const defaultConfig = {
   filterPanel: {
     enabled: false,
     eventFilter: '',
-    type: 'top',
+    type: 'left',
     showEmptyFilters: false,
     filters: [],
     filterLogic: 'or',

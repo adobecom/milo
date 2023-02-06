@@ -272,7 +272,7 @@ export const getConfig = async (state, strs = {}) => {
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
-      type: state.showFilters ? state.filterLocation : 'top',
+      type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state),
       filterLogic: state.filterLogic,
