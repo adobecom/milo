@@ -14,7 +14,9 @@ function handleEvent(prefix, link, config) {
 
 function decorateLink(link, config, path) {
   let pathname = link.getAttribute('href');
-  try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
+  if (pathname.startsWith('http')) {
+    try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
+  }
   const linkParts = pathname.split('/');
   const prefix = linkParts[1] || 'us';
   let { href } = link;
