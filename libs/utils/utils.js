@@ -373,16 +373,21 @@ export async function loadTemplate() {
 
 export async function loadBlock(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot } = getConfig();
+  const { miloLibs, codeRoot, experiment } = getConfig();
+
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  let blockPath = `${base}/blocks/${name}/${name}`;
+  if (experiment?.selectedVariant?.blocks?.[name]) {
+    blockPath = `${experiment.selectedVariant.blocks[name]}/${name}`;
+  }
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
+    loadStyle(`${blockPath}.css`, resolve);
   });
 
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
+        const { default: init } = await import(`${blockPath}.js`);
         await init(block);
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -446,13 +451,23 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
-      if (key === 'fragment' && url.hash === '') {
-        const { parentElement } = a;
-        const { nodeName, innerHTML } = parentElement;
-        const noText = innerHTML === a.outerHTML;
-        if (noText && nodeName === 'P') {
-          const div = createTag('div', null, a);
-          parentElement.parentElement.replaceChild(div, parentElement);
+      if (key === 'fragment') {
+        // checkForExperimentFragment(a);
+        if (url.hash === '') {
+          const { parentElement } = a;
+          const { nodeName, innerHTML } = parentElement;
+          const noText = innerHTML === a.outerHTML;
+          if (noText && nodeName === 'P') {
+            const div = createTag('div', null, a);
+            parentElement.parentElement.replaceChild(div, parentElement);
+          }
+        } else {
+          // Modals
+          a.dataset.modalPath = url.pathname;
+          a.dataset.modalHash = url.hash;
+          a.href = url.hash;
+          a.className = 'modal link-block';
+          return true;
         }
       }
       // Modals
@@ -605,12 +620,12 @@ async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
     const { default: martech } = await import('../martech/martech.js');
-    martech(config, loadScript, getMetadata);
+    await martech(config, loadScript, getMetadata);
   }
 }
 
 async function loadPostLCP(config) {
-  loadMartech(config);
+  // loadMartech(config);
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -681,28 +696,46 @@ function decorateMeta() {
     if (details) getModal(details);
   });
 }
+
+const handleAlloyResponse = (response) => {
+  const item = (response.decisions || response.propositions)?.[0]?.items?.[0];
+
+  if (item?.data?.content?.Experiments) {
+    return {
+      experimentPath: item.data.content.Experiments,
+      experimentName: item.meta['activity.name'],
+      variant: item.meta['experience.name'],
+    };
+  }
+
+  return {};
+};
+
+const loadIms = () => {
+  const { locale, imsClientId, env, onReady } = getConfig();
+  window.adobeid = {
+    client_id: imsClientId,
+    scope: 'AdobeID,openid,gnav',
+    locale: locale || 'en-US',
+    autoValidateToken: true,
+    environment: env.ims,
+    useLocalStorage: false,
+    onReady: onReady,
+  };
+  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+};
+
 const getExperiment = async () => {
   if (navigator.userAgent.match(/bot|crawl|spider/i)) {
     return {};
   }
-
-  let experimentPath;
-  let variant;
-
-  const usp = new URLSearchParams(window.location.search);
-  if (usp.has('experiment')) {
-    const experimentParam = usp.get('experiment')?.toLowerCase();
-    if (experimentParam) {
-      const lastSlash = experimentParam.lastIndexOf('/');
-      variant = experimentParam.slice(lastSlash + 1);
-      experimentPath = experimentParam.slice(0, lastSlash);
-    }
-  }
-
-  // TODO VIVIAN: TARGET code here
-  // populate:
-  // experimentPath: path to manifest.json
-  // variant: variant name e.g: challenger-1
+  loadIms();
+  const response = await alloy_load.sent;
+  const {
+    experimentPath,
+    experimentName,
+    variant,
+  } = handleAlloyResponse(response);
 
   if (!experimentPath) {
     experimentPath = getMetadata('experiment')?.toLowerCase();
@@ -718,19 +751,19 @@ const getExperiment = async () => {
 
 const checkForExperiments = async () => {
   const { experimentPath, instantExperiment, variant } = await getExperiment();
-  console.log(experimentPath);
   if (!experimentPath || !variant) return null;
 
-  const { getConfig, runExperiment } = await import('../scripts/experiments.js');
-  const experiment = await getConfig(experimentPath, variant, instantExperiment);
-  await runExperiment(experiment, document.querySelector('main'), createTag);
+  const { runExperiment } = await import('../scripts/experiments.js');
+  const experiment = await runExperiment(experimentPath, variant, instantExperiment, document.querySelector('main'), createTag);
+  console.log('experiment: ', experiment);
   return experiment;
 };
-
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
+  const config = getConfig();
+  await loadMartech(config);
   if (isDoc) {
     const experiment = await checkForExperiments();
     if (experiment) {
@@ -738,7 +771,6 @@ export async function loadArea(area = document) {
     }
   }
 
-  const config = getConfig();
 
   appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
@@ -791,6 +823,9 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    if (config.experiment?.selectedVariant?.scripts?.length) {
+      config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
+    }
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
