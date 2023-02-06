@@ -40,6 +40,7 @@ const MILO_BLOCKS = [
   'section-metadata',
   'slideshare',
   'tabs',
+  'tags',
   'table-of-contents',
   'text',
   'tiktok',
@@ -507,6 +508,14 @@ function decorateSections(el, isDoc) {
   });
 }
 
+async function buildTagsBlock() {
+  const topics = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
+
+  const tagsBlock = createTag('div', { class: 'tags' }, `<p>${topics.join(';')}`);
+
+  loadBlock(tagsBlock);
+}
+
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
@@ -614,6 +623,7 @@ export async function loadArea(area = document) {
       const { addRichResults } = await import('../features/richresults.js');
       addRichResults(type, { createTag, getMetadata });
     }
+    buildTagsBlock();
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
@@ -663,28 +673,4 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   }, options);
   io.observe(el);
   return io;
-}
-
-export function loadLana(options = {}) {
-  if (window.lana) return;
-
-  const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, {
-      errorType: 'i',
-    });
-  }
-
-  window.lana = {
-    log: async (...args) => {
-      await import('../utils/lana.js');
-      window.removeEventListener('error', lanaError);
-      window.removeEventListener('unhandledrejection', lanaError);
-      return window.lana.log(...args);
-    },
-    debug: false,
-    options,
-  };
-
-  window.addEventListener('error', lanaError);
-  window.addEventListener('unhandledrejection', lanaError);
 }

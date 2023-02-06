@@ -32,10 +32,9 @@ function calculateExcelDate(date) {
  * @param {Array} topics List of topics
  * @returns {Object} Taxonomy object
  */
-function computeTaxonomyFromTopics(topics, path) {
+export function computeTaxonomyFromTopics(topics, path) {
   // no topics: default to a randomly choosen category
   const category = topics?.length > 0 ? topics[0] : 'news';
-
   if (taxonomyModule) {
     const allTopics = [];
     const visibleTopics = [];

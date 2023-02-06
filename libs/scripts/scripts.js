@@ -13,7 +13,6 @@
 import {
   loadArea,
   loadDelayed,
-  loadLana,
   setConfig,
 } from '../utils/utils.js';
 
@@ -117,6 +116,29 @@ const config = {
   marketoMunchkinID: '345-TTI-184',
 };
 
+function loadLana() {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana.log(e.reason || e.error || e.message, {
+      errorType: 'i',
+    });
+  }
+
+  window.lana = {
+    log: async (...args) => {
+      await import('../utils/lana.js');
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      return window.lana.log(...args);
+    },
+    debug: false,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
+}
+
 (async function loadLCPImage() {
   const lcpImg = document.querySelector('img');
   lcpImg?.setAttribute('loading', 'eager');
@@ -124,7 +146,7 @@ const config = {
 
 (async function loadPage() {
   setConfig(config);
-  loadLana({ clientId: 'milo' });
+  loadLana();
   await loadArea();
   loadDelayed();
 }());
