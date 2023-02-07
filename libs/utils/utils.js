@@ -7,7 +7,7 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
-  'article-header',
+  // 'article-header',
   'aside',
   'author-header',
   'caas',
@@ -66,7 +66,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
-  { 'article-header': '/publish/' },
+  // { 'article-header': '/publish/' },
 ];
 const ENVS = {
   local: {
