@@ -7,8 +7,16 @@
   overflow: hidden;
 }
 
-.dark .aside {
-  color: white;
+.dark .aside,
+.aside.dark {
+  color: var(--color-white);
+  background-color: #1E1E1E;
+}
+
+.light .aside,
+.aside.light {
+  color: var(--text-color);
+  background-color: #f5f5f5;
 }
 
 .aside .detail-M {
@@ -33,26 +41,6 @@
   min-height: 700px;
 }
 
-.aside.dark {
-  color: white;
-  background-color: #1E1E1E;
-}
-
-.aside.light,
-.aside.split {
-  background-color: #f5f5f5;
-}
-
-.aside.dark h1,
-.aside.dark h2,
-.aside.dark h3,
-.aside.dark h4,
-.aside.dark h5,
-.aside.dark h6,
-.aside.dark p:not(.action-area) {
-  color: white;
-}
-
 .aside.split picture {
   display: flex;
 }
@@ -66,7 +54,7 @@
   bottom: 0;
 }
 
-.aside .background > div {
+.aside .background>div {
   height: 100%;
 }
 
@@ -103,7 +91,7 @@
   white-space: nowrap;
 }
 
-.aside:not(.notification) .foreground.container .text > * {
+.aside:not(.notification) .foreground.container .text>* {
   width: 100%;
 }
 
@@ -121,11 +109,11 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .text .action-area > a {
+.aside .foreground.container .text .action-area>a {
   margin-right: var(--spacing-s);
 }
 
-.aside .foreground.container .text .action-area > a:last-child {
+.aside .foreground.container .text .action-area>a:last-child {
   margin-right: 0;
 }
 
@@ -192,10 +180,6 @@
   flex-direction: column;
 }
 
-.aside.split.dark {
-  background-color: #1E1E1E;
-}
-
 .aside.split.large {
   flex-direction: column-reverse;
 }
@@ -208,7 +192,7 @@
 }
 
 .aside.split .foreground.container .text {
-  padding: 40px 0;
+  padding: var(--spacing-l) 0;
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
@@ -217,10 +201,6 @@
 .aside.inline .foreground.container div:has(.milo-video),
 .aside.inline .foreground.container .text {
   padding: 0;
-}
-
-.aside.split.light .foreground.container .text {
-  color: var(--text-color);
 }
 
 .aside.split .background {
@@ -280,8 +260,9 @@
   display: block;
 }
 
+.aside.notification .foreground.container .text[data-align=center],
 .aside.notification.center .foreground.container .text,
-.aside.notification.center .foreground.container .text > * {
+.aside.notification.center .foreground.container .text>* {
   text-align: center;
   justify-content: center;
 }
@@ -291,7 +272,7 @@
   font-weight: normal;
 }
 
-.aside.notification .foreground.container .text .action-area > a {
+.aside.notification .foreground.container .text .action-area>a {
   margin-right: 0;
 }
 
@@ -353,7 +334,7 @@
 
 .aside.notification.center.small .foreground.container .text,
 .aside.notification.center.extra-small .foreground.container .text {
-    margin: 0 auto;
+  margin: 0 auto;
 }
 
 .aside.notification.small {
@@ -378,7 +359,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text > * {
+.aside.notification.center.small .foreground.container .text>* {
   justify-content: flex-start;
 }
 
@@ -412,7 +393,7 @@
     align-self: center;
     justify-self: center;
   }
-  
+
   .aside .foreground.container .text.image {
     justify-content: flex-start;
   }
@@ -525,21 +506,21 @@
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
-  
+
   .aside.right .foreground.container {
     flex-direction: row-reverse;
   }
-  
+
   .aside.inline .foreground.container .image {
     flex: 0 0 calc(40% - var(--spacing-s));
     margin-right: 32px;
     margin-bottom: 0;
   }
-  
+
   .aside.notification .foreground.container {
     flex-direction: row;
   }
-  
+
   .aside.notification.medium .foreground.container,
   .aside.notification.large .foreground.container {
     gap: var(--spacing-s);
@@ -673,14 +654,14 @@
   .aside.notification .foreground.container .text+.image {
     margin-right: 0;
   }
-  
+
   .aside.notification.small .foreground.container .text {
     align-items: center;
     justify-content: flex-start;
   }
 
   .aside.notification.center.small .foreground.container .text,
-  .aside.notification.center.small .foreground.container .text > * {
+  .aside.notification.center.small .foreground.container .text>* {
     justify-content: center;
   }
 
