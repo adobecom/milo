@@ -8,10 +8,6 @@
   color: #FFFFFF;
 }
 
-div.accordion {
-  display: none;
-}
-
 dl.accordion {
   max-width: var(--grid-container-width);
   margin: 0 auto;
