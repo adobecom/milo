@@ -137,7 +137,7 @@
 .aside .foreground.container div:has(.milo-video),
 .aside .foreground.container .milo-inline-video {
   display: flex;
-  margin-top: 32px;
+  margin-top: var(--spacing-m);
   margin-bottom: var(--spacing-xxxl);
   justify-content: center;
 }
