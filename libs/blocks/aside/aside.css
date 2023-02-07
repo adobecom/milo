@@ -342,11 +342,6 @@
   flex-direction: column;
 }
 
-.aside.notification.extra-small .foreground.container .text,
-.aside.notification.small .foreground.container .text .body-M {
-  font-weight: bold;
-}
-
 .aside.notification.small .foreground.container .text {
   flex-direction: column;
   max-width: 1000px;
