@@ -49,6 +49,13 @@ const caasFilesLoaded = loadCaasFiles();
 const ConfiguratorContext = createContext();
 
 const defaultOptions = {
+  accessibilityLevel: {
+    2: '2',
+    3: '3',
+    4: '4',
+    5: '5',
+    6: '6',
+  },
   cardStyle: {
     '1:2': '1/2 Card',
     '3:4': '3/4 Card',
@@ -56,6 +63,8 @@ const defaultOptions = {
     'full-card': 'Full Card',
     'double-wide': 'Double Width Card',
     product: 'Product Card',
+    'text-card': 'Text Card',
+    'custom-card': 'Custom Card'
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -69,6 +78,10 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+  },
+  ctaActions: {
+    '_blank': 'New Tab',
+    '_self': 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -164,6 +177,13 @@ const defaultOptions = {
     workfront: 'Workfront',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
+  titleHeadingLevel: {
+    h2: 'h2',
+    h3: 'h3',
+    h4: 'h4',
+    h5: 'h5',
+    h6: 'h6',
+  },
   theme: {
     lightest: 'Lightest Theme',
     light: 'Light Theme',
@@ -270,6 +290,7 @@ const BasicsPanel = ({ tagsData }) => {
   const languageTags = getTagList(tagsData.language.tags);
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Select} options=${countryTags} prop="country" label="Country" />
     <${Select} options=${languageTags} prop="language" label="Language" />
@@ -285,6 +306,7 @@ const UiPanel = () => html`
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
+  <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
@@ -298,6 +320,12 @@ const UiPanel = () => html`
     label="Load More Button Style"
     prop="loadMoreBtnStyle"
     options=${defaultOptions.loadMoreBtnStyle}
+  />
+  <${Input} label="Custom Card HTML" prop="customCard" type="text" />
+  <${Select}
+    label="CTA Link Behavior"
+    prop="ctaAction"
+    options=${defaultOptions.ctaActions}
   />
 `;
 
@@ -505,31 +533,58 @@ const PaginationPanel = () => {
 const TargetPanel = () =>
   html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
+    <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
 const AnalyticsPanel = () =>
   html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
-    <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
+  <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
   const { dispatch } = useContext(ConfiguratorContext);
+  const context = useContext(ConfiguratorContext);
   const onClick = () => {
     dispatch({ type: 'RESET_STATE' });
   };
+
+  const onChange = (prop) => (values) => {
+    context.dispatch({
+      type: 'SELECT_CHANGE',
+      prop,
+      value: values,
+    });
+  };
+
+  function getAdditionalQueryParams(){
+    if(Array.isArray(context.state.additionalRequestParams)){
+      return context.state.additionalRequestParams;
+    }
+    return Object.entries(context.state.additionalRequestParams).map(([key, value]) => ({key, value}));
+  }
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
     <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
-    <${Select}
+    <${Input}
       label="Fallback Endpoint"
       prop="fallbackEndpoint"
-      options=${{ '': '', ...defaultOptions.endpoints }}
+      type="text"}
     />
-    <${Input} label="Placeholders Folder" prop="placeholderUrl" type="text" />
+    <${Input} label="Placeholders JSON" prop="placeholderUrl" type="text" />
     <${Input} label="Tags Url" prop="tagsUrl" defaultValue=${defaultState.tagsUrl} type="text" />
+    <${MultiField}
+      onChange=${onChange('additionalRequestParams')}
+      className="additionalRequestParams"
+      values=${getAdditionalQueryParams()}
+      title="Additional Request Params"
+      subTitle="Enter a key/value pair you want to include in a card's url."
+    >
+      <${FormInput} name="key" />
+      <${FormInput} name="value" />
+    <//>
   `;
 };
 
