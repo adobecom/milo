@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj } from '../../../libs/blocks/caas/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -16,6 +16,10 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
+describe('additionalQueryParams', () => {
+  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+  expect(arrayToObj({})).to.be.eql({});
+})
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
@@ -134,16 +138,20 @@ describe('getConfig', () => {
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
+        ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
+          cardTitleAccessibilityLevel: 6,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
+          titleHeadingLevel: 'h3'
         },
         setCardBorders: false,
         useOverlayLinks: false,
+        additionalRequestParams: {},
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -287,8 +295,15 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'US',
-      analytics: { trackImpressions: '', collectionIdentifier: '' },
-      target: { enabled: true },
+      "customCard": [
+        "card",
+        "return ``"
+      ],
+    analytics: { trackImpressions: '', collectionIdentifier: '' },
+      target: {
+        enabled: true,
+        lastViewedSession: "",
+      },
     });
   });
 });
