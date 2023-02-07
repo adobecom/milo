@@ -145,9 +145,9 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
-  if (!filterTag?.[0]) return null;
-  const tagId = filterTag[0];
+const getFilterObj = ({ excludeTags, filterTag, filterCustomTag, icon, openedOnLoad }, tags) => {
+  if (!filterTag?.[0] && !filterCustomTag?.[0]) return null;
+  const tagId = filterTag[0] || filterCustomTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
   const items = Object.values(tag.tags)
@@ -189,7 +189,7 @@ const getFilterArray = async (state) => {
 
   const selectedFilters = state.filterBuildPanel === 'automatic'
     ? state.filters
-    : state.filtersCustom;  
+    : state.filtersCustom;
   const filters = selectedFilters
     .map((filter) => getFilterObj(filter, tags))
     .filter((filter) => filter !== null);
