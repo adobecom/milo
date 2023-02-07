@@ -35,9 +35,6 @@ export default function init(block) {
   const links = divs[1].querySelectorAll('a');
   if (!links?.length) return;
   const { contentRoot } = config.locale;
-  const removeElems = [...divs].filter((d) => d.children.length > 1 && d.children[0].textContent.toLowerCase() === 'remove');
-  const remove = removeElems?.length ? removeElems[0].children[1].textContent : '';
-  const path = window.location.href.replace(`${contentRoot}`, '').replace(remove, '');
-  if (removeElems?.length) removeElems[0].remove();
+  const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
   links.forEach((l) => decorateLink(l, config, path));
 }
