@@ -121,8 +121,8 @@ const afterYiiLoadedCallback = () => {
       });
     }
 
-    iterator($('.faasform input[type="text"]'));
-    iterator($('.faasform textarea'));
+    iterator($('.faas-form input[type="text"]'));
+    iterator($('.faas-form textarea'));
   }
 
   function removeRequired() {
