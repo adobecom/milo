@@ -639,10 +639,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
-    const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-      const { addRichResults } = await import('../features/richresults.js');
-      addRichResults(type, { createTag, getMetadata });
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
