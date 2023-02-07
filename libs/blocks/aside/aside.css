@@ -19,12 +19,6 @@
   background-color: #f5f5f5;
 }
 
-.aside .detail-M {
-  text-transform: uppercase;
-  font-weight: 700;
-  margin-bottom: var(--spacing-xs);
-}
-
 .aside p {
   margin: 0;
 }
