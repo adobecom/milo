@@ -1,33 +1,22 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-await import('../../../libs/blocks/modal/modal.js');
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+import init from '../../../libs/blocks/region-nav/region-nav.js';
+
+document.body.innerHTML = await readFile({ path: './mocks/regions.html' });
 
 setConfig({ });
-describe('Langnav Modal', () => {
-  it('Loads a modal on load with hash and closes when removed from hash', async () => {
-    window.location.hash = '#langnav';
-    await waitForElement('#langnav');
-    expect(document.getElementById('langnav')).to.exist;
-    window.location.hash = '';
-    await waitForRemoval('#langnav');
-    expect(document.getElementById('langnav')).to.be.null;
-  });
-
+describe('Region Nav Block', () => {
   it('sets links correctly', async () => {
-    window.location.hash = '#langnav';
-    await waitForElement('#langnav');
-    const modal = document.getElementById('langnav');
-    debugger;
-    const links = modal.querySelector('.region-nav').querySelectorAll('a');
+    const block = document.body.querySelector('.region-nav');
+    init(block);
+    const links = document.body.querySelectorAll('a');
     const { contentRoot } = getConfig().locale;
+    window.location.hash = 'langnav';
     const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
     expect(links[0].href).to.be.equal(`${origin}/ar${path}`);
     expect(links[links.length - 1].href).to.be.equal(`${origin}/kr${path}`);
     window.location.hash = '';
-    await waitForRemoval('#langnav');
   });
 });

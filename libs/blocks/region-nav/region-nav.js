@@ -38,6 +38,6 @@ export default function init(block) {
   const removeElems = [...divs].filter((d) => d.children.length > 1 && d.children[0].textContent.toLowerCase() === 'remove');
   const remove = removeElems?.length ? removeElems[0].children[1].textContent : '';
   const path = window.location.href.replace(`${contentRoot}`, '').replace(remove, '');
-  removeElems[0].remove();
+  if (removeElems?.length) removeElems[0].remove();
   links.forEach((l) => decorateLink(l, config, path));
 }
