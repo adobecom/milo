@@ -43,11 +43,13 @@ function getBlockData(el) {
 function decorateInlineVideo(el) {
   const video = el.querySelector('a[href*=".mp4"]');
   if (!video) return;
-  const videoHref = video.getAttribute('href');
-  const videoAttrs = videoHref.includes('autoplay=true') ? 'playsinline autoplay muted loop' : 'controls';
   const parent = video.parentElement;
-  parent.innerHTML = `<video preload="metadata" ${videoAttrs}><source src="${video.href}" type="video/mp4" /></video>`;
   parent.classList.add('milo-inline-video');
+  const videoHref = video.getAttribute('href');
+  const videoAttrs = videoHref.includes('autoplay=true') ? { playsinline: '', autoplay: '', muted: '', loop: '' } : { controls: '' };
+  const source = createTag('source', { src: video.href, type: 'video/mp4' });
+  const html = createTag('video', videoAttrs, source);
+  parent.appendChild(html);
   video.remove();
 }
 
@@ -77,7 +79,6 @@ function decorateLayout(el) {
 }
 
 export default function init(el) {
-  if (!el) return;
   const blockData = getBlockData(el);
   const foreground = decorateLayout(el);
   decorateInlineVideo(el);
