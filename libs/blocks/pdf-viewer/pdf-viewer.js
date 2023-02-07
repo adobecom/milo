@@ -5,18 +5,17 @@ const PDF_RENDER_DIV_ID = 'adobe-dc-view';
 const CLIENT_ID_LIVE = '96e41871f28349e08b3562747a72dc75';
 
 export const getPdfConfig = () => {
-  const { env } = getConfig();
+  const { env, live } = getConfig();
   const { host, href } = window.location;
   const location = new URL(href);
   const query = location.searchParams.get('env');
-  let clientId = env.consumer?.pdfViewerClientId;
+  let clientId = env.consumer?.pdfViewerClientId || env.pdfViewerClientId;
   let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
 
   if (host.includes('hlx.live') || query === 'live') {
-    /* c8 ignore next */
-    clientId ??= CLIENT_ID_LIVE;
-  } else {
-    clientId ??= env.pdfViewerClientId;
+    /* c8 ignore next 2 */
+    clientId = live?.pdfViewerClientId || CLIENT_ID_LIVE;
+    reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
   return { clientId, reportSuiteId };

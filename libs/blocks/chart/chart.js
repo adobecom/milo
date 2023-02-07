@@ -1,4 +1,4 @@
-import { makeRelative, loadScript, getConfig } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -17,16 +17,16 @@ export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 export const colorPalette = {
   seafoam: '#0FB5AE',
-  orange: '#F68511',
   indigo: '#4046CA',
-  purple: '#7326D3',
-  blue: '#147AF3',
-  lime: '#72E06A',
-  lavender: '#7E84FA',
+  orange: '#F68511',
   magenta: '#DE3D82',
-  green: '#008F5D',
-  copper: '#CB5D00',
+  lavender: '#7E84FA',
+  lime: '#72E06A',
+  blue: '#147AF3',
+  purple: '#7326D3',
   yellow: '#E8C600',
+  copper: '#CB5D00',
+  green: '#008F5D',
   chartreuse: '#BCE931',
 };
 const SECTION_CLASSNAME = 'chart-section';
@@ -43,7 +43,7 @@ const chartTypes = [
 
 export function processDataset(data) {
   const dataset = {};
-  const optionalHeaders = ['unit', 'group', 'color'];
+  const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
   const units = headers?.[unitKey]?.split('-') || [];
@@ -70,13 +70,13 @@ export function processDataset(data) {
   return { dataset, headers, units };
 }
 
-export function processMarkData(series, xAxisType) {
+export function processMarkData(series, xUnit) {
   const seriesOptions = series.reduce((options, mark) => {
     options[mark.Type] ??= { data: [] };
 
     const markData = options[mark.Type].data;
     const split = mark.Value?.split('-');
-    const value = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
+    const value = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[0]) : parseValue(split[0]);
     const markObject = {
       ...(mark.Name ? { name: mark.Name } : {}),
       ...(mark.Axis ? { [mark.Axis]: value } : {}),
@@ -87,7 +87,7 @@ export function processMarkData(series, xAxisType) {
       markData[0].push(markObject);
 
       if (split.length > 1) {
-        const endRangeValue = xAxisType === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
+        const endRangeValue = xUnit === 'date' && mark.Axis === 'xAxis' ? formatExcelDate(split[1]) : parseValue(split[1]);
 
         markData[0].push((mark.Axis ? { [mark.Axis]: endRangeValue } : {}));
       }
@@ -122,8 +122,7 @@ export function processMarkData(series, xAxisType) {
 }
 
 export async function fetchData(link) {
-  const path = makeRelative(link.href);
-  const resp = await fetch(path.toLowerCase());
+  const resp = await fetch(link.href.toLowerCase());
 
   if (!resp.ok) return {};
 
@@ -192,7 +191,7 @@ export const tooltipFormatter = (params, units) => {
   return tooltip;
 };
 
-export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, units) => {
+export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, size, yUnits) => {
   const isLarge = size === LARGE;
   const isBar = chartType === 'bar';
 
@@ -200,7 +199,7 @@ export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, s
     type: 'bar',
     label: {
       show: isBar,
-      formatter: `{@[${index + 1}]}${units[0]}`,
+      formatter: `{@[${index + 1}]}${yUnits[0]}`,
       position: 'right',
       textBorderColor: '#000',
       distance: 8,
@@ -216,19 +215,19 @@ export const barSeriesOptions = (chartType, hasOverride, firstDataset, colors, s
     itemStyle: { borderRadius: 3 },
     barCategoryGap: isBar ? 0 : '33.3%',
     barGap: '33.3%',
-    yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
+    yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
   }));
 };
 
-export const lineSeriesOptions = (series, firstDataset, units, xAxisType) => {
-  const marks = processMarkData(series, xAxisType);
+export const lineSeriesOptions = (series, firstDataset, xUnit, yUnits) => {
+  const marks = processMarkData(series, xUnit);
 
   return firstDataset.map((value, index) => {
     let options = {
       type: 'line',
       symbol: 'none',
       lineStyle: { width: 3 },
-      yAxisIndex: typeof units[1] !== 'undefined' ? index : 0,
+      yAxisIndex: typeof yUnits[1] !== 'undefined' ? index : 0,
     };
 
     if (index === 0 && marks) {
@@ -334,29 +333,50 @@ export const pieSeriesOptions = (size) => {
 /**
  * Returns object of echart options
  * @param {string} chartType
- * @param {object} dataset
+ * @param {object} processedData
  * @param {object} series
- * @param {array} headers
- * @param {array} colors
  * @param {string} size
- * @param {array} units
+ * @param {array} colors
+ * @param {integer} labelDeg
  * @returns {object}
  */
-export const getChartOptions = (chartType, dataset, series, headers, colors, size, units = []) => {
+export const getChartOptions = ({
+  chartType,
+  processedData: { dataset, headers, units = [] } = {},
+  series,
+  size,
+  colors,
+  labelDeg = 0,
+}) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
-  const xAxisType = units[0] === 'date' ? units[0] : '';
   const source = dataset?.source;
   const firstDataset = source?.[1]?.slice() || [];
   const isBar = chartType === 'bar';
   const isColumn = chartType === 'column';
   const isPie = chartType === 'pie';
   const isDonut = chartType === 'donut';
+  const isDiagonalLabel = labelDeg > 0;
+  let xUnit = '';
+  let yUnits = units;
 
-  if (xAxisType) {
-    units.shift();
+  if (units[0] === 'date') {
+    [xUnit] = units;
+    yUnits = units.length > 1 ? units.slice(1) : [''];
   }
 
   firstDataset.shift();
+
+  let bottomGrid = 90;
+
+  if (size === LARGE) {
+    if (isDiagonalLabel) {
+      bottomGrid = 30;
+    } else {
+      bottomGrid = 60;
+    }
+  } else if (isDiagonalLabel) {
+    bottomGrid = 40;
+  }
 
   return {
     dataset,
@@ -366,21 +386,25 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
       inactiveColor: '#6C6C6C',
       type: 'scroll',
     },
-    title: isDonut ? donutTitleOptions(source, series, units[0], size) : {},
+    title: isDonut ? donutTitleOptions(source, series, yUnits[0], size) : {},
     tooltip: {
       show: true,
       formatter: ((params) => {
-        if (isBar) return barTooltipFormatter(params, units[0]);
-        if (isPie) return pieTooltipFormatter(params, units[0]);
-        if (isDonut) return donutTooltipFormatter(params, units[0]);
-        return tooltipFormatter(params, units);
+        if (isBar) return barTooltipFormatter(params, yUnits[0]);
+        if (isPie) return pieTooltipFormatter(params, yUnits[0]);
+        if (isDonut) return donutTooltipFormatter(params, yUnits[0]);
+        return tooltipFormatter(params, yUnits);
       }),
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
+    grid: { bottom: bottomGrid },
     xAxis: {
       type: isBar ? 'value' : 'category',
-      axisLabel: { show: !isBar },
+      axisLabel: {
+        show: !isBar,
+        rotate: labelDeg,
+      },
       axisTick: { show: !isBar },
       max: (value) => {
         if (!isBar) return null;
@@ -391,7 +415,7 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
       boundaryGap: isColumn,
     },
     yAxis: (() => (
-      units.map((unit) => (
+      yUnits.map((unit) => (
         {
           type: isBar ? 'category' : 'value',
           axisLabel: {
@@ -406,9 +430,9 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
     ))(),
     series: (() => {
       if (isBar || isColumn) {
-        return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, units);
+        return barSeriesOptions(chartType, hasOverride, firstDataset, colors, size, yUnits);
       }
-      if (chartType === 'line') return lineSeriesOptions(series, firstDataset, units, xAxisType);
+      if (chartType === 'line') return lineSeriesOptions(series, firstDataset, xUnit, yUnits);
       if (chartType === 'area') return areaSeriesOptions(firstDataset);
       if (isDonut) return donutSeriesOptions(size);
       if (isPie) return pieSeriesOptions(size);
@@ -430,28 +454,28 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = (chartWrapper, chartType, { data, series }, colors, size) => {
+const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
   const themeName = getTheme(size);
-  const { dataset, headers, units } = processDataset(data);
-  const chartOptions = getChartOptions(chartType, dataset, series, headers, colors, size, units);
+  const options = { chartType, processedData: data, series, size, ...rest };
+  const chartOptions = getChartOptions(options);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
   chartWrapper.tabIndex = 0;
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
-    setDonutListeners(chart, dataset?.source, series, units);
+    setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
   return chart;
 };
 
-const handleIntersect = (chartWrapper, chartType, data, colors, size) => (entries, observer) => {
+const handleIntersect = (options) => (entries, observer) => {
   if (!Array.isArray(entries)) return;
 
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      initChart(chartWrapper, chartType, data, colors, size);
+      initChart(options);
       observer.unobserve(entry.target);
     }
   });
@@ -486,22 +510,47 @@ export const getResponsiveSize = (authoredSize) => {
   return size;
 };
 
-/* c8 ignore next 19 */
-const handleResize = (el, authoredSize, chartType, data, colors) => {
+export const getLabelDegree = (chartStyles, isDesktop) => {
+  let diagonal = false;
+
+  if (isDesktop) {
+    diagonal = [...chartStyles]?.includes('desktop-diagonal-labels');
+  } else {
+    diagonal = [...chartStyles]?.includes('mobile-diagonal-labels');
+  }
+
+  return diagonal ? 60 : 0;
+};
+
+/* c8 ignore next 31 */
+const handleResize = (el, authoredSize, chartType, data, series, colors) => {
   const currentSize = getResponsiveSize(authoredSize);
-  const previousSize = el?.getAttribute('data-responsive-size');
-  const previousIsLarge = previousSize === LARGE;
-  const currentIsLarge = currentSize === LARGE;
-  const chartWrapper = el?.querySelector('.chart-wrapper');
+  const previousSize = el.getAttribute('data-responsive-size');
+  const chartWrapper = el.querySelector('.chart-wrapper');
   const chartInstance = window.echarts?.getInstanceByDom(chartWrapper);
+  const previousDevice = el.getAttribute('data-device');
+  const width = window.innerWidth;
+  let currentDevice = 'mobile';
+  let isDesktop = false;
+
+  if (width >= DESKTOP_BREAKPOINT) {
+    currentDevice = 'desktop';
+    isDesktop = true;
+  }
 
   if (currentSize !== previousSize) {
     el.setAttribute('data-responsive-size', currentSize);
   }
 
-  if (previousIsLarge !== currentIsLarge) {
+  if (currentDevice !== previousDevice) {
+    const chartStyles = el.classList;
+    const labelDeg = getLabelDegree(chartStyles, isDesktop);
+
+    el.setAttribute('data-device', currentDevice);
     chartInstance?.dispose();
-    initChart(chartWrapper, chartType, data, colors, currentSize);
+    initChart({
+      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg,
+    });
   } else {
     chartInstance?.resize();
   }
@@ -529,16 +578,17 @@ export const getOversizedNumberSize = (charLength) => {
 };
 
 const init = (el) => {
-  const children = el?.querySelectorAll(':scope > div');
-  const chartWrapper = children[2]?.querySelector(':scope > div');
+  const children = el.querySelectorAll(':scope > div');
+  const chartContainer = children[2];
+  const chartWrapper = chartContainer?.querySelector(':scope > div');
   children[0]?.classList.add('title');
   children[1]?.classList.add('subtitle');
-  children[2]?.classList.add('chart-container');
+  chartContainer?.classList.add('chart-container');
   children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart-wrapper');
 
-  const chartStyles = el?.classList;
-  const section = el?.parentElement?.matches('.section') ? el.parentElement : null;
+  const chartStyles = el.classList;
+  const section = el.parentElement?.matches('.section') ? el.parentElement : null;
   const sectionChildren = section?.querySelectorAll(':scope > div:not(.section-metadata)');
   const upNumber = sectionChildren?.length;
   section?.classList.add(`up-${upNumber}`);
@@ -552,7 +602,7 @@ const init = (el) => {
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
-  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type) !== -1);
+  const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
   const dataLink = chartWrapper?.querySelector('a[href$="json"]');
 
   dataLink?.remove();
@@ -560,6 +610,8 @@ const init = (el) => {
   if (!chartType || !chartWrapper || !dataLink) return;
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+  const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+  const labelDeg = getLabelDegree(chartStyles, isDesktop);
 
   if (chartType === 'list') {
     // Must use chained promise. Await will cause loading issues
@@ -567,6 +619,7 @@ const init = (el) => {
       .then(([json, { default: initList }]) => {
         initList(chartWrapper, json, colorPalette[authoredColor]);
       })
+      // eslint-disable-next-line no-console
       .catch((error) => console.log('Error loading script:', error));
     return;
   }
@@ -587,6 +640,7 @@ const init = (el) => {
 
         chartWrapper.innerHTML = html;
       })
+      // eslint-disable-next-line no-console
       .catch((error) => console.log('Error loading script:', error));
     return;
   }
@@ -598,17 +652,28 @@ const init = (el) => {
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
     .then(async (values) => {
       const json = values[0];
-      const data = chartData(json);
+      const rawData = chartData(json);
 
-      if (!data) return;
+      if (!rawData) return;
 
-      const hasOverride = hasPropertyCI(data?.data[0], 'color');
+      const { data, series } = rawData;
+      const processedData = processDataset(data);
+      const hasOverride = hasPropertyCI(processedData.headers, 'color');
       const colors = hasOverride
-        ? getOverrideColors(authoredColor, data.data)
+        ? getOverrideColors(authoredColor, data)
         : getColors(authoredColor);
+      const options = {
+        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg,
+      };
+      const text = propertyValueCI(processedData.headers, 'subheading');
+
+      if (text) {
+        const subheading = createTag('p', { class: 'subheading' }, text);
+        chartContainer.insertAdjacentElement('beforebegin', subheading);
+      }
 
       if (!(window.IntersectionObserver)) {
-        initChart(chartWrapper, chartType, data, colors, size);
+        initChart(options);
       } else {
         /* c8 ignore next 12 */
         const observerOptions = {
@@ -618,7 +683,7 @@ const init = (el) => {
         };
 
         const observer = new IntersectionObserver(
-          handleIntersect(chartWrapper, chartType, data, colors, size),
+          handleIntersect(options),
           observerOptions,
         );
         observer.observe(el);
@@ -626,12 +691,13 @@ const init = (el) => {
 
       const title = children[0]?.textContent.trim() || children[1]?.textContent.trim();
       chartWrapper.setAttribute('aria-label', `${await replaceKey(`${chartType}-chart`, config)}: ${title}`);
-
+      /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
         1000,
-        () => handleResize(el, authoredSize, chartType, data, colors),
+        () => handleResize(el, authoredSize, chartType, processedData, series, colors),
       ));
     })
+    // eslint-disable-next-line no-console
     .catch((error) => console.log('Error loading script:', error));
 };
 

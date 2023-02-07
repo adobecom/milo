@@ -22,10 +22,23 @@
     return false;
   }
 
-  function getOptions(op) {
-    const o = w.lana.options;
+  function mergeOptions(op1, op2) {
+    if (!op1) {
+      op1 = {};
+    }
+
+    if (!op2) {
+      op2 = {};
+    }
+
     function getOpt(key) {
-      return op[key] !== undefined ? op[key] : o[key];
+      if (op1[key] !== undefined) {
+        return op1[key]
+      }
+      if (op2[key] !== undefined) {
+        return op2[key];
+      }
+      return defaultOptions[key];
     }
 
     return Object.keys(defaultOptions).reduce(function (options, key) {
@@ -46,7 +59,7 @@
       msg = msg.slice(0, MSG_LIMIT) + '<trunc>';
     }
 
-    const o = getOptions(options || {});
+    const o = mergeOptions(options, w.lana.options);
     if (!o.clientId) {
       console.warn('LANA ClientID is not set in options.');
       return;
@@ -94,19 +107,10 @@
     return w.location.host.toLowerCase().indexOf('localhost') !== -1;
   }
 
-  const options = w.lana && w.lana.options;
   w.lana = {
     debug: false,
     log: log,
-    options: options || defaultOptions,
-    setClientId: function (id) {
-      console.warn('LANA setClientId is deprecated and will be removed in a future release.');
-      w.lana.options.clientId = id;
-    },
-    setDefaultOptions: function (options) {
-      console.warn('LANA setDefaultOptions is deprecated and will be removed in a future release.');
-      w.lana.options = getOptions(options);
-    },
+    options: mergeOptions(w.lana && w.lana.options),
   };
 
   /* c8 ignore next */

@@ -1,0 +1,219 @@
+.card-horizontal {
+  display: block;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-horizontal p {
+  margin: 0;
+}
+
+.card-horizontal .background {
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.card-horizontal .background > div {
+  height: 100%;
+}
+
+.card-horizontal .background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  min-height: 700px;
+}
+
+.card-horizontal .foreground {
+  gap: var(--spacing-m);
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.two-up .card-horizontal .foreground,
+.three-up .card-horizontal .foreground {
+  max-width: 100%;
+  margin: 0;
+}
+
+.card-horizontal .foreground .card-block {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  text-align: left;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  gap: var(--spacing-s);
+  overflow: hidden;
+  border: 1px solid #EAEAEA;
+  max-height: 130px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.card-horizontal .foreground .card-block .card-content {
+  padding-right: var(--spacing-s);
+  margin: 16px 0;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.card-horizontal .foreground .card-block .card-image {
+  height: 132px;
+  flex: 1 0 90px;
+}
+
+.card-horizontal.tile .foreground .card-block .card-image picture {
+  height: 62px;
+}
+
+.card-horizontal .foreground .card-block .card-image img {
+  object-fit: cover;
+  height: 100%;
+}
+
+.card-horizontal.tile .foreground .card-block .card-image {
+  height: 132px;
+  flex: 0 0 88px;
+  display: flex;
+  align-items: center;
+}
+
+.card-horizontal.tile .foreground .card-block .card-image img {
+  width: 64px;
+  height: 62px;
+  object-fit: contain;
+  margin-left: var(--spacing-s);
+}
+
+.two-up .card-horizontal .foreground .card-block .card-image,
+.three-up .card-horizontal .foreground .card-block .card-image {
+  flex: 0 0 91px;
+}
+
+@media screen and (min-width: 600px) {
+  .card-horizontal .foreground .card-block {
+    gap: var(--spacing-m);
+  }
+
+  .card-horizontal .foreground .card-block .card-image {
+    flex: 0 0 191px;
+  }
+
+  .card-horizontal.tile .foreground .card-block .card-content {
+    padding-right: var(--spacing-m);
+  }
+
+  .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 0 0 106px;
+  }
+
+  .card-horizontal.tile .foreground .card-block .card-image picture {
+    height: 73px;
+  }
+
+  .card-horizontal.tile .foreground .card-block .card-image img {
+    width: 74px;
+    height: 72px;
+    margin-left: var(--spacing-m);
+  }
+
+  .two-up .card-horizontal .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .three-up .card-horizontal .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .two-up .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 0 0 96px;
+  }
+
+  .two-up .card-horizontal.tile .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .two-up .card-horizontal.tile .foreground .card-block .card-image img {
+    width: 74px;
+    height: 72px;
+    margin-left: var(--spacing-s);
+  }
+
+  .three-up .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 0 0 98px;
+  }
+
+  .three-up .card-horizontal.tile .foreground .card-block .card-image img {
+    margin-left: var(--spacing-s);
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .card-horizontal .foreground {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card-horizontal .foreground .card-block .card-content {
+    padding-right: var(--spacing-m);
+  }
+
+  .two-up .card-horizontal .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .three-up .card-horizontal .foreground .card-block .card-content {
+    padding-right: var(--spacing-s);
+  }
+
+  .card-horizontal .foreground .card-block .card-image {
+    flex: 1 0 180px;
+  }
+
+  .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 1 0 106px;
+  }
+
+  .two-up .card-horizontal .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .two-up .card-horizontal .foreground .card-block .card-image {
+    flex: 1 0 115px;
+  }
+
+  .three-up .card-horizontal .foreground .card-block {
+    gap: var(--spacing-s);
+  }
+
+  .three-up .card-horizontal .foreground .card-block .card-image {
+    flex: 1 0 113px;
+  }
+
+  .two-up .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 1 0 98px;
+  }
+
+  .two-up .card-horizontal.tile .foreground .card-block .card-image img {
+    margin-left: var(--spacing-s);
+  }
+
+  .three-up .card-horizontal.tile .foreground .card-block .card-image {
+    flex: 1 0 98px;
+  }
+
+  .three-up .card-horizontal.tile .foreground .card-block .card-image img {
+    margin-left: var(--spacing-s);
+  }
+}
