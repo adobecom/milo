@@ -324,7 +324,7 @@ async function displayProjectDetail() {
   if (!projectStarted) {
     showIds = ['reload', 'updateFragments', 'copyToEn'];
     hideIds = ['refresh'];
-    if (connectedToGLaaS) {
+    if (connectedToGLaaS || projectDetail?.translationProjects.size === 0) {
       showIds.push('send');
     }
   }

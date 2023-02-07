@@ -17,7 +17,7 @@ import {
 } from '../utils/utils.js';
 
 // Production Domain
-const productionDomain = 'milo.adobe.com';
+const prodDomains = ['milo.adobe.com'];
 
 const locales = {
   // Americas
@@ -104,13 +104,13 @@ const locales = {
 };
 
 const config = {
-  geoRouting: 'off',
-  fallbackRouting: 'off',
+  geoRouting: 'on',
+  fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
-  productionDomain,
+  prodDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',

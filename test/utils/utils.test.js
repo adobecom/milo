@@ -181,6 +181,25 @@ describe('Utils', () => {
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
   });
 
+  it('Open link in new tab', () => {
+    const newTabLink = document.querySelector('.new-tab');
+    newTabLink.target = '_blank';
+    expect(newTabLink.target).to.contain('_blank');
+    newTabLink.href = newTabLink.href.replace('#_blank', '');
+    expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+  });
+
+  describe('SVGs', () => {
+    it('Not a valid URL', () => {
+      const a = document.querySelector('.bad-url');
+      try {
+        const textContentUrl = new URL(a.textContent);
+      } catch (err) {
+        expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
+      }
+    });
+  });
+
   describe ('rtlSupport', () => {
     before(async () => {
       config.locales = {
@@ -225,7 +244,7 @@ describe('Utils', () => {
         be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
         langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
       };
-      config.productionDomain = 'milo.adobe.com';
+      config.prodDomains = ['milo.adobe.com', 'www.adobe.com'];
       config.pathname = '/be_fr/page';
       config.origin = 'https://main--milo--adobecom';
       utils.setConfig(config);
@@ -259,6 +278,7 @@ describe('Utils', () => {
     it('Same domain link that is already localized is returned as relative', () => {
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
       expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
     });
 
@@ -276,12 +296,21 @@ describe('Utils', () => {
       expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
         .to
         .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
     });
 
     it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
       expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
         .to
         .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
+    });
+
+    it('Invalid href fails gracefully', () => {
+      expect(utils.localizeLink('not-a-url', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('not-a-url');
     });
   });
 
