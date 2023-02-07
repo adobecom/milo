@@ -188,7 +188,7 @@ async function decorateArticleHeader(eager = true) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   const authorImg = createTag('div', { class: 'article-author-image' });
-  authorImg.style.backgroundImage = `url(${base}/blocks/article-header/adobe-logo.svg)`;
+  authorImg.style.backgroundImage = `url(${base}/templates/article-header-and-tags/adobe-logo.svg)`;
   bylineContainer.prepend(authorImg);
   populateAuthorInfo(authorEl, authorImg, authorURL, authorName, eager);
 
