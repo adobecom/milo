@@ -2,11 +2,31 @@
   display: block;
   width: 100%;
   position: relative;
-  overflow: hidden;
 }
 
 .card-horizontal p {
   margin: 0;
+}
+
+.card-horizontal a {
+  color: var(--text-color);
+}
+
+.card-horizontal a:focus {
+  outline: none;
+}
+
+.card-horizontal a:hover {
+  text-decoration: none;
+}
+
+.card-horizontal a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .card-horizontal .background {
@@ -50,11 +70,21 @@
   background-color: white;
   border-radius: 4px;
   gap: var(--spacing-s);
-  overflow: hidden;
   border: 1px solid #EAEAEA;
   max-height: 130px;
   max-width: 600px;
   margin: 0 auto;
+}
+
+.card-horizontal .foreground .card-block:hover {
+  box-shadow: 0 3px 6px 0 rgb(0 0 0 / 16%);
+  transition: box-shadow .3s ease-in-out;
+}
+
+.card-horizontal .foreground .card-block.card-block-focus {
+  border: 1px solid var(--color-accent);
+  box-shadow: 0 3px 6px 0 rgb(0 0 0 / 16%);
+  transition: box-shadow .3s ease-in-out;
 }
 
 .card-horizontal .foreground .card-block .card-content {
@@ -69,8 +99,28 @@
 }
 
 .card-horizontal .foreground .card-block .card-image {
-  height: 132px;
+  height: 130px;
   flex: 1 0 90px;
+}
+
+.card-horizontal:not(.tile) .foreground .card-block .card-image {
+  position: relative;
+}
+
+.card-horizontal:not(.tile) .foreground .card-block .card-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgb(0 0 0 / 35%);
+  transition: opacity .3s ease-in-out;
+  opacity: 0;
+}
+
+.card-horizontal:not(.tile) .foreground .card-block:hover .card-image::after {
+  opacity: 1;
 }
 
 .card-horizontal.tile .foreground .card-block .card-image picture {
@@ -82,8 +132,13 @@
   height: 100%;
 }
 
+.card-horizontal:not(.tile) .foreground .card-block .card-image img {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
 .card-horizontal.tile .foreground .card-block .card-image {
-  height: 132px;
+  height: 130px;
   flex: 0 0 88px;
   display: flex;
   align-items: center;
