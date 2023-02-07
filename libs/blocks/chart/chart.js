@@ -41,7 +41,12 @@ const chartTypes = [
   'oversized-number',
 ];
 
-export function processDataset(data) {
+/**
+ * Normalizes data from sheet data
+ * @param {object} data
+ * @returns {object} dataset, headers, units
+ */
+export function processData(data) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
@@ -130,7 +135,12 @@ export async function fetchData(link) {
   return json;
 }
 
-export function chartData(json) {
+/**
+ * Organizes single sheet and multi-sheet data
+ * @param {object} data
+ * @returns {object} data, series
+ */
+export function sheetData(json) {
   const data = {};
   // Check the type of data
   if (json[':type'] === 'multi-sheet') {
@@ -333,7 +343,9 @@ export const pieSeriesOptions = (size) => {
 /**
  * Returns object of echart options
  * @param {string} chartType
- * @param {object} processedData
+ * @param {object} dataset
+ * @param {object} headers
+ * @param {array} units
  * @param {object} series
  * @param {string} size
  * @param {array} colors
@@ -341,12 +353,7 @@ export const pieSeriesOptions = (size) => {
  * @returns {object}
  */
 export const getChartOptions = ({
-  chartType,
-  processedData: { dataset, headers, units = [] } = {},
-  series,
-  size,
-  colors,
-  labelDeg = 0,
+  chartType, dataset, headers, units = [], series, colors, size, labelDeg = 0,
 }) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
   const source = dataset?.source;
@@ -454,9 +461,14 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
+/**
+ * Initializes and returns echart
+ * @param {object} options
+ * @returns {object}
+ */
+const initChart = ({chartWrapper, ...options}) => {
+  const { chartType, dataset, units, series, size } = options;
   const themeName = getTheme(size);
-  const options = { chartType, processedData: data, series, size, ...rest };
   const chartOptions = getChartOptions(options);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
@@ -464,7 +476,7 @@ const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => 
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
-    setDonutListeners(chart, data.dataset?.source, series, data.units);
+    setDonutListeners(chart, dataset?.source, series, units);
   }
 
   return chart;
@@ -652,20 +664,19 @@ const init = (el) => {
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
     .then(async (values) => {
       const json = values[0];
-      const rawData = chartData(json);
+      const { data, series } = sheetData(json);
 
-      if (!rawData) return;
+      if (!data) return;
 
-      const { data, series } = rawData;
-      const processedData = processDataset(data);
-      const hasOverride = hasPropertyCI(processedData.headers, 'color');
+      const { dataset, headers, units } = processData(data);
+      const hasOverride = hasPropertyCI(headers, 'color');
       const colors = hasOverride
         ? getOverrideColors(authoredColor, data)
         : getColors(authoredColor);
       const options = {
-        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg,
+        chartWrapper, chartType, dataset, headers, units, series, colors, size, labelDeg,
       };
-      const text = propertyValueCI(processedData.headers, 'subheading');
+      const text = propertyValueCI(headers, 'subheading');
 
       if (text) {
         const subheading = createTag('p', { class: 'subheading' }, text);

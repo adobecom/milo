@@ -15,8 +15,8 @@ const {
   tooltipFormatter,
   getColors,
   getOverrideColors,
-  chartData,
-  processDataset,
+  sheetData,
+  processData,
   processMarkData,
   areaSeriesOptions,
   donutTooltipFormatter,
@@ -170,7 +170,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, '').dataset).to.eql(dataset);
+    expect(processData(fetchedData.data, '').dataset).to.eql(dataset);
   });
 
   it('chart dataset with date', () => {
@@ -213,7 +213,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processDataset(fetchedData.data, 'date').dataset).to.eql(dataset);
+    expect(processData(fetchedData.data, 'date').dataset).to.eql(dataset);
   });
 
   it('chart mark series data', () => {
@@ -303,7 +303,7 @@ describe('chart', () => {
       ],
       series: [],
     };
-    expect(chartData(fetchedData)).to.eql(processedData);
+    expect(sheetData(fetchedData)).to.eql(processedData);
   });
 
   it('fetch data multi', () => {
@@ -359,7 +359,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(chartData(fetchedData)).to.eql(processedData);
+    expect(sheetData(fetchedData)).to.eql(processedData);
   });
 
   it('areaSeriesOptions returns array', () => {
@@ -462,7 +462,7 @@ describe('chart', () => {
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions({ processedData: { units: ['k', 'm'] } });
+    const options = getChartOptions({ units: ['k', 'm'] });
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
