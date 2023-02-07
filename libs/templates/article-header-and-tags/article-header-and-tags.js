@@ -1,7 +1,7 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
 import { loadTaxonomy, computeTaxonomyFromTopics, getTaxonomyModule, buildBlock, getLinkForTopic } from '../../blocks/article-feed/article-helpers.js';
-import { makeFigure } from '../../blocks/figure/figure.js';
+import { buildFigure } from '../../blocks/figure/figure.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
 
@@ -197,7 +197,7 @@ async function decorateArticleHeader(eager = true) {
 
   const featureImgContainer = childrenEls[3];
   featureImgContainer.classList.add('article-feature-image');
-  const featureFigEl = makeFigure(featureImgContainer.firstElementChild);
+  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
   featureFigEl.classList.add('figure-feature');
   featureImgContainer.prepend(featureFigEl);
   featureImgContainer.lastElementChild.remove();
