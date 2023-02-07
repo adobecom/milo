@@ -1,9 +1,9 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
 import { loadTaxonomy, computeTaxonomyFromTopics, getTaxonomyModule, buildBlock, getLinkForTopic } from '../../blocks/article-feed/article-helpers.js';
+import { buildFigure } from '../../blocks/figure/figure.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
-import { buildFigure } from '../../blocks/figure/figure.js';
 
 async function populateAuthorInfo(authorEl, imgContainer, url, name) {
   const resp = await fetch(`${url}.plain.html`);
