@@ -69,6 +69,8 @@ const defaultOptions = {
   collectionBtnStyle: {
     primary: 'Primary',
     'call-to-action': 'Call To Action',
+    link: 'Link',
+    hidden: 'Hide CTAs',
   },
   container: {
     '1200MaxWidth': '1200px Container',

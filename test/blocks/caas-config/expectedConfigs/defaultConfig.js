@@ -3,6 +3,7 @@ const defaultConfig = {
     mode: 'lightest',
     layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
     button: { style: 'primary' },
+    collectionButtonStyle: 'primary',
     resultsPerPage: 5,
     endpoint:
       'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
