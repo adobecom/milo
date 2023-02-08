@@ -737,4 +737,15 @@ describe('chart', () => {
     const options = getChartOptions({ size: 'small', labelDeg: 60 });
     expect(options.grid.bottom).to.equal(40);
   });
+
+  it('adds subheading from data file', async () => {
+    document.body.innerHTML = '<div class="chart"><div>Title</div><div>Subtitle</div><div><div><a href="/drafts/data-viz/chart.json"></a></div></div><div>Footnote</div></div>';
+    const el = document.querySelector('.chart');
+    const data = await readFile({ path: './mocks/lineChartSubheading.json' });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
+    el.classList.add('line');
+    init(el);
+    const subheading = await waitForElement('.subheading');
+    expect(subheading).to.exist;
+  });
 });
