@@ -15,8 +15,8 @@ Common styles for the block library
 /* Header */
 .sk-library-header {
   display: flex;
-  justify-content: space-between;
   background: rgb(0 0 0 / 35%);
+  flex-flow: wrap;
 }
 
 .sk-library-title {
@@ -63,6 +63,8 @@ Common styles for the block library
 
 .sk-library-search {
   display: flex;
+  position: relative;
+  flex: 1 1 100%;
 }
 
 .sk-library-search.is-hidden {
@@ -75,18 +77,23 @@ Common styles for the block library
   background: url('../../ui/img/spectrum-search.svg') no-repeat;
   width: 20px;
   height: 20px;
-  margin-left: 5px;
-  top: 10px;
+  margin-left: 11px;
+  top: 11px;
+  opacity: 0.6;
 }
 
 input.sk-library-search-input {
   width: 100%;
-  padding-left: 30px;
-  background: rgb(0 0 0 / 35%);
+  padding-left: 35px;
+  background: rgb(0 0 0 / 100%);
   color: #FFF;
   font-family: inherit;
   font-size: 14px;
   border: none;
+  height: 35px;
+  padding-right: 31px;
+  border-top: 1px solid rgba(100 100 100 / 20%);
+  border-bottom: 1px solid rgba(100 100 100 / 20%);
 }
 
 input.sk-library-search-input:focus {
@@ -95,11 +102,14 @@ input.sk-library-search-input:focus {
 
 .sk-library-search-clear {
   background: url('../../ui/img/spectrum-close.svg') no-repeat;
-  width: 30px;
+  width: 16px;
   height: 30px;
-  margin-top: 8px;
+  margin-top: 10px;
   margin-right: 8px;
-  margin-left: 8px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
 }
 
 .sk-library-search-clear.is-hidden {
