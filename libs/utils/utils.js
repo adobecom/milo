@@ -252,6 +252,17 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
+  
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
 
   const links = area.querySelectorAll('a');
   links.forEach((el) => {
