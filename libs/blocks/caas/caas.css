@@ -6,6 +6,11 @@ main .consonant-TopFilters-filtersWrapper:first-child {
   padding-top: 2px;
 }
 
+main > .section > .content .consonant-Wrapper--1200MaxWidth .consonant-Wrapper-inner,
+main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-inner { 
+  width: 100%;
+}
+
 /* temp fix for caas */
 [class$='Card-logo'] {
   border: 1px solid transparent;
