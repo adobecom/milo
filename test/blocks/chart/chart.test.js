@@ -16,7 +16,7 @@ const {
   getColors,
   getOverrideColors,
   sheetData,
-  processData,
+  getDataset,
   processMarkData,
   areaSeriesOptions,
   donutTooltipFormatter,
@@ -170,7 +170,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processData(fetchedData.data, '').dataset).to.eql(dataset);
+    expect(getDataset(fetchedData.data, ['k'])).to.eql(dataset);
   });
 
   it('chart dataset with date', () => {
@@ -213,7 +213,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(processData(fetchedData.data, 'date').dataset).to.eql(dataset);
+    expect(getDataset(fetchedData.data, ['date', 'k'])).to.eql(dataset);
   });
 
   it('chart mark series data', () => {

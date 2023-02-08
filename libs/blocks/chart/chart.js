@@ -44,14 +44,12 @@ const chartTypes = [
 /**
  * Normalizes data from sheet data
  * @param {object} data
- * @returns {object} dataset, headers, units
+ * @returns {object} dataset
  */
-export function processData(data) {
+export function getDataset(data, units = []) {
   const dataset = {};
   const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
-  const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
-  const units = headers?.[unitKey]?.split('-') || [];
   const cleanHeaders = Object.keys(headers).filter((header) => (
     !optionalHeaders.includes(header.toLowerCase())
   ));
@@ -72,7 +70,7 @@ export function processData(data) {
     dataset.source.push(values);
   });
 
-  return { dataset, headers, units };
+  return dataset;
 }
 
 export function processMarkData(series, xUnit) {
@@ -668,7 +666,9 @@ const init = (el) => {
 
       if (!data) return;
 
-      const { dataset, headers, units } = processData(data);
+      const headers = data?.[0];
+      const units = propertyValueCI(headers, 'unit')?.split('-') || [];
+      const dataset = getDataset(data, units);
       const hasOverride = hasPropertyCI(headers, 'color');
       const colors = hasOverride
         ? getOverrideColors(authoredColor, data)
