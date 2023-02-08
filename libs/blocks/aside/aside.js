@@ -51,6 +51,12 @@ function decorateInlineVideo(el) {
   video.remove();
 }
 
+function decorateStaticLinks(el) {
+  if (!el.classList.contains('notification')) return;
+  const textLinks = el.querySelectorAll('.text a:not([class])');
+  textLinks.forEach((link) => { link.classList.add('static') });
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
@@ -81,4 +87,5 @@ export default function init(el) {
   const foreground = decorateLayout(el);
   decorateInlineVideo(el);
   decorateBlockText(foreground, blockData);
+  decorateStaticLinks(el);
 }
