@@ -17,7 +17,7 @@ export default async function init() {
   const ostRootContainer = document.querySelector('.ost');
   let url = new URL(window.location);
   let searchParams = new URLSearchParams(url.search);
-  let osiSearch = searchParams.get('osi');
+  let offerIdSearch = searchParams.get('offerId');
   ostRootContainer.removeChild(ostRootContainer.firstElementChild);
   window.ost.openOfferSelectorTool({
     ostCountry,
@@ -26,6 +26,6 @@ export default async function init() {
     ostWcsApiKey,
     ostAosApiKey,
     ostAosAccessToken,
-    osiSearch
+    offerIdSearch
   });
 }
