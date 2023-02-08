@@ -39,6 +39,7 @@ const MILO_BLOCKS = [
   'review',
   'section-metadata',
   'slideshare',
+  'promo',
   'tabs',
   'table-of-contents',
   'text',
