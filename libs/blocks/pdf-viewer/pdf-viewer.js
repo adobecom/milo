@@ -20,9 +20,6 @@ export const getPdfConfig = () => {
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
-  // TODO: REMOVE AFTER TESTING
-  clientId = '7cda615329764b9d89f4e5a797fe3c1e';
-
   return { clientId, reportSuiteId };
 };
 
@@ -43,7 +40,7 @@ const init = async (a) => {
   const fileName = decodeURI(url?.split('/').pop());
   const { clientId, reportSuiteId } = getPdfConfig();
 
-  /* c8 ignore next 16 */
+  /* c8 ignore next 42 */
   const handleViewSdkReady = () => {
     const adobeDCView = new AdobeDC.View(
       {
@@ -62,7 +59,6 @@ const init = async (a) => {
     adobeDCView.registerCallback(
       AdobeDC.View.Enum.CallbackType.EVENT_LISTENER,
       (event) => {
-        console.log(event);
         /* eslint-disable-next-line no-underscore-dangle */
         window._satellite?.track('event', {
           xdm: {},
