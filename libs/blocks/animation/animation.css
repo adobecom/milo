@@ -1,0 +1,20 @@
+main .animation {
+  margin: 40px 0;
+}
+
+main .animation .figure {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.animation .figure video {
+  width: 100%;
+}
+
+@media (min-width: 700px) {
+  main .animation .figure {
+    margin: 0 auto;
+    max-width: 800px;
+  }
+}
