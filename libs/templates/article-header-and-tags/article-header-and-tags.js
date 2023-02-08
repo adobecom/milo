@@ -6,6 +6,7 @@ import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
 
 async function populateAuthorInfo(authorEl, imgContainer, url, name) {
+  if (!url) return;
   const resp = await fetch(`${url}.plain.html`);
   if (!resp || !resp.ok) {
     const p = document.createElement('p');
@@ -162,7 +163,6 @@ async function buildArticleHeader(el) {
 async function decorateArticleHeader(eager = true) {
   const block = await buildArticleHeader(document.querySelector('.section'));
 
-  console.log(block)
   const childrenEls = Array.from(block.children);
 
   const categoryContainer = childrenEls[0];
