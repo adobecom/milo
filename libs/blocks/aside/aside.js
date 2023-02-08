@@ -45,10 +45,8 @@ function decorateInlineVideo(el) {
   if (!video) return;
   const parent = video.parentElement;
   parent.classList.add('milo-inline-video');
-  const videoHref = video.getAttribute('href');
-  const videoAttrs = videoHref.includes('autoplay=true') ? { playsinline: '', autoplay: '', muted: '', loop: '' } : { controls: '' };
   const source = createTag('source', { src: video.href, type: 'video/mp4' });
-  const html = createTag('video', videoAttrs, source);
+  const html = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' }, source);
   parent.appendChild(html);
   video.remove();
 }
