@@ -39,6 +39,7 @@ const MILO_BLOCKS = [
   'review',
   'section-metadata',
   'slideshare',
+  'promo',
   'tabs',
   'table-of-contents',
   'text',
@@ -252,6 +253,17 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
+  
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
 
   const links = area.querySelectorAll('a');
   links.forEach((el) => {
@@ -562,6 +574,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
@@ -639,10 +658,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
-    const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-      const { addRichResults } = await import('../features/richresults.js');
-      addRichResults(type, { createTag, getMetadata });
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');

@@ -146,7 +146,7 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
+const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
@@ -154,10 +154,11 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-
+      const lang = state.language.split('/')[1];
+      const label = itemTag[`title.${lang}`] ? itemTag[`title.${lang}`] : itemTag.title;
       return {
         id: itemTag.tagID,
-        label: itemTag.title.replace('&amp;', '&'),
+        label: label.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -184,10 +185,23 @@ const getFilterArray = async (state) => {
 
   const { tags } = await getTags(state.tagsUrl);
   const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags))
+    .map((filter) => getFilterObj(filter, tags, state))
     .filter((filter) => filter !== null);
   return filters;
 };
+
+export function arrayToObj (input=[]) {
+  const obj = {};
+  if(!Array.isArray(input)){
+    input = [];
+  }
+  input.forEach(item => {
+    if (item.key && item.value) {
+      obj[item.key] = item.value;
+    }
+  });
+  return obj;
+}
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -196,7 +210,7 @@ export const getConfig = async (state, strs = {}) => {
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
-    && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -220,7 +234,7 @@ export const getConfig = async (state, strs = {}) => {
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
-      fallbackEndpoint: '',
+      fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
@@ -229,12 +243,15 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
+        titleHeadingLevel: state.titleHeadingLevel,
+        cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
+      collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
           description: strs.registrationText || 'Sign Up',
@@ -250,12 +267,14 @@ export const getConfig = async (state, strs = {}) => {
         sample: state.sortReservoirSample,
         pool: state.sortReservoirPool,
       },
+      ctaAction: state.ctaAction,
+      additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
-      type: state.showFilters ? state.filterLocation : 'top',
+      type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state),
       filterLogic: state.filterLogic,
@@ -358,7 +377,11 @@ export const getConfig = async (state, strs = {}) => {
       trackImpressions: state.analyticsTrackImpression || '',
       collectionIdentifier: state.analyticsCollectionName,
     },
-    target: { enabled: state.targetEnabled || '' },
+    target: {
+      enabled: state.targetEnabled || '',
+      lastViewedSession: state.lastViewedSession || '',
+    },
+    customCard: ['card', `return \`${state.customCard}\``],
   };
   return config;
 };
@@ -384,18 +407,22 @@ export const initCaas = async (state, caasStrs, el) => {
 };
 
 export const defaultState = {
+  additionalRequestParams: [],
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
+  cardTitleAccessibilityLevel: 6,
   collectionBtnStyle: 'primary',
   collectionName: '',
   collectionSize: '',
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
+  customCard: '',
+  ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
@@ -449,8 +476,10 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  collectionButtonStyle: 'primary',
   userInfo: [],
 };
