@@ -573,6 +573,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
