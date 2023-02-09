@@ -24,6 +24,7 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'iframe',
   'instagram',
   'marketo',
   'card',
@@ -138,6 +139,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -231,10 +233,11 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlPostfix(area = document) {
+  const config = getConfig();
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = AUTO_BLOCKS
+  const relativeAutoBlocks = config.autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
 
@@ -448,10 +451,11 @@ export function decorateSVG(a) {
 }
 
 export function decorateAutoBlock(a) {
+  const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return AUTO_BLOCKS.find((candidate) => {
+  return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
