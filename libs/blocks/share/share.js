@@ -13,6 +13,7 @@ export async function getSVGsfromFile(path, selectors) {
   if (!selectors) {
     const svg = doc.querySelector('svg');
     if (svg) return [{ svg }];
+    /* c8 ignore next 4 */
     return null;
   } else if (!(selectors instanceof Array)) {
     selectors = [selectors];
