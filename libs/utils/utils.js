@@ -31,6 +31,7 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'modal',
+  'modal-metadata',
   'pdf-viewer',
   'quote',
   'read-more',
@@ -38,15 +39,18 @@ const MILO_BLOCKS = [
   'review',
   'section-metadata',
   'slideshare',
+  'promo',
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
   'tiktok',
   'twitter',
   'vimeo',
   'youtube',
   'z-pattern',
   'share',
+  'reading-time',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -148,6 +152,10 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
+export function isInTextNode(node) {
+  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -161,6 +169,8 @@ export function createTag(tag, attributes, html) {
       || html instanceof SVGElement
       || html instanceof DocumentFragment) {
       el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
     }
@@ -179,23 +189,28 @@ function getExtension(path) {
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const url = new URL(href);
-  const relative = url.hostname === originHostName;
-  const processedHref = relative ? href.replace(url.origin, '') : href;
-  const { hash } = url;
-  if (hash === '#_dnt') return processedHref.split('#')[0];
-  const path = url.pathname;
-  const extension = getExtension(path);
-  const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) return processedHref;
-  const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) return processedHref;
-  const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) return processedHref;
-  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-  return relative ? urlPath : `${url.origin}${urlPath}`;
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -238,6 +253,17 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
+  
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
 
   const links = area.querySelectorAll('a');
   links.forEach((el) => {
@@ -348,17 +374,35 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
+  const altTextFlagIndex = textContent.indexOf('|');
+  const sanitizedTextContent = altTextFlagIndex === -1
+    ? textContent
+    : textContent?.slice(0, altTextFlagIndex).trim();
+  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
   if (ext !== 'svg') return;
+
+  const altText = altTextFlagIndex === -1
+    ? ''
+    : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
-  img.src = localizeLink(textContent);
+  img.setAttribute('loading', 'lazy');
+  img.src = localizeLink(sanitizedTextContent);
+  img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
-    a.textContent = '';
-    a.append(pic);
+
+  try {
+    const textContentUrl = new URL(sanitizedTextContent);
+    const hrefUrl = new URL(href);
+    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+      a.parentElement.replaceChild(pic, a);
+    } else {
+      a.textContent = '';
+      a.append(pic);
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log('Failed to load svg.', err.message);
   }
 }
 
@@ -398,7 +442,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -530,6 +574,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
@@ -607,10 +658,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
-    const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-      const { addRichResults } = await import('../features/richresults.js');
-      addRichResults(type, { createTag, getMetadata });
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');

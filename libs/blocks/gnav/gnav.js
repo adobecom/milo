@@ -1,6 +1,7 @@
 import {
   createTag,
   decorateSVG,
+  decorateLinks,
   getConfig,
   getMetadata,
   loadScript,
@@ -99,7 +100,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -144,7 +145,7 @@ class Gnav {
     if (brand.classList.contains('logo')) {
       if (brandLinks.length > 0) {
         decorateSVG(brandLinks[0]);
-        brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
+        brand.insertAdjacentElement('afterbegin', brandBlock.querySelector('img'));
       } else {
         brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
       }
@@ -155,7 +156,7 @@ class Gnav {
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
-    logo.href = localizeLink(logo.href);
+    if (!logo) return null;
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -284,6 +285,7 @@ class Gnav {
       menu.classList.add('large-Variant');
       const container = createTag('div', { class: 'gnav-menu-container' });
       container.append(...Array.from(menu.children));
+      decorateLinks(container);
       menu.append(container);
     }
     this.decorateLinkGroups(menu);
@@ -413,7 +415,11 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const { locale, imsClientId, env } = getConfig();
+    const defaultOnReady = () => {
+      this.imsReady(blockEl, profileEl); ;
+    }
+
+    const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
     window.adobeid = {
       client_id: imsClientId,
@@ -422,7 +428,7 @@ class Gnav {
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
-      onReady: () => { this.imsReady(blockEl, profileEl); },
+      onReady: onReady || defaultOnReady,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
     return profileEl;
@@ -448,6 +454,7 @@ class Gnav {
 
   decorateSignIn = (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    decorateLinks(blockEl);
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
