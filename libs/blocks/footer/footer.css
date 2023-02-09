@@ -231,11 +231,6 @@ footer .footer-region .fragment .region-selector {
   padding: 0;
 }
 
-footer .footer-region .fragment .region-selector .content {
-  padding: 0;
-  column-count: 1;
-}
-
 footer .footer-region .fragment .region-selector .content ul {
   padding: 0;
   list-style-type: none;
@@ -341,10 +336,6 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
   padding: 0 32px 32px;
 }
 
-.region-selector .content {
-  column-count: 1;
-}
-
 @media (min-width: 900px) {
   footer {
     padding: 40px 0 24px;
@@ -387,10 +378,6 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
 
   .footer-privacy-link {
     margin-bottom: 0;
-  }
-
-  .region-selector .content {
-    column-count: 3;
   }
 
   .footer-privacy-copyright::after {
