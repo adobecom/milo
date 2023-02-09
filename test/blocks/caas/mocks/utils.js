@@ -21,6 +21,7 @@ export const parseEncodedConfig = stub().returns({
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionButtonStyle: 'primary',
   container: '1200MaxWidth',
   country: 'caas:country/us',
   contentTypeTags: [],

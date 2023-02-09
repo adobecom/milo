@@ -145,6 +145,26 @@ main>.section[class*='-up']>.content {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+.section.sticky-top {
+  position: sticky;
+  top: 57px;
+  z-index: 1;
+  background-color: var(--color-white);
+}
+
+.section.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--color-white);
+}
+
+@media (min-width: 900px) {
+  .section.sticky-top {
+    top: 64px;
+  }
+}
+
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
