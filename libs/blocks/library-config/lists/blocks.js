@@ -65,7 +65,7 @@ function isMatchingBlock(pageBlock, query) {
   const tagsString = getBlockTags(pageBlock);
   if (!query || !tagsString) return false;
   const searchTokens = query.split(' ');
-  return searchTokens.every((token) => tagsString.includes(token));
+  return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
 }
 
 export default async function loadBlocks(blocks, list, query) {
