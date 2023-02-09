@@ -20,7 +20,7 @@ const fetchResults = async (searchStr, locale = 'en_US') => {
   return null;
 };
 
-const getNoResultsEl = (value) => {
+export const getNoResultsEl = (value) => {
   const noResultsTxt = 'Try our advanced search';
   const a = createTag('a', {
     href: getHelpxLink(value),

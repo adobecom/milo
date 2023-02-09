@@ -106,9 +106,16 @@ class Gnav {
 
   loadSearch = async () => {
     if (this.onSearchInput) return;
-    const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
-    this.onSearchInput = debounce(onSearchInput, SEARCH_DEBOUNCE_MS);
-    this.getHelpxLink = getHelpxLink;
+
+    const gnavSearch = await import('./gnav-search.js');
+    this.getHelpxLink = gnavSearch.getHelpxLink;
+
+    if (this.searchType === 'contextual') {
+      const { default: onSearchInput } = await import('./gnav-contextual-search.js');
+      this.onSearchInput = debounce(onSearchInput, SEARCH_DEBOUNCE_MS);
+    } else {
+      this.onSearchInput = debounce(gnavSearch.onSearchInput, SEARCH_DEBOUNCE_MS);
+    }
   };
 
   decorateToggle = () => {
@@ -347,29 +354,32 @@ class Gnav {
 
   decorateSearch = () => {
     const searchBlock = this.body.querySelector('.search');
-    if (searchBlock) {
-      const label = searchBlock.querySelector('p').textContent;
-      const searchEl = createTag('div', { class: 'gnav-search' });
-      const searchBar = this.decorateSearchBar(label);
-      const searchButton = createTag(
-        'button',
-        {
-          class: 'gnav-search-button',
-          'aria-label': label,
-          'aria-expanded': false,
-          'aria-controls': 'gnav-search-bar',
-          'daa-ll': 'Search',
-        },
-        SEARCH_ICON,
-      );
-      searchButton.addEventListener('click', () => {
-        this.loadSearch();
-        this.toggleMenu(searchEl);
-      });
-      searchEl.append(searchButton, searchBar);
-      return searchEl;
+    if (!searchBlock) return null;
+
+    const isContextual = searchBlock.classList.contains('contextual');
+    if (isContextual) {
+      this.searchType = 'contextual';
     }
-    return null;
+    const label = searchBlock.querySelector('p').textContent;
+    const searchEl = createTag('div', { class: `gnav-search ${isContextual ? 'contextual' : ''}` });
+    const searchBar = this.decorateSearchBar(label);
+    const searchButton = createTag(
+      'button',
+      {
+        class: 'gnav-search-button',
+        'aria-label': label,
+        'aria-expanded': false,
+        'aria-controls': 'gnav-search-bar',
+        'daa-ll': 'Search',
+      },
+      SEARCH_ICON,
+    );
+    searchButton.addEventListener('click', () => {
+      this.loadSearch();
+      this.toggleMenu(searchEl);
+    });
+    searchEl.append(searchButton, searchBar);
+    return searchEl;
   };
 
   decorateSearchBar = (label) => {
@@ -416,8 +426,8 @@ class Gnav {
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
     const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl); ;
-    }
+      this.imsReady(blockEl, profileEl);
+    };
 
     const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
