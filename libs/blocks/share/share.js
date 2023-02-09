@@ -97,9 +97,9 @@ export default async function decorate(el) {
     const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
     const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
     const copyButton = createTag('button', { 
-      title: clipboardToolTip, 
       type:'button', 
       class:'copy-to-clipboard', 
+      'aria-label': clipboardToolTip, 
       'data-copy-to-clipboard': clipboardToolTip, 
       'data-copied': `${copiedTooltip}!` 
     }, clipboardSvg.svg);
