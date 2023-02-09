@@ -34,19 +34,26 @@
   color: #adadad;
 }
 
-.share p.icon-container > a:not(:last-child) {
-  margin-right: 18px;
+.share p.icon-container > a:not(:first-child) {
+  margin-left: 18px;
 }
 
 .share .copy-to-clipboard {
   padding: 0;
-  border: none;
   background: none;
   margin: 0;
   line-height: 0;
   cursor: pointer;
   position: relative;
   transition: filter 0.3s;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  outline: none;
+  margin-left: 16px;
+}
+
+.share .copy-to-clipboard:focus-visible {
+  border: 2px solid black;
 }
 
 .share .copy-to-clipboard:hover svg {
