@@ -85,6 +85,7 @@ export default async function decorate(el) {
     }, svg.svg);
     container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
+      /* c8 ignore next 2 */
       e.preventDefault();
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
@@ -103,6 +104,7 @@ export default async function decorate(el) {
     }, clipboardSvg.svg);
     container.append(copyButton);
     copyButton.addEventListener('click', (e) => {
+      /* c8 ignore next 6 */
       e.preventDefault();
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
