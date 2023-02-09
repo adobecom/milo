@@ -106,6 +106,7 @@ const getSortOptions = (state, strs) => {
     featured: 'Featured',
     dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
+    dateModified: 'Date: (Last Modified)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
@@ -250,6 +251,7 @@ export const getConfig = async (state, strs = {}) => {
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
+      collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
           description: strs.registrationText || 'Sign Up',
@@ -458,6 +460,7 @@ export const defaultState = {
   showTotalResults: false,
   sortDateAsc: false,
   sortDateDesc: false,
+  sortDateModified: false,
   sortDefault: 'dateDesc',
   sortEnablePopup: false,
   sortEnableRandomSampling: false,
@@ -477,5 +480,6 @@ export const defaultState = {
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  collectionButtonStyle: 'primary',
   userInfo: [],
 };
