@@ -160,6 +160,7 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
+    dateModified: 'Date: (Last Modified)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -437,6 +438,7 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
+      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
