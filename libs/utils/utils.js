@@ -622,22 +622,59 @@ async function loadMartech(config) {
     // disable target hiding
     window.targetGlobalSettings = { bodyHidingEnabled: false };
     loadIms();
-    performance.mark('before-martech-load');
-    const { default: martech } = await import('../martech/martech.js');
-    performance.mark('after-martech-load');
-    const p = performance.measure('loadmartech', 'before-martech-load', 'after-martech-load');
-    console.log('loadmartech', p.duration);
-    await martech(config, loadScript, getMetadata);
-    performance.mark('after-martech-call');
-    const r = performance.measure('runmartech', 'after-martech-load', 'after-martech-call');
-    console.log('runmartech', r.duration);
+
+    function getDetails(env) {
+      /* c8 ignore start */
+      if (env.name === 'prod') {
+        return {
+          url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js',
+          edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+        };
+      }
+      return {
+        url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js',
+        edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+      };
+      /* c8 ignore stop */
+    }
+
+    async function martech(config, loadScript) {
+      const { url, edgeConfigId } = getDetails(config.env);
+      window.alloy_load ??= {};
+      window.alloy_load.data ??= {};
+      window.alloy_all ??= {};
+      window.alloy_all.data ??= {};
+      window.alloy_all.data._adobe_corpnew ??= {};
+      window.alloy_all.data._adobe_corpnew.digitalData ??= {};
+      window.alloy_all.data._adobe_corpnew.digitalData.page ??= {};
+      window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo ??= {};
+      window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language = config.locale.ietf;
+
+      window.marketingtech = {
+        adobe: {
+          launch: { url, controlPageLoad: false },
+          alloy: { edgeConfigId },
+          target: false,
+        },
+      };
+
+      window.edgeConfigId = edgeConfigId;
+
+      window.digitalData ??= {};
+      window.digitalData.diagnostic ??= {};
+      window.digitalData.diagnostic.franklin = { implementation: 'milo' };
+
+      await loadScript('/libs/deps/martech.main.standard.min.js');
+      _satellite.track('pageload');
+    }
+
+    await martech(config, loadScript);
     return true;
   }
   return false;
 }
 
 async function loadPostLCP(config) {
-  // loadMartech(config);
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -764,14 +801,39 @@ const getExperiments = async () => {
   if (navigator.userAgent.match(/bot|crawl|spider/i)) {
     return {};
   }
-  const response = await alloy_load.sent;
-  console.log(response);
 
-  // {
-  //   experimentPath,
-  //   experimentName,
-  //   variant,
-  // }
+  const timeoutParam = parseInt(new URL(window.location.href).searchParams.get('timeout'), 10);
+  const EXPERIMENT_TIMEOUT_MS = timeoutParam || 3000;
+
+  const experimentParam = new URL(window.location.href).searchParams.get('experiment');
+
+  if (experimentParam) {
+    const lastSlash = experimentParam.lastIndexOf('/');
+    return {
+      experiments: [{
+        experimentPath: experimentParam.substring(0, lastSlash),
+        variantLabel: experimentParam.substring(lastSlash + 1)
+      }],
+    }
+  }
+
+  const timeout = new Promise((resolve) => {
+    console.log('starting timeout')
+    setTimeout(() => {console.log('TIMEOUT!'); resolve()}, EXPERIMENT_TIMEOUT_MS, false);
+  });
+
+  let response = false;
+  try {
+    console.log('Awaiting Alloy');
+    response = await Promise.race([alloy_load.sent, timeout]);
+    console.log('ALLOY RESPONSE', response);
+  } catch (e) {
+    console.log('Promise error', e)
+  }
+
+  console.log('RESPONSE', response)
+  if (!response) return {};
+
   let experiments = handleAlloyResponse(response);
 
   if (!experiments?.length) {
@@ -790,6 +852,7 @@ const getExperiments = async () => {
 
 const checkForExperiments = async () => {
   const { experiments, instantExperiment } = await getExperiments();
+  if (!experiments) return null;
   const {
     experimentPath,
     experimentName,
@@ -818,10 +881,6 @@ export async function loadArea(area = document) {
       if (experiment) {
         setConfig({ ...getConfig(), experiment });
       }
-      const beforeExp = performance.measure('before-running-exp', 'loadpage', 'start-runexperiment');
-      const runExp = performance.measure('runexperiment', 'start-runexperiment', 'finish-runexperiment');
-      console.log('beforeExp', beforeExp.duration);
-      console.log('runExp', runExp.duration);
     }
   }
 

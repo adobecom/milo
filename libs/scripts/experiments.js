@@ -326,7 +326,7 @@ export async function getConfig(experimentName, variantLabel, manifestData, inst
     return {};
   }
 
-  const variant = config.variantLabels[variantLabel];
+  const variant = config.variantLabels[variantLabel] || variantLabel;
   if (config.variantNames.includes(variant)) {
     config.run = true;
     config.selectedVariantName = variant;
@@ -382,6 +382,10 @@ export async function runExperiment(
   const experiment = await getConfig(experimentPath, variantLabel, manifestData, instantExperiment);
   const { control } = experiment;
 
+// Currently required for preview.js
+window.hlx ??= {};
+window.hlx.experiment = experiment;
+
   if (!experiment.selectedVariant || experiment.selectedVariantName === experiment.controlName) {
     return;
   }
@@ -396,11 +400,6 @@ export async function runExperiment(
   convertToMap('fragments', control, selectedVariant);
 
   swapFragments(selectedVariant.fragments);
-
-
-  // Currently required for preview.js
-  window.hlx ??= {};
-  window.hlx.experiment = experiment;
 
   return experiment;
 }
