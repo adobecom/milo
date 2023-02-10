@@ -47,12 +47,16 @@ export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   let platforms = getPlatforms(block) || ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
-  let pinterestImage = document.querySelector('main img');
-  if (pinterestImage) {
-    pinterestImage = pinterestImage.src;
+  let pinterestImage;
+  let ogImage = document.querySelector('meta[property="og:image"]');
+  if (ogImage && ogImage.content) {
+    pinterestImage = ogImage.content;
   } else {
-    platforms = platforms.filter((item) => item !== 'pinterest')
+    const mainImg = document.querySelector('main img');
+    if (mainImg) pinterestImage = mainImg.src;
   }
+  console.log(pinterestImage);
+  if (!pinterestImage) platforms = platforms.filter((p) => p !== 'pinterest');
   block.innerHTML = '';
   const clipboardSupport = !!(navigator.clipboard)
   if (clipboardSupport) platforms.push('clipboard');
