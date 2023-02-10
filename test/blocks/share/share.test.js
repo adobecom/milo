@@ -53,4 +53,25 @@ describe('Share', () => {
     expect(pi).to.exist;
     expect(tw).to.not.exist;
   });
+  it('Only reddit exists', async () => {
+    const shareEl = document.querySelector('.share.reddit');
+    await init(shareEl);
+    const re = shareEl.querySelector('a[title*="Reddit"');
+    const tw = shareEl.querySelector('a[title*="Twitter"');
+    expect(re).to.exist;
+    expect(tw).to.not.exist;
+  });
+  it('The "Share (Reading Time)" variant', async () => {
+    const shareEl = document.querySelector('.share.reading-time');
+    await init(shareEl);
+    const rt = shareEl.querySelector('.icon-container .reading-time');
+    expect(rt).to.exist;
+  });
+  it('No pinterest if the document has no images', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-without-img.html' });
+    const shareEl = document.querySelector('.share');
+    await init(shareEl);
+    const pi = shareEl.querySelector('a[title*="Pinterest"');
+    expect(pi).to.not.exist;
+  });
 });
