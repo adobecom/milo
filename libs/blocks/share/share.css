@@ -119,3 +119,42 @@
 .share .copy-to-clipboard.copy-to-clipboard-copied::before {
   content: attr(data-copied);
 }
+
+.share.reading-time {
+  padding: 16px 0 64px;
+}
+
+.share.reading-time .reading-time {
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #adadad;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.share.reading-time .reading-time > span {
+  color: #adadad;
+}
+
+@media screen and (max-width: 600px) {
+  .share.reading-time .icon-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .share.reading-time .reading-time {
+    flex-basis: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .share.reading-time .reading-time > span {
+    border-top: 1px solid #adadad;
+    width: min-content;
+    white-space: nowrap;
+  }
+}
