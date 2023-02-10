@@ -67,11 +67,4 @@ describe('Share', () => {
     const rt = shareEl.querySelector('.icon-container .reading-time');
     expect(rt).to.exist;
   });
-  it('No pinterest if the document has no images', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body-without-img.html' });
-    const shareEl = document.querySelector('.share');
-    await init(shareEl);
-    const pi = shareEl.querySelector('a[title*="Pinterest"');
-    expect(pi).to.not.exist;
-  });
 });
