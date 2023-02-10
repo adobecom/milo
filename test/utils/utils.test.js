@@ -329,4 +329,16 @@ describe('Utils', () => {
     });
     expect(io instanceof IntersectionObserver).to.be.true;
   });
+
+  it('adds privacy trigger to cookie preferences link in footer', () => {
+    window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
+    if (!document.querySelector('footer')) {
+      const footerHtml = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
+      document.body.insertAdjacentHTML('beforeEnd', footerHtml);
+    }
+    utils.loadPrivacy();
+    const privacyLink = document.querySelector('#privacy-link');
+    privacyLink.click();
+    expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
+  });
 });
