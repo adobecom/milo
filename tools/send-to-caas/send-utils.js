@@ -325,6 +325,7 @@ const props = {
   cta1style: 0,
   cta1text: 0,
   cta1url: (s, options) => {
+    if (s?.trim() === '') return '';
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid Cta1Url: ${url}`);
   },
