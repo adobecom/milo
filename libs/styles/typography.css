@@ -53,6 +53,7 @@
 .detail-L,
 .detail-M,
 .detail-S {
+  text-transform: uppercase;
   font-weight: 700;
 }
 
