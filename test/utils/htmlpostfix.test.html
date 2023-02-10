@@ -35,6 +35,7 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { appendHtmlPostfix, setConfig } from './../../libs/utils/utils.js';
+    setConfig({});
 
     runTests(() => {
       describe('htmlpostfix', () => {
