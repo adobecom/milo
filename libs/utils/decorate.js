@@ -57,10 +57,9 @@ export function getBlockSize(el, defaultSize = 1) {
 }
 
 function getCopyDescendants(node, fragment = document.createDocumentFragment()) {
-  for (let i = 0; i < node.childNodes.length; i += 1) {
-    const child = node.childNodes[i];
+  node.childNodes.forEach((child) => {
     fragment.appendChild(child.cloneNode(true));
-  }
+  });
   return fragment;
 }
 
@@ -96,7 +95,7 @@ export function decorateButtons(buttons) {
     }
     const validParent = parent.nodeName === 'P' ? null : parent;
     [grandChild, child, validParent].forEach((n) => {
-      if (n && ['STRONG', 'EM'].some((t) => t === n.nodeName)) {
+      if (n && ['STRONG', 'EM'].includes(n.nodeName)) {
         n.replaceWith(getCopyDescendants(n));
       }
     });
