@@ -9,7 +9,7 @@ setConfig(config);
 
 let merch;
 
-describe('Decorating', () => {
+describe('Decorating merch links', () => {
   before(async () => {
     const mod = await import('../../../libs/features/merch.js');
     merch = mod;
