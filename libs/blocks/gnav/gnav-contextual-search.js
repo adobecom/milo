@@ -1,6 +1,7 @@
 import { fetchBlogArticleIndex } from '../article-feed/article-feed.js';
 import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-helpers.js';
 import { getNoResultsEl } from './gnav-search.js';
+import { createTag } from '../../utils/utils.js';
 
 function highlightTextElements(terms, elements) {
   elements.forEach((e) => {
@@ -57,11 +58,12 @@ export default async function onSearchInput(searchTerm, resultsContainer) {
     const noResults = getNoResultsEl();
     resultsContainer.replaceChildren(noResults);
     return;
-  };
+  }
 
   hits.forEach((hit) => {
     const card = buildArticleCard(hit);
-    resultsContainer.appendChild(card);
+    const listItemEl = createTag('li', null, card);
+    resultsContainer.appendChild(listItemEl);
   });
 
   highlightTextElements(terms, resultsContainer.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
