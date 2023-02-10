@@ -11,57 +11,49 @@ let merch;
 
 describe('Decorating', () => {
   before(async () => {
-    const mod = await import('../../../libs/blocks/merch/merch.js');
-    merch = mod.default;
+    const mod = await import('../../../libs/features/merch.js');
+    merch = mod;
   });
 
-  it('Doesnt decorate merch with bad content', async () => {
+  it('Does not decorate links that do not have an osi', async () => {
     const el = document.querySelector('.merch.no-osi');
-    const undef = await merch(el);
-    expect(undef).to.be.undefined;
+    const links = el.querySelectorAll('a');
+    merch.decorateCommerce(links);
+    expect(links[0].parentElement.querySelector('span')).to.be.null;
+    expect(links[1].href).to.not.be.equal('#');
   });
 
-  it('Decorates merch with button and price', async () => {
+  it('Does decorate links with an osi', async () => {
     const el = document.querySelector('.merch.price');
-    await merch(el);
-    const { dataset } = el.querySelector('a');
-    expect(dataset.checkoutWorkflowStep).to.equal('email');
+    const links = el.querySelectorAll('a');
+    const parent = links[0].parentElement;
+    merch.decorateCommerce(links);
+    const price = parent.querySelector('span');
+    expect(price).to.not.be.null;
+    expect(price.getAttribute('data-wcs-osi')).to.be.equal('A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M');
+    expect(price.classList.contains('price')).to.be.true;
+    expect(links[1].textContent).to.be.equal('buy-now');
   });
 
-  it('Decorates merch with button and price', async () => {
-    const el = document.querySelector('.merch.optical');
-    await merch(el);
-    const { dataset } = el.querySelector('span');
-    expect(dataset.template).to.equal('priceOptical');
-  });
-
-  it('Decorates merch with button and price', async () => {
+  it('Does decorate strikethrough price correctly', async () => {
     const el = document.querySelector('.merch.strikethrough');
-    await merch(el);
-    const { dataset } = el.querySelector('span');
-    expect(dataset.template).to.equal('priceStrikethrough');
+    const links = el.querySelectorAll('a');
+    const parent = links[0].parentElement;
+    merch.decorateCommerce(links);
+    const price = parent.querySelector('span');
+    expect(price).to.not.be.null;
+    expect(price.getAttribute('data-wcs-osi')).to.be.equal('A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M');
+    expect(price.classList.contains('priceStrikethrough')).to.be.true;
   });
 
-  it('Decorates merch with button and price', async () => {
-    const el = document.querySelector('.merch.with-tax');
-    await merch(el);
-    const { dataset } = el.querySelector('span');
-    expect(dataset.template).to.equal('priceWithTax');
-  });
-
-  it('Decorates merch with button and price', async () => {
-    const el = document.querySelector('.merch.with-strikethrough-tax');
-    await merch(el);
-    const { dataset } = el.querySelector('span');
-    expect(dataset.template).to.equal('priceWithTaxStrikethrough');
-  });
-
-  it('Decorates merch by falling back to only OSI supplied', async () => {
-    const el = document.querySelector('.merch.no-button');
-    await merch(el);
-    const button = el.querySelector('a');
-    const span = el.querySelector('span');
-    expect(button).to.not.exist;
-    expect(span).to.exist;
+  it('Does decorate optical price correctly', async () => {
+    const el = document.querySelector('.merch.optical');
+    const links = el.querySelectorAll('a');
+    const parent = links[0].parentElement;
+    merch.decorateCommerce(links);
+    const price = parent.querySelector('span');
+    expect(price).to.not.be.null;
+    expect(price.getAttribute('data-wcs-osi')).to.be.equal('A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M');
+    expect(price.classList.contains('priceOptical')).to.be.true;
   });
 });
