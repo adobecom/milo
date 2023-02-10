@@ -631,7 +631,9 @@ async function loadMartech(config) {
     performance.mark('after-martech-call');
     const r = performance.measure('runmartech', 'after-martech-load', 'after-martech-call');
     console.log('runmartech', r.duration);
+    return true;
   }
+  return false;
 }
 
 async function loadPostLCP(config) {
@@ -810,15 +812,17 @@ export async function loadArea(area = document) {
 
 
   if (isDoc) {
-    await loadMartech(config);
-    const experiment = await checkForExperiments();
-    if (experiment) {
-      setConfig({ ...getConfig(), experiment });
+    const martechIsRunning = await loadMartech(config);
+    if (martechIsRunning) {
+      const experiment = await checkForExperiments();
+      if (experiment) {
+        setConfig({ ...getConfig(), experiment });
+      }
+      const beforeExp = performance.measure('before-running-exp', 'loadpage', 'start-runexperiment');
+      const runExp = performance.measure('runexperiment', 'start-runexperiment', 'finish-runexperiment');
+      console.log('beforeExp', beforeExp.duration);
+      console.log('runExp', runExp.duration);
     }
-    const beforeExp = performance.measure('before-running-exp', 'loadpage', 'start-runexperiment');
-    const runExp = performance.measure('runexperiment', 'start-runexperiment', 'finish-runexperiment');
-    console.log('beforeExp', beforeExp.duration);
-    console.log('runExp', runExp.duration);
   }
 
 
