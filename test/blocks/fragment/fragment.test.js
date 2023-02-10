@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach afterEach it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
@@ -33,14 +30,6 @@ describe('Fragments', () => {
     const a = document.querySelector('a');
     await getFragment(a);
     const h1 = document.querySelector('h1');
-    expect(h1).to.exist;
-  });
-
-  it('Loads a fragment into a parent', async () => {
-    const a = document.querySelector('.parent-link');
-    const parent = document.querySelector('.parent');
-    await getFragment(a, parent);
-    const h1 = document.querySelector('.parent h1');
     expect(h1).to.exist;
   });
 

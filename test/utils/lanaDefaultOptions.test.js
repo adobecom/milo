@@ -1,9 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 
 const defaultTestOptions = {
   clientId: 'testClientId',
-  debug: false,
   endpoint: 'https://lana.adobeio.com/',
   errorType: 'e',
   sampleRate: 100,
@@ -12,9 +10,17 @@ const defaultTestOptions = {
 };
 
 it('lana should load existing window.lana.options', async () => {
-  window.lana = {
-    options: defaultTestOptions,
-  };
-  await import('../../../libs/utils/lana.js');
-  expect(window.lana.options).to.be.eql(defaultTestOptions);
+  window.lana = { options: defaultTestOptions };
+  await import('../../libs/utils/lana.js');
+
+  expect(window.lana.options).to.be.eql({
+    clientId: 'testClientId',
+    endpoint: 'https://lana.adobeio.com/',
+    errorType: 'e',
+    sampleRate: 100,
+    tags: '',
+    implicitSampleRate: 100,
+    endpointStage: "https://www.stage.adobe.com/lana/ll",
+    useProd: true,
+  });
 });

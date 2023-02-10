@@ -1,11 +1,13 @@
 import {
-  analyticsDecorateList,
   createTag,
   decorateAutoBlock,
+  decorateLinks,
   getConfig,
   getMetadata,
   loadBlock,
 } from '../../utils/utils.js';
+
+import { analyticsDecorateList } from '../../martech/attributes.js';
 
 import { getSVGsfromFile } from '../share/share.js';
 
@@ -40,6 +42,7 @@ class Footer {
     }
 
     this.addAnalytics(wrapper);
+    decorateLinks(wrapper);
     this.footerEl.append(wrapper);
   };
 

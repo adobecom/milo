@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 export async function getSVGsfromFile(path, selectors) {
   if (!path) return null;
@@ -12,6 +13,7 @@ export async function getSVGsfromFile(path, selectors) {
   if (!selectors) {
     const svg = doc.querySelector('svg');
     if (svg) return [{ svg }];
+    /* c8 ignore next 4 */
     return null;
   } else if (!(selectors instanceof Array)) {
     selectors = [selectors];
@@ -41,43 +43,76 @@ function getPlatforms(el) {
   });
 }
 
-function getDetails(name, url) {
-  switch (name) {
-    case 'facebook':
-      return { title: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` };
-    case 'twitter':
-      return { title: 'Twitter', href: `https://twitter.com/share?&url=${url}` };
-    case 'linkedin':
-      return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
-    case 'pinterest':
-      return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
-    default: return null;
-  }
-}
-
 export default async function decorate(el) {
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot;
-
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  el.querySelector('div').remove();
-  el.append(createTag('p', null, 'Share this page:'));
-
-  const url = encodeURIComponent(window.location.href);
+  el.innerHTML = '';
+  const clipboardSupport = !!(navigator.clipboard)
+  if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
 
+  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+  const shareToText = toSentenceCase(await replaceKey('share-to', config));
+  const url = encodeURIComponent(window.location.href);
+  const getDetails = (name, url) => {
+    switch (name) {
+      case 'facebook':
+        return { title: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` };
+      case 'twitter':
+        return { title: 'Twitter', href: `https://twitter.com/share?&url=${url}` };
+      case 'linkedin':
+        return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
+      case 'pinterest':
+        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
+      default: return null;
+    }
+  };
+  
+  const heading = toSentenceCase(await replaceKey('share-this-page', config));
+  el.append(createTag('p', null, ((heading))));
   const container = createTag('p', { class: 'icon-container' });
-  svgs.forEach((svg) => {
-    const details = getDetails(svg.name, url);
-    if (!details) return;
-    const shareLink = createTag('a', { target: '_blank', href: details.href, title: `Share to ${details.title}` }, svg.svg);
+  svgs.forEach(async (svg) => {
+    if (svg.name === 'clipboard') return;
+    
+    const obj = getDetails(svg.name, url);
+    if (!obj) return;
+
+    const shareLink = createTag('a', { 
+      title: `${shareToText} ${obj.title}`,
+      target: '_blank',
+      href: obj.href 
+    }, svg.svg);
+    container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
-    container.append(shareLink);
   });
+
+  const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
+  if (clipboardSvg && clipboardSupport) {
+    const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
+    const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
+    const copyButton = createTag('button', { 
+      type:'button', 
+      class:'copy-to-clipboard', 
+      'aria-label': clipboardToolTip, 
+      'data-copy-to-clipboard': clipboardToolTip, 
+      'data-copied': `${copiedTooltip}!` 
+    }, clipboardSvg.svg);
+    container.append(copyButton);
+    copyButton.addEventListener('click', (e) => {
+      /* c8 ignore next 6 */
+      e.preventDefault();
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        copyButton.classList.add('copy-to-clipboard-copied');
+        setTimeout(() => document.activeElement.blur(), 500);
+        setTimeout(() => copyButton.classList.remove('copy-to-clipboard-copied'), 2000);
+      });
+    });
+  }
   el.append(container);
 }

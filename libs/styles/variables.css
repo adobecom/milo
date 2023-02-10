@@ -2,13 +2,12 @@
   /* Colors */
   --link-color: #035fe6;
   --link-hover-color: #136ff6;
-  --link-color-dark: #5EAAF7;
-  --link-hover-color-dark: #5EAAF7;
+  --link-color-dark: #1473E6;
+  --link-hover-color-dark: #1473E6;
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
   --text-color: #2c2c2c;
-
   --color-white: #FFF;
   --color-gray-100: #F8F8F8;
   --color-gray-200: #E8E8E8;
@@ -42,6 +41,11 @@
   --spacing-xl: 48px;
   --spacing-xxl: 56px;
   --spacing-xxxl: 80px;
+
+  /* Static Spacing */
+  --spacing-xl-static: 56px;
+  --spacing-xxl-static: 80px;
+  --spacing-xxxl-static: 104px;
 
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
@@ -101,6 +105,10 @@
 
 :root:lang(ko-KR) {
   --body-font-family: adobe-han-k, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(ja-JP) {
+  --body-font-family: adobe-clean-han-japanese, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 @media (min-width: 1200px) {

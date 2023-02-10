@@ -1,11 +1,9 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { delay } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getSectionMetadata } = await import('../../../libs/blocks/section-metadata/section-metadata.js');
+const { default: init, getMetadata } = await import('../../../libs/blocks/section-metadata/section-metadata.js');
 
 describe('Section Metdata', () => {
   it('Gracefully dies', () => {
@@ -29,8 +27,45 @@ describe('Section Metdata', () => {
     expect(sec.style.backgroundColor).to.equal('rgb(239, 239, 239)');
   });
 
+  it('Adds class based on layout input', () => {
+    const sec = document.querySelector('.section.layout');
+    const sm = sec.querySelector('.section-metadata');
+    init(sm);
+    expect(sec.classList.contains('grid-template-columns-1-2')).to.be.true;
+  });
+
   it('gets section metadata', () => {
-    const expected = { style: 'darkest, xxl spacing, two up', background: 'rgb(239, 239, 239)' };
-    expect(getSectionMetadata(document.querySelector('.section.color .section-metadata'))).to.eql(expected);
+    const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
+    expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
+  });
+
+  it('gets section metadata', () => {
+    const sec = document.querySelector('.section.sticky-bottom');
+    const sm = sec.querySelector('.section-metadata');
+    const main = document.querySelector('main');
+    init(sm);
+    expect(main.lastElementChild).to.be.eql(sec);
+  });
+
+  it('add section to top', () => {
+    const sec = document.querySelector('.section.sticky-top');
+    const sm = sec.querySelector('.section-metadata');
+    const main = document.querySelector('main');
+    init(sm);
+    expect(main.firstElementChild).to.be.eql(sec);
+  });
+
+  it('should calculate the top position based on header height', async () => {
+    const sec = document.querySelector('.section.sticky-top');
+    const header = document.createElement('header');
+    header.style.height = '44px';
+    document.body.prepend(header);
+    sec.style.top = `${header.offsetHeight}px`;
+
+    window.dispatchEvent(new Event('resize'));
+    header.style.height = '77px';
+
+    await delay(700);
+    expect(sec.style.top).to.be.eql('77px');
   });
 });

@@ -92,9 +92,9 @@ const afterYiiLoadedCallback = () => {
       i += 1;
     } while (sibs[i]);
   }
-  const { multicampaignradiostyle } = state; // temp
+
   function changeSelectionElement() {
-    if (multicampaignradiostyle) {
+    if (state.multicampaignradiostyle) {
       const inputs = wr.querySelectorAll('.checkboxlist input');
       inputs.forEach((input) => {
         if (input.type === 'checkbox') {
@@ -121,8 +121,8 @@ const afterYiiLoadedCallback = () => {
       });
     }
 
-    iterator($('.faasform input[type="text"]'));
-    iterator($('.faasform textarea'));
+    iterator($('.faas-form input[type="text"]'));
+    iterator($('.faas-form textarea'));
   }
 
   function removeRequired() {
@@ -264,6 +264,8 @@ export const makeFaasConfig = (targetState) => {
   }
 
   const config = {
+    multicampaignradiostyle: targetState.multicampaignradiostyle ?? false,
+    hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
     d: targetState.d,
@@ -279,7 +281,7 @@ export const makeFaasConfig = (targetState) => {
     q: {},
     p: {
       js: {
-        36: targetState.pjs36 || defaultState.p.js[36],
+        36: targetState.pjs36?.trim() || defaultState.p.js[36],
         39: targetState.pjs39 || defaultState.p.js[39],
         77: 1,
         78: 1,
@@ -294,7 +296,15 @@ export const makeFaasConfig = (targetState) => {
     e: { 
       afterYiiLoadedCallback, 
       beforeSubmitCallback,
-    }
+    },
+    style_backgroundTheme: targetState.style_backgroundTheme || 'white',
+    style_layout: targetState.style_layout || 'column1',
+    isGate: targetState.isGate ? 'gated' : '',
+    pc1: targetState.pc1 || false,
+    pc2: targetState.pc2 || false,
+    pc3: targetState.pc3 || false,
+    pc4: targetState.pc4 || false,
+    pc5: targetState.pc5 || false,
   };
 
   // b2bpartners
@@ -311,7 +321,7 @@ export const makeFaasConfig = (targetState) => {
   if (targetState.q103) {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
-
+  
   return config;
 };
 
@@ -336,12 +346,18 @@ export const initFaas = (config, targetEl) => {
   }
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
-
   if (state.complete) {
+    if (state.js) {
+        Object.keys(state.js).forEach((key) => {
+        state[key] = state.js[key];
+      });
+      delete state.js;
+    }
+    state.complete = false;
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
   } else {
-    state = makeFaasConfig(config);
+    state = makeFaasConfig(state);
     $(formEl).faas(state);
   }
 

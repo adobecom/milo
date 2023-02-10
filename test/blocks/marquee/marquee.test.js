@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it before */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
@@ -31,6 +28,14 @@ describe('marquee', () => {
     it('has an icon-area', () => {
       const iconArea = marquees[1].querySelector('.icon-area');
       expect(iconArea).to.exist;
+    });
+  });
+
+  describe('supports media credits', () => {
+    it('has a media credit with text content', () => {
+      const mediaCredit = marquees[8].querySelector('.media-credit .body-S');
+      expect(mediaCredit).to.exist;
+      expect(mediaCredit.textContent.trim()).to.have.lengthOf.above(0);
     });
   });
 

@@ -1,7 +1,6 @@
-/* global describe beforeEach afterEach it */
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj } from '../../../libs/blocks/caas/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -17,6 +16,10 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
+describe('additionalQueryParams', () => {
+  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+  expect(arrayToObj({})).to.be.eql({});
+})
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
@@ -83,8 +86,8 @@ describe('loadStrings', () => {
   });
 
   it('should fetch data from the given url', async () => {
-    const strings = await loadStrings('http://my.test.url');
-    expect(strings).to.eql(strings);
+    const loadedStrings = await loadStrings('http://my.test.url');
+    expect(loadedStrings).to.eql(strings);
   });
 });
 
@@ -129,22 +132,27 @@ describe('getConfig', () => {
         mode: 'lightest',
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
+        collectionButtonStyle: 'primary',
         resultsPerPage: 5,
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=a%2Cb&environment=&draft=false&size=10&flatFile=false',
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
+        ctaAction: "_blank",
         showTotalResults: false,
         i18n: {
+          cardTitleAccessibilityLevel: 6,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: 'My Awesome Title',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
+          titleHeadingLevel: 'h3'
         },
         setCardBorders: false,
         useOverlayLinks: false,
+        additionalRequestParams: {},
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -288,9 +296,15 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'US',
-      analytics: { trackImpressions: '', collectionIdentifier: '' },
-      target: { enabled: true },
+      "customCard": [
+        "card",
+        "return ``"
+      ],
+    analytics: { trackImpressions: '', collectionIdentifier: '' },
+      target: {
+        enabled: true,
+        lastViewedSession: "",
+      },
     });
   });
 });
-

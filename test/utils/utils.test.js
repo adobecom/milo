@@ -1,11 +1,6 @@
-/* eslint-disable no-unused-expressions */
-/* global describe before after it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-
-const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
 
 const utils = {};
 
@@ -27,7 +22,7 @@ describe('Utils', () => {
   });
 
   before(async () => {
-    const module = await import('../../../libs/utils/utils.js');
+    const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
@@ -114,7 +109,7 @@ describe('Utils', () => {
     metaPath.content = '/test/utils/mocks/nofollow.json';
 
     document.head.append(metaOn, metaPath);
-    await utils.loadDeferred(document);
+    await utils.loadDeferred(document, [], { contentRoot: '' });
     const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
     expect(gaLink).to.exist;
   });
@@ -140,32 +135,9 @@ describe('Utils', () => {
     expect(b64).to.equal('hello world');
   });
 
-  it('Converts Base 64 to UTF-8', () => {
-    window.location.hash = hash;
-    const hashConfig = utils.getHashConfig();
-    expect(hashConfig.cardStyle).to.equal('full-card');
-  });
-
   it('Successfully dies parsing a bad config', () => {
     utils.parseEncodedConfig('error');
     expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
-  });
-
-  it('updateObj should add any missing keys to the obj', () => {
-    const allKeys = { a: 'one', b: 2, c: [6, 7, 8] };
-    expect(utils.updateObj({}, allKeys)).to.eql(utils.cloneObj(allKeys));
-    expect(utils.updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
-  });
-
-  it('Clones an object', () => {
-    const o = {
-      sortReservoirPool: 1000,
-      source: ['hawks'],
-      tagsUrl: 'www.adobe.com/chimera-api/tags',
-      targetActivity: '',
-      targetEnabled: false,
-    };
-    expect(utils.cloneObj(o)).to.be.eql(o);
   });
 
   it('Decorates no nav', async () => {
@@ -187,7 +159,7 @@ describe('Utils', () => {
     expect(utils.getLocale().ietf).to.equal('en-US');
   });
 
-  it('getLocaleFromPath for different paths', () => {
+  it('getLocale for different paths', () => {
     const locales = {
       '': { ietf: 'en-US', tk: 'hah7vzn.css' },
       langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -195,7 +167,7 @@ describe('Utils', () => {
     };
 
     function validateLocale(path, expectedOutput) {
-      const locale = utils.getLocaleFromPath(locales, path);
+      const locale = utils.getLocale(locales, path);
       expect(locale.prefix).to.equal(expectedOutput.prefix);
       expect(locale.ietf).to.equal(expectedOutput.ietf);
       expect(locale.tk).to.equal(expectedOutput.tk);
@@ -207,6 +179,139 @@ describe('Utils', () => {
     validateLocale('/be_fr/page', { prefix: '/be_fr', ietf: 'fr-BE', tk: 'vrk5vyv.css' });
     validateLocale('/langstore/lv', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
     validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
+  });
+
+  it('Open link in new tab', () => {
+    const newTabLink = document.querySelector('.new-tab');
+    newTabLink.target = '_blank';
+    expect(newTabLink.target).to.contain('_blank');
+    newTabLink.href = newTabLink.href.replace('#_blank', '');
+    expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+  });
+
+  describe('SVGs', () => {
+    it('Not a valid URL', () => {
+      const a = document.querySelector('.bad-url');
+      try {
+        const textContentUrl = new URL(a.textContent);
+      } catch (err) {
+        expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
+      }
+    });
+  });
+
+  describe ('rtlSupport', () => {
+    before(async () => {
+      config.locales = {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        africa: { ietf: 'en', tk: 'pps7abe.css' },
+        il_he: { ietf: 'he', tk: 'nwq1mna.css' },
+        mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+        ua: { tk: 'aaz7dvd.css' },
+      };
+    });
+
+    function setConfigWithPath(path) {
+      document.documentElement.removeAttribute('dir');
+      config.pathname = path;
+      utils.setConfig(config);
+    }
+
+    it('LTR Languages have dir as ltr', () => {
+      setConfigWithPath( '/africa/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+    });
+
+    it('RTL Languages have dir as rtl', () => {
+      setConfigWithPath( '/il_he/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      setConfigWithPath( '/mena_ar/solutions');
+      expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+    });
+
+    it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
+      setConfigWithPath( '/ua/solutions');
+      expect(document.documentElement.getAttribute('dir')).null;
+    });
+
+  });
+
+  describe('localizeLink', () => {
+    before(async () => {
+      config.locales = {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
+        be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
+        langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+      };
+      config.prodDomains = ['milo.adobe.com', 'www.adobe.com'];
+      config.pathname = '/be_fr/page';
+      config.origin = 'https://main--milo--adobecom';
+      utils.setConfig(config);
+    });
+
+    function setConfigPath(path) {
+      config.pathname = path;
+      utils.setConfig(config);
+    }
+
+    it('Same domain link is relative and localized', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+    });
+
+    it('Same domain fragment link is relative and localized', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fragments/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/fragments/gnav/solutions');
+    });
+
+    it('Same domain langstore link is relative and localized', () => {
+      setConfigPath('/langstore/fr/page');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+      setConfigPath('/be_fr/page');
+    });
+
+    it('Same domain extensions /, .html, .json are handled', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.html', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.html');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.json', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions.json');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions/', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions/');
+    });
+
+    it('Same domain link that is already localized is returned as relative', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/be_fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/fi/gnav/solutions');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/fi', 'main--milo--adobecom.hlx.page')).to.equal('/fi');
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/langstore/fr/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/langstore/fr/gnav/solutions');
+    });
+
+    it('Same domain PDF link is returned as relative and not localized', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions.pdf', 'main--milo--adobecom.hlx.page')).to.equal('/gnav/solutions.pdf');
+    });
+
+    it('Same domain link with #_dnt is returned as relative, #_dnt is removed and not localized', () => {
+      expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions#_dnt', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('/gnav/solutions');
+    });
+
+    it('Live domain html link  is absolute and localized', () => {
+      expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('https://milo.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      expect(utils.localizeLink('https://www.adobe.com/solutions/customer-experience-personalization-at-scale.html', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+    });
+
+    it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
+      expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html');
+    });
+
+    it('Invalid href fails gracefully', () => {
+      expect(utils.localizeLink('not-a-url', 'main--milo--adobecom.hlx.page'))
+        .to
+        .equal('not-a-url');
+    });
   });
 
   it('creates an IntersectionObserver', (done) => {

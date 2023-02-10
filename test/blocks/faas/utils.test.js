@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach afterEach it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -62,7 +59,6 @@ describe('Faas', () => {
     state.style_backgroundTheme = '';
     state.style_layout = '';
     state.isGate = false;
-    state.complete = true;
     await initFaas(state, a);
     const faas = await waitForElement('.faas-form-wrapper');
     expect(faas).to.exist;
@@ -70,6 +66,17 @@ describe('Faas', () => {
     expect(formWrapperEl.classList.contains('white')).to.equal(true);
     expect(formWrapperEl.classList.contains('column1')).to.equal(true);
     expect(formWrapperEl.classList.contains('gated')).to.equal(false);
+  });
+  
+  it('FaaS Complete', async () => {
+    let newState = '{"l":"en_us","d":"/resources/guides/data-retails-most-important-inventory/thank-you.html","ar":true,"test":false,"q":{},"pc":{"1":"js","2":"faas_submission","3":"sfdc","4":"demandbase","5":"clearbit"},"p":{"js":{"32":"unknown","36":"7015Y000003A7oBQAS","39":"","77":1,"78":1,"79":1,"90":"FAAS","92":2846,"93":"2847","94":3279,"173":"https://main--bacom--adobecom.hlx.page/resources/guides/data-retails-most-important-inventory"},"faas_submission":{},"sfdc":{"contactId":null},"demandbase":{}},"as":"true","o":{},"e":{},"cookie":{"p":{"js":{}}},"url":{"p":{"js":{"36":"70130000000kYe0AAE"}}},"js":{"l":"en_us","d":"/resources/guides/data-retails-most-important-inventory/thank-you.html","ar":true,"test":false,"q":{},"pc":{"1":"js","2":"faas_submission","3":"sfdc","4":"demandbase","5":"clearbit"},"p":{"js":{"36":"7015Y000003A7oBQAS","39":"","77":1,"78":1,"79":1,"90":"FAAS","92":2846,"93":"2847","94":3279}},"as":"true","o":{},"e":{},"cookie":{"p":{"js":{}}},"url":{"p":{"js":{"36":"70130000000kYe0AAE"}}},"onetrust_advertising_acceptance":"no","onetrust_performance_acceptance":"no","onetrust_functionality_acceptance":"no","clearbitStep":1,"formTag":"faas-Offer","id":"79","_fc":1,"complete":false,"title":"Please share some contact information to download the guide.","style_layout":"column2","cleabitStyle":"Cleabit Style","title_size":"p","title_align":"left"},"onetrust_advertising_acceptance":"no","onetrust_performance_acceptance":"no","onetrust_functionality_acceptance":"no","clearbitStep":1,"formTag":"faas-Offer","id":"79","_fc":1,"complete":false,"title":"Please share some contact information to download the guide.","style_layout":"column2","cleabitStyle":"Cleabit Style","title_size":"p","title_align":"left"}';
+    newState = JSON.parse(newState);
+    newState.complete = true;
+    const wrapper = document.createElement('div');
+    const newA = document.createElement('a');
+    wrapper.append(newA);
+    await initFaas(newState, newA);
+    console.log(newA);
   });
 
   it('FaaS Title', () => {
@@ -81,6 +88,7 @@ describe('Faas', () => {
     expect(getFaasHostSubDomain('prod')).to.equal('');
     expect(getFaasHostSubDomain('stage')).to.equal('dev.');
     expect(getFaasHostSubDomain('dev')).to.equal('dev.');
+    expect(getFaasHostSubDomain('qa')).to.equal('qa.');
     expect(getFaasHostSubDomain()).to.equal('qa.');
   });
 });

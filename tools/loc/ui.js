@@ -324,7 +324,7 @@ async function displayProjectDetail() {
   if (!projectStarted) {
     showIds = ['reload', 'updateFragments', 'copyToEn'];
     hideIds = ['refresh'];
-    if (connectedToGLaaS) {
+    if (connectedToGLaaS || projectDetail?.translationProjects.size === 0) {
       showIds.push('send');
     }
   }
@@ -552,12 +552,8 @@ function fileExistsInSharepoint(taskLangInfo) {
 async function save(taskLangInfo, glaasTaskAPI) {
   try {
     const dest = taskLangInfo.languageFilePath.toLowerCase();
-    if (fileExistsInSharepoint(taskLangInfo)) {
-      // eslint-disable-next-line no-alert
-      const confirm = window.confirm(`File ${dest} exists already. Are you sure you want to overwrite the current version ?`);
-      if (!confirm) return;
-    }
-    loadingON(`Downloading ${dest} file from GLaaS`);
+    const overrideMsg = fileExistsInSharepoint(taskLangInfo) ? `File ${dest} exists! Overriding it. <br/>` : '';
+    loadingON(`${overrideMsg}Downloading ${dest} file from GLaaS`);
     const file = await getAssetFromGLaaS(glaasTaskAPI, taskLangInfo.glaas.assetPath);
     loadingON(`Saving ${dest} file to Sharepoint`);
     await saveFile(file, dest);

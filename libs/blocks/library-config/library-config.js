@@ -2,9 +2,9 @@ import { createTag } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
-async function loadBlocks(content, list) {
+async function loadBlocks(content, list, query) {
   const { default: blocks } = await import('./lists/blocks.js');
-  blocks(content, list);
+  blocks(content, list, query);
 }
 
 async function loadPlaceholders(content, list) {
@@ -12,14 +12,62 @@ async function loadPlaceholders(content, list) {
   placeholders(content, list);
 }
 
+async function loadIcons(content, list) {
+  const { default: icons } = await import('./lists/icons.js');
+  icons(content, list);
+}
+
+async function loadAssets(content, list) {
+  const { default: assets } = await import('./lists/assets.js');
+  assets(content, list);
+}
+
+function addSearch(content, list) {
+  const skLibrary = list.closest('.sk-library');
+  const header = skLibrary.querySelector('.sk-library-header');
+  let search = skLibrary.querySelector('.sk-library-search');
+  if (!search) {
+    search = createTag('div', { class: 'sk-library-search' });
+    const searchInput = createTag('input', { class: 'sk-library-search-input', placeholder: 'Search...' });
+    const clear = createTag('div', { class: 'sk-library-search-clear is-hidden' });
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      if (query === '') {
+        clear.classList.add('is-hidden');
+      } else {
+        clear.classList.remove('is-hidden');
+      }
+      loadBlocks(content, list, query);
+    });
+    clear.addEventListener('click', (e) => {
+      e.target.classList.add('is-hidden');
+      e.target.closest('.sk-library-search').querySelector('.sk-library-search-input').value = '';
+      loadBlocks(content, list);
+    });
+    search.append(searchInput);
+    search.append(clear);
+    header.append(search);
+  } else {
+    search.classList.remove('is-hidden');
+  }
+}
+
 async function loadList(type, content, list) {
   list.innerHTML = '';
+  const query = list.closest('.sk-library').querySelector('.sk-library-search-input')?.value;
   switch (type) {
     case 'blocks':
-      loadBlocks(content, list);
+      addSearch(content, list);
+      loadBlocks(content, list, query);
       break;
     case 'placeholders':
       loadPlaceholders(content, list);
+      break;
+    case 'icons':
+      loadIcons(content, list);
+      break;
+    case 'assets':
+      loadAssets(content, list);
       break;
     default:
       await import('../../utils/lana.js');
@@ -28,7 +76,11 @@ async function loadList(type, content, list) {
 }
 
 async function fetchLibrary(domain) {
-  const resp = await fetch(`${domain}${LIBRARY_PATH}`);
+  const { searchParams } = new URL(window.location.href);
+  const suppliedLibrary = searchParams.get('library');
+  const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
+
+  const resp = await fetch(library);
   if (!resp.ok) return null;
   return resp.json();
 }
@@ -41,10 +93,26 @@ async function getSuppliedLibrary() {
   return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`);
 }
 
-function combineLibraries(base, supplied) {
+async function fetchAssetsData(path) {
+  if (!path) return null;
+  const resp = await fetch(path);
+  if (!resp.ok) return null;
+
+  const json = await resp.json();
+  const assetHrefs = json.entities.map((entity) => entity.links[0].href);
+  return assetHrefs;
+}
+
+async function combineLibraries(base, supplied) {
+  const url = new URL(window.location.href);
+
+  const assetsPath = url.searchParams.get('assets');
+
   const library = {
     blocks: base.blocks.data,
-    placeholders: base.placeholders.data,
+    placeholders: base.placeholders?.data,
+    icons: base.icons?.data,
+    assets: await fetchAssetsData(assetsPath),
   };
 
   if (supplied) {
@@ -67,6 +135,8 @@ function createList(libraries) {
   container.append(libraryList);
 
   Object.keys(libraries).forEach((type) => {
+    if (!libraries[type] || libraries[type].length === 0) return;
+
     const item = createTag('li', { class: 'content-type' }, type);
     libraryList.append(item);
 
@@ -95,6 +165,7 @@ function createHeader() {
 
   nav.addEventListener('click', (e) => {
     const skLibrary = e.target.closest('.sk-library');
+    skLibrary.querySelector('.sk-library-search')?.classList.add('is-hidden');
     skLibrary.querySelector('.sk-library-title-text').textContent = 'Pick a library';
     const insetEls = skLibrary.querySelectorAll('.inset');
     insetEls.forEach((el) => {
@@ -118,7 +189,7 @@ export default async function init(el) {
   // Get the data
   const base = await fetchLibrary(window.location.origin);
   const supplied = await getSuppliedLibrary();
-  const libraries = combineLibraries(base, supplied);
+  const libraries = await combineLibraries(base, supplied);
 
   // Create the UI
   const skLibrary = createTag('div', { class: 'sk-library' });

@@ -1,3 +1,4 @@
+/* stylelint-disable selector-class-pattern */
 .icon-block {
   display: block;
   width: 100%;
@@ -18,7 +19,7 @@
   bottom: 0;
 }
 
-.icon-block .background>div {
+.icon-block .background > div {
   height: 100%;
 }
 
@@ -34,18 +35,38 @@
   text-align: center;
 }
 
-.icon-block .foreground .text {
+.icon-block .foreground .text-content {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
   width: 100%;
 }
 
+.icon-block .foreground .text-content .action-area.supplemental-text {
+  margin-top: var(--spacing-s);
+  margin-bottom: 0;
+  font-size: var(--type-body-m-size);
+}
+
+
+.icon-block .foreground .text-content p:not([class]) a {
+  font-size: var(--type-body-m-size);
+}
+
+.icon-block.fullwidth .foreground .text-content .action-area a,
+.icon-block .foreground .text-content .action-area.supplemental-text a {
+  font-weight: bold;
+}
+
 .icon-block .foreground .icon-area {
-  margin: 0 auto var(--spacing-xs) auto;
-  height: 80px;
+  margin: 0 auto;
+  max-height: 80px;
   max-width: 234px;
   overflow: hidden;
+}
+
+.icon-block.fullwidth .foreground .icon-area {
+  margin-bottom: var(--spacing-m);
 }
 
 .icon-block .foreground .icon-area img {
@@ -53,30 +74,85 @@
   width: auto;
 }
 
-.icon-block .foreground .text>* {
-  width: 100%;
+.icon-block.vertical .foreground .icon-area {
+  margin: 0;
 }
 
-.icon-block .foreground .text .heading-XL,
-.icon-block .foreground .text .heading-S {
-  margin: var(--spacing-xs) 0;
+.icon-block.bio .foreground {
+  text-align: left;
+  border-top: 1px solid #D5D5D5;
+  border-bottom: 1px solid #D5D5D5;
 }
 
-.icon-block .foreground .text .body-M {
+.icon-block.bio .foreground .icon-area {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: var(--spacing-s) 0 var(--spacing-xs) 0;
+}
+
+.icon-block.bio.center .foreground .icon-area {
+  margin: var(--spacing-s) auto var(--spacing-xs) auto;
+}
+
+.icon-block.vertical.small .foreground .icon-area {
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block .foreground .text .action-area {
+.icon-block.vertical.medium .foreground .icon-area {
+  margin-bottom: var(--spacing-m);
+}
+
+.icon-block.bio .foreground .icon-area img {
+  object-fit: cover;
+  height: 60px;
+  width: 60px;
+}
+
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area {
+  max-height: 48px;
+  max-width: 147px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
+  max-height: 48px;
+  max-width: 147px;
+}
+
+.icon-block .foreground .text-content > * {
+  width: 100%;
+}
+
+.icon-block.bio .foreground .text-content .body-S {
+  margin-bottom: var(--spacing-s);
+}
+
+.icon-block .foreground .text-content .heading-XL,
+.icon-block .foreground .text-content .heading-L,
+.icon-block .foreground .text-content .heading-M,
+.icon-block .foreground .text-content .heading-S {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.icon-block .foreground .text-content .action-area > a:last-child {
+  margin: 0;
+}
+
+.icon-block.bio .foreground .text-content p,
+.icon-block .foreground .text-content p[class*="body-M"]:not(:last-of-type) {
+  margin-bottom: var(--spacing-s);
+}
+
+.icon-block .foreground .text-content p.body-M.action-area {
   margin-bottom: 0;
 }
 
-.icon-block .foreground .text .action-area>a {
+.icon-block.vertical:not(.center) .foreground .text-content .action-area > a {
   margin-right: var(--spacing-s);
   white-space: nowrap;
-}
-
-.icon-block .foreground .text .action-area>a:last-child {
-  margin: 0;
 }
 
 .icon-block .foreground div {
@@ -88,46 +164,82 @@
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block.vertical .foreground .text {
-  margin-bottom: var(--spacing-xxl);
+.icon-block.fullwidth .foreground,
+.icon-block.bio .foreground {
+  width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
-.icon-block.vertical .foreground .icon-area {
-  margin: 0;
-  margin-bottom: var(--spacing-xxs);
+.icon-block.bio.center .foreground,
+.icon-block.vertical.center .foreground {
+  text-align: center;
 }
 
-.icon-block.vertical .foreground .text .action-area>a:not(.con-button) {
-  font-size: 14px;
-  line-height: 21px;
+.icon-block.vertical.center .foreground .text-content .icon-area {
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.section[class*='-up'] .full-width {
+.five-up .foreground .text-content {
+  text-align: left;
+  padding-bottom: var(--spacing-xs);
+}
+
+.five-up .foreground .text-content .body-M {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.icon-block.center .foreground .text-content .action-area > a:not(.con-button) {
+  display: block;
+  margin-top: var(--spacing-xs);
+}
+
+.icon-block.vertical .foreground .text-content .action-area > a:not(.con-button) {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+.icon-block.fullwidth.small .foreground .text-content .action-area > a:not(.con-button) {
+  display: block;
+  margin-top: var(--spacing-s);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+}
+
+.two-up .icon-block.fullwidth,
+.three-up .icon-block.fullwidth,
+.four-up .icon-block.fullwidth,
+.five-up .icon-block.fullwidth {
   grid-column: 1 /-1;
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
 
-  .icon-block.vertical .foreground {
-    gap: 32px;
+  .icon-block.bio .foreground .icon-area,
+  .icon-block.bio .foreground .icon-area img {
+    width: 80px;
+    height: 80px;
   }
 
-  .three-up .icon-block.vertical .foreground .text:last-child {
-    padding-right: 53%;
+  .five-up .icon-block .foreground .text-content,
+  .five-up .icon-block .foreground .text-content .icon-area {
+    text-align: center;
   }
+  
 }
 
 @media screen and (min-width: 1200px) {
-  .icon-block .foreground .text {
+  .icon-block.fullwidth .foreground,
+  .icon-block.bio .foreground {
+    width: 800px;
     margin: 0 auto;
   }
 
-  .icon-block:not(.centered) .foreground,
-  .icon-block:not(.vertical) .foreground {
-    max-width: 800px;
+  .icon-block .foreground .text-content {
     margin: 0 auto;
   }
 
@@ -135,12 +247,18 @@
     max-width: 400px;
   }
 
+  .icon-block.bio .foreground .icon-area,
+  .icon-block.bio .foreground .icon-area img {
+    width: 80px;
+    height: 80px;
+  }
+
   .icon-block.vertical .foreground {
     flex-wrap: nowrap;
     margin-bottom: 0;
   }
 
-  .icon-block.vertical .foreground .text {
+  .icon-block.vertical .foreground .text-content {
     flex-grow: 1;
     flex-basis: 0;
     margin-bottom: 0;
@@ -150,7 +268,16 @@
     max-width: 1000px;
   }
 
-  .three-up .icon-block.vertical .foreground .text:last-child {
+  .five-up .icon-block .foreground .text-content {
+    font-size: var(--type-body-s-size);
+    text-align: center;
+  }
+
+  .five-up .icon-block .foreground .text-content .icon-area {
+    text-align: center;
+  }
+
+  .three-up .icon-block.vertical .foreground .text-content:last-child {
     padding-right: 0;
   }
 

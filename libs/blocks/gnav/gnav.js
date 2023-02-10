@@ -1,14 +1,17 @@
 import {
-  analyticsDecorateList,
-  analyticsGetLabel,
   createTag,
   decorateSVG,
+  decorateLinks,
   getConfig,
-  getBlockClasses,
   getMetadata,
   loadScript,
-  makeRelative,
+  localizeLink,
 } from '../../utils/utils.js';
+
+import {
+  analyticsDecorateList,
+  analyticsGetLabel,
+} from '../../martech/attributes.js';
 
 const COMPANY_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>';
 const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"><defs><style>.cls-1{fill:#fa0f00;}.cls-2{fill:#fff;}</style></defs><rect class="cls-1" width="240" height="234" rx="42.5"/><path id="_256" data-name="256" class="cls-2" d="M186.617,175.95037H158.11058a6.24325,6.24325,0,0,1-5.84652-3.76911L121.31715,99.82211a1.36371,1.36371,0,0,0-2.61145-.034l-19.286,45.94252A1.63479,1.63479,0,0,0,100.92626,148h21.1992a3.26957,3.26957,0,0,1,3.01052,1.99409l9.2814,20.65452a3.81249,3.81249,0,0,1-3.5078,5.30176H53.734a3.51828,3.51828,0,0,1-3.2129-4.90437L99.61068,54.14376A6.639,6.639,0,0,1,105.843,50h28.31354a6.6281,6.6281,0,0,1,6.23289,4.14376L189.81885,171.046A3.51717,3.51717,0,0,1,186.617,175.95037Z"/></svg>';
@@ -30,6 +33,14 @@ const debounce = (func, timeout = 300) => {
     timer = setTimeout(async () => func.apply(this, args), timeout);
   };
 };
+
+function getBlockClasses(className) {
+  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
+  const blockWithVariants = className.split('--');
+  const name = trimDashes(blockWithVariants.shift());
+  const variants = blockWithVariants.map((v) => trimDashes(v));
+  return { name, variants };
+}
 
 class Gnav {
   constructor(body, el) {
@@ -89,7 +100,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -134,7 +145,7 @@ class Gnav {
     if (brand.classList.contains('logo')) {
       if (brandLinks.length > 0) {
         decorateSVG(brandLinks[0]);
-        brand.insertAdjacentElement('afterbegin', brandLinks[0].querySelector('img'));
+        brand.insertAdjacentElement('afterbegin', brandBlock.querySelector('img'));
       } else {
         brand.insertAdjacentHTML('afterbegin', BRAND_IMG);
       }
@@ -145,7 +156,7 @@ class Gnav {
 
   decorateLogo = () => {
     const logo = this.body.querySelector('.adobe-logo a');
-    logo.href = makeRelative(logo.href, true);
+    if (!logo) return null;
     logo.classList.add('gnav-logo');
     logo.setAttribute('aria-label', logo.textContent);
     logo.setAttribute('daa-ll', 'Logo');
@@ -165,7 +176,7 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
-      navLink.href = makeRelative(navLink.href, true);
+      navLink.href = localizeLink(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
       const menu = navLink.closest('div');
@@ -215,7 +226,7 @@ class Gnav {
       const subtitle = linkGroup.querySelector('p:last-of-type') || '';
       const titleWrapper = createTag('div');
       titleWrapper.className = 'link-group-title';
-      anchor.href = makeRelative(anchor.href, true);
+      anchor.href = localizeLink(anchor.href);
       const link = createTag('a', { class: 'link-block', href: anchor.href });
 
       linkGroup.replaceChildren();
@@ -274,6 +285,7 @@ class Gnav {
       menu.classList.add('large-Variant');
       const container = createTag('div', { class: 'gnav-menu-container' });
       container.append(...Array.from(menu.children));
+      decorateLinks(container);
       menu.append(container);
     }
     this.decorateLinkGroups(menu);
@@ -295,7 +307,7 @@ class Gnav {
 
   decorateLargeMenu = (navLink, navItem, menu) => {
     let path = navLink.href;
-    path = makeRelative(path, true);
+    path = localizeLink(path);
     const promise = fetch(`${path}.plain.html`);
     promise.then(async (resp) => {
       if (resp.status === 200) {
@@ -374,7 +386,7 @@ class Gnav {
     const locale = getLocale();
 
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResultsUl, locale);
+      this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
     });
 
     searchInput.addEventListener('keydown', (e) => {
@@ -389,13 +401,25 @@ class Gnav {
   };
 
   /* c8 ignore start */
+  getAppLauncher = async (profileEl) => {
+    const appLauncherBlock = this.body.querySelector('.app-launcher');
+    if (!appLauncherBlock) return;
+
+    const { default: appLauncher } = await import('./gnav-appLauncher.js');
+    appLauncher(profileEl, appLauncherBlock, this.toggleMenu);
+  };
+
   decorateProfile = () => {
     const blockEl = this.body.querySelector('.profile');
     if (!blockEl) return null;
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const { locale, imsClientId, env } = getConfig();
+    const defaultOnReady = () => {
+      this.imsReady(blockEl, profileEl); ;
+    }
+
+    const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
     window.adobeid = {
       client_id: imsClientId,
@@ -404,7 +428,7 @@ class Gnav {
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
-      onReady: () => { this.imsReady(blockEl, profileEl); },
+      onReady: onReady || defaultOnReady,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
     return profileEl;
@@ -419,6 +443,7 @@ class Gnav {
       if (ioResp.status === 200) {
         const profile = await import('./gnav-profile.js');
         profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        this.getAppLauncher(profileEl);
       } else {
         this.decorateSignIn(blockEl, profileEl);
       }
@@ -429,6 +454,7 @@ class Gnav {
 
   decorateSignIn = (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    decorateLinks(blockEl);
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');
