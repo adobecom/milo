@@ -1,9 +1,7 @@
-import { getConfig, getMetadata, createTag } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';
-
-
 
 const getHelpxLink = (searchStr, country = 'US') => `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
 const getSearchLink = (searchStr, locale = 'en_US') => `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${SCOPE}&q[text]=${encodeURIComponent(searchStr)}`;
@@ -20,7 +18,7 @@ const fetchResults = async (searchStr, locale = 'en_US') => {
   return null;
 };
 
-export const getNoResultsEl = (value) => {
+const getNoResultsEl = (value) => {
   const noResultsTxt = 'Try our advanced search';
   const a = createTag('a', {
     href: getHelpxLink(value),
@@ -44,7 +42,6 @@ const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
   // If no value is provided, search results dropdown should not be populated
   if (!value.length) {
     resultsEl.replaceChildren();
-    
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
