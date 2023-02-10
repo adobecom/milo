@@ -39,7 +39,7 @@ body {
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
-  opacity: 1 !important; /* Fix Target hiding */
+  /* opacity: 1 !important; */ /* Fix Target hiding */
 }
 
 header:not(.global-navigation) {
