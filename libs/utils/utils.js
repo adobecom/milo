@@ -605,7 +605,7 @@ function loadPrivacy() {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
@@ -722,14 +722,12 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, {
-      errorType: 'i',
-    });
-  }
+    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
 
   window.lana = {
     log: async (...args) => {
-      await import('../utils/lana.js');
+      await import('./lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
       return window.lana.log(...args);
