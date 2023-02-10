@@ -1,6 +1,5 @@
 import { fetchBlogArticleIndex } from '../article-feed/article-feed.js';
 import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-helpers.js';
-import { getNoResultsEl } from './gnav-search.js';
 import { createTag } from '../../utils/utils.js';
 
 function highlightTextElements(terms, elements) {
@@ -31,10 +30,21 @@ function highlightTextElements(terms, elements) {
   });
 }
 
-export default async function onSearchInput(searchTerm, resultsContainer) {
+export default async function onSearchInput({ value, resultsEl, searchInputEl, advancedSearchEl }) {
+  // If no value is provided, search results dropdown should not be populated
+  if (!value.length) {
+    resultsEl.replaceChildren();
+    searchInputEl.classList.remove('gnav-search-input--isPopulated');
+    return;
+  }
+
+  // Add a modifier class if the input is populated
+  resultsEl.classList.remove('no-results');
+  searchInputEl.classList.add('gnav-search-input--isPopulated');
+
   const limit = 12;
-  const terms = searchTerm.toLowerCase().split(' ').map((e) => e.trim()).filter((e) => !!e);
-  resultsContainer.innerHTML = '';
+  const terms = value.toLowerCase().split(' ').map((e) => e.trim()).filter((e) => !!e);
+  resultsEl.innerHTML = '';
 
   if (!terms.length) return;
 
@@ -55,16 +65,23 @@ export default async function onSearchInput(searchTerm, resultsContainer) {
   }
 
   if (!hits.length) {
-    const noResults = getNoResultsEl();
-    resultsContainer.replaceChildren(noResults);
+    const noResults = advancedSearchEl;
+
+    const advancedLink = advancedSearchEl.querySelector('a');
+    const href = new URL(advancedLink.href);
+    href.searchParams.set('q', value);
+    advancedLink.href = href.toString();
+
+    resultsEl.replaceChildren(noResults);
+    resultsEl.classList.add('no-results');
     return;
   }
 
   hits.forEach((hit) => {
     const card = buildArticleCard(hit);
     const listItemEl = createTag('li', null, card);
-    resultsContainer.appendChild(listItemEl);
+    resultsEl.appendChild(listItemEl);
   });
 
-  highlightTextElements(terms, resultsContainer.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
+  highlightTextElements(terms, resultsEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
 }

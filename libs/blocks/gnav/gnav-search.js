@@ -44,17 +44,20 @@ const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
   // If no value is provided, search results dropdown should not be populated
   if (!value.length) {
     resultsEl.replaceChildren();
+    
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
 
   // Add a modifier class if the input is populated
+  resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
   // If there are no suggestions, the advanced search option should be shown
   if (!suggestions.length) {
     const noResults = getNoResultsEl(value);
     resultsEl.replaceChildren(noResults);
+    resultsEl.classList.add('no-results');
     return;
   }
 
@@ -77,7 +80,7 @@ const getSuggestions = (json) => {
   return json.suggested_completions.map((suggestion) => suggestion?.name);
 };
 
-const onSearchInput = async (value, resultsEl, locale, searchInputEl) => {
+const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
   updateSearchResults(value, suggestions, resultsEl, searchInputEl);

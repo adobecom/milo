@@ -360,9 +360,16 @@ class Gnav {
     if (isContextual) {
       this.searchType = 'contextual';
     }
+
+    const advancedSearchEl = searchBlock.querySelector('a');
+    let advancedSearchWrapper = null;
+    if (advancedSearchEl) {
+      advancedSearchWrapper = createTag('li', null, advancedSearchEl);
+    }
+
     const label = searchBlock.querySelector('p').textContent;
     const searchEl = createTag('div', { class: `gnav-search ${isContextual ? 'contextual' : ''}` });
-    const searchBar = this.decorateSearchBar(label);
+    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper);
     const searchButton = createTag(
       'button',
       {
@@ -382,7 +389,7 @@ class Gnav {
     return searchEl;
   };
 
-  decorateSearchBar = (label) => {
+  decorateSearchBar = (label, advancedSearchEl) => {
     const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
     const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
     const searchInput = createTag('input', {
@@ -396,7 +403,14 @@ class Gnav {
     const locale = getLocale();
 
     searchInput.addEventListener('input', (e) => {
-      this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
+      // this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
+      this.onSearchInput({
+        value: e.target.value,
+        resultsEl: searchResultsUl,
+        locale,
+        searchInputEl: searchInput,
+        advancedSearchEl,
+      });
     });
 
     searchInput.addEventListener('keydown', (e) => {
@@ -409,6 +423,8 @@ class Gnav {
     searchBar.append(searchField, searchResults);
     return searchBar;
   };
+
+  getNoResultsEl = (advancedSearchEl) => createTag('li', null, advancedSearchEl);
 
   /* c8 ignore start */
   getAppLauncher = async (profileEl) => {
