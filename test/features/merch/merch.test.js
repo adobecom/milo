@@ -2,28 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-
-const EXTERNAL_SCRIPTS = ['/libs/deps/tacocat.js'];
-
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach(({ addedNodes }) => {
-    addedNodes.forEach((node) => {
-      if (node.nodeType === 1 && node.tagName === 'SCRIPT') {
-        if (EXTERNAL_SCRIPTS.includes(node.src)) {
-          node.setAttribute('type', 'javascript/blocked');
-        }
-      }
-    });
-  });
-});
-
-// Starts the monitoring
-observer.observe(document.head, {
-  childList: true,
-  subtree: true,
-});
 
 const config = { codeRoot: '/libs' };
 setConfig(config);
