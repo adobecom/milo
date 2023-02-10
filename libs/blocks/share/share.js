@@ -47,12 +47,6 @@ export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
   let platforms = getPlatforms(block) || ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
-  let pinterestImage = document.querySelector('main img');
-  if (pinterestImage) {
-    pinterestImage = pinterestImage.src;
-  } else {
-    platforms = platforms.filter((item) => item !== 'pinterest')
-  }
   block.innerHTML = '';
   const clipboardSupport = !!(navigator.clipboard)
   if (clipboardSupport) platforms.push('clipboard');
@@ -72,7 +66,7 @@ export default async function decorate(block) {
       case 'linkedin':
         return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
       case 'pinterest':
-        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}&media=${pinterestImage}&description=${title}` };
+        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}&description=${title}` };
       case 'reddit':
         return { title: 'Reddit', href: `https://reddit.com/submit?url=${url}&title=${title}` };
       default: return null;
