@@ -42,6 +42,6 @@ export default async function init(config, loadScript) {
   window.digitalData.diagnostic ??= {};
   window.digitalData.diagnostic.franklin = { implementation: 'milo' };
 
-  await loadScript('https://www.adobe.com/marketingtech/main.standard.min.js');
+  await loadScript('/libs/deps/martech.main.standard.min.js');
   _satellite.track('pageload');
 }

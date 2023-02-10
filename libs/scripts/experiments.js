@@ -149,6 +149,10 @@ export function parseExperimentConfig(json) {
     });
     config.variants = variants;
     config.variantNames = variantNames;
+    config.variantLabels = Object.entries(variants).reduce((labelMap, [variantName, variant]) => {
+      labelMap[variant.label] = variantName;
+      return labelMap;
+    }, {});
     return config;
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -271,7 +275,7 @@ export function getConfigForInstantExperiment(experimentId, instantExperiment) {
  * @param {object} cfg
  * @returns {object} containing the experiment manifest
  */
-export async function getConfigForFullExperiment(experiment) {
+export async function getConfigForFullExperiment(experiment, manifestData) {
   const experimentId = experiment.includes('/')
     ? experiment.slice(experiment.lastIndexOf('/') + 1)
     : experiment;
@@ -282,12 +286,17 @@ export async function getConfigForFullExperiment(experiment) {
     path = `/${path}`;
   }
   try {
-    const resp = await fetch(path);
-    if (!resp.ok) {
-      console.log('error loading experiment config:', resp);
-      return null;
+    let json;
+    if (manifestData) {
+      json = manifestData;
+    } else {
+      const resp = await fetch(path);
+      if (!resp.ok) {
+        console.log('error loading experiment config:', resp);
+        return null;
+      }
+      json = await resp.json();
     }
-    const json = await resp.json();
     const config = parseExperimentConfig(json);
     if (!config) {
       return null;
@@ -302,14 +311,14 @@ export async function getConfigForFullExperiment(experiment) {
   return null;
 }
 
-export async function getConfig(experimentName, variant, instantExperiment) {
+export async function getConfig(experimentName, variantLabel, manifestData, instantExperiment) {
   let config;
   if (instantExperiment) {
     console.log('Instant Experiment: ', instantExperiment);
     config = getConfigForInstantExperiment(experimentName || 'not defined', instantExperiment);
   } else {
     console.log('Experiment: ', experimentName);
-    config = await getConfigForFullExperiment(experimentName);
+    config = await getConfigForFullExperiment(experimentName, manifestData);
   }
 
   if (!config) {
@@ -317,6 +326,7 @@ export async function getConfig(experimentName, variant, instantExperiment) {
     return {};
   }
 
+  const variant = config.variantLabels[variantLabel];
   if (config.variantNames.includes(variant)) {
     config.run = true;
     config.selectedVariantName = variant;
@@ -363,12 +373,13 @@ const convertToMap = (blockName, control, selectedVariant) => {
 
 export async function runExperiment(
   experimentPath,
-  variant,
+  variantLabel,
+  manifestData,
   instantExperiment,
   pageReplaceEl,
   createTag
 ) {
-  const experiment = await getConfig(experimentPath, variant, instantExperiment);
+  const experiment = await getConfig(experimentPath, variantLabel, manifestData, instantExperiment);
   const { control } = experiment;
 
   if (!experiment.selectedVariant || experiment.selectedVariantName === experiment.controlName) {

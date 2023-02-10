@@ -89,9 +89,9 @@ const bigcountformat = {
  * @return {Object} returns a badge or empty string
  */
 async function createExperiment() {
-  const selectedVariant = (window.hlx && window.hlx.experiment && window.hlx.experiment.selectedVariantName) ? window.hlx.experiment.selectedVariantName : 'control';
+  const selectedVariant = (window.hlx?.experiment?.selectedVariantName) ? window.hlx.experiment.selectedVariantName : 'control';
   // const experiment = toClassName(getMetadata('experiment'));
-  const experiment = getMetadata('experiment');
+  const experiment = window.hlx?.experiment?.experimentName;
   const instantExperiment = getMetadata('instant-experiment');
   console.log('preview experiment', experiment);
   if (experiment) {

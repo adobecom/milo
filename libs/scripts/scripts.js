@@ -148,6 +148,7 @@ const config = {
 }());
 
 (async function loadPage() {
+  performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
