@@ -112,6 +112,19 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+/* Links Static */
+a.static,
+a.static:hover {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.dark a.static,
+.dark a.static:hover {
+  color: var(--color-white);
+  text-decoration: underline;
+}
+
 /* Buttons */
 .dark a {
   color: var(--link-color-dark);
