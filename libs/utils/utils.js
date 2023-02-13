@@ -129,6 +129,32 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+const getContentRoot = (config, prefix, pathname) => {
+  if (config.contentRoot === undefined) return '';
+  if (!Array.isArray(config.contentRoot)) return config.contentRoot;
+  const pathSplit = pathname.split('/');
+  const contentRoots = config.contentRoot;
+  // page is in contentRoot array, is in en-US.
+  if (contentRoots.includes(pathSplit[1])) {
+    config.contentRoot = `/${pathSplit[1]}`;
+  } else if (contentRoots.includes(pathSplit[2])) {
+    if (prefix.length > 0) {
+      config.contentRoot = `/${pathSplit[2]}`;
+    } else {
+      // second split is present, but en-US prefix ie: /au/sub-cat.
+      config.contentRoot = `/${pathSplit[1]}/${pathSplit[2]}`;
+    }
+  } else if (!prefix.length > 0
+    && !contentRoots.includes(pathSplit[1]) && pathSplit[2]) {
+    // page not in contentRoot array, no prefix, isn't root index. ie: root page of /au/ site.
+    config.contentRoot = `/${pathSplit[1]}`;
+  } else {
+    // Fallback - ie: "/".
+    config.contentRoot = '';
+  }
+  return config.contentRoot;
+};
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -145,27 +171,7 @@ export const [setConfig, getConfig] = (() => {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
-      if (Array.isArray(config.contentRoot)) {
-        const pathSplit = pathname.split('/'); 
-        const contentRoots = config.contentRoot;   
-        // page is in contentRoot array, is in en-US.
-        if (contentRoots.includes(pathSplit[1])) {
-          config.contentRoot = `/${pathSplit[1]}`;
-        } else if (contentRoots.includes(pathSplit[2])) {
-          if (config.locale.prefix.length > 0) {
-            config.contentRoot = `/${pathSplit[2]}`;
-          } else {
-            // second split is present, but en-US prefix ie: /au/sub-cat.
-            config.contentRoot = `/${pathSplit[1]}/${pathSplit[2]}`;
-          }
-        } else if (!config.locale.prefix.length > 0 && !contentRoots.includes(pathSplit[1]) && pathSplit[2]) {
-          // page is not in contentRoot array, has no prefix (us-en), and isn't root index. ie: root page of /au/ site.
-          config.contentRoot = `/${pathSplit[1]}`;
-        } else {
-          // Fallback - ie: "/".
-          config.contentRoot = '';
-        }
-      }
+      config.contentRoot = getContentRoot(config, config.locale.prefix, pathname);
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
