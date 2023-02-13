@@ -5,7 +5,7 @@
 }
 
 .dark button, .darkest button {
-  color: #FFFFFF;
+  color: #fff;
 }
 
 div.accordion {
@@ -21,13 +21,20 @@ dl.accordion {
   border-top: 1px solid #E1E1E1;
   border-left: 2px solid transparent;
 }
+
 .accordion dt:last-of-type {
   border-bottom: 1px solid #E1E1E1;
 }
+
 .accordion dd {
   margin: 0;
   border-left: 2px solid transparent;
   padding: 0 var(--spacing-s) var(--spacing-s) calc(var(--spacing-s) * 2);
+}
+
+.accordion button {
+  display: flex;
+  align-items: center;
 }
 
 .accordion dt button {
@@ -37,18 +44,58 @@ dl.accordion {
   font-weight: 700;
   font-size: var(--type-heading-m-size);
   line-height: 25px;
-  padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
+  padding: var(--spacing-s);
   width: 100%;
+  display: block;
   text-align: left;
+  position: relative;
 }
-.accordion button {
-  display: flex;
-  align-items: center;
-}
+
 .accordion button:hover {
   cursor: pointer;
 }
-.accordion dt button::before {
+
+.accordion-icon {
+  position: absolute;
+  right: var(--spacing-s);
+  top: 50%;
+  margin-top: -10px;
+  width: 20px;
+  height: 20px;
+}
+
+.accordion-icon::before,
+.accordion-icon::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 2px; 
+  height: 20px;
+  background: #ccc;
+  border-radius: 2px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  transition: all .3s ease;
+}
+
+.accordion-icon::after {
+  width: 20px; 
+  height: 2px;
+}
+
+.accordion .is-open .accordion-icon::before,
+.accordion .is-open .accordion-icon::after {
+  transform: rotate(90deg);
+}
+
+.accordion .is-open .accordion-icon::after {
+  opacity: 0;
+}
+
+/* .accordion dt button::before {
   display: flex;
   position: relative;
   width: 20px; 
@@ -60,14 +107,17 @@ dl.accordion {
   content: '';
   padding-right: var(--spacing-s);
 }
+
 .accordion dt.is-open button::before {
   transform: rotate(0deg);
-}
+} */
+
 .accordion dt.is-open,
 .accordion dd.is-open,
 .accordion dt.has-focus,
 .accordion dd.has-focus {
-  border-left: 2px solid #e34850;
+  /* border-left: 2px solid #e34850; */
+  border-left: 2px solid var(--link-color);
 }
 
 .accordion dt.has-focus,
@@ -87,9 +137,9 @@ dl.accordion {
   border-bottom: none;
 }
 
-.accordion dt.is-open button {
+/* .accordion dt.is-open button {
   padding-bottom: 6px;
-}
+} */
 
 @media screen and (min-width: 900px) {
   dl.accordion {

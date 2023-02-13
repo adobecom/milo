@@ -35,7 +35,7 @@ function handleFocusOut(dt, dd) {
 function createItem(accordion, id, heading, num) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
-
+  const icon = createTag('span', { class: 'accordion-icon' });
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -43,6 +43,7 @@ function createItem(accordion, id, heading, num) {
     'aria-expanded': 'false',
     'aria-controls': panelId,
   }, heading.textContent);
+  button.append(icon);
 
   const panel = heading.nextElementSibling.firstElementChild;
   const para = panel.querySelector('p');
