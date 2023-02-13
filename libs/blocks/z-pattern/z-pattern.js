@@ -80,7 +80,7 @@ export default function init(el) {
   });
   if (getReversedRowCount(zRows) === 0) {
     zRows.forEach((row, i) => {
-      if (i % 2) row.classList.add('media--reversed');
+      if (i % 2) row.classList.add('media-reversed');
     });
   }
   const mediaItems = el.querySelectorAll(':scope > .media');
