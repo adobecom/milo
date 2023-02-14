@@ -101,7 +101,9 @@ export default async function loadBlocks(blocks, list, query) {
     const pageBlocks = doc.body.querySelectorAll('div[class]');
     let matchingBlockFound = false;
     pageBlocks.forEach((pageBlock) => {
-      if (pageBlock.className === 'section-metadata') {
+      // don't display the section-metadata used to set the block search tags
+      // unless the block is part of the Section Metadata page
+      if (block.name !== 'Section Metadata' && pageBlock.className === 'section-metadata') {
         return;
       }
       const item = document.createElement('li');
