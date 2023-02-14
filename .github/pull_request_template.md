@@ -1,4 +1,4 @@
-<!-- BEFORE SUBMITTING YOUR PR, MAKE SURE YOU REVIEW OTHERS BEFORE YOU. -->
+<!-- Before submitting, please review all open PRs. -->
 
 * Add your
 * Specicic
