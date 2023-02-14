@@ -1,3 +1,5 @@
+<!-- BEFORE SUBMITTING YOUR PR, MAKE SURE YOU REVIEW OTHERS BEFORE YOU. -->
+
 * Add your
 * Specicic
 * Features or fixes
