@@ -1,6 +1,5 @@
-.accordion-wrapper {
-  padding: 0 var(--spacing-m);
-  margin: 0 24px;
+.accordion-container {
+  padding: var(--spacing-m) 0;
 }
 
 div.accordion {
