@@ -59,9 +59,9 @@ dl.accordion {
   position: absolute;
   right: var(--spacing-s);
   top: 50%;
-  margin-top: -10px;
-  width: 20px;
-  height: 20px;
+  margin-top: -6px;
+  width: 12px;
+  height: 12px;
 }
 
 .accordion-icon::before,
@@ -70,19 +70,24 @@ dl.accordion {
   display: block;
   position: absolute;
   width: 2px; 
-  height: 20px;
-  background: #ccc;
+  height: 12px;
+  background: var(--color-gray-600);
   border-radius: 2px;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
   margin: auto;
-  transition: all .3s ease;
+  transition: all .2s ease;
+}
+
+.accordion button:hover .accordion-icon::before,
+.accordion button:hover .accordion-icon::after {
+  background: var(--text-color);
 }
 
 .accordion-icon::after {
-  width: 20px; 
+  width: 12px; 
   height: 2px;
 }
 
@@ -113,16 +118,13 @@ dl.accordion {
 } */
 
 .accordion dt.is-open,
-.accordion dd.is-open,
-.accordion dt.has-focus,
-.accordion dd.has-focus {
-  /* border-left: 2px solid #e34850; */
+.accordion dt.has-focus {
   border-left: 2px solid var(--link-color);
 }
 
 .accordion dt.has-focus,
 .accordion dd.has-focus {
-  background-color: rgb(206 206 206 / 20%);
+  background-color: #00000005;
 }
 
 .accordion button:focus {
