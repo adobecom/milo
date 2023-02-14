@@ -1,0 +1,9 @@
+.subproject-card {
+  padding: 1em;
+  width: 20em;
+  cursor: pointer;
+  border-radius: 10px;
+  border-color: grey;
+  border-width: 1px;
+  border-style: solid;
+}

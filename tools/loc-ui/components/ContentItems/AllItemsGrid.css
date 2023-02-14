@@ -1,0 +1,49 @@
+
+.all-items-grid {
+  grid-template-columns: [url-start] repeat(6,  1fr)
+    [url-end source-edit-start]  1fr
+    [source-edit-end source-preview-start]  1fr
+    [source-preview-end source-live-start]  1fr
+    [source-live-end divider-start] 30px
+    [divider-end store-sync-start]  1fr
+    [store-sync-end store-edit-start]  1fr
+    [store-edit-end store-preview-start]  1fr
+    [store-preview-end];
+  gap: 1em;
+}
+
+.all-items-grid > .url {
+  grid-column: url-start / url-end;
+}
+
+.all-items-grid > .source {
+  grid-column: source-edit-start / source-live-end;
+}
+
+.all-items-grid > .source-edit {
+  grid-column: source-edit-start / source-edit-end;
+}
+
+.all-items-grid > .source-preview {
+  grid-column: source-preview-start / source-preview-end;
+}
+
+.all-items-grid > .source-live {
+  grid-column: source-live-start / source-live-end;
+}
+
+.all-items-grid > .store {
+  grid-column: store-sync-start / store-preview-end;
+}
+
+.all-items-grid > .store-sync {
+  grid-column: store-sync-start / store-sync-end;
+}
+
+.all-items-grid > .store-edit {
+  grid-column: store-edit-start / store-edit-end;
+}
+
+.all-items-grid > .store-preview {
+  grid-column: store-preview-start / store-preview-end;
+}

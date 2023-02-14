@@ -1,0 +1,10 @@
+/* TODO: remove margin-top to make it more of a tab-like experience? */
+.locale-summary-block {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  padding: 2em;
+  border-radius: 10px;
+  border-color: grey;
+  border-width: 1px;
+  border-style: solid;
+}

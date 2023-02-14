@@ -1,0 +1,29 @@
+.locale-summary-grid {
+  grid-template-columns: [url-start] repeat(6,  1fr)
+    [url-end source-edit-start]  1fr
+    [source-edit-end source-preview-start]  1fr
+    [source-preview-end progress-start] 1fr
+    [progress-end action-start] 1fr
+    [action-end];
+  gap: 1em;
+}
+
+.locale-summary-grid > .url {
+  grid-column: url-start / url-end;
+}
+
+.locale-summary-grid > .edit {
+  grid-column: source-edit-start / source-edit-end;
+}
+
+.locale-summary-grid > .preview {
+  grid-column: source-preview-start / source-preview-end;
+}
+
+.locale-summary-grid > .progress {
+  grid-column: progress-start / progress-end;
+}
+
+.locale-summary-grid > .action {
+  grid-column: action-start / action-end;
+}

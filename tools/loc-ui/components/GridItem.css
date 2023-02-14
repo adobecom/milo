@@ -1,0 +1,10 @@
+.grid-item {
+}
+
+.disabled-grid-item {
+  opacity: 0.5;
+}
+
+.align-self-center {
+  align-self: center;
+}

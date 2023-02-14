@@ -5,6 +5,7 @@ async function init() {
   const url = new URL(document.location.href);
   const app = html` <${LocUIApp} /> `;
   const root = document.getElementById('loc-ui-root');
+  // const root = document.body;
 
   render(app, root);
 }

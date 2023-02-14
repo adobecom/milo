@@ -1,0 +1,27 @@
+.flex-item {
+  flex-basis: calc(100% / 12);
+}
+
+.flex-item-1 {
+  flex-basis: calc(100% / 12);
+}
+
+.flex-item-2 {
+  flex-basis: calc(200% / 12);
+}
+
+.flex-item-3 {
+  flex-basis: 25%;
+}
+
+.flex-item-6 {
+  flex-basis: 50%;
+}
+
+.flex-item-8 {
+  flex-basis: calc(800% / 12);
+}
+
+.flex-item-10 {
+  flex-basis: calc(1000% / 12);
+}
