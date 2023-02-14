@@ -4,10 +4,6 @@
   padding-bottom: 40px;
 }
 
-.dark button, .darkest button {
-  color: #fff;
-}
-
 div.accordion {
   display: none;
 }
@@ -18,12 +14,12 @@ dl.accordion {
 }
 
 .accordion dt {
-  border-top: 1px solid #E1E1E1;
+  border-top: 1px solid var(--color-gray-200);
   border-left: 2px solid transparent;
 }
 
 .accordion dt:last-of-type {
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .accordion dd {
@@ -124,7 +120,36 @@ dl.accordion {
 }
 
 .accordion dd.is-open:last-of-type {
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+/* dark */
+.dark .accordion button, 
+.darkest .accordion button {
+  color: #fff;
+}
+
+.dark .accordion dt {
+  border-top: 1px solid var(--color-gray-600);
+  border-left: 2px solid transparent;
+}
+
+.dark .accordion dt:last-of-type {
+  border-bottom: 1px solid var(--color-gray-600);
+}
+
+.dark .accordion dd.is-open:last-of-type {
+  border-bottom: 1px solid var(--color-gray-600);
+}
+
+.dark .accordion dt.has-focus,
+.dark .accordion dd.has-focus {
+  background-color: #00000050;
+}
+
+.dark .accordion button:hover .accordion-icon::before,
+.dark .accordion button:hover .accordion-icon::after {
+  background: var(--color-gray-100);
 }
 
 @media screen and (min-width: 900px) {

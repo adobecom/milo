@@ -76,12 +76,10 @@ export default function init(el) {
   el.innerHTML = '';
   el.className = `accordion-container ${el.className}`;
   el.classList.remove('accordion');
-  const styles = Array.from(el.classList);
-  styles.forEach((style) => {
-    if (style.startsWith('max-width-')) {
-      el.classList.add('con-block', style);
-      accordion.classList.add('foreground');
-    }
-  });
+  const maxWidthClass = Array.from(el.classList).find((style) => style.startsWith('max-width-'));
+  if (maxWidthClass) {
+    el.classList.add('con-block', maxWidthClass);
+    accordion.classList.add('foreground');
+  }
   el.append(accordion);
 }
