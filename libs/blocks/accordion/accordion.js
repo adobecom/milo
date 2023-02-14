@@ -70,13 +70,18 @@ export default function init(el) {
   const id = getUniqueId(el);
   const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
   const isSeo = el.classList.contains('seo');
-
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map((heading, idx) => createItem(accordion, id, heading, idx + 1));
-
   if (isSeo) { setSEO(items); }
   el.innerHTML = '';
   el.className = `accordion-container ${el.className}`;
   el.classList.remove('accordion');
+  const styles = Array.from(el.classList);
+  styles.forEach((style) => {
+    if (style.startsWith('max-width-')) {
+      el.classList.add('con-block', style);
+      accordion.classList.add('foreground');
+    }
+  });
   el.append(accordion);
 }

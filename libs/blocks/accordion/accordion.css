@@ -83,11 +83,6 @@ dl.accordion {
   transition: all .2s ease;
 }
 
-.accordion button:hover .accordion-icon::before,
-.accordion button:hover .accordion-icon::after {
-  background: var(--text-color);
-}
-
 .accordion-icon::after {
   width: 12px; 
   height: 2px;
@@ -102,22 +97,10 @@ dl.accordion {
   opacity: 0;
 }
 
-/* .accordion dt button::before {
-  display: flex;
-  position: relative;
-  width: 20px; 
-  height: 20px;
-  background: url('/img/ui/chevron.svg') no-repeat;
-  background-size: contain;
-  background-position: center;
-  transform: rotate(-90deg);
-  content: '';
-  padding-right: var(--spacing-s);
+.accordion button:hover .accordion-icon::before,
+.accordion button:hover .accordion-icon::after {
+  background: var(--text-color);
 }
-
-.accordion dt.is-open button::before {
-  transform: rotate(0deg);
-} */
 
 .accordion dt.is-open {
   border-left: 2px solid var(--link-color-dark);
