@@ -1,7 +1,6 @@
-.accordion {
-  padding-top: 50px;
+.accordion-wrapper {
+  padding: 0 var(--spacing-m);
   margin: 0 24px;
-  padding-bottom: 40px;
 }
 
 div.accordion {
@@ -16,6 +15,7 @@ dl.accordion {
 .accordion dt {
   border-top: 1px solid var(--color-gray-200);
   border-left: 2px solid transparent;
+  padding: 12px;
 }
 
 .accordion dt:last-of-type {
@@ -42,11 +42,12 @@ dl.accordion {
   font-weight: 700;
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-s-lh);
-  padding: var(--spacing-xs);
   width: 100%;
   display: block;
   text-align: left;
   position: relative;
+  padding: calc(var(--spacing-xxs) / 2);
+  padding-right: 18px;
 }
 
 .accordion button:hover {
@@ -55,7 +56,7 @@ dl.accordion {
 
 .accordion-icon {
   position: absolute;
-  right: var(--spacing-xs);
+  right: calc(var(--spacing-xxs) / 2);
   top: 50%;
   margin-top: -6px;
   width: 12px;
@@ -99,7 +100,7 @@ dl.accordion {
 }
 
 .accordion dt.is-open {
-  border-left: 2px solid var(--link-color-dark);
+  border-left-color: var(--link-color);
 }
 
 .accordion dt.has-focus,
@@ -107,9 +108,9 @@ dl.accordion {
   background-color: #00000005;
 }
 
-.accordion button:focus {
+/* .accordion button:focus {
   outline: none;
-}
+} */
 
 .accordion dd p:first-child {
   margin-top: 0;
@@ -131,11 +132,18 @@ dl.accordion {
 
 .dark .accordion dt {
   border-top: 1px solid var(--color-gray-600);
-  border-left: 2px solid transparent;
+}
+
+.dark .accordion dt.is-open {
+  border-left-color: var(--link-color-dark);
 }
 
 .dark .accordion dt:last-of-type {
   border-bottom: 1px solid var(--color-gray-600);
+}
+
+.dark .accordion dt.is-open:last-of-type {
+  border-bottom: none;
 }
 
 .dark .accordion dd.is-open:last-of-type {
