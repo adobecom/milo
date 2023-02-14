@@ -8,8 +8,8 @@ div.accordion {
 }
 
 dl.accordion {
-  max-width: var(--grid-container-width);
   margin: 0 auto;
+  max-width: var(--grid-container-width);
 }
 
 .accordion dt {
@@ -158,10 +158,4 @@ dl.accordion {
 .dark .accordion button:hover .accordion-icon::before,
 .dark .accordion button:hover .accordion-icon::after {
   background: var(--color-gray-100);
-}
-
-@media screen and (min-width: 900px) {
-  dl.accordion {
-    max-width: calc(var(--grid-column-width) * 10);
-  }
 }

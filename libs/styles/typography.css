@@ -249,6 +249,7 @@ div[class*='-up'] .con-block.has-bg.xxl-spacing,
 .con-block.max-width-8 .foreground { max-width: 800px; }
 .con-block.max-width-10 .foreground { max-width: 1000px; }
 .con-block.max-width-12 .foreground { max-width: 1200px; }
+.con-block.max-width-auto .foreground { max-width: unset; }
 
 /* mobile only */
 @media (max-width: 600px) {
