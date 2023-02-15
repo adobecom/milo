@@ -48,7 +48,6 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
-  'video',
   'vimeo',
   'youtube',
   'z-pattern',

@@ -5,7 +5,7 @@ function buildCaption(pEl) {
   return figCaptionEl;
 }
 
-export function buildFigure(blockEl) {
+function buildFigure(blockEl) {
   const figEl = document.createElement('figure');
   figEl.classList.add('figure');
   Array.from(blockEl.children).forEach((child) => {
