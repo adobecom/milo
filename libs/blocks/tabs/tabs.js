@@ -39,7 +39,9 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  return str.trim().toLowerCase().replace(/[^\w ]/g, '').replace(/ +/g, '-');
+  // regex to omit all special characters except Japanese or Korean language characters
+  const regex = '/[^\w\s\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3130-\u318F\uAC00-\uD7AF]+/g';
+  return str.trim().toLowerCase().replace(regex, '').replace(/ +/g, '-');
 }
 
 function configTabs(config) {
@@ -151,6 +153,8 @@ const init = (block) => {
     [...metadata].filter((d) => getStringKeyName(d.children[0].textContent) === 'tab')
       .forEach((d) => {
         const metaValue = getStringKeyName(d.children[1].textContent);
+
+        console.log('metaValue', metaValue, 'textContent', d.children[1].textContent);
         const section = sectionMetadata.closest('.section');
         const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
         if (assocTabItem) assocTabItem.append(section);
