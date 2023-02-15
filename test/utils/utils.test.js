@@ -333,8 +333,7 @@ describe('Utils', () => {
     const doc = await readFile({ path: './mocks/buttons.html' });
     const parser = new DOMParser();
     const el = parser.parseFromString(doc, 'text/html');
-    const links = el.querySelectorAll('a');
-    await utils.decorateLinksToButtons(links);
+    await utils.decorateLinks(el);
     const divs = el.querySelectorAll('div:not(.section)');
 
     const links0 = divs[0].querySelectorAll('a');

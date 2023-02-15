@@ -63,52 +63,86 @@ function getCopyDescendants(node, fragment = document.createDocumentFragment()) 
   return fragment;
 }
 
-export function decorateButtons(buttons) {
+const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
+const isPara = (node) => node.nodeName === 'P';
+const ignoreEmptyText = (s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim());
+const buttonable = (b) => {
+  if (b.nodeName !== 'A') return false;
+  return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
+    || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
+};
+export function decorateButton(button) {
   const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
-  const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
-  buttons.forEach((button) => {
-    const block = button.closest('.section div[class]:not(.content)');
-    const blockSize = getBlockSize(block);
-    const size = mapBtnSize[blockSize] ?? blockSize;
-    const parent = button.parentElement;
+  const block = button.closest('.section div[class]:not(.content)');
+  const blockSize = getBlockSize(block);
+  const size = mapBtnSize[blockSize] ?? blockSize;
+  const parent = button.parentElement;
 
-    const child = button.childNodes?.length > 0
-      ? Array.from(button.childNodes).filter(isStrongOrEm)[0] : null;
-    const grandChild = child?.childNodes?.length > 0
-      ? Array.from(child.childNodes).filter(isStrongOrEm)[0] : null;
-    const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
-    const text = parent.textContent || '';
-    const buttonTypes = [];
-    if (nodes.includes('STRONG') && nodes.includes('EM')) {
-      buttonTypes.push('fill');
-    } else if (nodes.includes('STRONG')) {
-      buttonTypes.push('blue');
-    } else if (nodes.includes('EM')) {
-      buttonTypes.push('outline');
-    }
-    button.classList.add('con-button', ...buttonTypes);
-    if (button.closest('.marquee')) {
-      // without this authors must review marquees in all projects to stop buttons having wrong size
-      button.classList.add(blockSize === 'large' ? 'button-XL' : 'button-L');
-    } else {
-      button.classList.add(size);
-    }
-    const validParent = parent.nodeName === 'P' ? null : parent;
-    [grandChild, child, validParent].forEach((n) => {
-      if (n && ['STRONG', 'EM'].includes(n.nodeName)) {
-        n.replaceWith(getCopyDescendants(n));
-      }
-    });
-    const span = button.querySelector('span');
-    button.textContent = text;
-    if (span) button.prepend(span);
-    const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
-    if (allowedArea) {
-      const actionArea = button.closest('p, div');
-      if (actionArea && !actionArea.parentElement.querySelector('.action-area')) {
-        actionArea.classList.add('action-area');
-        actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-      }
+  const child = button.childNodes?.length > 0
+    ? Array.from(button.childNodes).filter(isStrongOrEm)[0] : null;
+  const grandChild = child?.childNodes?.length > 0
+    ? Array.from(child.childNodes).filter(isStrongOrEm)[0] : null;
+  const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
+  const text = parent.textContent || '';
+  const buttonTypes = [];
+  if (nodes.includes('STRONG') && nodes.includes('EM')) {
+    buttonTypes.push('fill');
+  } else if (nodes.includes('STRONG')) {
+    buttonTypes.push('blue');
+  } else if (nodes.includes('EM')) {
+    buttonTypes.push('outline');
+  }
+  button.classList.add('con-button', ...buttonTypes);
+  if (button.closest('.marquee')) {
+    // without this authors must review marquees in all projects to stop buttons having wrong size
+    button.classList.add(blockSize === 'large' ? 'button-XL' : 'button-L');
+  } else {
+    button.classList.add(size);
+  }
+  const validParent = parent.nodeName === 'P' ? null : parent;
+  [grandChild, child, validParent].forEach((n) => {
+    if (n && ['STRONG', 'EM'].includes(n.nodeName)) {
+      n.replaceWith(getCopyDescendants(n));
     }
   });
+  const span = button.querySelector('span');
+  button.textContent = text;
+  if (span) button.prepend(span);
+  const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
+  if (allowedArea) {
+    const actionArea = button.closest('p, div');
+    if (actionArea && !actionArea.parentElement.querySelector('.action-area')) {
+      actionArea.classList.add('action-area');
+      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    }
+  }
+}
+
+export async function decorateLinkToButton(link) {
+  if (link.href.includes('#_dns')) {
+    link.href = link.href.replace('#_dns', '');
+    return;
+  }
+  if (!buttonable(link)) {
+    return;
+  }
+  const block = link.closest('p');
+  let validSiblings = true;
+  Array.from(block.childNodes).filter(ignoreEmptyText).forEach((child) => {
+    if (buttonable(child) || child.nodeName === 'A') {
+      return;
+    }
+    const grandChildren = Array.from(child.childNodes).filter(ignoreEmptyText);
+    if (!grandChildren || grandChildren.length === 0) {
+      validSiblings = false;
+    }
+    grandChildren.forEach((g) => {
+      if (!(buttonable(g) || g.nodeName === 'A')) {
+        validSiblings = false;
+      }
+    });
+  });
+  if (!validSiblings) return;
+
+  decorateButton(link);
 }

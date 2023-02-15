@@ -139,7 +139,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -256,7 +256,7 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
-  
+
   if (area === document) {
     const canonEl = document.head.querySelector('link[rel="canonical"]');
     if (!canonEl) return;
@@ -344,47 +344,6 @@ export async function loadTemplate() {
     })();
   });
   await Promise.all([styleLoaded, scriptLoaded]);
-}
-
-export async function decorateLinksToButtons(links) {
-  const ignoreEmptyText = (s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim());
-  const buttonable = (b) => {
-    if (b.nodeName !== 'A') return false;
-    const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === 'EM';
-    const isPara = (node) => node.nodeName === 'P';
-    return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
-      || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
-  };
-  const buttons = Array.from(links).filter((b) => {
-    if (b.href.includes('#_dns')) {
-      b.href = b.href.replace('#_dns', '');
-      return false;
-    }
-    if (!buttonable(b)) {
-      return false;
-    }
-    const block = b.closest('p');
-    let validSiblings = true;
-    Array.from(block.childNodes).filter(ignoreEmptyText).forEach((child) => {
-      if (buttonable(child) || child.nodeName === 'A') {
-        return;
-      }
-      const grandChildren = Array.from(child.childNodes).filter(ignoreEmptyText);
-      if (!grandChildren || grandChildren.length === 0) {
-        validSiblings = false;
-      }
-      grandChildren.forEach((g) => {
-        if (!(buttonable(g) || g.nodeName === 'A')) {
-          validSiblings = false;
-        }
-      });
-    });
-    return validSiblings;
-  });
-  if (buttons.length === 0) return;
-
-  const { decorateButtons } = await import('./decorate.js');
-  decorateButtons(buttons);
 }
 
 export async function loadBlock(block) {
@@ -489,7 +448,8 @@ export function decorateAutoBlock(a) {
 
 export async function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
-  const links = [...anchors].reduce((rdx, a) => {
+  const { decorateLinkToButton } = await import('./decorate.js');
+  return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -497,13 +457,12 @@ export async function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     const autoBLock = decorateAutoBlock(a);
+    decorateLinkToButton(a);
     if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
   }, []);
-  await decorateLinksToButtons(anchors);
-  return links;
 }
 
 function decorateContent(el) {
@@ -608,9 +567,7 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) {
-    loadBlock(header);
-  }
+  if (header) loadBlock(header);
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -694,9 +651,7 @@ export async function loadArea(area = document) {
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') {
-      loadPostLCP(config);
-    }
+    if (isDoc && section.el.dataset.idx === '0') loadPostLCP(config);
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
@@ -707,6 +662,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
@@ -732,10 +688,7 @@ export function loadDelayed(delay = 3000) {
       loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
         const path = `${getConfig().locale.contentRoot}/keywords.json`;
-        import('../features/interlinks.js').then((mod) => {
-          mod.default(path);
-          resolve(mod);
-        });
+        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
       } else {
         resolve(null);
       }
