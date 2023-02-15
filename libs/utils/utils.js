@@ -417,7 +417,7 @@ export function decorateVideo(a) {
 
   const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls preload="metadata"';
   const video = `<video ${attrs}>
-        <source src=".${pathname}" type="video/mp4" />
+        <source src=".${pathname}#t=0.001" type="video/mp4" />
       </video>`;
   a.insertAdjacentHTML('afterend', video);
   a.remove();
