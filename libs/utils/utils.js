@@ -46,6 +46,7 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -395,6 +396,18 @@ export function decorateSVG(a) {
   }
 }
 
+export function decorateVideo(a) {
+  const { textContent, href } = a;
+
+  if (!href.match('media_.*.mp4$')) return;
+
+  const anchor = createTag('a', { href }, textContent);
+  const videoBlock = createTag('div', { class: 'video' }, anchor);
+
+  a.replaceWith(videoBlock);
+  // loadBlock(videoBlock);
+}
+
 export function decorateAutoBlock(a) {
   const { hostname } = window.location;
   const url = new URL(a.href);
@@ -436,6 +449,7 @@ export function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
+    // decorateVideo(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');

@@ -1,0 +1,9 @@
+.video {
+  margin: 0;
+  text-align: center;
+}
+
+.video video {
+  width: 100%;
+  max-width: var(--grid-container-width);
+}
