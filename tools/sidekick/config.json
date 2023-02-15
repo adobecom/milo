@@ -42,7 +42,7 @@
     },
     {
       "id": "tools",
-      "title": "Select Offer",
+      "title": "Use offer",
       "environments": [ "edit" ],
       "url": "/tools/ost",
       "includePaths": [ "**.docx**" ]
