@@ -418,7 +418,7 @@ export function decorateVideo(a) {
   const isAutoplay = !!(hash?.includes('autoplay'));
 
   if (ext === 'mp4') {
-    const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls preload="metadata"';
+    const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'controls preload="metadata"';
     const video = `<video ${attrs}>
         <source src=".${pathname}" type="video/mp4" />
       </video>`;
