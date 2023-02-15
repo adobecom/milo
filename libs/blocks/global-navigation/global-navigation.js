@@ -118,7 +118,7 @@ class Gnav {
       this.decorateMenu = decorateMenu;
       this.decorateLargeMenu = decorateLargeMenu;
       this.appLauncher = appLauncher;
-      this.blocks.profile.Profile = Profile;
+      this.blocks.profile.ProfileClass = Profile;
       this.search = Search;
       resolve();
     });
