@@ -35,11 +35,13 @@ describe('Decorating', () => {
   });
 
   it('Decorates auto blocks', async () => {
+    await waitForElement('a[class]');
     const autoBlock = document.querySelector('a[class]');
     expect(autoBlock.className).to.equal('adobetv link-block');
   });
 
   it('Decorates modal link', async () => {
+    await waitForElement('a[data-modal-path]');
     const modalLink = document.querySelector('a[data-modal-path]');
     expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
   });
