@@ -16,17 +16,41 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
+function getLocale(currentPath){
+  let regex = /(\/([a-z]{2})\/)|\/([a-z]+_[a-z]+)\//;
+  let locale = currentPath.match(regex);
+  if(locale){
+    return locale[0].replace(/^\/|\/$/g, '');
+  }
+  return "";
+}
 export const loadStrings = async (url) => {
-  // TODO: Loc based loading
   if (!url) return {};
-  const resp = await fetch(url);
-  if (!resp.ok) return {};
-  const json = await resp.json();
-  const convertToObj = (data) => data.reduce((obj, { key, val }) => {
-    obj[key] = val;
-    return obj;
-  }, {});
-  return convertToObj(json.data);
+  try {
+    let locale = getLocale(location.pathname);
+    if(locale){
+      let _url = new URL(url);
+      _url.pathname = `${locale}${_url.pathname}`;
+      url = _url.toString();
+    }
+    const resp = await fetch(`${url}.plain.html`);
+    if (!resp.ok) return {};
+    let ans = {};
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const document = parser.parseFromString(html, 'text/html');
+    let nodes = document.querySelectorAll(".string-mappings > div");
+    for(parent of nodes){
+      let children = parent.querySelectorAll("div");
+      let key = children[0].innerText;
+      let val = children[1].innerHTML;
+      let defaultVal = children[3].innerHTML;
+      ans[key] = val ? val : defaultVal;
+    }
+    return ans;
+  } catch (err) {
+    return {};
+  }
 };
 
 export const loadCaasFiles = async () => {
