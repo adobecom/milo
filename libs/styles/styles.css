@@ -117,7 +117,7 @@ a:hover {
   color: var(--link-color-dark);
 }
 
-img {
+img, video {
   max-width: 100%;
   height: auto;
 }

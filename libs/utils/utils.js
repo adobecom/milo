@@ -5,6 +5,7 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
+  'animation',
   'article-feed',
   'aside',
   'author-header',
@@ -47,6 +48,7 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -409,6 +411,30 @@ export function decorateSVG(a) {
   }
 }
 
+export function decorateVideo(a) {
+  const { pathname, hash } = a;
+  if (!pathname.match('media_.*.mp4$')) return;
+
+  const ext = pathname?.substring(pathname.lastIndexOf('.') + 1);
+
+  const isAutoplay = !!(hash.includes('autoplay'));
+
+  if (ext === 'mp4') {
+    const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls preload="metadata"';
+    const video = `<video ${attrs}>
+        <source src=".${pathname}" type="video/mp4" />
+      </video>`;
+    a.insertAdjacentHTML('afterend', video);
+    a.remove();
+  } else if (ext === 'gif') {
+    const picEl = `<picture>
+      <img src=".${pathname}" />
+    </picture>`;
+    a.insertAdjacentHTML('afterend', picEl);
+    a.remove();
+  }
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
@@ -451,6 +477,7 @@ export function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
+    decorateVideo(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
