@@ -600,7 +600,7 @@ export function loadPrivacy() {
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
-  const privacyTrigger = document.querySelector('footer a[href$="#openPrivacy"]');
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
   privacyTrigger?.addEventListener('click', (event) => {
     event.preventDefault();
     window.adobePrivacy?.showPreferenceCenter();
