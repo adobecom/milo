@@ -28,54 +28,18 @@ describe('loadStrings', () => {
       new Promise((resolve) => {
         resolve({
           ok: true,
-          json: () => ({
-            data: [
-              {
-                key: 'collectionTitle',
-                val: 'My Awesome Title',
-              },
-              {
-                key: 'onErrorTitle',
-                val: 'Error Loading Title',
-              },
-              {
-                key: 'onErrorDesc',
-                val: 'Error Desc',
-              },
-              {
-                key: 'prettyDateIntervalFormat',
-                val: '',
-              },
-              {
-                key: 'totalResults',
-                val: '{total} Results',
-              },
-              {
-                key: 'sortLabel1',
-                val: 'Featured Sort',
-              },
-              {
-                key: 'sortType1',
-                val: 'featured',
-              },
-              {
-                key: 'sortLabel2',
-                val: 'Most recent',
-              },
-              {
-                key: 'sortType2',
-                val: 'dateDesc',
-              },
-              {
-                key: 'sortLabel3',
-                val: 'Title',
-              },
-              {
-                key: 'sortType3',
-                val: 'titleAsc',
-              },
-            ],
-          }),
+          text: () => {
+            return `
+            <div class="string-mappings">
+              <div>
+                <div>collectionTitle</div>
+                <div>My Awesome Title</div>
+                <div>Card Collection Title</div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>`
+          },
         });
       }),
     );
@@ -87,7 +51,10 @@ describe('loadStrings', () => {
 
   it('should fetch data from the given url', async () => {
     const loadedStrings = await loadStrings('http://my.test.url');
-    expect(loadedStrings).to.eql(strings);
+    let expected = {
+      collectionTitle: 'My Awesome Title',
+    };
+    expect(loadedStrings).to.eql(expected);
   });
 });
 
