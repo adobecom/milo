@@ -450,8 +450,8 @@ export function decorateAutoBlock(a) {
 
 export async function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
-  const { decorateLinkToButton } = await import('./decorate.js');
-  return [...anchors].reduce((rdx, a) => {
+  const decorateModule = import('./decorate.js');
+  const links = [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -459,12 +459,14 @@ export async function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     const autoBLock = decorateAutoBlock(a);
-    decorateLinkToButton(a);
+    decorateModule.then((mod) => { mod.decorateLinkToButton(a); });
     if (autoBLock) {
       rdx.push(a);
     }
     return rdx;
   }, []);
+  await decorateModule;
+  return links;
 }
 
 function decorateContent(el) {

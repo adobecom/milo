@@ -67,7 +67,7 @@ const isStrongOrEm = (node) => node.nodeName === 'STRONG' || node.nodeName === '
 const isPara = (node) => node.nodeName === 'P';
 const ignoreEmptyText = (s) => !(s.nodeType === Node.TEXT_NODE && !s.textContent.trim());
 const buttonable = (b) => {
-  if (b.nodeName !== 'A') return false;
+  if (b.nodeName !== 'A' || !b.parentElement || !b.parentElement.parentElement) return false;
   return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
     || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
 };
