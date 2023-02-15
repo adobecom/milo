@@ -153,8 +153,6 @@ const init = (block) => {
     [...metadata].filter((d) => getStringKeyName(d.children[0].textContent) === 'tab')
       .forEach((d) => {
         const metaValue = getStringKeyName(d.children[1].textContent);
-
-        console.log('metaValue', metaValue, 'textContent', d.children[1].textContent);
         const section = sectionMetadata.closest('.section');
         const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
         if (assocTabItem) assocTabItem.append(section);
