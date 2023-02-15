@@ -32,10 +32,10 @@ export function getPageLocale(currentPath){
   return '';
 }
 
-export const loadStrings = async (url) => {
+export const loadStrings = async (url, pathname=location.pathname) => {
   if (!url) return {};
   try {
-    let locale = getPageLocale(location.pathname);
+    let locale = getPageLocale(pathname);
     if(locale){
       let _url = new URL(url);
       _url.pathname = `${locale}${_url.pathname}`;

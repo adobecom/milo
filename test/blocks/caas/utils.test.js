@@ -53,7 +53,8 @@ describe('loadStrings', () => {
   });
 
   it('should fetch mappings for en_US', async () => {
-    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings');
+    const pathname = '/tools/caas';
+    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname);
     let expected = {
       collectionTitle: ' collection title',
     };
@@ -70,7 +71,8 @@ describe('loadStrings', () => {
       let expected = {
         collectionTitle: `${locale} collection title`
       };
-      const loadedStrings = await loadStrings(`https://milo.adobe.com/${locale}/drafts/caas/mappings`);
+      const pathname = `/${locale}/tools/caas`;
+      const loadedStrings = await loadStrings(`https://milo.adobe.com/${locale}/drafts/caas/mappings`, pathname);
       expect(loadedStrings).to.eql(expected);
     });
   }
