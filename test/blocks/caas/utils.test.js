@@ -72,7 +72,7 @@ describe('loadStrings', () => {
         collectionTitle: `${locale} collection title`
       };
       const pathname = `/${locale}/tools/caas`;
-      const loadedStrings = await loadStrings(`https://milo.adobe.com/${locale}/drafts/caas/mappings`, pathname);
+      const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname);
       expect(loadedStrings).to.eql(expected);
     });
   }
