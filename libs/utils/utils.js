@@ -139,7 +139,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -256,7 +256,7 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
-  
+
   if (area === document) {
     const canonEl = document.head.querySelector('link[rel="canonical"]');
     if (!canonEl) return;
@@ -413,24 +413,14 @@ export function decorateVideo(a) {
   const { pathname, hash } = a;
   if (!pathname.match('media_.*.mp4$')) return;
 
-  const ext = pathname?.substring(pathname.lastIndexOf('.') + 1);
-
   const isAutoplay = !!(hash?.includes('autoplay'));
 
-  if (ext === 'mp4') {
-    const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls preload="metadata"';
-    const video = `<video ${attrs}>
+  const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls preload="metadata"';
+  const video = `<video ${attrs}>
         <source src=".${pathname}" type="video/mp4" />
       </video>`;
-    a.insertAdjacentHTML('afterend', video);
-    a.remove();
-  } else if (ext === 'gif') {
-    const picEl = `<picture>
-      <img src=".${pathname}" />
-    </picture>`;
-    a.insertAdjacentHTML('afterend', picEl);
-    a.remove();
-  }
+  a.insertAdjacentHTML('afterend', video);
+  a.remove();
 }
 
 export function decorateAutoBlock(a) {
