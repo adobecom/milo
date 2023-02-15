@@ -37,9 +37,11 @@ const MILO_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
   'promo',
   'tabs',
   'table-of-contents',
@@ -592,20 +594,25 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
@@ -722,14 +729,12 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, {
-      errorType: 'i',
-    });
-  }
+    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
 
   window.lana = {
     log: async (...args) => {
-      await import('../utils/lana.js');
+      await import('./lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
       return window.lana.log(...args);
