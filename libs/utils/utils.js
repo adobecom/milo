@@ -130,6 +130,22 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export const locales = ['ae_ar', 'ae_en', 'africa', 'ar', 'au', 'be_en', 'be_fr', 'be_nl', 'bg', 'ca', 'ca_fr', 'ch_de',
+  'ch_fr', 'ch_it', 'cis_en', 'cl', 'cn', 'cy_en', 'de', 'es', 'fr', 'gr_en', 'hk_en', 'id_en', 'ie', 'il_en', 'in',
+  'jp', 'kr', 'la', 'langstore', 'lu_de', 'lu_en', 'lu_fr', 'lv', 'mena_ar', 'mena_en', 'mt', 'mx', 'my_en', 'nl',
+  'nz', 'pe', 'ph_en', 'pt', 'sa_ar', 'sa_en', 'se', 'sea', 'sg', 'th_en', 'uk', 'vn_en'];
+
+export function getPageLocale(currentPath){
+  let possibleLocale = currentPath.split("/")[1];
+  for(let locale of locales){
+    if(locale === possibleLocale){
+      return locale;
+    }
+  }
+  // defaults to en_US
+  return '';
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [

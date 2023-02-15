@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import { loadScript, loadStyle, getPageLocale } from '../../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
@@ -16,18 +16,10 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
-function getLocale(currentPath){
-  let regex = /(\/([a-z]{2})\/)|\/([a-z]+_[a-z]+)\//;
-  let locale = currentPath.match(regex);
-  if(locale){
-    return locale[0].replace(/^\/|\/$/g, '');
-  }
-  return "";
-}
 export const loadStrings = async (url) => {
   if (!url) return {};
   try {
-    let locale = getLocale(location.pathname);
+    let locale = getPageLocale(location.pathname);
     if(locale){
       let _url = new URL(url);
       _url.pathname = `${locale}${_url.pathname}`;

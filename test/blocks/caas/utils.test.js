@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { defaultState, getConfig, loadStrings, arrayToObj } from '../../../libs/blocks/caas/utils.js';
+import { locales } from '../../../libs/utils/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -24,16 +25,18 @@ describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
   beforeEach(() => {
-    window.fetch = stub().returns(
-      new Promise((resolve) => {
+    function htmlResponse(){
+      return new Promise(function(resolve){
         resolve({
           ok: true,
           text: () => {
+            let fetchCalledWith = fetch.args[0].toString();
+            let fetchLocale = fetchCalledWith.split("/")[3];
             return `
             <div class="string-mappings">
               <div>
                 <div>collectionTitle</div>
-                <div>My Awesome Title</div>
+                <div>${locales.includes(fetchLocale) ? fetchLocale : ''} collection title</div>
                 <div>Card Collection Title</div>
                 <div></div>
                 <div></div>
@@ -41,21 +44,32 @@ describe('loadStrings', () => {
             </div>`
           },
         });
-      }),
-    );
+      })
+    }
+    window.fetch = stub().returns(htmlResponse());
   });
 
   afterEach(() => {
     window.fetch = ogFetch;
   });
 
-  it('should fetch data from the given url', async () => {
-    const loadedStrings = await loadStrings('http://my.test.url');
+  it('should fetch mappings for en_US', async () => {
+    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings');
     let expected = {
-      collectionTitle: 'My Awesome Title',
+      collectionTitle: ' collection title',
     };
     expect(loadedStrings).to.eql(expected);
   });
+
+  for(let locale of locales){
+    it('should be able to fetch mappings all other locales ', async () => {
+      let expected = {
+        collectionTitle: `${locale} collection title`
+      };
+      const loadedStrings = await loadStrings(`https://milo.adobe.com/${locale}/drafts/caas/mappings`);
+      expect(loadedStrings).to.eql(expected);
+    });
+  }
 });
 
 describe('getConfig', () => {
