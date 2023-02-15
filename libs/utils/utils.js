@@ -37,9 +37,11 @@ const MILO_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
   'promo',
   'tabs',
   'table-of-contents',
@@ -608,7 +610,7 @@ function loadPrivacy() {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
