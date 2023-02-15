@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings, arrayToObj } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj, locales } from '../../../libs/blocks/caas/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -30,7 +30,7 @@ describe('loadStrings', () => {
           ok: true,
           text: () => {
             let fetchCalledWith = fetch.args[0].toString();
-            let fetchLocale = fetchCalledWith.split("/")[3];
+            let fetchLocale = fetchCalledWith.split('/')[3];
             return `
             <div class="string-mappings">
               <div>
@@ -59,8 +59,6 @@ describe('loadStrings', () => {
     };
     expect(loadedStrings).to.eql(expected);
   });
-
-  let locales = ['jp', 'de'];
 
   for(let locale of locales){
     it('should be able to fetch mappings all other locales ', async () => {

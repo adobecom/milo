@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle, getPageLocale } from '../../utils/utils.js';
+import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
@@ -16,6 +16,22 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
+export const locales = ['ae_ar', 'ae_en', 'africa', 'ar', 'au', 'be_en', 'be_fr', 'be_nl', 'bg', 'ca', 'ca_fr', 'ch_de',
+  'ch_fr', 'ch_it', 'cis_en', 'cl', 'cn', 'cy_en', 'de', 'es', 'fr', 'gr_en', 'hk_en', 'id_en', 'ie', 'il_en', 'in',
+  'jp', 'kr', 'la', 'langstore', 'lu_de', 'lu_en', 'lu_fr', 'lv', 'mena_ar', 'mena_en', 'mt', 'mx', 'my_en', 'nl',
+  'nz', 'pe', 'ph_en', 'pt', 'sa_ar', 'sa_en', 'se', 'sea', 'sg', 'th_en', 'uk', 'vn_en'];
+
+export function getPageLocale(currentPath){
+  let possibleLocale = currentPath.split('/')[1];
+  for(let locale of locales){
+    if(locale === possibleLocale){
+      return locale;
+    }
+  }
+  // defaults to en_US
+  return '';
+}
+
 export const loadStrings = async (url) => {
   if (!url) return {};
   try {
@@ -31,9 +47,9 @@ export const loadStrings = async (url) => {
     const html = await resp.text();
     const parser = new DOMParser();
     const document = parser.parseFromString(html, 'text/html');
-    let nodes = document.querySelectorAll(".string-mappings > div");
+    let nodes = document.querySelectorAll('.string-mappings > div');
     for(parent of nodes){
-      let children = parent.querySelectorAll("div");
+      let children = parent.querySelectorAll('div');
       let key = children[0].innerText;
       let val = children[1].innerHTML;
       let defaultVal = children[3].innerHTML;
