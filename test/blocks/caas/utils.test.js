@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings, arrayToObj, locales } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj, locales, getPageLocale } from '../../../libs/blocks/caas/utils.js';
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -60,6 +60,11 @@ describe('loadStrings', () => {
     expect(loadedStrings).to.eql(expected);
   });
 
+  it('should be able to get correct page locale for en_US', () => {
+    let locale = getPageLocale('/tools/caas');
+    expect(locale).to.eql('');
+  });
+
   for(let locale of locales){
     it('should be able to fetch mappings all other locales ', async () => {
       let expected = {
@@ -67,6 +72,12 @@ describe('loadStrings', () => {
       };
       const loadedStrings = await loadStrings(`https://milo.adobe.com/${locale}/drafts/caas/mappings`);
       expect(loadedStrings).to.eql(expected);
+    });
+  }
+  for(let locale of locales){
+    it('should be able to get correct page locale', () => {
+      let pageLocale = getPageLocale(`/${locale}/tools/caas`);
+      expect(locale).to.eql(pageLocale);
     });
   }
 });
