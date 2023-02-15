@@ -5,7 +5,6 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
-  'animation',
   'article-feed',
   'aside',
   'author-header',
