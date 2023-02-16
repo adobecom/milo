@@ -37,9 +37,11 @@ const MILO_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
   'promo',
   'tabs',
   'table-of-contents',
@@ -283,7 +285,7 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
-  
+
   if (area === document) {
     const canonEl = document.head.querySelector('link[rel="canonical"]');
     if (!canonEl) return;
@@ -572,7 +574,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = section.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -619,14 +621,19 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
