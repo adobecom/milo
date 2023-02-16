@@ -103,7 +103,6 @@ describe('Modals', () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
     expect(document.getElementById('milo')).to.exist;
-    await sendKeys({ press: 'Tab' });
     await delay(100);
     expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
     await sendKeys({ press: 'Tab' });
