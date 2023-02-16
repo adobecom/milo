@@ -231,6 +231,11 @@ footer .footer-region .fragment .region-selector {
   padding: 0;
 }
 
+footer .footer-region .fragment .region-selector .content {
+  padding: 0;
+  column-count: 1;
+}
+
 footer .footer-region .fragment .region-selector .content ul {
   padding: 0;
   list-style-type: none;
