@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="../loc/lib/msal-browser.js"></script>
+  <title>Sharepoint</title>
+</head>
+
+<body>
+
+  <h2>Sharepoint Tree Iteration Test</h2>
+  <div id="status">Authenticating to sharepoint...</div>
+  <div id="iterateTree" style="display: none;">
+    <button type="button">Iterate Milo Content Tree</button>
+  </div>
+  <div id="result"></div>
+  <script type="module">
+    import init from './sharepoint.js';
+    init();
+  </script>
+</body>
+
+</html>
