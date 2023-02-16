@@ -138,7 +138,7 @@ export async function fetchData(link) {
  * @param {object} data
  * @returns {object} data, series
  */
-export function sheetData(json) {
+export function getSheetData(json) {
   const data = {};
   // Check the type of data
   if (json[':type'] === 'multi-sheet') {
@@ -446,8 +446,13 @@ export const getChartOptions = ({
   };
 };
 
-const setDonutListeners = (chart, source, seriesData, units = []) => {
+/**
+ * @param {echartsInstance} chart
+ * @param {object} chartOptionsAndData
+ */
+const setDonutListeners = (chart, {dataset, seriesData, units = []}) => {
   // Remove header names
+  const source = dataset?.source;
   const sourceData = (source && source[0].every((i) => typeof i === 'string')) ? source.slice(1) : source;
   const sum = sourceData?.reduce((total, current) => total + current[0], 0);
   const firstSeries = seriesData?.[0];
@@ -461,31 +466,32 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
 
 /**
  * Initializes and returns echart
- * @param {object} options
- * @returns {object}
+ * @param {Element} chartWrapper
+ * @param {object} chartOptionsAndData
+ * @returns {echartsInstance} chart
  */
-const initChart = ({chartWrapper, ...options}) => {
-  const { chartType, dataset, units, series, size } = options;
+const initChart = (chartWrapper, chartOptionsAndData) => {
+  const { chartType, size } = chartOptionsAndData;
   const themeName = getTheme(size);
-  const chartOptions = getChartOptions(options);
+  const chartOptions = getChartOptions(chartOptionsAndData);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
   chartWrapper.tabIndex = 0;
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
-    setDonutListeners(chart, dataset?.source, series, units);
+    setDonutListeners(chart, chartOptionsAndData);
   }
 
   return chart;
 };
 
-const handleIntersect = (options) => (entries, observer) => {
+const handleIntersect = (chartWrapper, options) => (entries, observer) => {
   if (!Array.isArray(entries)) return;
 
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      initChart(options);
+      initChart(chartWrapper, options);
       observer.unobserve(entry.target);
     }
   });
@@ -533,7 +539,7 @@ export const getLabelDegree = (chartStyles, isDesktop) => {
 };
 
 /* c8 ignore next 31 */
-const handleResize = (el, authoredSize, chartType, data, series, colors) => {
+const handleResize = (el, authoredSize, options) => {
   const currentSize = getResponsiveSize(authoredSize);
   const previousSize = el.getAttribute('data-responsive-size');
   const chartWrapper = el.querySelector('.chart-wrapper');
@@ -558,9 +564,7 @@ const handleResize = (el, authoredSize, chartType, data, series, colors) => {
 
     el.setAttribute('data-device', currentDevice);
     chartInstance?.dispose();
-    initChart({
-      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg,
-    });
+    initChart(chartWrapper, options);
   } else {
     chartInstance?.resize();
   }
@@ -662,7 +666,7 @@ const init = (el) => {
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
     .then(async (values) => {
       const json = values[0];
-      const { data, series } = sheetData(json);
+      const { data, series } = getSheetData(json);
 
       if (!data) return;
 
@@ -673,8 +677,8 @@ const init = (el) => {
       const colors = hasOverride
         ? getOverrideColors(authoredColor, data)
         : getColors(authoredColor);
-      const options = {
-        chartWrapper, chartType, dataset, headers, units, series, colors, size, labelDeg,
+      const chartDataAndOptions = {
+        chartType, dataset, headers, units, series, colors, size, labelDeg,
       };
       const text = propertyValueCI(headers, 'subheading');
 
@@ -684,7 +688,7 @@ const init = (el) => {
       }
 
       if (!(window.IntersectionObserver)) {
-        initChart(options);
+        initChart(chartWrapper, chartDataAndOptions);
       } else {
         /* c8 ignore next 12 */
         const observerOptions = {
@@ -694,7 +698,7 @@ const init = (el) => {
         };
 
         const observer = new IntersectionObserver(
-          handleIntersect(options),
+          handleIntersect(chartWrapper, chartDataAndOptions),
           observerOptions,
         );
         observer.observe(el);
@@ -705,7 +709,7 @@ const init = (el) => {
       /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
         1000,
-        () => handleResize(el, authoredSize, chartType, processedData, series, colors),
+        () => handleResize(el, authoredSize, chartDataAndOptions),
       ));
     })
     // eslint-disable-next-line no-console

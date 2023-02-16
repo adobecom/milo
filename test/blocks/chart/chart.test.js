@@ -15,7 +15,7 @@ const {
   tooltipFormatter,
   getColors,
   getOverrideColors,
-  sheetData,
+  getSheetData,
   getDataset,
   processMarkData,
   areaSeriesOptions,
@@ -303,7 +303,7 @@ describe('chart', () => {
       ],
       series: [],
     };
-    expect(sheetData(fetchedData)).to.eql(processedData);
+    expect(getSheetData(fetchedData)).to.eql(processedData);
   });
 
   it('fetch data multi', () => {
@@ -359,7 +359,7 @@ describe('chart', () => {
       ],
     };
 
-    expect(sheetData(fetchedData)).to.eql(processedData);
+    expect(getSheetData(fetchedData)).to.eql(processedData);
   });
 
   it('areaSeriesOptions returns array', () => {
