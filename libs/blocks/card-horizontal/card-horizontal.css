@@ -100,7 +100,7 @@
 
 .card-horizontal .foreground .card-block .card-image {
   height: 130px;
-  flex: 1 0 90px;
+  flex: 0 0 90px;
 }
 
 .card-horizontal:not(.tile) .foreground .card-block .card-image {
@@ -233,11 +233,11 @@
   }
 
   .card-horizontal .foreground .card-block .card-image {
-    flex: 1 0 180px;
+    flex: 0 0 180px;
   }
 
   .card-horizontal.tile .foreground .card-block .card-image {
-    flex: 1 0 106px;
+    flex: 0 0 106px;
   }
 
   .two-up .card-horizontal .foreground .card-block {
@@ -245,7 +245,7 @@
   }
 
   .two-up .card-horizontal .foreground .card-block .card-image {
-    flex: 1 0 115px;
+    flex: 0 0 115px;
   }
 
   .three-up .card-horizontal .foreground .card-block {
@@ -253,11 +253,11 @@
   }
 
   .three-up .card-horizontal .foreground .card-block .card-image {
-    flex: 1 0 113px;
+    flex: 0 0 113px;
   }
 
   .two-up .card-horizontal.tile .foreground .card-block .card-image {
-    flex: 1 0 98px;
+    flex: 0 0 98px;
   }
 
   .two-up .card-horizontal.tile .foreground .card-block .card-image img {
@@ -265,7 +265,7 @@
   }
 
   .three-up .card-horizontal.tile .foreground .card-block .card-image {
-    flex: 1 0 98px;
+    flex: 0 0 98px;
   }
 
   .three-up .card-horizontal.tile .foreground .card-block .card-image img {
