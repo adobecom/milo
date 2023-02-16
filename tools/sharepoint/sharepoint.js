@@ -66,6 +66,8 @@ async function iterateTree() {
       <p>Number of word documents found : ${docs.length}</p>`;
 
   document.getElementById('status').style.display = 'none';
+
+  console.log(docs);
 }
 
 function setListeners() {
