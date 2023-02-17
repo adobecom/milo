@@ -6,8 +6,15 @@
   padding: 48px;
 }
 
+.locui-project-details {
+  display: flex;
+  gap: 12px;
+}
+
 .locui-project-details-name {
   text-transform: capitalize;
+  font-weight: 400;
+  font-size: 28px;
 }
 
 .locui-subprojects {

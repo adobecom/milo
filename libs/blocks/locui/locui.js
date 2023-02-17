@@ -21,10 +21,10 @@ function UrlItem({ item }) {
 function SubProject({ item }) {
   return html`
     <li class=locui-subproject>
-    <p class=locui-subproject-label>Language</p>
-    <h3 class=locui-subproject-name>${item.Language}</h3>
-    <p class=locui-subproject-label>Action</p>
-    <h3 class=locui-subproject-name>${item.Action}</h3>
+      <p class=locui-subproject-label>Language</p>
+      <h3 class=locui-subproject-name>${item.Language}</h3>
+      <p class=locui-subproject-label>Action</p>
+      <h3 class=locui-subproject-name>${item.Action}</h3>
     </li>
   `;
 }
@@ -39,12 +39,13 @@ function Localization() {
 
   return html`
     <h1>${LOC_NAME}</h1>
+    <p class=locui-subproject-label>Project</p>
     <div class=locui-project-details>
       <span class=locui-project-details-name>
         ${heading.value.name}
       </span>
       ${heading.value.editUrl
-        && html`<a href="${heading.value.editUrl}" target="_blank">Edit</a>`}
+        && html`<a class=locui-project-details-edit href="${heading.value.editUrl}" target="_blank">Edit</a>`}
     </div>
 
     ${hasProjects && html`
@@ -52,9 +53,6 @@ function Localization() {
       <ul class=locui-subprojects>
         ${subProjects.value.map((proj) => html`<${SubProject} item=${proj} />`)}
       </ul>
-    `}
-    ${!hasProjects && html`
-      <h2>Getting projects</h2>
     `}
 
     ${hasUrls && html`

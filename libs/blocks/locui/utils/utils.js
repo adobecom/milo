@@ -9,7 +9,6 @@ export async function getStatus() {
   const repo = urlParams.get('repo');
   const ref = urlParams.get('ref');
   const editUrl = urlParams.get('referrer');
-  // TODO: Die gracefully here
   const resp = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}?editUrl=${editUrl}`);
   const json = await resp.json();
   resourcePath = json.resourcePath;
