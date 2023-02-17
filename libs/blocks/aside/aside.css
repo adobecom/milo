@@ -39,8 +39,7 @@
   display: flex;
 }
 
-.aside .background,
-.aside.split .split-image {
+.aside .background {
   overflow: hidden;
   position: absolute;
   left: 0;
@@ -67,13 +66,21 @@
   align-items: baseline;
   justify-content: center;
   flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.aside:not(.notification):not(.inline) .foreground.container > :first-child {
+  padding: var(--spacing-xxxl) 0 0;
+}
+
+.aside:not(.notification):not(.inline) .foreground.container > :last-child {
+  margin-bottom: var(--spacing-xxxl);
 }
 
 .aside .foreground.container .text {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
-  padding: var(--spacing-xxxl) 0 0;
 }
 
 .aside.notification .foreground.container .text {
@@ -86,7 +93,7 @@
   white-space: nowrap;
 }
 
-.aside:not(.notification) .foreground.container .text>* {
+.aside:not(.notification) .foreground.container .text > * {
   width: 100%;
 }
 
@@ -104,11 +111,11 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .text .action-area>a {
+.aside .foreground.container .text .action-area > a {
   margin-right: var(--spacing-s);
 }
 
-.aside .foreground.container .text .action-area>a:last-child {
+.aside .foreground.container .text .action-area > a:last-child {
   margin-right: 0;
 }
 
@@ -120,8 +127,6 @@
 .aside .foreground.container div:has(.milo-video),
 .aside .foreground.container .milo-inline-video {
   display: flex;
-  margin-top: var(--spacing-m);
-  margin-bottom: var(--spacing-xxxl);
   justify-content: center;
 }
 
@@ -228,7 +233,6 @@
 
 .aside.inline .foreground.container .image {
   margin-top: 0;
-  margin-bottom: var(--spacing-m);
 }
 
 .aside.inline .heading-S {
@@ -257,7 +261,7 @@
 
 .aside.notification .foreground.container .text[data-align=center],
 .aside.notification.center .foreground.container .text,
-.aside.notification.center .foreground.container .text>* {
+.aside.notification.center .foreground.container .text > * {
   text-align: center;
   justify-content: center;
 }
@@ -267,7 +271,7 @@
   font-weight: normal;
 }
 
-.aside.notification .foreground.container .text .action-area>a {
+.aside.notification .foreground.container .text .action-area > a {
   margin-right: 0;
 }
 
@@ -353,7 +357,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text>* {
+.aside.notification.center.small .foreground.container .text > * {
   justify-content: flex-start;
 }
 
@@ -377,13 +381,20 @@
     margin: 0 auto;
   }
 
+  .aside:not(.notification):not(.inline) .foreground.container > :first-child {
+    padding: 0;
+  }
+  
+  .aside:not(.notification):not(.inline) .foreground.container > :last-child {
+    margin-bottom: 0;
+  }
+
   .aside .foreground.container .image,
   .aside .foreground.container div:has(.milo-video),
   .aside .foreground.container .milo-inline-video {
     margin: 0;
     flex: 0 0 50%;
     max-width: 50%;
-    padding-left: var(--spacing-s);
     align-self: center;
     justify-self: center;
   }
@@ -392,10 +403,14 @@
     justify-content: flex-start;
   }
 
-  .aside.right .foreground.container .image,
-  .aside.right .foreground.container div:has(.milo-video),
-  .aside.right .foreground.container .milo-inline-video {
-    padding-right: var(--spacing-s);
+  .aside .background,
+  .aside.split .split-image {
+    overflow: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
   }
 
   .aside .foreground.container .text {
@@ -406,7 +421,7 @@
     padding-right: var(--spacing-s);
   }
 
-  .aside.right .foreground.container .text {
+  .aside.split-right .foreground.container .text {
     padding-left: var(--spacing-s);
   }
 
@@ -425,7 +440,7 @@
     bottom: 0;
   }
 
-  .aside.right .split-image img {
+  .aside.split-right .split-image img {
     left: 0;
   }
 
@@ -442,8 +457,9 @@
     object-position: center top;
   }
 
-  .aside.right .background img,
   .aside.split.half .split-image img {
+    width: 50vw;
+    max-width: 1396px;
     object-position: left top;
   }
 
@@ -467,11 +483,6 @@
     flex: 0 0 61%;
     display: block;
     padding: 0;
-  }
-
-  .aside.split.half .split-image img {
-    width: 50vw;
-    max-width: 1396px;
   }
 
   .aside.inline .foreground.container .text {
@@ -501,13 +512,12 @@
     flex: 0 0 41.72%;
   }
 
-  .aside.right .foreground.container {
+  .aside.split-right .foreground.container {
     flex-direction: row-reverse;
   }
 
   .aside.inline .foreground.container .image {
     flex: 0 0 calc(40% - var(--spacing-s));
-    margin-right: 32px;
     margin-bottom: 0;
   }
 
@@ -528,7 +538,7 @@
     order: unset;
   }
 
-  .aside.notification .foreground.container .text+.image {
+  .aside.notification .foreground.container .text + .image {
     margin-right: 0;
   }
 
@@ -645,7 +655,7 @@
     width: 20%;
   }
 
-  .aside.notification .foreground.container .text+.image {
+  .aside.notification .foreground.container .text + .image {
     margin-right: 0;
   }
 
@@ -671,7 +681,7 @@
     max-width: 304px;
   }
 
-  .aside.notification.medium .foreground.container .text+.image {
+  .aside.notification.medium .foreground.container .text + .image {
     margin-right: 0;
   }
 }

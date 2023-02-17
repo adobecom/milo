@@ -40,17 +40,6 @@ function getBlockData(el) {
   return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
 }
 
-function decorateInlineVideo(el) {
-  const video = el.querySelector('a[href*=".mp4"]');
-  if (!video) return;
-  const parent = video.parentElement;
-  parent.classList.add('milo-inline-video');
-  const source = createTag('source', { src: video.href, type: 'video/mp4' });
-  const html = createTag('video', { playsinline: '', autoplay: '', muted: '', loop: '' }, source);
-  parent.appendChild(html);
-  video.remove();
-}
-
 function decorateStaticLinks(el) {
   if (!el.classList.contains('notification')) return;
   const textLinks = el.querySelectorAll('.text a:not([class])');
@@ -62,7 +51,7 @@ function decorateLayout(el) {
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
-  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, a')?.closest('div');
+  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, a:not(.video)')?.closest('div');
   text?.classList.add('text');
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
@@ -70,10 +59,12 @@ function decorateLayout(el) {
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
   const image = foregroundImage ?? bgImage;
-  if (image) {
+  if (image && !image.classList.contains('text')) {
     const isSplit = el.classList.contains('split');
     image.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
+      const position = Array.from(image.parentNode.children).indexOf(image);
+      el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(image);
     }
   } else if (!iconArea) {
@@ -82,10 +73,18 @@ function decorateLayout(el) {
   return foreground;
 }
 
+function decorateVideoContainer(el) {
+  const video = el.querySelector('a[href*=".mp4"]');
+  if (!video) return;
+  video.classList.add('video');
+  const parent = video.parentElement;
+  parent?.classList.add('image');
+}
+
 export default function init(el) {
   const blockData = getBlockData(el);
+  decorateVideoContainer(el);
   const foreground = decorateLayout(el);
-  decorateInlineVideo(el);
   decorateBlockText(foreground, blockData);
   decorateStaticLinks(el);
 }
