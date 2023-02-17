@@ -333,18 +333,6 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
   margin-left: 6px;
 }
 
-.region-selector-text {
-  padding: 0 32px;
-}
-
-.region-selector {
-  padding: 0 32px 32px;
-}
-
-.region-selector .content {
-  column-count: 1;
-}
-
 @media (min-width: 900px) {
   footer {
     padding: 40px 0 24px;
@@ -387,10 +375,6 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
 
   .footer-privacy-link {
     margin-bottom: 0;
-  }
-
-  .region-selector .content {
-    column-count: 3;
   }
 
   .footer-privacy-copyright::after {

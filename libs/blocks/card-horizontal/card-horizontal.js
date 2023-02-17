@@ -47,6 +47,13 @@ function decorateContent(block) {
   paragraphs.forEach((item) => item.classList.add('body-XS'));
   const image = decorateImage(block);
   if (image) card.insertAdjacentElement('afterbegin', image);
+
+  const a = block.querySelector('a');
+
+  if (a && card) {
+    a.addEventListener('focus', () => card.classList.add('card-block-focus'));
+    a.addEventListener('blur', () => card.classList.remove('card-block-focus'));
+  }
 }
 
 export default function init(el) {
