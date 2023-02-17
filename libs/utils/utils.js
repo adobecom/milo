@@ -625,20 +625,6 @@ function initSidekick() {
   }
 }
 
-function decorateMeta() {
-  const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."]');
-  contents.forEach((meta) => {
-    try {
-      const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
-    } catch (e) {
-      /* c8 ignore next 2 */
-      window.lana.log('Cannot make URL from metadata');
-    }
-  });
-}
-
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -647,7 +633,6 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateMeta();
     decorateHeader();
 
     import('./samplerum.js').then(({ addRumListeners }) => {
