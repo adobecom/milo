@@ -119,7 +119,8 @@ const init = (el) => {
   const picture = el.querySelector('picture');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
-  const merch = styles.contains('merch') && cardType === HALF;
+  debugger;
+  const merch = styles.includes('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
     .querySelectorAll('a') : el.querySelectorAll('a');
   let card = el;
