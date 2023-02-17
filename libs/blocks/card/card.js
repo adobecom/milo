@@ -119,7 +119,7 @@ const init = (el) => {
   const picture = el.querySelector('picture');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
-  const merch = el.classList.contains('merch') && cardType === HALF;
+  const merch = styles.contains('merch') && cardType === HALF;
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
     .querySelectorAll('a') : el.querySelectorAll('a');
   let card = el;
@@ -154,7 +154,7 @@ const init = (el) => {
     addFooter(links, row, merch);
   }
 
-  if (el.classList.contains('merch')) {
+  if (merch) {
     const merchLinks = el.querySelectorAll('a[href*="tools/ost?osi="], a[href*="tools/ost/?osi="]');
     decorateCommerce(merchLinks);
   }
