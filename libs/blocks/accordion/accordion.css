@@ -49,7 +49,7 @@ dl.accordion {
   position: relative;
   width: 20px; 
   height: 20px;
-  background: url('/libs/img/ui/chevron.svg') no-repeat;
+  background: url('/libs/ui/img/chevron.svg') no-repeat;
   background-size: contain;
   background-position: center;
   transform: rotate(-90deg);
