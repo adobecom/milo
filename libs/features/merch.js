@@ -46,20 +46,20 @@ export function getPrice(osi, type) {
 }
 
 export async function decorateCommerce(links) {
-  links.forEach((l) => {
-    const url = new URL(l.href);
+  links.forEach((link) => {
+    const url = new URL(link.href);
     const osi = url.searchParams.get('osi');
     if (!osi) return;
     const type = url.searchParams.get('type');
     if (type === 'checkoutUrl') {
       const text = url.searchParams.get('text');
-      decorateButton(osi, l, text);
+      decorateButton(osi, link, text);
     } else {
       const priceType = url.searchParams.get('priceType');
       const price = getPrice(osi, priceType);
       if (!price) return;
-      l.parentElement.insertBefore(price, l);
-      l.remove();
+      link.parentElement.insertBefore(price, link);
+      link.remove();
     }
   });
   await runTacocat();
