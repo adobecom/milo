@@ -104,6 +104,10 @@ dl.accordion {
   background-color: var(--link-color);
 }
 
+.quiet .accordion dt button[aria-expanded="true"]::before {
+  display: none;
+}
+
 .accordion dt button[aria-expanded="true"] .accordion-icon::before,
 .accordion dt button[aria-expanded="true"] .accordion-icon::after {
   transform: rotate(90deg);
