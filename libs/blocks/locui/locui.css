@@ -1,0 +1,48 @@
+.locui {
+  background: url('./img/bg.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  padding: 48px;
+}
+
+.locui-project-details-name {
+  text-transform: capitalize;
+}
+
+.locui-subprojects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+li.locui-subproject {
+  width: 240px;
+  min-height: 320px;
+  border: 4px solid #CC66CC;
+  background: #FCCEEA;
+  border-radius: 6px;
+  padding: 18px;
+}
+
+p.locui-subproject-label {
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+h3.locui-subproject-name {
+  font-weight: 400;
+  font-size: 28px;
+  margin: 0 0 24px;
+}
+
+.locui-urls {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+}
