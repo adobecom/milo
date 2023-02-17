@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { getBlockSize } from '../../utils/decorate.js';
+import { decorateActionArea, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -102,6 +102,13 @@ export default function init(el) {
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
+  decorateActionArea(el);
+  // without this authors must review marquees in all projects to stop buttons having wrong size
+  const buttons = el.querySelectorAll('a.con-button');
+  buttons?.forEach((b) => {
+    b.classList.remove(...[size ?? '', 'button-L', 'button-XL']);
+    b.classList.add(size === 'large' ? 'button-XL' : 'button-L');
+  });
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);

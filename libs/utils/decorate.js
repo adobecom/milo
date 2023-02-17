@@ -93,12 +93,7 @@ export function decorateButton(button) {
     buttonTypes.push('outline');
   }
   button.classList.add('con-button', ...buttonTypes);
-  if (button.closest('.marquee')) {
-    // without this authors must review marquees in all projects to stop buttons having wrong size
-    button.classList.add(blockSize === 'large' ? 'button-XL' : 'button-L');
-  } else {
-    button.classList.add(size);
-  }
+  button.classList.add(size);
   const validParent = parent.nodeName === 'P' ? null : parent;
   [grandChild, child, validParent].forEach((n) => {
     if (n && ['STRONG', 'EM'].includes(n.nodeName)) {
@@ -108,13 +103,15 @@ export function decorateButton(button) {
   const span = button.querySelector('span');
   button.textContent = text;
   if (span) button.prepend(span);
-  const allowedArea = button.closest('.marquee, .aside, .icon-block, .media, .text-block');
-  if (allowedArea) {
-    const actionArea = button.closest('p, div');
-    if (actionArea && !actionArea.parentElement.querySelector('.action-area')) {
-      actionArea.classList.add('action-area');
-      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
-    }
+}
+
+export function decorateActionArea(el) {
+  const button = el?.querySelector('a.con-button');
+  if (!button) return;
+  const actionArea = button.closest('p, div');
+  if (actionArea && !actionArea.parentElement.querySelector('.action-area')) {
+    actionArea.classList.add('action-area');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
   }
 }
 
