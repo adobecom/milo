@@ -34,7 +34,7 @@ dl.accordion {
   border-bottom: transparent;
 }
 
-.accordion .accordion dt[aria-expanded="true"] dd {
+.accordion dd:last-of-type:not([hidden]) {
   border-bottom: 1px solid var(--color-gray-500);
 }
 
@@ -48,7 +48,6 @@ dl.accordion {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-s-lh);
   width: 100%;
-  display: block;
   text-align: left;
   position: relative;
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
