@@ -3,10 +3,10 @@
   line-height: 1.375rem;
 }
 
-hr {
+.card hr {
   background-color: #E1E1E1;
   border: none;
-  height:1px;
+  height: 1px;
   width: 100%;
-  margin-bottom:16px;
+  margin-bottom: var(--spacing-xs);
 }
