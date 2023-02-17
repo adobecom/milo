@@ -1,6 +1,13 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings, arrayToObj, locales, getPageLocale } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj, getPageLocale } from '../../../libs/blocks/caas/utils.js';
+
+const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
+  'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
+  'mt', 'mena_en', 'nl', 'no', 'pl', 'pt', 'ro', 'sa_en', 'ch_de', 'si', 'sk', 'ch_fr', 'fi', 'se', 'ch_it', 'tr',
+  'ae_en', 'uk', 'at', 'cz', 'bg', 'ru', 'ua', 'il_he', 'ae_ar', 'mena_ar', 'sa_ar', 'au', 'hk_en', 'in', 'id_id',
+  'id_en', 'my_ms', 'my_en', 'nz', 'ph_en', 'ph_fil', 'sg', 'th_en', 'in_hi', 'th_th', 'cn', 'hk_zh', 'tw', 'jp', 'kr',
+  'langstore'];
 
 const strings = {
   collectionTitle: 'My Awesome Title',
@@ -35,7 +42,7 @@ describe('loadStrings', () => {
             <div class="string-mappings">
               <div>
                 <div>collectionTitle</div>
-                <div>${locales.includes(fetchLocale) ? fetchLocale : ''} collection title</div>
+                <div>${mockLocales.includes(fetchLocale) ? fetchLocale : ''} collection title</div>
                 <div>Card Collection Title</div>
                 <div></div>
                 <div></div>
@@ -54,7 +61,7 @@ describe('loadStrings', () => {
 
   it('should fetch mappings for en_US', async () => {
     const pathname = '/tools/caas';
-    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname);
+    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
     let expected = {
       collectionTitle: ' collection title',
     };
@@ -62,23 +69,24 @@ describe('loadStrings', () => {
   });
 
   it('should be able to get correct page locale for en_US', () => {
-    let locale = getPageLocale('/tools/caas');
+    let locale = getPageLocale('/tools/caas', mockLocales);
     expect(locale).to.eql('');
   });
 
-  for(let locale of locales){
-    it('should be able to fetch mappings all other locales ', async () => {
+  for(let locale of mockLocales){
+    it('should be able to fetch mappings all other mockLocales ', async () => {
       let expected = {
         collectionTitle: `${locale} collection title`
       };
       const pathname = `/${locale}/tools/caas`;
-      const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname);
+      const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
       expect(loadedStrings).to.eql(expected);
     });
   }
-  for(let locale of locales){
+
+  for(let locale of mockLocales) {
     it('should be able to get correct page locale', () => {
-      let pageLocale = getPageLocale(`/${locale}/tools/caas`);
+      let pageLocale = getPageLocale(`/${locale}/tools/caas`, mockLocales);
       expect(locale).to.eql(pageLocale);
     });
   }

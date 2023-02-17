@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
@@ -16,15 +16,14 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
-export const locales = ['ae_ar', 'ae_en', 'africa', 'ar', 'au', 'be_en', 'be_fr', 'be_nl', 'bg', 'ca', 'ca_fr', 'ch_de',
-  'ch_fr', 'ch_it', 'cis_en', 'cl', 'cn', 'cy_en', 'de', 'es', 'fr', 'gr_en', 'hk_en', 'id_en', 'ie', 'il_en', 'in',
-  'jp', 'kr', 'la', 'langstore', 'lu_de', 'lu_en', 'lu_fr', 'lv', 'mena_ar', 'mena_en', 'mt', 'mx', 'my_en', 'nl',
-  'nz', 'pe', 'ph_en', 'pt', 'sa_ar', 'sa_en', 'se', 'sea', 'sg', 'th_en', 'uk', 'vn_en'];
+const pageConfig = pageConfigHelper();
+const pageLocales = Object.keys(pageConfig.locales || {});
 
-export function getPageLocale(currentPath){
-  let possibleLocale = currentPath.split('/')[1];
-  for(let locale of locales){
-    if(locale === possibleLocale){
+export function getPageLocale(currentPath, locales = pageLocales) {
+  const possibleLocale = currentPath.split('/')[1];
+  for (let i = 0; i < locales.length; i += 1) {
+    const locale = locales[i];
+    if (locale === possibleLocale) {
       return locale;
     }
   }
@@ -32,28 +31,37 @@ export function getPageLocale(currentPath){
   return '';
 }
 
-export const loadStrings = async (url, pathname=location.pathname) => {
+export const loadStrings = async (
+  url,
+  pathname = window.location.pathname,
+  locales = pageLocales,
+) => {
   if (!url) return {};
   try {
-    let locale = getPageLocale(pathname);
-    if(locale){
-      let _url = new URL(url);
-      _url.pathname = `${locale}${_url.pathname}`;
-      url = _url.toString();
+    const locale = getPageLocale(pathname, locales);
+    let localizedURL = new URL(url);
+    if (locale) {
+      localizedURL.pathname = `${locale}${localizedURL.pathname}`;
+      localizedURL = localizedURL.toString();
     }
-    const resp = await fetch(`${url}.plain.html`);
-    if (!resp.ok) return {};
-    let ans = {};
+    let resp = await fetch(`${localizedURL}.plain.html`);
+    if (!resp.ok) {
+      resp = await fetch(`${url}.plain.html`);
+    }
+    if (!resp.ok) {
+      return {};
+    }
+    const ans = {};
     const html = await resp.text();
     const parser = new DOMParser();
     const document = parser.parseFromString(html, 'text/html');
-    let nodes = document.querySelectorAll('.string-mappings > div');
-    for(parent of nodes){
-      let children = parent.querySelectorAll('div');
-      let key = children[0].innerText;
-      let val = children[1].innerHTML;
-      let defaultVal = children[3].innerHTML;
-      ans[key] = val ? val : defaultVal;
+    const nodes = document.querySelectorAll('.string-mappings > div');
+    for (let i = 0; i < nodes.length; i += 1) {
+      const parent = nodes[i];
+      const children = parent.querySelectorAll('div');
+      const key = children[0].innerText;
+      const val = children[1]?.innerHTML;
+      ans[key] = val || '';
     }
     return ans;
   } catch (err) {
@@ -222,12 +230,13 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-export function arrayToObj (input=[]) {
+export function arrayToObj(input = []) {
   const obj = {};
-  if(!Array.isArray(input)){
+  if (!Array.isArray(input)) {
+    // eslint-disable-next-line no-param-reassign
     input = [];
   }
-  input.forEach(item => {
+  input.forEach((item) => {
     if (item.key && item.value) {
       obj[item.key] = item.value;
     }
