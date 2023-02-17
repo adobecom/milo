@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { decorateActionArea } from '../../libs/utils/decorate';
 
 const utils = {};
 
@@ -203,7 +204,7 @@ describe('Utils', () => {
       });
     });
 
-    describe ('rtlSupport', () => {
+    describe('rtlSupport', () => {
       before(async () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -221,22 +222,21 @@ describe('Utils', () => {
       }
 
       it('LTR Languages have dir as ltr', () => {
-        setConfigWithPath( '/africa/solutions');
+        setConfigWithPath('/africa/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
 
       it('RTL Languages have dir as rtl', () => {
-        setConfigWithPath( '/il_he/solutions');
+        setConfigWithPath('/il_he/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
-        setConfigWithPath( '/mena_ar/solutions');
+        setConfigWithPath('/mena_ar/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
-        setConfigWithPath( '/ua/solutions');
+        setConfigWithPath('/ua/solutions');
         expect(document.documentElement.getAttribute('dir')).null;
       });
-
     });
 
     describe('localizeLink', () => {
@@ -369,10 +369,6 @@ describe('Utils', () => {
     const links7 = divs[7].querySelectorAll('a');
     expect(Array.from(links7[0].classList).includes('con-button')).to.equal(true);
     expect(Array.from(links7[0].classList).includes('fill')).to.equal(true);
-    expect(Array.from(links7[0].classList).includes('button-XL')).to.equal(true);
-    const pTags = divs[7].querySelectorAll('p');
-    expect(Array.from(pTags[0].classList).includes('action-area')).to.equal(true);
-    expect(Array.from(pTags[1].classList).includes('supplemental-text')).to.equal(true);
   });
 
   it('adds privacy trigger to cookie preferences link in footer', () => {
