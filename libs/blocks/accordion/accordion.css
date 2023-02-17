@@ -92,7 +92,7 @@ dl.accordion {
   content: "";
   display: block;
   position: absolute;
-  width: 1px; 
+  width: 2px; 
   height: 100%;
   left: 0;
   top: 0;
@@ -100,7 +100,7 @@ dl.accordion {
 }
 
 .accordion dt button[aria-expanded="true"]::before {
-  background-color: var(--link-color);
+  background-color: var(--link-color-dark);
 }
 
 .quiet .accordion dt button[aria-expanded="true"]::before {
