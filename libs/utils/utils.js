@@ -550,7 +550,7 @@ async function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   const res = await Promise.all([...el.querySelectorAll(selector)].map(async (section, idx) => {
     decorateDefaults(section);
-    const blocks = section.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -599,14 +599,19 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
