@@ -20,7 +20,7 @@ describe('Get SVGs from a file', () => {
   });
 
   it('Dies gracefully when a bad path is given', async () => {
-    const val = await getSVGsfromFile('/img/ui/chevron.svg');
+    const val = await getSVGsfromFile('/libs/img/ui/chevron.svg');
     expect(val.length).to.equal(1);
   });
 });
