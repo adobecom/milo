@@ -12,21 +12,30 @@ dl.accordion {
 }
 
 .accordion dt {
-  border-top: 1px solid var(--color-gray-200);
-  border-left: 2px solid transparent;
-  padding: 12px;
+  border-top: 1px solid var(--color-gray-500);
 }
 
-.accordion dt:last-of-type {
-  border-bottom: 1px solid var(--color-gray-200);
+.dark .accordion dt {
+  border-top-color: var(--color-gray-600);
 }
 
 .accordion dd {
   margin: 0;
-  border-left: 2px solid transparent;
   padding: var(--spacing-xxs) var(--spacing-xs) var(--spacing-xs);
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-s-lh);
+}
+
+.accordion dt:last-of-type {
+  border-bottom: 1px solid var(--color-gray-500);
+}
+
+.accordion dt:has(button[aria-expanded="true"]) {
+  border-bottom: transparent;
+}
+
+.accordion dd:last-of-type:not([hidden]) {
+  border-bottom: 1px solid var(--color-gray-500);
 }
 
 .accordion button {
@@ -45,8 +54,7 @@ dl.accordion {
   display: block;
   text-align: left;
   position: relative;
-  padding: calc(var(--spacing-xxs) / 2);
-  padding-right: 18px;
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
 }
 
 .accordion button:hover {
@@ -55,7 +63,7 @@ dl.accordion {
 
 .accordion-icon {
   position: absolute;
-  right: calc(var(--spacing-xxs) / 2);
+  right: var(--spacing-xs);
   top: 50%;
   margin-top: -6px;
   width: 12px;
@@ -84,43 +92,43 @@ dl.accordion {
   height: 2px;
 }
 
-.accordion .is-open .accordion-icon::before,
-.accordion .is-open .accordion-icon::after {
+.accordion button::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 1px; 
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: transparent;
+}
+
+.accordion button[aria-expanded="true"]::before {
+  background-color: var(--link-color);
+}
+
+.accordion button[aria-expanded="true"] .accordion-icon::before,
+.accordion button[aria-expanded="true"] .accordion-icon::after {
   transform: rotate(90deg);
 }
 
-.accordion .is-open .accordion-icon::after {
+.accordion button[aria-expanded="true"] .accordion-icon::after {
   opacity: 0;
 }
 
 .accordion button:hover .accordion-icon::before,
 .accordion button:hover .accordion-icon::after {
-  background: var(--text-color);
+  background: var(--color-black);
 }
 
-.accordion dt.is-open {
-  border-left-color: var(--link-color);
+.accordion button:focus,
+.accordion button:hover,
+.accordion button[aria-expanded="true"] {
+  background: #00000005;
 }
-
-.accordion dt.has-focus,
-.accordion dd.has-focus {
-  background-color: #00000005;
-}
-
-/* .accordion button:focus {
-  outline: none;
-} */
 
 .accordion dd p:first-child {
   margin-top: 0;
-}
-
-.accordion dt.is-open:last-of-type {
-  border-bottom: none;
-}
-
-.accordion dd.is-open:last-of-type {
-  border-bottom: 1px solid var(--color-gray-200);
 }
 
 /* dark */
@@ -129,29 +137,22 @@ dl.accordion {
   color: #fff;
 }
 
-.dark .accordion dt {
-  border-top: 1px solid var(--color-gray-600);
-}
-
-.dark .accordion dt.is-open {
-  border-left-color: var(--link-color-dark);
-}
-
 .dark .accordion dt:last-of-type {
-  border-bottom: 1px solid var(--color-gray-600);
+  border-bottom-color: var(--color-gray-600);
 }
 
-.dark .accordion dt.is-open:last-of-type {
-  border-bottom: none;
+.dark .accordion dt:has(button[aria-expanded="true"]) {
+  border-bottom: transparent;
 }
 
-.dark .accordion dd.is-open:last-of-type {
-  border-bottom: 1px solid var(--color-gray-600);
+.dark .accordion dd:last-of-type:not([hidden]) {
+  border-bottom-color: var(--color-gray-600);
 }
 
-.dark .accordion dt.has-focus,
-.dark .accordion dd.has-focus {
-  background-color: #00000050;
+.dark .accordion button:focus,
+.dark .accordion button:hover,
+.dark .accordion button[aria-expanded="true"] {
+  background: #00000060;
 }
 
 .dark .accordion button:hover .accordion-icon::before,
