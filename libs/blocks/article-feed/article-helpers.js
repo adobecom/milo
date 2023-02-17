@@ -115,58 +115,57 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyLibrary.default(getConfig(), '/topics').then((_taxonomyModule) => {
-    taxonomyModule = _taxonomyModule;
-    if (taxonomyModule) {
-      // taxonomy loaded, post loading adjustments
-      // fix the links which have been created before the taxonomy has been loaded
-      // (pre lcp or in lcp block).
-      document.querySelectorAll('[data-topic-link]').forEach((a) => {
-        const topic = a.dataset.topicLink;
-        const tax = taxonomyModule.get(topic);
-        if (tax) {
-          a.href = tax.link;
-        } else {
-          // eslint-disable-next-line no-console
-          console.warn(`Trying to get a link for an unknown topic: ${topic} (current page)`);
-          a.href = '#';
+  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics')
+  // taxonomyModule = _taxonomyModule;
+  if (taxonomyModule) {
+    // taxonomy loaded, post loading adjustments
+    // fix the links which have been created before the taxonomy has been loaded
+    // (pre lcp or in lcp block).
+    document.querySelectorAll('[data-topic-link]').forEach((a) => {
+      const topic = a.dataset.topicLink;
+      const tax = taxonomyModule.get(topic);
+      if (tax) {
+        a.href = tax.link;
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(`Trying to get a link for an unknown topic: ${topic} (current page)`);
+        a.href = '#';
+      }
+      delete a.dataset.topicLink;
+    });
+
+    // adjust meta article:tag
+
+    const currentTags = getMetadata('article:tag') || [];
+    const articleTax = computeTaxonomyFromTopics(currentTags);
+
+    const allTopics = articleTax.allTopics || [];
+    allTopics.forEach((topic) => {
+      if (!currentTags.includes(topic)) {
+        // computed topic (parent...) is not in meta -> add it
+        const newMetaTag = document.createElement('meta');
+        newMetaTag.setAttribute('property', 'article:tag');
+        newMetaTag.setAttribute('content', topic);
+        document.head.append(newMetaTag);
+      }
+    });
+
+    currentTags.forEach((tag) => {
+      const tax = taxonomyModule.get(tag);
+      if (tax && tax.skipMeta) {
+        // if skipMeta, remove from meta "article:tag"
+        const meta = document.querySelector(`[property="article:tag"][content="${tag}"]`);
+        if (meta) {
+          meta.remove();
         }
-        delete a.dataset.topicLink;
-      });
-
-      // adjust meta article:tag
-
-      const currentTags = getMetadata('article:tag') || [];
-      const articleTax = computeTaxonomyFromTopics(currentTags);
-
-      const allTopics = articleTax.allTopics || [];
-      allTopics.forEach((topic) => {
-        if (!currentTags.includes(topic)) {
-          // computed topic (parent...) is not in meta -> add it
-          const newMetaTag = document.createElement('meta');
-          newMetaTag.setAttribute('property', 'article:tag');
-          newMetaTag.setAttribute('content', topic);
-          document.head.append(newMetaTag);
-        }
-      });
-
-      currentTags.forEach((tag) => {
-        const tax = taxonomyModule.get(tag);
-        if (tax && tax.skipMeta) {
-          // if skipMeta, remove from meta "article:tag"
-          const meta = document.querySelector(`[property="article:tag"][content="${tag}"]`);
-          if (meta) {
-            meta.remove();
-          }
-          // but add as meta with name
-          const newMetaTag = document.createElement('meta');
-          newMetaTag.setAttribute('name', tag);
-          newMetaTag.setAttribute('content', 'true');
-          document.head.append(newMetaTag);
-        }
-      });
-    }
-  });
+        // but add as meta with name
+        const newMetaTag = document.createElement('meta');
+        newMetaTag.setAttribute('name', tag);
+        newMetaTag.setAttribute('content', 'true');
+        document.head.append(newMetaTag);
+      }
+    });
+  }
 }
 
 /**
