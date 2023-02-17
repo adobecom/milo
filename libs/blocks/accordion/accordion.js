@@ -4,6 +4,7 @@ class Accordion {
   constructor(domNode) {
     this.rootEl = domNode;
     this.buttonEl = this.rootEl.querySelector('button[aria-expanded]');
+    this.buttonDt = this.rootEl.closest('dt');
 
     const controlsId = this.buttonEl.getAttribute('aria-controls');
     this.contentEl = document.getElementById(controlsId);
@@ -28,6 +29,7 @@ class Accordion {
     this.open = open;
 
     // handle DOM updates
+    this.buttonDt.setAttribute('aria-expanded', `${open}`);
     this.buttonEl.setAttribute('aria-expanded', `${open}`);
     if (open) {
       this.contentEl.removeAttribute('hidden');
