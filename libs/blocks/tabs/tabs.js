@@ -41,7 +41,7 @@ function changeTabs(e) {
 function getStringKeyName(str) {
   // regex to omit all special characters except Japanese or Korean language characters
   const regex = /[^\w\s\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3130-\u318F\uAC00-\uD7AF]+/g;
-  return str.trim().toLowerCase().replace(regex, '').replace(/ +/g, '-');
+  return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
 }
 
 function configTabs(config) {
