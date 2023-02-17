@@ -1,10 +1,14 @@
-const decorateSignIn = async ({ blockEl, decoratedEl, toFragment, getPlaceholder }) => {
+import { getPlaceholder, toFragment } from '../../utilities.js';
+
+const decorateSignIn = async ({ blockEl, decoratedEl }) => {
   const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
   const signInLabel = await getPlaceholder('sign-in').then(({ value }) => value);
   if (!dropDown) {
     const signIn = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signin">${signInLabel}</a>`;
     signIn.addEventListener('click', (e) => {
       e.preventDefault();
+      // TODO confirm adobeIMS is always set
+      // e.g. when it's consumed as NPM package or when we are on a consumer page
       window.adobeIMS.signIn();
     });
     return signIn;

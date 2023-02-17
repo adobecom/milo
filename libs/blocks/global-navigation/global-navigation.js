@@ -162,7 +162,7 @@ class Gnav {
         loadBlock('./blocks/profile/signIn.js'),
         loadStyles('./blocks/profile/signIn.css'),
       ]);
-      const signInEl = await decorateSignIn({ blockEl, decoratedEl, toFragment, getPlaceholder });
+      const signInEl = await decorateSignIn({ blockEl, decoratedEl });
       decoratedEl.append(signInEl);
       window.addEventListener('feds:profileSignIn:clicked', async () => {
         await this.loadDelayed();
