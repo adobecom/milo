@@ -1,7 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { decorateActionArea } from '../../libs/utils/decorate';
 
 const utils = {};
 
@@ -369,6 +368,11 @@ describe('Utils', () => {
     const links7 = divs[7].querySelectorAll('a');
     expect(Array.from(links7[0].classList).includes('con-button')).to.equal(true);
     expect(Array.from(links7[0].classList).includes('fill')).to.equal(true);
+
+    const links8 = divs[8].querySelectorAll('a');
+    expect(Array.from(links8[0].classList).includes('con-button')).to.equal(false);
+    expect(Array.from(links8[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links8[2].classList).includes('con-button')).to.equal(true);
   });
 
   it('adds privacy trigger to cookie preferences link in footer', () => {

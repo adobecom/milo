@@ -71,7 +71,7 @@ const buttonable = (b) => {
   return (isStrongOrEm(b.parentElement) && isPara(b.parentElement.parentElement))
     || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
 };
-export function decorateButton(button) {
+export function decorateButton(button, siblingButtons = false) {
   const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
   const block = button.closest('.section div[class]:not(.content)');
   const blockSize = getBlockSize(block);
@@ -83,7 +83,7 @@ export function decorateButton(button) {
   const grandChild = child?.childNodes?.length > 0
     ? Array.from(child.childNodes).filter(isStrongOrEm)[0] : null;
   const nodes = [parent.nodeName, child?.nodeName, grandChild?.nodeName];
-  const text = parent.textContent || '';
+  const text = siblingButtons ? button.textContent : parent.textContent;
   const buttonTypes = [];
   if (nodes.includes('STRONG') && nodes.includes('EM')) {
     buttonTypes.push('fill');
@@ -94,7 +94,7 @@ export function decorateButton(button) {
   }
   button.classList.add('con-button', ...buttonTypes);
   button.classList.add(size);
-  const validParent = parent.nodeName === 'P' ? null : parent;
+  const validParent = parent.nodeName === 'P' || siblingButtons ? null : parent;
   [grandChild, child, validParent].forEach((n) => {
     if (n && ['STRONG', 'EM'].includes(n.nodeName)) {
       n.replaceWith(getCopyDescendants(n));
@@ -141,5 +141,12 @@ export async function decorateLinkToButton(link) {
   });
   if (!validSiblings) return;
 
+  if (isStrongOrEm(link.parentElement)) {
+    // catch special case where several buttonable links are under the same em or strong
+    [...link.parentElement.querySelectorAll(':scope a')]
+      .filter((l) => l !== link).forEach((l) => {
+        decorateButton(l, true);
+      });
+  }
   decorateButton(link);
 }
