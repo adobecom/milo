@@ -151,17 +151,22 @@ describe('Utils', () => {
       expect(document.querySelector('header')).to.not.exist;
       expect(document.querySelector('footer')).to.not.exist;
     });
-  
+
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
       expect(lastPara.textContent).to.equal('nothing to see here');
     });
-  
+
+    it('Decorates meta helix url', () => {
+      const meta = document.head.querySelector('[name="hlx-url"]');
+      expect(meta.content).to.equal('http://localhost:2000/otis');
+    });
+
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
     });
-  
+
     it('getLocale for different paths', () => {
       const locales = {
         '': { ietf: 'en-US', tk: 'hah7vzn.css' },
