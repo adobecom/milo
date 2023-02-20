@@ -39,16 +39,20 @@ export function getCountry() {
   return getLocale()?.split('-').pop() || 'US';
 }
 
-// TODO this is just prototyped and should also support ?milolibs=test-branch
+// TODO this is just prototyped
 export const getFedsPlaceholderConfig = () => {
-  const { locale } = getConfig();
-  const origin = (window.location.origin.includes('localhost') || window.location.origin.includes('.hlx.'))
-    ? window.location.origin
-    : 'https://adobe.com';
+  const { locale, miloLibs } = getConfig();
+  let libOrigin = 'https://adobe.com/libs';
+  if (window.location.origin.includes('localhost')) {
+    libOrigin = `${window.location.origin}/libs`;
+  }
+  if (window.location.origin.includes('.hlx.')) {
+    libOrigin = miloLibs.replace('hlx.live', 'hlx.page') || 'https://main--milo--adobecom.hlx.page/libs';
+  }
   return {
     locale: {
       ...locale,
-      contentRoot: `${origin}/libs/feds${locale.prefix}`,
+      contentRoot: `${libOrigin}/feds${locale.prefix}`,
     },
   };
 };
