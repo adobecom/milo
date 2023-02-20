@@ -42,10 +42,9 @@ export function getCountry() {
 // TODO this is just prototyped and should also support ?milolibs=test-branch
 export const getFedsPlaceholderConfig = () => {
   const { locale } = getConfig();
-  let origin = 'https://adobe.com';
-  if (window.location.origin.includes('localhost') || window.location.origin.includes('.hlx.')) {
-    origin = window.location.origin;
-  }
+  const origin = (window.location.origin.includes('localhost') || window.location.origin.includes('.hlx.'))
+    ? window.location.origin
+    : 'https://adobe.com';
   return {
     locale: {
       ...locale,
