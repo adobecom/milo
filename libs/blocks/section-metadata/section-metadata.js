@@ -7,7 +7,12 @@ function handleBackground(div, section) {
   } else {
     const color = div.textContent;
     if (color) {
-      section.style.backgroundColor = color;
+      if (color.indexOf('gradient') !== -1) {
+        section.style.background = color;
+      }
+      else {
+        section.style.backgroundColor = color;
+      }
     }
   }
 }
