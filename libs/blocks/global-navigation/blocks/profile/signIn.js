@@ -1,8 +1,9 @@
-import { getPlaceholder, toFragment } from '../../utilities.js';
+import { toFragment, getFedsPlaceholderConfig } from '../../utilities/utilities.js';
+import { replaceKey } from '../../../../features/placeholders.js';
 
 const decorateSignIn = async ({ blockEl, decoratedEl }) => {
   const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
-  const signInLabel = await getPlaceholder('sign-in').then(({ value }) => value);
+  const signInLabel = await replaceKey('sign-in', getFedsPlaceholderConfig());
   if (!dropDown) {
     const signIn = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signin">${signInLabel}</a>`;
     signIn.addEventListener('click', (e) => {

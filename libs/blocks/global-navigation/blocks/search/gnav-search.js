@@ -3,8 +3,9 @@ import {
   debounceCallback,
   getLocale,
   getCountry,
-  getPlaceholders,
-} from '../../utilities.js';
+  getFedsPlaceholderConfig,
+} from '../../utilities/utilities.js';
+import { replaceKeyArray } from '../../../../features/placeholders.js';
 
 const CONFIG = {
   suggestions: {
@@ -28,15 +29,20 @@ class Search {
   }
 
   async init() {
-    this.labels = await getPlaceholders(['search', 'clear-results', 'try-advanced-search']);
+    await this.getLabels();
     this.decorate();
     this.addEventListeners();
   }
 
+  async getLabels() {
+    this.labels = {};
+    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], getFedsPlaceholderConfig());
+  }
+
   decorate() {
-    this.input = toFragment`<input placeholder="${this.labels.search.value}" aria-label="${this.labels.search.value}" class="feds-search-input" autocomplete="off" aria-autocomplete="list" aria-controls="feds-search-results" daa-ll="search-results:standard search" />`;
+    this.input = toFragment`<input placeholder="${this.labels.search}" aria-label="${this.labels.search}" class="feds-search-input" autocomplete="off" aria-autocomplete="list" aria-controls="feds-search-results" daa-ll="search-results:standard search" />`;
     this.resultsList = toFragment`<ul class="feds-search-results" id="feds-search-results" role="region" daa-ll="search-results:suggested-search:click"></ul>`;
-    this.clearButton = toFragment`<button tabindex="0" class="feds-search-clear" aria-label="${this.labels['clear-results'].value}"></button>`;
+    this.clearButton = toFragment`<button tabindex="0" class="feds-search-clear" aria-label="${this.labels.clearResults}"></button>`;
     this.searchBar = toFragment`
       <aside class="feds-search-bar">
         <div class="feds-search-field">
@@ -227,7 +233,7 @@ class Search {
   getNoResultsTemplate(query = this.query) {
     // TODO: should we style this element different than regular results?
     return toFragment`<li>
-      <a href="${Search.getHelpxLink(query)}" class="feds-search-result"><span>${this.labels['try-advanced-search'].value}</span></a>
+      <a href="${Search.getHelpxLink(query)}" class="feds-search-result"><span>${this.labels.tryAdvancedSearch}</span></a>
     </li>`;
   }
 

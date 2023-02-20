@@ -6,7 +6,8 @@ import {
   loadStyle,
 } from '../../utils/utils.js';
 import { analyticsGetLabel } from '../../martech/attributes.js';
-import { toFragment, getPlaceholder } from './utilities.js';
+import { toFragment, getFedsPlaceholderConfig } from './utilities/utilities.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -105,7 +106,7 @@ class Gnav {
         Profile,
         { Search },
       ] = await Promise.all([
-        loadBlock('./delayed-utilities.js'),
+        loadBlock('./utilities/delayed-utilities.js'),
         loadBlock('./blocks/navMenu/menu.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/profile.js'),
@@ -382,7 +383,12 @@ class Gnav {
         ${this.blocks.search.config.trigger}
       </div>`;
 
-    getPlaceholder('search').then(({ value }) => this.blocks.search.config.trigger.setAttribute('aria-label', value));
+    // Replace the aria-label value once placeholder is fetched
+    replaceKey('search', getFedsPlaceholderConfig()).then((placeholder) => {
+      if (placeholder && placeholder.length) {
+        this.blocks.search.config.trigger.setAttribute('aria-label', placeholder);
+      }
+    });
 
     this.blocks.search.config.trigger.addEventListener('click', async () => {
       await this.loadSearch();

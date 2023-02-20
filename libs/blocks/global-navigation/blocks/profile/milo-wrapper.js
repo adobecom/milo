@@ -1,11 +1,14 @@
-import { toFragment, getPlaceholder, getPlaceholders } from '../../utilities.js';
+import { toFragment, getFedsPlaceholderConfig } from '../../utilities/utilities.js';
+import {
+  replaceKey,
+  replaceKeyArray,
+} from '../../../../features/placeholders.js';
 
-const initProfileButton = async ({
-  blockEl,
-  decoratedEl,
-  avatar,
-}) => {
-  const placeholder = await getPlaceholder('profile-button');
+const initProfileButton = async ({ blockEl, decoratedEl, avatar }) => {
+  const profileButtonLabel = await replaceKey(
+    'profile-button',
+    getFedsPlaceholderConfig(),
+  );
   if (blockEl.children.length > 1) decoratedEl.classList.add('has-menu');
   decoratedEl.closest('nav.gnav')?.classList.add('signed-in');
 
@@ -14,7 +17,7 @@ const initProfileButton = async ({
         class="feds-profile-button" 
         aria-expanded="false" 
         aria-controls="feds-profile-menu"
-        aria-label="${placeholder.value}"
+        aria-label="${profileButtonLabel}"
         daa-ll="Account"
         aria-haspopup="true"
       > 
@@ -26,7 +29,23 @@ const initProfileButton = async ({
 };
 
 const initProfileMenu = async ({ blockEl, ProfileClass, ...rest }) => {
-  const placeholders = await getPlaceholders(['profile-button', 'sign-out', 'view-account', 'manage-teams', 'manage-enterprise']);
+  const placeholders = {};
+  [
+    placeholders.profileButton,
+    placeholders.signOut,
+    placeholders.viewAccount,
+    placeholders.manageTeams,
+    placeholders.manageEnterprise,
+  ] = await replaceKeyArray(
+    [
+      'profile-button',
+      'sign-out',
+      'view-account',
+      'manage-teams',
+      'manage-enterprise',
+    ],
+    getFedsPlaceholderConfig(),
+  );
   const profile = new ProfileClass({
     localMenu: blockEl.querySelector('h5')?.parentElement,
     placeholders,

@@ -1,5 +1,5 @@
 import { getConfig } from '../../../../utils/utils.js';
-import { toFragment } from '../../utilities.js';
+import { toFragment } from '../../utilities/utilities.js';
 
 const decorateEmail = (email) => {
   const MAX_CHAR = 12;
@@ -57,7 +57,7 @@ class Profile {
   decorateSignOut() {
     const signOutLink = toFragment`
       <li>
-        <a class="feds-profile-action" daa-ll="${this.placeholders['sign-out'].value}">${this.placeholders['sign-out'].value}</a>
+        <a class="feds-profile-action" daa-ll="${this.placeholders.signOut}">${this.placeholders.signOut}</a>
       </li>
     `;
 
@@ -80,20 +80,20 @@ class Profile {
         <a 
           href="${decorateProfileLink('https://account.adobe.com', 'account')}" 
           class="feds-profile-header"
-          daa-ll="${this.placeholders['view-account'].value}"
+          daa-ll="${this.placeholders.viewAccount}"
           aria-label="${this.accountLinkText}"
         >
           <img class="feds-profile-img" src="${this.avatar}"></img>
           <div class="feds-profile-details">
             <p class="feds-profile-name">${this.displayName}</p>
             <p class="feds-profile-email">${decorateEmail(this.email)}</p>
-            <p class="feds-profile-account">${this.placeholders['view-account'].value}</p>
+            <p class="feds-profile-account">${this.placeholders.viewAccount}</p>
           </div>
         </a>
         ${this.localMenu}
         <ul class="feds-profile-actions">
-          ${this.sections.manage.items.team?.id ? decorateAction(this.placeholders['manage-teams'].value, 'https://adminconsole.adobe.com/team') : ''}
-          ${this.sections.manage.items.enterprise?.id ? decorateAction(this.placeholders['manage-enterprise'].value, 'https://adminconsole.adobe.com') : ''}
+          ${this.sections.manage.items.team?.id ? decorateAction(this.placeholders.manageTeams, 'https://adminconsole.adobe.com/team') : ''}
+          ${this.sections.manage.items.enterprise?.id ? decorateAction(this.placeholders.manageEnterprise, 'https://adminconsole.adobe.com') : ''}
           ${this.decorateSignOut()}
         </ul>
       </div>
