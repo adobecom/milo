@@ -3,7 +3,7 @@
     <script type="importmap">
         {
           "imports": {
-            "../../../../libs/blocks/global-navigation/utilities.js": "./mocks/getPlaceholder.js"
+            "../../../../libs/features/placeholders.js": "./mocks/replaceKey.js"
           }
         }
       </script>
@@ -12,8 +12,15 @@
     <script type="module">
       import { expect } from '@esm-bundle/chai';
       import { runTests } from '@web/test-runner-mocha';
-      import { toFragment, getPlaceholder } from '../../../../libs/blocks/global-navigation/utilities.js';
-      import decorateSignIn from '. ./../../../libs/blocks/global-navigation/blocks/profile/signIn.js';
+      import { toFragment } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
+      import decorateSignIn from '../../../../libs/blocks/global-navigation/blocks/profile/signIn.js';
+      import {replaceKey} from '../../../../libs/features/placeholders.js'
+      import { setConfig } from '../../../../libs/utils/utils.js';
+      const config = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+      };
+      setConfig(config);
 
       const signInDropdown = () => toFragment`
             <div>
