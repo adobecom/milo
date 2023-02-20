@@ -1,0 +1,46 @@
+<html>
+<head>
+    <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
+    <link rel="stylesheet" href="/libs/blocks/gnav/gnav.css">
+</head>
+<body>
+<header class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/gnav">
+</header>
+<main>
+    <div class="section-wrapper">
+        <div>
+            <h1 id="welcome-to-the-gnav-test">Welcome to the Gnav/Breadcrumbs Test</h1>
+            <div id="wrong" class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/wrong-gnav"></div>
+            <div style="height: 1000px">
+                - no breadcrumbs block defined for this page.<br/>
+                - a breadscrumbs file is defined in the same folder as this page
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+<script type="module">
+  import { runTests } from '@web/test-runner-mocha';
+  import { expect } from '@esm-bundle/chai';
+  import { delay } from '../../../../../helpers/waitfor.js';
+  import gnav from '../../../../../../libs/blocks/gnav/gnav.js';
+  import getItems from '../utils.js';
+
+  runTests(() => {
+    describe('breadcrumbs', () => {
+      it('breadcrumbs defined in the breadcrumbs file in the same folder', async () => {
+        await gnav(document.querySelector('header'));
+        await delay(300);
+        const expected = [
+          {href: 'http://www.google.com/', title: 'from-file'},
+          {href: 'http://www.adobe.com/', title: 'Actors'},
+          {href: 'http://www.day.com/', title: 'Players'},
+          {href: '', title: 'page.test.html'},
+        ];
+        expect(getItems()).to.eql(expected);
+      });
+    });
+  });
+</script>
+</html>
+
