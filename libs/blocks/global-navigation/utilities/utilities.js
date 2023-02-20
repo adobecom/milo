@@ -42,8 +42,14 @@ export function getCountry() {
 // TODO this is just prototyped and should also support ?milolibs=test-branch
 export const getFedsPlaceholderConfig = () => {
   const { locale } = getConfig();
+  let origin = 'https://adobe.com';
   if (window.location.origin.includes('localhost') || window.location.origin.includes('.hlx.')) {
-    return { locale: { ...locale, contentRoot: `${window.location.origin}/libs/feds${locale.prefix}` } };
+    origin = window.location.origin;
   }
-  return { locale: { ...locale, contentRoot: `https://adobe.com/libs/feds${locale.prefix}` } };
+  return {
+    locale: {
+      ...locale,
+      contentRoot: `${origin}/libs/feds${locale.prefix}`,
+    },
+  };
 };
