@@ -160,4 +160,3 @@ export default async function addBreadcrumbs(element, wrapper) {
   wrapper.append(breadcrumbs);
   setBreadcrumbSEO(breadcrumbs);
 }
-

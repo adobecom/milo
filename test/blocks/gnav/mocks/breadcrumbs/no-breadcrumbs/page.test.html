@@ -24,8 +24,12 @@
   import { expect } from '@esm-bundle/chai';
   import { delay } from '../../../../../helpers/waitfor.js';
   import gnav from '../../../../../../libs/blocks/gnav/gnav.js';
+  import { setConfig } from '../../../../../../libs/utils/utils.js';
 
   runTests(() => {
+    const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+    setConfig(config);
+
     describe('breadcrumbs', () => {
       it('breadcrumbs is turned off for this page', async () => {
         await gnav(document.querySelector('header'));

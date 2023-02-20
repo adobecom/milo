@@ -27,8 +27,12 @@
   import { delay } from '../../../../../../../../helpers/waitfor.js';
   import gnav from '../../../../../../../../../libs/blocks/gnav/gnav.js';
   import getItems from '../../../../utils.js';
+  import { setConfig } from '../../../../../../../../../libs/utils/utils.js';
 
   runTests(() => {
+    const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+    setConfig(config);
+
     describe('breadcrumbs', () => {
       it('one of the ancestor pages is hidden from the breadcrumbs', async () => {
         await gnav(document.querySelector('header'));
