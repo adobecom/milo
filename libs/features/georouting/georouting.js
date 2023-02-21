@@ -1,3 +1,5 @@
+import { getConfig, loadStyle } from '../../utils/utils.js';
+
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -126,6 +128,12 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
 
 async function showModal(details) {
   const { getModal } = await import('../../blocks/modal/modal.js');
+  const styleLoaded = new Promise((resolve) => {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    loadStyle(`${base}/blocks/modal/modal.css`, resolve);
+  });
+  await styleLoaded;
   return getModal(null, { class: 'locale-modal', id: 'locale-modal', content: details, closeEvent: 'closeModal' });
 }
 
