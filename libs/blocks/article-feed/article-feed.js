@@ -307,6 +307,7 @@ async function buildFilter(type, tax, block, config) {
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
+  // console.log(category);
   category.forEach((topic) => {
     const item = tax.get(topic, tax[`${type.toUpperCase()}`]);
     if (item.level === 1) {
@@ -460,7 +461,7 @@ async function decorateArticleFeed(
   }
   if (articles.length > pageEnd || !feed.complete) {
     const loadMore = document.createElement('a');
-    loadMore.className = 'con-button outline';
+    loadMore.className = 'load-more con-button outline';
     loadMore.href = '#';
     loadMore.textContent = await replacePlaceholder('load-more');
     articleFeedEl.append(loadMore);

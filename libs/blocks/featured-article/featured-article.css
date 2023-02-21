@@ -1,7 +1,7 @@
 .featured-article-card {
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
+  margin: 0 auto 24px;
 }
 
 .featured-article a:any-link {
@@ -52,6 +52,7 @@
 
 .featured-article-card-body h3 {
   font-size: var(--type-heading-l-size);
+  color: var(--text-color);
   line-height: var(--type-heading-l-lh);
   margin: 0;
   margin-bottom: 1rem;
