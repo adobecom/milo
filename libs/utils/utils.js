@@ -636,7 +636,7 @@ async function loadMartech(config) {
         };
       }
       return {
-        url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.js',
+        url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
         edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
       };
       /* c8 ignore stop */
