@@ -1,3 +1,7 @@
+/*
+Common styles for the block library
+*/
+
 .sk-library {
   width: 360px;
   height: 360px;
@@ -11,8 +15,8 @@
 /* Header */
 .sk-library-header {
   display: flex;
-  justify-content: space-between;
   background: rgb(0 0 0 / 35%);
+  flex-flow: wrap;
 }
 
 .sk-library-title {
@@ -55,6 +59,61 @@
 
 .sk-library.allow-back .sk-library-back {
   display: block;
+}
+
+.sk-library-search {
+  display: flex;
+  position: relative;
+  flex: 1 1 100%;
+}
+
+.sk-library-search.is-hidden {
+  display: none;
+}
+
+.sk-library-search::before {
+  position: absolute;
+  content: '';
+  background: url('../../ui/img/spectrum-search.svg') no-repeat;
+  width: 20px;
+  height: 20px;
+  margin-left: 11px;
+  top: 11px;
+  opacity: 0.6;
+}
+
+input.sk-library-search-input {
+  width: 100%;
+  padding-left: 35px;
+  background: rgb(0 0 0 / 100%);
+  color: #FFF;
+  font-family: inherit;
+  font-size: 14px;
+  border: none;
+  height: 35px;
+  padding-right: 31px;
+  border-top: 1px solid rgba(100 100 100 / 20%);
+  border-bottom: 1px solid rgba(100 100 100 / 20%);
+}
+
+input.sk-library-search-input:focus {
+  outline-width: 0;
+}
+
+.sk-library-search-clear {
+  background: url('../../ui/img/spectrum-close.svg') no-repeat;
+  width: 16px;
+  height: 30px;
+  margin-top: 10px;
+  margin-right: 8px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+}
+
+.sk-library-search-clear.is-hidden {
+  visibility: hidden;
 }
 
 /* Content */
@@ -142,6 +201,14 @@
   border-bottom: 1px solid #676767;
 }
 
+/* 
+ * Fixes block list getting cut off with search 
+ * Margin height equal to search bar height
+*/
+.sk-library ul.con-blocks-list.inset {
+  margin-bottom: 39px;
+}
+
 .sk-library .block-group::after,
 .sk-library .content-type::after {
   content: '';
@@ -175,6 +242,10 @@
   font-weight: 700;
 }
 
+.sk-library .block-group.is-hidden {
+  display: none;
+}
+
 .sk-library .content-type:hover,
 .sk-library .block-group:hover,
 .sk-library button:hover {
@@ -191,6 +262,10 @@
 
 .sk-library .block-group.is-open + .block-group-list {
   display: block;
+}
+
+.sk-library .block-group-list li.is-hidden {
+  display: none;
 }
 
 .sk-library .block-group-list li:hover {
@@ -217,4 +292,31 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+}
+
+
+ul.con-type-list.con-assets-list {
+  display: flex;
+  align-items: start;
+  width: 360px;
+  flex-wrap: wrap;
+}
+
+.con-assets-list li {
+  flex: 0 0 50%;
+  height: 180px;
+  text-align: middle;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.con-assets-list li:hover {
+  cursor: pointer;
+  background: #85858545;
+}
+
+.con-assets-list li:nth-child(odd) {
+  border-right: 1px solid #676767;
 }

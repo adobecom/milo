@@ -4,10 +4,6 @@
 }
 
 .section.chart-section {
-    display: -webkit-box;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -49,12 +45,12 @@
   font-weight: 700;
 }
 
-.chart .subtitle * {
+.chart .subtitle *,
+.chart .subheading * {
   color: var(--spectrum-grey-900);
   font-weight: normal;
   font-size: 18px;
   line-height: 1.5;
-  margin-bottom: 40px;
   display: block;
 }
 
@@ -99,6 +95,10 @@
 .chart .chart-container,
 .chart .chart-wrapper {
   width: 100%;
+}
+
+.chart .chart-container {
+  margin-top: 40px;
 }
 
 .chart.oversized-number .chart-wrapper {

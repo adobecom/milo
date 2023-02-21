@@ -1,4 +1,4 @@
-import { loadScript, getConfig } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -17,16 +17,16 @@ export const DESKTOP_BREAKPOINT = 1200;
 export const TABLET_BREAKPOINT = 600;
 export const colorPalette = {
   seafoam: '#0FB5AE',
-  orange: '#F68511',
   indigo: '#4046CA',
-  purple: '#7326D3',
-  blue: '#147AF3',
-  lime: '#72E06A',
-  lavender: '#7E84FA',
+  orange: '#F68511',
   magenta: '#DE3D82',
-  green: '#008F5D',
-  copper: '#CB5D00',
+  lavender: '#7E84FA',
+  lime: '#72E06A',
+  blue: '#147AF3',
+  purple: '#7326D3',
   yellow: '#E8C600',
+  copper: '#CB5D00',
+  green: '#008F5D',
   chartreuse: '#BCE931',
 };
 const SECTION_CLASSNAME = 'chart-section';
@@ -43,7 +43,7 @@ const chartTypes = [
 
 export function processDataset(data) {
   const dataset = {};
-  const optionalHeaders = ['unit', 'group', 'color'];
+  const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
   const units = headers?.[unitKey]?.split('-') || [];
@@ -333,15 +333,21 @@ export const pieSeriesOptions = (size) => {
 /**
  * Returns object of echart options
  * @param {string} chartType
- * @param {object} dataset
+ * @param {object} processedData
  * @param {object} series
- * @param {array} headers
- * @param {array} colors
  * @param {string} size
- * @param {array} units
+ * @param {array} colors
+ * @param {integer} labelDeg
  * @returns {object}
  */
-export const getChartOptions = (chartType, dataset, series, headers, colors, size, units = []) => {
+export const getChartOptions = ({
+  chartType,
+  processedData: { dataset, headers, units = [] } = {},
+  series,
+  size,
+  colors,
+  labelDeg = 0,
+}) => {
   const hasOverride = headers ? hasPropertyCI(headers, 'color') : false;
   const source = dataset?.source;
   const firstDataset = source?.[1]?.slice() || [];
@@ -349,15 +355,28 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
   const isColumn = chartType === 'column';
   const isPie = chartType === 'pie';
   const isDonut = chartType === 'donut';
+  const isDiagonalLabel = labelDeg > 0;
   let xUnit = '';
   let yUnits = units;
 
   if (units[0] === 'date') {
-    xUnit = units[0];
+    [xUnit] = units;
     yUnits = units.length > 1 ? units.slice(1) : [''];
   }
 
   firstDataset.shift();
+
+  let bottomGrid = 90;
+
+  if (size === LARGE) {
+    if (isDiagonalLabel) {
+      bottomGrid = 30;
+    } else {
+      bottomGrid = 60;
+    }
+  } else if (isDiagonalLabel) {
+    bottomGrid = 40;
+  }
 
   return {
     dataset,
@@ -379,9 +398,13 @@ export const getChartOptions = (chartType, dataset, series, headers, colors, siz
       trigger: isBar || isPie || isDonut ? 'item' : 'axis',
       axisPointer: { type: isColumn ? 'none' : 'line' },
     },
+    grid: { bottom: bottomGrid },
     xAxis: {
       type: isBar ? 'value' : 'category',
-      axisLabel: { show: !isBar },
+      axisLabel: {
+        show: !isBar,
+        rotate: labelDeg,
+      },
       axisTick: { show: !isBar },
       max: (value) => {
         if (!isBar) return null;
@@ -431,28 +454,28 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = (chartWrapper, chartType, { data, series }, colors, size) => {
+const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
   const themeName = getTheme(size);
-  const { dataset, headers, units } = processDataset(data);
-  const chartOptions = getChartOptions(chartType, dataset, series, headers, colors, size, units);
+  const options = { chartType, processedData: data, series, size, ...rest };
+  const chartOptions = getChartOptions(options);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
   chartWrapper.tabIndex = 0;
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
-    setDonutListeners(chart, dataset?.source, series, units);
+    setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
   return chart;
 };
 
-const handleIntersect = (chartWrapper, chartType, data, colors, size) => (entries, observer) => {
+const handleIntersect = (options) => (entries, observer) => {
   if (!Array.isArray(entries)) return;
 
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      initChart(chartWrapper, chartType, data, colors, size);
+      initChart(options);
       observer.unobserve(entry.target);
     }
   });
@@ -487,22 +510,47 @@ export const getResponsiveSize = (authoredSize) => {
   return size;
 };
 
-/* c8 ignore next 19 */
-const handleResize = (el, authoredSize, chartType, data, colors) => {
+export const getLabelDegree = (chartStyles, isDesktop) => {
+  let diagonal = false;
+
+  if (isDesktop) {
+    diagonal = [...chartStyles]?.includes('desktop-diagonal-labels');
+  } else {
+    diagonal = [...chartStyles]?.includes('mobile-diagonal-labels');
+  }
+
+  return diagonal ? 60 : 0;
+};
+
+/* c8 ignore next 31 */
+const handleResize = (el, authoredSize, chartType, data, series, colors) => {
   const currentSize = getResponsiveSize(authoredSize);
-  const previousSize = el?.getAttribute('data-responsive-size');
-  const previousIsLarge = previousSize === LARGE;
-  const currentIsLarge = currentSize === LARGE;
-  const chartWrapper = el?.querySelector('.chart-wrapper');
+  const previousSize = el.getAttribute('data-responsive-size');
+  const chartWrapper = el.querySelector('.chart-wrapper');
   const chartInstance = window.echarts?.getInstanceByDom(chartWrapper);
+  const previousDevice = el.getAttribute('data-device');
+  const width = window.innerWidth;
+  let currentDevice = 'mobile';
+  let isDesktop = false;
+
+  if (width >= DESKTOP_BREAKPOINT) {
+    currentDevice = 'desktop';
+    isDesktop = true;
+  }
 
   if (currentSize !== previousSize) {
     el.setAttribute('data-responsive-size', currentSize);
   }
 
-  if (previousIsLarge !== currentIsLarge) {
+  if (currentDevice !== previousDevice) {
+    const chartStyles = el.classList;
+    const labelDeg = getLabelDegree(chartStyles, isDesktop);
+
+    el.setAttribute('data-device', currentDevice);
     chartInstance?.dispose();
-    initChart(chartWrapper, chartType, data, colors, currentSize);
+    initChart({
+      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg,
+    });
   } else {
     chartInstance?.resize();
   }
@@ -530,16 +578,17 @@ export const getOversizedNumberSize = (charLength) => {
 };
 
 const init = (el) => {
-  const children = el?.querySelectorAll(':scope > div');
-  const chartWrapper = children[2]?.querySelector(':scope > div');
+  const children = el.querySelectorAll(':scope > div');
+  const chartContainer = children[2];
+  const chartWrapper = chartContainer?.querySelector(':scope > div');
   children[0]?.classList.add('title');
   children[1]?.classList.add('subtitle');
-  children[2]?.classList.add('chart-container');
+  chartContainer?.classList.add('chart-container');
   children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart-wrapper');
 
-  const chartStyles = el?.classList;
-  const section = el?.parentElement?.matches('.section') ? el.parentElement : null;
+  const chartStyles = el.classList;
+  const section = el.parentElement?.matches('.section') ? el.parentElement : null;
   const sectionChildren = section?.querySelectorAll(':scope > div:not(.section-metadata)');
   const upNumber = sectionChildren?.length;
   section?.classList.add(`up-${upNumber}`);
@@ -553,7 +602,7 @@ const init = (el) => {
   el.classList.add(authoredSize);
   el.setAttribute('data-responsive-size', size);
 
-  const chartType = chartTypes?.find((type) => el?.className?.indexOf(type) !== -1);
+  const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
   const dataLink = chartWrapper?.querySelector('a[href$="json"]');
 
   dataLink?.remove();
@@ -561,6 +610,8 @@ const init = (el) => {
   if (!chartType || !chartWrapper || !dataLink) return;
 
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
+  const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+  const labelDeg = getLabelDegree(chartStyles, isDesktop);
 
   if (chartType === 'list') {
     // Must use chained promise. Await will cause loading issues
@@ -568,6 +619,7 @@ const init = (el) => {
       .then(([json, { default: initList }]) => {
         initList(chartWrapper, json, colorPalette[authoredColor]);
       })
+      // eslint-disable-next-line no-console
       .catch((error) => console.log('Error loading script:', error));
     return;
   }
@@ -588,6 +640,7 @@ const init = (el) => {
 
         chartWrapper.innerHTML = html;
       })
+      // eslint-disable-next-line no-console
       .catch((error) => console.log('Error loading script:', error));
     return;
   }
@@ -599,17 +652,28 @@ const init = (el) => {
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
     .then(async (values) => {
       const json = values[0];
-      const data = chartData(json);
+      const rawData = chartData(json);
 
-      if (!data) return;
+      if (!rawData) return;
 
-      const hasOverride = hasPropertyCI(data?.data[0], 'color');
+      const { data, series } = rawData;
+      const processedData = processDataset(data);
+      const hasOverride = hasPropertyCI(processedData.headers, 'color');
       const colors = hasOverride
-        ? getOverrideColors(authoredColor, data.data)
+        ? getOverrideColors(authoredColor, data)
         : getColors(authoredColor);
+      const options = {
+        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg,
+      };
+      const text = propertyValueCI(processedData.headers, 'subheading');
+
+      if (text) {
+        const subheading = createTag('p', { class: 'subheading' }, text);
+        chartContainer.insertAdjacentElement('beforebegin', subheading);
+      }
 
       if (!(window.IntersectionObserver)) {
-        initChart(chartWrapper, chartType, data, colors, size);
+        initChart(options);
       } else {
         /* c8 ignore next 12 */
         const observerOptions = {
@@ -619,7 +683,7 @@ const init = (el) => {
         };
 
         const observer = new IntersectionObserver(
-          handleIntersect(chartWrapper, chartType, data, colors, size),
+          handleIntersect(options),
           observerOptions,
         );
         observer.observe(el);
@@ -627,12 +691,13 @@ const init = (el) => {
 
       const title = children[0]?.textContent.trim() || children[1]?.textContent.trim();
       chartWrapper.setAttribute('aria-label', `${await replaceKey(`${chartType}-chart`, config)}: ${title}`);
-
+      /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
         1000,
-        () => handleResize(el, authoredSize, chartType, data, colors),
+        () => handleResize(el, authoredSize, chartType, processedData, series, colors),
       ));
     })
+    // eslint-disable-next-line no-console
     .catch((error) => console.log('Error loading script:', error));
 };
 
