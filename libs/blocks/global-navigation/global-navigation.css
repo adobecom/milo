@@ -184,6 +184,15 @@
   content: '/';
 }
 
+/* Profile styles */
+.feds-profile {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  position: relative;
+  justify-content: end;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
@@ -381,14 +390,6 @@ header .app-launcher {
 }
 
 /* END APP LAUNCHER */
-
-.feds-profile {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  position: relative;
-  justify-content: end;
-}
 
 @media (min-width: 900px) {
   header .gnav-navitem {

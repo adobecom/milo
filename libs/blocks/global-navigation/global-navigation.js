@@ -98,7 +98,6 @@ class Gnav {
     // eslint-disable-next-line no-async-promise-executor
     this.ready = this.ready || new Promise(async (resolve) => {
       this.el.removeEventListener('click', this.loadDelayed);
-      // TODO load placeholders here? is that too late?
       const [
         { MenuControls },
         { decorateMenu, decorateLargeMenu },
