@@ -189,7 +189,8 @@ export function isValidConfig(config) {
  */
 export async function replaceInner(path, element) {
   if (!path || !element) return false;
-  const plainPath = path.endsWith('.plain.html') ? path : `${path}.plain.html`;
+  let plainPath = path.endsWith('/') ? `${path}index` : path;
+  plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
   try {
     const resp = await fetch(plainPath);
     if (!resp.ok) {
@@ -275,7 +276,7 @@ export function getConfigForInstantExperiment(experimentId, instantExperiment) {
  * @param {object} cfg
  * @returns {object} containing the experiment manifest
  */
-export async function getConfigForFullExperiment(experiment, manifestData) {
+export async function getConfigForFullExperiment(experiment = '', manifestData = undefined) {
   const experimentId = experiment.includes('/')
     ? experiment.slice(experiment.lastIndexOf('/') + 1)
     : experiment;
@@ -345,7 +346,7 @@ const checkForPageReplacement = async (controlPages, selectedPages, id) => {
 
   const currentPath = window.location.pathname;
   const index = controlPages.indexOf(currentPath);
-  if (index > 0 || selectedPages[index] !== currentPath) {
+  if (index >= 0 || selectedPages[index] !== currentPath) {
     document.body.classList.add(`experiment-${id}`);
     await replaceInner(selectedPages[index], document.querySelector('main'));
   }

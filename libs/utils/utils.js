@@ -791,10 +791,11 @@ const handleAlloyResponse = (response) => {
 
   return items
     .map((item) => {
-      if (item?.data?.content?.experiment) {
+      if (item?.data?.content) {
+        const manifestData = JSON.parse(item.data.content);
         return {
-          experimentPath: item.data.content.experiment,
-          manifestData: item.data.content.manifest,
+          experimentPath: item.data.content.experiment || item.meta['offer.name'],
+          manifestData,
           experimentName: item.meta['activity.name'],
           variantLabel: item.meta['experience.name'],
         };
@@ -866,7 +867,7 @@ const checkForExperiments = async () => {
     manifestData,
     variantLabel,
   } = experiments[0]; // TODO: Support multiple experiments
-  if (!experimentPath || !variantLabel) return null;
+  if (!manifestData || !variantLabel) return null;
   performance.mark('start-runexperiment');
   const { runExperiment } = await import('../scripts/experiments.js');
   const experiment = await runExperiment(experimentPath, variantLabel, manifestData,instantExperiment, document.querySelector('main'), createTag);

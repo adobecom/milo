@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag } from '../../../libs/utils/utils.js';
 function transformLinkToAnimation(a) {
   if (!a || !a.href.includes('.mp4')) return null;
   const params = new URL(a.href).searchParams;
