@@ -106,7 +106,7 @@ export default async function loadBlocks(blocks, list, query) {
         return;
       }
       const blockVariationName = [...pageBlock.classList].join('.');
-      if (classVariationsFound.indexOf(blockVariationName) !== -1) {
+      if (classVariationsFound.includes(blockVariationName)) {
         return;
       }
       classVariationsFound.push(blockVariationName);
