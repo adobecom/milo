@@ -47,7 +47,7 @@ export const getFedsPlaceholderConfig = () => {
     libOrigin = `${window.location.origin}/libs`;
   }
   if (window.location.origin.includes('.hlx.')) {
-    libOrigin = miloLibs.replace('hlx.live', 'hlx.page') || 'https://main--milo--adobecom.hlx.page/libs';
+    libOrigin = miloLibs?.replace('hlx.live', 'hlx.page') || 'https://main--milo--adobecom.hlx.page/libs';
   }
   return {
     locale: {
