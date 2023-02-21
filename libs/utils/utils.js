@@ -142,7 +142,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -596,11 +596,7 @@ export async function loadDeferred(area, blocks, config) {
 }
 
 export function loadPrivacy() {
-  window.fedsConfig = {
-    privacy: {
-      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-    },
-  };
+  window.fedsConfig = { privacy: { otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db' } };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
   const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
@@ -681,7 +677,11 @@ export async function loadArea(area = document) {
   // Post section loading on document
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
-    if (georouting === 'on') {
+    const georoutingv2 = getMetadata('georoutingv2') || config.geoRoutingV2;
+    if (georoutingv2 === 'on') {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    } else if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }

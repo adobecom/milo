@@ -1,0 +1,116 @@
+.georouting-wrapper {
+  padding: 56px 24px 40px;
+}
+
+.dialog-modal.locale-modal-v2 {
+  background-image: url('/libs/img/GeoModal_BG_Map_Mobile.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.picker {
+  position: fixed;
+  margin-top: -2px;
+  background: #FFF 0 0 no-repeat padding-box;
+  box-shadow: 0 1px 4px #00000026;
+  border: 1px solid #B1B1B1;
+  border-radius: 4px;
+  opacity: 1;
+  padding-inline-start: 0;
+  min-width: 176px;
+}
+
+.picker li {
+  list-style-type: none
+}
+
+.picker li a {
+  width: calc(100% - 12px);
+  display: block;
+  padding-left: 12px;
+  color: #222;
+  font-size: 14px;
+}
+
+.picker li a:hover {
+  background-color: rgb(248 248 248);
+  text-decoration: none;
+}
+
+.dialog-modal.locale-modal-v2 a:first-child {
+  margin-right: 24px;
+}
+
+.dialog-modal.locale-modal-v2 a:last-child {
+  white-space: nowrap;
+}
+
+.dialog-modal.locale-modal-v2 .locale-text {
+  margin: 16px 0 26px;
+}
+
+.dialog-modal.locale-modal-v2 .link-wrapper {
+  line-height: 48px;
+}
+
+span.icon {
+  vertical-align: middle;
+}
+
+img.icon-milo {
+  top: 1px;
+}
+
+.icon-milo.down-arrow {
+  float: right;
+  margin-left: 4px;
+  top: 1px;
+}
+
+.tabs div[role="tablist"]  {
+  box-shadow: initial;
+  background: initial;
+}
+
+.tabs div[role="tablist"] .tabList-container {
+  padding: initial;
+  margin: initial;
+}
+
+.tabs.quiet div[role="tablist"] button[aria-selected="true"] {
+  border-bottom-color: var(--tabs-active-text-color);
+}
+
+.tabs .tabContent {
+  border-bottom: initial;
+  padding: initial;
+}
+
+@media (min-width: 480px) {
+  .dialog-modal.locale-modal-v2 {
+    background-image: url('/libs/img/GeoModal_BG_Map_Tablet.jpg');
+  }
+}
+
+@media (min-width: 600px) {
+  .georouting-wrapper {
+    padding: 56px 56px 40px;
+  }
+
+  .dialog-modal.locale-modal-v2 {
+    max-width: calc((100% - 6px) - 2em);
+  }
+}
+
+@media (min-width: 760px) {
+  .dialog-modal.locale-modal-v2 {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dialog-modal.locale-modal-v2 {
+    background-image: url('/libs/img/GeoModal_BG_Map_Desktop.jpg');
+  }
+}

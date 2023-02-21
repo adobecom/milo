@@ -44,15 +44,15 @@ function getStringKeyName(str) {
   return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
 }
 
-function configTabs(config) {
+function configTabs(config, rootElem) {
   if (config['active-tab']) {
-    const id = `tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
-    const sel = document.getElementById(id);
+    const id = `#tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
+    const sel = rootElem.querySelector(id);
     if (sel) sel.click();
   }
 }
 
-function initTabs(elm, config) {
+function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
   tabLists.forEach((tabList) => {
@@ -77,11 +77,21 @@ function initTabs(elm, config) {
   tabs.forEach((tab) => {
     tab.addEventListener('click', changeTabs);
   });
-  if (config) configTabs(config);
+  if (config) configTabs(config, rootElem);
 }
 
 let initCount = 0;
+
+function getRoot(block) {
+  let parent = block.parentElement;
+  while (parent.parentElement) {
+    parent = parent.parentElement;
+  }
+  return parent;
+}
+
 const init = (block) => {
+  const rootElem = getRoot(block);
   const rows = block.querySelectorAll(':scope > div');
   /* c8 ignore next */
   if (!rows.length) return;
@@ -126,6 +136,7 @@ const init = (block) => {
       const tabListContent = createTag('div', tabContentAttributes);
       tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${tabName}`);
       if (i > 0) tabListContent.setAttribute('hidden', '');
+
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
@@ -145,7 +156,7 @@ const init = (block) => {
   }
 
   // Tab Sections
-  const allSections = Array.from(document.querySelectorAll('div.section'));
+  const allSections = Array.from(rootElem.querySelectorAll('div.section'));
   allSections.forEach((e) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
@@ -154,11 +165,11 @@ const init = (block) => {
       .forEach((d) => {
         const metaValue = getStringKeyName(d.children[1].textContent);
         const section = sectionMetadata.closest('.section');
-        const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
+        const assocTabItem = rootElem.querySelector(`#tab-panel-${initCount}-${metaValue}`);
         if (assocTabItem) assocTabItem.append(section);
       });
   });
-  initTabs(block, config);
+  initTabs(block, config, rootElem);
   initCount += 1;
 };
 
