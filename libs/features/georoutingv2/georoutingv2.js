@@ -188,14 +188,12 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
   return fragment;
 }
 
-// eslint-disable-next-line max-len
 async function getDetails(currentPage, localeMatches, config, createTag, getMetadata, regionData) {
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
   if (availableLocales.length > 0) {
     const georoutingWrapper = createTag('div', { class: 'georouting-wrapper' });
     currentPage.url = window.location.hash ? document.location.href : '#';
     if (availableLocales.length === 1) {
-      // eslint-disable-next-line max-len
       const content = buildContent(config, currentPage, createTag, availableLocales[0], regionData);
       georoutingWrapper.appendChild(content);
       return georoutingWrapper;
@@ -205,7 +203,6 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
     georoutingWrapper.appendChild(tabsContainer);
 
     sortedLocales.forEach((locale) => {
-      // eslint-disable-next-line max-len
       const content = buildContent(config, currentPage, createTag, locale, regionData, sortedLocales);
       const tab = createTab(createTag, content, locale.language);
       georoutingWrapper.appendChild(tab);
@@ -223,7 +220,6 @@ async function showModal(details, loadStyle, config, loadBlock) {
     tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
     loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`)];
   await Promise.all(promises);
-  // eslint-disable-next-line import/no-cycle
   const { getModal } = await import('../../blocks/modal/modal.js');
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
@@ -246,7 +242,6 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.georouting.data.filter((d) => d.prefix === storedLocale);
-      // eslint-disable-next-line max-len
       const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.regions.data);
       if (details) {
         await showModal(details, loadStyle, config, loadBlock);
@@ -259,7 +254,6 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
   const akamaiCode = await getAkamaiCode();
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.georouting.data, akamaiCode);
-    // eslint-disable-next-line max-len
     const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.regions.data);
     if (details) {
       await showModal(details, loadStyle, config, loadBlock);
