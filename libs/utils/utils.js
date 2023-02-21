@@ -642,7 +642,7 @@ async function loadMartech(config) {
       /* c8 ignore stop */
     }
 
-    async function martech(config, loadScript) {
+    async function martech(config) {
       const { url, edgeConfigId } = getDetails(config.env);
       window.alloy_load ??= {};
       window.alloy_load.data ??= {};
@@ -672,14 +672,14 @@ async function loadMartech(config) {
       _satellite.track('pageload');
     }
 
-    await martech(config, loadScript);
+    await martech(config);
     return true;
   }
   return false;
 }
 
 async function loadPostLCP(config) {
-  loadMartech();
+  loadMartech(config);
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
@@ -783,8 +783,10 @@ const loadIms = () => {
 };
 
 const handleAlloyResponse = (response) => {
-  const items = (response.decisions || response.propositions)?.[0]?.items;
-  if (!items) return [];
+  const items = response.propositions?.[0]?.items
+    || response.decisions?.[0]?.items;
+
+    if (!items) return [];
   // loop through items for each manifest info
 
   return items
