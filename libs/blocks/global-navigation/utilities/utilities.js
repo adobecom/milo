@@ -1,3 +1,6 @@
+/* eslint-disable no-underscore-dangle */
+import { getConfig } from '../../../utils/utils.js';
+
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -35,3 +38,21 @@ export function getLocale() {
 export function getCountry() {
   return getLocale()?.split('-').pop() || 'US';
 }
+
+// TODO this is just prototyped
+export const getFedsPlaceholderConfig = () => {
+  const { locale, miloLibs } = getConfig();
+  let libOrigin = 'https://adobe.com/libs';
+  if (window.location.origin.includes('localhost')) {
+    libOrigin = `${window.location.origin}/libs`;
+  }
+  if (window.location.origin.includes('.hlx.')) {
+    libOrigin = miloLibs?.replace('hlx.live', 'hlx.page') || 'https://main--milo--adobecom.hlx.page/libs';
+  }
+  return {
+    locale: {
+      ...locale,
+      contentRoot: `${libOrigin}/feds${locale.prefix}`,
+    },
+  };
+};

@@ -184,6 +184,15 @@
   content: '/';
 }
 
+/* Profile styles */
+.feds-profile {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  position: relative;
+  justify-content: end;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
@@ -355,42 +364,6 @@ header .gnav-navitem.has-menu > a:after {
 
 /* END MAINNAV */
 
-/* PROFILE */
-
-.feds-profile {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  position: relative;
-  justify-content: end;
-}
-
-/* TODO temporarily more specificity until we improve the CSS */
-header .gnav-navitem .feds-signin {
-  padding: 11px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
-  border-bottom: none;
-  color: #4B4B4B;
-}
-
-header .gnav-navitem .feds-signin:hover {
-  background-color: transparent;
-}
-
-.feds-profile-img {
-  max-height: 30px;
-  max-width: 30px;
-  display: block;
-}
-
-.feds-profile-button {
-  padding: 5px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
-  border: none;
-}
-
-/* END PROFILE */
-
 /* APP LAUNCHER */
 
 header .app-launcher button.gnav-applications-button {
@@ -501,7 +474,6 @@ header .app-launcher {
   .gnav-logo {
     display: flex;
     width: 25px;
-    padding: 0 8px;
   }
 
   .gnav-logo::before {

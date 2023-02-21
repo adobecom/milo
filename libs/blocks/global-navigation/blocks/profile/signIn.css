@@ -1,0 +1,47 @@
+.feds-signin {
+  color: #2C2C2C;
+  padding: 11px var(--feds-spacing-utilityNav);
+  border-radius: var(--radius-utilityIcon);
+  color: #4B4B4B;
+}
+
+.feds-signin-dropdown {
+  position: absolute;
+  display: none;
+  right: 0;
+  top: 100%;
+  border: 1px solid #e1e1e1;
+  border-radius: 0 0 4px 4px;
+  background: #fafafa;
+  overflow: hidden;
+  box-shadow: 0 2px 6px -1px rgb(0 0 0 / 10%);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.feds-profile.is-open .feds-signin-dropdown {
+  display: block;
+}
+
+[dir='rtl'] .feds-signin-dropdown {
+  right: initial;
+  left: 0;
+}
+
+.feds-signin-dropdown a {
+  color: inherit;
+}
+
+.feds-signin-dropdown ul {
+  margin: 0;
+  padding: 12px 0;
+}
+
+.feds-signin-dropdown li {
+  padding: 4px 32px;
+}
+
+.feds-signin-dropdown li:hover {
+  color: var(--link-color);
+  background-color: #f5f5f5;
+}

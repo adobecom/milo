@@ -3,9 +3,9 @@ import {
   debounceCallback,
   getLocale,
   getCountry,
-} from '../../utilities.js';
+  getFedsPlaceholderConfig,
+} from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
-import { getConfig } from '../../../../utils/utils.js';
 
 const CONFIG = {
   suggestions: {
@@ -35,10 +35,8 @@ class Search {
   }
 
   async getLabels() {
-    const config = getConfig();
-    const sheet = 'feds';
     this.labels = {};
-    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], config, sheet);
+    [this.labels.search, this.labels.clearResults, this.labels.tryAdvancedSearch] = await replaceKeyArray(['search', 'clear-results', 'try-advanced-search'], getFedsPlaceholderConfig());
   }
 
   decorate() {

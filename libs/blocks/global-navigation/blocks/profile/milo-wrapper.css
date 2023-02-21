@@ -1,0 +1,11 @@
+.feds-profile-img {
+  max-height: 30px;
+  max-width: 30px;
+  display: block;
+}
+
+.feds-profile-button {
+  padding: 5px var(--feds-spacing-utilityNav);
+  border-radius: var(--radius-utilityIcon);
+  border: none;
+}
