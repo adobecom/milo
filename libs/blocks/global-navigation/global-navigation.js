@@ -6,7 +6,7 @@ import {
   loadStyle,
 } from '../../utils/utils.js';
 import { analyticsGetLabel } from '../../martech/attributes.js';
-import { toFragment } from './utilities.js';
+import { toFragment, getFedsPlaceholderConfig } from './utilities/utilities.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const CONFIG = {
@@ -27,9 +27,9 @@ function getBlockClasses(className) {
 }
 
 const loadStyles = (path) => {
-  const { codeRoot } = getConfig();
+  const { miloLibs, codeRoot } = getConfig();
   return new Promise((resolve) => {
-    loadStyle(`${codeRoot}/blocks/global-navigation/blocks/${path}`, resolve);
+    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
   });
 };
 
@@ -51,12 +51,9 @@ class Gnav {
       profile: {
         blockEl: body.querySelector('.profile'),
         decoratedEl: toFragment`<div class="feds-profile"></div>`,
+        config: {},
       },
-      search: {
-        config: {
-          icon: CONFIG.icons.search,
-        },
-      },
+      search: { config: { icon: CONFIG.icons.search } },
     };
 
     this.el = el;
@@ -108,20 +105,20 @@ class Gnav {
         Profile,
         { Search },
       ] = await Promise.all([
-        loadBlock('./delayed-utilities.js'),
+        loadBlock('./utilities/delayed-utilities.js'),
         loadBlock('./blocks/navMenu/menu.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/profile.js'),
         loadBlock('./blocks/search/gnav-search.js'),
-        loadStyles('profile/profile.css'),
-        loadStyles('navMenu/menu.css'),
-        loadStyles('search/gnav-search.css'),
+        loadStyles('./blocks/profile/profile.css'),
+        loadStyles('./blocks/navMenu/menu.css'),
+        loadStyles('./blocks/search/gnav-search.css'),
       ]);
       this.menuControls = new MenuControls(this.curtain);
       this.decorateMenu = decorateMenu;
       this.decorateLargeMenu = decorateLargeMenu;
       this.appLauncher = appLauncher;
-      this.Profile = Profile;
+      this.blocks.profile.ProfileClass = Profile;
       this.search = Search;
       resolve();
     });
@@ -152,77 +149,56 @@ class Gnav {
 
   decorateProfile = async () => {
     const { blockEl, decoratedEl } = this.blocks.profile;
-    if (!blockEl) return null;
+    if (!blockEl) return;
 
     const accessToken = window.adobeIMS.getAccessToken();
     const { env } = getConfig();
-    const profileRes = accessToken
+    this.blocks.profile.profileRes = accessToken
       ? await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) })
       : {};
-    if (profileRes.status !== 200) return this.decorateSignIn();
 
-    if (blockEl.children.length > 1) decoratedEl.classList.add('has-menu');
-    decoratedEl.closest('nav.gnav')?.classList.add('signed-in');
-    const { sections, user: { avatar } } = await profileRes.json();
-    const avatarImgEl = toFragment`<img class="feds-profile-img" src="${avatar}"></img>`;
-    const profileButtonEl = toFragment`
-        <button 
-          class="feds-profile-button" 
-          aria-expanded="false" 
-          aria-controls="feds-profile-menu"
-          aria-label="Profile button"
-          daa-ll="Account"
-          aria-haspopup="true"
-        > 
-          ${avatarImgEl}
-        </button>
-      `;
-    this.decorateProfileMenu({ avatarImgEl, sections, profileRes, profileButtonEl });
-    decoratedEl.append(profileButtonEl);
-    return null;
-  };
-
-  decorateProfileMenu = ({ avatarImgEl, sections, profileRes, profileButtonEl }) => {
-    const { blockEl, decoratedEl } = this.blocks.profile;
-    let decorating;
-    const decorate = async (event) => {
-      if (decorating) return;
-      decorating = true;
-      await this.loadDelayed();
-
-      // Forward click on the profile button it was clicked. Otherwise users need to click twice
-      if (event) {
-        decoratedEl.addEventListener('feds:events:profileReady', () => decoratedEl.click(), { once: true });
-      }
-
-      // TODO integrate placeholders here
-      this.blocks.profile.instance = new this.Profile({
-        accountLinkEl: blockEl.querySelector('div > div > p:nth-child(2) a'), // TODO placeholders
-        manageTeamsEl: blockEl.querySelector('div > div > p:nth-child(3) a'), // TODO placeholders
-        manageEnterpriseEl: blockEl.querySelector('div > div > p:nth-child(4) a'), // TODO placeholders
-        signOutEl: blockEl.querySelector('div > div > p:nth-child(5) a'), // TODO placeholders
-        localMenu: blockEl.querySelector('h5')?.parentElement,
-        toggleMenu: this.menuControls.toggleMenu,
-        decoratedEl,
-        avatarImgEl,
-        sections,
-        profileRes,
-        profileButtonEl,
+    if (this.blocks.profile.profileRes.status !== 200) {
+      const [decorateSignIn] = await Promise.all([
+        loadBlock('./blocks/profile/signIn.js'),
+        loadStyles('./blocks/profile/signIn.css'),
+      ]);
+      const signInEl = await decorateSignIn({ blockEl, decoratedEl });
+      decoratedEl.append(signInEl);
+      window.addEventListener('feds:profileSignIn:clicked', async () => {
+        await this.loadDelayed();
+        this.menuControls.toggleMenu(decoratedEl);
       });
+      return;
+    }
 
-      const appLauncherBlock = this.body.querySelector('.app-launcher');
-      if (appLauncherBlock) {
-        this.appLauncher(
-          decoratedEl,
-          appLauncherBlock,
-          this.menuControls.toggleMenu,
-        );
+    const [
+      { sections, user: { avatar } },
+      { initProfileButton, initProfileMenu },
+    ] = await Promise.all([
+      this.blocks.profile.profileRes.json(),
+      loadBlock('./blocks/profile/milo-wrapper.js'),
+      loadStyles('./blocks/profile/milo-wrapper.css'),
+    ]);
+    this.blocks.profile.sections = sections;
+    this.blocks.profile.avatar = avatar;
+
+    const profileButtonEl = await initProfileButton(this.blocks.profile);
+    decoratedEl.append(profileButtonEl);
+    window.addEventListener('feds:profileButton:clicked', async () => {
+      if (!this.blocks.profile.menu) {
+        await this.loadDelayed();
+        this.blocks.profile.menu = initProfileMenu(this.blocks.profile);
+        const appLauncherBlock = this.body.querySelector('.app-launcher');
+        if (appLauncherBlock) {
+          this.appLauncher(
+            decoratedEl,
+            appLauncherBlock,
+            this.menuControls.toggleMenu,
+          );
+        }
       }
-      decoratedEl.removeEventListener('click', decorate);
-    };
-
-    decoratedEl.addEventListener('click', decorate);
-    setTimeout(decorate, 3000);
+      this.menuControls.toggleMenu(decoratedEl);
+    });
   };
 
   loadSearch = () => {
@@ -406,10 +382,8 @@ class Gnav {
         ${this.blocks.search.config.trigger}
       </div>`;
 
-    const config = getConfig();
-    const sheet = 'feds';
     // Replace the aria-label value once placeholder is fetched
-    replaceKey('search', config, sheet).then((placeholder) => {
+    replaceKey('search', getFedsPlaceholderConfig()).then((placeholder) => {
       if (placeholder && placeholder.length) {
         this.blocks.search.config.trigger.setAttribute('aria-label', placeholder);
       }
@@ -421,51 +395,6 @@ class Gnav {
     });
 
     return searchEl;
-  };
-
-  decorateSignIn = () => {
-    const { blockEl, decoratedEl } = this.blocks.profile;
-    const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
-    // TODO use placeholders
-    const signIn = toFragment`<a href="#" daa-ll="Sign In" class="feds-signin">Sign in</a>`;
-    const id = `navmenu-${blockEl.className}`;
-    const signInEl = dropDown?.querySelector('li:last-of-type a') || decoratedEl;
-    decoratedEl.append(signIn);
-    if (!dropDown) {
-      signInEl.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.adobeIMS.signIn();
-      });
-      return;
-    }
-    dropDown.id = id;
-    decoratedEl.classList.add('gnav-navitem');
-    decoratedEl.classList.add('has-menu');
-    let decorating;
-    const decorate = async (event) => {
-      if (event) event.preventDefault();
-      if (decorating) return;
-      decorating = true;
-      await this.loadDelayed();
-      setNavLinkAttributes(id, signIn);
-      decoratedEl.insertAdjacentElement('beforeend', dropDown);
-
-      // TODO we don't have a good way of adding attributes to links
-      const dropDownSignIn = dropDown.querySelector('[href="https://adobe.com?sign-in=true"]');
-      if (dropDownSignIn) {
-        dropDownSignIn.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.adobeIMS.signIn();
-        });
-      }
-      this.decorateMenu(decoratedEl, signIn, dropDown, this.menuControls);
-      if (event) signIn.click();
-      signIn.removeEventListener('click', decorate);
-    };
-
-    // Load the menu as fast as possible if it has been clicked
-    signIn.addEventListener('click', decorate);
-    setTimeout(decorate, 3000);
   };
 
   setBreadcrumbSEO = () => {
@@ -508,6 +437,7 @@ class Gnav {
 
 export default async function init(header) {
   const { locale, imsClientId } = getConfig();
+  // TODO locale.contentRoot is not the fallback we want
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
