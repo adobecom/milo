@@ -1,0 +1,623 @@
+main .banner {
+  padding: 0;
+  --banner-height-sm: 360px;
+  --banner-height-md: 560px;
+  --banner-height-lg: 700px;
+  position: relative;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F5;
+  display: flex;
+  flex-direction: column;
+  color: var(--color-white);
+}
+
+main .banner h1,
+main .banner h2 {
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+
+main .banner h3 {
+  font-size: var(--type-heading-l-size);
+  line-height: var(--type-heading-l-lh);
+}
+
+main .banner p:not(.detail-M) {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+}
+
+main .banner .background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  user-select: none;
+  overflow: hidden;
+}
+
+main .banner:not(.light) .hero-animation-overlay {
+  background: #303030;
+}
+
+main .banner .background > div:first-child {
+  position: relative;
+}
+
+main .banner .background > div:not(:first-child) {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: auto;
+  text-align: right;
+}
+
+main .banner .background > div,
+main .banner .background > picture,
+main .banner .background img,
+main .banner .background video {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+main .banner .background img,
+main .banner .background video {
+  min-height: 200px;
+}
+
+main .banner > .background:last-child {
+  position: relative;
+}
+
+main .banner .background p {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+main .banner .background a {
+  color: var(--color-white);
+}
+
+main .banner.light .background a {
+  color: var(--color-black);
+}
+
+main .banner .background video {
+  min-width: 101%;
+  transform: translateX(-0.5%);
+  height: 100%;
+  object-fit: cover;
+}
+
+main .banner .background .hero-animation-overlay p:first-child {
+  line-height: 0;
+}
+
+main .banner .background picture ~ p:not(:empty),
+main .banner .background > div > p:not(:first-child):not(:empty) {
+  padding: 8px;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.6);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-align: right;
+  height: auto;
+  white-space: nowrap;
+  width: 100%;
+  color: var(--color-white);
+  z-index: 1;
+}
+
+main .banner .banner-image p,
+main .banner .background p {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+main .banner.large .background img,
+main .banner.large .background video {
+  min-height: 200px;
+}
+
+main .banner .banner-image p {
+  text-align: left;
+  padding: 0;
+}
+
+main .banner .banner-image p:last-child {
+  margin-bottom: 6px;
+}
+
+main .banner .banner-image {
+  order: -1;
+  padding-top: 24px;
+  margin: 2px 0;
+  vertical-align: top;
+}
+
+main .banner .banner-image img,
+main .banner .banner-image video {
+  max-height: 300px;
+  object-fit: contain;
+  height: 100%;
+  width: 100%;
+  margin: 6px 0;
+}
+
+main .banner .banner-column:not(:empty) {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: auto;
+  z-index: 1;
+  margin-left: 0;
+  max-width: 420px;
+}
+
+main .banner .banner-column:not(.banner-image):not(:empty) {
+  padding: 32px 0;
+}
+
+main .banner .banner-column:last-child:not(:empty) {
+  padding-bottom: 32px;
+}
+
+main .banner .banner-content {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  max-width: var(--grid-container-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main .banner .banner-content > div {
+  flex: 1 1 auto;
+}
+
+main .banner p.button-container {
+  flex-direction: column;
+}
+
+main .banner p.button-container a,
+main .banner p.button-container strong,
+main .banner p.button-container em {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+main .banner p.button-container a {
+  margin-top: 8px;
+}
+
+main .banner a.button.transparent:any-link {
+  color: var(--color-white);
+  border-color: var(--color-white);
+  background-color: var(--color-transparent-button-bg);
+}
+
+main .banner a.button.transparent:any-link:hover {
+  color: var(--color-white);
+  border-color: var(--color-white);
+  background-color: var(--color-transparent-button-bg-hover);
+}
+
+main .banner a.button.transparent:any-link:active {
+  color: var(--color-white);
+  border-color: var(--color-white);
+  background-color: var(--color-transparent-button-bg-down);
+}
+
+
+/* light */
+
+main .banner.light {
+  color: var(--color-black);
+}
+
+main .banner.light a.button.transparent:any-link {
+  color: var(--color-transparent-button-border);
+  border-color: var(--color-transparent-button-border);
+  background-color: var(--color-transparent-button-bg);
+}
+
+main .banner.light a.button.transparent:any-link:hover {
+  color: var(--color-transparent-button-border-hover);
+  border-color: var(--color-transparent-button-border-hover);
+  background-color: var(--color-transparent-button-bg-hover);
+}
+
+main .banner.light a.button.transparent:any-link:active {
+  color: var(--color-transparent-button-border-down);
+  border-color: var(--color-transparent-button-border-down);
+  background-color: var(--color-transparent-button-bg-down);
+}
+
+main .banner.light .background picture ~ p:not(:empty),
+main .banner.light .background > div > p:not(:first-child):not(:empty) {
+  color: var(--color-black);
+  text-shadow: 1px 2px 3px rgba(255, 255, 255, 0.3);
+}
+
+
+/* large */
+
+main .banner.large {
+  display: block;
+  color: var(--color-black);
+}
+
+main .banner.large a.button.transparent:any-link {
+  color: var(--color-transparent-button-border);
+  border-color: var(--color-transparent-button-border);
+  background-color: var(--color-transparent-button-bg);
+}
+
+main .banner.large a.button.transparent:any-link:hover {
+  color: var(--color-transparent-button-border-hover);
+  border-color: var(--color-transparent-button-border-hover);
+  background-color: var(--color-transparent-button-bg-hover);
+}
+
+main .banner.large a.button.transparent:any-link:active {
+  color: var(--color-transparent-button-border-down);
+  border-color: var(--color-transparent-button-border-down);
+  background-color: var(--color-transparent-button-bg-down);
+}
+
+main .banner.large .banner-content {
+  margin: 0 auto;
+}
+
+main .banner.large .banner-column:not(.banner-image):not(:empty):first-child {
+  padding-top: 0;
+}
+
+main .banner.large .background,
+main .banner.large .background img,
+main .banner.large .background video {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+main .banner.large .background img,
+main .banner.large .background video {
+  max-height: 260px;
+}
+
+main .banner.large h1,
+main .banner.large h2 {
+  font-size: var(--type-heading-xxl-size);
+  line-height: var(--type-heading-xxl-lh);
+  order: -3
+}
+
+main .banner.large p {
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+}
+
+main .banner.large .banner-image p,
+main .banner.large .background p {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+main .banner.large .banner-column:last-child {
+  padding-bottom: 0;
+}
+
+main .banner.large p.button-container {
+  order: -2;
+}
+
+main .banner.large .banner-content p.detail-M:first-child {
+  padding-top: 16px;
+}
+
+main .banner.large p.button-container + p {
+  order: -1;
+}
+
+main .banner.large .banner-image {
+  order: unset;
+  padding-top: 0;
+}
+
+
+/* small */
+
+main .banner.small .banner-image {
+  order: unset;
+  padding-top: 0;
+}
+
+/* center */
+
+main .banner.center .banner-column:not(.banner-image) {
+  text-align: center;
+}
+
+/* tablet */
+@media screen and (min-width: 600px) {
+  main .banner .banner-image p,
+  main .banner .background p {
+    font-size: var(--type-body-s-size);
+    line-height: var(--type-body-s-lh);
+  }
+
+  main .banner.large .banner-image p,
+  main .banner.large .background p {
+    font-size: var(--type-body-s-size);
+    line-height: var(--type-body-s-lh);
+  }
+
+  main .banner p.button-container {
+    flex-direction: row;
+  }
+
+  main .banner p.button-container a,
+  main .banner p.button-container strong,
+  main .banner p.button-container em {
+    width: auto;
+    box-sizing: border-box;
+  }
+
+  main .banner p.button-container a {
+    margin-top: 0;
+  }
+
+  main .banner:not(.large):not(.small):not(.empty-content) {
+    min-height: var(--banner-height-sm);
+  }
+
+  /* large */
+
+  main .banner.large .banner-column {
+    max-width: unset;
+  }
+
+  main .banner.large .banner-image {
+    margin-left: 0;
+    align-items: flex-start;
+  }
+
+  main .banner .background > div,
+  main .banner .background img,
+  main .banner .background video,
+  main .banner.large .background > div,
+  main .banner.large .background img,
+  main .banner.large .background video,
+  main .banner.small .background > div,
+  main .banner.small .background img,
+  main .banner.small .background video {
+    max-height: unset;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+main .banner .banner-content.has-inline-image .banner-column:not(:empty) {
+  max-width: unset;
+}
+
+main .banner.center .banner-content.has-inline-image .banner-column:not(:empty) {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main .banner .banner-content h1:first-child,
+main .banner .banner-content h2:first-child,
+main .banner .banner-content h3:first-child,
+main .banner .banner-content h4:first-child,
+main .banner .banner-content p.detail-M:first-child {
+  padding-top: 0;
+}
+
+main .banner .banner-content p.button-container:last-child a,
+main .banner .banner-content p.button-container:last-child {
+  margin-bottom: 0;
+}
+
+main .banner .banner-column.banner-image {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+/* laptop */
+
+@media screen and (min-width: 1000px) {
+  main .banner.right p.button-container {
+    justify-content: flex-end;
+  }
+
+  main .banner,
+  main .banner:not(.large):not(.small):not(.empty-content) {
+    min-height: var(--banner-height-md);
+  }
+
+  main .banner.large:not(.light) {
+    color: var(--color-white);
+  }
+
+  main .banner.large:not(.light) a.button.transparent:any-link {
+    color: var(--color-white);
+    border-color: var(--color-white);
+    background-color: var(--color-transparent-button-bg);
+  }
+
+  main .banner.large:not(.light) a.button.transparent:any-link:hover {
+    color: var(--color-white);
+    border-color: var(--color-white);
+    background-color: var(--color-transparent-button-bg-hover);
+  }
+
+  main .banner.large:not(.light) a.button.transparent:any-link:active {
+    color: var(--color-white);
+    border-color: var(--color-white);
+    background-color: var(--color-transparent-button-bg-down);
+  }
+
+  main .banner .banner-content {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-items: start;
+    justify-content: space-between;
+  }
+
+  main .banner .banner-content .banner-column {
+    display: block;
+  }
+  
+  main .banner .banner-content .banner-column:nth-child(odd) {
+    margin-right: auto;
+    margin-left: 0;
+  }
+
+  main .banner .banner-content .banner-column:nth-child(even) {
+    order: unset;
+    grid-column: 2;
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  main .banner .banner-column:last-child {
+    margin-left: auto;
+  }
+
+  main .banner .banner-image:not(:empty) {
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+  }
+
+  main .banner .banner-column h1,
+  main .banner .banner-column h2 {
+    max-width: 400px;
+  }
+
+  main .banner .banner-column:last-child:not(:empty) {
+    padding: 0;
+  }
+
+  main .banner .banner-column:not(.banner-image):not(:empty) {
+    padding: 32px 0;
+    width: 420px;
+  }
+
+  main .banner .banner-image:not(:empty):nth-child(even) {
+    padding-left: 3rem;
+  }
+
+  main .banner .banner-image:not(:empty):nth-child(odd) {
+    padding-right: 3rem;
+  }
+
+  /* center */
+
+  main .banner.center .banner-column h1,
+  main .banner.center .banner-column h2 {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* right */
+
+  main .banner.right .banner-column:not(.banner-image) {
+    text-align: right;
+  }    
+
+  main .banner.right .banner-column h1,
+  main .banner.right .banner-column h2 {
+    margin-left: auto;
+  }
+
+  /* large */
+
+  main .banner.large {
+    min-height: var(--banner-height-lg);
+    display: flex;
+  }
+
+  main .banner.large .background {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    max-height: unset;
+  }
+
+  main .banner.large .banner-content p.detail-M:first-child {
+    padding-top: 0;
+  }
+
+  /* small */
+
+  main .banner.small {
+    min-height: var(--banner-height-sm);
+  }
+
+  /* no text content */
+
+  main .banner.empty-content,
+  main .banner.empty-content .background,
+  main .banner.empty-content .background img,
+  main .banner.empty-content .background video {
+    position: relative;
+    min-height: unset;
+    max-height: var(--banner-height-md);
+  }
+
+
+  main .banner.small.empty-content,
+  main .banner.small.empty-content .background,
+  main .banner.small.empty-content .background img,
+  main .banner.small.empty-content .background video {
+    position: relative;
+    max-height: var(--banner-height-sm);
+  }
+
+  main .banner.large.empty-content,
+  main .banner.large.empty-content .background,
+  main .banner.large.empty-content .background img,
+  main .banner.large.empty-content .background video {
+    position: relative;
+    max-height: var(--banner-height-lg);
+  }
+
+  main .banner .banner-column:not(.banner-image):not(:empty):first-child {
+    width: 450px;
+    padding-right: 20px;
+    box-sizing: border-box;
+  }
+}
+
+/* desktop */
+
+@media screen and (min-width: 1200px) {
+  main .banner .banner-column:not(.banner-image):not(:empty),
+  main .banner .banner-column:not(.banner-image):not(:empty):first-child {
+    width: 520px;
+    max-width: unset;
+  }
+  
+  main .banner .banner-column.banner-image:not(:empty) {
+    width: 100%;
+  }
+}

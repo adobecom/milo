@@ -1,0 +1,49 @@
+main .separator {
+  padding: 12px 0;
+  margin: 0;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  background-color: var(--color-accent-faded);
+  flex-wrap: wrap;
+  text-align: center;
+  font-weight: bold;
+}
+
+main .separator > div {
+  width: 100%;
+  justify-content: flex-start;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  text-align: left;
+}
+
+main .separator > div :first-child {
+  margin-left: 0;
+}
+
+main .separator > div :last-child {
+  margin-right: 0;
+}
+
+main .separator a {
+  color: var(--color-white);
+  text-decoration: underline;
+}
+
+main .separator a.button.transparent:any-link {
+  color: var(--color-white);
+  border-color: var(--color-white);
+}
+
+main .separator .icon {
+  min-height: 40px;
+}
+
+main .separator p {
+  margin-left: 16px;
+  margin-right: 16px;
+}
