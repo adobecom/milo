@@ -58,7 +58,7 @@ const HelixReview = ({
         return;
       }
 
-      const resPromise = fetch(`${postUrl}.json`);
+      const resPromise = fetch(`${postUrl.split('#')[0]}.json`);
       resPromise
         .then((res) => {
           if (res.ok) {
