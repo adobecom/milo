@@ -424,7 +424,7 @@ class Gnav {
     window.adobeid = {
       client_id: imsClientId,
       scope: 'AdobeID,openid,gnav',
-      locale: locale || 'en-US',
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -454,6 +454,7 @@ class Gnav {
 
   decorateSignIn = (blockEl, profileEl) => {
     const dropDown = blockEl.querySelector(':scope > div:nth-child(2)');
+    decorateLinks(blockEl);
     const signIn = blockEl.querySelector('a');
 
     signIn.classList.add('gnav-signin');

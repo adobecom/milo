@@ -1,4 +1,4 @@
-import { loadScript, getConfig } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -43,7 +43,7 @@ const chartTypes = [
 
 export function processDataset(data) {
   const dataset = {};
-  const optionalHeaders = ['unit', 'group', 'color'];
+  const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
   const units = headers?.[unitKey]?.split('-') || [];
@@ -454,10 +454,9 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = ({ chartWrapper, chartType, rawData: { data, series }, size, ...rest }) => {
+const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
   const themeName = getTheme(size);
-  const processedData = processDataset(data);
-  const options = { chartType, processedData, series, size, ...rest };
+  const options = { chartType, processedData: data, series, size, ...rest };
   const chartOptions = getChartOptions(options);
   const chart = window.echarts?.init(chartWrapper, themeName, { renderer: 'svg' });
 
@@ -465,7 +464,7 @@ const initChart = ({ chartWrapper, chartType, rawData: { data, series }, size, .
   chart.setOption(chartOptions);
 
   if (chartType === 'donut') {
-    setDonutListeners(chart, processedData.dataset?.source, series, processedData.units);
+    setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
   return chart;
@@ -524,7 +523,7 @@ export const getLabelDegree = (chartStyles, isDesktop) => {
 };
 
 /* c8 ignore next 31 */
-const handleResize = (el, authoredSize, chartType, data, colors) => {
+const handleResize = (el, authoredSize, chartType, data, series, colors) => {
   const currentSize = getResponsiveSize(authoredSize);
   const previousSize = el.getAttribute('data-responsive-size');
   const chartWrapper = el.querySelector('.chart-wrapper');
@@ -550,7 +549,7 @@ const handleResize = (el, authoredSize, chartType, data, colors) => {
     el.setAttribute('data-device', currentDevice);
     chartInstance?.dispose();
     initChart({
-      chartWrapper, chartType, rawData: data, colors, size: currentSize, labelDeg,
+      chartWrapper, chartType, data, series, colors, size: currentSize, labelDeg,
     });
   } else {
     chartInstance?.resize();
@@ -580,10 +579,11 @@ export const getOversizedNumberSize = (charLength) => {
 
 const init = (el) => {
   const children = el.querySelectorAll(':scope > div');
-  const chartWrapper = children[2]?.querySelector(':scope > div');
+  const chartContainer = children[2];
+  const chartWrapper = chartContainer?.querySelector(':scope > div');
   children[0]?.classList.add('title');
   children[1]?.classList.add('subtitle');
-  children[2]?.classList.add('chart-container');
+  chartContainer?.classList.add('chart-container');
   children[3]?.classList.add('footnote');
   chartWrapper?.classList.add('chart-wrapper');
 
@@ -652,17 +652,25 @@ const init = (el) => {
   Promise.all([fetchData(dataLink), loadScript(`${base}/deps/echarts.common.min.js`)])
     .then(async (values) => {
       const json = values[0];
-      const data = chartData(json);
+      const rawData = chartData(json);
 
-      if (!data) return;
+      if (!rawData) return;
 
-      const hasOverride = hasPropertyCI(data?.data[0], 'color');
+      const { data, series } = rawData;
+      const processedData = processDataset(data);
+      const hasOverride = hasPropertyCI(processedData.headers, 'color');
       const colors = hasOverride
-        ? getOverrideColors(authoredColor, data.data)
+        ? getOverrideColors(authoredColor, data)
         : getColors(authoredColor);
       const options = {
-        chartWrapper, chartType, rawData: data, colors, size, labelDeg,
+        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg,
       };
+      const text = propertyValueCI(processedData.headers, 'subheading');
+
+      if (text) {
+        const subheading = createTag('p', { class: 'subheading' }, text);
+        chartContainer.insertAdjacentElement('beforebegin', subheading);
+      }
 
       if (!(window.IntersectionObserver)) {
         initChart(options);
@@ -686,7 +694,7 @@ const init = (el) => {
       /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
         1000,
-        () => handleResize(el, authoredSize, chartType, data, colors),
+        () => handleResize(el, authoredSize, chartType, processedData, series, colors),
       ));
     })
     // eslint-disable-next-line no-console

@@ -41,6 +41,12 @@
       "includePaths": [ "**.docx**" ]
     },
     {
+      "title": "Preflight",
+      "id": "preflight",
+      "environments": ["dev", "preview", "live"],
+      "event": "preflight"
+    },
+    {
       "id": "tools",
       "title": "Use offer",
       "environments": [ "edit" ],
