@@ -163,9 +163,7 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
     src: `${config.miloLibs || config.codeRoot}/img/icons/acom-flag/${flagFile}`,
   });
   const span = createTag('span', { class: 'icon margin-right' }, img);
-  const mainAction = createTag('a', {
-    class: 'con-button blue', lang, href: locale.url, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false,
-  }, span);
+  const mainAction = createTag('a', { class: 'con-button blue', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false }, span);
   mainAction.append(locale.button);
   if (locales) {
     const downArrow = createTag('img', {
@@ -178,6 +176,7 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
       openPicker(mainAction, createTag, locales, locale.button, config, e);
     });
   } else {
+    mainAction.href = locale.url;
     decorateForOnLinkClick(mainAction, locale.prefix);
   }
 
