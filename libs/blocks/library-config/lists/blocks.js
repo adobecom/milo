@@ -100,10 +100,16 @@ export default async function loadBlocks(blocks, list, query) {
     const doc = parser.parseFromString(html, 'text/html');
     const pageBlocks = doc.body.querySelectorAll('div[class]');
     let matchingBlockFound = false;
+    const classVariationsFound = [];
     pageBlocks.forEach((pageBlock) => {
       if (pageBlock.className === 'section-metadata') {
         return;
       }
+      const blockVariationName = [...pageBlock.classList].join('.');
+      if (classVariationsFound.indexOf(blockVariationName) !== -1) {
+        return;
+      }
+      classVariationsFound.push(blockVariationName);
       const item = document.createElement('li');
       const name = document.createElement('p');
       name.textContent = getAuthorName(pageBlock) || getBlockName(pageBlock);
