@@ -21,11 +21,8 @@ const pageLocales = Object.keys(pageConfig.locales || {});
 
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
-  for (let i = 0; i < locales.length; i += 1) {
-    const locale = locales[i];
-    if (locale === possibleLocale) {
-      return locale;
-    }
+  if (locales.includes(possibleLocale)) {
+    return possibleLocale;
   }
   // defaults to en_US
   return '';
@@ -39,10 +36,9 @@ export const loadStrings = async (
   if (!url) return {};
   try {
     const locale = getPageLocale(pathname, locales);
-    let localizedURL = new URL(url);
+    const localizedURL = new URL(url);
     if (locale) {
       localizedURL.pathname = `${locale}${localizedURL.pathname}`;
-      localizedURL = localizedURL.toString();
     }
     let resp = await fetch(`${localizedURL}.plain.html`);
     if (!resp.ok) {
@@ -51,19 +47,19 @@ export const loadStrings = async (
     if (!resp.ok) {
       return {};
     }
-    const ans = {};
     const html = await resp.text();
     const parser = new DOMParser();
     const document = parser.parseFromString(html, 'text/html');
     const nodes = document.querySelectorAll('.string-mappings > div');
-    for (let i = 0; i < nodes.length; i += 1) {
-      const parent = nodes[i];
+    return [...nodes].reduce((ans, parent) => {
       const children = parent.querySelectorAll('div');
-      const key = children[0].innerText;
+      const key = children[0]?.innerText;
       const val = children[1]?.innerHTML;
-      ans[key] = val || '';
-    }
-    return ans;
+      if (key) {
+        ans[key] = val || '';
+      }
+      return ans;
+    }, {});
   } catch (err) {
     return {};
   }
