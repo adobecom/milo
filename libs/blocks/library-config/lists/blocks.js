@@ -52,12 +52,12 @@ function getTable(block, name, path) {
 }
 
 function getBlockTags(block) {
-  if (block.nextElementSibling?.className !== 'section-metadata') {
+  if (block.nextElementSibling?.className !== 'library-metadata') {
     return getBlockName(block);
   }
-  const sectionMetadata = getMetadata(block.nextElementSibling);
-  return sectionMetadata?.searchtags?.text
-    ? `${sectionMetadata?.searchtags?.text} ${getBlockName(block)}`
+  const libraryMetadata = getMetadata(block.nextElementSibling);
+  return libraryMetadata?.searchtags?.text
+    ? `${libraryMetadata?.searchtags?.text} ${getBlockName(block)}`
     : getBlockName(block);
 }
 
@@ -101,9 +101,8 @@ export default async function loadBlocks(blocks, list, query) {
     const pageBlocks = doc.body.querySelectorAll('div[class]');
     let matchingBlockFound = false;
     pageBlocks.forEach((pageBlock) => {
-      // don't display the section-metadata used to set the block search tags
-      // unless the block is part of the Section Metadata page
-      if (block.name !== 'Section Metadata' && pageBlock.className === 'section-metadata') {
+      // don't display the library-metadata block used to set the block search tags
+      if (pageBlock.className === 'library-metadata') {
         return;
       }
       const item = document.createElement('li');
