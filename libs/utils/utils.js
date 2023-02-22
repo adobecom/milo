@@ -319,7 +319,7 @@ export async function loadTemplate() {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
+      loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
@@ -561,7 +561,7 @@ async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
-  loadTemplate();
+  
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 }
@@ -622,7 +622,6 @@ export async function loadArea(area = document) {
   }
 
   const sections = decorateSections(area, isDoc);
-
   const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
@@ -643,6 +642,8 @@ export async function loadArea(area = document) {
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
   }
+  await loadTemplate();
+  document.querySelector('body').classList.add('appear');
 
   // Post section loading on document
   if (isDoc) {
