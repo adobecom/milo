@@ -58,6 +58,7 @@ const MILO_BLOCKS = [
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
+  { adobetv: 'https://images-tv.adobe.com' },
   { gist: 'https://gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },

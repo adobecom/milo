@@ -1,1 +1,5 @@
 @import url('../../styles/iframe.css');
+
+.video-wrapper video {
+  width: 100%;
+}
