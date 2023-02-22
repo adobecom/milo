@@ -137,7 +137,7 @@ async function validateDate(date) {
   }
 }
 
-async function buildArticleHeader(el) {
+function buildArticleHeader(el) {
   const h1 = el.querySelector('h1');
   const picture = el.querySelector('picture');
   const tag = getMetadata('article:tag');
@@ -161,9 +161,16 @@ async function buildArticleHeader(el) {
 }
 
 async function decorateArticleHeader(eager = true) {
-  const block = await buildArticleHeader(document.querySelector('.section'));
+  const block = buildArticleHeader(document.querySelector('.section'));
 
   const childrenEls = Array.from(block.children);
+
+  const featureImgContainer = childrenEls[3];
+  featureImgContainer.classList.add('article-feature-image');
+  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
+  featureFigEl.classList.add('figure-feature');
+  featureImgContainer.prepend(featureFigEl);
+  featureImgContainer.lastElementChild.remove();
 
   const categoryContainer = childrenEls[0];
   categoryContainer.classList.add('article-category');
@@ -183,7 +190,7 @@ async function decorateArticleHeader(eager = true) {
 
   const date = bylineContainer.firstElementChild.lastElementChild;
   date.classList.add('article-date');
-  await validateDate(date);
+  validateDate(date);
 
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
@@ -194,13 +201,6 @@ async function decorateArticleHeader(eager = true) {
 
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
-
-  const featureImgContainer = childrenEls[3];
-  featureImgContainer.classList.add('article-feature-image');
-  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
-  featureFigEl.classList.add('figure-feature');
-  featureImgContainer.prepend(featureFigEl);
-  featureImgContainer.lastElementChild.remove();
 }
 
 function decorateTags(topics) {
@@ -233,11 +233,10 @@ function decorateTags(topics) {
 
 async function init() {
   await loadTaxonomy();
+  await decorateArticleHeader();
 
   const topics = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
-
-  await decorateArticleHeader();
   decorateTags(topics);
 }
 
-init();
+await init();
