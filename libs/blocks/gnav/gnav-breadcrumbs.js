@@ -144,14 +144,10 @@ async function getBreadcrumbs(element) {
   if (!element) return null;
   const noBreadcrumbs = getMetadata('breadcrumbs') === 'off';
   if (noBreadcrumbs) return null;
-  let breadcrumbs;
-  breadcrumbs = getBreadcrumbsFromPageBlock(element);
-  if (breadcrumbs) return breadcrumbs;
-  breadcrumbs = await getBreadcrumbsFromFile();
-  if (breadcrumbs) return breadcrumbs;
-  breadcrumbs = await getBreadcrumbsFromUrl(document.location.pathname);
-  if (breadcrumbs) return breadcrumbs;
-  return null;
+  return getBreadcrumbsFromPageBlock(element)
+    || await getBreadcrumbsFromFile()
+    || await getBreadcrumbsFromUrl(document.location.pathname)
+    || null;
 }
 
 export default async function addBreadcrumbs(element, wrapper) {
