@@ -121,8 +121,8 @@ const afterYiiLoadedCallback = () => {
       });
     }
 
-    iterator($('.faasform input[type="text"]'));
-    iterator($('.faasform textarea'));
+    iterator($('.faas-form input[type="text"]'));
+    iterator($('.faas-form textarea'));
   }
 
   function removeRequired() {
@@ -347,10 +347,12 @@ export const initFaas = (config, targetEl) => {
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
-    Object.keys(state.js).forEach((key) => {
-      state[key] = state.js[key];
-    });
-    delete state.js;
+    if (state.js) {
+        Object.keys(state.js).forEach((key) => {
+        state[key] = state.js[key];
+      });
+      delete state.js;
+    }
     state.complete = false;
     state.e = { afterYiiLoadedCallback, beforeSubmitCallback };
     $(formEl).faas(state);
