@@ -1,5 +1,4 @@
 function createIframeElement(href) {
-  console.log('----', href)
   return `
     <div class="milo-video">
       <iframe src="${href}" class="adobetv" webkitallowfullscreen mozallowfullscreen allowfullscreen scrolling="no" allow="encrypted-media" title="Adobe Video Publishing Cloud Player" loading="lazy">
