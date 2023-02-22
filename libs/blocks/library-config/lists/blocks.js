@@ -105,7 +105,7 @@ export default async function loadBlocks(blocks, list, query) {
       if (pageBlock.className === 'section-metadata') {
         return;
       }
-      const blockVariationName = [...pageBlock.classList].join('.');
+      const blockVariationName = [...pageBlock.classList].sort().join('.');
       if (classVariationsFound.includes(blockVariationName)) {
         return;
       }
