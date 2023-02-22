@@ -82,16 +82,8 @@ function initTabs(elm, config, rootElem) {
 
 let initCount = 0;
 
-function getRoot(block) {
-  let parent = block.parentElement;
-  while (parent.parentElement) {
-    parent = parent.parentElement;
-  }
-  return parent;
-}
-
 const init = (block) => {
-  const rootElem = getRoot(block);
+  const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   /* c8 ignore next */
   if (!rows.length) return;

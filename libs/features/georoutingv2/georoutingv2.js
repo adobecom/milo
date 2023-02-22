@@ -191,7 +191,7 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
 async function getDetails(currentPage, localeMatches, config, createTag, getMetadata, regionData) {
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
   if (availableLocales.length > 0) {
-    const georoutingWrapper = createTag('div', { class: 'georouting-wrapper' });
+    const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
     currentPage.url = window.location.hash ? document.location.href : '#';
     if (availableLocales.length === 1) {
       const content = buildContent(config, currentPage, createTag, availableLocales[0], regionData);
