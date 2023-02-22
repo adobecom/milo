@@ -3,85 +3,86 @@ import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-he
 import { createTag } from '../../utils/utils.js';
 
 function highlightTextElements(terms, elements) {
-  elements.forEach((e) => {
+  elements.forEach((element) => {
     const matches = [];
-    const txt = e.textContent;
+    const { textContent } = element;
+    const lowerCaseTextContent = textContent.toLowerCase();
     terms.forEach((term) => {
-      const offset = txt.toLowerCase().indexOf(term);
+      const offset = lowerCaseTextContent.indexOf(term.toLowerCase());
       if (offset >= 0) {
         matches.push({ offset, term });
       }
     });
     matches.sort((a, b) => a.offset - b.offset);
-    let markedUp = '';
-    if (!matches.length) markedUp = txt;
-    else {
-      markedUp = txt.substr(0, matches[0].offset);
-      matches.forEach((hit, i) => {
-        markedUp += `<mark class="gnav-search-highlight">${txt.substr(hit.offset, hit.term.length)}</mark>`;
-        if (matches.length - 1 === i) {
-          markedUp += txt.substr(hit.offset + hit.term.length);
-        } else {
-          markedUp += txt.substring(hit.offset + hit.term.length, matches[i + 1].offset);
-        }
-      });
-      e.innerHTML = markedUp;
+    let currentIndex = 0;
+    const fragment = matches.reduce((acc, { offset, term }) => {
+      const textBefore = textContent.substring(currentIndex, offset);
+      if (textBefore) {
+        acc.appendChild(document.createTextNode(textBefore));
+      }
+      const markedTerm = createTag('mark', { class: 'gnav-search-highlight' }, term);
+      acc.appendChild(markedTerm);
+      currentIndex = offset + term.length;
+      return acc;
+    }, document.createDocumentFragment());
+    const textAfter = textContent.substring(currentIndex);
+    if (textAfter) {
+      fragment.appendChild(document.createTextNode(textAfter));
     }
+    element.innerHTML = '';
+    element.appendChild(fragment);
   });
 }
 
 export default async function onSearchInput({ value, resultsEl, searchInputEl, advancedSearchEl }) {
-  // If no value is provided, search results dropdown should not be populated
   if (!value.length) {
-    resultsEl.replaceChildren();
+    resultsEl.innerHTML = '';
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
 
-  // Add a modifier class if the input is populated
   resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
   const limit = 12;
-  const terms = value.toLowerCase().split(' ').map((e) => e.trim()).filter((e) => !!e);
-  resultsEl.innerHTML = '';
-
+  const terms = value.toLowerCase().split(' ').filter(Boolean);
   if (!terms.length) return;
 
   const { data: articles } = await fetchBlogArticleIndex();
-  const hits = [];
-  let i = 0;
-  for (; i < articles.length; i += 1) {
-    const article = articles[i];
+  const hits = articles.reduce((acc, article) => {
+    if (acc.length === limit) {
+      return acc;
+    }
+
     const { category } = getArticleTaxonomy(article);
     const text = [category, article.title, article.description].join(' ').toLowerCase();
 
     if (terms.every((term) => text.includes(term))) {
-      if (hits.length === limit) {
-        break;
-      }
-      hits.push(article);
+      acc.push(article);
     }
-  }
+
+    return acc;
+  }, []);
 
   if (!hits.length) {
-    const noResults = advancedSearchEl;
-
     const advancedLink = advancedSearchEl.querySelector('a');
     const href = new URL(advancedLink.href);
     href.searchParams.set('q', value);
     advancedLink.href = href.toString();
 
-    resultsEl.replaceChildren(noResults);
+    resultsEl.replaceChildren(advancedSearchEl);
     resultsEl.classList.add('no-results');
     return;
   }
 
+  const fragment = document.createDocumentFragment();
   hits.forEach((hit) => {
     const card = buildArticleCard(hit);
     const listItemEl = createTag('li', null, card);
-    resultsEl.appendChild(listItemEl);
+    fragment.appendChild(listItemEl);
   });
+  resultsEl.innerHTML = '';
+  resultsEl.appendChild(fragment);
 
   highlightTextElements(terms, resultsEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
 }
