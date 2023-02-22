@@ -39,18 +39,15 @@ const wrapValueInSpan = (value, suggestion, linkEl) => {
 };
 
 const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
-  // If no value is provided, search results dropdown should not be populated
   if (!value.length) {
     resultsEl.replaceChildren();
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
 
-  // Add a modifier class if the input is populated
   resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
-  // If there are no suggestions, the advanced search option should be shown
   if (!suggestions.length) {
     const noResults = getNoResultsEl(value);
     resultsEl.replaceChildren(noResults);
@@ -58,7 +55,6 @@ const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
     return;
   }
 
-  // Show suggestions in the dropdown if they exist
   const df = document.createDocumentFragment();
   suggestions.forEach((suggestion) => {
     const a = createTag('a', {

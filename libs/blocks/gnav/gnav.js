@@ -107,14 +107,14 @@ class Gnav {
   loadSearch = async () => {
     if (this.onSearchInput) return;
 
-    const gnavSearch = await import('./gnav-search.js');
-    this.getHelpxLink = gnavSearch.getHelpxLink;
+    const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
+    this.getHelpxLink = getHelpxLink;
 
     if (this.searchType === 'contextual') {
-      const { default: onSearchInput } = await import('./gnav-contextual-search.js');
-      this.onSearchInput = debounce(onSearchInput, SEARCH_DEBOUNCE_MS);
+      const { default: onContextualSearchInput } = await import('./gnav-contextual-search.js');
+      this.onSearchInput = debounce(onContextualSearchInput, SEARCH_DEBOUNCE_MS);
     } else {
-      this.onSearchInput = debounce(gnavSearch.onSearchInput, SEARCH_DEBOUNCE_MS);
+      this.onSearchInput = debounce(onSearchInput, SEARCH_DEBOUNCE_MS);
     }
   };
 
@@ -403,7 +403,6 @@ class Gnav {
     const locale = getLocale();
 
     searchInput.addEventListener('input', (e) => {
-      // this.onSearchInput(e.target.value, searchResultsUl, locale, searchInput);
       this.onSearchInput({
         value: e.target.value,
         resultsEl: searchResultsUl,
