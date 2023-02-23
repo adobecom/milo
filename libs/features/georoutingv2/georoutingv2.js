@@ -91,6 +91,19 @@ async function getAvailableLocales(locales, config, getMetadata) {
   return availableLocales.filter((a) => !!a);
 }
 
+function getGeoroutingOverride() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const param = urlParams.get('hideGeorouting');
+  const hideGeorouting = param || getCookie('hideGeorouting');
+  if (param === 'on') {
+    const d = new Date();
+    d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
+    const expires = `expires=${d.toUTCString()}`;
+    document.cookie = `overrideGeorouting=${hideGeorouting};${expires};path=/;`;
+  } else if (param === 'off') document.cookie = 'hideGeorouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
+  return hideGeorouting === 'on';
+}
+
 function decorateForOnLinkClick(link, prefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
@@ -225,18 +238,24 @@ async function showModal(details, loadStyle, config, loadBlock) {
 }
 
 export default async function loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle) {
+  if (getGeoroutingOverride()) return;
+
+  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+  if (!resp.ok) {
+    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+    loadGeoRoutingOld(config, createTag, getMetadata);
+    return;
+  }
+  const json = await resp.json();
+
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
   const storedInter = sessionStorage.getItem('international') || getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
-  const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-  if (!resp.ok) return false;
-  const json = await resp.json();
-
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
-  if (!urlGeoData) return true;
+  if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
@@ -247,7 +266,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
         await showModal(details, loadStyle, config, loadBlock);
       }
     }
-    return true;
+    return;
   }
 
   // Show modal when derived countries from url locale and akamai disagree
@@ -259,5 +278,4 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
       await showModal(details, loadStyle, config, loadBlock);
     }
   }
-  return true;
 }

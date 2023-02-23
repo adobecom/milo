@@ -679,11 +679,7 @@ export async function loadArea(area = document) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle).then(async (success) => {
-        if (success) return;
-        const { default: loadGeoRoutingOld } = await import('../features/georouting/georouting.js');
-        loadGeoRoutingOld(config, createTag, getMetadata);
-      });
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

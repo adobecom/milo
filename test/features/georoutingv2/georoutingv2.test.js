@@ -155,6 +155,9 @@ let stubURLSearchParamsGet = stub(URLSearchParams.prototype, 'get');
 const setUserCountryFromIP = (country = 'CH') => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('akamaiLocale').returns(country);
 };
+const setHideGeorouting = (setting) => {
+  stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('hideGeorouting').returns(setting);
+};
 
 const ogFetch = window.fetch;
 window.fetch = stub();
@@ -196,6 +199,7 @@ describe('GeoRouting', () => {
   before(() => {
     setUserCountryFromIP();
     stubFetchForGeorouting();
+    setHideGeorouting();
   });
   after(() => {
     stubURLSearchParamsGet.reset();
@@ -466,5 +470,16 @@ describe('GeoRouting', () => {
     links[1].click();
     expect(getCookie('international')).to.be.equal('us');
     expect(sessionStorage.getItem('international')).to.be.equal('us');
+  });
+
+  it('Does not open georouting modal if georouting hide is active', async () => {
+    // prepare
+    setHideGeorouting('on');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.be.null;
+    // cleanup
+    setHideGeorouting('off');
   });
 });
