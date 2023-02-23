@@ -400,7 +400,6 @@ export function decorateSVG(a) {
   try {
     const textContentUrl = new URL(sanitizedTextContent);
     const hrefUrl = new URL(href);
-    
     if (textContentUrl?.pathname === hrefUrl?.pathname) {
       a.parentElement.replaceChild(pic, a);
     } else {
