@@ -152,7 +152,7 @@ const getFilterObj = ({ excludeTags, filterTag, filterCustomTag, icon, openedOnL
   if (!tag) return null;
   const items = Object.values(tag.tags)
     .map((itemTag) => {
-      if (excludeTags.includes(itemTag.tagID)) return null;
+      if (excludeTags?.includes(itemTag.tagID)) return null;
 
       return {
         id: itemTag.tagID,

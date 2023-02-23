@@ -445,6 +445,12 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
   `;
 
+  const CustomFilter = html`
+    <${FormInput} label="Filter Label" name="customFilter" />
+    <${TagSelect} id="filterCustomFilter" options=${allTags} label="Filter" singleSelect />
+    <${FormInput} label="Icon Path" name="icon" />
+  `;
+
   const FilterBuildPanel = html`
     <${FilterOptions}>
     <${MultiField}
@@ -471,10 +477,11 @@ const FilterPanel = ({ tagsData }) => {
       subTitle=""
     >
       <${FormInput} label="Add a label for a Group Of Tags" name="label" />
-      <${TagSelect} id="filterCustomTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterCustomTag" options=${allTags} label="Main Tag" />
       <${FormInput} label="Icon Path" name="icon" />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
+
   `;
 
   return html`
