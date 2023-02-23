@@ -1,17 +1,16 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
-import { loadTaxonomy, computeTaxonomyFromTopics, getTaxonomyModule, buildBlock, getLinkForTopic } from '../../blocks/article-feed/article-helpers.js';
-import { buildFigure } from '../../blocks/figure/figure.js';
+import { loadTaxonomy, computeTaxonomyFromTopics, getTaxonomyModule, getLinkForTopic } from '../../blocks/article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
+import { buildFigure } from '../../blocks/figure/figure.js';
 
 async function populateAuthorInfo(authorEl, imgContainer, url, name) {
   if (!url) return;
   const resp = await fetch(`${url}.plain.html`);
   if (!resp || !resp.ok) {
-    const p = document.createElement('p');
-    p.innerHTML = authorEl.innerHTML;
-    authorEl.replaceWith(p);
+    const p = createTag('p', null, authorEl.textContent);
+    authorEl.replaceChildren(p);
     console.log(`Could not retrieve metadata for ${url}`);
     return;
   }
@@ -59,7 +58,7 @@ async function copyToClipboard(button) {
 
     setTimeout(() => {
       tooltip.remove();
-    }, 5000);
+    }, 3000);
     button.classList.remove('copy-failure');
     button.classList.add('copy-success');
   } catch (e) {
@@ -68,9 +67,9 @@ async function copyToClipboard(button) {
   }
 }
 
-async function buildSharing() {
+async function buildSharing(el, heading) {
   const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent(document.querySelector('h1').textContent);
+  const title = encodeURIComponent(heading.textContent);
   const description = encodeURIComponent(getMetadata('description'));
 
   const platformMap = {
@@ -126,81 +125,58 @@ async function buildSharing() {
     await copyToClipboard(copyButton);
   });
 
-  return sharing;
+  el.append(sharing);
 }
 
 async function validateDate(date) {
-  if (date && !/[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}/.test(date.textContent.trim())) {
+  if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
     // match publication date to MM-DD-YYYY format
     date.classList.add('article-date-invalid');
     date.setAttribute('title', await replaceKey('invalid-date', getConfig()));
   }
 }
 
-function buildArticleHeader(el) {
+async function decorateArticleHeader() {
+  const el = document.querySelector('.section');
   const h1 = el.querySelector('h1');
   const picture = el.querySelector('picture');
   const tag = getMetadata('article:tag');
   const category = tag || 'News';
-  const author = getMetadata('author');
-  const { codeRoot } = getConfig();
-  const authorURL = getMetadata('author-url') || (author ? `${codeRoot}/authors/${author.replace(/[^0-9a-z]/gi, '-')}` : null);
+  const authorName = getMetadata('author');
+  const { codeRoot, miloLibs } = getConfig();
+  const authorURL = getMetadata('author-url') || (authorName ? `${codeRoot}/authors/${authorName.toLowerCase().replace(/[^0-9a-z]/gi, '-')}` : null);
   const publicationDate = getMetadata('publication-date');
 
+  const imageWrapper = createTag('div', { class: 'figure-feature' }, picture);
+  const figure = buildFigure(imageWrapper);
+  const featureImgContainer = createTag('div', { class: 'article-feature-image' }, figure);
+
   const categoryTag = getLinkForTopic(category);
+  const categoryEl = createTag('div', { class: 'article-category' }, categoryTag);
 
-  const articleHeaderBlockEl = buildBlock('article-header', [
-    [`<p>${categoryTag}</p>`],
-    [h1],
-    [`<p>${authorURL ? `<a href="${authorURL}">${author}</a>` : author}</p>
-      <p>${publicationDate}</p>`],
-    [picture],
-  ]);
-  el.prepend(articleHeaderBlockEl);
-  return articleHeaderBlockEl;
-}
+  const titleEl = createTag('div', { class: 'article-title' }, h1);
 
-async function decorateArticleHeader(eager = true) {
-  const block = buildArticleHeader(document.querySelector('.section'));
-
-  const childrenEls = Array.from(block.children);
-
-  const featureImgContainer = childrenEls[3];
-  featureImgContainer.classList.add('article-feature-image');
-  const featureFigEl = buildFigure(featureImgContainer.firstElementChild);
-  featureFigEl.classList.add('figure-feature');
-  featureImgContainer.prepend(featureFigEl);
-  featureImgContainer.lastElementChild.remove();
-
-  const categoryContainer = childrenEls[0];
-  categoryContainer.classList.add('article-category');
-
-  const titleContainer = childrenEls[1];
-  titleContainer.classList.add('article-title');
-
-  const bylineContainer = childrenEls[2];
-  bylineContainer.classList.add('article-byline');
-  bylineContainer.firstElementChild.classList.add('article-byline-info');
-
-  const author = bylineContainer.firstElementChild.firstElementChild;
-  const authorEl = author.querySelector('a');
-  const authorURL = authorEl.href;
-  const authorName = author.textContent;
-  author.classList.add('article-author');
-
-  const date = bylineContainer.firstElementChild.lastElementChild;
-  date.classList.add('article-date');
-  validateDate(date);
-
-  const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
+  const base = miloLibs || codeRoot;
   const authorImg = createTag('div', { class: 'article-author-image' });
   authorImg.style.backgroundImage = `url(${base}/templates/article-header-and-tags/adobe-logo.svg)`;
-  bylineContainer.prepend(authorImg);
-  populateAuthorInfo(authorEl, authorImg, authorURL, authorName, eager);
 
-  const shareBlock = await buildSharing();
-  bylineContainer.append(shareBlock);
+  const author = authorURL ? `<a href="${authorURL}">${authorName}</a>` : authorName;
+  const authorWrapper = createTag('div', { class: 'article-author' }, author);
+  const publicationDateEl = createTag('div', { class: 'article-date' }, publicationDate);
+  validateDate(publicationDateEl);
+
+  const bylineInfo = createTag('div', { class: 'article-byline-info' }, [authorWrapper, publicationDateEl]);
+  populateAuthorInfo(authorWrapper, authorImg, authorURL, authorName);
+
+  const byline = createTag('div', { class: 'article-byline' }, [authorImg, bylineInfo]);
+
+  buildSharing(byline, h1);
+
+  const articleHeader = createTag('div', { class: 'article-header' }, [categoryEl, titleEl, byline, featureImgContainer]);
+
+  el.prepend(articleHeader);
+
+  
 }
 
 function decorateTags(topics) {
@@ -212,7 +188,7 @@ function decorateTags(topics) {
 
   const tagsEl = createTag('p');
   const container = createTag('div', { class: 'tags-container' }, tagsEl);
-  const mainEl = document.body.querySelector('main');
+  const mainEl = document.querySelector('main');
   const recBlock = mainEl.querySelector('.recommended-articles');
   if (recBlock) {
     recBlock.insertAdjacentElement('beforebegin', container);

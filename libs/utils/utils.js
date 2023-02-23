@@ -7,7 +7,6 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
-  // 'article-header',
   'aside',
   'author-header',
   'caas',
@@ -69,7 +68,6 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
-  // { 'article-header': '/publish/' },
 ];
 const ENVS = {
   local: {
@@ -561,7 +559,7 @@ async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
-  
+
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 }
