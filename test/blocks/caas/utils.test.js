@@ -23,22 +23,24 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
-describe('additionalQueryParams', () => {
-  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
-  expect(arrayToObj({})).to.be.eql({});
-})
-describe('loadStrings', () => {
-  const ogFetch = window.fetch;
+function fileNotFoundResponse(){
+  return new Promise(function(resolve, reject){
+    resolve({
+      ok: false,
+      statusCode: 404,
+      text: () => {}
+    });
+  })
+}
 
-  beforeEach(() => {
-    function htmlResponse(){
-      return new Promise(function(resolve){
-        resolve({
-          ok: true,
-          text: () => {
-            let fetchCalledWith = fetch.args[0].toString();
-            let fetchLocale = fetchCalledWith.split('/')[3];
-            return `
+function htmlResponse(){
+  return new Promise(function(resolve){
+    resolve({
+      ok: true,
+      text: () => {
+        let fetchCalledWith = fetch.args[0].toString();
+        let fetchLocale = fetchCalledWith.split('/')[3];
+        return `
             <div class="string-mappings">
               <div>
                 <div>collectionTitle</div>
@@ -48,10 +50,19 @@ describe('loadStrings', () => {
                 <div></div>
               </div>
             </div>`
-          },
-        });
-      })
-    }
+      },
+    });
+  })
+}
+
+describe('additionalQueryParams', () => {
+  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+  expect(arrayToObj({})).to.be.eql({});
+})
+describe('loadStrings', () => {
+  const ogFetch = window.fetch;
+
+  beforeEach(() => {
     window.fetch = stub().returns(htmlResponse());
   });
 
@@ -90,6 +101,13 @@ describe('loadStrings', () => {
       expect(locale).to.eql(pageLocale);
     });
   }
+
+  it('should be able to handle multiple 404s', async () => {
+    const pathname = `/fr/tools/caas`;
+    window.fetch = stub().returns(fileNotFoundResponse());
+    const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
+    expect(loadedStrings).to.eql({});
+  });
 });
 
 describe('getConfig', () => {
