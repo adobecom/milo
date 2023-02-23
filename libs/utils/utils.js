@@ -392,7 +392,7 @@ export function decorateSVG(a) {
     : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
   img.setAttribute('loading', 'lazy');
-  img.src = sanitizedTextContent.replace(new URL(sanitizedTextContent).origin, '');
+  img.src = sanitizedTextContent?.replace(new URL(sanitizedTextContent)?.origin, '');
   img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
