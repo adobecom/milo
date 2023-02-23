@@ -424,7 +424,7 @@ class Gnav {
     window.adobeid = {
       client_id: imsClientId,
       scope: 'AdobeID,openid,gnav',
-      locale: locale || 'en-US',
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,

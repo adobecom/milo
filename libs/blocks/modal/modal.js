@@ -1,4 +1,4 @@
-import { createTag, getMetadata, localizeLink } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -46,6 +46,8 @@ function isElementInView(element) {
 }
 
 function getCustomModal(custom, dialog) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
   if (custom.class) dialog.classList.add(custom.class);
   if (custom.closeEvent) {

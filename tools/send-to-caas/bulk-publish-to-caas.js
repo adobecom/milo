@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
+import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import {
   loadTingleModalFiles,
   showAlert,
@@ -42,7 +43,7 @@ const fetchExcelJson = async (url) => {
 };
 
 const checkIms = async () => {
-  const accessToken = await getImsToken();
+  const accessToken = await getImsToken(loadScript);
   if (!accessToken) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
@@ -197,7 +198,7 @@ const loadFromLS = () => {
 };
 
 const init = async () => {
-  await loadTingleModalFiles();
+  await loadTingleModalFiles(loadScript, loadStyle);
   await loadCaasTags();
   loadFromLS();
 

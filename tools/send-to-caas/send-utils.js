@@ -325,6 +325,7 @@ const props = {
   cta1style: 0,
   cta1text: 0,
   cta1url: (s, options) => {
+    if (s?.trim() === '') return '';
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid Cta1Url: ${url}`);
   },
@@ -401,22 +402,26 @@ const getCaasProps = (p) => {
       }),
       badges: getBadges(p),
       ...(p.playurl && { playUrl: p.playurl }),
-      cta: {
-        primaryCta: {
-          text: p.cta1text,
-          url: p.cta1url,
-          style: p.cta1style,
-          icon: p.cta1icon,
+      ...((p.cta1url || p.cta2url) && {
+        cta: {
+          ...(p.cta1url && {
+            primaryCta: {
+              text: p.cta1text,
+              url: p.cta1url,
+              style: p.cta1style,
+              icon: p.cta1icon,
+            },
+          }),
+          ...(p.cta2url && {
+            secondaryCta: {
+              text: p.cta2text,
+              url: p.cta2url,
+              style: p.cta2style,
+              icon: p.cta2icon,
+            },
+          }),
         },
-        ...(p.cta2url && {
-          secondaryCta: {
-            text: p.cta2text,
-            url: p.cta2url,
-            style: p.cta2style,
-            icon: p.cta2icon,
-          },
-        }),
-      },
+      }),
       ...((p.eventduration || p.eventstart || p.eventend) && {
         event: {
           duration: p.eventduration,
