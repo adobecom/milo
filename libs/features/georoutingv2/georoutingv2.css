@@ -3,7 +3,7 @@
 }
 
 .dialog-modal.locale-modal-v2 {
-  background-image: url('/libs/img/GeoModal_BG_Map_Mobile.jpg');
+  background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Mobile.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -66,6 +66,7 @@ img.icon-milo {
   float: right;
   margin-left: 4px;
   top: 1px;
+  filter: brightness(0) invert(1);
 }
 
 .tabs div[role="tablist"]  {
@@ -89,7 +90,7 @@ img.icon-milo {
 
 @media (min-width: 480px) {
   .dialog-modal.locale-modal-v2 {
-    background-image: url('/libs/img/GeoModal_BG_Map_Tablet.jpg');
+    background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Tablet.png');
   }
 }
 
@@ -111,6 +112,6 @@ img.icon-milo {
 
 @media (min-width: 1200px) {
   .dialog-modal.locale-modal-v2 {
-    background-image: url('/libs/img/GeoModal_BG_Map_Desktop.jpg');
+    background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop.png');
   }
 }

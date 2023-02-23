@@ -677,13 +677,13 @@ export async function loadArea(area = document) {
   // Post section loading on document
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
-    const georoutingv2 = getMetadata('georoutingv2') || config.geoRoutingV2;
-    if (georoutingv2 === 'on') {
+    if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-    } else if (georouting === 'on') {
-      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle).then(async (success) => {
+        if (success) return;
+        const { default: loadGeoRoutingOld } = await import('../features/georouting/georouting.js');
+        loadGeoRoutingOld(config, createTag, getMetadata);
+      });
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

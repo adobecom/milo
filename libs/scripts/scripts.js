@@ -106,7 +106,6 @@ const locales = {
 
 const config = {
   geoRouting: 'on',
-  geoRoutingV2: 'on',
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',

@@ -157,10 +157,10 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
   const titleText = region.length ? region[0][currentPage.region] : '';
   const title = createTag('h3', { lang }, locale.title.replace('{{region}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang }, locale.text);
-  const flagFile = getCodes(locale).length > 1 ? 'acom-globe-grid.png' : `acom-flag_${locale.region}.svg`;
+  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag_${locale.region}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
-    src: `${config.miloLibs || config.codeRoot}/img/icons/acom-flag/${flagFile}`,
+    src: `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/${flagFile}`,
   });
   const span = createTag('span', { class: 'icon margin-right' }, img);
   const mainAction = createTag('a', { class: 'con-button blue', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false }, span);
@@ -168,7 +168,7 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
   if (locales) {
     const downArrow = createTag('img', {
       class: 'icon-milo down-arrow',
-      src: `${config.miloLibs || config.codeRoot}/img/icons/chevron-down.png`,
+      src: `${config.miloLibs || config.codeRoot}/ui/img/chevron.svg`,
     });
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
@@ -232,11 +232,11 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-  if (!resp.ok) return;
+  if (!resp.ok) return false;
   const json = await resp.json();
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
-  if (!urlGeoData) return;
+  if (!urlGeoData) return true;
 
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
@@ -247,7 +247,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
         await showModal(details, loadStyle, config, loadBlock);
       }
     }
-    return;
+    return true;
   }
 
   // Show modal when derived countries from url locale and akamai disagree
@@ -259,4 +259,5 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
       await showModal(details, loadStyle, config, loadBlock);
     }
   }
+  return true;
 }
