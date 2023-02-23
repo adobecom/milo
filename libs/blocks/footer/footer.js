@@ -197,23 +197,38 @@ class Footer {
 
   decoratePrivacy = () => {
     const copyrightEl = this.body.querySelector('div > p > em');
-    const links = copyrightEl?.parentElement.querySelectorAll('a');
-    if (!copyrightEl || !links) return null;
+    if (!copyrightEl) return null;
+    const container = copyrightEl.closest('div');
     const privacyWrapper = createTag('div', { class: 'footer-privacy' });
     const copyright = createTag('p', { class: 'footer-privacy-copyright' });
     const year = new Date().getFullYear();
     copyright.textContent = `Copyright © ${year} ${copyrightEl.textContent}`;
     privacyWrapper.append(copyright);
-    const infoLinks = createTag('ul', { class: 'footer-privacy-links' });
-    links.forEach((link) => {
-      const li = createTag('li', { class: 'footer-privacy-link' });
-      if (link.hash === '#interest-based-ads') {
-        link.insertAdjacentHTML('afterbegin', ADCHOICE_IMG);
-      }
-      li.append(link);
-      infoLinks.append(li);
-    });
-    privacyWrapper.append(infoLinks);
+
+    const adchoice = container.querySelector('a[href*="#interest-based-ads"]');
+    adchoice?.insertAdjacentHTML('afterbegin', ADCHOICE_IMG);
+
+    const ulClass = 'footer-privacy-links';
+    const liClass = 'footer-privacy-link';
+    let ul = container.querySelector('ul');
+
+    if (ul) {
+      ul.classList.add(ulClass);
+      const listItems = ul.querySelectorAll('li');
+      [...listItems].forEach((item) => {
+        item.classList.add(liClass);
+      });
+    } else {
+      const links = container.querySelectorAll('a');
+      if (!links) return null;
+      ul = createTag('ul', { class: ulClass });
+      links.forEach((link) => {
+        const li = createTag('li', { class: liClass });
+        li.append(link);
+        ul.append(li);
+      });
+    }
+    privacyWrapper.append(ul);
     return privacyWrapper;
   };
 
