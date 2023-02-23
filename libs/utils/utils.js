@@ -392,7 +392,7 @@ export function decorateSVG(a) {
     : textContent.substring(textContent.indexOf('|') + 1).trim();
   const img = document.createElement('img');
   img.setAttribute('loading', 'lazy');
-  img.src = localizeLink(sanitizedTextContent);
+  img.src = sanitizedTextContent.replace(new URL(sanitizedTextContent).origin, '');
   img.alt = altText;
   const pic = document.createElement('picture');
   pic.append(img);
@@ -400,9 +400,6 @@ export function decorateSVG(a) {
   try {
     const textContentUrl = new URL(sanitizedTextContent);
     const hrefUrl = new URL(href);
-    
-    // Making sure all svg URLs are relative.
-    img.src = img.src.replace(textContentUrl?.origin, '');
     
     if (textContentUrl?.pathname === hrefUrl?.pathname) {
       a.parentElement.replaceChild(pic, a);
