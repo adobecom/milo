@@ -163,17 +163,19 @@ function openPicker(button, createTag, locales, country, config, event) {
   removeOnClickOutsideElement(list, event, button);
 }
 
-function buildContent(config, currentPage, createTag, locale, regionData, locales) {
+function buildContent(config, currentPage, createTag, locale, geoData, locales) {
   const fragment = new DocumentFragment();
   const lang = config.locales[currentPage.prefix]?.ietf ?? '';
-  const region = regionData.filter((c) => c.prefix === locale.prefix);
-  const titleText = region.length ? region[0][currentPage.region] : '';
-  const title = createTag('h3', { lang }, locale.title.replace('{{region}}', titleText));
+  const geo = geoData.filter((c) => c.prefix === locale.prefix);
+  const titleText = geo.length ? geo[0][currentPage.geo] : '';
+  const title = createTag('h3', { lang }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang }, locale.text);
-  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag_${locale.region}.svg`;
+  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag_${locale.geo}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     src: `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/${flagFile}`,
+    width: 15,
+    height: 15,
   });
   const span = createTag('span', { class: 'icon margin-right' }, img);
   const mainAction = createTag('a', { class: 'con-button blue', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false }, span);
@@ -182,6 +184,8 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
     const downArrow = createTag('img', {
       class: 'icon-milo down-arrow',
       src: `${config.miloLibs || config.codeRoot}/ui/img/chevron.svg`,
+      width: 15,
+      height: 15,
     });
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
@@ -201,13 +205,13 @@ function buildContent(config, currentPage, createTag, locale, regionData, locale
   return fragment;
 }
 
-async function getDetails(currentPage, localeMatches, config, createTag, getMetadata, regionData) {
+async function getDetails(currentPage, localeMatches, config, createTag, getMetadata, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
   if (availableLocales.length > 0) {
     const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
     currentPage.url = window.location.hash ? document.location.href : '#';
     if (availableLocales.length === 1) {
-      const content = buildContent(config, currentPage, createTag, availableLocales[0], regionData);
+      const content = buildContent(config, currentPage, createTag, availableLocales[0], geoData);
       georoutingWrapper.appendChild(content);
       return georoutingWrapper;
     }
@@ -216,7 +220,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
     georoutingWrapper.appendChild(tabsContainer);
 
     sortedLocales.forEach((locale) => {
-      const content = buildContent(config, currentPage, createTag, locale, regionData, sortedLocales);
+      const content = buildContent(config, currentPage, createTag, locale, geoData, sortedLocales);
       const tab = createTab(createTag, content, locale.language);
       georoutingWrapper.appendChild(tab);
     });
@@ -261,7 +265,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.georouting.data.filter((d) => d.prefix === storedLocale);
-      const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.regions.data);
+      const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.geos.data);
       if (details) {
         await showModal(details, loadStyle, config, loadBlock);
       }
@@ -273,7 +277,7 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
   const akamaiCode = await getAkamaiCode();
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.georouting.data, akamaiCode);
-    const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.regions.data);
+    const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.geos.data);
     if (details) {
       await showModal(details, loadStyle, config, loadBlock);
     }
