@@ -742,8 +742,6 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   io.observe(el);
   return io;
 }
-<<<<<<< HEAD
-=======
 
 export function loadLana(options = {}) {
   if (window.lana) return;
