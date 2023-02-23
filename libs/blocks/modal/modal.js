@@ -114,13 +114,6 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  curtain.addEventListener('click', (e) => {
-    // on click outside of modal
-    if (e.target === curtain) {
-      closeModals([dialog]);
-    }
-  });
-
   dialog.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeModal(dialog);
@@ -129,7 +122,6 @@ export async function getModal(details, custom) {
 
   dialog.append(close);
   document.body.append(dialog);
-  dialog.insertAdjacentElement('afterend', curtain);
   document.getElementsByClassName("dialog-close")[0]?.focus({ focusVisible: true });
 
   const closeModal = (event) => {
