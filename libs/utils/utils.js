@@ -11,6 +11,8 @@ const MILO_BLOCKS = [
   'author-header',
   'caas',
   'caas-config',
+  'card',
+  'card-horizontal',
   'card-metadata',
   'carousel',
   'chart',
@@ -25,9 +27,9 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'iframe',
   'instagram',
   'marketo',
-  'card',
   'marquee',
   'media',
   'merch',
@@ -37,9 +39,12 @@ const MILO_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
+  'promo',
   'tabs',
   'table-of-contents',
   'text',
@@ -138,6 +143,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -231,10 +237,11 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlPostfix(area = document) {
+  const config = getConfig();
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = AUTO_BLOCKS
+  const relativeAutoBlocks = config.autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
 
@@ -253,6 +260,17 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
+
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
 
   const links = area.querySelectorAll('a');
   links.forEach((el) => {
@@ -396,10 +414,11 @@ export function decorateSVG(a) {
 }
 
 export function decorateAutoBlock(a) {
+  const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return AUTO_BLOCKS.find((candidate) => {
+  return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
@@ -510,7 +529,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
@@ -530,7 +549,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = section.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -563,6 +582,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
@@ -570,20 +596,25 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
@@ -595,6 +626,20 @@ function initSidekick() {
   }
 }
 
+function decorateMeta() {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]');
+  contents.forEach((meta) => {
+    try {
+      const url = new URL(meta.content);
+      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      window.lana.log('Cannot make URL from metadata');
+    } catch (e) {
+      // Not a valid URL.
+    }
+  });
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -603,6 +648,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
+    decorateMeta();
     decorateHeader();
 
     import('./samplerum.js').then(({ addRumListeners }) => {
@@ -641,10 +687,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
-    const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-      const { addRichResults } = await import('../features/richresults.js');
-      addRichResults(type, { createTag, getMetadata });
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
@@ -695,4 +741,28 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   }, options);
   io.observe(el);
   return io;
+}
+<<<<<<< HEAD
+=======
+
+export function loadLana(options = {}) {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
+
+  window.lana = {
+    log: async (...args) => {
+      await import('./lana.js');
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      return window.lana.log(...args);
+    },
+    debug: false,
+    options,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
 }

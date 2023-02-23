@@ -63,7 +63,7 @@ header nav {
   display: none;
 }
 
-header + main {
+header ~ main {
   margin-top: 57px;
 }
 
@@ -217,7 +217,7 @@ picture.bg-img img {
     overflow: unset;
   }
 
-  header + main {
+  header ~ main {
     margin-top: 64px;
   }
 
