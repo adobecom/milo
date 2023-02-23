@@ -41,7 +41,6 @@ const MILO_BLOCKS = [
   'section-metadata',
   'slideshare',
   'tabs',
-  'tags',
   'table-of-contents',
   'text',
   'walls-io',
@@ -539,14 +538,6 @@ function decorateSections(el, isDoc) {
   });
 }
 
-// async function buildTagsBlock() {
-//   const topics = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content);
-
-//   const tagsBlock = createTag('div', { class: 'tags' }, `<p>${topics.join(';')}`);
-
-//   loadBlock(tagsBlock);
-// }
-
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
@@ -655,7 +646,6 @@ export async function loadArea(area = document) {
       const { addRichResults } = await import('../features/richresults.js');
       addRichResults(type, { createTag, getMetadata });
     }
-    // buildTagsBlock();
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
