@@ -1,3 +1,27 @@
 .library-metadata {
-  display: none;
+  margin: 24px auto;
+}
+
+.library-metadata::before {
+  display: block;
+  content: 'Library Metadata';
+  background: #6eb4e4; /* CRXDE Blue  */
+  line-height: 28px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #293c51;
+  padding: 6px 12px;
+}
+
+.library-meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 4px;
+  border-radius: 6px;
+}
+
+.library-meta-row:nth-child(odd) {
+  background-color: #EFEFEF;
+  padding: 6px 12px;
 }
