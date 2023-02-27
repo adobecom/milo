@@ -575,7 +575,7 @@ const AdvancedPanel = () => {
       prop="fallbackEndpoint"
       type="text"}
     />
-    <${Input} label="Placeholders JSON" prop="placeholderUrl" type="text" />
+    <${Input} label="Map Text Strings From Word Doc" prop="placeholderUrl" type="text" />
     <${Input} label="Tags Url" prop="tagsUrl" defaultValue=${defaultState.tagsUrl} type="text" />
     <${MultiField}
       onChange=${onChange('additionalRequestParams')}
