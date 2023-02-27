@@ -324,7 +324,7 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
-  while (!copySuccess && copyStatusJson.status !== 'failed') {
+  while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
     const status = await fetch(statusUrl);
     if (status.ok) {

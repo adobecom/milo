@@ -10,6 +10,7 @@ import {
   copyFile,
   getFile,
   saveFile,
+  updateExcelTable,
 } from '../../loc/sharepoint.js';
 import {
   initProject,
@@ -21,13 +22,14 @@ import {
   updateProjectDetailsUI,
 } from './ui.js';
 
+let projectDetail;
+let project;
+let config;
+
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
 }
-
-let projectDetail;
-let config;
 
 async function refreshPage() {
   // Inject Sharepoint file metadata
@@ -86,9 +88,12 @@ async function floodgateContent() {
     return status;
   }
 
+  const startCopy = new Date();
   const copyStatuses = await Promise.all(
     [...projectDetail.urls].map(((valueArray) => copyFilesToFloodgateTree(valueArray[1]))),
   );
+  const endCopy = new Date();
+
   loadingON('Previewing for copied files... ');
   const previewStatuses = await Promise.all(
     copyStatuses
@@ -103,6 +108,11 @@ async function floodgateContent() {
   const failedPreviews = previewStatuses
     .filter((status) => !status.success)
     .map((status) => status.path);
+
+  const excelValues = [];
+  excelValues.push(['COPY', startCopy, endCopy, failedCopies.join('\n')]);
+  await updateExcelTable(project.excelPath, 'STATUS', excelValues);
+  loadingON('Project excel file updated with copy status... ');
 
   if (failedCopies.length > 0 || failedPreviews.length > 0) {
     let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to floodgate content folder` : '';
@@ -135,7 +145,7 @@ async function init() {
 
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
-    const project = await initProject();
+    project = await initProject();
     loadingON(`Fetching project details for ${project.url}`);
 
     // Update project name on the admin page
