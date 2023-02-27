@@ -202,7 +202,31 @@ class Gnav {
         if (navBlock.classList.contains('section')) {
           navItem.classList.add('section-menu');
         }
-        this.decorateLargeMenu(navLink, navItem, menu);
+        const onHover = (el, cb, delay = 50) => {
+          let timeout = null;
+          const enterFn = () => {
+            timeout = setTimeout(cb, delay);
+          };
+          const exitFn = () => {
+            clearTimeout(timeout);
+            el.removeEventListener('mouseout', exitFn);
+            el.removeEventListener('mouseover', enterFn);
+          }
+          el.addEventListener('mouseover', enterFn);
+          el.addEventListener('mouseout', exitFn);
+        };
+
+        const disableClick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        };
+        const decorate = () => {
+          this.decorateLargeMenu(navLink, navItem, menu);
+          navItem.removeEventListener('click', disableClick);
+        };
+        onHover(navItem, decorate, 50);
+
+        navItem.addEventListener('click', disableClick);
       }
       mainNav.appendChild(navItem);
     });
