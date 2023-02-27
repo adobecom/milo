@@ -93,7 +93,7 @@ async function updateProjectDetailsUI(projectDetail, config) {
 
   container.appendChild(table);
 
-  const showIds = ['reloadProject'];
+  const showIds = ['reloadProject', 'copyFiles'];
   showButtons(showIds);
 }
 
