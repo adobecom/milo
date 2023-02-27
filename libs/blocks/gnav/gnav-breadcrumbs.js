@@ -141,9 +141,7 @@ function setBreadcrumbSEO(breadcrumbs) {
 }
 
 async function getBreadcrumbs(element) {
-  if (!element) return null;
-  const noBreadcrumbs = getMetadata('breadcrumbs') === 'off';
-  if (noBreadcrumbs) return null;
+  if (!element || getMetadata('breadcrumbs') === 'off') return null;
   return getBreadcrumbsFromPageBlock(element)
     || await getBreadcrumbsFromFile()
     || await getBreadcrumbsFromUrl(document.location.pathname)
