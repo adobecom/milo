@@ -9,7 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import getConfig from './config.js';
+import { getConfig } from './config.js';
+import {
+  getConfig as getFloodgateConfig
+} from '../floodgate/js/config.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
@@ -87,10 +90,11 @@ const loadSharepointData = (spBatchApi, payload) => {
   return fetch(spBatchApi, options);
 };
 
-function getSharepointFileRequest(spConfig, fileIndex, filePath) {
+function getSharepointFileRequest(spConfig, fileIndex, filePath, isFloodgate) {
+  const baseURI = isFloodgate ? spConfig.api.file.get.fgBaseURI : spConfig.api.file.get.baseURI;
   return {
     id: fileIndex,
-    url: `${spConfig.api.file.get.baseURI}${filePath}`.replace(spConfig.api.url, ''),
+    url: `${baseURI}${filePath}`.replace(spConfig.api.url, ''),
     method: 'GET',
   };
 }
@@ -100,17 +104,17 @@ async function getSpViewUrl() {
   return sp.shareUrl;
 }
 
-async function getSpFiles(filePaths) {
+async function getSpFiles(filePaths, isFloodgate) {
   let index = 0;
   const spFilePromises = [];
-  const { sp } = await getConfig();
+  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
   const spBatchApi = `${sp.api.batch.uri}`;
 
   while (index < filePaths.length) {
     const payload = { requests: [] };
     for (let i = 0; i < BATCH_REQUEST_LIMIT && index < filePaths.length; index += 1, i += 1) {
       const filePath = filePaths[index];
-      payload.requests.push(getSharepointFileRequest(sp, index, filePath));
+      payload.requests.push(getSharepointFileRequest(sp, index, filePath, isFloodgate));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
   }
