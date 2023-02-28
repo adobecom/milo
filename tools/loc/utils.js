@@ -127,6 +127,12 @@ export function showButtons(buttonIds) {
   });
 }
 
+export function hideButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.add('hidden');
+  });
+}
+
 export async function fetchProjectFile(url, retryAttempt) {
   const response = await fetch(url);
   if (!response.ok && retryAttempt <= MAX_RETRIES) {

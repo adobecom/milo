@@ -4,6 +4,8 @@ import {
   loadingON,
   simulatePreview,
   stripExtension,
+  showButtons,
+  hideButtons,
 } from '../../loc/utils.js';
 import {
   connect as connectToSP,
@@ -20,6 +22,7 @@ import {
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
+  ACTION_BUTTON_IDS,
 } from './ui.js';
 
 let projectDetail;
@@ -88,6 +91,7 @@ async function floodgateContent() {
     return status;
   }
 
+  hideButtons(ACTION_BUTTON_IDS);
   const startCopy = new Date();
   const copyStatuses = await Promise.all(
     [...projectDetail.urls].map(((valueArray) => copyFilesToFloodgateTree(valueArray[1]))),
@@ -113,10 +117,11 @@ async function floodgateContent() {
   excelValues.push(['COPY', startCopy, endCopy, failedCopies.join('\n')]);
   await updateExcelTable(project.excelPath, 'STATUS', excelValues);
   loadingON('Project excel file updated with copy status... ');
+  showButtons(ACTION_BUTTON_IDS);
 
   if (failedCopies.length > 0 || failedPreviews.length > 0) {
-    let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to floodgate content folder` : '';
-    failureMessage = failedPreviews.length > 0 ? `${failureMessage} Failed to preview ${failedPreviews}. Kindly manually preview these files.` : '';
+    let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to floodgate content folder. Check project excel sheet for additional information\n` : '';
+    failureMessage += failedPreviews.length > 0 ? `Failed to preview ${failedPreviews}. Kindly manually preview these files.` : '';
     loadingON(failureMessage);
   } else {
     loadingOFF();
