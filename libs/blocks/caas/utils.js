@@ -408,8 +408,8 @@ export const getConfig = async (state, strs = {}) => {
         filterInfo: { searchPlaceholderText: strs.searchPlaceholder || 'Search Here' },
       },
     },
-    language: 'en',
-    country: 'US',
+    language,
+    country,
     analytics: {
       trackImpressions: state.analyticsTrackImpression || '',
       collectionIdentifier: state.analyticsCollectionName,
