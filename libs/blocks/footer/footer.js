@@ -95,12 +95,8 @@ class Footer {
       const headings = column.querySelectorAll('h2');
       headings.forEach((heading) => {
         const titleId = heading.textContent.trim().toLowerCase().replace(/ /g, '-');
-        const title = createTag('a', {
-          class: 'footer-nav-item-title',
-          role: 'button',
-          'aria-expanded': this.desktop.matches,
-          'aria-controls': `${titleId}-menu`,
-        });
+        const title = createTag('p', { class: 'footer-nav-item-title', id: titleId });
+
         title.textContent = heading.textContent;
 
         const navItem = createTag('div', { class: 'footer-nav-item' });
@@ -269,8 +265,10 @@ class Footer {
 
   setDesktopTitles = (titles) => {
     titles?.forEach((title) => {
+      title.removeAttribute('role');
       title.removeAttribute('tabindex');
-      title.setAttribute('aria-expanded', true);
+      title.removeAttribute('aria-expanded');
+      title.removeAttribute('aria-controls');
 
       window.removeEventListener('keydown', this.toggleOnKey);
       title.removeEventListener('click', this.toggleMenu);
@@ -279,8 +277,10 @@ class Footer {
 
   setMobileTitles = (titles) => {
     titles?.forEach((title) => {
+      title.setAttribute('role', 'button');
       title.setAttribute('tabindex', 0);
       title.setAttribute('aria-expanded', false);
+      title.setAttribute('aria-controls', `${title.id}-menu`);
       title.addEventListener('click', this.toggleMenu);
 
       title.addEventListener('focus', () => {

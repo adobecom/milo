@@ -114,6 +114,7 @@
         countrySelectEl.dispatchEvent(new Event('change'))
 
         const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.country = 'ca';
         expectedConfig.collection.endpoint =
         'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         await delay(50)
