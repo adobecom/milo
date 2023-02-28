@@ -40,12 +40,8 @@ body {
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   opacity: 1 !important; /* Fix Target hiding */
-  visibility: hidden;
 }
 
-body.appear {
-  visibility: unset;
-}
 
 header {
   height: 57px;

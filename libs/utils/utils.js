@@ -143,7 +143,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -334,7 +334,7 @@ export async function loadTemplate() {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs && MILO_TEMPLATES.includes(name) ? miloLibs : codeRoot;
   const styleLoaded = new Promise((resolve) => {
-      loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
+    loadStyle(`${base}/templates/${name}/${name}.css`, resolve);
   });
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
@@ -670,15 +670,17 @@ export async function loadArea(area = document) {
     // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
-    // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      // eslint-disable-next-line no-await-in-loop
+      await loadTemplate();
+      // Post LCP operations.
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
   }
-  await loadTemplate();
-  document.querySelector('body').classList.add('appear');
 
   // Post section loading on document
   if (isDoc) {
