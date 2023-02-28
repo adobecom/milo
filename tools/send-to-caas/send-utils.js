@@ -382,7 +382,7 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options) => {
-  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublish.html'
+  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
     ? await getBulkPublishLangAttr(options)
     : document.documentElement.lang;
 

@@ -30,7 +30,7 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
-  usepreview: false,
+  // usepreview: false,
 };
 
 const fetchExcelJson = async (url) => {
@@ -222,7 +222,7 @@ const init = async () => {
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
-      usepreview: document.getElementById('usepreview').checked,
+      // usepreview: document.getElementById('usepreview').checked,
     });
     bulkPublish();
   });
