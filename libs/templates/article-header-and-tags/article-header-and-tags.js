@@ -170,7 +170,7 @@ async function decorateArticleHeader() {
 
   const byline = createTag('div', { class: 'article-byline' }, [authorImg, bylineInfo]);
 
-  buildSharing(byline, h1);
+  await buildSharing(byline, h1);
 
   const articleHeader = createTag('div', { class: 'article-header' }, [categoryEl, titleEl, byline, featureImgContainer]);
 
