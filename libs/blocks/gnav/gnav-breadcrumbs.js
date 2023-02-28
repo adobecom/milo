@@ -1,5 +1,7 @@
 import { createTag, getMetadata } from '../../utils/utils.js';
 
+const BREADCRUMBS_HIDE_LAST = 'breadcrumbs-hide-last';
+
 function getParent(path) {
   if (!path || path.length === 0 || path === '/') {
     return null;
@@ -34,7 +36,7 @@ async function getItem(path) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   if (!doc) return defaultItem;
   const hideInNav = getMetadata('breadcrumbs-hide-page', doc) === 'on';
-  const hideLastPage = getMetadata('breadcrumbs-hide-last', doc) === 'on';
+  const hideLastPage = getMetadata(BREADCRUMBS_HIDE_LAST, doc) === 'on';
   return {
     path,
     title: getItemTitle(doc, defaultTitle),
@@ -109,13 +111,11 @@ async function getBreadcrumbsFromFile() {
   const breadcrumbs = getBreadcrumbsFromPageBlock(doc);
   if (!breadcrumbs) return null;
   // add the breadcrumbs item for the current page
-  const hideLastPage = getMetadata('breadcrumbs-hide-last') === 'on';
+  const hideLastPage = getMetadata(BREADCRUMBS_HIDE_LAST) === 'on';
   if (!hideLastPage) {
     const ul = breadcrumbs.querySelector(':scope ul');
     if (!ul) return null;
-    const li = createTag('li');
-    li.textContent = title;
-    li.setAttribute('aria-current', 'page');
+    const li = createTag('li', { 'aria-current': 'page' }, title);
     ul.append(li);
   }
   return breadcrumbs;
