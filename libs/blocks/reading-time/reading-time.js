@@ -16,9 +16,11 @@ function getTextLength(node) {
   return textLength;
 }
 
-export default async function init(el) {
-  el.innerHTML = '';
-  el.classList.add('content');
+export default async function init(block) {
+  block.innerHTML = '';
+  if (!block.classList.contains('inline')) {
+    block.classList.add('content');
+  }
   const span = createTag('span');
   const readingSpeed = 200; // Assume that the average reader reads 200 words per minute
   const textLength = getTextLength(document.body);
@@ -28,5 +30,13 @@ export default async function init(el) {
   const format = await replaceKey(placeholderKey, config);
   const readingTimeText = format.replace(/[1,5]/g, readingTime);
   span.innerHTML = readingTimeText;
-  el.append(span);
+  block.append(span);
+  if (block.classList.contains('inline')) {
+    let inlineContainer = block.parentElement.querySelector('.inline-wrapper');
+    if (!inlineContainer) {
+      inlineContainer = createTag('div', { class: 'inline-wrapper content' });
+      block.after(inlineContainer);
+    }
+    inlineContainer.append(block);
+  }
 }

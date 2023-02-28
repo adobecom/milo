@@ -21,9 +21,13 @@
 .share p.icon-container,
 .share p.icon-container a {
   display: flex;
-  justify-content: center;
   align-items: center;
   padding-bottom: 0;
+}
+
+.center .share p.icon-container,
+.center .share p.icon-container a {
+  justify-content: center;
 }
 
 .share p {
@@ -120,41 +124,35 @@
   content: attr(data-copied);
 }
 
-.share.reading-time {
+.share.inline {
+  display: inline-block;
+  margin: 0 auto;
+  text-align: center;
   padding: 16px 0 64px;
 }
 
-.share.reading-time .reading-time {
-  margin-left: 20px;
-  padding-left: 20px;
-  border-left: 1px solid #adadad;
-  font-style: italic;
-  font-weight: 700;
+main > .section > .content.inline-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0 12px;
 }
 
-.share.reading-time .reading-time > span {
-  color: #adadad;
+main > .section.center > .content.inline-wrapper {
+  justify-content: center;
+}
+
+main > .section > .content.inline-wrapper > .share.inline {
+  margin: 0;
+  order: -1;
+}
+
+.share.inline {
+  padding: 8px 0 16px 0;
 }
 
 @media screen and (max-width: 600px) {
-  .share.reading-time .icon-container {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .share.reading-time .reading-time {
+  .share.inline {
     flex-basis: 100%;
-    margin-left: 0;
-    padding-left: 0;
-    border-left: 0;
-    display: flex;
-    justify-content: center;
-    margin-top: 16px;
-  }
-
-  .share.reading-time .reading-time > span {
-    border-top: 1px solid #adadad;
-    width: min-content;
-    white-space: nowrap;
   }
 }

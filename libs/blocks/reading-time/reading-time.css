@@ -12,3 +12,45 @@ main > .section > .content.reading-time > span {
 .center .reading-time > span {
   text-align: center;
 }
+
+main > .section > .content.inline-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0 12px;
+}
+
+main > .section.center > .content.inline-wrapper {
+  justify-content: center;
+}
+
+main > .section > .content.inline-wrapper > .reading-time.inline {
+  margin: 0;
+  order: 1;
+  margin-left: 20px;
+}
+
+.reading-time.inline {
+  font-style: italic;
+  font-weight: 700;
+  padding-left: 20px;
+  margin-left: 20px;
+  border-left: 1px solid #adadad;
+}
+
+.reading-time.inline > span {
+  color: #adadad;
+  padding: 16px 0;
+}
+
+@media screen and (max-width: 600px) {
+  .reading-time.inline {
+    border: none;
+    padding-left: 0;
+    border-top: 1px solid #adadad;
+  }
+  
+  main > .section > .content.inline-wrapper > .reading-time.inline {
+    margin-left: 0;
+  }
+}

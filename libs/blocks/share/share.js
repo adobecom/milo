@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadBlock } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export async function getSVGsfromFile(path, selectors) {
@@ -72,8 +72,8 @@ export default async function decorate(block) {
       default: return null;
     }
   };
-  const hasReadingTime = block.classList.contains('reading-time');
-  if (!hasReadingTime) {
+  const heading = toSentenceCase(await replaceKey('share-this-page', config));
+  if (!block.classList.contains('inline')) {
     const heading = toSentenceCase(await replaceKey('share-this-page', config));
     block.append(createTag('p', null, ((heading))));
   }
@@ -119,9 +119,12 @@ export default async function decorate(block) {
     });
   }
   block.append(container);
-  if (hasReadingTime) {
-    const readingTime = createTag('div', { class: 'reading-time' });
-    container.append(readingTime);
-    loadBlock(readingTime);
+  if (block.classList.contains('inline')) {
+    let inlineContainer = block.parentElement.querySelector('.inline-wrapper');
+    if (!inlineContainer) {
+      inlineContainer = createTag('div', { class: 'inline-wrapper content' });
+      block.after(inlineContainer);
+    }
+    inlineContainer.append(block);
   }
 }
