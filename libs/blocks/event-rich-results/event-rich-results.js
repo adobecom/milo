@@ -4,7 +4,7 @@ function buildData(el) {
   const data = new Map();
   const rows = el.children;
   [...rows].forEach((row) => {
-    const key = [...row.children][0]?.innerText?.toLowerCase();
+    const key = [...row.children][0]?.innerText?.trim().replaceAll(' ', '-').toLowerCase();
     const value = [...row.children][1]?.innerText;
     data.set(key, value);
   });
