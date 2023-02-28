@@ -19,7 +19,7 @@ import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly', 'usepreview'];
+const FIELDS_CB = ['draftOnly']; // , 'usepreview'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
   excelFile: '',
