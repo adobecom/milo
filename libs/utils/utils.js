@@ -10,6 +10,8 @@ const MILO_BLOCKS = [
   'author-header',
   'caas',
   'caas-config',
+  'card',
+  'card-horizontal',
   'card-metadata',
   'carousel',
   'chart',
@@ -27,7 +29,6 @@ const MILO_BLOCKS = [
   'iframe',
   'instagram',
   'marketo',
-  'card',
   'marquee',
   'media',
   'merch',
@@ -37,9 +38,11 @@ const MILO_BLOCKS = [
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
   'promo',
   'tabs',
   'table-of-contents',
@@ -139,7 +142,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -256,7 +259,7 @@ export function appendHtmlPostfix(area = document) {
     if (isAutoblockLink) return true;
     return false;
   };
-  
+
   if (area === document) {
     const canonEl = document.head.querySelector('link[rel="canonical"]');
     if (!canonEl) return;
@@ -377,35 +380,34 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const altTextFlagIndex = textContent.indexOf('|');
-  const sanitizedTextContent = altTextFlagIndex === -1
-    ? textContent
-    : textContent?.slice(0, altTextFlagIndex).trim();
-  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
-  if (ext !== 'svg') return;
-
-  const altText = altTextFlagIndex === -1
-    ? ''
-    : textContent.substring(textContent.indexOf('|') + 1).trim();
-  const img = document.createElement('img');
-  img.setAttribute('loading', 'lazy');
-  img.src = localizeLink(sanitizedTextContent);
-  img.alt = altText;
-  const pic = document.createElement('picture');
-  pic.append(img);
-
+  if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
   try {
-    const textContentUrl = new URL(sanitizedTextContent);
-    const hrefUrl = new URL(href);
-    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+    // Mine for URL and alt text
+    const splitText = textContent.split('|');
+    const textUrl = new URL(splitText.shift().trim());
+    const altText = splitText.join('|').trim();
+
+    // Relative link checking
+    const hrefUrl = a.href.startsWith('/')
+      ? new URL(`${window.location.origin}${a.href}`)
+      : new URL(a.href);
+
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+
+    const img = createTag('img', { loading: 'lazy', src });
+    if (altText) img.alt = altText;
+    const pic = createTag('picture', null, img);
+
+    if (textUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
-    } else {
-      a.textContent = '';
-      a.append(pic);
+      return pic;
     }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log('Failed to load svg.', err.message);
+    a.textContent = '';
+    a.append(pic);
+    return a;
+  } catch (e) {
+    console.log('Failed to create SVG.', e.message);
+    return a;
   }
 }
 
@@ -525,7 +527,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
@@ -545,7 +547,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = section.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -592,20 +594,25 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
   window.fedsConfig = {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
     },
-  };
+};
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
@@ -617,6 +624,20 @@ function initSidekick() {
   }
 }
 
+function decorateMeta() {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]');
+  contents.forEach((meta) => {
+    try {
+      const url = new URL(meta.content);
+      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      window.lana.log('Cannot make URL from metadata');
+    } catch (e) {
+      // Not a valid URL.
+    }
+  });
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -625,6 +646,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
+    decorateMeta();
     decorateHeader();
 
     import('./samplerum.js').then(({ addRumListeners }) => {
@@ -722,14 +744,12 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, {
-      errorType: 'i',
-    });
-  }
+    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
 
   window.lana = {
     log: async (...args) => {
-      await import('../utils/lana.js');
+      await import('./lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
       return window.lana.log(...args);
