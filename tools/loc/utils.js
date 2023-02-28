@@ -106,3 +106,30 @@ export async function simulatePreview(path, retryAttempt = 1) {
   }
   return previewStatus;
 }
+
+export function getAnchorHtml(url, text) {
+  return `<a href="${url}" target="_new">${text}</a>`;
+}
+
+function getLinkedPagePath(spShareUrl, pagePath) {
+  return getAnchorHtml(spShareUrl.replace('<relativePath>', pagePath), pagePath);
+}
+
+export function getLinkOrDisplayText(spViewUrl, docStatus) {
+  const pathOrMsg = docStatus.msg;
+  return docStatus.hasSourceFile ? getLinkedPagePath(spViewUrl, pathOrMsg) : pathOrMsg;
+}
+
+export function showButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.remove('hidden');
+  });
+}
+
+export async function fetchProjectFile(url, retryAttempt) {
+  const response = await fetch(url);
+  if (!response.ok && retryAttempt <= MAX_RETRIES) {
+    await fetchProjectFile(url, retryAttempt + 1);
+  }
+  return response;
+}

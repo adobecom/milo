@@ -30,6 +30,18 @@ describe('single action card blocks', () => {
             const body = blk.querySelector('.body-XS');
             expect(body).to.exist;
           });
+
+          const a = blk.querySelector('a');
+
+          if (a) {
+            it('toggles class on focus', () => {
+              expect(blk.classList.contains('card-block-focus')).to.be.false;
+              a.dispatchEvent(new Event('focus'));
+              expect(blk.classList.contains('card-block-focus')).to.be.true;
+              a.dispatchEvent(new Event('blur'));
+              expect(blk.classList.contains('card-block-focus')).to.be.false;
+            });
+          }
         });
       }
     });

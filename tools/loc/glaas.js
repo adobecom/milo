@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import getConfig from './config.js';
+import { getConfig } from './config.js';
 import { getPathFromUrl, stripExtension } from './utils.js';
 import { getSpFiles } from './sharepoint.js';
 import { PROJECTS_ROOT_PATH } from './project.js';

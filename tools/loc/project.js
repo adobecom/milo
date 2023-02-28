@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { getDocPathFromUrl, getUrlInfo } from './utils.js';
-import getConfig from './config.js';
+import { getConfig } from './config.js';
 import { getSpFiles } from './sharepoint.js';
 
 const PROJECTS_ROOT_PATH = '/drafts/localization/projects/';
@@ -334,4 +334,12 @@ async function updateProjectWithDocs(projectDetail) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export { init, updateProjectWithDocs, PROJECT_STATUS, PROJECTS_ROOT_PATH };
+export {
+  init,
+  updateProjectWithDocs,
+  getHelixAdminApiUrl,
+  getProjectFileStatus,
+  readProjectFile,
+  PROJECT_STATUS,
+  PROJECTS_ROOT_PATH
+};
