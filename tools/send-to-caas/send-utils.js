@@ -285,6 +285,15 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getCountryAndLang = () => {
+  const langAttr = document.documentElement.lang?.toLowerCase().split('-') || [];
+  const [lang = 'en', country = 'us'] = langAttr;
+  return {
+    country,
+    lang,
+  };
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -308,8 +317,7 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
-  // TODO - automatically get country
-  country: (s) => s || 'us',
+  country: (s) => s || getCountryAndLang().country || 'us',
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
@@ -341,8 +349,7 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s) => s || 'default',
-  // TODO: automatically get lang
-  lang: (s) => s || 'en',
+  lang: (s) => s || getCountryAndLang().lang || 'en',
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s
