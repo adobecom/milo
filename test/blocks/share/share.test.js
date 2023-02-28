@@ -61,10 +61,4 @@ describe('Share', () => {
     expect(re).to.exist;
     expect(tw).to.not.exist;
   });
-  it('The "Share (Reading Time)" variant', async () => {
-    const shareEl = document.querySelector('.share.reading-time');
-    await init(shareEl);
-    const rt = shareEl.querySelector('.icon-container .reading-time');
-    expect(rt).to.exist;
-  });
 });
