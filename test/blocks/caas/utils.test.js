@@ -314,7 +314,7 @@ describe('getConfig', () => {
         },
       },
       language: 'en',
-      country: 'US',
+      country: 'us',
       "customCard": [
         "card",
         "return ``"
