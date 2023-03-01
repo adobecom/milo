@@ -36,6 +36,13 @@ describe('Card', () => {
     expect(document.querySelector('.consonant-OneHalfCard')).to.exist;
   });
 
+  it('Supports Half card with merch', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/half-merch.html' });
+    init(document.querySelector('.card'));
+    expect(document.querySelector('.consonant-OneHalfCard')).to.exist;
+    expect(document.querySelector('span.price')).to.exist;
+  });
+
   describe('Double Width Card', () => {
     before(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/double-width.html' });

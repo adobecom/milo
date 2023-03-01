@@ -123,7 +123,7 @@ const defaultConfig = {
     },
   },
   language: 'en',
-  country: 'US',
+  country: 'us',
   analytics: { trackImpressions: '', collectionIdentifier: '' },
   target: {
     enabled: '',
