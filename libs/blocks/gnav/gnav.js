@@ -172,7 +172,7 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
-      if (navLink.parentElement.tagName === 'STRONG') {
+      if (navLink.parentElement.nodeName === 'STRONG') {
         const cta = this.decorateCta(navLink);
         mainNav.append(cta);
         return;
