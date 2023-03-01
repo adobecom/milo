@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { waitForElement } from '../helpers/waitfor.js';
 
 const utils = {};
 
@@ -162,6 +163,17 @@ describe('Utils', () => {
       const meta = document.head.querySelector('[name="hlx-url"]');
       expect(meta.content).to.equal('http://localhost:2000/otis');
     });
+
+    it('Adds an event listener for modal:open', async () => {
+      const meta = document.createElement('meta');
+      meta.name = '-milo';
+      meta.content = 'http://localhost:2000/test/blocks/modals/mocks/milo';
+      document.head.append(meta);
+      const event = new CustomEvent('modal:open', { detail: { hash: '#milo' } });
+      window.dispatchEvent(event);
+      await waitForElement('#milo');
+      expect(document.getElementById('milo')).to.exist;
+    })
 
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
