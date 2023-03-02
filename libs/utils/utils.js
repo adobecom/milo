@@ -401,54 +401,7 @@ function decorateLinks(el) {
   }, []);
 }
 
-/**
- * returns an image caption of a picture elements
- * @param {Element} picture picture element
- */
-function getImageCaption(picture) {
-  const parentEl = picture.parentNode;
-  let caption = parentEl.querySelector('em');
-  if (caption) return caption;
-
-  const parentSiblingEl = parentEl.nextElementSibling;
-  caption = parentSiblingEl && !parentSiblingEl.querySelector('picture') && parentSiblingEl.querySelector('em') ? parentSiblingEl.querySelector('em') : undefined;
-  return caption;
-}
-
-/**
- * builds images blocks from default content.
- * @param {Element} mainEl The container element
- */
-function buildImageBlocks(mainEl) {
-  const imgEls = mainEl.querySelectorAll('.content picture');
-  if (!imgEls.length) return;
-
-  imgEls.forEach((imgEl) => {
-    const block = createTag('div', { class: 'figure' });
-    const row = createTag('div', null);
-    const caption = getImageCaption(imgEl);
-    const parentEl = imgEl.closest('p');
-
-    if (!caption) {
-      const wrapper = createTag('div', null, imgEl.cloneNode(true));
-      row.append(wrapper);
-    } else {
-      const picture = createTag('p', null, imgEl.cloneNode(true));
-      const em = createTag('p', null, caption.cloneNode(true));
-      const wrapper = createTag('div', null);
-      wrapper.append(picture, em);
-      row.append(wrapper);
-      caption.remove();
-    }
-
-    block.append(row.cloneNode(true));
-    loadBlock(block);
-    const clone = block.cloneNode(true);
-    parentEl.replaceWith(clone);
-  });
-}
-
-function decorateContent(el) {
+async function decorateContent(el) {
   const children = [el];
   let child = el;
   while (child) {
@@ -462,7 +415,14 @@ function decorateContent(el) {
   const block = document.createElement('div');
   block.className = 'content';
   block.append(...children);
-  buildImageBlocks(block);
+  if (block.querySelector('picture')) {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    const { buildImagesBlock } = await import(`${base}/blocks/figure/figure.js`);
+    loadStyle(`${base}/blocks/figure/figure.css`);
+    buildImagesBlock(block, createTag);
+  }
+
   return block;
 }
 
@@ -470,9 +430,9 @@ function decorateDefaults(el) {
   const firstChild = ':scope > *:not(div):first-child';
   const afterBlock = ':scope > div + *:not(div)';
   const children = el.querySelectorAll(`${firstChild}, ${afterBlock}`);
-  children.forEach((child) => {
+  children.forEach(async (child) => {
     const prev = child.previousElementSibling;
-    const content = decorateContent(child);
+    const content = await decorateContent(child);
     if (prev) {
       prev.insertAdjacentElement('afterend', content);
     } else {

@@ -5,6 +5,16 @@ function buildCaption(pEl) {
   return figCaptionEl;
 }
 
+function getImageCaption(picture) {
+  const parentEl = picture.parentNode;
+  let caption = parentEl.querySelector('em');
+  if (caption) return caption;
+
+  const parentSiblingEl = parentEl.nextElementSibling;
+  caption = parentSiblingEl && !parentSiblingEl.querySelector('picture') && parentSiblingEl.querySelector('em') ? parentSiblingEl.querySelector('em') : undefined;
+  return caption;
+}
+
 function buildFigure(blockEl) {
   const figEl = document.createElement('figure');
   figEl.classList.add('figure');
@@ -44,6 +54,7 @@ function buildFigure(blockEl) {
 }
 
 export default function init(blockEl) {
+  console.log(blockEl.cloneNode(true))
   const children = blockEl.querySelectorAll(':scope > div > div');
   blockEl.innerHTML = '';
 
@@ -60,4 +71,41 @@ export default function init(blockEl) {
   if (blockCount > 1) {
     blockEl.classList.add('figure-list', `figure-list-${blockCount}`);
   }
+}
+
+export function buildImagesBlock(section, createTag) {
+  const imgEls = section.querySelectorAll('picture');
+  if (!imgEls.length) return;
+
+  let currentElementParent = imgEls[0].closest('p');
+  const block = createTag('div', { class: 'figure' });
+  imgEls.forEach((imgEl, index) => {
+    const nextElementParent = imgEls[index + 1]?.closest('p') || null;
+
+    const caption = getImageCaption(imgEl);
+    const parentEl = imgEl.closest('p');
+    const row = createTag('div', null);
+    const col = createTag('div');
+    if (!caption) {
+      col.append(imgEl.cloneNode(true));
+    } else {
+      const picture = createTag('p', null, imgEl.cloneNode(true));
+      const em = createTag('p', null, caption.cloneNode(true));
+      col.append(picture, em);
+      caption.remove();
+    }
+
+    row.append(col);
+    block.append(row);
+    if (currentElementParent === nextElementParent) {
+      return;
+    }
+
+    init(block);
+    const clone = block.cloneNode(true);
+    parentEl.replaceWith(clone);
+
+    currentElementParent = nextElementParent;
+    block.innerHTML = '';
+  });
 }
