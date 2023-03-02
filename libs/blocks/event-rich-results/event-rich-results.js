@@ -11,6 +11,17 @@ function buildData(el) {
   return data;
 }
 
+function logNullValues(obj) {
+  if (!obj || typeof obj === 'string') return;
+  Object.keys(obj).forEach((key) => {
+    const value = obj[key];
+    if (!value || value === '') {
+      window.lana.log(`Event property ${key} is not defined`);
+    }
+    logNullValues(value);
+  });
+}
+
 function getLocation(data) {
   if (data.get('location-type') === 'Place') {
     return {
@@ -35,7 +46,8 @@ function getLocation(data) {
   return null;
 }
 
-function getEvent(data) {
+function getEvent(el) {
+  const data = buildData(el);
   const location = getLocation(data);
   return {
     '@context': 'https://schema.org',
@@ -70,8 +82,8 @@ function getEvent(data) {
 }
 
 export default function init(el) {
-  const data = buildData(el);
-  const event = getEvent(data);
+  const event = getEvent(el);
+  logNullValues(event);
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(event));
   document.head.append(script);
   el.remove();
