@@ -94,7 +94,7 @@ async function floodgateContent() {
   hideButtons(ACTION_BUTTON_IDS);
   const startCopy = new Date();
   const copyStatuses = await Promise.all(
-    [...projectDetail.urls].map(((valueArray) => copyFilesToFloodgateTree(valueArray[1]))),
+    [...projectDetail.urls].map((valueArray) => copyFilesToFloodgateTree(valueArray[1])),
   );
   const endCopy = new Date();
 
@@ -106,15 +106,12 @@ async function floodgateContent() {
   );
   loadingON('Completed Preview for copied files... ');
 
-  const failedCopies = copyStatuses
-    .filter((status) => !status.success)
-    .map((status) => status?.srcPath || 'Path Info Not available');
-  const failedPreviews = previewStatuses
-    .filter((status) => !status.success)
+  const failedCopies = copyStatuses.filter((status) => !status.success)
+    .map((status) => status.srcPath || 'Path Info Not available');
+  const failedPreviews = previewStatuses.filter((status) => !status.success)
     .map((status) => status.path);
 
-  const excelValues = [];
-  excelValues.push(['COPY', startCopy, endCopy, failedCopies.join('\n')]);
+  const excelValues = [['COPY', startCopy, endCopy, failedCopies.join('\n')]];
   await updateExcelTable(project.excelPath, 'STATUS', excelValues);
   loadingON('Project excel file updated with copy status... ');
   showButtons(ACTION_BUTTON_IDS);
