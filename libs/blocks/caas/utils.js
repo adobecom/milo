@@ -68,10 +68,10 @@ export const loadStrings = async (
 export const loadCaasFiles = async () => {
   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
 
-  loadStyle(`http://sunier.corp.adobe.com:5000/dist/app.css`);
+  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
   await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
-  await loadScript(`http://sunier.corp.adobe.com:5000/dist/main.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
