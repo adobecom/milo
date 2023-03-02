@@ -10,6 +10,90 @@ const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
 
+const LOCALES = {
+  // Americas
+  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
+  br: { ietf: 'pt-BR', tk: 'inq1xob.css' },
+  ca: { ietf: 'en-CA', tk: 'pps7abe.css' },
+  ca_fr: { ietf: 'fr-CA', tk: 'vrk5vyv.css' },
+  cl: { ietf: 'es-CL', tk: 'oln4yqj.css' },
+  co: { ietf: 'es-CO', tk: 'oln4yqj.css' },
+  la: { ietf: 'es-LA', tk: 'oln4yqj.css' },
+  mx: { ietf: 'es-MX', tk: 'oln4yqj.css' },
+  pe: { ietf: 'es-PE', tk: 'oln4yqj.css' },
+  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  // EMEA
+  africa: { ietf: 'en', tk: 'pps7abe.css' },
+  be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
+  be_en: { ietf: 'en-BE', tk: 'pps7abe.css' },
+  be_nl: { ietf: 'nl-BE', tk: 'cya6bri.css' },
+  cy_en: { ietf: 'en-CY', tk: 'pps7abe.css' },
+  dk: { ietf: 'da-DK', tk: 'aaz7dvd.css' },
+  de: { ietf: 'de-DE', tk: 'vin7zsi.css' },
+  ee: { ietf: 'et-EE', tk: 'aaz7dvd.css' },
+  es: { ietf: 'es-ES', tk: 'oln4yqj.css' },
+  fr: { ietf: 'fr-FR', tk: 'vrk5vyv.css' },
+  gr_en: { ietf: 'en-GR', tk: 'pps7abe.css' },
+  ie: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  il_en: { ietf: 'en-IL', tk: 'pps7abe.css' },
+  it: { ietf: 'it-IT', tk: 'bbf5pok.css' },
+  lv: { ietf: 'lv-LV', tk: 'aaz7dvd.css' },
+  lt: { ietf: 'lt-LT', tk: 'aaz7dvd.css' },
+  lu_de: { ietf: 'de-LU', tk: 'vin7zsi.css' },
+  lu_en: { ietf: 'en-LU', tk: 'pps7abe.css' },
+  lu_fr: { ietf: 'fr-LU', tk: 'vrk5vyv.css' },
+  hu: { ietf: 'hu-HU', tk: 'aaz7dvd.css' },
+  mt: { ietf: 'en-MT', tk: 'pps7abe.css' },
+  mena_en: { ietf: 'en', tk: 'pps7abe.css' },
+  nl: { ietf: 'nl-NL', tk: 'cya6bri.css' },
+  no: { ietf: 'no-NO', tk: 'aaz7dvd.css' },
+  pl: { ietf: 'pl-PL', tk: 'aaz7dvd.css' },
+  pt: { ietf: 'pt-PT', tk: 'inq1xob.css' },
+  ro: { ietf: 'ro-RO', tk: 'aaz7dvd.css' },
+  sa_en: { ietf: 'en', tk: 'pps7abe.css' },
+  ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
+  si: { ietf: 'sl-SI', tk: 'aaz7dvd.css' },
+  sk: { ietf: 'sk-SK', tk: 'aaz7dvd.css' },
+  ch_fr: { ietf: 'fr-CH', tk: 'vrk5vyv.css' },
+  fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
+  se: { ietf: 'sv-SE', tk: 'fpk1pcd.css' },
+  ch_it: { ietf: 'it-CH', tk: 'bbf5pok.css' },
+  tr: { ietf: 'tr-TR', tk: 'aaz7dvd.css' },
+  ae_en: { ietf: 'en', tk: 'pps7abe.css' },
+  uk: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  at: { ietf: 'de-AT', tk: 'vin7zsi.css' },
+  cz: { ietf: 'cs-CZ', tk: 'aaz7dvd.css' },
+  bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
+  ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
+  ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  // Asia Pacific
+  au: { ietf: 'en-AU', tk: 'pps7abe.css' },
+  hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
+  in: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  id_id: { ietf: 'id', tk: 'czc0mun.css' },
+  id_en: { ietf: 'en', tk: 'pps7abe.css' },
+  my_ms: { ietf: 'ms', tk: 'sxj4tvo.css' },
+  my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  nz: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  ph_en: { ietf: 'en', tk: 'pps7abe.css' },
+  ph_fil: { ietf: 'fil-PH', tk: 'ict8rmp.css' },
+  sg: { ietf: 'en-SG', tk: 'pps7abe.css' },
+  th_en: { ietf: 'en', tk: 'pps7abe.css' },
+  in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
+  th_th: { ietf: 'th', tk: 'aaz7dvd.css' },
+  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
+  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
+  tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
+  jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
+  vn_en: { ietf: 'en', tk: 'pps7abe.css' },
+  vn_vi: { ietf: 'vi-VN', tk: 'jii8bki.css' },
+};
+
 const [setConfig, getConfig] = (() => {
   let config = {
     isInjectedDoc: () => this.doc !== document,
@@ -285,6 +369,32 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getBulkPublishLangAttr = async (options) => {
+  let { getLocale } = getConfig();
+  if (!getLocale) {
+    // This is only imported from the bulk publisher so there is no dependency cycle
+    // eslint-disable-next-line import/no-cycle
+    const { getLocale: utilsGetLocale } = await import('../../libs/utils/utils.js');
+    getLocale = utilsGetLocale;
+    setConfig({ getLocale });
+  }
+  return getLocale(LOCALES, options.prodUrl).ietf;
+};
+
+const getCountryAndLang = async (options) => {
+  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
+    ? await getBulkPublishLangAttr(options)
+    : document.documentElement.lang;
+
+  const langAttr = langStr?.toLowerCase().split('-') || [];
+
+  const [lang = 'en', country = 'us'] = langAttr;
+  return {
+    country,
+    lang,
+  };
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -308,8 +418,11 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
-  // TODO - automatically get country
-  country: (s) => s || 'us',
+  country: async (s, options) => {
+    if (s) return s;
+    const { country } = await getCountryAndLang(options);
+    return country;
+  },
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
@@ -341,8 +454,11 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s) => s || 'default',
-  // TODO: automatically get lang
-  lang: (s) => s || 'en',
+  lang: async (s, options) => {
+    if (s) return s;
+    const { lang } = await getCountryAndLang(options);
+    return lang;
+  },
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s
