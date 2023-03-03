@@ -145,6 +145,7 @@ main > .section > .content.inline-wrapper {
 
 main > .section.center > .content.inline-wrapper {
   justify-content: center;
+  text-align: center;
 }
 
 main > .section > .content.inline-wrapper > .share.inline {
@@ -152,6 +153,7 @@ main > .section > .content.inline-wrapper > .share.inline {
 }
 
 .share.inline {
+  width: fit-content;
   padding: 8px 0 16px 0;
 }
 
@@ -162,14 +164,21 @@ main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline
 }
 
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 600px) {  
+  main > .section > .content.inline-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  main > .section.center > .content.inline-wrapper {
+    align-items: center;
+  }
+
   main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline {
     border: none;
     padding-left: 0;
+    margin-left: 0;
     border-top: 1px solid #adadad;
-  }
-
-  .share.inline {
-    flex-basis: 100%;
   }
 }
