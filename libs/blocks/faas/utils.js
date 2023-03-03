@@ -80,6 +80,7 @@ export const defaultState = {
 
 /* c8 ignore start */
 const afterYiiLoadedCallback = () => {
+  console.log('loaded');
   const wr = document.querySelector('.faas-form');
   function editMessages(mutations) {
     const firstmut = mutations[0].addedNodes;
@@ -188,9 +189,26 @@ const afterYiiLoadedCallback = () => {
     });
   }
 
+  function setProductOfInterest() {
+    const poi = document.querySelector('meta[name="poi"]');
+    if (!poi) return;
+    const poiProduct = poi.content.toLowerCase().trim();
+    const regx = /(?=.*product)(?=.*interest)/;
+    const labels = document.querySelectorAll('.faas-form label');
+    labels.forEach((label) => {
+      if (regx.test(label.innerText)) {
+        const labelFor = label.getAttribute('for');
+        const select = document.querySelector(`#${labelFor}`);
+        const option = Array.from(select.querySelectorAll('option')).filter((opt) => opt.innerText.trim().toLocaleLowerCase() === poiProduct);
+        option[0].selected = true;
+      }
+    });
+  }
+
   changeSelectionElement();
   removeRequired();
   placeHolders();
+  setProductOfInterest();
 
   const errorMessages = $('.hash-window .checkbox .errorMessage');
   const faasform = $('.faas-form');
