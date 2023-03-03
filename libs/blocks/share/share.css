@@ -121,7 +121,6 @@
 }
 
 .share.inline {
-  display: inline-block;
   margin: 0 auto;
   text-align: center;
   padding: 16px 0 64px;
@@ -150,14 +149,26 @@ main > .section.center > .content.inline-wrapper {
 
 main > .section > .content.inline-wrapper > .share.inline {
   margin: 0;
-  order: -1;
 }
 
 .share.inline {
   padding: 8px 0 16px 0;
 }
 
+main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline {
+  padding-left: 20px;
+  margin-left: 20px;
+  border-left: 1px solid #adadad;
+}
+
+
 @media screen and (max-width: 600px) {
+  main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline {
+    border: none;
+    padding-left: 0;
+    border-top: 1px solid #adadad;
+  }
+
   .share.inline {
     flex-basis: 100%;
   }

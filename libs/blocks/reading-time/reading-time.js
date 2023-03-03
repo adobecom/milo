@@ -32,11 +32,12 @@ export default async function init(block) {
   span.innerHTML = readingTimeText;
   block.append(span);
   if (block.classList.contains('inline')) {
-    let inlineContainer = block.parentElement.querySelector('.inline-wrapper');
+    const section = block.closest('.section');
+    let inlineContainer = section.querySelector('.inline-wrapper');
     if (!inlineContainer) {
       inlineContainer = createTag('div', { class: 'inline-wrapper content' });
       block.after(inlineContainer);
     }
-    inlineContainer.append(block);
+    section.querySelectorAll('.inline').forEach((el) => inlineContainer.append(el));
   }
 }
