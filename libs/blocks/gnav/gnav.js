@@ -276,7 +276,7 @@ class Gnav {
   decorateButtons = (menu) => {
     const buttons = menu.querySelectorAll('strong a');
     buttons.forEach((btn) => {
-      btn.classList.add('con-button', 'filled', 'blue', 'button-M');
+      btn.classList.add('con-button', 'filled', 'blue', 'button-m');
     });
   };
 
@@ -344,7 +344,7 @@ class Gnav {
       if (origin !== window.location.origin) {
         cta.target = '_blank';
       }
-      cta.classList.add('con-button', 'blue', 'button-M');
+      cta.classList.add('con-button', 'blue', 'button-m');
       cta.setAttribute('daa-ll', analyticsGetLabel(cta.textContent));
       cta.parentElement.classList.add('gnav-cta');
       return cta.parentElement;
