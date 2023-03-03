@@ -15,6 +15,13 @@ function highlightTextElements(terms, elements) {
         matches.push({ offset, term });
       }
     });
+    if (!matches.length) {
+      if (element.firstElementChild.nodeName === 'A') {
+        element.firstElementChild.removeAttribute('href');
+      }
+      return;
+    }
+    
     matches.sort((a, b) => a.offset - b.offset);
     let currentIndex = 0;
     const fragment = matches.reduce((acc, { offset, term }) => {

@@ -20,11 +20,18 @@ describe('Section Metdata', () => {
     expect(sec.classList.contains('has-background')).to.be.true;
   });
 
-  it('Handles background image', () => {
+  it('Handles background color', () => {
     const sec = document.querySelector('.section.color');
     const sm = sec.querySelector('.section-metadata');
     init(sm);
-    expect(sec.style.backgroundColor).to.equal('rgb(239, 239, 239)');
+    expect(sec.style.background).to.equal('rgb(239, 239, 239)');
+  });
+
+  it('Handles background gradient', () => {
+    const sec = document.querySelector('.section.gradient.color');
+    const sm = sec.querySelector('.section-metadata');
+    init(sm);
+    expect(sec.style.background).to.equal('linear-gradient(red, yellow)');
   });
 
   it('Adds class based on layout input', () => {
