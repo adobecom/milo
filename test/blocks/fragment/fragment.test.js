@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon, { stub } from 'sinon';
+import { stub } from 'sinon';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
@@ -18,14 +18,6 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: getFragment } = await import('../../../libs/blocks/fragment/fragment.js');
 
 describe('Fragments', () => {
-  // beforeEach(() => {
-  //   sinon.spy(lana, 'log');
-  // });
-
-  // afterEach(() => {
-  //   lana.log.restore();
-  // });
-
   it('Loads a fragment', async () => {
     const a = document.querySelector('a');
     await getFragment(a);
