@@ -18,6 +18,7 @@ const BRAND_IMG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 234"
 const SEARCH_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>';
 const SEARCH_DEBOUNCE_MS = 300;
 export const IS_OPEN = 'is-open';
+const SEARCH_TYPE_CONTEXTUAL = 'contextual';
 
 const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
@@ -110,7 +111,7 @@ class Gnav {
     const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
     this.getHelpxLink = getHelpxLink;
 
-    if (this.searchType === 'contextual') {
+    if (this.searchType === SEARCH_TYPE_CONTEXTUAL) {
       const { default: onContextualSearchInput } = await import('./gnav-contextual-search.js');
       this.onSearchInput = debounce(onContextualSearchInput, SEARCH_DEBOUNCE_MS);
     } else {
@@ -356,9 +357,9 @@ class Gnav {
     const searchBlock = this.body.querySelector('.search');
     if (!searchBlock) return null;
 
-    const isContextual = searchBlock.classList.contains('contextual');
+    const isContextual = searchBlock.classList.contains(SEARCH_TYPE_CONTEXTUAL);
     if (isContextual) {
-      this.searchType = 'contextual';
+      this.searchType = SEARCH_TYPE_CONTEXTUAL;
     }
 
     const advancedSearchEl = searchBlock.querySelector('a');
@@ -368,7 +369,7 @@ class Gnav {
     }
 
     const label = searchBlock.querySelector('p').textContent;
-    const searchEl = createTag('div', { class: `gnav-search ${isContextual ? 'contextual' : ''}` });
+    const searchEl = createTag('div', { class: `gnav-search ${isContextual ? SEARCH_TYPE_CONTEXTUAL : ''}` });
     const searchBar = this.decorateSearchBar(label, advancedSearchWrapper);
     const searchButton = createTag(
       'button',

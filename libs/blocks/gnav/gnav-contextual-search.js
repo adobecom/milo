@@ -2,6 +2,8 @@ import { fetchBlogArticleIndex } from '../article-feed/article-feed.js';
 import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-helpers.js';
 import { createTag } from '../../utils/utils.js';
 
+const LIMIT = 12;
+
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
     const matches = [];
@@ -44,13 +46,12 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
   resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
-  const limit = 12;
   const terms = value.toLowerCase().split(' ').filter(Boolean);
   if (!terms.length) return;
 
   const { data: articles } = await fetchBlogArticleIndex();
   const hits = articles.reduce((acc, article) => {
-    if (acc.length === limit) {
+    if (acc.length === LIMIT) {
       return acc;
     }
 
