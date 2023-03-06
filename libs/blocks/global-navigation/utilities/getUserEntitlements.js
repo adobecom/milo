@@ -66,11 +66,8 @@ const getSubscriptions = async ({ queryParams, locale }) => {
  * @returns {object} JIL Entitlements
  */
 const getUserEntitlements = async ({ params, locale } = {}) => {
-  if (!window.adobeIMS?.isSignedInUser()) {
-    return new Promise((resolve, reject) => {
-      reject(new Error('User not signed in'));
-    });
-  }
+  if (!window.adobeIMS?.isSignedInUser()) return Promise.reject(new Error('User not signed in'));
+
   const queryParams = getQueryParameters(params);
   if (entitlements[queryParams]) return entitlements[queryParams];
 
