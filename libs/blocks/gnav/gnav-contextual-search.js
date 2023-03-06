@@ -6,7 +6,6 @@ const LIMIT = 12;
 
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
-    console.log(element.cloneNode(true))
     const matches = [];
     const { textContent } = element;
     const lowerCaseTextContent = textContent.toLowerCase();
