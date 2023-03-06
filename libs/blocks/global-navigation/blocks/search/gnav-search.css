@@ -1,7 +1,3 @@
-:root {
-  --background-nav--light: #fff;
-}
-
 .feds-nav-wrapper.has-results .feds-nav {
   display: none;
 }
@@ -10,7 +6,7 @@
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
-  background-color: var(--background-nav--light);
+  background-color: var(--feds-background-nav--light);
   /* TODO: add desktop top border */
 }
 
@@ -72,7 +68,7 @@
   font-size: 20px;
   line-height: 1;
   color: #2d2d2d;
-  border-radius: var(--radius-utilityIcon);
+  border-radius: var(--feds-radius-utilityIcon);
   outline-offset: 2px;
 }
 
@@ -136,8 +132,7 @@
     display: none;
   }
 
-  /* TODO: better class naming than 'is-open'? */
-  .feds-search.is-open .feds-search-bar {
+  .feds-search-trigger[aria-expanded = "true"] + .feds-search-bar {
     display: flex;
   }
 }
