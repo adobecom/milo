@@ -9,6 +9,9 @@ module.exports = {
     sourceType: 'module',
     requireConfigFile: false,
   },
+  plugins: [
+      "eslint-plugin-import",
+  ],
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
