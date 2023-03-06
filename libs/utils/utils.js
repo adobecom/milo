@@ -595,11 +595,24 @@ export async function loadDeferred(area, blocks, config) {
 }
 
 export function loadPrivacy() {
+  const domains = {
+    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
+  };
+  const currentDomain = Object.keys(domains)
+    .find((domain) => window.location.host.includes(domain)) || domains[0];
+  let domainId = domains[currentDomain];
+  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
+  if (getConfig().env.name === 'stage') {
+    domainId += '-test';
+  }
   window.fedsConfig = {
     privacy: {
-      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+      otDomainId: domainId,
+      documentLanguage: true,
     },
-};
+  };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
   const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
