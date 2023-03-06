@@ -97,7 +97,6 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
@@ -236,23 +235,22 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlPostfix(area = document) {
-  const config = getConfig();
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = config.autoBlocks
+  const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const relativeAutoBlocks = autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
-
-  const { htmlExclude = [] } = getConfig();
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || href.endsWith('/')
       || href === pageUrl.origin
-      || htmlExclude.includes(href)
-      || HAS_EXTENSION.test(href.split('/').pop())) {
+      || HAS_EXTENSION.test(href.split('/').pop())
+      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
       return true;
     }
     const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
