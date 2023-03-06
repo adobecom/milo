@@ -11,23 +11,23 @@ describe('text block', () => {
   });
   describe('full-width text block medium heading', () => {
     it('has a medium heading', () => {
-      const heading = textBlocks[0].querySelector('.heading-L');
+      const heading = textBlocks[0].querySelector('.heading-l');
       expect(heading).to.exist;
     });
 
     it('has body copy', () => {
-      const body = textBlocks[0].querySelector('.body-M');
+      const body = textBlocks[0].querySelector('.body-m');
       expect(body).to.exist;
     });
   });
   describe('full-width text block large heading', () => {
     it('has a large heading', () => {
-      const heading = textBlocks[1].querySelector('.heading-XL');
+      const heading = textBlocks[1].querySelector('.heading-xl');
       expect(heading).to.exist;
     });
 
     it('has body copy', () => {
-      const body = textBlocks[1].querySelector('.body-M');
+      const body = textBlocks[1].querySelector('.body-m');
       expect(body).to.exist;
     });
   });

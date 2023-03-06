@@ -9,8 +9,8 @@ describe('media', () => {
     init(media);
   });
   describe('default media medium', () => {
-    it('has a heading-M', () => {
-      const heading = medias[0].querySelector('.heading-M');
+    it('has a heading-m', () => {
+      const heading = medias[0].querySelector('.heading-m');
       expect(heading).to.exist;
     });
     it('has a supporting image', () => {
@@ -23,8 +23,8 @@ describe('media', () => {
     });
   });
   describe('dark media large', () => {
-    it('has a heading-XL', () => {
-      const heading = medias[1].querySelector('.heading-XL');
+    it('has a heading-xl', () => {
+      const heading = medias[1].querySelector('.heading-xl');
       expect(heading).to.exist;
     });
     it('has a supporting bg color', () => {
