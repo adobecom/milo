@@ -1,6 +1,6 @@
 /**
  * Some blocks are not meant to be loaded out of the
- * blocks folder. They are typically used used in
+ * blocks folder. They are typically used in
  * larger blocks only to help add context to content.
  */
 const SYNTHETIC_BLOCKS = [
