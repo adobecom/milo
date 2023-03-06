@@ -25,43 +25,40 @@ import {
   ACTION_BUTTON_IDS,
 } from './ui.js';
 
-let projectDetail;
-let project;
-let config;
-
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
 }
 
-async function refreshPage() {
+async function refreshPage(config, projectDetail) {
   // Inject Sharepoint file metadata
   loadingON('Updating Project with the Sharepoint Docs Data...');
   await updateProjectWithDocs(projectDetail);
 
   // Render the data on the page
-  loadingON('Updating tabeke with project details..');
+  loadingON('Updating table with project details..');
   await updateProjectDetailsUI(projectDetail, config);
   loadingON('UI updated..');
   loadingOFF();
 }
 
-async function floodgateContent() {
+async function floodgateContent(project, projectDetail) {
   function updateAndDisplayCopyStatus(copyStatus, srcPath) {
-    let copyDisplayText = `Copied ${srcPath} to floodgated content folder`;
-    if (!copyStatus) {
-      copyDisplayText = `Failed to copy ${srcPath} to floodgated content folder`;
-    }
+    const copyDisplayText = copyStatus
+      ? `Copied ${srcPath} to floodgated content folder`
+      : `Failed to copy ${srcPath} to floodgated content folder`;
     loadingON(copyDisplayText);
   }
 
   async function copyFilesToFloodgateTree(urlInfo) {
     const status = { success: false };
+    if (!urlInfo?.doc) return status;
+
     try {
-      const srcPath = urlInfo?.doc?.filePath;
+      const srcPath = urlInfo.doc.filePath;
       loadingON(`Copying ${srcPath} to pink folder`);
       let copySuccess = false;
-      if (urlInfo?.doc?.fg?.sp?.status !== 200) {
+      if (urlInfo.doc.fg?.sp?.status !== 200) {
         const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
         copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
         updateAndDisplayCopyStatus(copySuccess, srcPath);
@@ -69,7 +66,7 @@ async function floodgateContent() {
         // Get the source file
         const file = await getFile(urlInfo.doc);
         if (file) {
-          const destination = urlInfo?.doc?.filePath;
+          const destination = urlInfo.doc.filePath;
           if (destination) {
             // Save the file in the floodgate destination location
             const saveStatus = await saveFile(file, destination, true);
@@ -126,20 +123,17 @@ async function floodgateContent() {
   }
 }
 
-function setListeners() {
+function setListeners(project, projectDetail) {
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
-  document.querySelector('#copyFiles button').addEventListener('click', floodgateContent);
+  document.querySelector('#copyFiles button').addEventListener('click', () => floodgateContent(project, projectDetail));
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
 async function init() {
   try {
-    // Set the listeners on the floodgate action buttons
-    setListeners();
-
     // Read the Floodgate Sharepoint Config
     loadingON('Fetching Floodgate Config...');
-    config = await getConfig();
+    const config = await getConfig();
     if (!config) {
       return;
     }
@@ -147,15 +141,18 @@ async function init() {
 
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
-    project = await initProject();
+    const project = await initProject();
     loadingON(`Fetching project details for ${project.url}`);
 
     // Update project name on the admin page
     updateProjectInfo(project);
 
     // Read the project excel file and parse the data
-    projectDetail = await project.getDetails();
+    const projectDetail = await project.getDetails();
     loadingON('Project Details loaded...');
+
+    // Set the listeners on the floodgate action buttons
+    setListeners(project, projectDetail);
 
     loadingON('Connecting now to Sharepoint...');
     const connectedToSp = await connectToSP();
@@ -164,7 +161,7 @@ async function init() {
       return;
     }
     loadingON('Connected to Sharepoint!');
-    await refreshPage();
+    await refreshPage(config, projectDetail);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);
