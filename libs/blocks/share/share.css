@@ -123,41 +123,47 @@
 .share.inline {
   margin: 0 auto;
   text-align: center;
-  padding: 16px 0 64px;
+  padding: 8px 0 16px 0;
 }
 
-.share.inline p.icon-container,
-.share.inline p.icon-container a {
+.share.inline p.icon-container {
   justify-content: flex-start;
+  width: fit-content;
+  margin: 0;
 }
 
-.center .share.inline p.icon-container,
-.center .share.inline p.icon-container a {
+main > .section > .share.inline {
+  margin: 0 auto;
+}
+
+.center .share.inline p.icon-container {
+  margin: 0 auto;
   justify-content: center;
 }
 
-main > .section > .content.inline-wrapper {
+main > .section > .inline-wrapper {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   padding: 8px 0 12px;
 }
 
-main > .section.center > .content.inline-wrapper {
+main > .section > .inline-wrapper > .share.inline {
+  margin: 0;
+}
+
+main > .section > .share.inline {
+  margin: 0 auto;
+}
+
+main > .section.center > .share.inline,
+main > .section.center > .inline-wrapper {
+  margin: 0 auto;
   justify-content: center;
   text-align: center;
 }
 
-main > .section > .content.inline-wrapper > .share.inline {
-  margin: 0;
-}
-
-.share.inline {
-  width: fit-content;
-  padding: 8px 0 16px 0;
-}
-
-main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline {
+main > .section > .inline-wrapper > .reading-time.inline ~ .share.inline {
   padding-left: 20px;
   margin-left: 20px;
   border-left: 1px solid #adadad;
@@ -165,17 +171,17 @@ main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline
 
 
 @media screen and (max-width: 600px) {  
-  main > .section > .content.inline-wrapper {
+  main > .section > .inline-wrapper {
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
   }
 
-  main > .section.center > .content.inline-wrapper {
+  main > .section.center > .inline-wrapper {
     align-items: center;
   }
 
-  main > .section > .content.inline-wrapper > .reading-time.inline ~ .share.inline {
+  main > .section > .inline-wrapper > .reading-time.inline ~ .share.inline {
     border: none;
     padding-left: 0;
     margin-left: 0;
