@@ -141,7 +141,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      config.autoBlocks = conf.autoBlocks ? [ ...AUTO_BLOCKS, ...conf.autoBlocks ] : AUTO_BLOCKS;
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -629,9 +629,8 @@ function decorateMeta() {
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
-      window.lana.log('Cannot make URL from metadata');
     } catch (e) {
-      // Not a valid URL.
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
 }
@@ -742,7 +741,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {
