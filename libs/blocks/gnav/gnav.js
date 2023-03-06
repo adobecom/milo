@@ -68,10 +68,6 @@ class Gnav {
 
     const mainNav = this.decorateMainNav();
     if (mainNav) {
-      const cta = this.decorateCta();
-      if (cta) {
-        mainNav.append(cta);
-      }
       scrollWrapper.append(mainNav);
     }
 
@@ -175,7 +171,7 @@ class Gnav {
 
   decorateMainNav = () => {
     const mainNav = createTag('div', { class: 'gnav-mainnav' });
-    const mainLinks = this.body.querySelectorAll('h2 > a');
+    const mainLinks = this.body.querySelectorAll('h2 > a, strong a');
     if (mainLinks.length > 0) {
       this.buildMainNav(mainNav, mainLinks);
     }
@@ -184,6 +180,11 @@ class Gnav {
 
   buildMainNav = (mainNav, navLinks) => {
     navLinks.forEach((navLink, idx) => {
+      if (navLink.parentElement.nodeName === 'STRONG') {
+        const cta = this.decorateCta(navLink);
+        mainNav.append(cta);
+        return;
+      }
       navLink.href = localizeLink(navLink.href);
       const navItem = createTag('div', { class: 'gnav-navitem' });
       const navBlock = navLink.closest('.large-menu');
@@ -338,8 +339,7 @@ class Gnav {
     });
   };
 
-  decorateCta = () => {
-    const cta = this.body.querySelector('strong a');
+  decorateCta = (cta) => {
     if (cta) {
       const { origin } = new URL(cta.href);
       if (origin !== window.location.origin) {
