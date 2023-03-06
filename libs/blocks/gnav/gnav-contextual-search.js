@@ -6,6 +6,7 @@ const LIMIT = 12;
 
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
+    console.log(element.cloneNode(true))
     const matches = [];
     const { textContent } = element;
     const lowerCaseTextContent = textContent.toLowerCase();
@@ -15,13 +16,14 @@ function highlightTextElements(terms, elements) {
         matches.push({ offset, term });
       }
     });
+
     if (!matches.length) {
-      if (element.firstElementChild.nodeName === 'A') {
+      if (element.firstElementChild?.nodeName === 'A') {
         element.firstElementChild.removeAttribute('href');
       }
       return;
     }
-    
+
     matches.sort((a, b) => a.offset - b.offset);
     let currentIndex = 0;
     const fragment = matches.reduce((acc, { offset, term }) => {
