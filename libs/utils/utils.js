@@ -631,9 +631,8 @@ function decorateMeta() {
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
-      window.lana.log('Cannot make URL from metadata');
     } catch (e) {
-      // Not a valid URL.
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
 
@@ -753,7 +752,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {

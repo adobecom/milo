@@ -21,7 +21,7 @@ export function decorateHeadline(header, size) {
   const headingRow = header.parentElement;
   headingRow.classList.add('heading-row');
   headingRow.parentElement.classList.add('container');
-  const headerClass = (size === 'large') ? 'heading-XL' : 'heading-L';
+  const headerClass = (size === 'large') ? 'heading-xl' : 'heading-l';
   header.classList.add(headerClass, 'headline');
 }
 
