@@ -158,6 +158,11 @@ describe('Utils', () => {
       expect(lastPara.textContent).to.equal('nothing to see here');
     });
 
+    it('Decorates meta helix url', () => {
+      const meta = document.head.querySelector('[name="hlx-url"]');
+      expect(meta.content).to.equal('http://localhost:2000/otis');
+    });
+
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
     });

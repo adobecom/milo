@@ -22,12 +22,12 @@ describe('single action card blocks', () => {
           });
 
           it('has a heading', () => {
-            const heading = blk.querySelector('.heading-XS');
+            const heading = blk.querySelector('.heading-xs');
             expect(heading).to.exist;
           });
 
           it('has body text', () => {
-            const body = blk.querySelector('.body-XS');
+            const body = blk.querySelector('.body-xs');
             expect(body).to.exist;
           });
 

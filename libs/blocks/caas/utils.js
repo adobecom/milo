@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
@@ -16,17 +16,53 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
-export const loadStrings = async (url) => {
-  // TODO: Loc based loading
+const pageConfig = pageConfigHelper();
+const pageLocales = Object.keys(pageConfig.locales || {});
+
+export function getPageLocale(currentPath, locales = pageLocales) {
+  const possibleLocale = currentPath.split('/')[1];
+  if (locales.includes(possibleLocale)) {
+    return possibleLocale;
+  }
+  // defaults to en_US
+  return '';
+}
+
+export const loadStrings = async (
+  url,
+  pathname = window.location.pathname,
+  locales = pageLocales,
+) => {
   if (!url) return {};
-  const resp = await fetch(url);
-  if (!resp.ok) return {};
-  const json = await resp.json();
-  const convertToObj = (data) => data.reduce((obj, { key, val }) => {
-    obj[key] = val;
-    return obj;
-  }, {});
-  return convertToObj(json.data);
+  try {
+    const locale = getPageLocale(pathname, locales);
+    const localizedURL = new URL(url);
+    if (locale) {
+      localizedURL.pathname = `${locale}${localizedURL.pathname}`;
+    }
+    let resp = await fetch(`${localizedURL}.plain.html`);
+    if (!resp.ok) {
+      resp = await fetch(`${url}.plain.html`);
+    }
+    if (!resp.ok) {
+      return {};
+    }
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const document = parser.parseFromString(html, 'text/html');
+    const nodes = document.querySelectorAll('.string-mappings > div');
+    return [...nodes].reduce((ans, parent) => {
+      const children = parent.querySelectorAll('div');
+      const key = children[0]?.innerText;
+      const val = children[1]?.innerHTML;
+      if (key) {
+        ans[key] = val || '';
+      }
+      return ans;
+    }, {});
+  } catch (err) {
+    return {};
+  }
 };
 
 export const loadCaasFiles = async () => {
@@ -190,12 +226,13 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-export function arrayToObj (input=[]) {
+export function arrayToObj(input = []) {
   const obj = {};
-  if(!Array.isArray(input)){
+  if (!Array.isArray(input)) {
+    // eslint-disable-next-line no-param-reassign
     input = [];
   }
-  input.forEach(item => {
+  input.forEach((item) => {
     if (item.key && item.value) {
       obj[item.key] = item.value;
     }
@@ -371,8 +408,8 @@ export const getConfig = async (state, strs = {}) => {
         filterInfo: { searchPlaceholderText: strs.searchPlaceholder || 'Search Here' },
       },
     },
-    language: 'en',
-    country: 'US',
+    language,
+    country,
     analytics: {
       trackImpressions: state.analyticsTrackImpression || '',
       collectionIdentifier: state.analyticsCollectionName,

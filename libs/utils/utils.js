@@ -381,35 +381,34 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const altTextFlagIndex = textContent.indexOf('|');
-  const sanitizedTextContent = altTextFlagIndex === -1
-    ? textContent
-    : textContent?.slice(0, altTextFlagIndex).trim();
-  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
-  if (ext !== 'svg') return;
-
-  const altText = altTextFlagIndex === -1
-    ? ''
-    : textContent.substring(textContent.indexOf('|') + 1).trim();
-  const img = document.createElement('img');
-  img.setAttribute('loading', 'lazy');
-  img.src = localizeLink(sanitizedTextContent);
-  img.alt = altText;
-  const pic = document.createElement('picture');
-  pic.append(img);
-
+  if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
   try {
-    const textContentUrl = new URL(sanitizedTextContent);
-    const hrefUrl = new URL(href);
-    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+    // Mine for URL and alt text
+    const splitText = textContent.split('|');
+    const textUrl = new URL(splitText.shift().trim());
+    const altText = splitText.join('|').trim();
+
+    // Relative link checking
+    const hrefUrl = a.href.startsWith('/')
+      ? new URL(`${window.location.origin}${a.href}`)
+      : new URL(a.href);
+
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+
+    const img = createTag('img', { loading: 'lazy', src });
+    if (altText) img.alt = altText;
+    const pic = createTag('picture', null, img);
+
+    if (textUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
-    } else {
-      a.textContent = '';
-      a.append(pic);
+      return pic;
     }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log('Failed to load svg.', err.message);
+    a.textContent = '';
+    a.append(pic);
+    return a;
+  } catch (e) {
+    console.log('Failed to create SVG.', e.message);
+    return a;
   }
 }
 
@@ -544,7 +543,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
@@ -616,7 +615,7 @@ export function loadPrivacy() {
     privacy: {
       otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
     },
-  };
+};
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
   const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
@@ -641,6 +640,19 @@ function initSidekick() {
   }
 }
 
+function decorateMeta() {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]');
+  contents.forEach((meta) => {
+    try {
+      const url = new URL(meta.content);
+      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+    } catch (e) {
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+    }
+  });
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -649,6 +661,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
+    decorateMeta();
     decorateHeader();
 
     import('./samplerum.js').then(({ addRumListeners }) => {
@@ -746,7 +759,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {

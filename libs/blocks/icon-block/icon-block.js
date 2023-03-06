@@ -19,19 +19,19 @@ import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 const variants = ['fullwidth', 'vertical', 'bio'];
 const iconBlocks = {
   small: {
-    [variants[0]]: ['M', 'M'],
-    [variants[1]]: ['S', 'M'],
-    [variants[2]]: ['S', 'S'],
+    [variants[0]]: ['m', 'm'],
+    [variants[1]]: ['s', 'm'],
+    [variants[2]]: ['s', 's'],
   },
   medium: {
-    [variants[0]]: ['L', 'M'],
-    [variants[1]]: ['M', 'M'],
-    [variants[2]]: ['S', 'S'],
+    [variants[0]]: ['l', 'm'],
+    [variants[1]]: ['m', 'm'],
+    [variants[2]]: ['s', 's'],
   },
   large: {
-    [variants[0]]: ['XL', 'M'],
-    [variants[1]]: ['M', 'M'],
-    [variants[2]]: ['S', 'S'],
+    [variants[0]]: ['xl', 'm'],
+    [variants[1]]: ['m', 'm'],
+    [variants[2]]: ['s', 's'],
   },
 };
 
