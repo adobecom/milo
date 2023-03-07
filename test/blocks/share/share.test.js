@@ -61,4 +61,18 @@ describe('Share', () => {
     expect(re).to.exist;
     expect(tw).to.not.exist;
   });
+  it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+    const section = document.querySelector('.section.inline-has-siblings');
+    const shareEls = section.querySelectorAll('.share.inline');
+    shareEls.forEach(async (shareEl) => {
+      await init(shareEl);
+      expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.true;
+    });
+  });
+  it("Inline variant (without siblings) doesn't affect the DOM", async () => {
+    const section = document.querySelector('.section.inline-no-siblings');
+    const shareEl = section.querySelector('.share.inline');
+    await init(shareEl);
+    expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.false;
+  });
 });
