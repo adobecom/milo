@@ -68,10 +68,15 @@ async function fetchTaxonomy(target) {
 }
 
 function parseTaxonomyJson(data, root) {
+  let level1; let level2;
   return data?.reduce((taxonomy, row) => {
     const level3 = removeLineBreaks(row[TAXONOMY_FIELDS.level3]);
-    const level2 = removeLineBreaks(row[TAXONOMY_FIELDS.level2]);
-    const level1 = removeLineBreaks(row[TAXONOMY_FIELDS.level1]);
+    if (!level3) {
+      level2 = removeLineBreaks(row[TAXONOMY_FIELDS.level2]);
+      if (!level2) {
+        level1 = removeLineBreaks(row[TAXONOMY_FIELDS.level1]);
+      }
+    }
 
     // eslint-disable-next-line no-nested-ternary
     const level = level3 ? LEVEL_INDEX.level3
@@ -157,8 +162,8 @@ const formatPath = (str) => str?.replace(/^\/+/g, '').replace(/\/+$/, '');
  */
 export default async (config, route, target) => {
   const root = route
-        ? `${config.locale.contentRoot}/${formatPath(route)}` 
-        : config.locale.contentRoot;
+    ? `${config.locale.contentRoot}/${formatPath(route)}`
+    : config.locale.contentRoot;
   const path = target || `${config.locale.contentRoot}/taxonomy.json`;
 
   return fetchTaxonomy(path)
