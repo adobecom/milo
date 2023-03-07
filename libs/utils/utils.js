@@ -456,7 +456,7 @@ export function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     if (a.href.includes('#_dnb')) {
-      a.href = a.href.split('#')[0];
+      a.href = a.href.replace('#_dnb', '');
     } else {
       const autoBlock = decorateAutoBlock(a);
       if (autoBlock) {
