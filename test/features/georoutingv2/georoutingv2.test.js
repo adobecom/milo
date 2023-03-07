@@ -238,7 +238,7 @@ describe('GeoRouting', () => {
     expect(modal).to.not.be.null;
   });
 
-  it('If session storage is us it is compared correctly', async () => {
+  it('Does not create a modal if the user IP matches session storage.', async () => {
     // prepare
     setUserCountryFromIP('US');
     sessionStorage.setItem('international', 'us');
@@ -250,7 +250,7 @@ describe('GeoRouting', () => {
     setUserCountryFromIP();
   });
 
-  it('If aiming for CH page and IP in Switzerland no modal is shown', async () => {
+  it('Shows no modal if aiming for CH page and IP in Switzerland', async () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
@@ -432,7 +432,7 @@ describe('GeoRouting', () => {
     stubHeadRequestToReturnVal('/ch_fr', true);
   });
 
-  it('Closes picker properly', async () => {
+  it('Closes picker if picker open and then clicking somewhere else within the modal', async () => {
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');

@@ -1,4 +1,10 @@
-const createTabsContainer = (createTag, tabNames) => {
+let config;
+let createTag;
+let getMetadata;
+let loadBlock;
+let loadStyle;
+
+const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
   tabNames.forEach((name) => {
     const li = createTag('li', null, name);
@@ -10,7 +16,7 @@ const createTabsContainer = (createTag, tabNames) => {
   return createTag('div', { class: 'section tabs-background-transparent' }, divTabs);
 };
 
-const createTab = (createTag, content, tabName) => {
+const createTab = (content, tabName) => {
   const divTab = createTag('div', null, 'tab');
   const divTagName = createTag('div', null, tabName);
   const tab = createTag('div');
@@ -62,7 +68,7 @@ const getAkamaiCode = () => new Promise((resolve) => {
 });
 
 // Determine if any of the locales can be linked to.
-async function getAvailableLocales(locales, config, getMetadata) {
+async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
   const { contentRoot } = config.locale;
@@ -146,7 +152,7 @@ function removeOnClickOutsideElement(element, event, button) {
   document.addEventListener('click', func);
 }
 
-function openPicker(button, createTag, locales, country, config, event) {
+function openPicker(button, locales, country, event) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
@@ -163,7 +169,7 @@ function openPicker(button, createTag, locales, country, config, event) {
   removeOnClickOutsideElement(list, event, button);
 }
 
-function buildContent(config, currentPage, createTag, locale, geoData, locales) {
+function buildContent(currentPage, locale, geoData, locales) {
   const fragment = new DocumentFragment();
   const lang = config.locales[currentPage.prefix]?.ietf ?? '';
   const geo = geoData.filter((c) => c.prefix === locale.prefix);
@@ -178,7 +184,9 @@ function buildContent(config, currentPage, createTag, locale, geoData, locales) 
     height: 15,
   });
   const span = createTag('span', { class: 'icon margin-right' }, img);
-  const mainAction = createTag('a', { class: 'con-button blue', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false }, span);
+  const mainAction = createTag('a', {
+    class: 'con-button blue button-l', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false, href: '#',
+  }, span);
   mainAction.append(locale.button);
   if (locales) {
     const downArrow = createTag('img', {
@@ -190,7 +198,7 @@ function buildContent(config, currentPage, createTag, locale, geoData, locales) 
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
       e.preventDefault();
-      openPicker(mainAction, createTag, locales, locale.button, config, e);
+      openPicker(mainAction, locales, locale.button, e);
     });
   } else {
     mainAction.href = locale.url;
@@ -205,23 +213,23 @@ function buildContent(config, currentPage, createTag, locale, geoData, locales) 
   return fragment;
 }
 
-async function getDetails(currentPage, localeMatches, config, createTag, getMetadata, geoData) {
-  const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
+async function getDetails(currentPage, localeMatches, geoData) {
+  const availableLocales = await getAvailableLocales(localeMatches);
   if (availableLocales.length > 0) {
     const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
     currentPage.url = window.location.hash ? document.location.href : '#';
     if (availableLocales.length === 1) {
-      const content = buildContent(config, currentPage, createTag, availableLocales[0], geoData);
+      const content = buildContent(currentPage, availableLocales[0], geoData);
       georoutingWrapper.appendChild(content);
       return georoutingWrapper;
     }
     const sortedLocales = availableLocales.sort((a, b) => a.languageOrder - b.languageOrder);
-    const tabsContainer = createTabsContainer(createTag, sortedLocales.map((l) => l.language));
+    const tabsContainer = createTabsContainer(sortedLocales.map((l) => l.language));
     georoutingWrapper.appendChild(tabsContainer);
 
     sortedLocales.forEach((locale) => {
-      const content = buildContent(config, currentPage, createTag, locale, geoData, sortedLocales);
-      const tab = createTab(createTag, content, locale.language);
+      const content = buildContent(currentPage, locale, geoData, sortedLocales);
+      const tab = createTab(content, locale.language);
       georoutingWrapper.appendChild(tab);
     });
     return georoutingWrapper;
@@ -229,20 +237,27 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
   return null;
 }
 
-async function showModal(details, loadStyle, config, loadBlock) {
+async function showModal(details) {
   const { miloLibs, codeRoot } = config;
 
   const tabs = details.querySelector('.tabs');
-  const promises = [tabs ? loadBlock(tabs) : null,
+  const promises = [
+    tabs ? loadBlock(tabs) : null,
     tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
-    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`)];
+    loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
+  ];
   await Promise.all(promises);
   const { getModal } = await import('../../blocks/modal/modal.js');
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
-export default async function loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle) {
+export default async function loadGeoRouting(conf, createTagFunc, getMetadataFunc, loadBlockFunc, loadStyleFunc) {
   if (getGeoroutingOverride()) return;
+  config = conf;
+  createTag = createTagFunc;
+  getMetadata = getMetadataFunc;
+  loadBlock = loadBlockFunc;
+  loadStyle = loadStyleFunc;
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
@@ -265,9 +280,9 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.georouting.data.filter((d) => d.prefix === storedLocale);
-      const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.geos.data);
+      const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
-        await showModal(details, loadStyle, config, loadBlock);
+        await showModal(details);
       }
     }
     return;
@@ -277,9 +292,9 @@ export default async function loadGeoRouting(config, createTag, getMetadata, loa
   const akamaiCode = await getAkamaiCode();
   if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
     const localeMatches = getMatches(json.georouting.data, akamaiCode);
-    const details = await getDetails(urlGeoData, localeMatches, config, createTag, getMetadata, json.geos.data);
+    const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
     if (details) {
-      await showModal(details, loadStyle, config, loadBlock);
+      await showModal(details);
     }
   }
 }

@@ -11,7 +11,7 @@
 
 .picker {
   position: fixed;
-  margin-top: -2px;
+  margin-top: 2px;
   background: #FFF 0 0 no-repeat padding-box;
   box-shadow: 0 1px 4px #00000026;
   border: 1px solid #B1B1B1;
@@ -44,6 +44,10 @@
 
 .dialog-modal.locale-modal-v2 a:last-child {
   white-space: nowrap;
+}
+
+.dialog-modal.locale-modal-v2 h3 {
+  margin: 16px 0;
 }
 
 .dialog-modal.locale-modal-v2 .locale-text {
@@ -81,6 +85,10 @@ img.icon-milo {
 
 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-text-color);
+}
+
+.tabs.quiet div[role="tablist"] button {
+  margin-left: 24px;
 }
 
 .tabs .tabContent {
