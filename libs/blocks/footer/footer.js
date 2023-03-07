@@ -82,7 +82,7 @@ class Footer {
   decorateGrid = () => {
     const navGrid = createTag('div', { class: 'footer-nav-grid' });
     const columns = [...this.body.querySelectorAll('body > div')]
-      .filter((col) => col.firstElementChild.nodeName === 'H2');
+      .filter((col) => col.firstElementChild?.nodeName === 'H2');
 
     if (!columns.length) {
       this.footerEl.classList.add('footer-small');

@@ -126,13 +126,11 @@ export async function loadTaxonomy() {
         a.href = tax.link;
       } else {
         // eslint-disable-next-line no-console
-        console.warn(`Trying to get a link for an unknown topic: ${topic} (current page)`);
+        window.lana.log(`Trying to get a link for an unknown topic: ${topic} (current page)`);
         a.href = '#';
       }
       delete a.dataset.topicLink;
     });
-
-    // adjust meta article:tag
 
     const currentTags = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content) || [];
     const articleTax = computeTaxonomyFromTopics(currentTags);
