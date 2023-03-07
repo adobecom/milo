@@ -19,7 +19,7 @@ const SPECTRUM_CHEVRON = '<svg class="icon-chevron-down" xmlns="http://www.w3.or
 const ADCHOICE_IMG = `<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="${base}/blocks/footer/adchoices-small.svg" height="9" width="9">`;
 const SUPPORTED_SOCIAL = ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'];
 
-class Footer {
+export class Footer {
   constructor(body, footerEl) {
     this.footerEl = footerEl;
     this.body = body;
@@ -225,6 +225,10 @@ class Footer {
       });
     }
     privacyWrapper.append(ul);
+
+    const secondLine = container.children[1];
+    if (secondLine) privacyWrapper.append(secondLine);
+
     return privacyWrapper;
   };
 
