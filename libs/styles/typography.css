@@ -212,6 +212,12 @@ svg.icon-milo {
   overflow: visible;
 }
 
+.con-button svg.icon-milo {
+  height: 1em;
+  width: 1em;
+  display: inline-block;
+}
+
 span.icon.margin-right { margin-right: 8px; }
 
 span.icon.margin-left { margin-left: 8px; }
