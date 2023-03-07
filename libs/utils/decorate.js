@@ -68,7 +68,7 @@ const buttonable = (b) => {
     || (Array.from(b.childNodes).some(isStrongOrEm) && isPara(b.parentElement));
 };
 export function decorateButton(button, siblingButtons = false) {
-  const mapBtnSize = { large: 'button-L', xlarge: 'button-XL' };
+  const mapBtnSize = { large: 'button-l', xlarge: 'button-xl' };
   const block = button.closest('.section div[class]:not(.content)');
   const blockSize = getBlockSize(block);
   const size = mapBtnSize[blockSize] ?? blockSize;

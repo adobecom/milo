@@ -42,7 +42,7 @@ describe('marquee', () => {
   describe('supports buttons ', () => {
     it('has adapted button sizes', () => {
       const button = marquees[14].querySelector('a.con-button');
-      expect(Array.from(button.classList).includes('button-XL')).to.equal(true);
+      expect(Array.from(button.classList).includes('button-xl')).to.equal(true);
     });
 
     it('creates an action area', () => {
