@@ -71,7 +71,7 @@ async function loadList(type, content, list) {
       break;
     default:
       await import('../../utils/lana.js');
-      window.lana.log(`Library type not supported: ${type}`, { clientId: 'milo', sampleRate: 100 });
+      window.lana?.log(`Library type not supported: ${type}`, { clientId: 'milo' });
   }
 }
 

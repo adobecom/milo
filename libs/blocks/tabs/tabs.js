@@ -105,7 +105,7 @@ const init = (block) => {
   tabListContainer.classList.add('tabList-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-XS' : 'heading-XS';
+    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = getStringKeyName(item.textContent);
       const tabBtnAttributes = {

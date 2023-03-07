@@ -31,7 +31,7 @@ const updateFragMap = (fragment, a, href) => {
 export default async function init(a) {
   const relHref = localizeLink(a.href);
   if (isCircularRef(relHref)) {
-    console.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
+    window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
   const resp = await fetch(`${a.href}.plain.html`);
@@ -50,10 +50,9 @@ export default async function init(a) {
 
       await loadArea(fragment);
     } else {
-      window.lana.log('Could not make fragment');
+      window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
     }
   } else {
-    // eslint-disable-next-line no-console
-    console.log('Could not get fragment');
+    window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
   }
 }

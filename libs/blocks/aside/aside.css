@@ -76,11 +76,11 @@
   width: 100%;
 }
 
-.aside .foreground.container .text .heading-XL {
+.aside .foreground.container .text .heading-xl {
   margin: var(--spacing-xs) 0;
 }
 
-.aside .foreground.container .text .body-S {
+.aside .foreground.container .text .body-s {
   margin-bottom: var(--spacing-s);
 }
 
@@ -228,7 +228,7 @@
   margin-bottom: 24px;
 }
 
-.aside.inline .heading-S {
+.aside.inline .heading-s {
   margin-bottom: 16px;
 }
 
@@ -309,11 +309,11 @@
   color: white;
 }
 
-.aside.notification .foreground.container .text .heading-L {
+.aside.notification .foreground.container .text .heading-l {
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification .foreground.container .text .body-S {
+.aside.notification .foreground.container .text .body-s {
   margin-bottom: 0;
 }
 
@@ -337,8 +337,8 @@
   flex-wrap: nowrap;
 }
 
-.aside.notification.extra-small .foreground.container .text .body-M,
-.aside.notification.small .foreground.container .text .body-M {
+.aside.notification.extra-small .foreground.container .text .body-m,
+.aside.notification.small .foreground.container .text .body-m {
   font-weight: bold;
 }
 
@@ -371,7 +371,7 @@
   flex-direction: column;
 }
 
-.aside.notification.medium .foreground.container .text .heading-S {
+.aside.notification.medium .foreground.container .text .heading-s {
   margin-bottom: var(--spacing-xxs);
 }
 
@@ -421,7 +421,7 @@
     object-fit: cover;
     object-position: center top;
   }
-  
+
   .aside.split.right .background img,
   .aside.split.half .background img {
     object-position: left top;
@@ -552,7 +552,7 @@
     max-width: 400px;
   }
 
-  .aside .foreground.container .text .heading-XL {
+  .aside .foreground.container .text .heading-xl {
     margin: var(--spacing-xs) 0;
   }
 
