@@ -104,6 +104,7 @@ function getSharepointConfig(config) {
   const sharepointConfig = config.sp.data[0];
   // ${sharepointConfig.site} - MS Graph API Url with site pointers.
   const baseURI = `${sharepointConfig.site}/drive/root:${sharepointConfig.rootFolders}`;
+  const fgBaseURI = `${sharepointConfig.site}/drive/root:${sharepointConfig.fgRootFolder}`;
   return {
     ...sharepointConfig,
     clientApp: {
@@ -114,31 +115,37 @@ function getSharepointConfig(config) {
       cache: { cacheLocation: 'sessionStorage' },
     },
     shareUrl: sharepointConfig.shareurl,
+    fgShareUrl: sharepointConfig.fgShareUrl,
     login: { redirectUri: '/tools/loc/spauth' },
     api: {
       url: GRAPH_API,
       file: {
-        get: { baseURI },
+        get: { baseURI, fgBaseURI },
         download: { baseURI: `${sharepointConfig.site}/drive/items` },
         upload: {
           baseURI,
+          fgBaseURI,
           method: 'PUT',
         },
         delete: {
           baseURI,
+          fgBaseURI,
           method: 'DELETE',
         },
         update: {
           baseURI,
+          fgBaseURI,
           method: 'PATCH',
         },
         createUploadSession: {
           baseURI,
+          fgBaseURI,
           method: 'POST',
           payload: { '@microsoft.graph.conflictBehavior': 'replace' },
         },
         copy: {
           baseURI,
+          fgBaseURI,
           method: 'POST',
           payload: { '@microsoft.graph.conflictBehavior': 'replace' },
         },
@@ -146,6 +153,7 @@ function getSharepointConfig(config) {
       directory: {
         create: {
           baseURI,
+          fgBaseURI,
           method: 'PATCH',
           payload: { folder: {} },
         },
@@ -153,6 +161,7 @@ function getSharepointConfig(config) {
       excel: {
         update: {
           baseURI,
+          fgBaseURI,
           method: 'POST',
         },
       },
@@ -199,4 +208,9 @@ async function getConfig() {
   return decoratedConfig;
 }
 
-export default getConfig;
+export {
+  getConfig,
+  fetchConfigJson,
+  getSharepointConfig,
+  getHelixAdminConfig,
+};

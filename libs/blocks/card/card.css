@@ -2,3 +2,11 @@
 .card .consonant-ProductCard-title {
   line-height: 1.375rem;
 }
+
+.card hr {
+  background-color: #E1E1E1;
+  border: none;
+  height: 1px;
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}

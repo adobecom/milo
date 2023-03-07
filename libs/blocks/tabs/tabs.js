@@ -39,8 +39,12 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  // regex to omit all special characters except Japanese or Korean language characters
-  const regex = /[^\w\s\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u3130-\u318F\uAC00-\uD7AF]+/g;
+  /* 
+  The [^...] character class is used to match any character that is not a valid CSS selector character. 
+  The #, ., -, and underscore characters are included as valid characters, 
+  and the \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
+  */
+  const regex = /[^#\. \p{L}\p{N}_-]/gu;
   return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
 }
 
@@ -101,7 +105,7 @@ const init = (block) => {
   tabListContainer.classList.add('tabList-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-XS' : 'heading-XS';
+    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = getStringKeyName(item.textContent);
       const tabBtnAttributes = {

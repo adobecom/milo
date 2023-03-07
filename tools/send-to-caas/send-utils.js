@@ -10,6 +10,91 @@ const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
 
+const LOCALES = {
+  // Americas
+  ar: { ietf: 'es-AR' },
+  br: { ietf: 'pt-BR' },
+  ca: { ietf: 'en-CA' },
+  ca_fr: { ietf: 'fr-CA' },
+  cl: { ietf: 'es-CL' },
+  co: { ietf: 'es-CO' },
+  la: { ietf: 'es-LA' },
+  mx: { ietf: 'es-MX' },
+  pe: { ietf: 'es-PE' },
+  '': { ietf: 'en-US' },
+  // EMEA
+  africa: { ietf: 'africa-en' },
+  be_fr: { ietf: 'fr-BE' },
+  be_en: { ietf: 'en-BE' },
+  be_nl: { ietf: 'nl-BE' },
+  cy_en: { ietf: 'en-CY' },
+  dk: { ietf: 'da-DK' },
+  de: { ietf: 'de-DE' },
+  ee: { ietf: 'et-EE' },
+  es: { ietf: 'es-ES' },
+  fr: { ietf: 'fr-FR' },
+  gr_en: { ietf: 'en-GR' },
+  ie: { ietf: 'en-GB' },
+  il_en: { ietf: 'en-IL' },
+  it: { ietf: 'it-IT' },
+  lv: { ietf: 'lv-LV' },
+  lt: { ietf: 'lt-LT' },
+  lu_de: { ietf: 'de-LU' },
+  lu_en: { ietf: 'en-LU' },
+  lu_fr: { ietf: 'fr-LU' },
+  hu: { ietf: 'hu-HU' },
+  mt: { ietf: 'en-MT' },
+  mena: { ietf: 'mena-en' },
+  mena_en: { ietf: 'mena-en' },
+  mena_ar: { ietf: 'mena-ar' },
+  nl: { ietf: 'nl-NL' },
+  no: { ietf: 'no-NO' },
+  pl: { ietf: 'pl-PL' },
+  pt: { ietf: 'pt-PT' },
+  ro: { ietf: 'ro-RO' },
+  sa_en: { ietf: 'en' },
+  ch_de: { ietf: 'de-CH' },
+  si: { ietf: 'sl-SI' },
+  sk: { ietf: 'sk-SK' },
+  ch_fr: { ietf: 'fr-CH' },
+  fi: { ietf: 'fi-FI' },
+  se: { ietf: 'sv-SE' },
+  ch_it: { ietf: 'it-CH' },
+  tr: { ietf: 'tr-TR' },
+  ae_en: { ietf: 'ae-en' },
+  uk: { ietf: 'en-GB' },
+  at: { ietf: 'de-AT' },
+  cz: { ietf: 'cs-CZ' },
+  bg: { ietf: 'bg-BG' },
+  ru: { ietf: 'ru-RU' },
+  ua: { ietf: 'uk-UA' },
+  il_he: { ietf: 'he-il' },
+  ae_ar: { ietf: 'ar-ae' },
+  sa_ar: { ietf: 'ar-sa' },
+  // Asia Pacific
+  au: { ietf: 'en-AU' },
+  hk_en: { ietf: 'en-HK' },
+  in: { ietf: 'en-GB' },
+  id_id: { ietf: 'id-id' },
+  id_en: { ietf: 'en-id' },
+  my_ms: { ietf: 'ms-my' },
+  my_en: { ietf: 'en-GB' },
+  nz: { ietf: 'en-GB' },
+  ph_en: { ietf: 'en-ph' },
+  ph_fil: { ietf: 'fil-PH' },
+  sg: { ietf: 'en-SG' },
+  th_en: { ietf: 'th-en' },
+  in_hi: { ietf: 'in-hi' },
+  th_th: { ietf: 'th-th' },
+  cn: { ietf: 'zh-CN' },
+  hk_zh: { ietf: 'zh-HK' },
+  tw: { ietf: 'zh-TW' },
+  jp: { ietf: 'ja-JP' },
+  kr: { ietf: 'ko-KR' },
+  vn_en: { ietf: 'en-vn' },
+  vn_vi: { ietf: 'vi-VN' },
+};
+
 const [setConfig, getConfig] = (() => {
   let config = {
     isInjectedDoc: () => this.doc !== document,
@@ -285,6 +370,32 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getBulkPublishLangAttr = async (options) => {
+  let { getLocale } = getConfig();
+  if (!getLocale) {
+    // This is only imported from the bulk publisher so there is no dependency cycle
+    // eslint-disable-next-line import/no-cycle
+    const { getLocale: utilsGetLocale } = await import('../../libs/utils/utils.js');
+    getLocale = utilsGetLocale;
+    setConfig({ getLocale });
+  }
+  return getLocale(LOCALES, options.prodUrl).ietf;
+};
+
+const getCountryAndLang = async (options) => {
+  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
+    ? await getBulkPublishLangAttr(options)
+    : document.documentElement.lang;
+
+  const langAttr = langStr?.toLowerCase().split('-') || [];
+
+  const [lang = 'en', country = 'us'] = langAttr;
+  return {
+    country,
+    lang,
+  };
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -308,8 +419,11 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
-  // TODO - automatically get country
-  country: (s) => s || 'us',
+  country: async (s, options) => {
+    if (s) return s;
+    const { country } = await getCountryAndLang(options);
+    return country;
+  },
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
@@ -341,8 +455,11 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s) => s || 'default',
-  // TODO: automatically get lang
-  lang: (s) => s || 'en',
+  lang: async (s, options) => {
+    if (s) return s;
+    const { lang } = await getCountryAndLang(options);
+    return lang;
+  },
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s

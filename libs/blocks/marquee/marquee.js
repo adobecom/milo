@@ -66,7 +66,7 @@ function decorateText(el, size) {
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
+  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
 }
 
 function extendButtonsClass(text) {
@@ -106,8 +106,8 @@ export default function init(el) {
   // without this authors must review marquees in all projects to stop buttons having wrong size
   const buttons = el.querySelectorAll('a.con-button');
   buttons?.forEach((b) => {
-    b.classList.remove(...[size ?? '', 'button-L', 'button-XL']);
-    b.classList.add(size === 'large' ? 'button-XL' : 'button-L');
+    b.classList.remove(...[size ?? '', 'button-l', 'button-xl']);
+    b.classList.add(size === 'large' ? 'button-xl' : 'button-l');
   });
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
@@ -119,7 +119,7 @@ export default function init(el) {
       foreground.insertAdjacentElement('beforebegin', media);
     }
     if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-S' }, media.lastChild.textContent);
+      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
