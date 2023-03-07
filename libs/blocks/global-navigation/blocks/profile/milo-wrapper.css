@@ -6,6 +6,6 @@
 
 .feds-profile-button {
   padding: 5px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
+  border-radius: var(--feds-radius-utilityIcon);
   border: none;
 }
