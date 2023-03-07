@@ -1,5 +1,4 @@
-/* eslint-disable no-underscore-dangle */
-import { getConfig } from '../../../utils/utils.js';
+import { getConfig, localizeLink } from '../../../utils/utils.js';
 
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
@@ -56,3 +55,24 @@ export const getFedsPlaceholderConfig = () => {
     },
   };
 };
+
+export function getAnalyticsValue(str, index) {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = str.trim().replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '');
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+}
+
+export function decorateCta({ elem, type = 'primary', index } = {}) {
+  return toFragment`
+    <div class="feds-cta-wrapper">
+      <a 
+        href="${localizeLink(elem.href)}"
+        class="feds-cta feds-cta--${type}"
+        daa-ll="${getAnalyticsValue(elem.textContent, index)}">
+          ${elem.textContent}
+      </a>
+    </div>`;
+}
