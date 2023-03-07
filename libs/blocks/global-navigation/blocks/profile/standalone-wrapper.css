@@ -10,7 +10,7 @@
 
 .feds-signin {
   padding: 4px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
+  border-radius: var(--feds-radius-utilityIcon);
 }
 
 .feds-profile-img {
@@ -20,7 +20,7 @@
 
 .feds-profile-button {
   padding: 2px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
+  border-radius: var(--feds-radius-utilityIcon);
   border: none;
 }  
 
