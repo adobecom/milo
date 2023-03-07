@@ -13,6 +13,10 @@
   background-color: var(--feds-background-popup--light);
 }
 
+.feds-popup p {
+  margin: 0;
+}
+
 .feds-popup,
 .feds-popup-items {
   display: none;

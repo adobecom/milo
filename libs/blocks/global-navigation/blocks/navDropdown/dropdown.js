@@ -41,7 +41,7 @@ const decorateHeadline = (elem) => {
 };
 
 const decorateLinkGroup = (elem, index) => {
-  if (!(elem instanceof HTMLElement)) return null;
+  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return null;
 
   // TODO: could it be something other than a 'picture'?
   const image = elem.querySelector('picture');
@@ -148,8 +148,8 @@ const decorateDropdown = async (config) => {
             columnElem.remove();
           }
 
-          // Leave lists intact, just add attributes to their links
-          if (columnElem.tagName === 'UL') {
+          // Leave lists and paragraphs intact, just add attributes to their links
+          if (columnElem.tagName === 'UL' || columnElem.tagName === 'P') {
             columnElem.querySelectorAll('a').forEach((link, index) => {
               link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
               link.classList.add('feds-navLink');
