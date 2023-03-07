@@ -208,22 +208,6 @@ describe('Utils', () => {
       });
     });
 
-    describe('video uploaded using franklin bot', () => {
-      it('decorates video', async () => {
-        const block = document.createElement('div');
-        const a = document.createElement('a');
-        const href = 'https://main--blog--adobecom.hlx.page/media_17927691d22fe4e1bd058e94762a224fdc57ebb7b.mp4';
-        a.setAttribute('href', href);
-        a.textContent = href;
-        block.append(a);
-
-        await utils.decorateVideo(a);
-
-        expect(block.querySelector('a')).to.be.null;
-        expect(block.firstElementChild.tagName).to.eql('VIDEO');
-      });
-    });
-
     describe('rtlSupport', () => {
       before(async () => {
         config.locales = {

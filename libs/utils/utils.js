@@ -50,6 +50,7 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -72,6 +73,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
   local: {
@@ -412,20 +414,6 @@ export function decorateSVG(a) {
   }
 }
 
-export function decorateVideo(a) {
-  const { pathname, hash } = a;
-  if (!pathname.match('media_.*.mp4$')) return;
-
-  const isAutoplay = !!(hash?.includes('autoplay'));
-
-  const attrs = isAutoplay ? 'playsinline autoplay loop muted' : 'playsinline controls';
-  const video = `<video ${attrs}>
-        <source src=".${pathname}" type="video/mp4" />
-      </video>`;
-  a.insertAdjacentHTML('afterend', video);
-  a.remove();
-}
-
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
@@ -456,6 +444,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
@@ -468,7 +462,6 @@ export function decorateLinks(el) {
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    decorateVideo(a);
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
