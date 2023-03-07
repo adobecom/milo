@@ -5,8 +5,7 @@ import {
   localizeLink,
   loadStyle,
 } from '../../utils/utils.js';
-import { analyticsGetLabel } from '../../martech/attributes.js';
-import { toFragment, getFedsPlaceholderConfig } from './utilities/utilities.js';
+import { toFragment, getFedsPlaceholderConfig, getAnalyticsValue, decorateCta } from './utilities/utilities.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const CONFIG = {
@@ -36,15 +35,6 @@ const loadStyles = (path) => {
 const loadBlock = (path) => import(path)
   .then((module) => module.default);
 
-const setNavLinkAttributes = (id, navLink) => {
-  navLink.setAttribute('role', 'button');
-  navLink.setAttribute('aria-expanded', false);
-  navLink.setAttribute('aria-controls', id);
-  navLink.setAttribute('daa-ll', navLink.textContent);
-  navLink.setAttribute('daa-lh', 'header|Open');
-  navLink.setAttribute('aria-haspopup', true);
-};
-
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -58,7 +48,7 @@ class Gnav {
 
     this.el = el;
     this.body = body;
-    this.desktop = window.matchMedia('(min-width: 1200px)');
+    this.desktop = window.matchMedia('(min-width: 900px)');
     body.querySelectorAll('[class$="-"]').forEach((block) => {
       const { name, variants } = getBlockClasses(block.className);
       block.classList.add(name, ...variants);
@@ -100,26 +90,25 @@ class Gnav {
       this.el.removeEventListener('click', this.loadDelayed);
       const [
         { MenuControls },
-        { decorateMenu, decorateLargeMenu },
+        decorateDropdown,
         { appLauncher },
         Profile,
         { Search },
       ] = await Promise.all([
         loadBlock('./utilities/delayed-utilities.js'),
-        loadBlock('./blocks/navMenu/menu.js'),
+        loadBlock('./blocks/navDropdown/dropdown.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/profile.js'),
         loadBlock('./blocks/search/gnav-search.js'),
         loadStyles('./blocks/profile/profile.css'),
-        loadStyles('./blocks/navMenu/menu.css'),
+        loadStyles('./blocks/navDropdown/dropdown.css'),
         loadStyles('./blocks/search/gnav-search.css'),
       ]);
       this.menuControls = new MenuControls(this.curtain);
-      this.decorateMenu = decorateMenu;
-      this.decorateLargeMenu = decorateLargeMenu;
+      this.decorateDropdown = decorateDropdown;
       this.appLauncher = appLauncher;
       this.blocks.profile.ProfileClass = Profile;
-      this.search = Search;
+      this.Search = Search;
       resolve();
     });
     return this.ready;
@@ -202,16 +191,25 @@ class Gnav {
   };
 
   loadSearch = () => {
-    if (this.blocks?.search?.instance) return this.loadDelayed();
+    if (this.blocks?.search?.instance) return null;
+
     return this.loadDelayed().then(() => {
-      // TODO: figure out if instance is actually needed for further use
-      this.blocks.search.instance = new this.search(this.blocks.search.config);
+      this.blocks.search.instance = new this.Search(this.blocks.search.config);
     });
   };
 
   mobileToggle = () => {
     const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`;
-    const onMediaChange = (e) => e.matches && this.el.classList.remove(IS_OPEN);
+    const onMediaChange = (e) => {
+      if (e.matches) {
+        this.el.classList.remove(IS_OPEN);
+        this.curtain.classList.remove(IS_OPEN);
+
+        if (this.blocks?.search?.instance) {
+          this.blocks.search.instance.clearSearchForm();
+        }
+      }
+    };
 
     // TODO: better bottom padding logic
     let eventTimeout;
@@ -231,11 +229,16 @@ class Gnav {
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
+        this.curtain.classList.remove(IS_OPEN);
+        if (this.blocks?.search?.instance) {
+          this.blocks.search.instance.clearSearchForm();
+        }
         this.desktop.removeEventListener('change', onMediaChange);
 
         this.mainNav.style.removeProperty('padding-bottom');
       } else {
         this.el.classList.add(IS_OPEN);
+        this.curtain.classList.add(IS_OPEN);
         this.desktop.addEventListener('change', onMediaChange);
         this.loadSearch();
 
@@ -289,79 +292,124 @@ class Gnav {
 
   decorateMainNav = () => {
     this.mainNav = toFragment`<div class="feds-nav"></div>`;
-    const links = this.body.querySelectorAll('h2 > a');
-    links.forEach((link, i) => this.mainNav.appendChild(this.navLink(link, i)));
-    this.mainNav.appendChild(this.decorateCta());
+    // TODO: add secondary CTA option
+    // TODO: add Localnav logic
+    const items = this.body.querySelectorAll('h2, strong > a');
+    items.forEach((item, index) => this.mainNav.appendChild(this.decorateMainNavItem(item, index)));
+
     return this.mainNav;
   };
 
-  navLink = (navLink, idx) => {
-    navLink.href = localizeLink(navLink.href);
-    const navBlock = navLink.closest('.large-menu');
-    const menu = navLink.closest('div');
-    menu.querySelector('h2').remove();
-
-    const hasMenu = menu.childElementCount > 0 || navBlock ? ' has-menu' : '';
-    const largeMenu = navBlock ? ' large-menu' : '';
-    const sectionMenu = navBlock?.classList.contains('section')
-      ? ' section-menu'
-      : '';
-
-    // All menu types
-    if (hasMenu) {
-      const id = `navmenu-${idx}`;
-      menu.id = id;
-      setNavLinkAttributes(id, navLink);
-    }
-
-    const navItem = toFragment`
-      <div class="gnav-navitem${hasMenu}${largeMenu}${sectionMenu}">
-        ${navLink}
-      </div>
-    `;
-
-    let decorating;
-    const decorate = async (event) => {
-      if (event) event.preventDefault();
-      if (decorating) return;
-      decorating = true;
-      await this.loadDelayed();
-      // Small and medium menu types
-      if (menu.childElementCount > 0) {
-        navItem.appendChild(this.decorateMenu(navItem, navLink, menu, this.menuControls));
-      }
-
-      // Large Menus & Section Nav
-      if (navBlock) await this.decorateLargeMenu(navLink, navItem, menu, this.menuControls);
-
-      navLink.removeEventListener('click', decorate);
-      if (event) navLink.click();
-    };
-
-    // Load the menu as fast as possible if it has been clicked
-    if (menu.childElementCount > 0 || navBlock) {
-      navLink.addEventListener('click', decorate);
-      setTimeout(decorate, 3000);
-    }
-
-    return navItem;
+  // eslint-disable-next-line class-methods-use-this
+  getMainNavItemType = (item) => {
+    const itemTopParent = item.closest('div');
+    const hasSyncDropdown = itemTopParent instanceof HTMLElement
+      && itemTopParent.childElementCount > 1;
+    if (hasSyncDropdown) return 'syncDropdownTrigger';
+    const hasAsyncDropdown = itemTopParent instanceof HTMLElement
+      && itemTopParent.closest('.large-menu') instanceof HTMLElement;
+    if (hasAsyncDropdown) return 'asyncDropdownTrigger';
+    const isPrimaryCta = item.closest('strong') instanceof HTMLElement;
+    if (isPrimaryCta) return 'primaryCta';
+    const isText = !(item.querySelector('a') instanceof HTMLElement);
+    if (isText) return 'text';
+    return 'link';
   };
 
-  decorateCta = () => {
-    const cta = this.body.querySelector('strong a');
-    const { origin } = new URL(cta.href);
-    return toFragment`
-      <strong class="gnav-cta">
-        <a 
-          href="${cta.getAttribute('href')}"
-          class="con-button blue button-M" 
-          daa-ll="${analyticsGetLabel(cta.textContent)}"
-          target="${origin === window.location.origin ? '' : '_blank'}"
-        >
-          ${cta.textContent}
-        </a>
-      </strong>
-    `;
+  decorateMainNavItem = (item, index) => {
+    const itemType = this.getMainNavItemType(item);
+
+    // All dropdown decoration is delayed
+    const delayDropdownDecoration = (template) => {
+      let decorationTimeout;
+
+      const decorateDropdown = async () => {
+        item.removeEventListener('click', decorateDropdown);
+        clearTimeout(decorationTimeout);
+        await this.loadDelayed();
+        this.decorateDropdown({
+          item,
+          template,
+          type: itemType,
+        });
+      };
+
+      item.addEventListener('click', decorateDropdown);
+      decorationTimeout = setTimeout(decorateDropdown, 3000);
+    };
+
+    // Decorate item based on its type
+    switch (itemType) {
+      case 'syncDropdownTrigger':
+      case 'asyncDropdownTrigger': {
+        const dropdownTrigger = toFragment`<a
+          href="#"
+          class="feds-navLink feds-navLink--hoverCaret"
+          role="button"
+          aria-expanded="false"
+          aria-haspopup="true"
+          daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
+          daa-lh="header|Open">
+            ${item.textContent.trim()}
+          </a>`;
+
+        const triggerTemplate = toFragment`
+          <div class="feds-navItem">
+            ${dropdownTrigger}
+          </div>`;
+        // TODO: move proper logic to accessibility,
+        // this is just for demo functionality purposes
+        dropdownTrigger.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          const openPopup = document.querySelector('.feds-navLink[aria-expanded = "true"]');
+
+          if (openPopup && openPopup !== dropdownTrigger) {
+            openPopup.setAttribute('aria-expanded', 'false');
+            openPopup.setAttribute('daa-lh', 'header|Open');
+          }
+
+          const currentState = dropdownTrigger.getAttribute('aria-expanded');
+
+          if (currentState === 'false') {
+            dropdownTrigger.setAttribute('aria-expanded', 'true');
+            dropdownTrigger.setAttribute('daa-lh', 'header|Close');
+          } else {
+            dropdownTrigger.setAttribute('aria-expanded', 'false');
+            dropdownTrigger.setAttribute('daa-lh', 'header|Open');
+          }
+        });
+        delayDropdownDecoration(triggerTemplate);
+        return triggerTemplate;
+      }
+      case 'primaryCta':
+        return toFragment`<div class="feds-navItem feds-navItem--centered">
+            ${decorateCta({ elem: item, index: index + 1 })}
+          </div>`;
+      case 'link': {
+        const linkElem = item.querySelector('a');
+        const navLink = toFragment`<a
+          href="${localizeLink(linkElem.href)}"
+          class="feds-navLink"
+          daa-ll="${getAnalyticsValue(linkElem.textContent, index + 1)}">
+            ${linkElem.textContent.trim()}
+          </a>`;
+
+        const linkTemplate = toFragment`
+          <div class="feds-navItem">
+            ${navLink}
+          </div>`;
+        return linkTemplate;
+      }
+      case 'text':
+        return toFragment`<div class="feds-navItem feds-navItem--centered">
+            ${item.textContent}
+          </div>`;
+      default:
+        return toFragment`<div class="feds-navItem feds-navItem--centered">
+            ${item}
+          </div>`;
+    }
   };
 
   decorateSearch = () => {
@@ -369,6 +417,7 @@ class Gnav {
 
     if (!searchBlock) return null;
 
+    this.blocks.search.config.curtain = this.curtain;
     this.blocks.search.config.parent = this.navWrapper;
 
     this.blocks.search.config.trigger = toFragment`
@@ -391,7 +440,6 @@ class Gnav {
 
     this.blocks.search.config.trigger.addEventListener('click', async () => {
       await this.loadSearch();
-      this.menuControls.toggleMenu(searchEl);
     });
 
     return searchEl;

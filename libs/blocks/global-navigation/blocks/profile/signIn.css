@@ -1,8 +1,8 @@
 .feds-signin {
-  color: #2C2C2C;
   padding: 11px var(--feds-spacing-utilityNav);
-  border-radius: var(--radius-utilityIcon);
+  border-radius: var(--feds-radius-utilityIcon);
   color: #4B4B4B;
+  white-space: nowrap;
 }
 
 .feds-signin-dropdown {

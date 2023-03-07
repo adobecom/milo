@@ -22,8 +22,9 @@ class Search {
   constructor(config) {
     this.icon = config.icon;
     this.trigger = config.trigger;
-    // TODO: could this elem be passed through config?
-    this.parent = this.trigger.closest('.feds-nav-wrapper');
+    this.parent = config.parent;
+    this.curtain = config.curtain;
+    this.isDesktop = window.matchMedia('(min-width: 900px)');
 
     this.init();
   }
@@ -32,6 +33,7 @@ class Search {
     await this.getLabels();
     this.decorate();
     this.addEventListeners();
+    this.toggleDropdown();
   }
 
   async getLabels() {
@@ -56,11 +58,19 @@ class Search {
       </aside>`;
 
     this.trigger.after(this.searchBar);
-    // TODO: better logic for focusing input on first open
-    this.input.focus();
+  }
+
+  clearSearchForm() {
+    this.input.value = '';
+    this.onSearchInput();
   }
 
   addEventListeners() {
+    // Toggle the dropdown when the trigger is clicked
+    this.trigger.addEventListener('click', () => {
+      this.toggleDropdown();
+    });
+
     this.input.addEventListener('input', () => {
       this.onSearchInput();
     });
@@ -69,8 +79,7 @@ class Search {
       if (e.code === 'Escape') {
         // Pressing ESC when input has value resets the results
         if (this.input.value.length) {
-          this.input.value = '';
-          this.onSearchInput();
+          this.clearSearchForm();
         } else {
           // TODO: hide search form and focus search trigger;
           // need the general Menu class to achieve this
@@ -87,12 +96,16 @@ class Search {
 
     // Clicking the clear button resets the results
     this.clearButton.addEventListener('click', () => {
-      this.input.value = '';
+      this.clearSearchForm();
       this.input.focus();
-      this.onSearchInput();
     });
 
-    // TODO: close results on device orientation change?
+    // Switching between a mobile and a desktop view
+    // should close the search dropdown
+    this.isDesktop.addEventListener('change', () => {
+      this.closeDropdown();
+    });
+
     // TODO: search menu should close on scroll, but this should happen from the general Menu logic
   }
 
@@ -235,6 +248,30 @@ class Search {
     return toFragment`<li>
       <a href="${Search.getHelpxLink(query)}" class="feds-search-result"><span>${this.labels.tryAdvancedSearch}</span></a>
     </li>`;
+  }
+
+  closeDropdown() {
+    this.clearSearchForm();
+    this.trigger.setAttribute('aria-expanded', 'false');
+    this.curtain.classList.remove('is-open');
+  }
+
+  openDropdown() {
+    this.trigger.setAttribute('aria-expanded', 'true');
+    this.curtain.classList.add('is-open');
+    if (this.isDesktop.matches) {
+      this.input.focus();
+    }
+  }
+
+  toggleDropdown() {
+    const isOpen = this.trigger.getAttribute('aria-expanded') === 'true';
+
+    if (isOpen) {
+      this.closeDropdown();
+    } else {
+      this.openDropdown();
+    }
   }
 
   static getHelpxLink(query) {
