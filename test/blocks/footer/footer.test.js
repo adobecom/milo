@@ -27,6 +27,10 @@ describe('Footer', () => {
     it('allows text without link', () => {
       expect(privacy.querySelector('li#no-link')).not.to.be.null;
     });
+
+    it('supports second line of text', () => {
+      expect(privacy.querySelector('p:nth-of-type(2)')).not.to.be.null;
+    });
   });
 
   describe('copyright p', async () => {
