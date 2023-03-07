@@ -458,8 +458,8 @@ export function decorateLinks(el) {
     if (a.href.includes('#_dnb')) {
       a.href = a.href.split('#')[0];
     } else {
-      const autoBLock = decorateAutoBlock(a);
-      if (autoBLock) {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
         rdx.push(a);
       }
     }

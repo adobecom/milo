@@ -62,7 +62,7 @@ describe('Utils', () => {
         );
       });
 
-      it('Auto block works as expected when #_dnb in not added to url', () => {
+      it('Auto block works as expected when #_dnb is not added to url', () => {
         const autoBlockLink = document.querySelector(
           '[href="https://twitter.com/Adobe"]'
         );
