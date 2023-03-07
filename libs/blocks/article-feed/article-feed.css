@@ -76,6 +76,7 @@ element {
 .filter-button {
   padding: 0.5rem 0.75rem;
   background: var(--color-white);
+  color: var(--text-color);
   border: 1px solid var(--color-gray-200);
   border-radius: 4px;
   cursor: pointer;
@@ -97,6 +98,8 @@ element {
 .filter-button:hover,
 .filter-button:focus {
   outline: 2px solid black;
+  color: var(--text-color);
+  text-decoration: none;
 }
 
 .filter-button::after {
@@ -273,6 +276,8 @@ element {
 .selected-filter:hover,
 .selected-filter:focus {
   outline: 1px solid black;
+  color: var(--text-color);
+  text-decoration: none;
 }
 
 /* BUTTON */
@@ -319,7 +324,7 @@ element {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  height: 100vh;
+  height: 40vh;
 }
 
 .article-feed .article-cards-empty p {
@@ -333,6 +338,7 @@ element {
 /* CURTAIN */
 
 .filter-curtain {
+  display: block;
   position: fixed;
   top: 0;
   right: 0;

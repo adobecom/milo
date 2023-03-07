@@ -11,13 +11,16 @@
  */
 /* eslint-disable no-use-before-define */
 
-import getConfig from './config.js';
+import { getConfig } from './config.js';
 import {
   createTag,
+  fetchProjectFile,
+  getAnchorHtml,
+  getLinkOrDisplayText,
   getPathFromUrl,
   loadingOFF,
   loadingON,
-  setStatus, simulatePreview, stripExtension,
+  setStatus, showButtons, simulatePreview, stripExtension,
 } from './utils.js';
 import {
   saveFile,
@@ -95,10 +98,6 @@ async function createTableWithHeaders(config) {
   await appendLanguages($tr, config, projectDetail.translationProjects);
   $table.appendChild($tr);
   return $table;
-}
-
-function getAnchorHtml(url, text) {
-  return `<a href="${url}" target="_new">${text}</a>`;
 }
 
 function getSharepointStatus(doc) {
@@ -214,21 +213,6 @@ async function rolloutAll(projectInfo) {
   if (failedRollouts.length > 0) {
     loadingON(`Rollout failed for <br/> ${failedRollouts.flat(1).join('<br/>')}`);
   }
-}
-
-function getLinkedPagePath(spShareUrl, pagePath) {
-  return getAnchorHtml(spShareUrl.replace('<relativePath>', pagePath), pagePath);
-}
-
-function getLinkOrDisplayText(spViewUrl, docStatus) {
-  const pathOrMsg = docStatus.msg;
-  return docStatus.hasSourceFile ? getLinkedPagePath(spViewUrl, pathOrMsg) : pathOrMsg;
-}
-
-function showButtons(buttonIds) {
-  buttonIds.forEach((buttonId) => {
-    document.getElementById(buttonId).classList.remove('hidden');
-  });
 }
 
 function hideButtons(buttonIds) {
@@ -408,7 +392,7 @@ async function handleEnglishCopyProjects(langstoreEnFiles) {
     }
     statusValues.push(
       [projectInfo.language, projectInfo.status, projectInfo.status, projectInfo.status,
-        projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
+      projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
     );
     loadingON(`Updated status for project ${projectInfo.language}...`);
   });
@@ -513,14 +497,6 @@ async function startProject() {
   } catch (error) {
     loadingON(`Error occurred when starting the project ${error.message}`);
   }
-}
-
-async function fetchProjectFile(url, retryAttempt) {
-  const response = await fetch(url);
-  if (!response.ok && retryAttempt <= MAX_RETRIES) {
-    await fetchProjectFile(url, retryAttempt + 1);
-  }
-  return response;
 }
 
 async function reloadProjectFile() {

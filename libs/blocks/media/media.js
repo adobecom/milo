@@ -19,10 +19,10 @@ import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
 const blockTypeSizes = {
-  small: ['XS', 'S', 'M'],
-  medium: ['M', 'S', 'M'],
-  large: ['XL', 'M', 'L'],
-  xlarge: ['XXL', 'M', 'L'],
+  small: ['xs', 's', 'm'],
+  medium: ['m', 's', 'm'],
+  large: ['xl', 'm', 'l'],
+  xlarge: ['xxl', 'm', 'l'],
 };
 
 export default function init(el) {

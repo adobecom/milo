@@ -97,7 +97,6 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
@@ -236,23 +235,22 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlPostfix(area = document) {
-  const config = getConfig();
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = config.autoBlocks
+  const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const relativeAutoBlocks = autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
-
-  const { htmlExclude = [] } = getConfig();
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || href.endsWith('/')
       || href === pageUrl.origin
-      || htmlExclude.includes(href)
-      || HAS_EXTENSION.test(href.split('/').pop())) {
+      || HAS_EXTENSION.test(href.split('/').pop())
+      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
       return true;
     }
     const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
@@ -380,35 +378,34 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const altTextFlagIndex = textContent.indexOf('|');
-  const sanitizedTextContent = altTextFlagIndex === -1
-    ? textContent
-    : textContent?.slice(0, altTextFlagIndex).trim();
-  const ext = sanitizedTextContent?.substring(sanitizedTextContent.lastIndexOf('.') + 1);
-  if (ext !== 'svg') return;
-
-  const altText = altTextFlagIndex === -1
-    ? ''
-    : textContent.substring(textContent.indexOf('|') + 1).trim();
-  const img = document.createElement('img');
-  img.setAttribute('loading', 'lazy');
-  img.src = localizeLink(sanitizedTextContent);
-  img.alt = altText;
-  const pic = document.createElement('picture');
-  pic.append(img);
-
+  if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
   try {
-    const textContentUrl = new URL(sanitizedTextContent);
-    const hrefUrl = new URL(href);
-    if (textContentUrl?.pathname === hrefUrl?.pathname) {
+    // Mine for URL and alt text
+    const splitText = textContent.split('|');
+    const textUrl = new URL(splitText.shift().trim());
+    const altText = splitText.join('|').trim();
+
+    // Relative link checking
+    const hrefUrl = a.href.startsWith('/')
+      ? new URL(`${window.location.origin}${a.href}`)
+      : new URL(a.href);
+
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+
+    const img = createTag('img', { loading: 'lazy', src });
+    if (altText) img.alt = altText;
+    const pic = createTag('picture', null, img);
+
+    if (textUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
-    } else {
-      a.textContent = '';
-      a.append(pic);
+      return pic;
     }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log('Failed to load svg.', err.message);
+    a.textContent = '';
+    a.append(pic);
+    return a;
+  } catch (e) {
+    console.log('Failed to create SVG.', e.message);
+    return a;
   }
 }
 
@@ -528,7 +525,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
@@ -596,7 +593,24 @@ export async function loadDeferred(area, blocks, config) {
 }
 
 export function loadPrivacy() {
-  window.fedsConfig = { privacy: { otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db' } };
+  const domains = {
+    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
+  };
+  const currentDomain = Object.keys(domains)
+    .find((domain) => window.location.host.includes(domain)) || domains[0];
+  let domainId = domains[currentDomain];
+  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
+  if (getConfig().env.name === 'stage') {
+    domainId += '-test';
+  }
+  window.fedsConfig = {
+    privacy: {
+      otDomainId: domainId,
+      documentLanguage: true,
+    },
+  };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
   const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
@@ -628,9 +642,8 @@ function decorateMeta() {
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
-      window.lana.log('Cannot make URL from metadata');
     } catch (e) {
-      // Not a valid URL.
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
 }
@@ -741,7 +754,7 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {
