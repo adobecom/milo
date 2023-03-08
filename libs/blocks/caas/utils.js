@@ -269,7 +269,7 @@ export const getConfig = async (state, strs = {}) => {
         state.endpoint
       }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
         ',',
-      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&hideCtaIds=${hideCtaIds}&environment=&draft=${
+      )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
@@ -308,6 +308,7 @@ export const getConfig = async (state, strs = {}) => {
       ctaAction: state.ctaAction,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
+    hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,

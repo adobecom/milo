@@ -90,7 +90,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&hideCtaIds=&environment=&draft=false&size=10';
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -104,7 +104,7 @@
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&hideCtaIds=&environment=&draft=false&size=10'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         expect(config).to.eql(expectedConfig);
       });
 
@@ -116,7 +116,7 @@
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.country = 'ca';
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&hideCtaIds=&environment=&draft=false&size=10'
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         await delay(50)
         expect(config).to.eql(expectedConfig);
       });
@@ -133,7 +133,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&hideCtaIds=&environment=&draft=false&size=10&flatFile=false';
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
         expectedConfig.target.enabled = true;
         expect(config).to.eql(expectedConfig);
       });
@@ -157,7 +157,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&hideCtaIds=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -173,8 +173,24 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=featured-card-id&hideCtaIds=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=featured-card-id&environment=&draft=false&size=10';
         expectedConfig.featuredCards = ['featured-card-id'];
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Can add cta ids to hide', async () => {
+        const hideCtaAdd = configPanelEl.querySelector('.hideCtaIds.multifield-add');
+        hideCtaAdd.click();
+
+        const contentIdEl = await waitForElement('#contentId');
+        contentIdEl.value = 'hide-cta-id';
+        contentIdEl.dispatchEvent(new Event('change'));
+        await delay(150);
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        expectedConfig.hideCtaIds = ['hide-cta-id'];
         expect(config).to.eql(expectedConfig);
       });
 
