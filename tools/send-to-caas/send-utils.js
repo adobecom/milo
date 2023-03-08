@@ -249,6 +249,14 @@ const getTags = (s) => {
 const getDateProp = (dateStr, errorMsg) => {
   if (!dateStr) return undefined;
   try {
+    if (dateStr.length === 10) {
+      const [m, d, y] = dateStr.split('-');
+      if (m > 12) {
+        // must be in day-month-year format
+        // eslint-disable-next-line no-param-reassign
+        dateStr = `${d}-${m}-${y}`;
+      }
+    }
     const date = new Date(dateStr);
     if (date.getFullYear() < 2000) return { error: `${errorMsg} - Date is before the year 2000` };
     return date.toISOString();
@@ -396,6 +404,21 @@ const getCountryAndLang = async (options) => {
   };
 };
 
+const parseCardMetadata = () => {
+  const pageMd = {};
+  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  if (mdEl) {
+    mdEl.childNodes.forEach((n) => {
+      const key = n.children?.[0]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent;
+      if (!key) return;
+
+      pageMd[key] = val;
+    });
+  }
+  return pageMd;
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -428,8 +451,12 @@ const props = {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
     }
+    const cardDate = parseCardMetadata()?.carddate;
+    if (cardDate) {
+      return getDateProp(cardDate, `Invalid Date: ${cardDate}`);
+    }
 
-    const pubDate = getMetaContent('name', 'publication-date');
+    const pubDate = getMetaContent('name', 'publishdate') || getMetaContent('name', 'publication-date');
     const { doc, lastModified } = getConfig();
     return pubDate
       ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
@@ -575,21 +602,6 @@ const getCaaSMetadata = async (pageMd, options) => {
   }
 
   return { caasMetadata: md, errors, tags, tagErrors };
-};
-
-const parseCardMetadata = () => {
-  const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
-  if (mdEl) {
-    mdEl.childNodes.forEach((n) => {
-      const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
-      if (!key) return;
-
-      pageMd[key] = val;
-    });
-  }
-  return pageMd;
 };
 
 const getCardMetadata = async (options) => {
