@@ -11,8 +11,7 @@ function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-async function getStatus(suppliedPath) {
-  const url = new URL(suppliedPath);
+async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
@@ -23,44 +22,44 @@ async function getStatus(suppliedPath) {
   return { url, edit, preview, live };
 }
 
-function findLinks(parent, selector) {
-  return [...parent.querySelectorAll(selector)].map((el) => {
-    const { modalPath, modalHash, path: fragmentPath } = el.dataset;
-    let dataPath = modalPath ? `${modalPath}${modalHash}` : fragmentPath;
-    // Find out if this is a fully qualified URL
-    try {
-      const url = new URL(dataPath);
-      dataPath = url.pathname;
-    } catch (e) {
-      // not a fully qualified URL
-    }
-    let path = dataPath ? `${window.location.origin}${dataPath}` : el.href;
-    path = path.endsWith('/') ? `${path}index` : path;
-    return getStatus(path);
+function getStatuses() {
+  Object.keys(content.value).forEach((key) => {
+    content.value[key].items.forEach((item, idx) => {
+      getStatus(item.url).then((status) => {
+        content.value[key].items[idx] = status;
+        content.value = { ...content.value };
+      });
+    });
   });
+}
+
+function getUrl(el) {
+  const { modalPath, modalHash, path: fragmentPath } = el.dataset;
+  const dataPath = modalPath ? `${modalPath}${modalHash}` : fragmentPath;
+  try {
+    return new URL(dataPath);
+  } catch {
+    const path = dataPath ? `${window.location.origin}${dataPath}` : el.href;
+    return new URL(path);
+  }
+}
+
+function findLinks(selector) {
+  return [...document.body.querySelectorAll(selector)]
+    .map((el) => ({ url: getUrl(el), edit: null, preview: 'Fetching', live: 'Fetching' }));
 }
 
 async function setContent() {
   if (content.value.page) return;
-  const main = document.querySelector('main');
-  const header = document.querySelector('header');
 
-  const page = await getStatus(window.location.href);
-  const fragments = await Promise.all(findLinks(main, '.fragment, a[data-modal-path]'));
-  const links = await Promise.all(findLinks(main, 'a[href^="/"'));
-
-  const tmp = {
-    page: { items: [page] },
-    fragments: { items: fragments },
-    links: { items: links },
+  content.value = {
+    page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
+    fragments: { items: findLinks('main .fragment, a[data-modal-path]') },
+    links: { items: findLinks('main a[href^="/"') },
+    nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
 
-  if (header) {
-    const navLinks = await Promise.all(findLinks(header, 'a[href^="/"'));
-    tmp.nav = { items: navLinks, closed: true };
-  }
-
-  content.value = tmp;
+  getStatuses();
 }
 
 async function handleAction(action) {
@@ -123,12 +122,13 @@ function prettyPath(url) {
 
 function Item({ name, item, idx }) {
   const isChecked = item.checked ? ' is-checked' : '';
+  const isFetching = item.edit ? '' : ' is-fetching';
 
   return html`
-    <div class="preflight-group-row preflight-group-detail${isChecked}"
+    <div class="preflight-group-row preflight-group-detail${isChecked}${isFetching}"
       onClick=${(e) => handleChange(e.target, name, idx)}>
       <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
-      <p><a href=${item.edit} class=preflight-edit target=_blank>EDIT</a></p>
+      <p>${item.edit && html`<a href=${item.edit} class=preflight-edit target=_blank>EDIT</a>`}</p>
       <p class=preflight-date-wrapper>${item.action === 'preview' ? 'Previewing' : prettyDate(item.preview)}</p>
       <p class=preflight-date-wrapper>${item.action === 'live' ? 'Publishing' : prettyDate(item.live)}</p>
     </div>`;
