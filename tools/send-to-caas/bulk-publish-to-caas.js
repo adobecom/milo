@@ -19,7 +19,7 @@ import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly']; // , 'usepreview'];
+const FIELDS_CB = ['draftOnly', 'usepreview'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
   excelFile: '',
@@ -30,7 +30,7 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
-  // usepreview: false,
+  usepreview: false,
 };
 
 const fetchExcelJson = async (url) => {
@@ -108,7 +108,7 @@ const processData = async (data, accessToken) => {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
 
       const { pathname } = new URL(rawUrl);
-      const pageUrl = `${domain}${pathname}`;
+      const pageUrl = usepreview ? `${domain}${pathname.replace('.html', '')}` : `${domain}${pathname}`;
       const prodUrl = `${host}${pathname}`;
 
       index += 1;
@@ -222,7 +222,7 @@ const init = async () => {
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
-      // usepreview: document.getElementById('usepreview').checked,
+      usepreview: document.getElementById('usepreview').checked,
     });
     bulkPublish();
   });
