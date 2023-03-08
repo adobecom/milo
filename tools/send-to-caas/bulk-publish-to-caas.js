@@ -218,6 +218,7 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
+      caasEnv: document.getElementById('caasEnv').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
