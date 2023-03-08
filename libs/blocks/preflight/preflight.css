@@ -123,12 +123,9 @@ p.preflight-content-heading-edit {
 }
 
 .preflight-group-row.preflight-group-detail {
+  position: relative;
   box-sizing: border-box;
   min-height: 60px;
-  background-image: url('./img/empty.svg');
-  background-repeat: no-repeat;
-  background-size: 32px;
-  background-position: 20px 50%;
 }
 
 .preflight-group-row.preflight-group-detail:hover {
@@ -144,10 +141,30 @@ p.preflight-content-heading-edit {
   text-decoration: underline;
 }
 
-.preflight-group-row.preflight-group-detail.is-checked {
+.preflight-group-row.preflight-group-detail::before {
+  content: '';
+  background-image: url(./img/empty.svg);
+  background-repeat: no-repeat;
+  background-size: 32px;
+  background-position: 50%;
+  position: absolute;
+  left: 18px;
+  width: 32px;
+  top: 0;
+  bottom: 0;
+}
+
+.preflight-group-row.preflight-group-detail.is-checked::before {
   background-image: url('./img/check.svg');
   background-repeat: no-repeat;
   font-weight: 700;
+}
+
+.preflight-group-row.preflight-group-detail.is-fetching::before {
+  background-image: url('./img/purple-working.svg');
+  background-repeat: no-repeat;
+  font-weight: 700;
+  animation: spin 2s linear infinite;
 }
 
 a.preflight-edit {
