@@ -269,7 +269,7 @@ export function getLinkForTopic(topic, path) {
     console.warn(`Trying to get a link for an unknown topic: ${topic} ${path ? `on page ${path}` : '(current page)'}`);
   }
 
-  return `<a href="${catLink ?? ''}" ${catLink ?? `data-topic-link="${topic}"`}>${titleSubs[topic] ?? topic}</a>`;
+  return `<a href="${catLink ?? ''}" ${!catLink ? `data-topic-link="${topic}"` : ''}>${titleSubs[topic] ?? topic}</a>`;
 }
 
 /**
