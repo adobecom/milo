@@ -50,6 +50,7 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -71,6 +72,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
   local: {
@@ -431,6 +433,11 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -456,10 +463,14 @@ export async function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
-    const autoBLock = decorateAutoBlock(a);
-    decorateLinkToButton(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      decorateLinkToButton(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
