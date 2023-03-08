@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -66,13 +66,13 @@ function decorateText(el, size) {
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
+  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
 }
 
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
 
 export default function init(el) {
@@ -102,6 +102,7 @@ export default function init(el) {
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
+  decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);
@@ -112,7 +113,7 @@ export default function init(el) {
       foreground.insertAdjacentElement('beforebegin', media);
     }
     if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-S' }, media.lastChild.textContent);
+      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');

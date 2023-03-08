@@ -1,6 +1,7 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
-import { getSectionMetadata } from '../section-metadata/section-metadata.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
+import { decorateCommerce } from '../../features/merch.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -19,8 +20,10 @@ const getCardType = (styles) => {
 };
 
 const getUpFromSectionMetadata = (section) => {
-  const sectionMetadata = getSectionMetadata(section.querySelector('.section-metadata'));
-  const styles = sectionMetadata.style?.split(', ').map((style) => style.replaceAll(' ', '-'));
+  const sectionMetadata = section.querySelector('.section-metadata');
+  if (!sectionMetadata) return null;
+  const metadata = getMetadata(sectionMetadata);
+  const styles = metadata.style?.text.split(', ').map((style) => style.replaceAll(' ', '-'));
   return styles?.find((style) => style.includes('-up'));
 };
 
@@ -89,10 +92,11 @@ const addInner = (el, cardType, card) => {
   text?.classList.add(`consonant-${cardType}-text`);
 };
 
-const addFooter = (links, container) => {
+const addFooter = (links, container, merch) => {
   const linksArr = Array.from(links);
   const linksLeng = linksArr.length;
-  let footer = `<div class="consonant-CardFooter"><div class="consonant-CardFooter-row" data-cells="${linksLeng}">`;
+  const hrTag = merch ? '<hr>' : '';
+  let footer = `<div class="consonant-CardFooter">${hrTag}<div class="consonant-CardFooter-row" data-cells="${linksLeng}">`;
   footer = linksArr.reduce(
     (combined, link, index) => (
       `${combined}<div class="consonant-CardFooter-cell consonant-CardFooter-cell--${(linksLeng === 2 && index === 0) ? 'left' : 'right'}">${link.outerHTML}</div>`),
@@ -113,9 +117,11 @@ const init = (el) => {
   section.classList.add('milo-card-section');
   const row = el.querySelector(':scope > div');
   const picture = el.querySelector('picture');
-  const links = el.querySelectorAll('a');
   const styles = Array.from(el.classList);
   const cardType = getCardType(styles);
+  const merch = styles.includes('merch') && cardType === HALF;
+  const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
+    .querySelectorAll('a') : el.querySelectorAll('a');
   let card = el;
 
   addWrapper(el, section, cardType);
@@ -145,7 +151,12 @@ const init = (el) => {
   decorateButtons(el);
 
   if (cardType === HALF || cardType === PRODUCT) {
-    addFooter(links, row);
+    addFooter(links, row, merch);
+  }
+
+  if (merch) {
+    const merchLinks = el.querySelectorAll('a[href*="tools/ost?osi="], a[href*="tools/ost/?osi="]');
+    decorateCommerce(merchLinks);
   }
 };
 

@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
+import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import {
   loadTingleModalFiles,
   showAlert,
@@ -18,7 +19,7 @@ import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly', 'usepreview'];
+const FIELDS_CB = ['draftOnly']; // , 'usepreview'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
   excelFile: '',
@@ -29,7 +30,7 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
-  usepreview: false,
+  // usepreview: false,
 };
 
 const fetchExcelJson = async (url) => {
@@ -42,7 +43,7 @@ const fetchExcelJson = async (url) => {
 };
 
 const checkIms = async () => {
-  const accessToken = await getImsToken();
+  const accessToken = await getImsToken(loadScript);
   if (!accessToken) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
@@ -197,7 +198,7 @@ const loadFromLS = () => {
 };
 
 const init = async () => {
-  await loadTingleModalFiles();
+  await loadTingleModalFiles(loadScript, loadStyle);
   await loadCaasTags();
   loadFromLS();
 
@@ -221,7 +222,7 @@ const init = async () => {
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
-      usepreview: document.getElementById('usepreview').checked,
+      // usepreview: document.getElementById('usepreview').checked,
     });
     bulkPublish();
   });

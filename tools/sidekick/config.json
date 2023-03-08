@@ -18,6 +18,15 @@
       "includePaths": [ "**/:x**" ]
     },
     {
+      "id": "floodgate",
+      "title": "Floodgate",
+      "environments": [ "edit" ],
+      "url": "/tools/floodgate/index.html?project=milo--adobecom",
+      "passReferrer": true,
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
+    },
+    {
       "title": "Send to CaaS",
       "id": "sendtocaas",
       "environments": ["dev","preview", "live", "prod"],
@@ -39,6 +48,12 @@
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 398px; width: 360px;",
       "url": "/tools/library",
       "includePaths": [ "**.docx**" ]
+    },
+    {
+      "title": "Preflight",
+      "id": "preflight",
+      "environments": ["dev", "preview", "live"],
+      "event": "preflight"
     }
   ]
 }

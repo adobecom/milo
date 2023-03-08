@@ -33,6 +33,7 @@ const {
   pieTooltipFormatter,
   pieSeriesOptions,
   getOversizedNumberSize,
+  getLabelDegree,
 } = await import('../../../libs/blocks/chart/chart.js');
 
 const config = { codeRoot: '/libs' };
@@ -433,35 +434,35 @@ describe('chart', () => {
   });
 
   it('getChartOptions', () => {
-    expect(typeof getChartOptions()).to.equal('object');
+    expect(typeof getChartOptions({})).to.equal('object');
   });
 
   it('getChartOptions tooltipFormatter', () => {
-    const options = getChartOptions();
+    const options = getChartOptions({});
     expect(typeof options.tooltip.formatter([{ seriesName: '', name: '', value: [''], encode: { y: [1] }, marker: '' }])).to.equal('string');
   });
 
   it('getChartOptions barTooltipFormatter', () => {
-    const options = getChartOptions('bar');
+    const options = getChartOptions({ chartType: 'bar' });
     expect(typeof options.tooltip.formatter({ seriesName: '', marker: '', value: [''], encode: {}, name: '' })).to.equal('string');
   });
 
   it('getChartOptions donutTooltipFormatter', () => {
-    const options = getChartOptions('donut');
+    const options = getChartOptions({ chartType: 'donut' });
     expect(typeof options.tooltip.formatter({ marker: '*', data: [''], encode: { value: [0] }, name: 'Mobile', percent: 0 }, '')).to.equal('string');
   });
 
   it('getChartOptions pieTooltipFormatter', () => {
-    const options = getChartOptions('pie');
+    const options = getChartOptions({ chartType: 'pie' });
     expect(typeof options.tooltip.formatter({ marker: '*', data: [''], encode: { value: [0] }, name: 'Chrome' }, '')).to.equal('string');
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    expect(typeof getChartOptions('bar')).to.equal('object');
+    expect(typeof getChartOptions({ chartType: 'bar' })).to.equal('object');
   });
 
   it('getChartOptions axisLabel formatter', () => {
-    const options = getChartOptions('', null, null, null, null, null, ['k', 'm']);
+    const options = getChartOptions({ processedData: { units: ['k', 'm'] } });
     expect(typeof options.yAxis[0].axisLabel.formatter()).to.equal('string');
   });
 
@@ -703,5 +704,48 @@ describe('chart', () => {
 
   it('getOversizedNumberSize returns miniumum size for more than 6 characters', () => {
     expect(getOversizedNumberSize(100)).to.eql([90, 55, 65]);
+  });
+
+  it('Horizontal is the default label orientation', () => {
+    document.body.innerHTML = '<div class="chart line"></div>';
+    const styles = document.querySelector('.chart').classList;
+    expect(getLabelDegree(styles, true)).to.equal(0);
+  });
+
+  it('Sets degree for diagonal labels', () => {
+    document.body.innerHTML = '<div class="chart line mobile-diagonal-labels"></div>';
+    const styles = document.querySelector('.chart').classList;
+    expect(getLabelDegree(styles, false)).to.be.above(0);
+  });
+
+  it('sets default grid bottom', () => {
+    const options = getChartOptions({});
+    expect(options.grid.bottom).to.equal(90);
+  });
+
+  it('sets grid bottom for large chart with default labels', () => {
+    const options = getChartOptions({ size: 'large' });
+    expect(options.grid.bottom).to.equal(60);
+  });
+
+  it('sets grid bottom for large chart with diagonal labels', () => {
+    const options = getChartOptions({ size: 'large', labelDeg: 60 });
+    expect(options.grid.bottom).to.equal(30);
+  });
+
+  it('sets grid bottom for non-large chart with diagonal labels', () => {
+    const options = getChartOptions({ size: 'small', labelDeg: 60 });
+    expect(options.grid.bottom).to.equal(40);
+  });
+
+  it('adds subheading from data file', async () => {
+    document.body.innerHTML = '<div class="chart"><div>Title</div><div>Subtitle</div><div><div><a href="/drafts/data-viz/chart.json"></a></div></div><div>Footnote</div></div>';
+    const el = document.querySelector('.chart');
+    const data = await readFile({ path: './mocks/lineChartSubheading.json' });
+    fetch.withArgs(el.getElementsByTagName('a')[0].href).resolves({ ok: true, json: () => JSON.parse(data) });
+    el.classList.add('line');
+    init(el);
+    const subheading = await waitForElement('.subheading');
+    expect(subheading).to.exist;
   });
 });

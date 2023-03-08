@@ -1,5 +1,6 @@
-import { createTag, getMetadata, localizeLink } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
+const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
     <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
@@ -8,34 +9,30 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
   </g>
 </svg>`;
 
-function getDetails(el) {
-  const details = { id: window.location.hash.replace('#', '') };
-  const a = el || document.querySelector(`a[data-modal-hash="${window.location.hash}"]`);
-  if (a) {
-    details.path = a.dataset.modalPath;
-    return details;
-  }
-  const metaPath = getMetadata(`-${details.id}`);
-  if (metaPath) {
-    details.path = localizeLink(metaPath);
-    return details;
-  }
-  return null;
+function findDetails(hash, el) {
+  const id = hash.replace('#', '');
+  const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
+  const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
+  return { id, path, isHash: hash === window.location.hash };
 }
 
-function closeModals(modals) {
-  const qModals = modals || Array.from(document.querySelectorAll('.dialog-modal'));
-  if (qModals?.length) {
-    const anchor = qModals.some((m) => m.classList.contains('anchor'));
-    qModals.forEach((modal) => {
-      if (modal.nextElementSibling?.classList.contains('modal-curtain')) {
-        modal.nextElementSibling.remove();
-      }
-      modal.remove();
-      document.querySelector(`[data-modal-hash="#${modal.id}"]`)?.focus();
-    });
-    if (anchor) { window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`); }
-  }
+function closeModal(modal) {
+  const { id } = modal;
+  const closeEvent = new Event('milo:modal:closed');
+  window.dispatchEvent(closeEvent);
+
+  document.querySelectorAll(`#${id}`).forEach((mod) => {
+    if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
+      mod.nextElementSibling.remove();
+    }
+    if (mod.classList.contains('dialog-modal')) {
+      mod.remove();
+    }
+    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+  });
+
+  const hashId = window.location.hash.replace('#', '');
+  if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
 }
 
 function isElementInView(element) {
@@ -48,44 +45,42 @@ function isElementInView(element) {
   );
 }
 
-function handleCustomModal(custom, dialog) {
-  dialog.id = custom.id;
-  dialog.classList.add(custom.class);
+function getCustomModal(custom, dialog) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
+  if (custom.id) dialog.id = custom.id;
+  if (custom.class) dialog.classList.add(custom.class);
   if (custom.closeEvent) {
     dialog.addEventListener(custom.closeEvent, () => {
-      closeModals([dialog]);
+      closeModal(dialog);
     });
   }
-  return custom.content;
+  dialog.append(custom.content);
 }
 
-async function handleAnchorModal(el, dialog) {
-  const details = getDetails(el);
-  if (!details) return null;
-
-  dialog.id = details.id;
-  dialog.classList.add('anchor');
-
-  const linkBlock = document.createElement('a');
-  linkBlock.href = details.path;
+async function getPathModal(path, dialog) {
+  const block = createTag('a', { href: path });
+  dialog.append(block);
 
   const { default: getFragment } = await import('../fragment/fragment.js');
-  await getFragment(linkBlock, dialog);
-
-  return linkBlock;
+  await getFragment(block);
 }
 
-export async function getModal(el, custom) {
-  const curtain = createTag('div', { class: 'modal-curtain is-open' });
-  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
-  const dialog = document.createElement('div');
-  dialog.className = 'dialog-modal';
+export async function getModal(details, custom) {
+  if (!(details?.path || custom)) return null;
 
-  const content = custom ? handleCustomModal(custom, dialog) : await handleAnchorModal(el, dialog);
-  if (!content) return;
+  const { id } = details || custom;
+
+  const dialog = createTag('div', { class: 'dialog-modal', id });
+  const loadedEvent = new Event('milo:modal:loaded');
+
+  if (custom) getCustomModal(custom, dialog);
+  if (details) await getPathModal(details.path, dialog);
+
+  const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
 
   const focusVisible = { focusVisible: true };
-  const focusablesOnLoad = [...dialog.querySelectorAll('a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]')];
+  const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
   const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
   let firstFocusable;
 
@@ -115,44 +110,56 @@ export async function getModal(el, custom) {
   });
 
   close.addEventListener('click', (e) => {
-    closeModals([dialog]);
+    closeModal(dialog);
     e.preventDefault();
-  });
-
-  curtain.addEventListener('click', (e) => {
-    // on click outside of modal
-    if (e.target === curtain) {
-      closeModals([dialog]);
-    }
   });
 
   dialog.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      closeModals([dialog]);
+      closeModal(dialog);
     }
   });
 
-  dialog.append(close, content);
+  dialog.append(close);
   document.body.append(dialog);
-  dialog.insertAdjacentElement('afterend', curtain);
   firstFocusable.focus(focusVisible);
+  window.dispatchEvent(loadedEvent);
+
+  if (!dialog.classList.contains('curtain-off')) {
+    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    curtain.addEventListener('click', (e) => {
+      if (e.target === curtain) closeModal(dialog);
+    });
+    dialog.insertAdjacentElement('afterend', curtain);
+  }
 
   return dialog;
 }
 
+// Deep link-based
 export default function init(el) {
   const { modalHash } = el.dataset;
   if (window.location.hash === modalHash) {
-    return getModal(el);
+    const details = findDetails(window.location.hash, el);
+    if (details) return getModal(details);
   }
   return null;
 }
 
-// First import will cause this side effect (on purpose)
-window.addEventListener('hashchange', () => {
+// Event-based modal
+window.addEventListener('modal:open', (e) => {
+  const details = findDetails(e.detail.hash);
+  if (details) getModal(details);
+});
+
+// Click-based modal
+window.addEventListener('hashchange', (e) => {
   if (!window.location.hash) {
-    closeModals();
+    const url = new URL(e.oldURL);
+    const dialog = document.querySelector(`.dialog-modal${url.hash}`);
+    if (dialog) closeModal(dialog);
   } else {
-    getModal();
+    const details = findDetails(window.location.hash, null);
+    if (details) getModal(details);
   }
 });

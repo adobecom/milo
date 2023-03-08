@@ -71,7 +71,7 @@ dl.accordion {
   content: "";
   display: block;
   position: absolute;
-  width: 2px; 
+  width: 2px;
   height: 12px;
   background: var(--color-gray-600);
   border-radius: 2px;
@@ -84,7 +84,7 @@ dl.accordion {
 }
 
 .accordion-icon::after {
-  width: 12px; 
+  width: 12px;
   height: 2px;
 }
 
@@ -92,7 +92,7 @@ dl.accordion {
   content: "";
   display: block;
   position: absolute;
-  width: 2px; 
+  width: 2px;
   height: 100%;
   left: 0;
   top: 0;
@@ -132,7 +132,7 @@ dl.accordion {
 }
 
 /* dark */
-.dark .accordion dt button, 
+.dark .accordion dt button,
 .darkest .accordion dt button {
   color: #fff;
 }

@@ -30,11 +30,24 @@
       <a href="http://adobe.com/test/"></a>
       <a href="http://google.com"></a>
     </div>
+    <div id="sameserverlinks-exclude">
+      <a href="http://localhost:2000/exclude/this/link"></a>
+      <a href="http://localhost:2000/jp/exclude/this/link"></a>
+      <a href="http://localhost:2000/ca_fr/exclude/this/link"></a>
+      <a href="http://localhost:2000/deep/path/exclude/this/link"></a>
+      <a href="http://localhost:2000/this/link/not/excluded"></a>
+    </div>
   </body>
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { appendHtmlPostfix, setConfig } from './../../libs/utils/utils.js';
+    setConfig({
+      htmlExclude: [
+        /localhost:2000\/exclude\/.*/,
+        /localhost:2000\/(\w\w|(\w\w_\w\w))\/exclude\/.*/,
+      ],
+    });
 
     runTests(() => {
       describe('htmlpostfix', () => {
@@ -81,6 +94,19 @@
           'http://adobe.com/test',
           'http://adobe.com/test/',
           'http://google.com',
+          ])
+        });
+
+        it('same server links in htmlExclude list not modified', async () => {
+          const links = document.getElementById('sameserverlinks-exclude');
+          appendHtmlPostfix(links);
+          const hrefs = [...links.querySelectorAll('a')].map(a => a.getAttribute('href'));
+          expect(hrefs).to.eql([
+          'http://localhost:2000/exclude/this/link',
+          'http://localhost:2000/jp/exclude/this/link',
+          'http://localhost:2000/ca_fr/exclude/this/link',
+          'http://localhost:2000/deep/path/exclude/this/link.html',
+          'http://localhost:2000/this/link/not/excluded.html',
           ])
         });
       });

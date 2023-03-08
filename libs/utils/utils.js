@@ -10,6 +10,8 @@ const MILO_BLOCKS = [
   'author-header',
   'caas',
   'caas-config',
+  'card',
+  'card-horizontal',
   'card-metadata',
   'carousel',
   'chart',
@@ -24,29 +26,36 @@ const MILO_BLOCKS = [
   'gnav',
   'how-to',
   'icon-block',
+  'iframe',
   'instagram',
   'marketo',
-  'card',
   'marquee',
   'media',
   'merch',
   'modal',
+  'modal-metadata',
   'pdf-viewer',
   'quote',
   'read-more',
   'recommended-articles',
+  'region-nav',
   'review',
   'section-metadata',
   'slideshare',
+  'preflight',
+  'promo',
   'tabs',
   'table-of-contents',
   'text',
+  'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
   'share',
+  'reading-time',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -63,6 +72,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
   local: {
@@ -89,7 +99,6 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
@@ -134,6 +143,7 @@ export const [setConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -148,6 +158,10 @@ export const [setConfig, getConfig] = (() => {
   ];
 })();
 
+export function isInTextNode(node) {
+  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -161,6 +175,8 @@ export function createTag(tag, attributes, html) {
       || html instanceof SVGElement
       || html instanceof DocumentFragment) {
       el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
     }
@@ -179,23 +195,28 @@ function getExtension(path) {
 }
 
 export function localizeLink(href, originHostName = window.location.hostname) {
-  const url = new URL(href);
-  const relative = url.hostname === originHostName;
-  const processedHref = relative ? href.replace(url.origin, '') : href;
-  const { hash } = url;
-  if (hash === '#_dnt') return processedHref.split('#')[0];
-  const path = url.pathname;
-  const extension = getExtension(path);
-  const allowedExts = ['', 'html', 'json'];
-  if (!allowedExts.includes(extension)) return processedHref;
-  const { locale, locales, productionDomain } = getConfig();
-  if (!locale || !locales) return processedHref;
-  const isLocalizable = relative || productionDomain === url.hostname;
-  if (!isLocalizable) return processedHref;
-  const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales).some((loc) => loc !== '' && path.startsWith(`/${loc}/`));
-  if (isLocalizedLink) return processedHref;
-  const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
-  return relative ? urlPath : `${url.origin}${urlPath}`;
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -219,25 +240,36 @@ export function appendHtmlPostfix(area = document) {
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = AUTO_BLOCKS
+  const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const relativeAutoBlocks = autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
-
-  const { htmlExclude = [] } = getConfig();
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || href.endsWith('/')
       || href === pageUrl.origin
-      || htmlExclude.includes(href)
-      || HAS_EXTENSION.test(href.split('/').pop())) {
+      || HAS_EXTENSION.test(href.split('/').pop())
+      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
       return true;
     }
     const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
     if (isAutoblockLink) return true;
     return false;
   };
+
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
 
   const links = area.querySelectorAll('a');
   links.forEach((el) => {
@@ -348,25 +380,43 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
-  if (ext !== 'svg') return;
-  const img = document.createElement('img');
-  img.src = localizeLink(textContent);
-  const pic = document.createElement('picture');
-  pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
+  if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
+  try {
+    // Mine for URL and alt text
+    const splitText = textContent.split('|');
+    const textUrl = new URL(splitText.shift().trim());
+    const altText = splitText.join('|').trim();
+
+    // Relative link checking
+    const hrefUrl = a.href.startsWith('/')
+      ? new URL(`${window.location.origin}${a.href}`)
+      : new URL(a.href);
+
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+
+    const img = createTag('img', { loading: 'lazy', src });
+    if (altText) img.alt = altText;
+    const pic = createTag('picture', null, img);
+
+    if (textUrl.pathname === hrefUrl.pathname) {
+      a.parentElement.replaceChild(pic, a);
+      return pic;
+    }
     a.textContent = '';
     a.append(pic);
+    return a;
+  } catch (e) {
+    console.log('Failed to create SVG.', e.message);
+    return a;
   }
 }
 
 export function decorateAutoBlock(a) {
+  const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return AUTO_BLOCKS.find((candidate) => {
+  return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
@@ -391,6 +441,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
@@ -398,7 +454,7 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -407,9 +463,13 @@ function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
-    const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
@@ -477,7 +537,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(config, regex, el.innerHTML);
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
 
 async function loadFooter() {
@@ -497,7 +557,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = section.querySelectorAll('div[class]:not(.content)');
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -530,6 +590,13 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
 
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
@@ -537,20 +604,38 @@ export async function loadDeferred(area, blocks, config) {
   });
 }
 
-function loadPrivacy() {
+export function loadPrivacy() {
+  const domains = {
+    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
+  };
+  const currentDomain = Object.keys(domains)
+    .find((domain) => window.location.host.includes(domain)) || domains[0];
+  let domainId = domains[currentDomain];
+  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
+  if (getConfig().env.name === 'stage') {
+    domainId += '-test';
+  }
   window.fedsConfig = {
     privacy: {
-      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
+      otDomainId: domainId,
+      documentLanguage: true,
     },
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
 }
 
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
-    init({ loadScript, loadStyle });
+    init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
   if (document.querySelector('helix-sidekick')) {
@@ -562,6 +647,19 @@ function initSidekick() {
   }
 }
 
+function decorateMeta() {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]');
+  contents.forEach((meta) => {
+    try {
+      const url = new URL(meta.content);
+      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+    } catch (e) {
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+    }
+  });
+}
+
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
@@ -570,6 +668,7 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
+    decorateMeta();
     decorateHeader();
 
     import('./samplerum.js').then(({ addRumListeners }) => {
@@ -607,10 +706,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
       loadGeoRouting(config, createTag, getMetadata);
     }
-    const type = getMetadata('richresults');
-    if (SUPPORTED_RICH_RESULTS_TYPES.includes(type)) {
-      const { addRichResults } = await import('../features/richresults.js');
-      addRichResults(type, { createTag, getMetadata });
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
@@ -667,16 +766,14 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, {
-      errorType: 'i',
-    });
-  }
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
 
   window.lana = {
     log: async (...args) => {
-      await import('../utils/lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
+      await import('./lana.js');
       return window.lana.log(...args);
     },
     debug: false,

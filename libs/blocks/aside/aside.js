@@ -58,18 +58,18 @@ function decorateContent(el, type, size) {
   const isInline = type === INLINE;
   const isNotification = type === NOTIFICATION;
   if (heading) {
-    let headingClass = 'heading-XL';
+    let headingClass = 'heading-xl';
     if ((isNotification && size === SIZE_M) || isInline) {
-      headingClass = 'heading-S';
+      headingClass = 'heading-s';
     }
     if (isNotification && size === SIZE_L) {
-      headingClass = 'heading-L';
+      headingClass = 'heading-l';
     }
     heading?.classList.add(headingClass);
     const prevClasses = heading?.previousElementSibling?.classList;
-    if (prevClasses?.length === 0) prevClasses.add('detail-M');
+    if (prevClasses?.length === 0) prevClasses.add('detail-m');
   }
-  const bodyClass = (isNotification && (size === SIZE_XS || size === SIZE_S || size === SIZE_L)) || isInline ? 'body-M' : 'body-S';
+  const bodyClass = (isNotification && (size === SIZE_XS || size === SIZE_S || size === SIZE_L)) || isInline ? 'body-m' : 'body-s';
   const bodyCopy = heading?.nextElementSibling.classList.length === 0 ? heading.nextElementSibling : text?.querySelector('p:not([class])');
   bodyCopy?.classList.add(bodyClass);
   const body = createTag('div', { class: 'body-area' });
