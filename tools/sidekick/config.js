@@ -108,6 +108,17 @@ function hasSchema(host) {
           },
         },
       },
+      {
+        id: 'region-selector',
+        condition: (s) => s.isEditor(),
+        button: {
+          text: 'Region Selector',
+          action: (_, s) => {
+            const { config } = s;
+            console.log('Region Selector is on', config);
+          },
+        },
+      },
     ],
   });
 })();
