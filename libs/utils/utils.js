@@ -761,9 +761,9 @@ export function loadLana(options = {}) {
 
   window.lana = {
     log: async (...args) => {
-      await import('./lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
+      await import('./lana.js');
       return window.lana.log(...args);
     },
     debug: false,
