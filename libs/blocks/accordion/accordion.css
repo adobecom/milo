@@ -39,22 +39,24 @@ dl.accordion {
 }
 
 .accordion dt button {
-  display: flex;
   align-items: center;
   background: none;
   border: none;
+  color: var(--text-color);
+  display: flex;
   font-family: var(--body-font-family);
-  font-weight: 700;
   font-size: var(--type-heading-xs-size);
+  font-weight: 700;
   line-height: var(--type-heading-s-lh);
-  width: 100%;
-  text-align: left;
-  position: relative;
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
+  position: relative;
+  text-align: left;
+  width: 100%;
 }
 
 .accordion dt button:hover {
   cursor: pointer;
+  color: var(--color-black);
 }
 
 .accordion-icon {
