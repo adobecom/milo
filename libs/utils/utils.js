@@ -651,6 +651,8 @@ function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]');
   contents.forEach((meta) => {
+    // skip for sidekick meta
+    if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
