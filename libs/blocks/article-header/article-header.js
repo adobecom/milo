@@ -140,8 +140,6 @@ export default async function init(blockEl) {
     await loadTaxonomy();
   }
 
-  console.log('test')
-
   const childrenEls = Array.from(blockEl.children);
 
   const categoryContainer = childrenEls[0];

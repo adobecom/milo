@@ -14,7 +14,6 @@ export default async function init(blockEl) {
   const tagsArray = tags.split(', ').map((tag) => tag.trim());
 
   const articleTax = computeTaxonomyFromTopics(tagsArray);
-  console.log(articleTax)
   const tagsWrapper = createTag('p');
 
   articleTax.visibleTopics?.forEach((topic) => {
