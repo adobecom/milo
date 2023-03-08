@@ -1,5 +1,5 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
-import { loadTaxonomy, getLinkForTopic } from '../article-feed/article-helpers.js';
+import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
 import { buildFigure } from '../figure/figure.js';
@@ -136,10 +136,16 @@ async function validateDate(date) {
 }
 
 export default async function init(blockEl) {
-  await loadTaxonomy();
+  if (!getTaxonomyModule()) {
+    await loadTaxonomy();
+  }
+
   const childrenEls = Array.from(blockEl.children);
 
   const categoryContainer = childrenEls[0];
+  const categoryEl = categoryContainer.firstElementChild.firstElementChild;
+  const categoryTag = getLinkForTopic(categoryEl.textContent);
+  categoryEl.innerHTML = categoryTag;
   categoryContainer.classList.add('article-category');
 
   const titleContainer = childrenEls[1];
@@ -164,7 +170,7 @@ export default async function init(blockEl) {
   const authorImg = createTag('div', { class: 'article-author-image' });
   authorImg.style.backgroundImage = `url(${base}/blocks/article-header/adobe-logo.svg)`;
   bylineContainer.prepend(authorImg);
-  populateAuthorInfo(authorEl, authorImg, authorURL, authorName);
+  populateAuthorInfo(author, authorImg, authorURL, authorName);
 
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
