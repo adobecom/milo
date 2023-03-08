@@ -88,21 +88,55 @@ export function getUrlInfo() {
   return urlInfo;
 }
 
-export async function simulatePreview(path, retryAttempt = 1) {
+export async function simulatePreview(path, retryAttempt = 1, isFloodgate) {
   const previewStatus = { success: true, path };
   try {
     getUrlInfo();
-    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${urlInfo.repo}/${urlInfo.ref}${path}`;
+    const repo = isFloodgate ? `${urlInfo.repo}-pink` : urlInfo.repo;
+    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${repo}/${urlInfo.ref}${path}`;
     const response = await fetch(
       `${previewUrl}`,
       { method: 'POST' },
     );
     if (!response.ok && retryAttempt <= MAX_RETRIES) {
-      await simulatePreview(path, retryAttempt + 1);
+      await simulatePreview(path, retryAttempt + 1, isFloodgate);
     }
     previewStatus.responseJson = await response.json();
   } catch (error) {
     previewStatus.success = false;
   }
   return previewStatus;
+}
+
+export function getAnchorHtml(url, text) {
+  return `<a href="${url}" target="_new">${text}</a>`;
+}
+
+function getLinkedPagePath(spShareUrl, pagePath) {
+  return getAnchorHtml(spShareUrl.replace('<relativePath>', pagePath), pagePath);
+}
+
+export function getLinkOrDisplayText(spViewUrl, docStatus) {
+  const pathOrMsg = docStatus.msg;
+  return docStatus.hasSourceFile ? getLinkedPagePath(spViewUrl, pathOrMsg) : pathOrMsg;
+}
+
+export function showButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.remove('hidden');
+  });
+}
+
+export function hideButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.add('hidden');
+  });
+}
+
+export async function fetchProjectFile(url, retryAttempt) {
+  const response = await fetch(url);
+  if (!response.ok && retryAttempt <= MAX_RETRIES) {
+    await fetchProjectFile(url, retryAttempt + 1);
+  }
+  return response;
 }

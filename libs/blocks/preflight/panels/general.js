@@ -7,51 +7,59 @@ const content = signal({});
 function getAdminUrl(url, type) {
   const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
   const [branch, repo, owner] = project.split('--');
-  return `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
+  const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
+  return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-async function getStatus(suppliedPath) {
-  const url = new URL(suppliedPath);
+async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
   const json = await resp.json();
   const preview = json.preview.lastModified || 'Never';
   const live = json.live.lastModified || 'Never';
-  return { url, preview, live };
+  const edit = json.edit.url;
+  return { url, edit, preview, live };
 }
 
-function findLinks(parent, selector) {
-  return [...parent.querySelectorAll(selector)].map((el) => {
-    const { modalPath, modalHash, path: fragmentPath } = el.dataset;
-    const dataPath = modalPath ? `${modalPath}${modalHash}` : fragmentPath;
-    let path = dataPath ? `${window.location.origin}${dataPath}` : el.href;
-    path = path.endsWith('/') ? `${path}index` : path;
-    return getStatus(path);
+function getStatuses() {
+  Object.keys(content.value).forEach((key) => {
+    content.value[key].items.forEach((item, idx) => {
+      getStatus(item.url).then((status) => {
+        content.value[key].items[idx] = status;
+        content.value = { ...content.value };
+      });
+    });
   });
+}
+
+function getUrl(el) {
+  const { modalPath, modalHash, path: fragmentPath } = el.dataset;
+  const dataPath = modalPath ? `${modalPath}${modalHash}` : fragmentPath;
+  try {
+    return new URL(dataPath);
+  } catch {
+    const path = dataPath ? `${window.location.origin}${dataPath}` : el.href;
+    return new URL(path);
+  }
+}
+
+function findLinks(selector) {
+  return [...document.body.querySelectorAll(selector)]
+    .map((el) => ({ url: getUrl(el), edit: null, preview: 'Fetching', live: 'Fetching' }));
 }
 
 async function setContent() {
   if (content.value.page) return;
-  const main = document.querySelector('main');
-  const header = document.querySelector('header');
 
-  const page = await getStatus(window.location.href);
-  const fragments = await Promise.all(findLinks(main, '.fragment, a[data-modal-path]'));
-  const links = await Promise.all(findLinks(main, 'a[href^="/"'));
-
-  const tmp = {
-    page: { items: [page] },
-    fragments: { items: fragments },
-    links: { items: links },
+  content.value = {
+    page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
+    fragments: { items: findLinks('main .fragment, a[data-modal-path]') },
+    links: { items: findLinks('main a[href^="/"') },
+    nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
 
-  if (header) {
-    const navLinks = await Promise.all(findLinks(header, 'a[href^="/"'));
-    tmp.nav = { items: navLinks, closed: true };
-  }
-
-  content.value = tmp;
+  getStatuses();
 }
 
 async function handleAction(action) {
@@ -72,6 +80,15 @@ async function handleAction(action) {
       content.value = { ...content.value };
     });
   });
+}
+
+function toggleSelect(checked) {
+  const copy = { ...content.value };
+  Object.keys(copy).forEach((key) => {
+    if (copy[key].closed) return;
+    copy[key].items.forEach((item) => { item.checked = !checked; });
+  });
+  content.value = copy;
 }
 
 function handleChange(target, name, idx) {
@@ -105,11 +122,13 @@ function prettyPath(url) {
 
 function Item({ name, item, idx }) {
   const isChecked = item.checked ? ' is-checked' : '';
+  const isFetching = item.edit ? '' : ' is-fetching';
 
   return html`
-    <div class="preflight-group-row preflight-group-detail${isChecked}"
+    <div class="preflight-group-row preflight-group-detail${isChecked}${isFetching}"
       onClick=${(e) => handleChange(e.target, name, idx)}>
       <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
+      <p>${item.edit && html`<a href=${item.edit} class=preflight-edit target=_blank>EDIT</a>`}</p>
       <p class=preflight-date-wrapper>${item.action === 'preview' ? 'Previewing' : prettyDate(item.preview)}</p>
       <p class=preflight-date-wrapper>${item.action === 'live' ? 'Publishing' : prettyDate(item.live)}</p>
     </div>`;
@@ -125,6 +144,7 @@ function ContentGroup({ name, group }) {
         <div class="preflight-group-expand"></div>
         <p class=preflight-content-heading>${name}</p>
         ${name === 'page' && html`
+          <p class="preflight-content-heading preflight-content-heading-edit">Edit</p>
           <p class=preflight-content-heading>Previewed</p>
           <p class=preflight-content-heading>Published</p>
         `}
@@ -141,18 +161,28 @@ export default function General() {
   const checked = Object.keys(content.value)
     .find((key) => content.value[key].items.find((item) => item.checked));
 
+  const hasPage = content.value.page;
+  const selectStyle = checked ? 'Select none' : 'Select all';
+
   return html`
     <div class=preflight-general-content>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>
-    ${checked && html`
-      <div class=preflight-actions>
+
+    <div class=preflight-actions>
+      ${hasPage && html`
+        <div id=select-action class=preflight-action-wrapper>
+          <button class=preflight-action onClick=${() => toggleSelect(checked)}>${selectStyle}</button>
+        </div>
+      `}
+      ${checked && html`
         <div id=preview-action class=preflight-action-wrapper>
           <button class=preflight-action onClick=${() => handleAction('preview')}>Preview</button>
         </div>
         <div id=publish-action class=preflight-action-wrapper>
           <button class=preflight-action onClick=${() => handleAction('live')}>Publish</button>
         </div>
-      </div>`}
-    `;
+      `}
+    </div>
+  `;
 }

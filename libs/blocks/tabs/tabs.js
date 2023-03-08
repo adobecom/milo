@@ -39,7 +39,13 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  return str.trim().toLowerCase().replace(/[^\w ]/g, '').replace(/ +/g, '-');
+  /* 
+  The [^...] character class is used to match any character that is not a valid CSS selector character. 
+  The #, ., -, and underscore characters are included as valid characters, 
+  and the \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
+  */
+  const regex = /[^#\. \p{L}\p{N}_-]/gu;
+  return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
 }
 
 function configTabs(config) {
@@ -99,7 +105,7 @@ const init = (block) => {
   tabListContainer.classList.add('tabList-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-XS' : 'heading-XS';
+    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = getStringKeyName(item.textContent);
       const tabBtnAttributes = {
