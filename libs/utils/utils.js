@@ -50,6 +50,7 @@ const MILO_BLOCKS = [
   'walls-io',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -71,6 +72,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
   local: {
@@ -439,6 +441,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
