@@ -390,7 +390,7 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
   .footer-privacy {
     display: flex;
     flex-wrap: wrap;
-    justify-content: end;
+    justify-content: flex-end;
   }
 
   .footer-copyright-second {
