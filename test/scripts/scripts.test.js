@@ -34,18 +34,6 @@ describe('Decorating', () => {
     await import('../../libs/scripts/scripts.js');
   });
 
-  it('Decorates auto blocks', async () => {
-    await waitForElement('a[class]');
-    const autoBlock = document.querySelector('a[class]');
-    expect(autoBlock.className).to.equal('adobetv link-block');
-  });
-
-  it('Decorates modal link', async () => {
-    await waitForElement('a[data-modal-path]');
-    const modalLink = document.querySelector('a[data-modal-path]');
-    expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
-  });
-
   it('martech test', async () => {
     const el = await waitForElement(
       'script[src="https://www.adobe.com/marketingtech/main.standard.min.js"]',

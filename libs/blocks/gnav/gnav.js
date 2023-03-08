@@ -50,7 +50,7 @@ class Gnav {
     this.desktop = window.matchMedia('(min-width: 1200px)');
   }
 
-  init = () => {
+  init = async () => {
     this.state = {};
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
@@ -96,7 +96,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-    decorateLinks(wrapper);
+    await decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -408,8 +408,8 @@ class Gnav {
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
     const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl); ;
-    }
+      this.imsReady(blockEl, profileEl);
+    };
 
     const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
@@ -619,7 +619,7 @@ export default async function init(header) {
     const parser = new DOMParser();
     const gnavDoc = parser.parseFromString(html, 'text/html');
     const gnav = new Gnav(gnavDoc.body, header);
-    gnav.init();
+    await gnav.init();
     header.dispatchEvent(initEvent);
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav${name}`);

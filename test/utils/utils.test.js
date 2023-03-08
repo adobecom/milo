@@ -388,4 +388,22 @@ describe('Utils', () => {
     privacyLink.click();
     expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
   });
+
+  it('Decorates auto blocks', async () => {
+    const doc = await readFile({ path: './mocks/body.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    await utils.decorateLinks(el);
+    const autoBlock = el.querySelector('a[class]');
+    expect(autoBlock.className).to.equal('youtube link-block');
+  });
+
+  it('Decorates modal link', async () => {
+    const doc = await readFile({ path: './mocks/body.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    await utils.decorateLinks(el);
+    const modalLink = el.querySelector('a[data-modal-path]');
+    expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
+  });
 });
