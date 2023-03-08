@@ -23,13 +23,13 @@ const sizes = ['extra-small', 'small', 'medium', 'large'];
 const [split, inline, notification] = variants;
 const [xsmall, small, medium, large] = sizes;
 const blockConfig = {
-  [split]: ['XL', 'S', 'M'],
-  [inline]: ['S', 'M'],
+  [split]: ['xl', 's', 'm'],
+  [inline]: ['s', 'm'],
   [notification]: {
-    [xsmall]: ['M', 'M'],
-    [small]: ['M', 'M'],
-    [medium]: ['S', 'S'],
-    [large]: ['L', 'M'],
+    [xsmall]: ['m', 'm'],
+    [small]: ['m', 'm'],
+    [medium]: ['s', 's'],
+    [large]: ['l', 'm'],
   },
 };
 

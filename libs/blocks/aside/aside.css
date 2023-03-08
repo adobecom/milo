@@ -97,13 +97,13 @@
   width: 100%;
 }
 
-.aside .foreground.container .text .heading-XL {
+.aside .foreground.container .text .heading-xl {
   margin: 0;
   margin-bottom: var(--spacing-xs);
 }
 
-.aside .foreground.container .text .body-M,
-.aside .foreground.container .text .body-S {
+.aside .foreground.container .text .body-m,
+.aside .foreground.container .text .body-s {
   margin-bottom: var(--spacing-s);
 }
 
@@ -216,6 +216,10 @@
   display: none;
 }
 
+.aside.notification .foreground.container img {
+  display: block;
+}
+
 .aside.split .foreground.container .split-image img {
   object-fit: cover;
   height: 270px;
@@ -235,7 +239,7 @@
   margin-top: 0;
 }
 
-.aside.inline .heading-S {
+.aside.inline .heading-s {
   margin-bottom: var(--spacing-s);
 }
 
@@ -253,10 +257,6 @@
   max-width: 75px;
   margin: 0;
   order: -1;
-}
-
-.aside.notification .foreground.container img {
-  display: block;
 }
 
 .aside.notification .foreground.container .text[data-align=center],
@@ -288,12 +288,12 @@
   margin-left: 0;
 }
 
-.aside.notification .foreground.container .text .heading-L {
+.aside.notification .foreground.container .text .heading-l {
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification .foreground.container:not(.no-image) .text .body-S.action-area,
-.aside.notification .foreground.container:not(.no-image) .text .body-M.action-area {
+.aside.notification .foreground.container:not(.no-image) .text .body-s.action-area,
+.aside.notification .foreground.container:not(.no-image) .text .body-m.action-area {
   margin-bottom: 0;
 }
 
@@ -352,7 +352,7 @@
   gap: var(--spacing-xs);
 }
 
-.aside.notification.medium .foreground.container .text .heading-S {
+.aside.notification.medium .foreground.container .text .heading-s {
   margin-bottom: var(--spacing-xxs);
 }
 
@@ -500,11 +500,11 @@
     flex-grow: 1;
   }
 
-  .aside.notification.small .foreground.container .text .body-M {
+  .aside.notification.small .foreground.container .text .body-m {
     margin: 0;
   }
 
-  .aside.notification.small .foreground.container .text .body-M.action-area {
+  .aside.notification.small .foreground.container .text .body-m.action-area {
     margin-left: 24px;
   }
 
@@ -592,7 +592,7 @@
     max-width: 400px;
   }
 
-  .aside .foreground.container .text .heading-XL {
+  .aside .foreground.container .text .heading-xl {
     margin: 0;
     margin-bottom: var(--spacing-xs);
   }
