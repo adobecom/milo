@@ -465,9 +465,13 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
-    const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
