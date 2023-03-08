@@ -54,19 +54,18 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
         expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
+          'https://www.instagram.com/',
         );
       });
 
       it('Auto block works as expected when #_dnb is not added to url', () => {
         const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
+          '[href="https://twitter.com/Adobe"]',
         );
-        expect(autoBlockLink.className).to.equal('twitter link-block');
+        expect(autoBlockLink.className).to.equal('autoblock twitter link-block');
       });
     });
 
