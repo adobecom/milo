@@ -227,7 +227,10 @@ export class Footer {
     privacyWrapper.append(ul);
 
     const secondLine = container.querySelector('p:nth-of-type(2)');
-    if (secondLine) privacyWrapper.append(secondLine);
+    if (secondLine) {
+      secondLine.classList.add('footer-copyright-second');
+      privacyWrapper.append(secondLine);
+    }
 
     return privacyWrapper;
   };

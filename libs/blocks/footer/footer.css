@@ -176,10 +176,6 @@ footer .footer-social a {
   width: 20px;
 }
 
-.footer-privacy p:nth-of-type(2) {
-  line-height: 2;
-}
-
 /* Region Selector */
 .footer-region {
   position: relative;
@@ -336,6 +332,11 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
   margin-left: 6px;
 }
 
+.footer-copyright-second {
+  line-height: 2;
+  width: 100%;
+}
+
 @media (min-width: 900px) {
   footer {
     padding: 40px 0 24px;
@@ -390,5 +391,9 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
     display: flex;
     flex-wrap: wrap;
     justify-content: end;
+  }
+
+  .footer-copyright-second {
+    text-align: right;
   }
 }
