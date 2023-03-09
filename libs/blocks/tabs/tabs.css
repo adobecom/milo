@@ -48,6 +48,7 @@
 
 .tabs div[role="tablist"] {
   position: relative;
+  box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
   /* ScrollProps */
@@ -69,6 +70,7 @@
   margin-top: var(--spacing-xxl);
   margin-bottom: var(--spacing-xl);
 }
+
 .tabs.center .tab-headline {
     text-align: center;
 }
@@ -84,6 +86,7 @@
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
+
 .tabs div[role="tablist"] .tabList-container {
   display: flex;
   padding: 0 8.3%;
@@ -92,13 +95,9 @@
   box-sizing: content-box;
 }
 
-.tabs div[role="tablist"] {
-  box-shadow: 0 -1px 0 inset var(--tabs-border-color);
-}
-
 /* center tabs */
-.tabs.center div[role="tablist"]:after,
-.tabs.center div[role="tablist"]:before {
+.tabs.center div[role="tablist"]::after,
+.tabs.center div[role="tablist"]::before {
   content: "";
   margin: auto;
 }
@@ -109,8 +108,14 @@
 }
 
 .tabs .tabContent {
-  padding: var(--spacing-s) 0;
   border-bottom: 1px solid var(--tabs-border-color);
+}
+
+/* contained tabs content */
+.tabs.contained .tabContent .tabContent-container,
+[role='tabpanel'] > .section > .content {
+  width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
 .tabContent [role='tabpanel'] .section {
@@ -124,13 +129,6 @@
 .tabContent [role='tabpanel'] .section > .content {
   z-index: 1;
   position: relative;
-}
-
-/* contained tabs content */
-.tabs.contained .tabContent .tabContent-container,
-[role='tabpanel'] > .section > .content {
-  width: var(--grid-container-width);
-  margin: 0 auto;
 }
 
 .tabs div[role="tablist"] button {
@@ -170,7 +168,7 @@
   color: var(--tabs-active-text-color);
 }
 
-/*- Tabs: .quiet -*/
+/* Tabs: .quiet */
 .tabs.quiet div[role="tablist"] button {
   border-width: 0 0 2px;
   border-color: transparent;

@@ -84,6 +84,14 @@ function initTabs(elm, config) {
   if (config) configTabs(config);
 }
 
+function handleDeferredImages(e) {
+  const images = e.querySelectorAll('img[loading="lazy"]');
+  images.forEach((img) => {
+    img.removeAttribute('loading');
+  });
+  e.removeEventListener('milo:deferred', handleDeferredImages, true);
+}
+
 let initCount = 0;
 const init = (block) => {
   const rows = block.querySelectorAll(':scope > div');
@@ -162,6 +170,9 @@ const init = (block) => {
         if (assocTabItem) assocTabItem.append(section);
       });
   });
+
+  block.addEventListener('milo:deferred', handleDeferredImages(block), true);
+
   initTabs(block, config);
   initCount += 1;
 };
