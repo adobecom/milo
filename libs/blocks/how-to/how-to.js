@@ -52,6 +52,7 @@ const getHowToInfo = (el) => {
   if (!infoDiv) return {};
 
   const heading = infoDiv.firstElementChild;
+  heading.setAttribute('class', 'heading-xl');
   if (!heading.id) {
     heading.id = heading.textContent.replace(/\s+/g, '-').toLowerCase();
   }
