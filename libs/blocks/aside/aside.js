@@ -51,8 +51,10 @@ function decorateLayout(el) {
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
-  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, a:not(.video)')?.closest('div');
+  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
+  const media = foreground.querySelector(':scope > div:not([class])');
+  if (!el.classList.contains('notification')) media?.classList.add('image');
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
@@ -73,18 +75,9 @@ function decorateLayout(el) {
   return foreground;
 }
 
-function decorateVideoContainer(el) {
-  const video = el.querySelector('a[href*=".mp4"]');
-  if (!video) return;
-  video.classList.add('video');
-  const parent = video.parentElement;
-  parent?.classList.add('image');
-}
-
 export default function init(el) {
   const blockData = getBlockData(el);
-  decorateVideoContainer(el);
-  const foreground = decorateLayout(el);
-  decorateBlockText(foreground, blockData);
+  const blockText = decorateLayout(el);
+  decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
 }

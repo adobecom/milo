@@ -63,17 +63,17 @@
 .aside .foreground.container {
   display: flex;
   position: relative;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: var(--spacing-xl);
 }
 
-.aside:not(.notification):not(.inline) .foreground.container > :first-child {
+.aside:not(.notification):not(.inline) .foreground.container> :first-child {
   padding: var(--spacing-xxxl) 0 0;
 }
 
-.aside:not(.notification):not(.inline) .foreground.container > :last-child {
+.aside:not(.notification):not(.inline) .foreground.container> :last-child {
   margin-bottom: var(--spacing-xxxl);
 }
 
@@ -119,30 +119,19 @@
   margin-right: 0;
 }
 
-.aside .foreground.container div {
-  flex: 1 1 auto;
+.aside .foreground.container > div {
+  flex-grow: 1;
+  flex-basis: 0;
+  min-width: 0;
+}
+
+.aside.notification .foreground.container > div {
+  flex-basis: 100%;
 }
 
 .aside .foreground.container .image,
-.aside .foreground.container div:has(.milo-video),
-.aside .foreground.container .milo-inline-video {
+.aside .foreground.container div:has(.milo-video) {
   display: flex;
-  justify-content: center;
-}
-
-.aside .foreground.container .milo-inline-video video {
-  object-fit: contain;
-  width: 100%;
-  align-self: center;
-  justify-self: center;
-}
-
-.aside .foreground.container img {
-  object-fit: contain;
-  height: 100%;
-  width: 100%;
-  align-self: center;
-  justify-self: center;
 }
 
 .aside .foreground.container .icon-area {
@@ -220,6 +209,13 @@
   display: block;
 }
 
+.aside .foreground.container .image video,
+.aside .foreground.container .image picture,
+.aside .foreground.container .image picture img {
+  width: 100%;
+  display: flex;
+}
+
 .aside.split .foreground.container .split-image img {
   object-fit: cover;
   height: 270px;
@@ -232,7 +228,8 @@
 .aside.inline .foreground.container {
   width: 100%;
   min-height: 0;
-  margin: 32px;
+  margin: 0 var(--spacing-m);
+  gap: var(--spacing-m);
 }
 
 .aside.inline .foreground.container .image {
@@ -251,6 +248,7 @@
   padding-top: var(--spacing-s);
   padding-bottom: var(--spacing-s);
   box-sizing: border-box;
+  justify-content: flex-start;
 }
 
 .aside.notification .foreground.container .image {
@@ -259,9 +257,7 @@
   order: -1;
 }
 
-.aside.notification .foreground.container .text[data-align=center],
-.aside.notification.center .foreground.container .text,
-.aside.notification.center .foreground.container .text > * {
+.aside.notification .foreground.container [data-align=center] {
   text-align: center;
   justify-content: center;
 }
@@ -275,11 +271,11 @@
   margin-right: 0;
 }
 
-.aside.notification.extra-small .foreground.container .text a:last-child {
+.aside.notification.extra-small .foreground.container a:last-child {
   font-weight: bold;
 }
 
-.aside.notification.extra-small .foreground.container .text a:not(.con-button):last-of-type {
+.aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
   margin-left: var(--spacing-xs);
 }
 
@@ -357,7 +353,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text > * {
+.aside.notification.center.small .foreground.container .text>* {
   justify-content: flex-start;
 }
 
@@ -376,27 +372,23 @@
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
-    align-items: stretch;
+    align-items: center;
     flex-direction: row;
     margin: 0 auto;
+    padding: var(--spacing-m) 0;
   }
 
-  .aside:not(.notification):not(.inline) .foreground.container > :first-child {
+  .aside:not(.notification):not(.inline) .foreground.container> :first-child {
     padding: 0;
   }
-  
-  .aside:not(.notification):not(.inline) .foreground.container > :last-child {
+
+  .aside:not(.notification):not(.inline) .foreground.container> :last-child {
     margin-bottom: 0;
   }
 
   .aside .foreground.container .image,
-  .aside .foreground.container div:has(.milo-video),
-  .aside .foreground.container .milo-inline-video {
+  .aside .foreground.container div:has(.milo-video) {
     margin: 0;
-    flex: 0 0 50%;
-    max-width: 50%;
-    align-self: center;
-    justify-self: center;
   }
 
   .aside .foreground.container .text.image {
@@ -415,9 +407,6 @@
 
   .aside .foreground.container .text {
     margin-bottom: 0;
-    padding: var(--spacing-xxxl) 0;
-    flex: 1 0 50%;
-    max-width: 50%;
     padding-right: var(--spacing-s);
   }
 
@@ -538,7 +527,7 @@
     order: unset;
   }
 
-  .aside.notification .foreground.container .text + .image {
+  .aside.notification .foreground.container .text+.image {
     margin-right: 0;
   }
 
@@ -570,21 +559,16 @@
 @media screen and (min-width: 1200px) {
   .aside .foreground.container {
     min-height: 420px;
-    justify-content: space-between;
     width: var(--grid-container-width);
   }
 
-  .aside .foreground.container .image,
-  .aside .foreground.container div:has(.milo-video),
-  .aside .foreground.container .milo-inline-video {
-    flex: 0 0 50%;
-    max-width: 500px;
+  .aside .foreground.container>div,
+  .aside .foreground.container div:has(.milo-video) {
     object-fit: cover;
     padding-left: 0;
   }
 
   .aside .foreground.container .text {
-    max-width: 500px;
     padding: var(--spacing-xxl) 0;
   }
 
@@ -655,7 +639,7 @@
     width: 20%;
   }
 
-  .aside.notification .foreground.container .text + .image {
+  .aside.notification .foreground.container .text+.image {
     margin-right: 0;
   }
 
@@ -681,7 +665,7 @@
     max-width: 304px;
   }
 
-  .aside.notification.medium .foreground.container .text + .image {
+  .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
   }
 }
