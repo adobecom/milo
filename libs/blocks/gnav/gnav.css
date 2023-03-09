@@ -361,12 +361,22 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
 
 .gnav-search-results .article-card {
   width: unset;
+  height: calc(100% - 10px);
 }
 
-.gnav-search-results > ul li,a {
+.gnav-search-results .article-card .article-card-body h3 {
+  -webkit-line-clamp: unset;
+}
+
+.gnav-search-results .article-card .article-card-description {
+  -webkit-line-clamp: unset;
+}
+
+.gnav-search-results > ul li{
   font-size: 14px;
     line-height: 1;
     margin: 0;
+    height: 98%;
 }
 
 .gnav-search-results > ul li > a {
@@ -381,6 +391,7 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
 .gnav-search-results > ul li > a span {
   font-weight: 400;
 }
+
 
 .gnav-search-highlight {
   position: relative;
