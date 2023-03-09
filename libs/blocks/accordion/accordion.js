@@ -1,53 +1,5 @@
 import { createTag } from '../../utils/utils.js';
 
-class Accordion {
-  constructor(domNode) {
-    this.rootEl = domNode;
-    this.buttonEl = this.rootEl.querySelector('button[aria-expanded]');
-    this.buttonDt = this.rootEl.closest('dt');
-
-    const controlsId = this.buttonEl.getAttribute('aria-controls');
-    this.contentEl = document.getElementById(controlsId);
-
-    this.open = this.buttonEl.getAttribute('aria-expanded') === 'true';
-
-    // add event listeners
-    this.buttonEl.addEventListener('click', this.onButtonClick.bind(this));
-  }
-
-  onButtonClick() {
-    this.toggle(!this.open);
-  }
-
-  toggle(open) {
-    // don't do anything if the open state doesn't change
-    if (open === this.open) {
-      return;
-    }
-
-    // update the internal state
-    this.open = open;
-
-    // handle DOM updates
-    this.buttonDt.setAttribute('aria-expanded', `${open}`);
-    this.buttonEl.setAttribute('aria-expanded', `${open}`);
-    if (open) {
-      this.contentEl.removeAttribute('hidden');
-    } else {
-      this.contentEl.setAttribute('hidden', '');
-    }
-  }
-
-  // Add public open and close methods for convenience
-  open() {
-    this.toggle(true);
-  }
-
-  close() {
-    this.toggle(false);
-  }
-}
-
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 
 function setSEO(questions) {
@@ -55,6 +7,17 @@ function setSEO(questions) {
     { '@type': 'Question', name, acceptedAnswer: { text, '@type': 'Answer' } })));
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(faq));
   document.head.append(script);
+}
+
+function handleClick(el, dd) {
+  const expanded = el.getAttribute('aria-expanded') === 'true';
+  if (expanded) {
+    el.setAttribute('aria-expanded', 'false');
+    dd.setAttribute('hidden', '');
+  } else {
+    el.setAttribute('aria-expanded', 'true');
+    dd.removeAttribute('hidden');
+  }
 }
 
 function createItem(accordion, id, heading, num) {
@@ -69,11 +32,15 @@ function createItem(accordion, id, heading, num) {
     'aria-controls': panelId,
   }, heading.textContent);
   button.append(icon);
+
   const panel = heading.nextElementSibling.firstElementChild;
   const para = panel.querySelector('p');
   const text = para ? para.textContent : panel.textContent;
+
   const dt = createTag('dt', { role: 'heading', 'aria-level': 3 }, button);
-  const dd = createTag('dd', { role: 'region', 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'accordion-panel' }, panel);
+  const dd = createTag('dd', { role: 'region', 'aria-labelledby': triggerId, id: panelId, hidden: true }, panel);
+
+  button.addEventListener('click', (e) => { handleClick(e.target, dd); });
   accordion.append(dt, dd);
   return { name: heading.textContent, text };
 }
@@ -97,9 +64,4 @@ export default function init(el) {
   el.classList.add('con-block', maxWidthClass || 'max-width-10-desktop');
   accordion.classList.add('foreground');
   el.append(accordion);
-  const titles = el.querySelectorAll('.accordion dt');
-  titles.forEach((accordionEl) => {
-    const accord = new Accordion(accordionEl);
-    return accord;
-  });
 }

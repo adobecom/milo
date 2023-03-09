@@ -9,14 +9,7 @@ div.accordion {
 dl.accordion {
   margin: 0 auto;
   max-width: var(--grid-container-width);
-}
-
-.accordion dt {
-  border-top: 1px solid var(--color-gray-500);
-}
-
-.dark .accordion dt {
-  border-top-color: var(--color-gray-600);
+  border-bottom: 1px solid var(--color-gray-500);
 }
 
 .accordion dd {
@@ -26,22 +19,11 @@ dl.accordion {
   line-height: var(--type-body-s-lh);
 }
 
-.accordion dt:last-of-type {
-  border-bottom: 1px solid var(--color-gray-500);
-}
-
-.accordion dt[aria-expanded="true"] {
-  border-bottom: transparent;
-}
-
-.accordion dd:last-of-type:not([hidden]) {
-  border-bottom: 1px solid var(--color-gray-500);
-}
-
 .accordion dt button {
   align-items: center;
   background: none;
-  border: none;
+  border: 1px solid var(--color-gray-500);
+  border-width: 1px 0 0;
   color: var(--text-color);
   display: flex;
   font-family: var(--body-font-family);
@@ -66,6 +48,7 @@ dl.accordion {
   margin-top: -6px;
   width: 12px;
   height: 12px;
+  pointer-events: none;
 }
 
 .accordion-icon::before,
@@ -139,16 +122,12 @@ dl.accordion {
   color: #fff;
 }
 
-.dark .accordion dt:last-of-type {
+.dark dl.accordion {
   border-bottom-color: var(--color-gray-600);
 }
 
-.dark .accordion dt[aria-expanded="true"] {
-  border-bottom: transparent;
-}
-
-.dark .accordion dt[aria-expanded="true"] dd {
-  border-bottom-color: var(--color-gray-600);
+.dark .accordion dt button {
+  border-top-color: var(--color-gray-600);
 }
 
 .dark .accordion dt button:focus,
