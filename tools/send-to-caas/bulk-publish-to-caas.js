@@ -108,7 +108,7 @@ const processData = async (data, accessToken) => {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
 
       const { pathname } = new URL(rawUrl);
-      const pageUrl = `${domain}${pathname}`;
+      const pageUrl = usepreview ? `${domain}${pathname.replace('.html', '')}` : `${domain}${pathname}`;
       const prodUrl = `${host}${pathname}`;
 
       index += 1;
@@ -218,6 +218,7 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
+      caasEnv: document.getElementById('caasEnv').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
