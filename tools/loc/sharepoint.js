@@ -445,4 +445,6 @@ export {
   saveFileAndUpdateMetadata,
   updateExcelTable,
   addWorksheetToExcel,
+  validateConnection,
+  createFolder,
 };
