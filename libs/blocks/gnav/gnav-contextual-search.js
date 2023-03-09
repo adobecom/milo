@@ -57,21 +57,29 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
   const terms = value.toLowerCase().split(' ').filter(Boolean);
   if (!terms.length) return;
 
-  const { data: articles } = await fetchBlogArticleIndex();
-  const hits = articles.reduce((acc, article) => {
-    if (acc.length === LIMIT) {
-      return acc;
-    }
+  const hits = [];
+  let fetchComplete = false;
+  const pageSize = 500;
 
-    const { category } = getArticleTaxonomy(article);
-    const text = [category, article.title, article.description].join(' ').toLowerCase();
+  while (hits.length < LIMIT && !fetchComplete) {
+    // eslint-disable-next-line no-await-in-loop
+    const { data: articles, complete, offset } = await fetchBlogArticleIndex();
+    // articles = [...articles, ...data];
+    const offsetArticles = articles.slice(offset - pageSize, offset);
+    offsetArticles.forEach((article) => {
+      if (hits.length === LIMIT) {
+        return;
+      }
 
-    if (terms.every((term) => text.includes(term))) {
-      acc.push(article);
-    }
+      const { category } = getArticleTaxonomy(article);
+      const text = [category, article.title, article.description].join(' ').toLowerCase();
 
-    return acc;
-  }, []);
+      if (terms.every((term) => text.includes(term))) {
+        hits.push(article);
+      }
+    });
+    fetchComplete = complete;
+  }
 
   if (!hits.length) {
     const advancedLink = advancedSearchEl.querySelector('a');
