@@ -289,6 +289,12 @@ const BasicsPanel = ({ tagsData }) => {
   if (!tagsData) return '';
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
+
+  // Manually correct for Chinese
+  delete languageTags['caas:language/zh-Hans'];
+  delete languageTags['caas:language/zh-Hant'];
+  languageTags['caas:language/zh'] = 'Chinese';
+
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
