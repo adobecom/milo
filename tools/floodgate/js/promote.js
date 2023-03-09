@@ -1,7 +1,19 @@
-import { createFolder, getAuthorizedRequestOption, saveFile, validateConnection } from '../../loc/sharepoint.js';
-import { hideButtons, loadingOFF, loadingON } from '../../loc/utils.js';
+import {
+  createFolder,
+  getAuthorizedRequestOption,
+  saveFile,
+  updateExcelTable,
+  validateConnection,
+} from '../../loc/sharepoint.js';
+import {
+  hideButtons,
+  loadingON,
+  showButtons,
+  simulatePreview,
+} from '../../loc/utils.js';
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
+import { handleExtension } from './utils.js';
 
 /**
  * Copies the Floodgated files back to the main content tree.
@@ -56,7 +68,7 @@ async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgF
             fgFolders.push(itemPath);
           } else {
             const downloadUrl = item['@microsoft.graph.downloadUrl'];
-            fgFiles.push({ docDownloadUrl: downloadUrl, docPath: itemPath });
+            fgFiles.push({ fileDownloadUrl: downloadUrl, filePath: itemPath });
           }
         });
       }
@@ -79,10 +91,13 @@ async function findAllFiles() {
 
 async function getFile(downloadUrl) {
   const response = await fetch(downloadUrl);
-  return response.blob();
+  if (response) {
+    return response.blob();
+  }
+  return undefined;
 }
 
-async function promoteFloodgatedFiles() {
+async function promoteFloodgatedFiles(project) {
   function updateAndDisplayPromoteStatus(promoteStatus, srcPath) {
     const promoteDisplayText = promoteStatus
       ? `Promoted ${srcPath} to main content tree`
@@ -90,65 +105,75 @@ async function promoteFloodgatedFiles() {
     loadingON(promoteDisplayText);
   }
 
-  async function promoteFile(fileData) {
+  async function promoteFile(downloadUrl, filePath) {
     const status = { success: false };
     try {
       let promoteSuccess = false;
+      loadingON(`Promoting ${filePath} ...`);
       const { sp } = await getFloodgateConfig();
       const options = getAuthorizedRequestOption();
-      const res = await fetch(`${sp.api.file.get.baseURI}${fileData.docPath}`, options);
+      const res = await fetch(`${sp.api.file.get.baseURI}${filePath}`, options);
       if (res.ok) {
         // File exists at the destination (main content tree)
-        // Get the file in the pink directory
-        // This is the downloadUrl value returned by the tree traversal
-        const file = await getFile(fileData.docDownloadUrl);
+        // Get the file in the pink directory using downloadUrl
+        const file = await getFile(downloadUrl);
         if (file) {
           // Save the file in the main content tree
-          const saveStatus = await saveFile(file, fileData.docPath);
+          const saveStatus = await saveFile(file, filePath);
           if (saveStatus.success) {
-            console.log(`save copied :: ${fileData.docPath}`);
             promoteSuccess = true;
           }
         }
       } else {
-        // file does not exist at the destination (main content tree)
-        // file can be copied directly
-        const destinationFolder = `${fileData.docPath.substring(0, fileData.docPath.lastIndexOf('/'))}`;
-        promoteSuccess = await promoteCopy(fileData.docPath, destinationFolder);
-        console.log(`promote copied :: ${fileData.docPath}`);
+        // File does not exist at the destination (main content tree)
+        // File can be copied directly
+        const destinationFolder = `${filePath.substring(0, filePath.lastIndexOf('/'))}`;
+        promoteSuccess = await promoteCopy(filePath, destinationFolder);
       }
+      updateAndDisplayPromoteStatus(promoteSuccess, filePath);
       status.success = promoteSuccess;
-      status.srcPath = fileData.docPath;
+      status.srcPath = filePath;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(`Error occurred when trying to promote files to main content tree ${error.message}`);
     }
-    console.log('done');
     return status;
   }
 
   hideButtons(ACTION_BUTTON_IDS);
-
+  const startPromote = new Date();
   // Iterate the floodgate tree and get all files to promote
-  const allFiles = await findAllFiles();
-  console.log(allFiles);
+  const allFloodgatedFiles = await findAllFiles();
+  const promoteStatuses = await Promise.all(
+    allFloodgatedFiles.map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+  );
+  const endPromote = new Date();
 
-  const promoteStatuses = await Promise.all(allFiles.map((file) => promoteFile(file)));
+  loadingON('Previewing promoted files... ');
+  const previewStatuses = await Promise.all(
+    promoteStatuses
+      .filter((status) => status.success)
+      .map((status) => simulatePreview(handleExtension(status.srcPath), 1)),
+  );
+  loadingON('Completed Preview for promoted files... ');
 
   const failedPromotes = promoteStatuses.filter((status) => !status.success)
     .map((status) => status.srcPath || 'Path Info Not available');
-  console.log(failedPromotes);
+  const failedPreviews = previewStatuses.filter((status) => !status.success)
+    .map((status) => status.path);
 
-  // TODO: handle previews
+  const excelValues = [['PROMOTE', startPromote, endPromote, failedPromotes.join('\n'), failedPreviews.join('\n')]];
+  await updateExcelTable(project.excelPath, 'PROMOTE_STATUS', excelValues);
+  loadingON('Project excel file updated with promote status... ');
+  showButtons(ACTION_BUTTON_IDS);
 
-  if (failedPromotes.length > 0 /*|| failedPreviews.length > 0*/) {
-    let failureMessage = failedPromotes.length > 0 ? `Failed to promote ${failedPromotes} to main content tree. Check project excel sheet for additional information\n` : '';
-    // failureMessage += failedPreviews.length > 0 ? `Failed to preview ${failedPreviews}. Kindly manually preview these files.` : '';
-    loadingON(failureMessage);
+  if (failedPromotes.length > 0 || failedPreviews.length > 0) {
+    loadingON('Error occurred when promoting floodgated content. Check project excel sheet for additional information<br/><br/>'
+      + 'Reloading page... please wait.');
   } else {
-    loadingOFF();
-    // await refreshPage();
+    loadingON('Promoted floodgate tree successfully. Reloading page... please wait.');
   }
+  setTimeout(() => window.location.reload(), 3000);
 }
 
 export default promoteFloodgatedFiles;
