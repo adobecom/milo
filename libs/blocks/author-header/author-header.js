@@ -22,13 +22,16 @@ export default function init(blockElement) {
   const pictureWrapper = createTag('div', { class: 'author-header-img' }, pictureElement);
   const bioWrapper = createTag('div', { class: 'author-header-bio' }, bioElement);
 
+  blockElement.append(titleEl, pictureWrapper, bioWrapper);
+
   const social = block.querySelector('h2');
-  const socialWrapper = createTag('div', { class: 'author-header-socials' }, social);
+  if (social) {
+    const socialWrapper = createTag('div', { class: 'author-header-socials' }, social);
 
-  const socialLinksList = block.querySelector('ul');
-  socialWrapper.append(socialLinksList);
-
-  blockElement.append(titleEl, pictureWrapper, bioWrapper, socialWrapper);
+    const socialLinksList = block.querySelector('ul');
+    socialWrapper.append(socialLinksList);
+    blockElement.append(socialWrapper);
+  }
 
   const blockWrapper = blockElement.parentElement;
   blockWrapper?.classList.add('author-header-wrapper');
