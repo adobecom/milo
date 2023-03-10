@@ -105,7 +105,7 @@ async function buildSharing() {
   const anchorTags = platforms.map(async (platform) => {
     const platformProperties = platformMap[platform];
     if (platformProperties) {
-      return createTag('a', platformProperties, svgs[platform]);
+      return createTag('a', platformProperties, svgs[platform].cloneNode(true));
     }
     return null;
   });
@@ -124,7 +124,7 @@ async function buildSharing() {
     await copyToClipboard(copyButton);
   });
 
-  return sharing.cloneNode(true);
+  return sharing;
 }
 
 async function validateDate(date) {
