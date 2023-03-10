@@ -23,7 +23,7 @@ const LOCALES = {
   pe: { ietf: 'es-PE' },
   '': { ietf: 'en-US' },
   // EMEA
-  africa: { ietf: 'africa-en' },
+  africa: { ietf: 'en-africa' },
   be_fr: { ietf: 'fr-BE' },
   be_en: { ietf: 'en-BE' },
   be_nl: { ietf: 'nl-BE' },
@@ -34,7 +34,7 @@ const LOCALES = {
   es: { ietf: 'es-ES' },
   fr: { ietf: 'fr-FR' },
   gr_en: { ietf: 'en-GR' },
-  ie: { ietf: 'en-GB' },
+  ie: { ietf: 'en-IE' },
   il_en: { ietf: 'en-IL' },
   it: { ietf: 'it-IT' },
   lv: { ietf: 'lv-LV' },
@@ -44,24 +44,25 @@ const LOCALES = {
   lu_fr: { ietf: 'fr-LU' },
   hu: { ietf: 'hu-HU' },
   mt: { ietf: 'en-MT' },
-  mena: { ietf: 'mena-en' },
-  mena_en: { ietf: 'mena-en' },
-  mena_ar: { ietf: 'mena-ar' },
+  mena: { ietf: 'en-mena' },
+  mena_en: { ietf: 'en-mena' },
+  mena_ar: { ietf: 'ar-mena' },
+  mena_fr: { ietf: 'fr-mena' },
   nl: { ietf: 'nl-NL' },
   no: { ietf: 'no-NO' },
   pl: { ietf: 'pl-PL' },
   pt: { ietf: 'pt-PT' },
   ro: { ietf: 'ro-RO' },
-  sa_en: { ietf: 'en' },
+  sa_en: { ietf: 'en-sa' },
+  ch_fr: { ietf: 'fr-CH' },
   ch_de: { ietf: 'de-CH' },
+  ch_it: { ietf: 'it-CH' },
   si: { ietf: 'sl-SI' },
   sk: { ietf: 'sk-SK' },
-  ch_fr: { ietf: 'fr-CH' },
   fi: { ietf: 'fi-FI' },
   se: { ietf: 'sv-SE' },
-  ch_it: { ietf: 'it-CH' },
   tr: { ietf: 'tr-TR' },
-  ae_en: { ietf: 'ae-en' },
+  ae_en: { ietf: 'en-ae' },
   uk: { ietf: 'en-GB' },
   at: { ietf: 'de-AT' },
   cz: { ietf: 'cs-CZ' },
@@ -74,17 +75,17 @@ const LOCALES = {
   // Asia Pacific
   au: { ietf: 'en-AU' },
   hk_en: { ietf: 'en-HK' },
-  in: { ietf: 'en-GB' },
+  in: { ietf: 'en-in' },
   id_id: { ietf: 'id-id' },
   id_en: { ietf: 'en-id' },
   my_ms: { ietf: 'ms-my' },
-  my_en: { ietf: 'en-GB' },
-  nz: { ietf: 'en-GB' },
+  my_en: { ietf: 'en-my' },
+  nz: { ietf: 'en-nz' },
   ph_en: { ietf: 'en-ph' },
   ph_fil: { ietf: 'fil-PH' },
   sg: { ietf: 'en-SG' },
-  th_en: { ietf: 'th-en' },
-  in_hi: { ietf: 'in-hi' },
+  th_en: { ietf: 'en-th' },
+  in_hi: { ietf: 'hi-in' },
   th_th: { ietf: 'th-th' },
   cn: { ietf: 'zh-CN' },
   hk_zh: { ietf: 'zh-HK' },
@@ -249,6 +250,14 @@ const getTags = (s) => {
 const getDateProp = (dateStr, errorMsg) => {
   if (!dateStr) return undefined;
   try {
+    if (dateStr.length === 10) {
+      const [m, d, y] = dateStr.split('-');
+      if (m > 12) {
+        // must be in day-month-year format
+        // eslint-disable-next-line no-param-reassign
+        dateStr = `${d}-${m}-${y}`;
+      }
+    }
     const date = new Date(dateStr);
     if (date.getFullYear() < 2000) return { error: `${errorMsg} - Date is before the year 2000` };
     return date.toISOString();
@@ -396,6 +405,21 @@ const getCountryAndLang = async (options) => {
   };
 };
 
+const parseCardMetadata = () => {
+  const pageMd = {};
+  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  if (mdEl) {
+    mdEl.childNodes.forEach((n) => {
+      const key = n.children?.[0]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent;
+      if (!key) return;
+
+      pageMd[key] = val;
+    });
+  }
+  return pageMd;
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -428,8 +452,12 @@ const props = {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
     }
+    const cardDate = parseCardMetadata()?.carddate;
+    if (cardDate) {
+      return getDateProp(cardDate, `Invalid Date: ${cardDate}`);
+    }
 
-    const pubDate = getMetaContent('name', 'publication-date');
+    const pubDate = getMetaContent('name', 'publishdate') || getMetaContent('name', 'publication-date');
     const { doc, lastModified } = getConfig();
     return pubDate
       ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
@@ -575,21 +603,6 @@ const getCaaSMetadata = async (pageMd, options) => {
   }
 
   return { caasMetadata: md, errors, tags, tagErrors };
-};
-
-const parseCardMetadata = () => {
-  const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
-  if (mdEl) {
-    mdEl.childNodes.forEach((n) => {
-      const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
-      if (!key) return;
-
-      pageMd[key] = val;
-    });
-  }
-  return pageMd;
 };
 
 const getCardMetadata = async (options) => {
