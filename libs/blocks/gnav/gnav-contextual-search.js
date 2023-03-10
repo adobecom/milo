@@ -2,7 +2,10 @@ import { fetchBlogArticleIndex } from '../article-feed/article-feed.js';
 import { getArticleTaxonomy, buildArticleCard } from '../article-feed/article-helpers.js';
 import { createTag } from '../../utils/utils.js';
 
+let abortController;
+let articles = [];
 const LIMIT = 12;
+let lastSearch = null;
 
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
@@ -44,6 +47,33 @@ function highlightTextElements(terms, elements) {
   });
 }
 
+async function fetchResults(signal, terms) {
+  let data = [];
+  let complete = false;
+  const hits = [];
+  if (!articles.length) {
+    ({ data, complete } = await fetchBlogArticleIndex());
+    articles = data;
+  }
+  while (hits.length < LIMIT && !complete && !signal.aborted) {
+    articles.forEach((article) => {
+      if (hits.length === LIMIT) {
+        return;
+      }
+      const { category } = getArticleTaxonomy(article);
+      const text = [category, article.title, article.description].join(' ').toLowerCase();
+      if (terms.every((term) => text.includes(term))) {
+        hits.push(article);
+      }
+    });
+    if (hits.length < LIMIT && !complete) {
+      // eslint-disable-next-line no-await-in-loop
+      ({ data, complete } = await fetchBlogArticleIndex());
+    }
+  }
+  return hits;
+}
+
 export default async function onSearchInput({ value, resultsEl, searchInputEl, advancedSearchEl }) {
   if (!value.length) {
     resultsEl.innerHTML = '';
@@ -51,55 +81,42 @@ export default async function onSearchInput({ value, resultsEl, searchInputEl, a
     return;
   }
 
+  if (abortController) {
+    abortController.abort();
+  }
+  abortController = new AbortController();
+
   resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
+
+  lastSearch = {};
+  const currentSearch = lastSearch;
 
   const terms = value.toLowerCase().split(' ').filter(Boolean);
   if (!terms.length) return;
 
-  const hits = [];
-  let fetchComplete = false;
-  const pageSize = 500;
+  const hits = await fetchResults(abortController.signal, terms);
 
-  while (hits.length < LIMIT && !fetchComplete) {
-    // eslint-disable-next-line no-await-in-loop
-    const { data: articles, complete, offset } = await fetchBlogArticleIndex();
-    // articles = [...articles, ...data];
-    const offsetArticles = articles.slice(offset - pageSize, offset);
-    offsetArticles.forEach((article) => {
-      if (hits.length === LIMIT) {
-        return;
-      }
+  if (currentSearch === lastSearch) {
+    if (!hits.length) {
+      const advancedLink = advancedSearchEl.querySelector('a');
+      const href = new URL(advancedLink.href);
+      href.searchParams.set('q', value);
+      advancedLink.href = href.toString();
+      resultsEl.replaceChildren(advancedSearchEl);
+      resultsEl.classList.add('no-results');
+      return;
+    }
 
-      const { category } = getArticleTaxonomy(article);
-      const text = [category, article.title, article.description].join(' ').toLowerCase();
-
-      if (terms.every((term) => text.includes(term))) {
-        hits.push(article);
-      }
+    const fragment = document.createDocumentFragment();
+    hits.forEach((hit) => {
+      const card = buildArticleCard(hit);
+      const listItemEl = createTag('li', null, card);
+      fragment.appendChild(listItemEl);
     });
-    fetchComplete = complete;
+    resultsEl.innerHTML = '';
+    resultsEl.appendChild(fragment);
+
+    highlightTextElements(terms, resultsEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
   }
-
-  if (!hits.length) {
-    const advancedLink = advancedSearchEl.querySelector('a');
-    const href = new URL(advancedLink.href);
-    href.searchParams.set('q', value);
-    advancedLink.href = href.toString();
-
-    resultsEl.replaceChildren(advancedSearchEl);
-    resultsEl.classList.add('no-results');
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  hits.forEach((hit) => {
-    const card = buildArticleCard(hit);
-    const listItemEl = createTag('li', null, card);
-    fragment.appendChild(listItemEl);
-  });
-  resultsEl.innerHTML = '';
-  resultsEl.appendChild(fragment);
-
-  highlightTextElements(terms, resultsEl.querySelectorAll('h3, .article-card-category, .article-card-body > p'));
 }
