@@ -1,3 +1,5 @@
+@import './inline-utils.css';
+
 .share {
   margin-left: auto;
   margin-right: auto;
@@ -128,24 +130,7 @@
 
 .share.inline p.icon-container {
   justify-content: flex-start;
-  width: fit-content;
   margin: 0;
-}
-
-main > .section > .share.inline {
-  margin: 0 auto;
-}
-
-.center .share.inline p.icon-container {
-  margin: 0 auto;
-  justify-content: center;
-}
-
-main > .section > .inline-wrapper {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 8px 0 12px;
 }
 
 main > .section > .inline-wrapper > .share.inline {
@@ -156,35 +141,7 @@ main > .section > .share.inline {
   margin: 0 auto;
 }
 
-main > .section.center > .share.inline,
-main > .section.center > .inline-wrapper {
+main > .section.center .share.inline p.icon-container {
   margin: 0 auto;
   justify-content: center;
-  text-align: center;
-}
-
-main > .section > .inline-wrapper > .reading-time.inline ~ .share.inline {
-  padding-left: 20px;
-  margin-left: 20px;
-  border-left: 1px solid #adadad;
-}
-
-
-@media screen and (max-width: 600px) {  
-  main > .section > .inline-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-
-  main > .section.center > .inline-wrapper {
-    align-items: center;
-  }
-
-  main > .section > .inline-wrapper > .reading-time.inline ~ .share.inline {
-    border: none;
-    padding-left: 0;
-    margin-left: 0;
-    border-top: 1px solid #adadad;
-  }
 }

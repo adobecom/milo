@@ -1,5 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { inlineBlock } from '../share/inline-utils.js';
 
 function getTextLength(node) {
   let textLength = 0;
@@ -31,18 +32,5 @@ export default async function init(block) {
   const readingTimeText = format.replace(/[1,5]/g, readingTime);
   span.innerHTML = readingTimeText;
   block.append(span);
-  if (block.classList.contains('inline')) {
-    const section = block.closest('.section');
-    const inlineSiblinggs = section.querySelectorAll('.inline');
-    if (inlineSiblinggs.length > 1) {
-      let inlineContainer = section.querySelector('.inline-wrapper');
-      if (!inlineContainer) {
-        inlineContainer = createTag('div', { class: 'inline-wrapper content' });
-        block.after(inlineContainer);
-      }
-      inlineSiblinggs.forEach((el) => inlineContainer.append(el));
-    } else {
-      block.classList.add('content');
-    }
-  }
+  inlineBlock(block);
 }
