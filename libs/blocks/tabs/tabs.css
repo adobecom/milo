@@ -1,3 +1,5 @@
+/* stylelint-disable selector-class-pattern */
+
 :root {
   /* Tab Colors */
   --tabs-active-color: #1473e6;
@@ -75,18 +77,6 @@
     text-align: center;
 }
 
-/* Section Metadata */
-.tabs-background-transparent .tabs,
-.tabs-background-transparent .tabs div[role="tablist"],
-.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
-  background: transparent;
-}
-
-.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
-  border-bottom-color: var(--tabs-active-bg-color);
-}
-
-
 .tabs div[role="tablist"] .tabList-container {
   display: flex;
   padding: 0 8.3%;
@@ -112,11 +102,12 @@
 }
 
 /* contained tabs content */
-.tabs.contained .tabContent .tabContent-container,
-[role='tabpanel'] > .section > .content {
+[role='tabpanel'] > .section > .content,
+.tabs.contained .tabContent .tabContent-container {
   width: var(--grid-container-width);
   margin: 0 auto;
 }
+
 
 .tabContent [role='tabpanel'] .section {
   position: relative;
@@ -130,6 +121,7 @@
   z-index: 1;
   position: relative;
 }
+
 
 .tabs div[role="tablist"] button {
   background: transparent;
@@ -165,6 +157,7 @@
 
 .tabs div[role="tablist"] button[aria-selected="true"] {
   background: var(--tabs-active-bg-color);
+  border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
   color: var(--tabs-active-text-color);
 }
 
@@ -190,11 +183,23 @@
   border-bottom-color: var(--tabs-active-color);
 }
 
-.tabs div[role="tablist"] button[aria-selected="true"] {
-  border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
+
+/* Section Metadata */
+.tabs-background-transparent .tabs,
+.tabs-background-transparent .tabs div[role="tablist"],
+.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
+  background: transparent;
+}
+
+.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
+  border-bottom-color: var(--tabs-active-bg-color);
 }
 
 @media screen and (min-width: 1200px) {
+  [role='tabpanel'] > .section[class*='-up'] > .content,
+  [role='tabpanel'] > .section[class*='grid-width-'] > .content {
+    width: auto;
+  }
 
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
