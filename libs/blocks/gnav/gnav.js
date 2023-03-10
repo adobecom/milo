@@ -50,7 +50,7 @@ class Gnav {
     this.desktop = window.matchMedia('(min-width: 1200px)');
   }
 
-  init = async () => {
+  init = () => {
     this.state = {};
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
@@ -96,7 +96,7 @@ class Gnav {
     if (breadcrumbs) {
       wrapper.append(breadcrumbs);
     }
-    await decorateLinks(wrapper);
+    decorateLinks(wrapper);
     this.el.append(this.curtain, wrapper);
   };
 
@@ -267,6 +267,13 @@ class Gnav {
 
   decorateAnalytics = (menu) => [...menu.children].forEach((child) => this.setMenuAnalytics(child));
 
+  decorateButtons = (menu) => {
+    const buttons = menu.querySelectorAll('strong a');
+    buttons.forEach((btn) => {
+      btn.classList.add('con-button', 'filled', 'blue', 'button-m');
+    });
+  };
+
   decorateMenu = (navItem, navLink, menu) => {
     menu.className = 'gnav-navitem-menu';
     menu.setAttribute('daa-lh', `header|${navLink.textContent}`);
@@ -295,6 +302,7 @@ class Gnav {
       e.stopPropagation();
       this.toggleMenu(navItem);
     });
+    this.decorateButtons(menu);
     return menu;
   };
 
@@ -408,8 +416,8 @@ class Gnav {
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
     const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl);
-    };
+      this.imsReady(blockEl, profileEl); ;
+    }
 
     const { locale, imsClientId, env, onReady } = getConfig();
     if (!imsClientId) return null;
@@ -619,7 +627,7 @@ export default async function init(header) {
     const parser = new DOMParser();
     const gnavDoc = parser.parseFromString(html, 'text/html');
     const gnav = new Gnav(gnavDoc.body, header);
-    await gnav.init();
+    gnav.init();
     header.dispatchEvent(initEvent);
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav${name}`);

@@ -433,29 +433,29 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
-      // slack uploaded mp4s
-      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
-        return false;
-      }
-
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        a.classList.add('modal', 'link-block');
-      } else {
-        a.classList.add(key, 'link-block');
+        a.className = 'modal link-block';
+        return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
+      a.className = `${key} link-block`;
       return true;
     }
     return false;
   });
 }
 
-export async function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
-  const { decorateLinkToButton } = await import('./decorate.js');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
@@ -467,7 +467,6 @@ export async function decorateLinks(el) {
       a.href = a.href.replace('#_dnb', '');
     } else {
       const autoBlock = decorateAutoBlock(a);
-      decorateLinkToButton(a);
       if (autoBlock) {
         rdx.push(a);
       }
@@ -553,18 +552,17 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
-async function decorateSections(el, isDoc) {
+function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
-  const res = await Promise.all([...el.querySelectorAll(selector)].map(async (section, idx) => {
+  return [...el.querySelectorAll(selector)].map((section, idx) => {
+    const links = decorateLinks(section);
     decorateDefaults(section);
     const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
-    const links = await decorateLinks(section, blocks);
     return { el: section, blocks: [...links, ...blocks] };
-  }));
-  return res;
+  });
 }
 
 async function loadMartech(config) {
@@ -578,7 +576,7 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) loadBlock(header);
+  if (header) { loadBlock(header); }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -679,7 +677,7 @@ export async function loadArea(area = document) {
     });
   }
 
-  const sections = await decorateSections(area, isDoc);
+  const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
@@ -695,7 +693,7 @@ export async function loadArea(area = document) {
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') loadPostLCP(config);
+    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
