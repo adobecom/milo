@@ -52,7 +52,7 @@ async function fetchResults(signal, terms) {
   let complete = false;
   const hits = [];
   if (!articles.length) {
-    ({ data, complete } = await fetchBlogArticleIndex());
+    ({ data } = await fetchBlogArticleIndex());
     articles = data;
   }
   while (hits.length < LIMIT && !complete && !signal.aborted) {
