@@ -108,6 +108,20 @@ function hasSchema(host) {
           },
         },
       },
+      {
+        id: 'region-selector',
+        condition: (s) => s.isEditor(),
+        button: {
+          text: 'Region Selector',
+          action: (_, s) => {
+            const { config } = s;
+            // Change this for local development
+            const domain = `https://${config.innerHost}`;
+            console.log(config);
+            console.log(s);
+          },
+        },
+      },
     ],
   });
 })();
