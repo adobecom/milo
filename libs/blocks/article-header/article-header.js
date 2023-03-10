@@ -124,7 +124,7 @@ async function buildSharing() {
     await copyToClipboard(copyButton);
   });
 
-  return sharing;
+  return sharing.cloneNode(true);
 }
 
 async function validateDate(date) {
