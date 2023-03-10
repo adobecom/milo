@@ -39,6 +39,19 @@ describe('marquee', () => {
     });
   });
 
+  describe('supports buttons ', () => {
+    it('has adapted button sizes', () => {
+      const button = marquees[14].querySelector('a.con-button');
+      expect(Array.from(button.classList).includes('button-xl')).to.equal(true);
+    });
+
+    it('creates an action area', () => {
+      const pTags = marquees[14].querySelectorAll('p');
+      expect(Array.from(pTags[2].classList).includes('action-area')).to.equal(true);
+      expect(Array.from(pTags[3].classList).includes('supplemental-text')).to.equal(true);
+    });
+  });
+
   describe('supports videos', () => {
     before(() => {
       document.body.innerHTML = video;

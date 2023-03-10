@@ -51,24 +51,23 @@ describe('Utils', () => {
         expect(link.target).to.equal('_blank');
       });
     });
-    
+
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
         expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
+          'https://www.instagram.com/',
         );
       });
 
       it('Auto block works as expected when #_dnb is not added to url', () => {
         const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
+          '[href="https://twitter.com/Adobe"]',
         );
-        expect(autoBlockLink.className).to.equal('twitter link-block');
+        expect(autoBlockLink.className).to.equal('autoblock twitter link-block');
       });
-    }); 
+    });
 
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
@@ -356,6 +355,48 @@ describe('Utils', () => {
     });
   });
 
+  it('decorates buttons', async () => {
+    const doc = await readFile({ path: './mocks/buttons.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    await utils.decorateLinks(el);
+    const divs = el.querySelectorAll('div:not(.section)');
+
+    const links0 = divs[0].querySelectorAll('a');
+    expect(Array.from(links0[0].classList).includes('con-button')).to.equal(false);
+
+    const links1 = divs[1].querySelectorAll('a');
+    expect(Array.from(links1[0].classList).includes('con-button')).to.equal(false);
+
+    const links2 = divs[2].querySelectorAll('a');
+    expect(Array.from(links2[0].classList).includes('con-button')).to.equal(false);
+
+    const links3 = divs[3].querySelectorAll('a');
+    expect(Array.from(links3[0].classList).includes('con-button')).to.equal(true);
+    const links4 = divs[4].querySelectorAll('a');
+    expect(Array.from(links4[0].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links4[0].classList).includes('blue')).to.equal(true);
+    expect(Array.from(links4[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links4[1].classList).includes('fill')).to.equal(true);
+
+    const links5 = divs[5].querySelectorAll('a');
+    expect(Array.from(links5[0].classList).includes('con-button')).to.equal(false);
+    expect(links5[0].href.includes('#_dns')).to.equal(false);
+    const links6 = divs[6].querySelectorAll('a');
+    expect(Array.from(links6[0].classList).includes('con-button')).to.equal(false);
+    expect(Array.from(links6[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links6[2].classList).includes('con-button')).to.equal(true);
+
+    const links7 = divs[7].querySelectorAll('a');
+    expect(Array.from(links7[0].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links7[0].classList).includes('fill')).to.equal(true);
+
+    const links8 = divs[8].querySelectorAll('a');
+    expect(Array.from(links8[0].classList).includes('con-button')).to.equal(false);
+    expect(Array.from(links8[1].classList).includes('con-button')).to.equal(true);
+    expect(Array.from(links8[2].classList).includes('con-button')).to.equal(true);
+  });
+
   it('adds privacy trigger to cookie preferences link in footer', () => {
     window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
     document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
@@ -363,5 +404,23 @@ describe('Utils', () => {
     const privacyLink = document.querySelector('#privacy-link');
     privacyLink.click();
     expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
+  });
+
+  it('Decorates auto blocks', async () => {
+    const doc = await readFile({ path: './mocks/body.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    await utils.decorateLinks(el);
+    const autoBlock = el.querySelector('a[class]');
+    expect(autoBlock.className).to.equal('youtube link-block');
+  });
+
+  it('Decorates modal link', async () => {
+    const doc = await readFile({ path: './mocks/body.html' });
+    const parser = new DOMParser();
+    const el = parser.parseFromString(doc, 'text/html');
+    await utils.decorateLinks(el);
+    const modalLink = el.querySelector('a[data-modal-path]');
+    expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
   });
 });

@@ -1,4 +1,3 @@
-import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { decorateCommerce } from '../../features/merch.js';
@@ -148,7 +147,6 @@ const init = (el) => {
 
   picture?.parentElement.remove();
   addInner(el, cardType, card);
-  decorateButtons(el);
 
   if (cardType === HALF || cardType === PRODUCT) {
     addFooter(links, row, merch);
