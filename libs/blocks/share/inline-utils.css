@@ -7,7 +7,6 @@ main > .section > .inline-wrapper {
 
 main > .section > .inline-wrapper > .inline {
   margin: 0;
-  width: fit-content;
 }
 
 main > .section.center > .inline-wrapper {
