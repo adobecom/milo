@@ -396,9 +396,10 @@ header .gnav-search-field:hover .gnav-search-input::placeholder {
 .gnav-search-highlight {
   position: relative;
   z-index: 1;
+  background-color: transparent;
 }
 
-.gnav-search-highlight:after {
+.gnav-search-highlight::after {
   content: '';
   position: absolute;
   z-index: -1;
