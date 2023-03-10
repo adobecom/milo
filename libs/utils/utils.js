@@ -248,8 +248,12 @@ export function appendHtmlPostfix(area = document) {
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
+    let url;
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || href.endsWith('/')
+      || url?.pathname.endsWith('/')
       || href === pageUrl.origin
       || HAS_EXTENSION.test(href.split('/').pop())
       || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {

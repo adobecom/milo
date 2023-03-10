@@ -14,6 +14,12 @@
       <a href="http://localhost:2000/has/json/extension.json"></a>
       <a href="http://localhost:2000/has/css/extension.css"></a>
       <a href="http://localhost/wrongport"></a>
+      <a href="http://localhost:2000/#hash"></a>
+      <a href="http://localhost:2000/?q=puppies"></a>
+      <a href="http://localhost:2000/?q=puppies#hash"></a>
+      <a href="http://localhost:2000#hash"></a>
+      <a href="http://localhost:2000?q=puppies"></a>
+      <a href="http://localhost:2000?q=puppies#hash"></a>
     </div>
     <div id="relativelinks">
       <a href="/test/relative/link"></a>
@@ -67,7 +73,13 @@
           'http://localhost:2000/has/json/extension.json',
           'http://localhost:2000/has/css/extension.css',
           'http://localhost/wrongport',
-          ])
+          'http://localhost:2000/#hash',
+          'http://localhost:2000/?q=puppies',
+          'http://localhost:2000/?q=puppies#hash',
+          'http://localhost:2000#hash',
+          'http://localhost:2000?q=puppies',
+          'http://localhost:2000?q=puppies#hash',
+          ]);
         });
 
         it('relative links', async () => {
