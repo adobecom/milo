@@ -45,7 +45,14 @@ function getStringKeyName(str) {
   and the \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
   */
   const regex = /[^#\. \p{L}\p{N}_-]/gu;
-  return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
+  const number = Number(str);
+  const isInteger = Number.isInteger(number);
+  const isPositive = number > 0;
+  const isPositiveInteger = isInteger && isPositive;
+  const name = isPositiveInteger 
+    ? number 
+    : str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
+  return name;
 }
 
 function configTabs(config) {
@@ -115,7 +122,9 @@ const init = (block) => {
   if (tabListItems) {
     const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
     tabListItems.forEach((item, i) => {
-      const tabName = getStringKeyName(item.textContent);
+      // index vs named
+      const tabName = getStringKeyName(i+1);
+      const tabNameValue = getStringKeyName(item.textContent);
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
@@ -158,21 +167,24 @@ const init = (block) => {
 
   // Tab Sections
   const allSections = Array.from(document.querySelectorAll('div.section'));
-  allSections.forEach((e) => {
+  allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
     const metadata = sectionMetadata.querySelectorAll(':scope > div');
     [...metadata].filter((d) => getStringKeyName(d.children[0].textContent) === 'tab')
       .forEach((d) => {
-        const metaValue = getStringKeyName(d.children[1].textContent);
+        // Is tabs key value an integer? 
+        const number = Number(d.children[1].textContent);
+        const isInteger = Number.isInteger(number);
+        const isPositive = number > 0;
+        const isPositiveInteger = isInteger && isPositive;
+        const metaValue = isPositiveInteger ? getStringKeyName(d.children[1].textContent): getStringKeyName(i);
         const section = sectionMetadata.closest('.section');
         const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
         if (assocTabItem) assocTabItem.append(section);
       });
   });
-
   block.addEventListener('milo:deferred', handleDeferredImages(block), true);
-
   initTabs(block, config);
   initCount += 1;
 };
