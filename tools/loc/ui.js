@@ -20,7 +20,7 @@ import {
   getPathFromUrl,
   loadingOFF,
   loadingON,
-  setStatus, showButtons, simulatePreview, stripExtension,
+  setStatus, showButtons, hideButtons, simulatePreview, stripExtension,
 } from './utils.js';
 import {
   saveFile,
@@ -213,12 +213,6 @@ async function rolloutAll(projectInfo) {
   if (failedRollouts.length > 0) {
     loadingON(`Rollout failed for <br/> ${failedRollouts.flat(1).join('<br/>')}`);
   }
-}
-
-function hideButtons(buttonIds) {
-  buttonIds.forEach((buttonId) => {
-    document.getElementById(buttonId).classList.add('hidden');
-  });
 }
 
 async function displayProjectDetail() {

@@ -10,6 +10,8 @@ import {
   getFloodgateUrl,
 } from './utils.js';
 
+const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles'];
+
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
   let hasSourceFile = false;
@@ -92,12 +94,11 @@ async function updateProjectDetailsUI(projectDetail, config) {
   });
 
   container.appendChild(table);
-
-  const showIds = ['reloadProject'];
-  showButtons(showIds);
+  showButtons(ACTION_BUTTON_IDS);
 }
 
 export {
   updateProjectInfo,
   updateProjectDetailsUI,
+  ACTION_BUTTON_IDS,
 };
