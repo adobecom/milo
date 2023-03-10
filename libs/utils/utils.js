@@ -456,7 +456,7 @@ export function decorateAutoBlock(a) {
 export async function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   const { decorateLinkToButton } = await import('./decorate.js');
-  const links = [...anchors].reduce((rdx, a) => {
+  return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -474,7 +474,6 @@ export async function decorateLinks(el) {
     }
     return rdx;
   }, []);
-  return links;
 }
 
 function decorateContent(el) {
