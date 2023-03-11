@@ -54,9 +54,10 @@
       "title": "Region Selector",
       "environments": [ "edit" ],
       "isPalette": true,
+      "passConfig": true,
+      "passReferrer": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 500px; width: 800px;",
-      "url": "https://region-selector--milo--adobecom.hlx.page/tools/region-selector",
-      "includePaths": [ "**.docx**" ]
+      "url": "https://region-selector--milo--adobecom.hlx.page/tools/region-selector"
     },
     {
       "title": "Preflight",

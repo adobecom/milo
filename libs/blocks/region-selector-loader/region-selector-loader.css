@@ -1,3 +1,7 @@
 /*
 Common styles for the block region selector loader
 */
+
+.region-selector-loader {
+  padding: 0 15px;
+}
