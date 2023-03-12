@@ -43,7 +43,8 @@ const init = async (el) => {
   const referrer = params.get('referrer');
   const owner = params.get('owner');
   const repo = params.get('repo');
-  let currentPath = await getWebPath(owner, repo, referrer);
+  const currentPath = await getWebPath(owner, repo, referrer);
+  let currentPathWithOutLocale = currentPath;
   if (!currentPath) {
     return;
   }
@@ -51,25 +52,24 @@ const init = async (el) => {
   const index = livecopies.indexOf(currentLocale);
   if (index > -1) {
     livecopies.splice(index, 1);
-    // taking off the locale part.
-    currentPath = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
+    currentPathWithOutLocale = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
   }
+  const editUrls = new Set();
   livecopies.forEach(async l => {
-    const editUrl = await getEditUrl(owner, repo, l, currentPath);
-    if (editUrl) {
+    const editUrl = await getEditUrl(owner, repo, l, currentPathWithOutLocale);
+    if (editUrl && !editUrls.has(editUrl)) {
+      const previewUrl = `${l ? `/${l}` : ''}${currentPathWithOutLocale}`;
+      if(previewUrl === currentPath) return;
+
       const div = createTag('div', { class: 'sk-edit-link' })
       const link = createTag('a', { target: '_blank' });
       link.href = editUrl;
-      link.innerHTML = `${l ? `/${l}` : ''}${currentPath}`;
+      link.innerHTML = previewUrl;
       div.append(link);
       el.querySelector('div div').append(div);
+      editUrls.add(editUrl);
     }
   });
-  if (!el.querySelector('.sk-edit-link')) {
-    const noLinkDiv = createTag('div', { class: 'sk-no-edit-link' })
-    noLinkDiv.innerHTML = 'There is no other locale content.';
-    el.append(noLinkDiv);
-  }
 }
 
 export default init;
