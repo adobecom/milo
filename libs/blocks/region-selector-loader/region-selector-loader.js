@@ -36,7 +36,7 @@ const getEditUrl = async (owner, repo, locale, path) => {
   }
 }
 
-const init = async (el) => {
+const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
   const { search } = window.location;
   const params = new URLSearchParams(search);
@@ -44,6 +44,7 @@ const init = async (el) => {
   const owner = params.get('owner');
   const repo = params.get('repo');
   const currentPath = await getWebPath(owner, repo, referrer);
+  
   let currentPathWithOutLocale = currentPath;
   if (!currentPath) {
     return;
@@ -54,6 +55,7 @@ const init = async (el) => {
     livecopies.splice(index, 1);
     currentPathWithOutLocale = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
   }
+  
   const editUrls = new Set();
   const ol = createTag('ol', { class: 'sk-edit-links' });
   livecopies.forEach(async l => {
@@ -63,7 +65,7 @@ const init = async (el) => {
       
       if (previewUrl === currentPath) return;
 
-      const li = createTag('li', { class: 'sk-edit-link' })
+      const li = createTag('li', { class: 'sk-edit-link', 'data-locale': l});
       const link = createTag('a', { target: '_blank' });
       link.href = editUrl;
       link.innerHTML = previewUrl;
@@ -72,7 +74,11 @@ const init = async (el) => {
       editUrls.add(editUrl);
     }
   });
-  el.querySelector('div').append(ol);
+  block.querySelector('div').append(ol);
+};
+
+const init = async (block) => {
+  await decorateRegionLinks(block);
 }
 
 export default init;
