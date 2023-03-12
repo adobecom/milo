@@ -10,7 +10,7 @@ const getLivecopies = async () => {
   json.locales.data.forEach((d) => {
     livecopies.push(...d.livecopies.split(','));
   });
-  return livecopies;
+  return livecopies.sort();
 };
 
 const getWebPath = async (owner, repo, referrer) => {
