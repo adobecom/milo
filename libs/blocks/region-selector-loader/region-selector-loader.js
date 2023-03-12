@@ -55,21 +55,24 @@ const init = async (el) => {
     currentPathWithOutLocale = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
   }
   const editUrls = new Set();
+  const ol = createTag('ol', { class: 'sk-edit-links' });
   livecopies.forEach(async l => {
     const editUrl = await getEditUrl(owner, repo, l, currentPathWithOutLocale);
     if (editUrl && !editUrls.has(editUrl)) {
       const previewUrl = `${l ? `/${l}` : ''}${currentPathWithOutLocale}`;
-      if(previewUrl === currentPath) return;
+      
+      if (previewUrl === currentPath) return;
 
-      const div = createTag('div', { class: 'sk-edit-link' })
+      const li = createTag('li', { class: 'sk-edit-link' })
       const link = createTag('a', { target: '_blank' });
       link.href = editUrl;
       link.innerHTML = previewUrl;
-      div.append(link);
-      el.querySelector('div div').append(div);
+      li.append(link);
+      ol.append(li);
       editUrls.add(editUrl);
     }
   });
+  el.querySelector('div').append(ol);
 }
 
 export default init;
