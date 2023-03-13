@@ -331,8 +331,8 @@ function Bulk(props) {
 
 export default async function init(el) {
   // force user to sign in
-  const signedIn = await signIn();
-  if (!signedIn) return;
+  // const signedIn = await signIn();
+  // if (!signedIn) return;
   
   const user = await getUser();
   render(html`<${Bulk} user="${user}" />`, el);
