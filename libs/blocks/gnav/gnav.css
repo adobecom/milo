@@ -3,6 +3,7 @@
 :root {
   --border-color: #e1e1e1;
   --apps-border-color: #cacaca;
+  --text-gray-color: #707070;
 }
 
 header {
@@ -156,7 +157,7 @@ header .breadcrumbs {
   border-bottom: 1px solid #EAEAEA;
   font-size: 12px;
   font-weight: 400;
-  color: #707070;
+  color: var(--text-gray-color);
 }
 
 /* Show when header is open */
@@ -191,7 +192,7 @@ header .breadcrumbs li {
 
 header .breadcrumbs a,
 header .breadcrumbs li {
-  color: #707070;
+  color: var(--text-gray-color);
   line-height: 34px;
 }
 
@@ -199,11 +200,16 @@ header .breadcrumbs li:first-of-type {
   padding: 0;
 }
 
+header .breadcrumbs li:last-of-type {
+  color: var(--text-color);
+}
+
 header .breadcrumbs li:first-of-type a {
   padding: 0 12px;
 }
 
 .breadcrumbs li:not(:first-of-type)::before {
+  color: var(--text-gray-color);
   position: absolute;
   left: 0;
   content: '/';
@@ -316,7 +322,7 @@ header .gnav-search-field .gnav-search-input:focus {
 
 .gnav-search-input:focus::placeholder,
 header .gnav-search-field:hover .gnav-search-input::placeholder {
-  color: #2c2c2c;
+  color: var(--text-color);
 }
 
 .gnav-search-results {
@@ -773,7 +779,7 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
 }
 
 .gnav-profile-email {
-  color: #707070;
+  color: var(--text-gray-color);
   font-size: 14px;
   line-height: 1.25;
   margin: 0;

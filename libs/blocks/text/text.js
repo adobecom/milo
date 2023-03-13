@@ -45,7 +45,7 @@ export default function init(el) {
   const overrides = ['-heading', '-body', '-detail'];
   overrides.forEach((override, index) => {
     const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toUpperCase();
+    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
   });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });

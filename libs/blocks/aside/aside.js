@@ -14,74 +14,70 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-const asideTypes = ['inline', 'notification'];
-const [INLINE, NOTIFICATION] = asideTypes;
-const asideSizes = ['extra-small', 'small', 'medium', 'large'];
-const [SIZE_XS, SIZE_S, SIZE_M, SIZE_L] = asideSizes;
+// standard/default aside uses same text sizes as the split
+const variants = ['split', 'inline', 'notification'];
+const sizes = ['extra-small', 'small', 'medium', 'large'];
+const [split, inline, notification] = variants;
+const [xsmall, small, medium, large] = sizes;
+const blockConfig = {
+  [split]: ['xl', 's', 'm'],
+  [inline]: ['s', 'm'],
+  [notification]: {
+    [xsmall]: ['m', 'm'],
+    [small]: ['m', 'm'],
+    [medium]: ['s', 's'],
+    [large]: ['l', 'm'],
+  },
+};
+
+function getBlockData(el) {
+  const variant = variants.find((variantClass) => el.classList.contains(variantClass));
+  const size = sizes.find((sizeClass) => el.classList.contains(sizeClass));
+  const blockData = variant ? blockConfig[variant] : blockConfig[Object.keys(blockConfig)[0]];
+  return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
+}
+
+function decorateStaticLinks(el) {
+  if (!el.classList.contains('notification')) return;
+  const textLinks = el.querySelectorAll('.text a:not([class])');
+  textLinks.forEach((link) => { link.classList.add('static') });
+}
 
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
+  if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  text?.classList.add('text');
+  const media = foreground.querySelector(':scope > div:not([class])');
+  if (!el.classList.contains('notification')) media?.classList.add('image');
+  const picture = text?.querySelector('picture');
+  const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
+  iconArea?.classList.add('icon-area');
+  const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const image = foregroundImage ?? bgImage;
+  if (image && !image.classList.contains('text')) {
+    const isSplit = el.classList.contains('split');
+    image.classList.add(`${isSplit ? 'split-' : ''}image`);
+    if (isSplit) {
+      const position = Array.from(image.parentNode.children).indexOf(image);
+      el.classList.add(`split${!position ? '-right' : '-left'}`);
+      foreground.parentElement.appendChild(image);
+    }
+  } else if (!iconArea) {
+    foreground?.classList.add('no-image');
+  }
   return foreground;
 }
 
-function decorateContent(el, type, size) {
-  if (!el) return;
-  const text = el.querySelector('h1, h2, h3, h4, h5, h6, a')?.closest('div');
-  const picture = text?.querySelector('picture');
-  const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
-  text?.classList.add('text');
-  if (text && !text.querySelector('p')) {
-    const buttons = text.querySelectorAll('em a, strong a');
-    let btnWrap = null;
-    if (buttons[0] && !buttons[0].closest('p')) {
-      btnWrap = document.createElement('p');
-      btnWrap.append(...[...buttons].map((button) => button.parentElement));
-    }
-    const desc = createTag('p', null, text.innerHTML);
-    text.innerHTML = '';
-    text.append(
-      iconArea || '',
-      desc,
-      btnWrap || '',
-    );
-  }
-  iconArea?.classList.add('icon-area');
-  decorateButtons(el);
-  const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings?.[headings.length - 1];
-  const isInline = type === INLINE;
-  const isNotification = type === NOTIFICATION;
-  if (heading) {
-    let headingClass = 'heading-xl';
-    if ((isNotification && size === SIZE_M) || isInline) {
-      headingClass = 'heading-s';
-    }
-    if (isNotification && size === SIZE_L) {
-      headingClass = 'heading-l';
-    }
-    heading?.classList.add(headingClass);
-    const prevClasses = heading?.previousElementSibling?.classList;
-    if (prevClasses?.length === 0) prevClasses.add('detail-m');
-  }
-  const bodyClass = (isNotification && (size === SIZE_XS || size === SIZE_S || size === SIZE_L)) || isInline ? 'body-m' : 'body-s';
-  const bodyCopy = heading?.nextElementSibling.classList.length === 0 ? heading.nextElementSibling : text?.querySelector('p:not([class])');
-  bodyCopy?.classList.add(bodyClass);
-  const body = createTag('div', { class: 'body-area' });
-  bodyCopy?.insertAdjacentElement('beforebegin', body);
-  body.append(bodyCopy);
-  el.querySelector(':scope > div:not(.text) img')?.closest('div').classList.add('image');
-}
-
 export default function init(el) {
-  const foreground = decorateLayout(el);
-  const type = asideTypes.find((asideType) => el.className.includes(asideType));
-  const size = asideSizes.find((asideSize) => el.className.includes(asideSize))
-    || (type === NOTIFICATION ? SIZE_L : null);
-  decorateContent(foreground, type, size);
+  const blockData = getBlockData(el);
+  const blockText = decorateLayout(el);
+  decorateBlockText(blockText, blockData);
+  decorateStaticLinks(el);
 }
