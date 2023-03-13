@@ -187,10 +187,10 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
+  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-      const lang = state.language.split('/')[1];
       const label = itemTag[`title.${lang}`] ? itemTag[`title.${lang}`] : itemTag.title;
       return {
         id: itemTag.tagID,
@@ -204,7 +204,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
     id: tagId,
     openedOnLoad: !!openedOnLoad,
     items,
-    group: tag.title,
+    group: tag[`title.${lang}`] ? tag[`title.${lang}`] : tag.title,
   };
 
   if (icon) {
