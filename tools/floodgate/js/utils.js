@@ -22,3 +22,11 @@ export function handleExtension(path) {
   }
   return path.substring(0, path.lastIndexOf('.'));
 }
+
+export async function getFile(downloadUrl) {
+  const response = await fetch(downloadUrl);
+  if (response) {
+    return response.blob();
+  }
+  return undefined;
+}

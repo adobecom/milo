@@ -13,7 +13,7 @@ import {
 } from '../../loc/utils.js';
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { handleExtension } from './utils.js';
+import { getFile, handleExtension } from './utils.js';
 
 /**
  * Copies the Floodgated files back to the main content tree.
@@ -84,17 +84,7 @@ async function findAllFiles() {
   const rootFolder = baseURI.split('/').pop();
   const options = getAuthorizedRequestOption({ method: 'GET' });
 
-  const fgFiles = [];
-  const fgFolders = [''];
-  return findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgFolders);
-}
-
-async function getFile(downloadUrl) {
-  const response = await fetch(downloadUrl);
-  if (response) {
-    return response.blob();
-  }
-  return undefined;
+  return findAllFloodgatedFiles(baseURI, options, rootFolder, [], ['']);
 }
 
 async function promoteFloodgatedFiles(project) {
