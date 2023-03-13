@@ -57,7 +57,8 @@
       "passConfig": true,
       "passReferrer": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 500px; width: 600px;",
-      "url": "https://region-selector--milo--adobecom.hlx.page/tools/region-selector"
+      "url": "https://region-selector--milo--adobecom.hlx.page/tools/region-selector",
+      "includePaths": [ "**.docx**" ]
     },
     {
       "title": "Preflight",

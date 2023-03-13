@@ -43,6 +43,7 @@ const decorateRegionLinks = async (block) => {
   const referrer = params.get('referrer');
   const owner = params.get('owner');
   const repo = params.get('repo');
+  const branch = params.get('ref');
   const currentPath = await getWebPath(owner, repo, referrer);
   
   let currentPathWithOutLocale = currentPath;
@@ -65,11 +66,18 @@ const decorateRegionLinks = async (block) => {
       
       if (previewUrl === currentPath) return;
 
+      const item = createTag('div', { class: 'sk-region-select-item' });
       const li = createTag('li', { class: 'sk-edit-link', 'data-locale': l});
-      const link = createTag('a', { target: '_blank' });
-      link.href = editUrl;
-      link.innerHTML = previewUrl;
-      li.append(link);
+      const previewLink = createTag('a', { class: 'sk-preview-link', target: '_blank' });
+      const editLink = createTag('a', { class: 'sk-edit-link', target: '_blank' });
+      previewLink.href = `http://${branch}--${repo}--${owner}.hlx.page${previewUrl}`;
+      previewLink.innerHTML = previewUrl;
+      editLink.href = editUrl;
+      editLink.innerHTML = 'Edit';
+
+      item.append(previewLink);
+      item.append(editLink);
+      li.append(item);
       ol.append(li);
       editUrls.add(editUrl);
     }

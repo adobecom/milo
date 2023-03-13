@@ -4,4 +4,16 @@ Common styles for the block region selector loader
 
 .region-selector-loader {
   padding: 0 15px;
+  background-color: #303030;
+  color: #fff;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+.sk-region-select-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sk-region-select-item a {
+  color: #5fa0ff;
 }
