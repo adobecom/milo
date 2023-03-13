@@ -7,6 +7,12 @@ Common styles for the block region selector loader
   background-color: #303030;
   color: #fff;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  min-height: 500px;
+}
+
+.region-selector-loader h2 {
+  margin: 0;
+  padding: 0.8em 0 0;
 }
 
 .sk-region-select-item {
