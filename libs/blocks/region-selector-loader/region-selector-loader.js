@@ -44,6 +44,9 @@ const decorateRegionLinks = async (block) => {
   const owner = params.get('owner');
   const repo = params.get('repo');
   const branch = params.get('ref');
+  
+  if (!owner || !repo || !referrer) return;
+  
   const currentPath = await getWebPath(owner, repo, referrer);
   
   let currentPathWithOutLocale = currentPath;
