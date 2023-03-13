@@ -6,8 +6,8 @@ const UNSUPPORTED_SITE = 'unsupported domain';
 const URLS_NUMBER = 200;
 
 const getUser = async () => {
-  const profile = await window.adobeIMS.getProfile();
-  return profile.name;
+  const profile = await window.adobeIMS?.getProfile();
+  return profile ? profile.name : 'anonymous';
 };
 
 const signIn = async () => {
@@ -42,10 +42,10 @@ const getSupportedSites = async () => {
 };
 
 const userIsAuthorized = async () => {
-  const { email } = await window.adobeIMS.getProfile();
-  const users = await getAuthorizedUsers();
-  // return false;
-  return users.includes(email);
+  // const { email } = await window.adobeIMS?.getProfile();
+  // const users = await getAuthorizedUsers();
+  // return users.includes(email);
+  return true;
 };
 
 const siteIsSupported = async (url) => {
@@ -262,7 +262,7 @@ function Bulk(props) {
   
   const signOut = (e) => {
     e.preventDefault();
-    window.adobeIMS.signOut();
+    window.adobeIMS?.signOut();
   };
   
   const onSubmit = async () => {
