@@ -1,4 +1,4 @@
-.georouting-wrapper {
+.dialog-modal.locale-modal-v2 .georouting-wrapper {
   padding: 56px 24px 40px;
 }
 
@@ -9,7 +9,7 @@
   background-size: cover;
 }
 
-.picker {
+.dialog-modal.locale-modal-v2 .picker {
   position: fixed;
   margin-top: 2px;
   background: #FFF 0 0 no-repeat padding-box;
@@ -21,11 +21,19 @@
   min-width: 176px;
 }
 
-.picker li {
+.dialog-modal.locale-modal-v2 a:first-child {
+  margin-right: 24px;
+}
+
+.dialog-modal.locale-modal-v2 a:last-child {
+  white-space: nowrap;
+}
+
+.dialog-modal.locale-modal-v2 .picker li {
   list-style-type: none
 }
 
-.picker li a {
+.dialog-modal.locale-modal-v2 .picker li a {
   width: calc(100% - 12px);
   display: block;
   padding-left: 12px;
@@ -33,17 +41,9 @@
   font-size: 14px;
 }
 
-.picker li a:hover {
+.dialog-modal.locale-modal-v2 .picker li a:hover {
   background-color: rgb(229 229 229);
   text-decoration: none;
-}
-
-.dialog-modal.locale-modal-v2 a:first-child {
-  margin-right: 24px;
-}
-
-.dialog-modal.locale-modal-v2 a:last-child {
-  white-space: nowrap;
 }
 
 .dialog-modal.locale-modal-v2 h3 {
@@ -58,40 +58,40 @@
   line-height: 48px;
 }
 
-span.icon {
+.dialog-modal.locale-modal-v2 span.icon {
   vertical-align: middle;
 }
 
-img.icon-milo {
+.dialog-modal.locale-modal-v2 img.icon-milo {
   top: 1px;
 }
 
-.icon-milo.down-arrow {
+.dialog-modal.locale-modal-v2 .icon-milo.down-arrow {
   float: right;
   margin-left: 4px;
   top: 1px;
   filter: brightness(0) invert(1);
 }
 
-.tabs div[role="tablist"]  {
+.dialog-modal.locale-modal-v2 .tabs div[role="tablist"]  {
   box-shadow: initial;
   background: initial;
 }
 
-.tabs div[role="tablist"] .tabList-container {
+.dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tabList-container {
   padding: initial;
   margin: initial;
 }
 
-.tabs.quiet div[role="tablist"] button[aria-selected="true"] {
+.dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-text-color);
 }
 
-.tabs.quiet div[role="tablist"] button {
+.dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
   margin-left: 24px;
 }
 
-.tabs .tabContent {
+.dialog-modal.locale-modal-v2 .tabs .tabContent {
   border-bottom: initial;
   padding: initial;
 }
@@ -103,7 +103,7 @@ img.icon-milo {
 }
 
 @media (min-width: 600px) {
-  .georouting-wrapper {
+  .dialog-modal.locale-modal-v2 .georouting-wrapper {
     padding: 56px 56px 40px;
   }
 
