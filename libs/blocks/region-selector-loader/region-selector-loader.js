@@ -67,7 +67,7 @@ const decorateRegionLinks = async (block) => {
       if (previewUrl === currentPath) return;
 
       const item = createTag('div', { class: 'sk-region-select-item' });
-      const li = createTag('li', { class: 'sk-edit-link', 'data-locale': l});
+      const li = createTag('li', { class: 'sk-edit-list', 'data-locale': l});
       const previewLink = createTag('a', { class: 'sk-preview-link', target: '_blank' });
       const editLink = createTag('a', { class: 'sk-edit-link', target: '_blank' });
       previewLink.href = `http://${branch}--${repo}--${owner}.hlx.page${previewUrl}`;

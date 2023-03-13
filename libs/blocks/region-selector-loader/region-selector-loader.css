@@ -15,9 +15,22 @@ Common styles for the block region selector loader
   padding: 0.8em 0 0;
 }
 
+.region-selector-loader ol {
+  margin: 0;
+  padding: 1em;
+}
+
 .sk-region-select-item {
   display: flex;
   justify-content: space-between;
+}
+
+.sk-edit-list {
+  border-bottom: 1px solid #888;
+}
+
+.sk-edit-list:last-child {
+  border: none;
 }
 
 .sk-region-select-item a {
