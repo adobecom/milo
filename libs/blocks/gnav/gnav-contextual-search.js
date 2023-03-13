@@ -10,8 +10,7 @@ let lastSearch = null;
 function highlightTextElements(terms, elements) {
   elements.forEach((element) => {
     const matches = [];
-    const { textContent } = element;
-    const lowerCaseTextContent = textContent.toLowerCase();
+    const textContent = element.textContent.toLowerCase();
     terms.forEach((term) => {
       const offset = lowerCaseTextContent.indexOf(term.toLowerCase());
       if (offset >= 0) {
