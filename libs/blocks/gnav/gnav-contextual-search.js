@@ -12,7 +12,7 @@ function highlightTextElements(terms, elements) {
     const matches = [];
     const textContent = element.textContent.toLowerCase();
     terms.forEach((term) => {
-      const offset = lowerCaseTextContent.indexOf(term.toLowerCase());
+      const offset = textContent.indexOf(term.toLowerCase());
       if (offset >= 0) {
         matches.push({ offset, term });
       }
