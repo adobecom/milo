@@ -19,7 +19,7 @@ const SPECTRUM_CHEVRON = '<svg class="icon-chevron-down" xmlns="http://www.w3.or
 const ADCHOICE_IMG = `<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="${base}/blocks/footer/adchoices-small.svg" height="9" width="9">`;
 const SUPPORTED_SOCIAL = ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'];
 
-class Footer {
+export class Footer {
   constructor(body, footerEl) {
     this.footerEl = footerEl;
     this.body = body;
@@ -82,7 +82,7 @@ class Footer {
   decorateGrid = () => {
     const navGrid = createTag('div', { class: 'footer-nav-grid' });
     const columns = [...this.body.querySelectorAll('body > div')]
-      .filter((col) => col.firstElementChild.nodeName === 'H2');
+      .filter((col) => col.firstElementChild?.nodeName === 'H2');
 
     if (!columns.length) {
       this.footerEl.classList.add('footer-small');
@@ -225,6 +225,13 @@ class Footer {
       });
     }
     privacyWrapper.append(ul);
+
+    const secondLine = container.querySelector('p:nth-of-type(2)');
+    if (secondLine) {
+      secondLine.classList.add('footer-copyright-second');
+      privacyWrapper.append(secondLine);
+    }
+
     return privacyWrapper;
   };
 
