@@ -67,11 +67,12 @@ async function buildAuthorInfo(authorEl, bylineContainer) {
 async function copyToClipboard(button) {
   try {
     await navigator.clipboard.writeText(window.location.href);
-    button.setAttribute('title', await replaceKey('copied-to-clipboard', getConfig()));
-    button.setAttribute('alt', await replaceKey('copied-to-clipboard', getConfig()));
-    button.setAttribute('aria-label', await replaceKey('copied-to-clipboard', getConfig()));
+    const copiedToClipboard = await replaceKey('copied-to-clipboard', getConfig());
+    button.setAttribute('title', copiedToClipboard);
+    button.setAttribute('alt', copiedToClipboard);
+    button.setAttribute('aria-label', copiedToClipboard);
 
-    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, `${await replaceKey('copied-to-clipboard', getConfig())}`);
+    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, copiedToClipboard);
     button.append(tooltip);
 
     setTimeout(() => {
@@ -158,6 +159,9 @@ export default async function init(blockEl) {
   }
 
   const childrenEls = Array.from(blockEl.children);
+  if (childrenEls.length < 4) {
+    console.warn('Block does not have enough children');
+  }
 
   const categoryContainer = childrenEls[0];
   const categoryEl = categoryContainer.firstElementChild.firstElementChild;
