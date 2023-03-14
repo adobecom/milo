@@ -9,7 +9,7 @@ async function validateAuthorUrl(url) {
   if (!url) return null;
 
   const resp = await fetch(`${url}.plain.html`);
-  if (!resp || !resp.ok) {
+  if (!resp?.ok) {
     console.log(`Could not retrieve metadata for ${url}`);
     return null;
   }
