@@ -60,18 +60,16 @@ async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgF
       // eslint-disable-next-line no-await-in-loop
       const json = await res.json();
       const driveItems = json.value;
-      if (driveItems) {
-        driveItems.forEach((item) => {
-          const itemPath = `${item.parentReference.path.replace(`/drive/root:/${rootFolder}`, '')}/${item.name}`;
-          if (item.folder) {
-            // it is a folder
-            fgFolders.push(itemPath);
-          } else {
-            const downloadUrl = item['@microsoft.graph.downloadUrl'];
-            fgFiles.push({ fileDownloadUrl: downloadUrl, filePath: itemPath });
-          }
-        });
-      }
+      driveItems?.forEach((item) => {
+        const itemPath = `${item.parentReference.path.replace(`/drive/root:/${rootFolder}`, '')}/${item.name}`;
+        if (item.folder) {
+          // it is a folder
+          fgFolders.push(itemPath);
+        } else {
+          const downloadUrl = item['@microsoft.graph.downloadUrl'];
+          fgFiles.push({ fileDownloadUrl: downloadUrl, filePath: itemPath });
+        }
+      });
     }
   }
 
