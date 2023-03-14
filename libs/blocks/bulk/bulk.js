@@ -7,7 +7,9 @@ const URLS_NUMBER = 200;
 
 const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
-  return profile ? profile.name : 'anonymous';
+  return profile
+    ? { name: profile.name, email: profile.email }
+    : { name: 'anonymous', email: 'anonymous' };
 };
 
 const signIn = async () => {
@@ -42,10 +44,9 @@ const getSupportedSites = async () => {
 };
 
 const userIsAuthorized = async () => {
-  // const { email } = await window.adobeIMS?.getProfile();
-  // const users = await getAuthorizedUsers();
-  // return users.includes(email);
-  return true;
+  const { email } = await getUser();
+  const users = await getAuthorizedUsers();
+  return users.includes(email);
 };
 
 const siteIsSupported = async (url) => {
@@ -87,7 +88,7 @@ const getReport = async (urls, action) => {
     origins.set(origin, count + 1);
   });
   const timestamp = new Date().toISOString();
-  const { email } = await window.adobeIMS.getProfile();
+  const { email } = await getUser();
   return [...origins.keys()].map((origin) => ({
     timestamp,
     email,
@@ -100,7 +101,6 @@ const getReport = async (urls, action) => {
 const sendReport = async (urls, action) => {
   const rows = await getReport(urls, action);
   const reportFile = '/tools/bulk-report';
-  // const reportFile = '/drafts/jck/bulk/bulk-report';
   rows.forEach((row) => {
     fetch(reportFile, {
       method: 'POST',
@@ -126,7 +126,7 @@ const execute = async (url, action) => {
   return resp.status;
 };
 
-const executeAll = async (actions, urls) => {
+const executeAll = async (actions, urls, setResult) => {
   const result = [];
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
@@ -140,13 +140,13 @@ const executeAll = async (actions, urls) => {
       url,
       status,
     });
+    setResult([...result]);
   }
-  return result;
 };
 
-function getUrls(element) {
+const getUrls = (element) => {
   return element.current?.value.split('\n').filter((url) => url.length > 0).map((e) => e.trim());
-}
+};
 
 function StatusRow(props) {
   return html`
@@ -181,16 +181,18 @@ function StatusContent(props) {
             <div class="bulk-status-rows">
                 ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
             </div>
-            <div class="bulk-status-footer">
-                <div class="bulk-status-footer-preview">
-                    <div class="bulk-status-footer-preview-complete">${props.result[0]?.status.preview && html`job complete`}</div>
-                    <div class="bulk-status-footer-preview-date">${props.result[0]?.status.preview && timeStamp}</div>
+            ${props.actionFinished && html`
+                <div class="bulk-status-footer">
+                    <div class="bulk-status-footer-preview">
+                        <div class="bulk-status-footer-preview-complete">${props.result[0]?.status.preview && html`job complete`}</div>
+                        <div class="bulk-status-footer-preview-date">${props.result[0]?.status.preview && timeStamp}</div>
+                    </div>
+                    <div class="bulk-status-footer-publish">
+                        <div class="bulk-status-footer-publish-complete">${props.result[0]?.status.live && html`job complete`}</div>
+                        <div class="bulk-status-footer-publish-date">${props.result[0]?.status.live && timeStamp}</div>
+                    </div>
                 </div>
-                <div class="bulk-status-footer-publish">
-                    <div class="bulk-status-footer-publish-complete">${props.result[0]?.status.live && html`job complete`}</div>
-                    <div class="bulk-status-footer-publish-date">${props.result[0]?.status.live && timeStamp}</div>
-                </div>
-            </div>
+            `}
         `}
     </div>`;
 }
@@ -215,7 +217,8 @@ function Status(props) {
         </div>
         <div class="bulk-status-content-container">
             <${StatusContent}
-                result=${props.result} />
+                result=${props.result}
+                actionFinished=${props.actionFinished} />
         </div>
     </div>`;
 }
@@ -223,7 +226,7 @@ function Status(props) {
 function User(props) {
   return html`
       <div class="bulk-user-name">
-          ${props.user}
+          ${props.user.name}
       </div>`;
 }
 
@@ -256,46 +259,48 @@ function Bulk(props) {
   const [selectedAction, setSelectedAction] = useState('preview');
   const [submittedAction, setSubmittedAction] = useState(null);
   const [result, setResult] = useState(null);
-  
+  const [actionFinished, setActionFinished] = useState(false);
+
   const urlsElt = useRef(null);
   const actionElt = useRef(null);
-  
+
   const signOut = (e) => {
     e.preventDefault();
     window.adobeIMS?.signOut();
   };
-  
+
   const onSubmit = async () => {
     // reset the result area
     setSubmittedAction(null);
     setResult(null);
-    
+    setActionFinished(false);
+
     // validate the user
     const authorizedValue = await userIsAuthorized();
     setAuthorized(authorizedValue);
     if (!authorizedValue) return;
-    
+
     // validate the number of urls
     const urls = getUrls(urlsElt);
     const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
     if (urlNumberValue === 0 || urlNumberValue > URLS_NUMBER) return;
-    
+
     // perform the action
     const submittedActionValue = actionElt.current.value;
     setSubmittedAction(submittedActionValue);
     const actions = submittedActionValue.split('&');
-    const resultValue = await executeAll(actions, urls);
-    setResult(resultValue);
-    
+    await executeAll(actions, urls, setResult);
+    setActionFinished(true);
+
     // Log the actions on the server
     await sendReport(urls, submittedActionValue);
   };
-  
+
   const onSelectChange = () => {
     setSelectedAction(actionElt.current.value);
   };
-  
+
   return html`
         <div class="bulk">
             <div class="bulk-header">
@@ -323,18 +328,21 @@ function Bulk(props) {
                 authorized=${authorized}
                 urlNumber=${urlNumber} />
             <${Status}
+                urlsElt=${urlsElt}
                 submittedAction=${submittedAction}
                 result=${result}
-                urlsElt=${urlsElt} />
+                actionFinished=${actionFinished} />
         </div>`;
 }
 
 export default async function init(el) {
   // force user to sign in
+  // TODO enable IMS sign in again
   // const signedIn = await signIn();
   // if (!signedIn) return;
-  
+
   const user = await getUser();
   render(html`<${Bulk} user="${user}" />`, el);
 }
+// TODO remove the anonymous user in bulk-config.xlsx
 // TODO: test edge cases + write tests
