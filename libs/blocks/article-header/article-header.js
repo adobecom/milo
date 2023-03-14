@@ -97,16 +97,15 @@ async function buildSharing() {
 
   const platforms = Object.keys(platformMap);
   const svgs = await fetchIcons(getConfig());
-  const anchorTags = platforms.map(async (platform) => {
+  const allAnchorTags = platforms.map((platform) => {
     const platformProperties = platformMap[platform];
     if (platformProperties) {
       return createTag('a', platformProperties, svgs[platform].cloneNode(true));
     }
     return null;
-  });
+  }).filter(Boolean);
 
   const sharing = createTag('div', { class: 'article-byline-sharing' });
-  const allAnchorTags = await Promise.all(anchorTags);
   allAnchorTags.forEach((anchorTag) => {
     const span = createTag('span', null, anchorTag);
     sharing.append(span);
