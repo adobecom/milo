@@ -12,7 +12,6 @@ export default async function init(blockEl) {
 
   blockEl.innerHTML = '';
   const tagsArray = tags.split(', ').map((tag) => tag.trim());
-
   const articleTax = computeTaxonomyFromTopics(tagsArray);
   const tagsWrapper = createTag('p');
 
