@@ -128,6 +128,10 @@ const execute = async (url, action) => {
 
 const executeAll = async (actions, urls, setResult) => {
   const result = [];
+  const success = {
+    preview: 0,
+    live: 0,
+  };
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     const status = {};
@@ -135,6 +139,9 @@ const executeAll = async (actions, urls, setResult) => {
       const action = actions[j];
       // eslint-disable-next-line no-await-in-loop
       status[action] = await execute(url, action);
+      if (status[action] === 200) {
+        success[action] += 1;
+      }
     }
     result.push({
       url,
@@ -142,6 +149,10 @@ const executeAll = async (actions, urls, setResult) => {
     });
     setResult([...result]);
   }
+  return {
+    total: urls.length,
+    success,
+  };
 };
 
 const getUrls = (element) => {
@@ -181,16 +192,22 @@ function StatusContent(props) {
             <div class="bulk-status-rows">
                 ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
             </div>
-            ${props.actionFinished && html`
+            ${props.stats && html`
                 <div class="bulk-status-footer">
-                    <div class="bulk-status-footer-preview">
-                        <div class="bulk-status-footer-preview-complete">${props.result[0]?.status.preview && html`job complete`}</div>
-                        <div class="bulk-status-footer-preview-date">${props.result[0]?.status.preview && timeStamp}</div>
-                    </div>
-                    <div class="bulk-status-footer-publish">
-                        <div class="bulk-status-footer-publish-complete">${props.result[0]?.status.live && html`job complete`}</div>
-                        <div class="bulk-status-footer-publish-date">${props.result[0]?.status.live && timeStamp}</div>
-                    </div>
+                    ${props.result[0]?.status.preview && html`
+                        <div class="bulk-status-footer-preview">
+                            <div class="bulk-status-footer-preview-complete">job complete</div>
+                            <div class="bulk-status-footer-preview-date">${timeStamp}</div>
+                            <div class="bulk-status-footer-preview-success">successful: ${props.stats.success.preview} / ${props.stats.total}</div>
+                        </div>
+                    `}
+                    ${props.result[0]?.status.live && html`
+                        <div class="bulk-status-footer-publish">
+                            <div class="bulk-status-footer-publish-complete">job complete</div>
+                            <div class="bulk-status-footer-publish-date">${timeStamp}</div>
+                            <div class="bulk-status-footer-publish-success">successful: ${props.stats.success.live} / ${props.stats.total}</div>
+                        </div>
+                    `}
                 </div>
             `}
         `}
@@ -218,7 +235,7 @@ function Status(props) {
         <div class="bulk-status-content-container">
             <${StatusContent}
                 result=${props.result}
-                actionFinished=${props.actionFinished} />
+                stats=${props.stats} />
         </div>
     </div>`;
 }
@@ -259,7 +276,7 @@ function Bulk(props) {
   const [selectedAction, setSelectedAction] = useState('preview');
   const [submittedAction, setSubmittedAction] = useState(null);
   const [result, setResult] = useState(null);
-  const [actionFinished, setActionFinished] = useState(false);
+  const [stats, setStats] = useState(null);
 
   const urlsElt = useRef(null);
   const actionElt = useRef(null);
@@ -273,7 +290,7 @@ function Bulk(props) {
     // reset the result area
     setSubmittedAction(null);
     setResult(null);
-    setActionFinished(false);
+    setStats(null);
 
     // validate the user
     const authorizedValue = await userIsAuthorized();
@@ -290,8 +307,8 @@ function Bulk(props) {
     const submittedActionValue = actionElt.current.value;
     setSubmittedAction(submittedActionValue);
     const actions = submittedActionValue.split('&');
-    await executeAll(actions, urls, setResult);
-    setActionFinished(true);
+    const statsValue = await executeAll(actions, urls, setResult);
+    setStats(statsValue);
 
     // Log the actions on the server
     await sendReport(urls, submittedActionValue);
@@ -331,7 +348,7 @@ function Bulk(props) {
                 urlsElt=${urlsElt}
                 submittedAction=${submittedAction}
                 result=${result}
-                actionFinished=${actionFinished} />
+                stats=${stats} />
         </div>`;
 }
 
