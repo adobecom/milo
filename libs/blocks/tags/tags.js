@@ -2,7 +2,7 @@ import { getTaxonomyModule, loadTaxonomy, computeTaxonomyFromTopics, getLinkForT
 import { createTag } from '../../utils/utils.js';
 
 export default async function init(blockEl) {
-  const tags = blockEl.firstElementChild?.firstElementChild?.textContent;
+  let tags = blockEl.firstElementChild?.firstElementChild?.textContent;
 
   if (!tags) return;
 
@@ -11,6 +11,7 @@ export default async function init(blockEl) {
   }
 
   blockEl.innerHTML = '';
+  tags = tags.replace(/[^a-zA-Z0-9,\s-]/g, '');
   const tagsArray = tags.split(', ').map((tag) => tag.trim());
   const articleTax = computeTaxonomyFromTopics(tagsArray);
   const tagsWrapper = createTag('p');
