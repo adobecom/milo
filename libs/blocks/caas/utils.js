@@ -182,16 +182,21 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
+const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
+  || tag[`title.${lang}`]
+  || tag.title;
+
 const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
+  const country = state.country.split('/')[1];
   const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-      const label = itemTag[`title.${lang}`] ? itemTag[`title.${lang}`] : itemTag.title;
+      const label = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
         label: label.replace('&amp;', '&'),
@@ -204,7 +209,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
     id: tagId,
     openedOnLoad: !!openedOnLoad,
     items,
-    group: tag[`title.${lang}`] ? tag[`title.${lang}`] : tag.title,
+    group: getLocalTitle(tag, country, lang),
   };
 
   if (icon) {
