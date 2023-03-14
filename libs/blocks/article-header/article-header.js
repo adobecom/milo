@@ -1,4 +1,5 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
+import { copyToClipboard } from '../../utils/tools.js';
 import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
@@ -64,28 +65,6 @@ async function buildAuthorInfo(authorEl, bylineContainer) {
   }
 }
 
-async function copyToClipboard(button) {
-  try {
-    await navigator.clipboard.writeText(window.location.href);
-    const copiedToClipboard = await replaceKey('copied-to-clipboard', getConfig());
-    button.setAttribute('title', copiedToClipboard);
-    button.setAttribute('alt', copiedToClipboard);
-    button.setAttribute('aria-label', copiedToClipboard);
-
-    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, copiedToClipboard);
-    button.append(tooltip);
-
-    setTimeout(() => {
-      tooltip.remove();
-    }, 3000);
-    button.classList.remove('copy-failure');
-    button.classList.add('copy-success');
-  } catch (e) {
-    button.classList.add('copy-failure');
-    button.classList.remove('copy-success');
-  }
-}
-
 async function buildSharing() {
   const url = encodeURIComponent(window.location.href);
   const title = encodeURIComponent(document.querySelector('h1').textContent);
@@ -138,14 +117,14 @@ async function buildSharing() {
   });
   const copyButton = sharing.querySelector('#copy-to-clipboard');
   copyButton.addEventListener('click', async () => {
-    await copyToClipboard(copyButton);
+    const copyText = await replaceKey('copied-to-clipboard', getConfig());
+    await copyToClipboard(copyButton, copyText);
   });
 
   return sharing;
 }
 
 async function validateDate(date) {
-  console.log(date)
   if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
     // match publication date to MM-DD-YYYY format
     date.classList.add('article-date-invalid');
