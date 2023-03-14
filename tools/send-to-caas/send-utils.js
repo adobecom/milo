@@ -223,7 +223,7 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.toLowerCase().split(',').map((t) => t.trim());
+    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
   } else {
     rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
       (metaEl) => metaEl.content,
