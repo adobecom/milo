@@ -1,5 +1,5 @@
 /*
- * tabs - consonant v5.1
+ * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
 import { createTag } from '../../utils/utils.js';
@@ -45,14 +45,12 @@ function getStringKeyName(str) {
   and the \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
   */
   const regex = /[^#\. \p{L}\p{N}_-]/gu;
-  const number = Number(str);
-  const isInteger = Number.isInteger(number);
-  const isPositive = number > 0;
-  const isPositiveInteger = isInteger && isPositive;
-  const name = isPositiveInteger 
-    ? number 
-    : str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
-  return name;
+  return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
+}
+
+function getUniqueId(el) {
+  const tabs = document.querySelectorAll('.tabs');
+  return [...tabs].indexOf(el) + 1;
 }
 
 function configTabs(config) {
@@ -99,61 +97,15 @@ function handleDeferredImages(e) {
   e.removeEventListener('milo:deferred', handleDeferredImages, true);
 }
 
-let initCount = 0;
 const init = (block) => {
   const rows = block.querySelectorAll(':scope > div');
+  const parentSection = block.closest('.section');
   /* c8 ignore next */
   if (!rows.length) return;
-
-  // Tab Content
-  const tabContentContainer = createTag('div', { class: 'tabContent-container' });
-  const tabContent = createTag('div', { class: 'tabContent' }, tabContentContainer);
-  block.append(tabContent);
-
-  // Tab List
-  const tabList = rows[0];
-  const tabId = `tabs-${initCount}`;
-  block.id = tabId;
-  tabList.classList.add('tabList');
-  tabList.setAttribute('role', 'tablist');
-  const tabListContainer = tabList.querySelector(':scope > div');
-  tabListContainer.classList.add('tabList-container');
-  const tabListItems = rows[0].querySelectorAll(':scope li');
-  if (tabListItems) {
-    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
-    tabListItems.forEach((item, i) => {
-      // index vs named
-      const tabName = getStringKeyName(i+1);
-      const tabNameValue = getStringKeyName(item.textContent);
-      const tabBtnAttributes = {
-        role: 'tab',
-        class: btnClass,
-        id: `tab-${initCount}-${tabName}`,
-        tabindex: '0',
-        'aria-selected': (i === 0) ? 'true' : 'false',
-        'aria-controls': `tab-panel-${initCount}-${tabName}`,
-      };
-      const tabBtn = createTag('button', tabBtnAttributes);
-      tabBtn.innerText = item.textContent;
-      tabListContainer.append(tabBtn);
-
-      const tabContentAttributes = {
-        id: `tab-panel-${initCount}-${tabName}`,
-        role: 'tabpanel',
-        class: 'tabpanel',
-        tabindex: '0',
-        'aria-labelledby': `tab-${initCount}-${tabName}`,
-      };
-      const tabListContent = createTag('div', tabContentAttributes);
-      tabListContent.setAttribute('aria-labelledby', `tab-${initCount}-${tabName}`);
-      if (i > 0) tabListContent.setAttribute('hidden', '');
-      tabContentContainer.append(tabListContent);
-    });
-    tabListItems[0].parentElement.remove();
-  }
+  block.addEventListener('milo:deferred', handleDeferredImages(block), true);
 
   // Tab Config
-  const config = { 'tab-id': initCount };
+  const config = {};
   const configRows = [].slice.call(rows);
   configRows.splice(0, 1);
   if (configRows) {
@@ -164,29 +116,77 @@ const init = (block) => {
       row.remove();
     });
   }
+  const tabsId = config.id ? config.id : getUniqueId(block);
+  config['tab-id'] = tabsId;
+  block.id = `tabs-${tabsId}`;
+  parentSection?.classList.add(`tablist-${tabsId}-section`);
+
+  // Tab Content
+  const tabContentContainer = createTag('div', { class: 'tabContent-container' });
+  const tabContent = createTag('div', { class: 'tabContent' }, tabContentContainer);
+  block.append(tabContent);
+
+  // Tab List
+  const tabList = rows[0];
+  tabList.classList.add('tabList');
+  tabList.setAttribute('role', 'tablist');
+  const tabListContainer = tabList.querySelector(':scope > div');
+  tabListContainer.classList.add('tabList-container');
+  const tabListItems = rows[0].querySelectorAll(':scope li');
+  if (tabListItems) {
+    const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
+    tabListItems.forEach((item, i) => {
+      const tabName = config.id ? i+1 : getStringKeyName(item.textContent);
+      const tabBtnAttributes = {
+        role: 'tab',
+        class: btnClass,
+        id: `tab-${tabsId}-${tabName}`,
+        tabindex: '0',
+        'aria-selected': (i === 0) ? 'true' : 'false',
+        'aria-controls': `tab-panel-${tabsId}-${tabName}`,
+      };
+      const tabBtn = createTag('button', tabBtnAttributes);
+      tabBtn.innerText = item.textContent;
+      tabListContainer.append(tabBtn);
+
+      const tabContentAttributes = {
+        id: `tab-panel-${tabsId}-${tabName}`,
+        role: 'tabpanel',
+        class: 'tabpanel',
+        tabindex: '0',
+        'aria-labelledby': `tab-${tabsId}-${tabName}`,
+      };
+      const tabListContent = createTag('div', tabContentAttributes);
+      tabListContent.setAttribute('aria-labelledby', `tab-${tabsId}-${tabName}`);
+      if (i > 0) tabListContent.setAttribute('hidden', '');
+      tabContentContainer.append(tabListContent);
+    });
+    tabListItems[0].parentElement.remove();
+  }
 
   // Tab Sections
   const allSections = Array.from(document.querySelectorAll('div.section'));
   allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
-    const metadata = sectionMetadata.querySelectorAll(':scope > div');
-    [...metadata].filter((d) => getStringKeyName(d.children[0].textContent) === 'tab')
-      .forEach((d) => {
-        // Is tabs key value an integer? 
-        const number = Number(d.children[1].textContent);
-        const isInteger = Number.isInteger(number);
-        const isPositive = number > 0;
-        const isPositiveInteger = isInteger && isPositive;
-        const metaValue = isPositiveInteger ? getStringKeyName(d.children[1].textContent): getStringKeyName(i);
-        const section = sectionMetadata.closest('.section');
-        const assocTabItem = document.getElementById(`tab-panel-${initCount}-${metaValue}`);
-        if (assocTabItem) assocTabItem.append(section);
-      });
+    const rows = sectionMetadata.querySelectorAll(':scope > div');
+    rows.forEach((row) => {
+      const key = getStringKeyName(row.children[0].textContent);
+      if (key != 'tab') return;
+      let val = getStringKeyName(row.children[1].textContent);
+      if (!val) return;
+      let id = tabsId;
+      if (config.id) {
+        const values = row.children[1].textContent.split(',');
+        id = values[0];
+        val = getStringKeyName(String(values[1]));
+      }
+      const section = sectionMetadata.closest('.section');
+      const assocTabItem = document.getElementById(`tab-panel-${id}-${val}`);
+      if (assocTabItem) assocTabItem.append(section);
+    });
   });
-  block.addEventListener('milo:deferred', handleDeferredImages(block), true);
   initTabs(block, config);
-  initCount += 1;
 };
 
 export default init;
