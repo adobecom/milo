@@ -17,7 +17,9 @@ export default async function init(blockEl) {
 
   articleTax.visibleTopics?.forEach((topic) => {
     const link = getLinkForTopic(topic);
-    tagsWrapper.insertAdjacentHTML('beforeend', link);
+    const parser = new DOMParser();
+    const linkElement = parser.parseFromString(link, 'text/html').body.firstChild;
+    tagsWrapper.appendChild(linkElement);
   });
 
   blockEl.append(tagsWrapper);
