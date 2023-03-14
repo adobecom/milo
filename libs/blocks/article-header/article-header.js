@@ -4,34 +4,20 @@ import { replaceKey } from '../../features/placeholders.js';
 import { fetchIcons } from '../../features/icons.js';
 import { buildFigure } from '../figure/figure.js';
 
-async function populateAuthorInfo(authorEl, imgContainer, url, name) {
-  if (!url) return;
+async function validateAuthorUrl(url) {
+  if (!url) return null;
+
   const resp = await fetch(`${url}.plain.html`);
   if (!resp || !resp.ok) {
-    const p = createTag('p', null, authorEl.textContent);
-    authorEl.replaceChildren(p);
     console.log(`Could not retrieve metadata for ${url}`);
-    return;
+    return null;
   }
+
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
-  const img = doc.querySelector('img');
-  if (img) {
-    img.setAttribute('alt', name);
-    imgContainer.append(img);
-    if (!img.complete) {
-      img.addEventListener('load', () => {
-        imgContainer.style.backgroundImage = 'none';
-      });
-      img.addEventListener('error', () => {
-        img.remove();
-      });
-    } else {
-      imgContainer.style.backgroundImage = 'none';
-    }
-  }
+  return doc;
 }
 
 function openPopup(e) {
@@ -43,6 +29,39 @@ function openPopup(e) {
     type,
     'popup,top=233,left=233,width=700,height=467',
   );
+}
+
+async function buildAuthorInfo(authorEl, bylineContainer) {
+  const { href, textContent } = authorEl;
+
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
+  const authorImg = createTag('div', { class: 'article-author-image' });
+  authorImg.style.backgroundImage = `url(${base}/blocks/article-header/adobe-logo.svg)`;
+  bylineContainer.prepend(authorImg);
+
+  const doc = await validateAuthorUrl(href);
+  if (!doc) {
+    const p = createTag('p', null, textContent);
+    authorEl.replaceWith(p);
+    return;
+  }
+
+  const img = doc.querySelector('img');
+  if (img) {
+    img.setAttribute('alt', authorEl.textContent);
+    authorImg.append(img);
+    if (!img.complete) {
+      img.addEventListener('load', () => {
+        authorImg.style.backgroundImage = 'none';
+      });
+      img.addEventListener('error', () => {
+        img.remove();
+      });
+    } else {
+      authorImg.style.backgroundImage = 'none';
+    }
+  }
 }
 
 async function copyToClipboard(button) {
@@ -125,6 +144,7 @@ async function buildSharing() {
 }
 
 async function validateDate(date) {
+  console.log(date)
   if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
     // match publication date to MM-DD-YYYY format
     date.classList.add('article-date-invalid');
@@ -152,22 +172,15 @@ export default async function init(blockEl) {
   bylineContainer.classList.add('article-byline');
   bylineContainer.firstElementChild.classList.add('article-byline-info');
 
-  const author = bylineContainer.firstElementChild.firstElementChild;
-  const authorEl = author.querySelector('a');
-  const authorURL = authorEl.href;
-  const authorName = author.textContent;
-  author.classList.add('article-author');
+  const authorContainer = bylineContainer.firstElementChild.firstElementChild;
+  const authorEl = authorContainer.querySelector('a');
+  authorContainer.classList.add('article-author');
 
-  const date = bylineContainer.firstElementChild.lastElementChild;
+  await buildAuthorInfo(authorEl, bylineContainer);
+
+  const date = bylineContainer.querySelector('.article-byline-info > p:last-child');
   date.classList.add('article-date');
   await validateDate(date);
-
-  const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
-  const authorImg = createTag('div', { class: 'article-author-image' });
-  authorImg.style.backgroundImage = `url(${base}/blocks/article-header/adobe-logo.svg)`;
-  bylineContainer.prepend(authorImg);
-  populateAuthorInfo(author, authorImg, authorURL, authorName);
 
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
