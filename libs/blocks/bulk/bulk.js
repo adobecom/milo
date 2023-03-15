@@ -3,7 +3,7 @@ import { getImsToken } from '../../../tools/send-to-caas/send-utils.js';
 import { loadScript } from '../../utils/utils.js';
 
 const UNSUPPORTED_SITE = 'unsupported domain';
-const URLS_NUMBER = 200;
+const URLS_NUMBER = 1000;
 
 const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
