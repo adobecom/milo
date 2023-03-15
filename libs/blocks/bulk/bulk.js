@@ -87,6 +87,9 @@ const executeAction = async (action, url) => {
   return resp.status;
 };
 
+// eslint-disable-next-line no-promise-executor-return
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
 const executeActions = async (actions, urls, setResult) => {
   const results = [];
   for (let i = 0; i < urls.length; i++) {
@@ -96,6 +99,8 @@ const executeActions = async (actions, urls, setResult) => {
       const action = actions[j];
       // eslint-disable-next-line no-await-in-loop
       status[action] = await executeAction(action, url);
+      // eslint-disable-next-line no-await-in-loop
+      await delay(100);
     }
     results.push({
       url,
