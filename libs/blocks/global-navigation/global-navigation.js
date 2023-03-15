@@ -48,7 +48,8 @@ class Gnav {
 
     this.el = el;
     this.body = body;
-    this.desktop = window.matchMedia('(min-width: 900px)');
+    this.isDesktop = window.matchMedia('(min-width: 900px)');
+    this.elements = {};
     body.querySelectorAll('[class$="-"]').forEach((block) => {
       const { name, variants } = getBlockClasses(block.className);
       block.classList.add(name, ...variants);
@@ -56,32 +57,66 @@ class Gnav {
   }
 
   init = () => {
-    this.curtain = toFragment`<div class="feds-curtain"></div>`;
+    this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
-    this.navWrapper = toFragment`
+    this.elements.navWrapper = toFragment`
       <div class="feds-nav-wrapper">
-        ${this.decorateBreadcrumbs()}
+        ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+        ${this.isDesktop.matches ? '' : this.decorateSearch()}
         ${this.decorateMainNav()}
-        ${this.decorateSearch()}
+        ${this.isDesktop.matches ? this.decorateSearch() : ''}
       </div>`;
 
-    this.nav = toFragment`
-      <div class="feds-topnav-wrapper">
-        <nav class="feds-topnav" aria-label="Main">
-          <div class="feds-brand-container">
-            ${this.mobileToggle()}
-            ${this.decorateBrand()}
-          </div>
-          ${this.navWrapper}
-          ${this.blocks.profile.blockEl && this.blocks.profile.decoratedEl}
-          ${this.decorateLogo()}
-        </nav>
-      </div>
+    this.elements.topnav = toFragment`
+      <nav class="feds-topnav" aria-label="Main">
+        <div class="feds-brand-container">
+          ${this.mobileToggle()}
+          ${this.decorateBrand()}
+        </div>
+        ${this.elements.navWrapper}
+        ${this.blocks.profile.blockEl && this.blocks.profile.decoratedEl}
+        ${this.decorateLogo()}
+      </nav>
     `;
+
+    this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
+        ${this.elements.topnav}
+        ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+      </div>`;
+
     this.el.addEventListener('click', this.loadDelayed);
     setTimeout(() => this.loadDelayed(), 3000);
     this.loadIMS();
-    this.el.append(this.curtain, this.nav);
+    this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+
+    // Ensure correct DOM order for elements between mobile and desktop
+    this.isDesktop.addEventListener('change', () => {
+      if (this.isDesktop.matches) {
+        // On desktop, search is after nav
+        if (this.elements.mainNav instanceof HTMLElement
+          && this.elements.search instanceof HTMLElement) {
+          this.elements.mainNav.after(this.elements.search);
+        }
+
+        // On desktop, breadcrumbs are below the whole nav
+        if (this.elements.topnav instanceof HTMLElement
+          && this.elements.breadcrumbsWrapper instanceof HTMLElement) {
+          this.elements.topnav.after(this.elements.breadcrumbsWrapper);
+        }
+      } else {
+        // On mobile, nav is after search
+        if (this.elements.mainNav instanceof HTMLElement
+          && this.elements.search instanceof HTMLElement) {
+          this.elements.mainNav.before(this.elements.search);
+        }
+
+        // On mobile, breadcrumbs are before the search and nav
+        if (this.elements.navWrapper instanceof HTMLElement
+          && this.elements.breadcrumbsWrapper instanceof HTMLElement) {
+          this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
+        }
+      }
+    });
   };
 
   loadDelayed = async () => {
@@ -203,7 +238,7 @@ class Gnav {
     const onMediaChange = (e) => {
       if (e.matches) {
         this.el.classList.remove(IS_OPEN);
-        this.curtain.classList.remove(IS_OPEN);
+        this.elements.curtain.classList.remove(IS_OPEN);
 
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
@@ -211,43 +246,36 @@ class Gnav {
       }
     };
 
-    // TODO: better bottom padding logic
-    let eventTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(eventTimeout);
+    const setHamburgerPadding = () => {
+      if (this.isDesktop.matches) {
+        this.elements.mainNav.style.removeProperty('padding-bottom');
+      } else {
+        const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
+        this.elements.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+      }
+    };
 
-      eventTimeout = setTimeout(() => {
-        if (document.documentElement.scrollWidth < 900) {
-          const offset = this.nav.getBoundingClientRect().bottom;
-          this.mainNav.style.setProperty('padding-bottom', `${offset}px`);
-        } else {
-          this.mainNav.style.removeProperty('padding-bottom');
-        }
-      }, 100);
+    this.isDesktop.addEventListener('change', () => {
+      setHamburgerPadding();
     });
 
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
-        this.curtain.classList.remove(IS_OPEN);
+        this.elements.curtain.classList.remove(IS_OPEN);
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
         }
-        this.desktop.removeEventListener('change', onMediaChange);
+        this.isDesktop.removeEventListener('change', onMediaChange);
 
-        this.mainNav.style.removeProperty('padding-bottom');
+        this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         this.el.classList.add(IS_OPEN);
-        this.curtain.classList.add(IS_OPEN);
-        this.desktop.addEventListener('change', onMediaChange);
+        this.elements.curtain.classList.add(IS_OPEN);
+        this.isDesktop.addEventListener('change', onMediaChange);
         this.loadSearch();
 
-        if (document.documentElement.scrollWidth < 900) {
-          const offset = this.nav.getBoundingClientRect().bottom;
-          this.mainNav.style.setProperty('padding-bottom', `${offset}px`);
-        } else {
-          this.mainNav.style.removeProperty('padding-bottom');
-        }
+        setHamburgerPadding();
       }
     });
     return toggle;
@@ -291,13 +319,13 @@ class Gnav {
   };
 
   decorateMainNav = () => {
-    this.mainNav = toFragment`<div class="feds-nav"></div>`;
-    // TODO: add secondary CTA option
-    // TODO: add Localnav logic
-    const items = this.body.querySelectorAll('h2, strong > a');
-    items.forEach((item, index) => this.mainNav.appendChild(this.decorateMainNavItem(item, index)));
+    this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
 
-    return this.mainNav;
+    const items = this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a');
+    items.forEach((item, index) => this.elements.mainNav
+      .appendChild(this.decorateMainNavItem(item, index)));
+
+    return this.elements.mainNav;
   };
 
   // eslint-disable-next-line class-methods-use-this
@@ -311,6 +339,8 @@ class Gnav {
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
     const isPrimaryCta = item.closest('strong') instanceof HTMLElement;
     if (isPrimaryCta) return 'primaryCta';
+    const isSecondaryCta = item.closest('em') instanceof HTMLElement;
+    if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
     return 'link';
@@ -324,7 +354,7 @@ class Gnav {
       let decorationTimeout;
 
       const decorateDropdown = async () => {
-        item.removeEventListener('click', decorateDropdown);
+        template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
         await this.loadDelayed();
         this.decorateDropdown({
@@ -334,7 +364,7 @@ class Gnav {
         });
       };
 
-      item.addEventListener('click', decorateDropdown);
+      template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, 3000);
     };
 
@@ -353,8 +383,9 @@ class Gnav {
             ${item.textContent.trim()}
           </a>`;
 
+        const isSectionMenu = item.closest('.section') instanceof HTMLElement;
         const triggerTemplate = toFragment`
-          <div class="feds-navItem">
+          <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
         // TODO: move proper logic to accessibility,
@@ -383,8 +414,9 @@ class Gnav {
         return triggerTemplate;
       }
       case 'primaryCta':
+      case 'secondaryCta':
         return toFragment`<div class="feds-navItem feds-navItem--centered">
-            ${decorateCta({ elem: item, index: index + 1 })}
+            ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`;
       case 'link': {
         const linkElem = item.querySelector('a');
@@ -417,8 +449,7 @@ class Gnav {
 
     if (!searchBlock) return null;
 
-    this.blocks.search.config.curtain = this.curtain;
-    this.blocks.search.config.parent = this.navWrapper;
+    this.blocks.search.config.curtain = this.elements.curtain;
 
     this.blocks.search.config.trigger = toFragment`
       <button class="feds-search-trigger" aria-label="Search" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
@@ -426,7 +457,7 @@ class Gnav {
         <span class="feds-search-close"></span>
       </button>`;
 
-    const searchEl = toFragment`
+    this.elements.search = toFragment`
       <div class="feds-search">
         ${this.blocks.search.config.trigger}
       </div>`;
@@ -442,7 +473,7 @@ class Gnav {
       await this.loadSearch();
     });
 
-    return searchEl;
+    return this.elements.search;
   };
 
   setBreadcrumbSEO = () => {
@@ -472,9 +503,11 @@ class Gnav {
       const ul = parent.querySelector('ul');
       if (ul) {
         ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        const nav = toFragment`<nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>`;
+        this.elements.breadcrumbsWrapper = toFragment`<div class="feds-breadcrumbs-wrapper">
+            <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>
+          </div>`;
         parent.remove();
-        return nav;
+        return this.elements.breadcrumbsWrapper;
       }
     }
 

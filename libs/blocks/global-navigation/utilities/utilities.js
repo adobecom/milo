@@ -65,12 +65,14 @@ export function getAnalyticsValue(str, index) {
   return analyticsValue;
 }
 
-export function decorateCta({ elem, type = 'primary', index } = {}) {
+export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
+  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
+
   return toFragment`
     <div class="feds-cta-wrapper">
       <a 
         href="${localizeLink(elem.href)}"
-        class="feds-cta feds-cta--${type}"
+        class="feds-cta feds-cta--${modifier}"
         daa-ll="${getAnalyticsValue(elem.textContent, index)}">
           ${elem.textContent}
       </a>

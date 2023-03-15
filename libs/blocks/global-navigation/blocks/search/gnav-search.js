@@ -22,7 +22,7 @@ class Search {
   constructor(config) {
     this.icon = config.icon;
     this.trigger = config.trigger;
-    this.parent = config.parent;
+    this.parent = this.trigger.closest('.feds-nav-wrapper');
     this.curtain = config.curtain;
     this.isDesktop = window.matchMedia('(min-width: 900px)');
 
@@ -46,15 +46,17 @@ class Search {
     this.resultsList = toFragment`<ul class="feds-search-results" id="feds-search-results" role="region" daa-ll="search-results:suggested-search:click"></ul>`;
     this.clearButton = toFragment`<button tabindex="0" class="feds-search-clear" aria-label="${this.labels.clearResults}"></button>`;
     this.searchBar = toFragment`
-      <aside class="feds-search-bar">
-        <div class="feds-search-field">
-          ${this.input}
-          <div class="feds-search-icons">
-            ${this.icon}
-            ${this.clearButton}
+      <aside class="feds-search-dropdown">
+        <div class="feds-search-bar">
+          <div class="feds-search-field">
+            ${this.input}
+            <div class="feds-search-icons">
+              ${this.icon}
+              ${this.clearButton}
+            </div>
           </div>
+          ${this.resultsList}
         </div>
-        ${this.resultsList}
       </aside>`;
 
     this.trigger.after(this.searchBar);
