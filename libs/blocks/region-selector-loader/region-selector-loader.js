@@ -30,10 +30,8 @@ const getEditUrl = async (owner, repo, locale, path) => {
     if (json.edit.status === 200) {
       return json.edit.url;
     }
-    return false;
-  } catch (e) {
-    return false;
-  }
+  } catch (e) { /* ignore */ }
+  return false;
 }
 
 const decorateRegionLinks = async (block) => {
