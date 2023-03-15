@@ -3,7 +3,9 @@ import { getImsToken } from '../../../tools/send-to-caas/send-utils.js';
 import { loadScript } from '../../utils/utils.js';
 
 const UNSUPPORTED_SITE = 'unsupported domain';
-const URLS_NUMBER = 1000;
+const MAX_URLS_NUMBER = 1000;
+// TODO enable IMS sign in?
+const IMS_SIGN_IN_ENABLED = false;
 
 const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
@@ -13,6 +15,8 @@ const getUser = async () => {
 };
 
 const signIn = async () => {
+  if (!IMS_SIGN_IN_ENABLED) return true;
+  // force user to sign in
   const accessToken = await getImsToken(loadScript);
   if (!accessToken) {
     window.adobeIMS.signIn();
@@ -92,9 +96,11 @@ const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mil
 
 const executeActions = async (actions, urls, setResult) => {
   const results = [];
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     const status = {};
+    // eslint-disable-next-line no-plusplus
     for (let j = 0; j < actions.length; j++) {
       const action = actions[j];
       // eslint-disable-next-line no-await-in-loop
@@ -293,8 +299,8 @@ function ErrorMessage(props) {
     message = 'You are not authorized to perform bulk operations';
   } else if (props.urlNumber === 0) {
     message = 'There are no URLs specified';
-  } else if (props.urlNumber > URLS_NUMBER) {
-    message = `There are too many URLs. You entered ${props.urlNumber} URLs. The max allowed number is ${URLS_NUMBER}`;
+  } else if (props.urlNumber > MAX_URLS_NUMBER) {
+    message = `There are too many URLs. You entered ${props.urlNumber} URLs. The max allowed number is ${MAX_URLS_NUMBER}`;
   }
   return !!message && html`
       <div class="bulk-error">
@@ -333,7 +339,7 @@ function Bulk(props) {
     const urls = getUrls(urlsElt);
     const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
-    if (urlNumberValue === 0 || urlNumberValue > URLS_NUMBER) return;
+    if (urlNumberValue === 0 || urlNumberValue > MAX_URLS_NUMBER) return;
 
     // perform the action
     const submittedActionValue = actionElt.current.value;
@@ -352,44 +358,42 @@ function Bulk(props) {
   };
 
   return html`
-        <div class="bulk">
-            <div class="bulk-header">
-                <div class="bulk-urls">
-                    <div class="bulk-urls-title">urls</div>
-                </div>
-                <div class="bulk-user">
-                    <div class="bulk-user-header">logged in as</div>
-                    <${User} user=${props.user} />
-                    <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
-                </div>
+    <div class="bulk">
+        <div class="bulk-header">
+            <div class="bulk-urls">
+                <div class="bulk-urls-title">urls</div>
             </div>
-            <textarea class="bulk-urls-input" ref="${urlsElt}"></textarea>
-            <div class="bulk-action">
-                <${SubmitBtn}
-                    onSubmit=${onSubmit}
-                    selectedAction=${selectedAction} />
-                <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
-                    <option value="preview">Preview</option>
-                    <option value="publish">Publish</option>
-                    <option value="preview&publish">Preview & Publish</option>
-                </select>
+            <div class="bulk-user">
+                <div class="bulk-user-header">logged in as</div>
+                <${User} user=${props.user} />
+                <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
             </div>
-            <${ErrorMessage}
-                authorized=${authorized}
-                urlNumber=${urlNumber} />
-            <${Status}
-                urlsElt=${urlsElt}
-                submittedAction=${submittedAction}
-                result=${result}
-                completion=${completion} />
-        </div>`;
+        </div>
+        <textarea class="bulk-urls-input" ref="${urlsElt}"></textarea>
+        <div class="bulk-action">
+            <${SubmitBtn}
+                onSubmit=${onSubmit}
+                selectedAction=${selectedAction} />
+            <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
+                <option value="preview">Preview</option>
+                <option value="publish">Publish</option>
+                <option value="preview&publish">Preview & Publish</option>
+            </select>
+        </div>
+        <${ErrorMessage}
+            authorized=${authorized}
+            urlNumber=${urlNumber} />
+        <${Status}
+            urlsElt=${urlsElt}
+            submittedAction=${submittedAction}
+            result=${result}
+            completion=${completion} />
+    </div>`;
 }
 
 export default async function init(el) {
-  // force user to sign in
-  // TODO enable IMS sign in again
-  // const signedIn = await signIn();
-  // if (!signedIn) return;
+  const signedIn = await signIn();
+  if (!signedIn) return;
 
   const user = await getUser();
   render(html`<${Bulk} user="${user}" />`, el);
