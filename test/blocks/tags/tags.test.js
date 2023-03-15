@@ -22,6 +22,6 @@ describe('decorateTags', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const block = document.querySelector('.tags');
     await init(block);
-    expect(document.body.querySelector('.tags')).to.be.exist;
+    expect(document.body.querySelector('.tags')).to.exist;
   });
 });

@@ -22,19 +22,27 @@ describe('article header', () => {
     config.locale.contentRoot = '/test/blocks/article-header/mocks';
 
     await init(block);
-    expect(document.body.querySelector('.article-category')).to.be.exist;
-    expect(document.body.querySelector('.article-title')).to.be.exist;
-    expect(document.body.querySelector('.article-author-image')).to.be.exist;
-    expect(document.body.querySelector('.article-author')).to.be.exist;
-    expect(document.body.querySelector('.article-date')).to.be.exist;
-    expect(document.body.querySelector('.article-byline-sharing')).to.be.exist;
+    expect(document.body.querySelector('.article-category')).to.exist;
+    expect(document.body.querySelector('.article-title')).to.exist;
+    expect(document.body.querySelector('.article-author-image')).to.exist;
+    expect(document.body.querySelector('.article-author')).to.exist;
+    expect(document.body.querySelector('.article-date')).to.exist;
+    expect(document.body.querySelector('.article-byline-sharing')).to.exist;
   });
 
   it('should open link popup when share links are clicked', () => {
+    // first share link is twitter
     const shareLink = document.querySelector('.article-byline-sharing a');
-    const spy = sinon.spy(shareLink, 'click');
+    const stub = sinon.stub(window, 'open');
     shareLink.click();
-    expect(spy.called).to.be.true;
+
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.querySelector('h1').textContent);
+    expect(stub.calledOnce).to.be.true;
+    expect(stub.firstCall.args[0]).to.equal(`https://www.twitter.com/share?&url=${url}&text=${title}`);
+    expect(stub.firstCall.args[2]).to.equal('popup,top=233,left=233,width=700,height=467');
+
+    stub.restore();
   });
 
   it('should add copy-failure class to link if the copy fails', async () => {
@@ -44,7 +52,7 @@ describe('article header', () => {
     copyLink.click();
     await delay(200);
 
-    expect(copyLink.classList.contains('copy-failure')).to.be.true;
+    expect(copyLink.classList.contains('copy-failure')).to.true;
 
     writeTextStub.restore();
   });
@@ -57,21 +65,21 @@ describe('article header', () => {
 
     const tooltip = await waitForElement('.copied-to-clipboard');
 
-    expect(tooltip).to.be.exist;
+    expect(tooltip).to.exist;
     writeTextStub.restore();
   });
 });
 
-describe('test the invalid block', () => {
+describe('test the invalid article header', () => {
   beforeEach(() => {
     document.body.innerHTML = invalidDoc;
   });
 
-  it('tests invalid url', async () => {
+  it('does not init if the element is invalid', async () => {
     await init(document.body.querySelector('.article-header'));
     const authorTextEl = await waitForElement('.article-author p');
     const authorLink = document.querySelector('.article-author a');
-    expect(authorTextEl).to.be.exist;
+    expect(authorTextEl).to.exist;
     expect(authorLink).to.not.exist;
   });
 
@@ -79,7 +87,6 @@ describe('test the invalid block', () => {
     await init(document.body.querySelector('.article-header'));
 
     const date = await waitForElement('.article-date-invalid');
-    console.log(date);
-    expect(date).to.be.exist;
+    expect(date).to.exist;
   });
 });
