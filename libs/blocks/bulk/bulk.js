@@ -59,104 +59,127 @@ const siteIsSupported = async (url) => {
   }
 };
 
-function getActionName(action, gerund) {
+const getUrls = (element) => element.current?.value.split('\n').filter((url) => url.length > 0).map((e) => e.trim());
+
+const getActionName = (action, gerund) => {
   let name;
   switch (action) {
     case 'preview':
       name = (!gerund) ? 'Preview' : 'Previewing';
       break;
-    case 'live':
+    case 'publish':
       name = (!gerund) ? 'Publish' : 'Publishing';
       break;
     default:
       name = (!gerund) ? 'Preview & publish' : 'Previewing & publishing';
   }
   return name;
-}
-
-const getReport = async (urls, action) => {
-  const origins = new Map();
-  urls.forEach((url) => {
-    let origin;
-    try {
-      const urlObj = new URL(url);
-      origin = urlObj.origin;
-    } catch (e) {
-      origin = url;
-    }
-    const count = origins.get(origin) || 0;
-    origins.set(origin, count + 1);
-  });
-  const timestamp = new Date().toISOString();
-  const { email } = await getUser();
-  return [...origins.keys()].map((origin) => ({
-    timestamp,
-    email,
-    action: getActionName(action),
-    domain: origin,
-    urls: origins.get(origin),
-  }));
 };
 
-const sendReport = async (urls, action) => {
-  const rows = await getReport(urls, action);
-  const reportFile = '/tools/bulk-report';
-  rows.forEach((row) => {
-    fetch(reportFile, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: row,
-      }),
-    })
-  });
-};
-
-const execute = async (url, action) => {
+const executeAction = async (action, url) => {
+  const operation = (action === 'preview') ? 'preview' : 'live';
   const siteAllowed = await siteIsSupported(url);
   if (!siteAllowed) return UNSUPPORTED_SITE;
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
-  const adminURL = `https://admin.hlx.page/${action}/${owner}/${repo}/${branch}${pathname}`;
-  const resp = await fetch(adminURL, {
-    method: 'POST',
-  });
+  const adminURL = `https://admin.hlx.page/${operation}/${owner}/${repo}/${branch}${pathname}`;
+  const resp = await fetch(adminURL, { method: 'POST' });
   return resp.status;
 };
 
-const executeAll = async (actions, urls, setResult) => {
-  const result = [];
-  const success = {
-    preview: 0,
-    live: 0,
-  };
+const executeActions = async (actions, urls, setResult) => {
+  const results = [];
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     const status = {};
     for (let j = 0; j < actions.length; j++) {
       const action = actions[j];
       // eslint-disable-next-line no-await-in-loop
-      status[action] = await execute(url, action);
-      if (status[action] === 200) {
-        success[action] += 1;
-      }
+      status[action] = await executeAction(action, url);
     }
-    result.push({
+    results.push({
       url,
       status,
     });
-    setResult([...result]);
+    setResult([...results]);
   }
+  return results;
+};
+
+const getCompletion = (results) => {
+  let previewTotal = 0;
+  let publishTotal = 0;
+  let previewSuccess = 0;
+  let publishSuccess = 0;
+  results.forEach((result) => {
+    const { status } = result;
+    if (status.preview) previewTotal += 1;
+    if (status.publish) publishTotal += 1;
+    if (status.preview === 200) previewSuccess += 1;
+    if (status.publish === 200) publishSuccess += 1;
+  });
   return {
-    total: urls.length,
-    success,
+    preview: {
+      total: previewTotal,
+      success: previewSuccess,
+    },
+    publish: {
+      total: publishTotal,
+      success: publishSuccess,
+    },
   };
 };
 
-const getUrls = (element) => {
-  return element.current?.value.split('\n').filter((url) => url.length > 0).map((e) => e.trim());
+const getReport = async (results, action) => {
+  const origins = {};
+  results.forEach((result) => {
+    let origin;
+    try {
+      const urlObj = new URL(result.url);
+      origin = urlObj.origin;
+    } catch (e) {
+      origin = result.url;
+    }
+    if (!origins[origin]) {
+      origins[origin] = {
+        total: 0,
+        success: 0,
+      };
+    }
+    if (action === 'preview&publish') {
+      origins[origin].total += 2;
+    } else {
+      origins[origin].total += 1;
+    }
+    if (result.status.preview === 200) {
+      origins[origin].success += 1;
+    }
+    if (result.status.publish === 200) {
+      origins[origin].success += 1;
+    }
+  });
+  const timestamp = new Date().toISOString();
+  const { email } = await getUser();
+  return Object.keys(origins).map((origin) => ({
+    timestamp,
+    email,
+    action: getActionName(action),
+    domain: origin,
+    urls: origins[origin].total,
+    success: origins[origin].success,
+  }));
+};
+
+const sendReport = async (results, action) => {
+  const rows = await getReport(results, action);
+  const reportFile = '/tools/bulk-report';
+  rows.forEach((row) => {
+    fetch(reportFile, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: row }),
+    });
+  });
 };
 
 function StatusRow(props) {
@@ -164,8 +187,8 @@ function StatusRow(props) {
     <div class="bulk-status-row">
         <div class="bulk-status-url">${props.row.status.preview && props.row.url}</div>
         <div class="bulk-status-preview">${props.row.status.preview && props.row.status.preview}</div>
-        <div class="bulk-status-url">${props.row.status.live && props.row.url}</div>
-        <div class="bulk-status-publish">${props.row.status.live && props.row.status.live}</div>
+        <div class="bulk-status-url">${props.row.status.publish && props.row.url}</div>
+        <div class="bulk-status-publish">${props.row.status.publish && props.row.status.publish}</div>
     </div>`;
 }
 
@@ -173,45 +196,10 @@ function prettyDate() {
   const date = new Date();
   const localeDate = date.toLocaleString();
   const splitDate = localeDate.split(', ');
-  
   return html`
     <span class=bulk-date>${splitDate[0]}</span>
     <span class=bulk-time>${splitDate[1]}</span>
   `;
-}
-
-function StatusContent(props) {
-  const timeStamp = prettyDate();
-  return html`
-    <div class="bulk-status-content">
-        ${props.result && html`
-            <div class="bulk-status-header">
-                <div class="bulk-status-header-url">Preview Status</div>
-                <div class="bulk-status-header-url">Publish Status</div>
-            </div>
-            <div class="bulk-status-rows">
-                ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
-            </div>
-            ${props.stats && html`
-                <div class="bulk-status-footer">
-                    ${props.result[0]?.status.preview && html`
-                        <div class="bulk-status-footer-preview">
-                            <div class="bulk-status-footer-preview-complete">job complete</div>
-                            <div class="bulk-status-footer-preview-date">${timeStamp}</div>
-                            <div class="bulk-status-footer-preview-success">successful: ${props.stats.success.preview} / ${props.stats.total}</div>
-                        </div>
-                    `}
-                    ${props.result[0]?.status.live && html`
-                        <div class="bulk-status-footer-publish">
-                            <div class="bulk-status-footer-publish-complete">job complete</div>
-                            <div class="bulk-status-footer-publish-date">${timeStamp}</div>
-                            <div class="bulk-status-footer-publish-success">successful: ${props.stats.success.live} / ${props.stats.total}</div>
-                        </div>
-                    `}
-                </div>
-            `}
-        `}
-    </div>`;
 }
 
 function StatusTitle(props) {
@@ -224,6 +212,42 @@ function StatusTitle(props) {
       </div>`;
 }
 
+function StatusContent(props) {
+  return html`
+    <div class="bulk-status-content">
+        ${props.result && html`
+            <div class="bulk-status-header">
+                <div class="bulk-status-header-url">Preview Status</div>
+                <div class="bulk-status-header-url">Publish Status</div>
+            </div>
+            <div class="bulk-status-rows">
+                ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
+            </div>
+        `}
+    </div>`;
+}
+
+function StatusFooter(props) {
+  const timeStamp = prettyDate();
+  return props.completion && html`
+    <div class="bulk-status-footer">
+        <div class="bulk-status-footer-preview">
+            ${props.completion.preview.total > 0 && html`
+                <div class="bulk-status-footer-preview-complete">job complete</div>
+                <div class="bulk-status-footer-preview-date">${timeStamp}</div>
+                <div class="bulk-status-footer-preview-success">successful: ${props.completion.preview.success} / ${props.completion.preview.total}</div>
+            `}
+        </div>
+        <div class="bulk-status-footer-publish">
+            ${props.completion.publish.total > 0 && html`
+                <div class="bulk-status-footer-publish-complete">job complete</div>
+                <div class="bulk-status-footer-publish-date">${timeStamp}</div>
+                <div class="bulk-status-footer-publish-success">successful: ${props.completion.publish.success} / ${props.completion.publish.total}</div>
+        `}
+        </div>
+    </div>`;
+}
+
 function Status(props) {
   return html`
     <div class="bulk-status">
@@ -234,8 +258,11 @@ function Status(props) {
         </div>
         <div class="bulk-status-content-container">
             <${StatusContent}
-                result=${props.result}
-                stats=${props.stats} />
+                result=${props.result} />
+        </div>
+        <div class="bulk-status-footer-container">
+            <${StatusFooter}
+                completion=${props.completion} />
         </div>
     </div>`;
 }
@@ -276,7 +303,7 @@ function Bulk(props) {
   const [selectedAction, setSelectedAction] = useState('preview');
   const [submittedAction, setSubmittedAction] = useState(null);
   const [result, setResult] = useState(null);
-  const [stats, setStats] = useState(null);
+  const [completion, setCompletion] = useState(null);
 
   const urlsElt = useRef(null);
   const actionElt = useRef(null);
@@ -290,7 +317,7 @@ function Bulk(props) {
     // reset the result area
     setSubmittedAction(null);
     setResult(null);
-    setStats(null);
+    setCompletion(null);
 
     // validate the user
     const authorizedValue = await userIsAuthorized();
@@ -307,11 +334,12 @@ function Bulk(props) {
     const submittedActionValue = actionElt.current.value;
     setSubmittedAction(submittedActionValue);
     const actions = submittedActionValue.split('&');
-    const statsValue = await executeAll(actions, urls, setResult);
-    setStats(statsValue);
+    const results = await executeActions(actions, urls, setResult);
+    const completionValue = getCompletion(results);
+    setCompletion(completionValue);
 
     // Log the actions on the server
-    await sendReport(urls, submittedActionValue);
+    await sendReport(results, submittedActionValue);
   };
 
   const onSelectChange = () => {
@@ -337,8 +365,8 @@ function Bulk(props) {
                     selectedAction=${selectedAction} />
                 <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
                     <option value="preview">Preview</option>
-                    <option value="live">Publish</option>
-                    <option value="preview&live">Preview & Publish</option>
+                    <option value="publish">Publish</option>
+                    <option value="preview&publish">Preview & Publish</option>
                 </select>
             </div>
             <${ErrorMessage}
@@ -348,7 +376,7 @@ function Bulk(props) {
                 urlsElt=${urlsElt}
                 submittedAction=${submittedAction}
                 result=${result}
-                stats=${stats} />
+                completion=${completion} />
         </div>`;
 }
 
