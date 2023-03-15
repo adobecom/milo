@@ -23,12 +23,13 @@ const getWebPath = async (owner, repo, referrer) => {
   }
 }
 
-const getEditUrl = async (owner, repo, locale, path) => {
+const getStatusFromHelixAdmin = async (owner, repo, locale, path) => {
   try {
     const res = await fetch(`${HELIX_ADMIN}/status/${owner}/${repo}/main/${locale}/${path}?editUrl=auto`);
     const json = await res.json();
     if (json.edit.status === 200) {
-      return json.edit.url;
+      console.log(json);
+      return json;
     }
   } catch (e) { /* ignore */ }
   return false;
@@ -52,7 +53,6 @@ const decorateRegionLinks = async (block) => {
   const referrer = params.get('referrer');
   const owner = params.get('owner');
   const repo = params.get('repo');
-  const branch = params.get('ref');
   
   if (!owner || !repo || !referrer) return;
   
@@ -72,19 +72,19 @@ const decorateRegionLinks = async (block) => {
   const editUrls = new Set();
   const ol = createTag('ol', { class: 'sk-edit-links' });
   livecopies.forEach(async l => {
-    const editUrl = await getEditUrl(owner, repo, l, currentPathWithOutLocale);
-    if (editUrl && !editUrls.has(editUrl)) {
-      const previewUrl = `${l ? `/${l}` : ''}${currentPathWithOutLocale}`;
-      
-      if (previewUrl === currentPath) return;
-
+    const adminStatus = await getStatusFromHelixAdmin(owner, repo, l, currentPathWithOutLocale);
+    if (adminStatus && !editUrls.has(adminStatus.edit.url)) {
+      if (adminStatus.webPath === currentPath) return;
       const item = createTag('div', { class: 'sk-region-select-item' });
       const li = createTag('li', { class: 'sk-edit-list', 'data-locale': l});
       const previewLink = createTag('a', { class: 'sk-preview-link', target: '_blank' });
       const editLink = createTag('a', { class: 'sk-edit-link', target: '_blank' });
-      previewLink.href = `http://${branch}--${repo}--${owner}.hlx.page${previewUrl}`;
-      previewLink.innerHTML = previewUrl;
-      editLink.href = editUrl;
+      previewLink.href = adminStatus.preview.url;
+      previewLink.innerHTML = adminStatus.webPath;
+      if (adminStatus.preview.status !== 200) {
+        previewLink.style.color = 'red';
+      }
+      editLink.href = adminStatus.edit.url;
       editLink.innerHTML = 'Edit';
 
       item.append(previewLink);
