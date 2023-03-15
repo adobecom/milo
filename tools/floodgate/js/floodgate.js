@@ -3,7 +3,6 @@ import {
   loadingOFF,
   loadingON,
   simulatePreview,
-  stripExtension,
   showButtons,
   hideButtons,
 } from '../../loc/utils.js';
@@ -24,6 +23,8 @@ import {
   updateProjectDetailsUI,
   ACTION_BUTTON_IDS,
 } from './ui.js';
+import promoteFloodgatedFiles from './promote.js';
+import { handleExtension } from './utils.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
@@ -79,7 +80,6 @@ async function floodgateContent(project, projectDetail) {
       }
       status.success = copySuccess;
       status.srcPath = srcPath;
-      status.dstPath = srcPath;
       status.url = urlInfo.doc.url;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -99,7 +99,7 @@ async function floodgateContent(project, projectDetail) {
   const previewStatuses = await Promise.all(
     copyStatuses
       .filter((status) => status.success)
-      .map((status) => simulatePreview(stripExtension(status.dstPath), 1, true)),
+      .map((status) => simulatePreview(handleExtension(status.srcPath), 1, true)),
   );
   loadingON('Completed Preview for copied files... ');
 
@@ -109,7 +109,7 @@ async function floodgateContent(project, projectDetail) {
     .map((status) => status.path);
 
   const excelValues = [['COPY', startCopy, endCopy, failedCopies.join('\n')]];
-  await updateExcelTable(project.excelPath, 'STATUS', excelValues);
+  await updateExcelTable(project.excelPath, 'COPY_STATUS', excelValues);
   loadingON('Project excel file updated with copy status... ');
   showButtons(ACTION_BUTTON_IDS);
 
@@ -126,6 +126,7 @@ async function floodgateContent(project, projectDetail) {
 function setListeners(project, projectDetail) {
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
   document.querySelector('#copyFiles button').addEventListener('click', () => floodgateContent(project, projectDetail));
+  document.querySelector('#promoteFiles button').addEventListener('click', () => promoteFloodgatedFiles(project));
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -142,6 +143,7 @@ async function init() {
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
     const project = await initProject();
+    await project.purge();
     loadingON(`Fetching project details for ${project.url}`);
 
     // Update project name on the admin page
