@@ -19,11 +19,18 @@ Common styles for faas form Dexter's
   display: none;
 }
 
-.faas h2 {
-  max-width: 460px;
-  font-size: 24px;
-  margin: 0 auto 1.25em;
+.faas-title {
+  margin-bottom: 1.25em;
+}
+
+.faas-title.text-center {
   text-align: center;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.faas-title.text-right {
+  text-align: right;
 }
 
 .faas-form .row {
@@ -68,6 +75,10 @@ Common styles for faas form Dexter's
   font-weight: 600;
 }
 
+.faas-form label .required {
+  display: none;
+}
+
 input[type="checkbox"] + label {
   width: 95%;
   font-weight: normal;
@@ -108,7 +119,7 @@ input[type="checkbox"] + label {
 
 .faas-form .error select {
   background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCI+PHBhdGggZD0iTTguNTY0IDEuMjg5LjIgMTYuMjU2QS41LjUgMCAwIDAgLjYzNiAxN2gxNi43MjhhLjUuNSAwIDAgMCAuNS0uNS40OTQuNDk0IDAgMCAwLS4wNjQtLjI0NEw5LjQzNiAxLjI4OWEuNS41IDAgMCAwLS44NzIgMFpNMTAgMTQuNzVhLjI1LjI1IDAgMCAxLS4yNS4yNWgtMS41YS4yNS4yNSAwIDAgMS0uMjUtLjI1di0xLjVhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVabTAtM2EuMjUuMjUgMCAwIDEtLjI1LjI1aC0xLjVhLjI1LjI1IDAgMCAxLS4yNS0uMjV2LTZhLjI1LjI1IDAgMCAxIC4yNS0uMjVoMS41YS4yNS4yNSAwIDAgMSAuMjUuMjVaIiBmaWxsPSIjZDczNzNmIi8+PC9zdmc+'),url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+');
-  background-position: 94%,100% 50%;
+  background-position: calc(100% - 20px),100% 50%;
   background-repeat: no-repeat;
   background-size: 18px,1em 1em;
   padding-right: 2.5rem;
@@ -146,6 +157,14 @@ input[type="checkbox"] + label {
 .faas-form .errorSummary {
   font-size: 16px;
   display: none !important;
+}
+
+.faas-form .legalnotice {
+  font-style: italic;
+}
+
+.faas-form .legalnotice a {
+  color: var(--link-color);
 }
 
 /* dark theme */
@@ -212,7 +231,7 @@ input[type="checkbox"] + label {
   box-shadow: 0 0 12px rgb(0 0 0 / 25%);
   display: none!important;
   margin-top: 2px;
-  max-width: 14em;
+  max-width: 15em;
   padding: 0.2em 0.4em;
   position: absolute;
   top: -14px;
@@ -249,7 +268,7 @@ input[type="checkbox"] + label {
 
 /* next */
 .faas.next {
-  padding: 0;
+  padding: 48px;
 }
 
 .faas.next .faas-form {
@@ -281,8 +300,8 @@ input[type="checkbox"] + label {
 
 .faas.next .faas-form .row.submit input + div {
   position: relative;
-  top: 7px;
-  left: -15px;
+  top: 20px;
+  left: -20px;
 }
 
 .faas.next .faas-form .row.submit input + div::after {
@@ -327,23 +346,21 @@ input[type="checkbox"] + label {
   bottom: -10px;
 }
 
+/* for bottom checkbox */
+.faas.column2 .faas-form .row:not(.submit).FaaS-35 {
+  width: 100%;
+}
+
 /* for modal */
 .dialog-modal .faas {
   font-size: 13px;
   max-width: 100%;
+  min-width: 200px;
 }
 
 .dialog-modal .faas .faas-form-wrapper {
   max-width: 650px;
   margin: 0 auto;
-}
-
-.dialog-modal .faas h2 {
-  font-size: 20px;
-  text-align: left;
-  margin: 0 auto 1em;
-  padding: 0 15px;
-  max-width: 620px;
 }
 
 .dialog-modal .faas .faas-form .row:not(.submit):not(.checkbox) {
@@ -371,10 +388,6 @@ input[type="checkbox"] + label {
 
 /* for mobile */
 @media (max-width:799.99px) {
-  .faas h2 {
-    font-size: 20px;
-  }
-
   .faas-form label,
   .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
   .faas-form select,

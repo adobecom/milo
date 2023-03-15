@@ -1,5 +1,3 @@
-const PROJECT_NAME = 'milo--adobecom';
-const PRODUCTION_DOMAINS = ['milo.adobe.com'];
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -7,32 +5,57 @@ const MILO_TEMPLATES = [
 const MILO_BLOCKS = [
   'accordion',
   'adobetv',
+  'article-feed',
   'aside',
+  'author-header',
   'caas',
   'caas-config',
+  'card',
+  'card-horizontal',
   'card-metadata',
   'carousel',
   'chart',
   'columns',
   'faas',
   'faq',
+  'featured-article',
+  'figure',
   'fragment',
+  'featured-article',
   'footer',
   'gnav',
   'how-to',
   'icon-block',
-  'manual-card',
+  'iframe',
+  'instagram',
+  'marketo',
   'marquee',
   'media',
   'merch',
   'modal',
+  'modal-metadata',
   'pdf-viewer',
   'quote',
+  'read-more',
+  'recommended-articles',
+  'region-nav',
+  'review',
   'section-metadata',
+  'slideshare',
+  'preflight',
+  'promo',
   'tabs',
+  'table-of-contents',
+  'text',
+  'walls-io',
+  'tiktok',
+  'twitter',
+  'video',
+  'vimeo',
   'youtube',
   'z-pattern',
   'share',
+  'reading-time',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'https://video.tv.adobe.com' },
@@ -40,18 +63,31 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { instagram: 'https://www.instagram.com' },
+  { slideshare: 'https://www.slideshare.net' },
+  { tiktok: 'https://www.tiktok.com' },
+  { twitter: 'https://twitter.com' },
+  { vimeo: 'https://vimeo.com' },
+  { vimeo: 'https://player.vimeo.com' },
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
-  local: { name: 'local' },
+  local: {
+    name: 'local',
+    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
+    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+  },
   stage: {
     name: 'stage',
     ims: 'stg1',
     adobeIO: 'cc-collab-stage.adobe.io',
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
+    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
+    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
   prod: {
     name: 'prod',
@@ -59,31 +95,42 @@ const ENVS = {
     adobeIO: 'cc-collab.adobe.io',
     adminconsole: 'adminconsole.adobe.com',
     account: 'account.adobe.com',
+    edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
+    pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
+const LANGSTORE = 'langstore';
 
-function getEnv() {
+function getEnv(conf) {
   const { host, href } = window.location;
   const location = new URL(href);
   const query = location.searchParams.get('env');
 
-  if (query) { return ENVS.query; }
-  if (host.includes('localhost:')) return ENVS.local;
+  if (query) return { ...ENVS[query], consumer: conf[query] };
+  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
-  if (host.includes('hlx.page') || host.includes('hlx.live') || host.includes('corp.adobe')) return ENVS.stage;
-  return ENVS.prod;
+  if (host.includes('hlx.page')
+    || host.includes('hlx.live')
+    || host.includes('stage.adobe')
+    || host.includes('corp.adobe')) {
+    return { ...ENVS.stage, consumer: conf.stage };
+  }
+  return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
 }
 
-// find out current locale based on pathname and existing locales object from config.
-export function getLocale(locales) {
+export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
   }
-  const { pathname } = window.location;
   const split = pathname.split('/');
-  const locale = locales[split[1]] || locales[''];
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${split[1]}`;
+  const localeString = split[1];
+  const locale = locales[localeString] || locales[''];
+  if (localeString === LANGSTORE) {
+    locale.prefix = `/${localeString}/${split[2]}`;
+    return locale;
+  }
+  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
   return locale;
 }
 
@@ -91,33 +138,45 @@ export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
-      const { origin } = window.location;
-      config = { ...conf, env: getEnv() };
+      const origin = conf.origin || window.location.origin;
+      const pathname = conf.pathname || window.location.pathname;
+      config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
-      config.locale = getLocale(conf.locales);
+      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
-      if (config.contentRoot) {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot}`;
-      } else {
-        config.locale.contentRoot = `${origin}${config.locale.prefix}`;
+      try {
+        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Invalid or missing locale:', e);
       }
+      config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
     () => config,
   ];
 })();
 
-export function getMetadata(name) {
+export function isInTextNode(node) {
+  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+}
+
+export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement || html instanceof SVGElement) {
+    if (html instanceof HTMLElement
+      || html instanceof SVGElement
+      || html instanceof DocumentFragment) {
       el.append(html);
+    } else if (Array.isArray(html)) {
+      el.append(...html);
     } else {
       el.insertAdjacentHTML('beforeend', html);
     }
@@ -130,13 +189,34 @@ export function createTag(tag, attributes, html) {
   return el;
 }
 
-export function makeRelative(href) {
-  const fixedHref = href.replace(/\u2013|\u2014/g, '--');
-  const hosts = [`${PROJECT_NAME}.hlx.page`, `${PROJECT_NAME}.hlx.live`, ...PRODUCTION_DOMAINS];
-  const url = new URL(fixedHref);
-  const relative = hosts.some((host) => url.hostname.includes(host))
-    || url.hostname === window.location.hostname;
-  return relative ? `${url.pathname}${url.search}${url.hash}` : href;
+function getExtension(path) {
+  const pageName = path.split('/').pop();
+  return pageName.includes('.') ? pageName.split('.').pop() : '';
+}
+
+export function localizeLink(href, originHostName = window.location.hostname) {
+  try {
+    const url = new URL(href);
+    const relative = url.hostname === originHostName;
+    const processedHref = relative ? href.replace(url.origin, '') : href;
+    const { hash } = url;
+    if (hash === '#_dnt') return processedHref.split('#')[0];
+    const path = url.pathname;
+    const extension = getExtension(path);
+    const allowedExts = ['', 'html', 'json'];
+    if (!allowedExts.includes(extension)) return processedHref;
+    const { locale, locales, prodDomains } = getConfig();
+    if (!locale || !locales) return processedHref;
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname));
+    if (!isLocalizable) return processedHref;
+    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`) || Object.keys(locales)
+      .some((loc) => loc !== '' && (path.startsWith(`/${loc}/`) || path.endsWith(`/${loc}`)));
+    if (isLocalizedLink) return processedHref;
+    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    return relative ? urlPath : `${url.origin}${urlPath}`;
+  } catch (error) {
+    return href;
+  }
 }
 
 export function loadStyle(href, callback) {
@@ -154,6 +234,66 @@ export function loadStyle(href, callback) {
     callback('noop');
   }
   return link;
+}
+
+export function appendHtmlPostfix(area = document) {
+  const pageUrl = new URL(window.location.href);
+  if (!pageUrl.pathname.endsWith('.html')) return;
+
+  const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const relativeAutoBlocks = autoBlocks
+    .map((b) => Object.values(b)[0])
+    .filter((b) => b.startsWith('/'));
+
+  const HAS_EXTENSION = /\..*$/;
+  const shouldNotConvert = (href) => {
+    let url = { pathname: href };
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
+    if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
+      || url.pathname?.endsWith('/')
+      || href === pageUrl.origin
+      || HAS_EXTENSION.test(href.split('/').pop())
+      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
+      return true;
+    }
+    const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
+    if (isAutoblockLink) return true;
+    return false;
+  };
+
+  if (area === document) {
+    const canonEl = document.head.querySelector('link[rel="canonical"]');
+    if (!canonEl) return;
+    const { href } = canonEl;
+    const canonUrl = new URL(href);
+    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+    const pagePath = pageUrl.pathname.replace('.html', '');
+    if (pagePath !== canonUrl.pathname) return;
+    canonEl.setAttribute('href', `${href}.html`);
+  }
+
+  const links = area.querySelectorAll('a');
+  links.forEach((el) => {
+    const href = el.getAttribute('href');
+    if (!href || shouldNotConvert(href)) return;
+
+    try {
+      const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
+      if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
+        linkUrl.pathname = `${linkUrl.pathname}.html`;
+        el.setAttribute('href', href.startsWith('/')
+          ? `${linkUrl.pathname}${linkUrl.search}${linkUrl.hash}`
+          : linkUrl.href);
+      }
+    } catch (err) {
+      /* c8 ignore next 3 */
+      // eslint-disable-next-line no-console
+      console.log(err);
+    }
+  });
 }
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
@@ -220,6 +360,7 @@ export async function loadBlock(block) {
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
+
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -230,8 +371,8 @@ export async function loadBlock(block) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
-          block.dataset.failed = 'true';
-          block.dataset.reason = `Failed loading ${name || ''} block.`;
+          const { showError } = await import('../blocks/fallback/fallback.js');
+          showError(block, name);
         }
       }
       resolve();
@@ -243,33 +384,50 @@ export async function loadBlock(block) {
 
 export function decorateSVG(a) {
   const { textContent, href } = a;
-  const ext = textContent?.substr(textContent.lastIndexOf('.') + 1);
-  if (ext !== 'svg') return;
-  const img = document.createElement('img');
-  img.src = makeRelative(textContent);
-  const pic = document.createElement('picture');
-  pic.append(img);
-  if (img.src === href) {
-    a.parentElement.replaceChild(pic, a);
-  } else {
+  if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
+  try {
+    // Mine for URL and alt text
+    const splitText = textContent.split('|');
+    const textUrl = new URL(splitText.shift().trim());
+    const altText = splitText.join('|').trim();
+
+    // Relative link checking
+    const hrefUrl = a.href.startsWith('/')
+      ? new URL(`${window.location.origin}${a.href}`)
+      : new URL(a.href);
+
+    const src = textUrl.hostname.includes('.hlx.') ? textUrl.pathname : textUrl;
+
+    const img = createTag('img', { loading: 'lazy', src });
+    if (altText) img.alt = altText;
+    const pic = createTag('picture', null, img);
+
+    if (textUrl.pathname === hrefUrl.pathname) {
+      a.parentElement.replaceChild(pic, a);
+      return pic;
+    }
     a.textContent = '';
     a.append(pic);
+    return a;
+  } catch (e) {
+    console.log('Failed to create SVG.', e.message);
+    return a;
   }
 }
 
 export function decorateAutoBlock(a) {
+  const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return AUTO_BLOCKS.find((candidate) => {
+  return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
-      if (key === 'pdf-viewer' && a.textContent !== decodeURI(a.href)) {
+      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
         a.target = '_blank';
         return false;
       }
-      // Fragments
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -287,6 +445,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
@@ -294,22 +458,25 @@ export function decorateAutoBlock(a) {
   });
 }
 
-function decorateLinks(el) {
+export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
-    a.href = makeRelative(a.href);
+    a.href = localizeLink(a.href);
     decorateSVG(a);
-    const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_blank')) {
+      a.setAttribute('target', '_blank');
+      a.href = a.href.replace('#_blank', '');
+    }
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
-}
-
-function decorateBlocks(el) {
-  const blocks = el.querySelectorAll('div[class]:not(.content)');
-  return [...blocks].map((block) => block);
 }
 
 function decorateContent(el) {
@@ -361,6 +528,22 @@ function decorateHeader() {
   }
 }
 
+async function decorateIcons(area, config) {
+  const domIcons = area.querySelectorAll('span.icon');
+  if (domIcons.length === 0) return;
+  const { default: loadIcons } = await import('../features/icons.js');
+  loadIcons(domIcons, config);
+}
+
+async function decoratePlaceholders(area, config) {
+  const el = area.documentElement ? area.body : area;
+  const regex = /{{(.*?)}}/g;
+  const found = regex.test(el.innerHTML);
+  if (!found) return;
+  const { replaceText } = await import('../features/placeholders.js');
+  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+}
+
 async function loadFooter() {
   const footer = document.querySelector('footer');
   if (!footer) return;
@@ -378,7 +561,7 @@ function decorateSections(el, isDoc) {
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
     decorateDefaults(section);
-    const blocks = decorateBlocks(section);
+    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
@@ -388,13 +571,14 @@ function decorateSections(el, isDoc) {
 
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
-  if (query !== 'off') {
-    const { default: martech } = await import('./martech.js');
+  if (query !== 'off' && getMetadata('martech') !== 'off') {
+    const { default: martech } = await import('../martech/martech.js');
     martech(config, loadScript, getMetadata);
   }
 }
 
 async function loadPostLCP(config) {
+  loadMartech(config);
   const header = document.querySelector('header');
   if (header) { loadBlock(header); }
   loadTemplate();
@@ -402,47 +586,124 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export async function loadDeferred(area) {
-  if (getMetadata('nofollow-links') === 'on') {
-    const path = getMetadata('nofollow-path') || '/seo/nofollow.json';
-    const { default: nofollow } = await import('../features/nofollow.js');
-    nofollow(path, area);
+export async function loadDeferred(area, blocks, config) {
+  const event = new Event('milo:deferred');
+  area.dispatchEvent(event);
+  if (config.links === 'on') {
+    const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
+    import('../features/links.js').then((mod) => mod.default(path, area));
+  }
+
+  if (config.locale?.ietf === 'ja-JP') {
+    // Japanese word-wrap
+    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
+      controlLineBreaksJapanese(config, area);
+    });
+  }
+
+  import('./samplerum.js').then(({ sampleRUM }) => {
+    sampleRUM('lazy');
+    sampleRUM.observe(blocks);
+    sampleRUM.observe(area.querySelectorAll('picture > img'));
+  });
+}
+
+export function loadPrivacy() {
+  const domains = {
+    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
+  };
+  const currentDomain = Object.keys(domains)
+    .find((domain) => window.location.host.includes(domain)) || domains[0];
+  let domainId = domains[currentDomain];
+  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
+  if (getConfig().env.name === 'stage') {
+    domainId += '-test';
+  }
+  window.fedsConfig = {
+    privacy: {
+      otDomainId: domainId,
+      documentLanguage: true,
+    },
+  };
+  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
+  privacyTrigger?.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.adobePrivacy?.showPreferenceCenter();
+  });
+}
+
+function initSidekick() {
+  const initPlugins = async () => {
+    const { default: init } = await import('./sidekick.js');
+    init({ createTag, loadBlock, loadScript, loadStyle });
+  };
+
+  if (document.querySelector('helix-sidekick')) {
+    initPlugins();
+  } else {
+    document.addEventListener('sidekick-ready', () => {
+      initPlugins();
+    });
   }
 }
 
-/**
-* Load the Privacy library
-*/
-function loadPrivacy() {
-  // Configure Privacy
-  window.fedsConfig = {
-    privacy: {
-      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-      footerLinkSelector: '[href="https://www.adobe.com/#openPrivacy"]',
-    },
-  };
+function decorateMeta() {
+  const { origin } = window.location;
+  const contents = document.head.querySelectorAll('[content*=".hlx."]');
+  contents.forEach((meta) => {
+    if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
+    try {
+      const url = new URL(meta.content);
+      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+    } catch (e) {
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
+    }
+  });
 
-  const env = getEnv().name === 'prod' ? '' : 'stage.';
-  loadScript(`https://www.${env}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
+  });
 }
 
 export async function loadArea(area = document) {
   const config = getConfig();
   const isDoc = area === document;
 
+  appendHtmlPostfix(area);
+  await decoratePlaceholders(area, config);
+
   if (isDoc) {
+    decorateMeta();
     decorateHeader();
-    loadMartech(config);
+
+    import('./samplerum.js').then(({ addRumListeners }) => {
+      addRumListeners();
+    });
   }
 
   const sections = decorateSections(area, isDoc);
+
+  const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
+    areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
     // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
+
+    // eslint-disable-next-line no-await-in-loop
+    await decorateIcons(section.el, config);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
@@ -454,54 +715,44 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
+    const georouting = getMetadata('georouting') || config.geoRouting;
+    if (georouting === 'on') {
+      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
+      loadGeoRouting(config, createTag, getMetadata);
+    }
+    const richResults = getMetadata('richresults');
+    if (richResults) {
+      const { default: addRichResults } = await import('../features/richresults.js');
+      addRichResults(richResults, { createTag, getMetadata });
+    }
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    initSidekick();
   }
 
   // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area);
+  await loadDeferred(area, areaBlocks, config);
 }
 
-/**
- * Load everything that impacts performance later.
- */
+// Load everything that impacts performance later.
 export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
       if (getMetadata('interlinks') === 'on') {
-        import('../features/interlinks.js').then((mod) => {
-          resolve(mod);
-        });
+        const path = `${getConfig().locale.contentRoot}/keywords.json`;
+        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
       } else {
         resolve(null);
       }
+      import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
     }, delay);
   });
 }
 
-export function utf8ToB64(str) {
-  return window.btoa(unescape(encodeURIComponent(str)));
-}
-
-export function b64ToUtf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
-}
-
-const RE_ALPHANUM = /[^0-9a-z]/gi;
-const RE_TRIM_UNDERSCORE = /^_+|_+$/g;
-export const analyticsGetLabel = (txt) => txt.replaceAll('&', 'and').replace(RE_ALPHANUM, '_').replace(RE_TRIM_UNDERSCORE, '');
-
-export const analyticsDecorateList = (li, idx) => {
-  const link = li.firstChild?.nodeName === 'A' && li.firstChild;
-  if (!link) return;
-
-  const label = link.textContent || link.getAttribute('aria-label');
-  if (!label) return;
-
-  link.setAttribute('daa-ll', `${analyticsGetLabel(label)}-${idx + 1}`);
-};
+export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
 
 export function parseEncodedConfig(encodedConfig) {
   try {
@@ -510,37 +761,6 @@ export function parseEncodedConfig(encodedConfig) {
     console.log(e);
   }
   return null;
-}
-
-export const removeHash = (url) => url?.split('#')[0];
-
-export function getHashConfig() {
-  const { hash } = window.location;
-  if (!hash) return null;
-  window.location.hash = '';
-
-  const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
-}
-
-export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-
-export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
-
-export function updateObj(obj, defaultObj) {
-  const ds = cloneObj(defaultObj);
-  Object.keys(ds).forEach((key) => {
-    if (obj[key] === undefined) obj[key] = ds[key];
-  });
-  return obj;
-}
-
-export function getBlockClasses(className) {
-  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
-  const blockWithVariants = className.split('--');
-  const name = trimDashes(blockWithVariants.shift());
-  const variants = blockWithVariants.map((v) => trimDashes(v));
-  return { name, variants };
 }
 
 export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
@@ -554,4 +774,26 @@ export function createIntersectionObserver({ el, callback, once = true, options 
   }, options);
   io.observe(el);
   return io;
+}
+
+export function loadLana(options = {}) {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
+
+  window.lana = {
+    log: async (...args) => {
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      await import('./lana.js');
+      return window.lana.log(...args);
+    },
+    debug: false,
+    options,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
 }

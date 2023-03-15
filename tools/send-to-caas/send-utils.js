@@ -1,5 +1,4 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { loadScript } from '../../libs/utils/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -10,6 +9,92 @@ const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
+
+const LOCALES = {
+  // Americas
+  ar: { ietf: 'es-AR' },
+  br: { ietf: 'pt-BR' },
+  ca: { ietf: 'en-CA' },
+  ca_fr: { ietf: 'fr-CA' },
+  cl: { ietf: 'es-CL' },
+  co: { ietf: 'es-CO' },
+  la: { ietf: 'es-LA' },
+  mx: { ietf: 'es-MX' },
+  pe: { ietf: 'es-PE' },
+  '': { ietf: 'en-US' },
+  // EMEA
+  africa: { ietf: 'en-africa' },
+  be_fr: { ietf: 'fr-BE' },
+  be_en: { ietf: 'en-BE' },
+  be_nl: { ietf: 'nl-BE' },
+  cy_en: { ietf: 'en-CY' },
+  dk: { ietf: 'da-DK' },
+  de: { ietf: 'de-DE' },
+  ee: { ietf: 'et-EE' },
+  es: { ietf: 'es-ES' },
+  fr: { ietf: 'fr-FR' },
+  gr_en: { ietf: 'en-GR' },
+  ie: { ietf: 'en-IE' },
+  il_en: { ietf: 'en-IL' },
+  it: { ietf: 'it-IT' },
+  lv: { ietf: 'lv-LV' },
+  lt: { ietf: 'lt-LT' },
+  lu_de: { ietf: 'de-LU' },
+  lu_en: { ietf: 'en-LU' },
+  lu_fr: { ietf: 'fr-LU' },
+  hu: { ietf: 'hu-HU' },
+  mt: { ietf: 'en-MT' },
+  mena: { ietf: 'en-mena' },
+  mena_en: { ietf: 'en-mena' },
+  mena_ar: { ietf: 'ar-mena' },
+  mena_fr: { ietf: 'fr-mena' },
+  nl: { ietf: 'nl-NL' },
+  no: { ietf: 'no-NO' },
+  pl: { ietf: 'pl-PL' },
+  pt: { ietf: 'pt-PT' },
+  ro: { ietf: 'ro-RO' },
+  sa_en: { ietf: 'en-sa' },
+  ch_fr: { ietf: 'fr-CH' },
+  ch_de: { ietf: 'de-CH' },
+  ch_it: { ietf: 'it-CH' },
+  si: { ietf: 'sl-SI' },
+  sk: { ietf: 'sk-SK' },
+  fi: { ietf: 'fi-FI' },
+  se: { ietf: 'sv-SE' },
+  tr: { ietf: 'tr-TR' },
+  ae_en: { ietf: 'en-ae' },
+  uk: { ietf: 'en-GB' },
+  at: { ietf: 'de-AT' },
+  cz: { ietf: 'cs-CZ' },
+  bg: { ietf: 'bg-BG' },
+  ru: { ietf: 'ru-RU' },
+  ua: { ietf: 'uk-UA' },
+  il_he: { ietf: 'he-il' },
+  ae_ar: { ietf: 'ar-ae' },
+  sa_ar: { ietf: 'ar-sa' },
+  // Asia Pacific
+  au: { ietf: 'en-AU' },
+  hk_en: { ietf: 'en-HK' },
+  in: { ietf: 'en-in' },
+  id_id: { ietf: 'id-id' },
+  id_en: { ietf: 'en-id' },
+  my_ms: { ietf: 'ms-my' },
+  my_en: { ietf: 'en-my' },
+  nz: { ietf: 'en-nz' },
+  ph_en: { ietf: 'en-ph' },
+  ph_fil: { ietf: 'fil-PH' },
+  sg: { ietf: 'en-SG' },
+  th_en: { ietf: 'en-th' },
+  in_hi: { ietf: 'hi-in' },
+  th_th: { ietf: 'th-th' },
+  cn: { ietf: 'zh-CN' },
+  hk_zh: { ietf: 'zh-HK' },
+  tw: { ietf: 'zh-TW' },
+  jp: { ietf: 'ja-JP' },
+  kr: { ietf: 'ko-KR' },
+  vn_en: { ietf: 'en-vn' },
+  vn_vi: { ietf: 'vi-VN' },
+};
 
 const [setConfig, getConfig] = (() => {
   let config = {
@@ -112,11 +197,11 @@ const [getCaasTags, loadCaasTags] = (() => {
         if (resp.ok) {
           const json = await resp.json();
           tags = json.namespaces.caas.tags;
+          return;
         }
       } catch (e) {
         // ignore
       }
-
       const { default: caasTags } = await import('../../libs/blocks/caas-config/caas-tags.js');
       tags = caasTags.namespaces.caas.tags;
     }];
@@ -138,7 +223,7 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.toLowerCase().split(',').map((t) => t.trim());
+    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
   } else {
     rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
       (metaEl) => metaEl.content,
@@ -165,6 +250,14 @@ const getTags = (s) => {
 const getDateProp = (dateStr, errorMsg) => {
   if (!dateStr) return undefined;
   try {
+    if (dateStr.length === 10) {
+      const [m, d, y] = dateStr.split('-');
+      if (m > 12) {
+        // must be in day-month-year format
+        // eslint-disable-next-line no-param-reassign
+        dateStr = `${d}-${m}-${y}`;
+      }
+    }
     const date = new Date(dateStr);
     if (date.getFullYear() < 2000) return { error: `${errorMsg} - Date is before the year 2000` };
     return date.toISOString();
@@ -252,7 +345,7 @@ const getBadges = (p) => {
   return badges;
 };
 
-const getImsToken = async () => {
+const getImsToken = async (loadScript) => {
   window.adobeid = {
     client_id: IMS_CLIENT_ID,
     environment: 'prod',
@@ -286,6 +379,47 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getBulkPublishLangAttr = async (options) => {
+  let { getLocale } = getConfig();
+  if (!getLocale) {
+    // This is only imported from the bulk publisher so there is no dependency cycle
+    // eslint-disable-next-line import/no-cycle
+    const { getLocale: utilsGetLocale } = await import('../../libs/utils/utils.js');
+    getLocale = utilsGetLocale;
+    setConfig({ getLocale });
+  }
+  return getLocale(LOCALES, options.prodUrl).ietf;
+};
+
+const getCountryAndLang = async (options) => {
+  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
+    ? await getBulkPublishLangAttr(options)
+    : document.documentElement.lang;
+
+  const langAttr = langStr?.toLowerCase().split('-') || [];
+
+  const [lang = 'en', country = 'us'] = langAttr;
+  return {
+    country,
+    lang,
+  };
+};
+
+const parseCardMetadata = () => {
+  const pageMd = {};
+  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  if (mdEl) {
+    mdEl.childNodes.forEach((n) => {
+      const key = n.children?.[0]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent;
+      if (!key) return;
+
+      pageMd[key] = val;
+    });
+  }
+  return pageMd;
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -309,14 +443,21 @@ const props = {
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
-  // TODO - automatically get country
-  country: (s) => s || 'us',
+  country: async (s, options) => {
+    if (s) return s;
+    const { country } = await getCountryAndLang(options);
+    return country;
+  },
   created: (s) => {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
     }
+    const cardDate = parseCardMetadata()?.carddate;
+    if (cardDate) {
+      return getDateProp(cardDate, `Invalid Date: ${cardDate}`);
+    }
 
-    const pubDate = getMetaContent('name', 'publication-date');
+    const pubDate = getMetaContent('name', 'publishdate') || getMetaContent('name', 'publication-date');
     const { doc, lastModified } = getConfig();
     return pubDate
       ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
@@ -326,6 +467,7 @@ const props = {
   cta1style: 0,
   cta1text: 0,
   cta1url: (s, options) => {
+    if (s?.trim() === '') return '';
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid Cta1Url: ${url}`);
   },
@@ -341,8 +483,11 @@ const props = {
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
   floodgatecolor: (s) => s || 'default',
-  // TODO: automatically get lang
-  lang: (s) => s || 'en',
+  lang: async (s, options) => {
+    if (s) return s;
+    const { lang } = await getCountryAndLang(options);
+    return lang;
+  },
   modified: (s) => {
     const { doc, lastModified } = getConfig();
     return s
@@ -402,22 +547,26 @@ const getCaasProps = (p) => {
       }),
       badges: getBadges(p),
       ...(p.playurl && { playUrl: p.playurl }),
-      cta: {
-        primaryCta: {
-          text: p.cta1text,
-          url: p.cta1url,
-          style: p.cta1style,
-          icon: p.cta1icon,
+      ...((p.cta1url || p.cta2url) && {
+        cta: {
+          ...(p.cta1url && {
+            primaryCta: {
+              text: p.cta1text,
+              url: p.cta1url,
+              style: p.cta1style,
+              icon: p.cta1icon,
+            },
+          }),
+          ...(p.cta2url && {
+            secondaryCta: {
+              text: p.cta2text,
+              url: p.cta2url,
+              style: p.cta2style,
+              icon: p.cta2icon,
+            },
+          }),
         },
-        ...(p.cta2url && {
-          secondaryCta: {
-            text: p.cta2text,
-            url: p.cta2url,
-            style: p.cta2style,
-            icon: p.cta2icon,
-          },
-        }),
-      },
+      }),
       ...((p.eventduration || p.eventstart || p.eventend) && {
         event: {
           duration: p.eventduration,
@@ -456,21 +605,6 @@ const getCaaSMetadata = async (pageMd, options) => {
   return { caasMetadata: md, errors, tags, tagErrors };
 };
 
-const parseCardMetadata = () => {
-  const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
-  if (mdEl) {
-    mdEl.childNodes.forEach((n) => {
-      const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
-      if (!key) return;
-
-      pageMd[key] = val;
-    });
-  }
-  return pageMd;
-};
-
 const getCardMetadata = async (options) => {
   const pageMd = parseCardMetadata();
   return getCaaSMetadata(pageMd, options);
@@ -482,7 +616,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
     body: JSON.stringify(caasProps),
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      draft: draftOnly,
+      draft: !!draftOnly,
       'caas-env': caasEnv,
     },
   };

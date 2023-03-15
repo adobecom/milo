@@ -1,7 +1,8 @@
 module.exports = {
   root: true,
-  extends: 'airbnb-base',
-  env: { browser: true },
+  extends: ['airbnb-base', 'plugin:react-hooks/recommended', 'plugin:compat/recommended', 'plugin:ecmalist/recommended'],
+  settings: { es: { aggressive: true } },
+  env: { browser: true, mocha: true },
   parser: '@babel/eslint-parser',
   parserOptions: {
     allowImportExportEverywhere: true,
@@ -19,9 +20,21 @@ module.exports = {
       ImportDeclaration: { multiline: true, minProperties: 6 },
       ExportDeclaration: { multiline: true, minProperties: 6 },
     }],
+    'no-unused-expressions': 0,
+    'chai-friendly/no-unused-expressions': 2,
+
   },
+  overrides: [
+    {
+      files: ['test/**/*.js'],
+      rules: { 'no-console': 'off' },
+    },
+  ],
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
+  ],
+  plugins: [
+    'chai-friendly',
   ],
 };

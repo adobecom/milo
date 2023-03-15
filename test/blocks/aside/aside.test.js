@@ -1,12 +1,9 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
-const types = ['simple', 'split', 'inline'];
+const types = ['simple', 'split', 'inline', 'notification'];
 
 describe('aside', () => {
   const asides = document.querySelectorAll('.aside');
@@ -19,15 +16,33 @@ describe('aside', () => {
     describe(`aside ${type}`, () => {
       const isInline = type === 'inline';
 
-      it('has a heading', () => {
-        const heading = aside.querySelector('[class^=heading-]');
-        expect(heading).to.exist;
-      });
+      if (type !== 'notification') {
+        it('has a heading', () => {
+          const heading = aside.querySelector('[class^=heading-]');
+          expect(heading).to.exist;
+        });
 
-      it('has a body', () => {
-        const body = aside.querySelector('[class^=body-]');
-        expect(body).to.exist;
-      });
+        it('icon has a wrapper', () => {
+          const icon = aside.querySelector('.text picture');
+
+          if (icon) {
+            expect(icon.closest('.icon-area')).to.exist;
+          }
+        });
+
+        it('has a body', () => {
+          const body = aside.querySelector('[class^=body-]');
+          expect(body).to.exist;
+        });
+
+        it('button has a wrapper', () => {
+          const button = aside.querySelector('.text .con-button');
+
+          if (aside.querySelector('.text .con-button')) {
+            expect(button.closest('p')).to.exist;
+          }
+        });
+      }
 
       if (type === 'default' || type === isInline) {
         it('has an image', () => {
@@ -38,7 +53,7 @@ describe('aside', () => {
 
       if (type === types[1]) {
         it('has a background image', () => {
-          const body = aside.querySelector('.background');
+          const body = aside.querySelector('.split-image');
           expect(body).to.exist;
         });
       }

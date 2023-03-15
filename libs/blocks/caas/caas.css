@@ -1,15 +1,20 @@
-a[href*="/tools/caas#"] {
+a[href*='/tools/caas#'] {
   visibility: hidden !important;
 }
 
-main .consonant-TopFilters-filtersWrapper:first-child{
+main .consonant-TopFilters-filtersWrapper:first-child {
   padding-top: 2px;
 }
 
+main > .section > .content .consonant-Wrapper--1200MaxWidth .consonant-Wrapper-inner,
+main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-inner { 
+  width: 100%;
+}
+
 /* temp fix for caas */
-[class$="Card-logo"] {
+[class$='Card-logo'] {
   border: 1px solid transparent;
-  background-color:white;
+  background-color: white;
   border-bottom-right-radius: 4px;
   border-top-right-radius: 4px;
   min-height: 48px;
@@ -24,7 +29,7 @@ main .consonant-TopFilters-filtersWrapper:first-child{
   z-index: 1;
 }
 
-[class$="Card-logo"] img {
+[class$='Card-logo'] img {
   height: auto;
   min-height: 32px;
   max-height: 32px;
@@ -33,3 +38,367 @@ main .consonant-TopFilters-filtersWrapper:first-child{
   user-select: none;
   width: auto;
 }
+
+/* Dexter Modal CSS - can be removed when caas team fixes MWPW-118588*/
+.aem-Grid {
+  display: block;
+  width: 100%;
+}
+
+.aem-Grid::before, .aem-Grid::after {
+  display: table;
+  content: " ";
+}
+
+.aem-Grid::after {
+  clear: both;
+}
+
+.videoContainer {
+  height: 0;
+  padding-bottom: 56.25%;
+  position: relative
+}
+
+.videoContainer.portrait.nineSixteen {
+  padding-bottom: 177.7778%
+}
+
+.videoContainer.portrait.fiveFour {
+  padding-bottom: 80%
+}
+
+.videoContainer.portrait.fourFive {
+  padding-bottom: 125%
+}
+
+.videoContainer.portrait.twoThree {
+  padding-bottom: 150%
+}
+
+.videoContainer.portrait.oneOne {
+  padding-bottom: 100%
+}
+
+.videoContainer.portrait.nineNinteenFive {
+  padding-bottom: 216.5778%
+}
+
+.videoContainer.landscape.sixteenNine {
+  padding-bottom: 56.25%
+}
+
+.videoContainer.landscape.fourThree {
+  padding-bottom: 75%
+}
+
+.videoContainer iframe {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%
+}
+
+.dexter-Modal_overlay {
+  display: flex;
+  opacity: 0;
+  position: fixed;
+  transition: opacity 125ms ease-in-out,background-color 125ms ease-in-out,backdrop-filter 125ms ease-in-out,-webkit-backdrop-filter 125ms ease-in-out,transform 125ms ease-in-out;
+  visibility: hidden
+}
+
+.dexter-Modal_overlay.is-Open {
+  align-items: center;
+  background: none;
+  bottom: 0;
+  justify-content: center;
+  left: 0;
+  opacity: 1;
+  right: 0;
+  top: 0;
+  visibility: visible
+}
+
+.dexter-Modal_overlay.closePlacement-outsideTopRight {
+  padding: 5.125rem 2.625rem 2.625rem
+}
+
+.dexter-Modal_overlay.closePlacement-outsideTopRight .dexter-CloseButton {
+  right: -2.0625rem;
+  top: -2.0625rem
+}
+
+.dexter-Modal_overlay[data-conf-display*=onPageLoad] {
+  pointer-events: none;
+  z-index: 110
+}
+
+.dexter-Modal_overlay[data-conf-display*=onHashChange] {
+  background-color: rgba(0,0,0,.9);
+  pointer-events: all;
+  z-index: 200
+}
+
+.dexter-Modal_overlay.mobile-place-top {
+  align-items: flex-start
+}
+
+.dexter-Modal_overlay.mobile-place-middle {
+  align-items: center
+}
+
+.dexter-Modal_overlay.mobile-place-bottom {
+  align-items: flex-end
+}
+
+@media only screen and (min-width: 37.5rem) {
+  .dexter-Modal_overlay.tablet-place-top {
+      align-items:flex-start
+  }
+
+  .dexter-Modal_overlay.tablet-place-middle {
+      align-items: center
+  }
+
+  .dexter-Modal_overlay.tablet-place-bottom {
+      align-items: flex-end
+  }
+
+  .dexter-Modal_overlay.tablet-place-left {
+      justify-content: flex-start
+  }
+
+  .dexter-Modal_overlay.tablet-place-center {
+      justify-content: center
+  }
+
+  .dexter-Modal_overlay.tablet-place-right {
+      justify-content: flex-end
+  }
+}
+
+@media only screen and (min-width: 75rem) {
+  .dexter-Modal_overlay.closePlacement-outsideTopRight {
+      padding-top:7.625rem
+  }
+
+  .dexter-Modal_overlay.desktop-place-top {
+      align-items: flex-start
+  }
+
+  .dexter-Modal_overlay.desktop-place-middle {
+      align-items: center
+  }
+
+  .dexter-Modal_overlay.desktop-place-bottom {
+      align-items: flex-end
+  }
+
+  .dexter-Modal_overlay.desktop-place-left {
+      justify-content: flex-start
+  }
+
+  .dexter-Modal_overlay.desktop-place-center {
+      justify-content: center
+  }
+
+  .dexter-Modal_overlay.desktop-place-right {
+      justify-content: flex-end
+  }
+}
+
+
+.dexter-Modal {
+  display: none;
+  opacity: 0;
+  pointer-events: all;
+  visibility: hidden;
+  width: 100%
+}
+
+.dexter-Modal:focus {
+  outline: none
+}
+
+.dexter-Modal.is-Open {
+  background: #fff;
+  display: block;
+  opacity: 1;
+  position: relative;
+  visibility: visible
+}
+
+.dexter-Modal.mobile-height-100 {
+  height: 100%
+}
+
+.dexter-Modal.mobile-height-auto {
+  height: auto
+}
+
+.dexter-Modal.mobile-height-auto>.aem-Grid {
+  max-height: calc(100vh - 150px);
+  overflow-x: hidden;
+  overflow-y: auto
+}
+
+.dexter-Modal.drop-shadow {
+  box-shadow: 0 .5em 1em -.125em hsla(0,0%,4%,.1),0 0 0 1px hsla(0,0%,4%,.02)
+}
+
+.dexter-Modal .dexter-CloseButton {
+  border: 3px solid transparent;
+  border-radius: 50%;
+  height: 24px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 24px;
+  z-index: 1
+}
+
+.dexter-Modal .dexter-CloseButton.focus-ring {
+  outline: 3px solid #1473e6
+}
+
+.dexter-Modal .dexter-CloseButton .dexter-CloseButton_icon:after {
+  content: "";
+  height: 44px;
+  left: -13px;
+  position: absolute;
+  top: -13px;
+  width: 44px
+}
+
+.dexter-Modal .dexter-CloseButton .dexter-CloseButton_icon.spectrum-close-circle-light:after {
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NCIgaGVpZ2h0PSI0NCI+PHBhdGggZD0iTTI5IDE1YTEwIDEwIDAgMSAwIDAgMTQuMTJBMTAgMTAgMCAwIDAgMjkgMTVabS0zLjExIDExLjc0YS41LjUgMCAwIDEtLjcxIDBMMjIgMjMuNTZsLTMuMTggMy4xOGEuNS41IDAgMCAxLS43MSAwbC0uODUtLjg1YS41LjUgMCAwIDEgMC0uNzFMMjAuNDQgMjJsLTMuMTgtMy4xOGEuNS41IDAgMCAxIDAtLjcxbC44NS0uODVhLjUuNSAwIDAgMSAuNzEgMEwyMiAyMC40NGwzLjE4LTMuMThhLjUuNSAwIDAgMSAuNzEgMGwuODUuODVhLjUuNSAwIDAgMSAwIC43MUwyMy41NSAyMmwzLjE4IDMuMThhLjUuNSAwIDAgMSAwIC43MVoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=")
+}
+
+.dexter-Modal .dexter-CloseButton .dexter-CloseButton_icon.spectrum-close-circle-dark:after {
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NCIgaGVpZ2h0PSI0NCI+PHBhdGggZD0iTTI5IDE1YTEwIDEwIDAgMSAwIDAgMTQuMTJBMTAgMTAgMCAwIDAgMjkgMTVabS0zLjExIDExLjc0YS41LjUgMCAwIDEtLjcxIDBMMjIgMjMuNTZsLTMuMTggMy4xOGEuNS41IDAgMCAxLS43MSAwbC0uODUtLjg1YS41LjUgMCAwIDEgMC0uNzFMMjAuNDQgMjJsLTMuMTgtMy4xOGEuNS41IDAgMCAxIDAtLjcxbC44NS0uODVhLjUuNSAwIDAgMSAuNzEgMEwyMiAyMC40NGwzLjE4LTMuMThhLjUuNSAwIDAgMSAuNzEgMGwuODUuODVhLjUuNSAwIDAgMSAwIC43MUwyMy41NSAyMmwzLjE4IDMuMThhLjUuNSAwIDAgMSAwIC43MVoiIGZpbGw9IiM3MDcwNzAiLz48L3N2Zz4=")
+}
+
+.dexter-Modal .aem-Grid {
+  height: 100%;
+  overflow: auto
+}
+
+.dexter-Modal .aem-Grid.focus-ring,.dexter-Modal .aem-Grid:focus {
+  outline: none
+}
+
+@media only screen and (min-width: 37.5rem) {
+  .dexter-Modal.tablet-width-100 {
+      width:100%
+  }
+
+  .dexter-Modal.tablet-width-240 {
+      width: 15rem
+  }
+
+  .dexter-Modal.tablet-width-360 {
+      width: 22.5rem
+  }
+
+  .dexter-Modal.tablet-width-480 {
+      width: 30rem
+  }
+
+  .dexter-Modal.tablet-width-640 {
+      width: 40rem
+  }
+
+  .dexter-Modal.tablet-height-100 {
+      height: 100%;
+      top: 0
+  }
+
+  .dexter-Modal.tablet-height-240 {
+      height: 15rem
+  }
+
+  .dexter-Modal.tablet-height-360 {
+      height: 22.5rem
+  }
+
+  .dexter-Modal.tablet-height-480 {
+      height: 30rem
+  }
+
+  .dexter-Modal.tablet-height-640 {
+      height: 40rem
+  }
+
+  .dexter-Modal.tablet-height-auto {
+      height: auto
+  }
+
+  .dexter-Modal.tablet-height-auto>.aem-Grid {
+      max-height: calc(100vh - 60px);
+      overflow-x: hidden;
+      overflow-y: auto
+  }
+}
+
+@media only screen and (min-width: 75rem) {
+  .dexter-Modal.desktop-width-100 {
+      width:100%
+  }
+
+  .dexter-Modal.desktop-width-240 {
+      width: 15rem
+  }
+
+  .dexter-Modal.desktop-width-360 {
+      width: 22.5rem
+  }
+
+  .dexter-Modal.desktop-width-480 {
+      width: 30rem
+  }
+
+  .dexter-Modal.desktop-width-640 {
+      width: 40rem
+  }
+
+  .dexter-Modal.desktop-width-1024 {
+      width: 64rem
+  }
+
+  .dexter-Modal.desktop-height-100 {
+      height: 100%;
+      top: 0
+  }
+
+  .dexter-Modal.desktop-height-240 {
+      height: 15rem
+  }
+
+  .dexter-Modal.desktop-height-360 {
+      height: 22.5rem
+  }
+
+  .dexter-Modal.desktop-height-480 {
+      height: 30rem
+  }
+
+  .dexter-Modal.desktop-height-640 {
+      height: 40rem
+  }
+
+  .dexter-Modal.desktop-height-1024 {
+      height: 64rem
+  }
+
+  .dexter-Modal.desktop-height-auto,.dexter-Modal.mobile-height-auto,.dexter-Modal.tablet-height-auto {
+      height: auto
+  }
+
+  .dexter-Modal.desktop-height-auto>.aem-Grid,.dexter-Modal.mobile-height-auto>.aem-Grid,.dexter-Modal.tablet-height-auto>.aem-Grid {
+      max-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto
+  }
+}
+/* End Dexter Modal */

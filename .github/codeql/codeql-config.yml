@@ -1,0 +1,7 @@
+name: "Milo CodeQL Config"
+
+paths-ignore:
+  - 'tools/loc/**'
+  - 'tools/floodgate/**'
+  - 'tools/translation/**'
+  - node_modules

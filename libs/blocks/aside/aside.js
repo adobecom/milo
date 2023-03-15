@@ -14,33 +14,70 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
+
+// standard/default aside uses same text sizes as the split
+const variants = ['split', 'inline', 'notification'];
+const sizes = ['extra-small', 'small', 'medium', 'large'];
+const [split, inline, notification] = variants;
+const [xsmall, small, medium, large] = sizes;
+const blockConfig = {
+  [split]: ['xl', 's', 'm'],
+  [inline]: ['s', 'm'],
+  [notification]: {
+    [xsmall]: ['m', 'm'],
+    [small]: ['m', 'm'],
+    [medium]: ['s', 's'],
+    [large]: ['l', 'm'],
+  },
+};
+
+function getBlockData(el) {
+  const variant = variants.find((variantClass) => el.classList.contains(variantClass));
+  const size = sizes.find((sizeClass) => el.classList.contains(sizeClass));
+  const blockData = variant ? blockConfig[variant] : blockConfig[Object.keys(blockConfig)[0]];
+  return variant && size && !Array.isArray(blockData) ? blockData[size] : blockData;
+}
+
+function decorateStaticLinks(el) {
+  if (!el.classList.contains('notification')) return;
+  const textLinks = el.querySelectorAll('.text a:not([class])');
+  textLinks.forEach((link) => { link.classList.add('static') });
+}
 
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
+  if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
-  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  text?.classList.add('text');
+  const media = foreground.querySelector(':scope > div:not([class])');
+  if (!el.classList.contains('notification')) media?.classList.add('image');
+  const picture = text?.querySelector('picture');
+  const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
+  iconArea?.classList.add('icon-area');
+  const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const image = foregroundImage ?? bgImage;
+  if (image && !image.classList.contains('text')) {
+    const isSplit = el.classList.contains('split');
+    image.classList.add(`${isSplit ? 'split-' : ''}image`);
+    if (isSplit) {
+      const position = Array.from(image.parentNode.children).indexOf(image);
+      el.classList.add(`split${!position ? '-right' : '-left'}`);
+      foreground.parentElement.appendChild(image);
+    }
+  } else if (!iconArea) {
+    foreground?.classList.add('no-image');
+  }
   return foreground;
 }
 
-function decorateContent(el, isInline) {
-  if (!el) return;
-  const text = el.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
-  text?.classList.add('text');
-  const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings?.[headings.length - 1];
-  heading?.classList.add(`${isInline ? 'heading-S' : 'heading-XL'}`);
-  heading?.nextElementSibling?.classList.add(`${isInline ? 'body-M' : 'body-S'}`);
-  heading?.previousElementSibling?.classList.add('detail-M');
-  el.querySelector(':scope > div:not([class])')?.classList.add('image');
-  const image = text?.querySelector('img');
-  if (image) image.closest('p')?.classList.add('icon-area');
-}
-
 export default function init(el) {
-  const foreground = decorateLayout(el);
-  const isInline = el.className.includes('inline');
-  decorateContent(foreground, isInline);
-  decorateButtons(foreground);
+  const blockData = getBlockData(el);
+  const blockText = decorateLayout(el);
+  decorateBlockText(blockText, blockData);
+  decorateStaticLinks(el);
 }

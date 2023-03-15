@@ -2,7 +2,6 @@
 /* global tingle */
 /* eslint-disable no-alert */
 
-import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import {
   getCardMetadata,
   getCaasProps,
@@ -12,8 +11,6 @@ import {
   postDataToCaaS,
   setConfig,
 } from './send-utils.js';
-
-loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 
 const [setPublishingTrue, setPublishingFalse, isPublishing] = (() => {
   let publishing = false;
@@ -25,7 +22,7 @@ const [setPublishingTrue, setPublishingFalse, isPublishing] = (() => {
 })();
 
 // Tingle is the js library for displaying modals
-const loadTingleModalFiles = async () => {
+const loadTingleModalFiles = async (loadScript, loadStyle) => {
   if (!window.tingle?.modal) {
     await Promise.all([
       loadScript('https://milo.adobe.com/libs/deps/tingle.js'),
@@ -232,8 +229,8 @@ const checkPublishStatus = async (publishingModal) => {
   return true;
 };
 
-const checkIms = async (publishingModal) => {
-  const accessToken = await getImsToken();
+const checkIms = async (publishingModal, loadScript) => {
+  const accessToken = await getImsToken(loadScript);
   if (!accessToken) {
     publishingModal.close();
     const shouldLogIn = await showConfirm(
@@ -281,16 +278,20 @@ const postToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly, publishi
   }
 };
 
-const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', owner = '' } = {}) => {
+const noop = () => {};
+
+const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', owner = '' } = {}, loadScript = noop, loadStyle = noop) => {
   if (isPublishing()) return;
 
   setConfig({
-    host, project, branch, repo, owner, doc: document,
+    host: host || window.location.host, project, branch, repo, owner, doc: document,
   });
+
+  loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 
   setPublishingTrue();
 
-  await loadTingleModalFiles();
+  await loadTingleModalFiles(loadScript, loadStyle);
   const publishingModal = displayPublishingModal();
 
   try {
@@ -303,7 +304,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
     const isPublished = await checkPublishStatus(publishingModal);
     if (!isPublished) return;
 
-    const accessToken = await checkIms(publishingModal);
+    const accessToken = await checkIms(publishingModal, loadScript);
     if (!accessToken) return;
 
     const caasProps = getCaasProps(caasMetadata);
@@ -316,13 +317,9 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
   }
 };
 
-document.addEventListener('send-to-caas', async (e) => {
-  const { host, project, branch, repo, owner } = e.detail;
-  sendToCaaS({ host, project, branch, repo, owner });
-});
-
 export {
   loadTingleModalFiles,
+  sendToCaaS,
   showAlert,
   showConfirm,
 };

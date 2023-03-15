@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe beforeEach afterEach it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -40,14 +37,16 @@ describe('Faas', () => {
   });
 
   it('Make FaaS config', () => {
-    const config = makeFaasConfig(state);
-    expect(config.id).to.equal('42');
-    expect(config.l).to.equal('en_us');
-    expect(config.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
-    expect(config.as).to.equal(true);
-    expect(config.ar).to.equal(false);
-    expect(config.e.afterYiiLoadedCallback).to.exist;
     expect(makeFaasConfig()).to.equal(defaultState);
+    state[149] = 1;
+    state[172] = 'last asset';
+    const faasConfig = makeFaasConfig(state);
+    expect(faasConfig.id).to.equal('42');
+    expect(faasConfig.l).to.equal('en_us');
+    expect(faasConfig.d).to.equal('https://business.adobe.com/request-consultation/thankyou.html');
+    expect(faasConfig.as).to.equal(true);
+    expect(faasConfig.ar).to.equal(false);
+    expect(faasConfig.e.afterYiiLoadedCallback).to.exist;
   });
 
   it('FaaS Initiation Error Case test', async () => {
@@ -68,6 +67,17 @@ describe('Faas', () => {
     expect(formWrapperEl.classList.contains('column1')).to.equal(true);
     expect(formWrapperEl.classList.contains('gated')).to.equal(false);
   });
+  
+  it('FaaS Complete', async () => {
+    let newState = '{"l":"en_us","d":"/resources/guides/data-retails-most-important-inventory/thank-you.html","ar":true,"test":false,"q":{},"pc":{"1":"js","2":"faas_submission","3":"sfdc","4":"demandbase","5":"clearbit"},"p":{"js":{"32":"unknown","36":"7015Y000003A7oBQAS","39":"","77":1,"78":1,"79":1,"90":"FAAS","92":2846,"93":"2847","94":3279,"173":"https://main--bacom--adobecom.hlx.page/resources/guides/data-retails-most-important-inventory"},"faas_submission":{},"sfdc":{"contactId":null},"demandbase":{}},"as":"true","o":{},"e":{},"cookie":{"p":{"js":{}}},"url":{"p":{"js":{"36":"70130000000kYe0AAE"}}},"js":{"l":"en_us","d":"/resources/guides/data-retails-most-important-inventory/thank-you.html","ar":true,"test":false,"q":{},"pc":{"1":"js","2":"faas_submission","3":"sfdc","4":"demandbase","5":"clearbit"},"p":{"js":{"36":"7015Y000003A7oBQAS","39":"","77":1,"78":1,"79":1,"90":"FAAS","92":2846,"93":"2847","94":3279}},"as":"true","o":{},"e":{},"cookie":{"p":{"js":{}}},"url":{"p":{"js":{"36":"70130000000kYe0AAE"}}},"onetrust_advertising_acceptance":"no","onetrust_performance_acceptance":"no","onetrust_functionality_acceptance":"no","clearbitStep":1,"formTag":"faas-Offer","id":"79","_fc":1,"complete":false,"title":"Please share some contact information to download the guide.","style_layout":"column2","cleabitStyle":"Cleabit Style","title_size":"p","title_align":"left"},"onetrust_advertising_acceptance":"no","onetrust_performance_acceptance":"no","onetrust_functionality_acceptance":"no","clearbitStep":1,"formTag":"faas-Offer","id":"79","_fc":1,"complete":false,"title":"Please share some contact information to download the guide.","style_layout":"column2","cleabitStyle":"Cleabit Style","title_size":"p","title_align":"left"}';
+    newState = JSON.parse(newState);
+    newState.complete = true;
+    const wrapper = document.createElement('div');
+    const newA = document.createElement('a');
+    wrapper.append(newA);
+    await initFaas(newState, newA);
+    console.log(newA);
+  });
 
   it('FaaS Title', () => {
     const title = document.querySelector('.faas-title');
@@ -76,8 +86,9 @@ describe('Faas', () => {
 
   it('Test environment', () => {
     expect(getFaasHostSubDomain('prod')).to.equal('');
-    expect(getFaasHostSubDomain('stage')).to.equal('staging.');
+    expect(getFaasHostSubDomain('stage')).to.equal('dev.');
     expect(getFaasHostSubDomain('dev')).to.equal('dev.');
+    expect(getFaasHostSubDomain('qa')).to.equal('qa.');
     expect(getFaasHostSubDomain()).to.equal('qa.');
   });
 });

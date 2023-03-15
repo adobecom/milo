@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -23,7 +20,7 @@ describe('Get SVGs from a file', () => {
   });
 
   it('Dies gracefully when a bad path is given', async () => {
-    const val = await getSVGsfromFile('/img/ui/chevron.svg');
+    const val = await getSVGsfromFile('/libs/ui/img/chevron.svg');
     expect(val.length).to.equal(1);
   });
 });

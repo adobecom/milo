@@ -14,44 +14,51 @@
 * Icon Block - v5.1
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
-function decorateLayout(el) {
-  const children = el.querySelectorAll(':scope > div');
-  if (children.length > 1 && children[0].childNodes.length) {
-    decorateBlockBg(el, children[0]);
-  }
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container', 'grid');
-  el.appendChild(foreground);
-  return foreground;
-}
+const variants = ['fullwidth', 'vertical', 'bio'];
+const iconBlocks = {
+  small: {
+    [variants[0]]: ['m', 'm'],
+    [variants[1]]: ['s', 'm'],
+    [variants[2]]: ['s', 's'],
+  },
+  medium: {
+    [variants[0]]: ['l', 'm'],
+    [variants[1]]: ['m', 'm'],
+    [variants[2]]: ['s', 's'],
+  },
+  large: {
+    [variants[0]]: ['xl', 'm'],
+    [variants[1]]: ['m', 'm'],
+    [variants[2]]: ['s', 's'],
+  },
+};
 
-function decorateContent(row, isVertical) {
-  if (!row) return;
-  const text = row.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
+function decorateContent(el) {
+  const block = el.querySelector(':scope > div:not([class])');
+  block.classList.add('foreground');
+  if (!block) return;
+  const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
-    text?.classList.add('text');
-    const headings = text?.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    const heading = headings?.[headings.length - 1];
-    heading?.classList.add(isVertical ? 'heading-S' : 'heading-XL');
-    heading?.nextElementSibling?.classList.add('body-M');
-    heading?.previousElementSibling?.classList.add('icon-area');
-    decorateButtons(row);
-  } else {
-    row.classList.add('text');
-    const image = row.querySelector(':scope img');
-    image?.parentElement?.parentElement?.classList?.add('icon-area');
+    text.classList.add('text-content');
+    const image = block.querySelector(':scope img');
+    if (image) image.closest('p').classList.add('icon-area');
+    // place standalone links inside an action-area
+    const lastElem = text.lastElementChild;
+    if (lastElem.children.length === 1
+      && lastElem.lastElementChild.nodeName === 'A'
+      && lastElem.lastElementChild.innerText === lastElem.innerText) {
+      text.lastElementChild.classList.add('action-area');
+    }
+    const size = getBlockSize(el, 2);
+    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
+    decorateBlockText(el, iconBlocks[size][variant]);
   }
 }
 
 export default function init(el) {
-  const foreground = decorateLayout(el);
-  const rows = el.querySelectorAll(':scope > div:not([class])');
-  const isVertical = el.classList.contains('vertical');
-  [...rows].forEach(row => {
-    decorateContent(row, isVertical);
-    foreground.insertAdjacentElement('beforeEnd', row.children[0]);
-    row.remove();
-  });
+  el.classList.add('con-block');
+  if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xl-spacing-static-bottom');
+  decorateContent(el);
 }

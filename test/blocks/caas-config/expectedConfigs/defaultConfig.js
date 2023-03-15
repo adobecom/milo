@@ -3,20 +3,24 @@ const defaultConfig = {
     mode: 'lightest',
     layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
     button: { style: 'primary' },
+    collectionButtonStyle: 'primary',
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=2000',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
     totalCardsToShow: 10,
     cardStyle: 'half-height',
     showTotalResults: false,
     i18n: {
+      cardTitleAccessibilityLevel: 6,
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',
       onErrorTitle: 'Sorry there was a system error.',
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
+      titleHeadingLevel: 'h3',
+
     },
     setCardBorders: false,
     useOverlayLinks: false,
@@ -29,11 +33,16 @@ const defaultConfig = {
     useLightText: false,
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
+    ctaAction: '_blank',
+    additionalRequestParams: {}
   },
+  featuredCards: [
+    '',
+  ],
   filterPanel: {
     enabled: false,
     eventFilter: '',
-    type: 'top',
+    type: 'left',
     showEmptyFilters: false,
     filters: [],
     filterLogic: 'or',
@@ -114,9 +123,13 @@ const defaultConfig = {
     },
   },
   language: 'en',
-  country: 'US',
+  country: 'us',
   analytics: { trackImpressions: '', collectionIdentifier: '' },
-  target: { enabled: '' },
+  target: {
+    enabled: '',
+    lastViewedSession: ''
+  },
+  customCard: ["card","return ``"]
 };
 
 export default defaultConfig;

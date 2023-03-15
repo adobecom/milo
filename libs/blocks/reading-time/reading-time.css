@@ -1,0 +1,14 @@
+main > .section > .content.reading-time > span {
+  margin: 0;
+}
+
+.reading-time > span {
+  color: var(--color-gray-600);
+  font-size: var(--type-body-s-size);
+  display: block;
+  padding: 1rem 0;
+}
+
+.center .reading-time > span {
+  text-align: center;
+}

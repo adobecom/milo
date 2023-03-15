@@ -1,0 +1,51 @@
+<html lang="en">
+
+<head>
+  <title>Floodgate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="../loc/translation.css">
+  <link rel="stylesheet" href="./css/floodgate.css">
+  <script src="../loc/lib/msal-browser.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1 class="container">Floodgate</h1>
+  </header>
+  <main>
+    <div class="project-overview">
+      <div class="container">
+        <h2 class="project-name">
+          <span class="detail">Project</span>
+          <span id="project-url"></span>
+        </h2>
+        <div id="reloadProject" class="hidden">
+          <button type="button">Reload Project</button>
+        </div>
+        <div id="copyFiles" class="hidden">
+          <button type="button">Copy Files to FG Tree</button>
+        </div>
+        <div id="promoteFiles" class="hidden">
+          <button type="button">Promote Files</button>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="subhead">
+        <div id="loading" class="hidden">
+          <div id="status" class="modal level-4 wait">Application is loading...</div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="project-detail"></div>
+    </div>
+  </main>
+  <script type="module">
+    import init from './js/floodgate.js';
+    init();
+  </script>
+</body>
+
+</html>

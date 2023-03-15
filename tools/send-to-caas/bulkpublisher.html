@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/libs/ui/controls/accordion.css" />
+    <link rel="stylesheet" href="./bulkpublish.css" />
+  </head>
+
+  <body>
+    <div class="bulk-publisher">
+      <div class="main">
+      <div class="options-panel">
+        <dt class="title is-expanded">
+          <span>CaaS Bulk Publisher</span>
+        </dt>
+        <dd class="content is-expanded">
+          <div class="field">
+            <label for="host">Host:</label>
+            <input id="host" name="host" type="text" />
+          </div>
+          <div class="field">
+            <label for="repo">Repo:</label>
+            <input id="repo" name="repo" type="text" />
+          </div>
+          <div class="field">
+            <label for="owner">Repo Owner:</label>
+            <input id="owner" name="owner" type="text" />
+          </div>
+          <div class="field">
+            <label for="excelFile">Excel File Url (Leave blank if using URLs field):</label>
+            <input id="excelFile" name="excelFile" type="text" />
+          </div>
+          <div class="field">
+            <label for="caasEnv">CaaS Env</label>
+            <select name="1A" id="caasEnv">
+              <option>Prod</option>
+              <option>Stage</option>
+              <option>Dev</option>
+            </select>
+          </div>
+          <div id="caas-draft-cb" class="field checkbox">
+            <input type="checkbox" id="draftOnly" name="draftOnly" />
+            <label for="draftOnly">Publish to Draft only</label>
+          </div>
+          <div id="use-preview-cb" class="field checkbox">
+            <input type="checkbox" id="usepreview" name="usepreview" />
+            <label for="usepreview">Use Preview Content</label>
+          </div>
+          <button id="bulkpublish" href="#">Bulk Publish</button>
+        </dd>
+      </div>
+      <dd class="urls">
+        <div class="urls-label">
+          <label for="urls">URLs:</label>
+        </div>
+          <textarea id="urls" name="urls" rows="10" cols="50"></textarea>
+      </dd>
+      </div>
+      <dd class="results">
+        <div>
+          <label for="errors">Errors:</label>
+          <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
+        </div>
+        <div>
+          <label for="success">Success:</label>
+          <textarea id="success" name="success" rows="10" cols="50"></textarea>
+        </div>
+      </dd>
+    </div>
+    <script type="module">
+      import init from './bulk-publish-to-caas.js';
+      init();
+    </script>
+  </body>
+</html>

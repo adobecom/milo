@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-expressions */
-/* global describe it */
-
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
@@ -12,8 +9,8 @@ describe('media', () => {
     init(media);
   });
   describe('default media medium', () => {
-    it('has a heading-M', () => {
-      const heading = medias[0].querySelector('.heading-M');
+    it('has a heading-m', () => {
+      const heading = medias[0].querySelector('.heading-m');
       expect(heading).to.exist;
     });
     it('has a supporting image', () => {
@@ -22,13 +19,12 @@ describe('media', () => {
     });
     it('has a icon area', () => {
       const iconArea = medias[0].querySelector('.icon-area');
-      console.log(iconArea, medias[0]);
       expect(iconArea).to.exist;
     });
   });
   describe('dark media large', () => {
-    it('has a heading-XL', () => {
-      const heading = medias[1].querySelector('.heading-XL');
+    it('has a heading-xl', () => {
+      const heading = medias[1].querySelector('.heading-xl');
       expect(heading).to.exist;
     });
     it('has a supporting bg color', () => {

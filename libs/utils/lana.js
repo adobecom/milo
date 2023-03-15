@@ -14,10 +14,33 @@
 
   const w = window;
 
-  function getOptions(op) {
-    const o = w.lana.options;
+  function isProd() {
+    const host = window.location.host;
+    if (host.substring(host.length - 10) === '.adobe.com'
+      && host.substring(host.length - 15) !== '.corp.adobe.com'
+      && host.substring(host.length - 16) !== '.stage.adobe.com') {
+      return true;
+    }
+    return false;
+  }
+
+  function mergeOptions(op1, op2) {
+    if (!op1) {
+      op1 = {};
+    }
+
+    if (!op2) {
+      op2 = {};
+    }
+
     function getOpt(key) {
-      return op[key] !== undefined ? op[key] : o[key];
+      if (op1[key] !== undefined) {
+        return op1[key]
+      }
+      if (op2[key] !== undefined) {
+        return op2[key];
+      }
+      return defaultOptions[key];
     }
 
     return Object.keys(defaultOptions).reduce(function (options, key) {
@@ -33,12 +56,12 @@
   }
 
   function log(msg, options) {
-    msg = msg && msg.stack ? msg.stack : msg;
+    msg = msg && msg.stack ? msg.stack : (msg || '');
     if (msg.length > MSG_LIMIT) {
       msg = msg.slice(0, MSG_LIMIT) + '<trunc>';
     }
 
-    const o = getOptions(options || {});
+    const o = mergeOptions(options, w.lana.options);
     if (!o.clientId) {
       console.warn('LANA ClientID is not set in options.');
       return;
@@ -48,9 +71,9 @@
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
-    const isCorpAdobeCom = window.location.href.indexOf('.corp.adobe.com') !== -1;
+    const isProdDomain = isProd();
 
-    const endpoint = (isCorpAdobeCom || !o.useProd) ? o.endpointStage : o.endpoint;
+    const endpoint = (!isProdDomain || !o.useProd) ? o.endpointStage : o.endpoint;
     const queryParams = [
       'm=' + encodeURIComponent(msg),
       'c=' + encodeURI(o.clientId),
@@ -62,7 +85,7 @@
       queryParams.push('tags=' + encodeURI(o.tags));
     }
 
-    if (w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
+    if (!isProdDomain || w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
 
     if (!w.lana.localhost || w.lana.debug) {
       const xhr = new XMLHttpRequest();
@@ -86,19 +109,10 @@
     return w.location.host.toLowerCase().indexOf('localhost') !== -1;
   }
 
-  const options = w.lana && w.lana.options;
   w.lana = {
     debug: false,
     log: log,
-    options: options || defaultOptions,
-    setClientId: function (id) {
-      console.warn('LANA setClientId is deprecated and will be removed in a future release.');
-      w.lana.options.clientId = id;
-    },
-    setDefaultOptions: function (options) {
-      console.warn('LANA setDefaultOptions is deprecated and will be removed in a future release.');
-      w.lana.options = getOptions(options);
-    },
+    options: mergeOptions(w.lana && w.lana.options),
   };
 
   /* c8 ignore next */

@@ -1,41 +1,59 @@
-/*
-* Copyright 2022 Adobe. All rights reserved.
-* This file is licensed to you under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License. You may obtain a copy
-* of the License at http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software distributed under
-* the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
-* OF ANY KIND, either express or implied. See the License for the specific language
-* governing permissions and limitations under the License.
-*/
+import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
-
-/*
- * Text Block - v1.0
- */
+// size: [heading, body, ...detail]
+const blockTypeSizes = {
+  standard: {
+    small: ['s', 's', 's'],
+    medium: ['m', 'm', 'm'],
+    large: ['l', 'l', 'l'],
+    xlarge: ['xl', 'xl', 'xl'],
+  },
+  inset: {
+    small: ['s', 'm'],
+    medium: ['m', 'l'],
+    large: ['l', 'xl'],
+    xlarge: ['xl', 'xxl'],
+  },
+  text: {
+    small: ['m', 's', 's'],
+    medium: ['l', 'm', 'm'],
+    large: ['xl', 'm', 'l'],
+    xlarge: ['xxl', 'l', 'xl'],
+  },
+};
 
 export default function init(el) {
-  const children = el.querySelectorAll(':scope > div');
-  const [background, ...cols] = children;
-  decorateBlockBg(el, background);
-
-  const container = document.createElement('div');
-  container.classList.add('foreground', 'container', 'grid');
-  el.appendChild(container);
-  el.classList.add('block');
-
-  cols.forEach((col, idx) => {
-    let headingClass = 'medium';
-    if (idx === 0 && (el.classList.contains('full-width'))) {
-      col.children[0].classList.add('full-width');
-      headingClass = el.classList.contains('large') ? 'large' : 'medium';
+  el.classList.add('text-block', 'con-block');
+  let rows = el.querySelectorAll(':scope > div');
+  if (rows.length > 1) {
+    if (rows[0].textContent !== '') el.classList.add('has-bg');
+    const [head, ...tail] = rows;
+    decorateBlockBg(el, head);
+    rows = tail;
+  }
+  const helperClasses = [];
+  let blockType = 'text';
+  const size = getBlockSize(el);
+  const longFormVariants = ['inset', 'long-form', 'bio'];
+  longFormVariants.forEach((variant, index) => {
+    if (el.classList.contains(variant)) {
+      helperClasses.push('max-width-8-desktop');
+      blockType = (index > 0) ? 'standard' : variant;
     }
-    col.children[0].classList.add('text');
-    decorateBlockText(el, headingClass);
-    col.querySelector('a + a')?.closest('p').classList.add('action-area');
-    container.insertAdjacentElement('beforeend', col.children[0]);
-    col.remove();
   });
+  const config = blockTypeSizes[blockType][size];
+  const overrides = ['-heading', '-body', '-detail'];
+  overrides.forEach((override, index) => {
+    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
+    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
+  });
+  decorateBlockText(el, config);
+  rows.forEach((row) => { row.classList.add('foreground'); });
+  if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
+  if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
+  if (el.classList.contains('vertical')) {
+    const elAction = el.querySelector('.action-area');
+    if (elAction) elAction.classList.add('body-s');
+  }
+  el.classList.add(...helperClasses);
 }

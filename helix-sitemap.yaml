@@ -1,0 +1,12 @@
+version: 1
+
+sitemaps:
+  website:
+    origin: https://milo.adobe.com
+    lastmod: YYYY-MM-DD
+    languages:
+      default:
+        source: /blog/query-index.json
+        destination: /blog/sitemap.xml
+        hreflang: en
+        alternate: /{path}

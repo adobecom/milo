@@ -1,9 +1,7 @@
-import { getConfig, getMetadata, createTag } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';
-
-
 
 const getHelpxLink = (searchStr, country = 'US') => `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
 const getSearchLink = (searchStr, locale = 'en_US') => `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${SCOPE}&q[text]=${encodeURIComponent(searchStr)}`;
@@ -40,10 +38,20 @@ const wrapValueInSpan = (value, suggestion, linkEl) => {
   }, linkEl);
 };
 
-const updateSearchResults = (value, suggestions, resultsEl) => {
+const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
+  if (!value.length) {
+    resultsEl.replaceChildren();
+    searchInputEl.classList.remove('gnav-search-input--isPopulated');
+    return;
+  }
+
+  resultsEl.classList.remove('no-results');
+  searchInputEl.classList.add('gnav-search-input--isPopulated');
+
   if (!suggestions.length) {
     const noResults = getNoResultsEl(value);
     resultsEl.replaceChildren(noResults);
+    resultsEl.classList.add('no-results');
     return;
   }
 
@@ -65,10 +73,10 @@ const getSuggestions = (json) => {
   return json.suggested_completions.map((suggestion) => suggestion?.name);
 };
 
-const onSearchInput = async (value, resultsEl, locale) => {
+const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
-  updateSearchResults(value, suggestions, resultsEl);
+  updateSearchResults(value, suggestions, resultsEl, searchInputEl);
 };
 
 export {

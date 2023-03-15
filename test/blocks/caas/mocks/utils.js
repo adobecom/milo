@@ -1,12 +1,6 @@
 import { stub } from 'sinon';
 
-export const isValidUuid = () => true;
-
-export const getHashConfig = stub();
-
 export const getConfig = () => ({});
-
-export const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
 
 export const loadStyle = stub();
 
@@ -14,15 +8,7 @@ export const loadScript = stub();
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 
-export function updateObj(obj, defaultObj) {
-  const ds = cloneObj(defaultObj);
-  Object.keys(ds).forEach((key) => {
-    if (obj[key] === undefined) obj[key] = ds[key];
-  });
-  return obj;
-}
-
-export function createIntersectionObserver({ el, callback, once = true, options = {} }) {
+export function createIntersectionObserver({ el, callback /* , once = true, options = {} */ }) {
   // fire immediately
   callback(el, { target: el });
 }
@@ -35,6 +21,7 @@ export const parseEncodedConfig = stub().returns({
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
   collectionBtnStyle: 'primary',
+  collectionButtonStyle: 'primary',
   container: '1200MaxWidth',
   country: 'caas:country/us',
   contentTypeTags: [],

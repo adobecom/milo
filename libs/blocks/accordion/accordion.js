@@ -14,9 +14,13 @@ function handleClick(el, dt, dd) {
   if (expanded) {
     el.setAttribute('aria-expanded', 'false');
     dd.setAttribute('hidden', '');
+    dt.classList.remove('has-focus');
+    dd.classList.remove('has-focus');
   } else {
     el.setAttribute('aria-expanded', 'true');
     dd.removeAttribute('hidden');
+    dt.classList.add('has-focus');
+    dd.classList.add('has-focus');
   }
   dt.classList.toggle('is-open');
   dd.classList.toggle('is-open');
@@ -75,6 +79,7 @@ export default function init(el) {
 
   if (isSeo) { setSEO(items); }
   el.innerHTML = '';
-  el.className = 'accordion-container';
+  el.className = `accordion-container ${el.className}`;
+  el.classList.remove('accordion');
   el.append(accordion);
 }

@@ -18,7 +18,7 @@
   font-weight: 700;
   size-adjust: 95%;
   src: local('Trebuchet MS Bold'),
-       local('TrebuchetMSBold');
+    local('TrebuchetMSBold');
 }
 
 @font-face {
@@ -26,7 +26,7 @@
   font-weight: 400;
   size-adjust: 93%;
   src: local('Trebuchet MS'),
-       local('TrebuchetMS');
+    local('TrebuchetMS');
 }
 
 body {
@@ -58,7 +58,7 @@ header nav {
   display: none;
 }
 
-header + main {
+header ~ main {
   margin-top: 57px;
 }
 
@@ -112,13 +112,22 @@ a:hover {
   color: var(--link-hover-color);
 }
 
-/* Buttons */
-.dark a {
-  color: #FFF;
+/* Links Static */
+a.static,
+a.static:hover {
+  color: var(--text-color);
+  text-decoration: underline;
 }
 
-.light a {
-  color: #2C2C2C;
+.dark a.static,
+.dark a.static:hover {
+  color: var(--color-white);
+  text-decoration: underline;
+}
+
+/* Buttons */
+.dark a {
+  color: var(--link-color-dark);
 }
 
 img {
@@ -162,7 +171,8 @@ main .section[data-status='decorated'] {
   display: none;
 }
 
-main > .section {
+main > .section,
+.fragment > .section {
   display: block;
   position: relative;
 }
@@ -204,11 +214,19 @@ picture.bg-img img {
   width: 100%;
 }
 
+.milo-card-section {
+  visibility: hidden;
+}
+
 @media (min-width: 900px) {
   header {
     min-height: 64px;
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
+  }
+
+  header ~ main {
+    margin-top: 64px;
   }
 
   header.has-breadcrumbs {
@@ -223,4 +241,3 @@ picture.bg-img img {
     margin-top: 97px;
   }
 }
-
