@@ -19,7 +19,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin: 24px 0;
+  margin-top: 24px;
+  margin-bottom: 0;
   padding: 0;
 }
 
@@ -33,6 +34,7 @@
   border-radius: 8px;
   padding: 16px;
   cursor: pointer;
+  line-height: 1.5;
 }
 
 .table-of-contents .toc-item:hover {
@@ -77,9 +79,21 @@
 
 .table-of-contents .toc-arrow {
   align-self: center;
-  padding: 0 8px;
+  padding: 0 0 0 8px;
 }
 
+.toc .marquee {
+  min-height: unset;
+}
+
+.toc .marquee .foreground {
+  flex-flow: column-reverse;
+  padding-bottom: 0;
+}
+
+.toc .marquee .foreground .media {
+  width: 100%;
+}
 
 @media screen and (min-width: 600px) {
   .table-of-contents .toc-list {
@@ -88,6 +102,14 @@
 
   .table-of-contents .toc-item {
     flex: 1 1 40%;
+  }
+
+  .toc .marquee .foreground .text h2 {
+    font-size: 36px;
+  }
+
+  .toc .marquee .foreground .media {
+    margin: 0;
   }
 }
 
@@ -104,7 +126,7 @@
   .section.toc .marquee .foreground.container {
     margin-right: 0;
     flex-wrap: wrap;
-    align-content: center;
+    align-content: space-between;
   }
 
   .table-of-contents .toc-container {
@@ -125,10 +147,31 @@
   .toc .table-of-contents .toc-item {
     flex: 1 1 100%;
   }
+
+  .toc .marquee .foreground {
+    gap: 0;
+  }
+
+  .toc .marquee .foreground .text {
+    padding: var(--spacing-xl) 0 0 0;
+  }
+
+  .toc .marquee .foreground .media {
+    max-width: 100%;
+  }
 }
 
 @media screen and (min-width: 1440px) {
   .section.toc .marquee .foreground.container {
     width: calc(var(--grid-container-width) - 400px);
+  }
+
+  .toc .marquee .foreground {
+    flex-flow: initial;
+    padding-bottom: 0;
+  }
+
+  .toc .marquee .foreground .text h2 {
+    font-size: 44px;
   }
 }
