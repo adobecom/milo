@@ -5,7 +5,7 @@ const base = miloLibs || codeRoot;
 
 export default async function init() {
   if (!window.ost) {
-    await loadScript(`${base}/deps/offer-selector-tool.js`);
+    await loadScript(`https://www.stage.adobe.com/special/tacocat/ost/offer-selector-tool.js`);
   }
 
   const ostCountry = 'US';
