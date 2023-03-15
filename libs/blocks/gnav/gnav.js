@@ -130,7 +130,7 @@ class Gnav {
         document.removeEventListener('click', closeToggleOnDocClick);
       }
     };
-    toggle.addEventListener('click', async (e) => {
+    toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
         this.desktop.removeEventListener('change', onMediaChange);
