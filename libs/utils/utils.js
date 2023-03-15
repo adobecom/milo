@@ -663,6 +663,15 @@ function decorateMeta() {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
+
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
+  });
 }
 
 export async function loadArea(area = document) {
