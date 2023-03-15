@@ -28,27 +28,28 @@ const getStatusFromHelixAdmin = async (owner, repo, locale, path) => {
     const res = await fetch(`${HELIX_ADMIN}/status/${owner}/${repo}/main/${locale}/${path}?editUrl=auto`);
     const json = await res.json();
     if (json.edit.status === 200) {
-      console.log(json);
       return json;
     }
   } catch (e) { /* ignore */ }
   return false;
 }
 
-const insertAlphabetically = (ol, li) => {
+const insertAlphabetically = (ul, li) => {
   const locale = li.dataset.locale;
-  const items = [...ol.getElementsByTagName('li')];
+  const items = [...ul.getElementsByTagName('li')];
   const insertBefore = items.find((item) => locale < item.dataset.locale);
   if (insertBefore) {
-    ol.insertBefore(li, insertBefore);
+    ul.insertBefore(li, insertBefore);
   } else {
-    ol.append(li);
+    ul.append(li);
   }
 };
 
 const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
-  const { search } = window.location;
+  // const { search } = window.location;
+  // const search = '?ref=main&repo=bacom&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B1C8CDBDF-F5BD-4AA2-B18E-D2488AC04131%257D%26file%3Dcustomer-success-stories.docx%26action%3Ddefault%26mobileredirect%3Dtrue';
+  const search = '?ref=main&repo=milo&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B664D4A7F-CD90-4B72-80FD-428FBB7D66EB%257D%26cid%3D2d780159-195c-4f7d-9b8b-22008fc1d64b';
   const params = new URLSearchParams(search);
   const referrer = params.get('referrer');
   const owner = params.get('owner');
@@ -70,31 +71,36 @@ const decorateRegionLinks = async (block) => {
   }
   
   const editUrls = new Set();
-  const ol = createTag('ol', { class: 'sk-edit-links' });
+  const ul = createTag('ul', { class: 'sk-edit-links' });
   livecopies.forEach(async l => {
     const adminStatus = await getStatusFromHelixAdmin(owner, repo, l, currentPathWithOutLocale);
     if (adminStatus && !editUrls.has(adminStatus.edit.url)) {
       if (adminStatus.webPath === currentPath) return;
       const item = createTag('div', { class: 'sk-region-select-item' });
       const li = createTag('li', { class: 'sk-edit-list', 'data-locale': l});
+      const previewContainer = createTag('div', { class: 'sk-preview-container' });
       const previewLink = createTag('a', { class: 'sk-preview-link', target: '_blank' });
       const editLink = createTag('a', { class: 'sk-edit-link', target: '_blank' });
-      previewLink.href = adminStatus.preview.url;
       previewLink.innerHTML = adminStatus.webPath;
-      if (adminStatus.preview.status !== 200) {
-        previewLink.style.color = 'red';
+      if (adminStatus.preview.status === 200) {
+        previewLink.classList.add('previewed');
+        previewLink.href = adminStatus.preview.url;
+        const checkmark = createTag('span', { class: 'icon icon-checkmark'});
+        checkmark.innerHTML = `<svg id="checkmark" viewBox="0 0 18 18" class="icon-milo icon-milo-checkmark"><path fill="currentcolor" d="M15.656,3.8625l-.7275-.5665a.5.5,0,0,0-.7.0875L7.411,12.1415,4.0875,8.8355a.5.5,0,0,0-.707,0L2.718,9.5a.5.5,0,0,0,0,.707l4.463,4.45a.5.5,0,0,0,.75-.0465L15.7435,4.564A.5.5,0,0,0,15.656,3.8625Z"></path></svg>`;
+        previewContainer.append(checkmark);
       }
       editLink.href = adminStatus.edit.url;
       editLink.innerHTML = 'Edit';
 
-      item.append(previewLink);
+      previewContainer.append(previewLink);
+      item.append(previewContainer);
       item.append(editLink);
       li.append(item);
-      insertAlphabetically(ol, li);
-      editUrls.add(editUrl);
+      insertAlphabetically(ul, li);
+      editUrls.add(adminStatus.edit.url);
     }
   });
-  block.querySelector('div').append(ol);
+  block.querySelector('div').append(ul);
 };
 
 const init = async (block) => {
