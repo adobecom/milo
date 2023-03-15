@@ -570,6 +570,11 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   right: 0;
 }
 
+.gnav-navitem:not(.large-menu) .gnav-navitem-menu {
+  box-shadow: 0px 3px 3px 0px rgb(0 0 0 / 20%);
+  border-bottom: none;
+}
+
 .gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > ul {
   margin: 0;
 }
