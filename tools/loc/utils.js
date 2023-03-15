@@ -88,17 +88,18 @@ export function getUrlInfo() {
   return urlInfo;
 }
 
-export async function simulatePreview(path, retryAttempt = 1) {
+export async function simulatePreview(path, retryAttempt = 1, isFloodgate) {
   const previewStatus = { success: true, path };
   try {
     getUrlInfo();
-    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${urlInfo.repo}/${urlInfo.ref}${path}`;
+    const repo = isFloodgate ? `${urlInfo.repo}-pink` : urlInfo.repo;
+    const previewUrl = `https://admin.hlx.page/preview/${urlInfo.owner}/${repo}/${urlInfo.ref}${path}`;
     const response = await fetch(
       `${previewUrl}`,
       { method: 'POST' },
     );
     if (!response.ok && retryAttempt <= MAX_RETRIES) {
-      await simulatePreview(path, retryAttempt + 1);
+      await simulatePreview(path, retryAttempt + 1, isFloodgate);
     }
     previewStatus.responseJson = await response.json();
   } catch (error) {
@@ -123,6 +124,12 @@ export function getLinkOrDisplayText(spViewUrl, docStatus) {
 export function showButtons(buttonIds) {
   buttonIds.forEach((buttonId) => {
     document.getElementById(buttonId).classList.remove('hidden');
+  });
+}
+
+export function hideButtons(buttonIds) {
+  buttonIds.forEach((buttonId) => {
+    document.getElementById(buttonId).classList.add('hidden');
   });
 }
 

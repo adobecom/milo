@@ -1,0 +1,54 @@
+<html>
+<head>
+    <meta name="breadcrumbs-title" content="my specific title">
+    <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
+    <link rel="stylesheet" href="/libs/blocks/gnav/gnav.css">
+</head>
+<body>
+<header class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/gnav">
+</header>
+<main>
+    <div class="section-wrapper">
+        <div>
+            <h1 id="welcome-to-the-gnav-test">Welcome to the Gnav/Breadcrumbs Test</h1>
+            <div id="wrong" class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/wrong-gnav"></div>
+            <div style="height: 1000px">
+                - one breadcrumbs item has a specific title
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+<script type="module">
+  import { runTests } from '@web/test-runner-mocha';
+  import { expect } from '@esm-bundle/chai';
+  import { delay } from '../../../../../helpers/waitfor.js';
+  import gnav from '../../../../../../libs/blocks/gnav/gnav.js';
+  import getItems from '../utils.js';
+  import { setConfig } from '../../../../../../libs/utils/utils.js';
+
+  runTests(() => {
+    const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+    setConfig(config);
+
+    describe('breadcrumbs', () => {
+      it('one breadcrumbs item has a specific title', async () => {
+        await gnav(document.querySelector('header'));
+        await delay(300);
+        const expected = [
+          {href: '/', title: ''},
+          {href: '/test', title: 'test'},
+          {href: '/test/blocks', title: 'blocks'},
+          {href: '/test/blocks/gnav', title: 'gnav'},
+          {href: '/test/blocks/gnav/mocks', title: 'mocks'},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs', title: 'breadcrumbs'},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs/specific-title', title: 'specific-title'},
+          {href: '', title: 'my specific title'},
+        ];
+        expect(getItems()).to.eql(expected);
+      });
+    });
+  });
+</script>
+</html>
+

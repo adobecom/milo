@@ -2,16 +2,20 @@ import { html, useEffect, useState } from '../../deps/htm-preact.js';
 
 let checkboxIdx = 0;
 
-const Select = ({ label, name, onChange, options, value }) => {
+const Select = ({ label, name, onChange, options, value, sort = false }) => {
   const onSelectChange = (e) => {
     onChange(e.target.value, e);
   };
+
+  const entries = sort
+    ? Object.entries(options).sort((a, b) => a[1].localeCompare(b[1]))
+    : Object.entries(options);
 
   return html`
     <div class="field">
       <label for=${name}>${label}</label>
       <select id=${name} value=${value} onChange=${onSelectChange}>
-        ${Object.entries(options).map(
+        ${entries.map(
           ([val, optionLabel]) => html`<option value="${val}">${optionLabel}</option>`
         )}
       </select>
