@@ -79,7 +79,7 @@
 
 .table-of-contents .toc-arrow {
   align-self: center;
-  padding: 0 0 0 8px;
+  padding-left: 8px;
 }
 
 .toc .marquee {
@@ -153,7 +153,7 @@
   }
 
   .toc .marquee .foreground .text {
-    padding: var(--spacing-xl) 0 0 0;
+    padding-top: var(--spacing-xl);
   }
 
   .toc .marquee .foreground .media {
