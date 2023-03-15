@@ -34,6 +34,17 @@ const getEditUrl = async (owner, repo, locale, path) => {
   return false;
 }
 
+const insertAlphabetically = (ol, li) => {
+  const locale = li.getAttribute('data-locale');
+  const items = [...ol.getElementsByTagName('li')];
+  const insertBefore = items.find((item) => locale < item.getAttribute('data-locale'));
+  if (insertBefore) {
+    ol.insertBefore(li, insertBefore);
+  } else {
+    ol.append(li);
+  }
+};
+
 const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
   const { search } = window.location;
@@ -79,7 +90,7 @@ const decorateRegionLinks = async (block) => {
       item.append(previewLink);
       item.append(editLink);
       li.append(item);
-      ol.append(li);
+      insertAlphabetically(ol, li);
       editUrls.add(editUrl);
     }
   });
