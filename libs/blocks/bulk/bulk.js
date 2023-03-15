@@ -1,6 +1,10 @@
 import { html, render, useState, useRef } from '../../deps/htm-preact.js';
 import { getImsToken } from '../../../tools/send-to-caas/send-utils.js';
 import { loadScript } from '../../utils/utils.js';
+import {
+  getLocalStorage,
+  setLocalStorage,
+} from '../review/utils/localStorageUtils.js';
 
 const UNSUPPORTED_SITE = 'unsupported domain';
 const MAX_URLS_NUMBER = 1000;
@@ -26,24 +30,22 @@ const signIn = async () => {
 };
 
 const getAuthorizedUsers = async () => {
-  window.bulk = window.bulk || {};
-  let { authorizedUsers } = window.bulk;
+  let authorizedUsers = getLocalStorage('bulkAuthorizedUsers');
   if (authorizedUsers) return authorizedUsers;
   const resp = await fetch('/tools/bulk-config.json');
   const json = await resp.json();
   authorizedUsers = json.users.data.map((user) => user.user);
-  window.bulk.authorizedUsers = authorizedUsers;
+  setLocalStorage('bulkAuthorizedUsers', authorizedUsers);
   return authorizedUsers;
 };
 
 const getSupportedSites = async () => {
-  window.bulk = window.bulk || {};
-  let { supportedSites } = window.bulk;
+  let supportedSites = getLocalStorage('bulkSupportedSites');
   if (supportedSites) return supportedSites;
   const resp = await fetch('/tools/bulk-config.json');
   const json = await resp.json();
   supportedSites = json.sites.data.map((site) => site.origin);
-  window.bulk.supportedSites = supportedSites;
+  setLocalStorage('bulkSupportedSites', supportedSites);
   return supportedSites;
 };
 
@@ -325,6 +327,7 @@ function Bulk(props) {
   };
 
   const onSubmit = async () => {
+    setLocalStorage('bulkUrls', urlsElt.current.value);
     // reset the result area
     setSubmittedAction(null);
     setResult(null);
@@ -369,7 +372,7 @@ function Bulk(props) {
                 <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
             </div>
         </div>
-        <textarea class="bulk-urls-input" ref="${urlsElt}"></textarea>
+        <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage('bulkUrls')}</textarea>
         <div class="bulk-action">
             <${SubmitBtn}
                 onSubmit=${onSubmit}
