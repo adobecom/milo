@@ -250,8 +250,12 @@ export function appendHtmlPostfix(area = document) {
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
+    let url = { pathname: href };
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || href.endsWith('/')
+      || url.pathname?.endsWith('/')
       || href === pageUrl.origin
       || HAS_EXTENSION.test(href.split('/').pop())
       || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
@@ -660,6 +664,15 @@ function decorateMeta() {
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
+  });
+
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
   });
 }
 
