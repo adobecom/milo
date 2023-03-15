@@ -47,9 +47,7 @@ const insertAlphabetically = (ul, li) => {
 
 const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
-  // const { search } = window.location;
-  // const search = '?ref=main&repo=bacom&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B1C8CDBDF-F5BD-4AA2-B18E-D2488AC04131%257D%26file%3Dcustomer-success-stories.docx%26action%3Ddefault%26mobileredirect%3Dtrue';
-  const search = '?ref=main&repo=milo&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fadobe.sharepoint.com%2F%3Aw%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B664D4A7F-CD90-4B72-80FD-428FBB7D66EB%257D%26cid%3D2d780159-195c-4f7d-9b8b-22008fc1d64b';
+  const { search } = window.location;
   const params = new URLSearchParams(search);
   const referrer = params.get('referrer');
   const owner = params.get('owner');
