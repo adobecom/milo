@@ -2,12 +2,15 @@
   display: none;
 }
 
+.feds-search-dropdown {
+  border-bottom: 1px solid var(--feds-color-border--light);
+  background-color: var(--feds-background-nav--light);
+}
+
 .feds-search-bar {
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
-  background-color: var(--feds-background-nav--light);
-  /* TODO: add desktop top border */
 }
 
 .feds-search-field {
@@ -123,16 +126,25 @@
     display: flex;
   }
 
-  .feds-search-bar {
+  .feds-search-dropdown {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    padding: 20px;
+    border-top: 1px solid var(--feds-color-border--light);
     display: none;
+    z-index: 1;
   }
 
-  .feds-search-trigger[aria-expanded = "true"] + .feds-search-bar {
+  .feds-search-bar {
+    width: 100%;
+    max-width: var(--feds-maxWidth-nav);
+    box-sizing: border-box;
+    padding: 20px 8px;
+  }
+
+  .feds-search-trigger[aria-expanded = "true"] + .feds-search-dropdown {
     display: flex;
+    justify-content: center;
   }
 }
