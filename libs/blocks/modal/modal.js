@@ -9,7 +9,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
   </g>
 </svg>`;
 
-function findDetails(hash, el) {
+export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
@@ -145,12 +145,6 @@ export default function init(el) {
   }
   return null;
 }
-
-// Event-based modal
-window.addEventListener('modal:open', (e) => {
-  const details = findDetails(e.detail.hash);
-  if (details) getModal(details);
-});
 
 // Click-based modal
 window.addEventListener('hashchange', (e) => {
