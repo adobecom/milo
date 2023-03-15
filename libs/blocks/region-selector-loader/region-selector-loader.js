@@ -35,9 +35,9 @@ const getEditUrl = async (owner, repo, locale, path) => {
 }
 
 const insertAlphabetically = (ol, li) => {
-  const locale = li.getAttribute('data-locale');
+  const locale = li.dataset.locale;
   const items = [...ol.getElementsByTagName('li')];
-  const insertBefore = items.find((item) => locale < item.getAttribute('data-locale'));
+  const insertBefore = items.find((item) => locale < item.dataset.locale);
   if (insertBefore) {
     ol.insertBefore(li, insertBefore);
   } else {
