@@ -73,64 +73,61 @@ const decorateRegionLinks = async (block) => {
     currentPathWithOutLocale = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
   }
   
-  const editUrls = new Set();
+  const locales = new Set(livecopies);
   const containerParent = createTag('div', { class: 'sk-region-select-item-containers' });
-  livecopies.forEach(async loc => {
+  locales.forEach(async loc => {
     const adminStatus = await getStatusFromHelixAdmin(owner, repo, loc, currentPathWithOutLocale);
-    if (!editUrls.has(adminStatus.edit.url)) {
-      const itemContainer = createTag('div', { class: 'sk-region-select-item-container', 'data-locale': loc});
-      const item = createTag('div', { class: 'sk-region-select-item' });
+    const itemContainer = createTag('div', { class: 'sk-region-select-item-container', 'data-locale': loc});
+    const item = createTag('div', { class: 'sk-region-select-item' });
 
-      const localeText = createTag('div', { class: 'locale-text' });
-      localeText.innerHTML = loc || 'en_us';
+    const localeText = createTag('div', { class: 'locale-text' });
+    localeText.innerHTML = loc || 'en_us';
 
-      const linkContainer = createTag('div', { class: 'sk-link-container' });
-      const editLink = createTag('a', { class: 'sk-edit-link disabled', target: '_blank' });
-      const previewLink = createTag('a', { class: 'sk-preview-link disabled', target: '_blank' });
-      const liveLink = createTag('a', { class: 'sk-live-link disabled', target: '_blank' });
-      
-      editLink.innerHTML = WORD_ICON;
-      previewLink.innerHTML = ADOBE_ICON;
-      liveLink.innerHTML = ADOBE_ICON;
-      
-      if (adminStatus.edit.status === 200) {
-        editLink.classList.remove('disabled');
-        editLink.href = adminStatus.edit.url;
-      }
-      
-      if (adminStatus.preview.status === 200) {
-        previewLink.classList.remove('disabled');
-        previewLink.href = adminStatus.preview.url;
-      }
+    const linkContainer = createTag('div', { class: 'sk-link-container' });
+    const editLink = createTag('a', { class: 'sk-edit-link disabled', target: '_blank' });
+    const previewLink = createTag('a', { class: 'sk-preview-link disabled', target: '_blank' });
+    const liveLink = createTag('a', { class: 'sk-live-link disabled', target: '_blank' });
+    
+    editLink.innerHTML = WORD_ICON;
+    previewLink.innerHTML = ADOBE_ICON;
+    liveLink.innerHTML = ADOBE_ICON;
+    
+    if (adminStatus.edit.status === 200) {
+      editLink.classList.remove('disabled');
+      editLink.href = adminStatus.edit.url;
+    }
+    
+    if (adminStatus.preview.status === 200) {
+      previewLink.classList.remove('disabled');
+      previewLink.href = adminStatus.preview.url;
+    }
 
-      if (adminStatus.live.status === 200) {
-        liveLink.classList.remove('disabled');
-        liveLink.href = adminStatus.live.url;
-      }
-      
-      linkContainer.append(editLink, previewLink, liveLink);
-      item.append(localeText, linkContainer);
-      itemContainer.append(item);
+    if (adminStatus.live.status === 200) {
+      liveLink.classList.remove('disabled');
+      liveLink.href = adminStatus.live.url;
+    }
+    
+    linkContainer.append(editLink, previewLink, liveLink);
+    item.append(localeText, linkContainer);
+    itemContainer.append(item);
 
-      if (adminStatus.webPath === currentPath) {
-        const origin = document.referrer;
-        if (origin.includes('google.com') || origin.includes('sharepoint.com')) {
-          editLink.style.opacity = 0;
-          editLink.removeAttribute('href');
-        } else if(origin.includes('hlx.page')) {
-          previewLink.style.opacity = 0;
-          previewLink.removeAttribute('href');
-        } else {
-          liveLink.style.opacity = 0;
-          liveLink.removeAttribute('href');
-        }
-        itemContainer.classList.add('current');
-        const localeHeader = block.querySelector('.locale-header');
-        localeHeader.parentElement.insertBefore(itemContainer, localeHeader);
+    if (adminStatus.webPath === currentPath) {
+      const origin = document.referrer;
+      if (origin.includes('google.com') || origin.includes('sharepoint.com')) {
+        editLink.style.opacity = 0;
+        editLink.removeAttribute('href');
+      } else if(origin.includes('hlx.page')) {
+        previewLink.style.opacity = 0;
+        previewLink.removeAttribute('href');
       } else {
-        insertAlphabetically(containerParent, itemContainer);
+        liveLink.style.opacity = 0;
+        liveLink.removeAttribute('href');
       }
-      editUrls.add(adminStatus.edit.url);
+      itemContainer.classList.add('current');
+      const localeHeader = block.querySelector('.locale-header');
+      localeHeader.parentElement.insertBefore(itemContainer, localeHeader);
+    } else {
+      insertAlphabetically(containerParent, itemContainer);
     }
   });
   block.querySelector('div').append(containerParent);
