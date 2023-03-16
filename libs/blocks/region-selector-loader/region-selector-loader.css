@@ -3,11 +3,32 @@ Common styles for the block region selector loader
 */
 
 .region-selector-loader {
-  padding: 0 15px;
   background-color: #303030;
   color: #fff;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  min-height: 500px;
+  min-height: 398px;
+}
+
+img.icon {
+  width: 35px;
+}
+
+a.disabled {
+  filter: grayscale(100%);
+}
+
+.sk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 1.5rem;
+  padding: 0 15px;
+}
+
+.right-headings {
+  display: flex;
+  gap: 20px;
+  font-weight: bolder;
 }
 
 .region-selector-loader h2 {
@@ -15,50 +36,18 @@ Common styles for the block region selector loader
   padding: 0.8em 0 0;
 }
 
-.region-selector-loader ul {
-  margin: 0;
-  padding: 1em;
+.sk-region-select-item-container {
+  padding: 15px;
+  background-color: #353535;
 }
 
 .sk-region-select-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-.sk-edit-list {
-  border-bottom: 1px solid #888;
-  list-style: none;
-}
-
-.sk-edit-list:last-child {
-  border: none;
-}
-
-.icon-checkmark,
-.sk-preview-link.previewed,
-.sk-edit-link {
-  color: #5fa0ff;
-}
-
-.icon-checkmark {
-  position: relative;
-  left: -18px;
-}
-
-.sk-preview-link {
-  color: #999;
-}
-
-.sk-preview-link:hover {
-  text-decoration: none;
-  color: #999;
-}
-
-.sk-preview-link.previewed {
-  position: relative;
-  left: -18px;  
-}
-
-.sk-preview-link.previewed:hover {
-  color: var(--link-hover-color);
+.sk-link-container {
+  display: flex;
+  gap: 38.5px;
 }

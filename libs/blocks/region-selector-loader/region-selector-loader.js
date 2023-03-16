@@ -2,6 +2,8 @@ import { createTag } from '../../utils/utils.js';
 
 const LOC_CONFIG = 'https://main--milo--adobecom.hlx.page/drafts/localization/configs/config.json';
 const HELIX_ADMIN = 'https://admin.hlx.page';
+const ADOBE_ICON = '<img class="icon" src="/libs/blocks/region-selector-loader/img/Adobe_Experience_Cloud_logo_RGB.svg">';
+const WORD_ICON = '<img class="icon" src="/libs/blocks/region-selector-loader/img/word-icon.svg">';
 
 const getLivecopies = async () => {
   const livecopies = [];
@@ -26,22 +28,21 @@ const getWebPath = async (owner, repo, referrer) => {
 const getStatusFromHelixAdmin = async (owner, repo, locale, path) => {
   try {
     const res = await fetch(`${HELIX_ADMIN}/status/${owner}/${repo}/main/${locale}/${path}?editUrl=auto`);
+    if (!res.ok) return false;
     const json = await res.json();
-    if (json.edit.status === 200) {
-      return json;
-    }
+    return json;
   } catch (e) { /* ignore */ }
   return false;
 }
 
-const insertAlphabetically = (ul, li) => {
-  const locale = li.dataset.locale;
-  const items = [...ul.getElementsByTagName('li')];
+const insertAlphabetically = (containerParent, itemContainer) => {
+  const locale = itemContainer.dataset.locale;
+  const items = [...containerParent.querySelectorAll('.sk-region-select-item-container')];
   const insertBefore = items.find((item) => locale < item.dataset.locale);
   if (insertBefore) {
-    ul.insertBefore(li, insertBefore);
+    containerParent.insertBefore(itemContainer, insertBefore);
   } else {
-    ul.append(li);
+    containerParent.append(itemContainer);
   }
 };
 
@@ -55,8 +56,13 @@ const decorateRegionLinks = async (block) => {
   
   if (!owner || !repo || !referrer) return;
   
-  const currentPath = await getWebPath(owner, repo, referrer);
-  
+  let currentPath;
+  if (referrer.includes('google.com') || referrer.includes('sharepoint.com')) {
+    currentPath = await getWebPath(owner, repo, referrer);
+  } else {
+    currentPath = new URL(referrer).pathname;
+  }
+    
   let currentPathWithOutLocale = currentPath;
   if (!currentPath) {
     return;
@@ -64,44 +70,89 @@ const decorateRegionLinks = async (block) => {
   const currentLocale = currentPath.split('/')[1];
   const index = livecopies.indexOf(currentLocale);
   if (index > -1) {
-    livecopies.splice(index, 1);
     currentPathWithOutLocale = currentPath.substring(currentPath.indexOf(currentLocale) + currentLocale.length);
   }
   
   const editUrls = new Set();
-  const ul = createTag('ul', { class: 'sk-edit-links' });
-  livecopies.forEach(async l => {
-    const adminStatus = await getStatusFromHelixAdmin(owner, repo, l, currentPathWithOutLocale);
-    if (adminStatus && !editUrls.has(adminStatus.edit.url)) {
-      if (adminStatus.webPath === currentPath) return;
+  const containerParent = createTag('div', { class: 'sk-region-select-item-containers' });
+  livecopies.forEach(async loc => {
+    const adminStatus = await getStatusFromHelixAdmin(owner, repo, loc, currentPathWithOutLocale);
+    if (!editUrls.has(adminStatus.edit.url)) {
+      const itemContainer = createTag('div', { class: 'sk-region-select-item-container', 'data-locale': loc});
       const item = createTag('div', { class: 'sk-region-select-item' });
-      const li = createTag('li', { class: 'sk-edit-list', 'data-locale': l});
-      const previewContainer = createTag('div', { class: 'sk-preview-container' });
-      const previewLink = createTag('a', { class: 'sk-preview-link', target: '_blank' });
-      const editLink = createTag('a', { class: 'sk-edit-link', target: '_blank' });
-      previewLink.innerHTML = adminStatus.webPath;
-      if (adminStatus.preview.status === 200) {
-        previewLink.classList.add('previewed');
-        previewLink.href = adminStatus.preview.url;
-        const checkmark = createTag('span', { class: 'icon icon-checkmark'});
-        checkmark.innerHTML = `<svg id="checkmark" viewBox="0 0 18 18" class="icon-milo icon-milo-checkmark"><path fill="currentcolor" d="M15.656,3.8625l-.7275-.5665a.5.5,0,0,0-.7.0875L7.411,12.1415,4.0875,8.8355a.5.5,0,0,0-.707,0L2.718,9.5a.5.5,0,0,0,0,.707l4.463,4.45a.5.5,0,0,0,.75-.0465L15.7435,4.564A.5.5,0,0,0,15.656,3.8625Z"></path></svg>`;
-        previewContainer.append(checkmark);
-      }
-      editLink.href = adminStatus.edit.url;
-      editLink.innerHTML = 'Edit';
 
-      previewContainer.append(previewLink);
-      item.append(previewContainer);
-      item.append(editLink);
-      li.append(item);
-      insertAlphabetically(ul, li);
+      const localeText = createTag('div', { class: 'localeText' });
+      localeText.innerHTML = loc || 'en_us';
+
+      const linkContainer = createTag('div', { class: 'sk-link-container' });
+      const editLink = createTag('a', { class: 'sk-edit-link disabled', target: '_blank' });
+      const previewLink = createTag('a', { class: 'sk-preview-link disabled', target: '_blank' });
+      const liveLink = createTag('a', { class: 'sk-live-link disabled', target: '_blank' });
+      
+      editLink.innerHTML = WORD_ICON;
+      previewLink.innerHTML = ADOBE_ICON;
+      liveLink.innerHTML = ADOBE_ICON;
+      
+      if (adminStatus.edit.status === 200) {
+        editLink.classList.remove('disabled');
+        editLink.href = adminStatus.edit.url;
+      }
+      
+      if (adminStatus.preview.status === 200) {
+        previewLink.classList.remove('disabled');
+        previewLink.href = adminStatus.preview.url;
+      }
+
+      if (adminStatus.live.status === 200) {
+        liveLink.classList.remove('disabled');
+        liveLink.href = adminStatus.live.url;
+      }
+      
+      linkContainer.append(editLink, previewLink, liveLink);
+      item.append(localeText, linkContainer);
+      itemContainer.append(item);
+
+      if (adminStatus.webPath === currentPath) {
+        const origin = document.referrer;
+        console.log(origin);
+        if (origin.includes('google.com') || origin.includes('sharepoint.com')) {
+          editLink.style.opacity = 0;
+          editLink.removeAttribute('href');
+        } else if(origin.includes('hlx.page')) {
+          previewLink.style.opacity = 0;
+          previewLink.removeAttribute('href');
+        } else {
+          liveLink.style.opacity = 0;
+          liveLink.removeAttribute('href');
+        }
+        itemContainer.classList.add('current');
+        const localeHeader = block.querySelector('.locale-header');
+        localeHeader.parentElement.insertBefore(itemContainer, localeHeader);
+      } else {
+        insertAlphabetically(containerParent, itemContainer);
+      }
       editUrls.add(adminStatus.edit.url);
     }
   });
-  block.querySelector('div').append(ul);
+  block.querySelector('div').append(containerParent);
 };
 
+const decorateHeader = (block) => {
+  const headingParent = block.querySelector('h1, h2, h3')?.parentElement;
+  headingParent.classList.add('sk-header');
+  const rightHeading = createTag('div', { class: 'right-headings' });
+  rightHeading.innerHTML = '<div>EDIT</div><div>PREVIEW</div><div>LIVE</div>';
+  headingParent.append(rightHeading);
+  
+  const localeHeader = createTag('div', { class: 'sk-header locale-header' });
+  const localeHeading = createTag('h2');
+  localeHeading.innerHTML = 'LOCALES';
+  localeHeader.append(localeHeading);
+  headingParent.parentElement.append(localeHeader);
+}
+
 const init = async (block) => {
+  decorateHeader(block);
   await decorateRegionLinks(block);
 }
 
