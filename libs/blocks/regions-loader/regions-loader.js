@@ -2,8 +2,8 @@ import { createTag } from '../../utils/utils.js';
 
 const LOC_CONFIG = 'https://main--milo--adobecom.hlx.page/drafts/localization/configs/config.json';
 const HELIX_ADMIN = 'https://admin.hlx.page';
-const ADOBE_ICON = '<img class="icon" src="/libs/blocks/region-selector-loader/img/Adobe_Experience_Cloud_logo_RGB.svg">';
-const WORD_ICON = '<img class="icon" src="/libs/blocks/region-selector-loader/img/word-icon.svg">';
+const ADOBE_ICON = '<img class="icon" src="/libs/blocks/regions-loader/img/Adobe_Experience_Cloud_logo_RGB.svg">';
+const WORD_ICON = '<img class="icon" src="/libs/blocks/regions-loader/img/word-icon.svg">';
 
 const getLivecopies = async () => {
   const livecopies = [];
@@ -48,7 +48,9 @@ const insertAlphabetically = (containerParent, itemContainer) => {
 
 const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
-  const { search } = window.location;
+  // const { search } = window.location;
+  let search = '?ref=main&repo=milo&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fmain--milo--adobecom.hlx.page%2Fae_en%2Fdrafts%2Fcmillar%2Fabout-adobe-demo-jingle';
+  // search = `?ref=main&repo=bacom&owner=adobecom&referrer=https://adobe.sharepoint.com/:w:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC9ED2CF-7532-43C6-B9B2-608CBCF524E7%7D&cid=c8cdcb33-9caa-41ce-bc09-d96e87f215b7`;
   const params = new URLSearchParams(search);
   const referrer = params.get('referrer');
   const owner = params.get('owner');
@@ -81,7 +83,7 @@ const decorateRegionLinks = async (block) => {
       const itemContainer = createTag('div', { class: 'sk-region-select-item-container', 'data-locale': loc});
       const item = createTag('div', { class: 'sk-region-select-item' });
 
-      const localeText = createTag('div', { class: 'localeText' });
+      const localeText = createTag('div', { class: 'locale-text' });
       localeText.innerHTML = loc || 'en_us';
 
       const linkContainer = createTag('div', { class: 'sk-link-container' });
@@ -114,7 +116,6 @@ const decorateRegionLinks = async (block) => {
 
       if (adminStatus.webPath === currentPath) {
         const origin = document.referrer;
-        console.log(origin);
         if (origin.includes('google.com') || origin.includes('sharepoint.com')) {
           editLink.style.opacity = 0;
           editLink.removeAttribute('href');
@@ -137,6 +138,10 @@ const decorateRegionLinks = async (block) => {
   block.querySelector('div').append(containerParent);
 };
 
+const searchEvent = (e) => {
+
+}
+
 const decorateHeader = (block) => {
   const headingParent = block.querySelector('h1, h2, h3')?.parentElement;
   headingParent.classList.add('sk-header');
@@ -146,8 +151,11 @@ const decorateHeader = (block) => {
   
   const localeHeader = createTag('div', { class: 'sk-header locale-header' });
   const localeHeading = createTag('h2');
+  const searchInput = createTag('input',{ class: 'sk-regions-search', placeholder: 'Search...' });
+  searchInput.addEventListener('keyup', searchEvent);
   localeHeading.innerHTML = 'LOCALES';
   localeHeader.append(localeHeading);
+  // localeHeader.append(searchInput);
   headingParent.parentElement.append(localeHeader);
 }
 

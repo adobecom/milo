@@ -63,7 +63,7 @@
       "passConfig": true,
       "passReferrer": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 398px; width: 360px;",
-      "url": "https://region-selector--milo--adobecom.hlx.page/tools/region-selector",
+      "url": "https://region-selector--milo--adobecom.hlx.page/tools/regions-loader",
       "includePaths": [ "**.docx**" ]
     }
   ]
