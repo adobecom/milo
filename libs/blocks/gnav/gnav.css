@@ -7,7 +7,24 @@
 }
 
 header {
-  display: block;
+  height: 57px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #FFF;
+  box-sizing: border-box;
+  visibility: visible;
+}
+
+header nav {
+  display: none;
+}
+
+header ~ main {
+  margin-top: 57px;
 }
 
 header.gnav {
@@ -892,8 +909,29 @@ header .app-launcher {
 }
 
 /* END APP LAUNCHER */
-
 @media (min-width: 900px) {
+  header {
+    min-height: 64px;
+    border-bottom: 1px solid #EAEAEA;
+    overflow: unset;
+  }
+
+  header ~ main {
+    margin-top: 64px;
+  }
+
+  header.has-breadcrumbs {
+    min-height: 97px;
+  }
+
+  header nav {
+    display: unset;
+  }
+
+  header.has-breadcrumbs + main {
+    margin-top: 97px;
+  }
+
   header .gnav-wrapper {
     height: unset;
     grid-template-areas: 'main'
