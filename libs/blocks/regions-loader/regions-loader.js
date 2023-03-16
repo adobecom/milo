@@ -137,7 +137,15 @@ const decorateRegionLinks = async (block) => {
 };
 
 const searchEvent = (e) => {
-
+  const search = regionsSearch.value;
+  const subjects = document.querySelectorAll('.sk-region-select-item-containers .sk-region-select-item-container');
+  subjects.forEach(subject => {
+    if (subject.textContent.includes(search)) {
+      subject.style.display = 'block';
+    } else {
+      subject.style.display = 'none';
+    }
+  });
 }
 
 const decorateHeader = (block) => {
@@ -149,11 +157,11 @@ const decorateHeader = (block) => {
   
   const localeHeader = createTag('div', { class: 'sk-header locale-header' });
   const localeHeading = createTag('h2');
-  const searchInput = createTag('input',{ class: 'sk-regions-search', placeholder: 'Search...' });
+  const searchInput = createTag('input',{ id: 'regionsSearch', class: 'sk-regions-search', placeholder: 'Search...' });
   searchInput.addEventListener('keyup', searchEvent);
   localeHeading.innerHTML = 'LOCALES';
   localeHeader.append(localeHeading);
-  // localeHeader.append(searchInput);
+  localeHeader.append(searchInput);
   headingParent.parentElement.append(localeHeader);
 }
 
