@@ -43,24 +43,15 @@
  }
  
  header {
-   height: 57px;
-   position: fixed;
-   top: 0;
-   left: 0;
-   right: 0;
-   z-index: 100;
-   overflow: hidden;
-   background: #FFF;
-   box-sizing: border-box;
+  height: 64px; /* TODO better approach for value? */
+  visibility: hidden;
  }
- 
- header nav {
-   display: none;
- }
- 
- header ~ main {
-   margin-top: 57px;
- }
+
+ @media (min-width: 900px) {
+    header.has-breadcrumbs {
+      padding-bottom: 33px; /* TODO better approach for value? */
+    }
+  }
  
  .breadcrumbs {
    display: none;
@@ -216,29 +207,5 @@
  
  .milo-card-section {
    visibility: hidden;
- }
- 
- @media (min-width: 900px) {
-   header {
-     min-height: 64px;
-     border-bottom: 1px solid #EAEAEA;
-     overflow: unset;
-   }
- 
-   header ~ main {
-     margin-top: 64px;
-   }
- 
-   header.has-breadcrumbs {
-     min-height: 97px;
-   }
- 
-   header nav {
-     display: unset;
-   }
- 
-   header.has-breadcrumbs + main {
-     margin-top: 97px;
-   }
  }
  
