@@ -48,9 +48,7 @@ const insertAlphabetically = (containerParent, itemContainer) => {
 
 const decorateRegionLinks = async (block) => {
   const livecopies = await getLivecopies();
-  // const { search } = window.location;
-  let search = '?ref=main&repo=milo&owner=adobecom&host=milo.adobe.com&project=Milo&referrer=https%3A%2F%2Fmain--milo--adobecom.hlx.page%2Fae_en%2Fdrafts%2Fcmillar%2Fabout-adobe-demo-jingle';
-  // search = `?ref=main&repo=bacom&owner=adobecom&referrer=https://adobe.sharepoint.com/:w:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC9ED2CF-7532-43C6-B9B2-608CBCF524E7%7D&cid=c8cdcb33-9caa-41ce-bc09-d96e87f215b7`;
+  const { search } = window.location;
   const params = new URLSearchParams(search);
   const referrer = params.get('referrer');
   const owner = params.get('owner');
