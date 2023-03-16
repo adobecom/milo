@@ -106,7 +106,7 @@
 }
 
 .marquee.split.has-credit {
-  margin-bottom: var(--spacing-m);
+  margin-bottom: var(--spacing-l);
 }
 
 .marquee.split .media-credit {
@@ -503,10 +503,6 @@
 
   .marquee.split.large p.action-area:last-of-type {
     margin-bottom: 0;
-  }
-
-  .marquee.split.has-credit {
-    margin-bottom: unset;
   }
 
   .marquee.split .text .icon-area img {
