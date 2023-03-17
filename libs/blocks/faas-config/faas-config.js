@@ -206,7 +206,7 @@ const Select = ({ label, options, prop, onChange, sort }) => {
       <div class="field">
         <label for=${prop}>${label}</label>
         <select id=${prop} value=${context.state[prop]} onChange=${onSelectChange}>
-          ${optionsArray.map(([v, l]) => html`<option value="${v}">${l}</option>`)}
+          ${optionsArray.map(([v, l]) => html`<option value="${v}">${l} (${v})</option>`)}
         </select>
       </div>
     `;

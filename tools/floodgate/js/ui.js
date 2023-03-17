@@ -10,7 +10,7 @@ import {
   getFloodgateUrl,
 } from './utils.js';
 
-const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles'];
+const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles'];
 
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
