@@ -15,7 +15,7 @@ dl.accordion {
 .accordion dd {
   margin: 0;
   padding: var(--spacing-xs);
-  font-size: var(--type-body-xs-size);
+  font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
 }
 
