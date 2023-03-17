@@ -1,0 +1,118 @@
+.in-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/*
+Common styles for the block region selector loader
+*/
+
+.locale-nav {
+  width: 360px;
+  height: 360px;
+  overflow: scroll;
+  background-color: #303030;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.sk-header {
+  background: rgb(0 0 0 / 35%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  line-height: 36px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 48px 60px 60px;
+  text-align: center;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  line-height: 72px;
+  font-size: 1.125rem;
+  text-transform: uppercase;
+}
+
+.action {
+  display: inline-block;
+  overflow: hidden;
+  text-indent: -1000px;
+}
+
+.action.edit {
+  background: url('./img/word-icon.svg') center / 26px no-repeat;
+}
+
+.action.preview, .action.live {
+  background: url('./img/aec-icon.svg') center / 26px no-repeat;
+}
+
+.status-404 {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* Locale List */
+ul.locales {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.locale-search-wrapper {
+  position: relative;
+}
+
+.locale-search {
+  width: 100%;
+  display: block;
+  font-family: var(--body-font-family);
+  background: rgb(0 0 0 / 35%);
+  border: none;
+  margin: 0;
+  padding: 0 12px;
+  line-height: 36px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #FFF;
+  box-sizing: border-box;
+  transition: padding .2s ease-in-out;
+}
+
+.locale-search-icon {
+  position: absolute;
+  content: '';
+  width: 36px;
+  height: 36px;
+  left: -36px;
+  top: 0;
+  background: url('/libs/ui/img/spectrum-search.svg') center / 24px no-repeat;
+  transition: left .2s ease-in-out;
+}
+
+.locale-search:hover + .locale-search-icon, .locale-search:focus + .locale-search-icon {
+  left: 6px;
+}
+
+.locale-search:hover, .locale-search:focus {
+  padding: 0 42px;
+}
+
+.locale-search::placeholder {
+  color: #FFF;
+}
+
+.locale-search:focus::placeholder {
+  color: #676767;
+}
