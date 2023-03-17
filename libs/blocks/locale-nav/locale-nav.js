@@ -35,7 +35,9 @@ const getDetails = async (path) => {
 
 const getCurrentDetails = async () => {
   const { origin, pathname } = new URL(referrer);
-  const isEdit = origin.endsWith('google.com') || origin.endsWith('sharepoint.com');
+  const split = origin.split('.');
+  const topLevel = split.slice(Math.max(split.length - 2, 1)).join('.');
+  const isEdit = topLevel === 'google.com' || topLevel === 'sharepoint.com';
   return isEdit ? getDetails() : getDetails(pathname);
 }
 
