@@ -316,6 +316,8 @@ div[class*='-up'] .con-block.has-bg.xxl-spacing,
 .con-block.max-width-6 .foreground { max-width: 600px; }
 .con-block.max-width-8 .foreground { max-width: 800px; }
 .con-block.max-width-10 .foreground { max-width: 1000px; }
+.con-block.max-width-12 .foreground { max-width: 1200px; }
+.con-block.max-width-auto .foreground { max-width: unset; }
 
 /* mobile only */
 @media (max-width: 600px) {
@@ -330,12 +332,18 @@ div[class*='-up'] .con-block.has-bg.xxl-spacing,
   .con-block.max-width-6-tablet .foreground { max-width: 600px; }
   .con-block.max-width-8-tablet .foreground { max-width: 800px; }
   .con-block.max-width-10-tablet .foreground { max-width: 1000px; }
+  .con-block.max-width-12-tablet .foreground { max-width: 1200px; }
 }
-
 
 /* desktop up */
 @media screen and (min-width: 1200px) {
   .con-block.max-width-6-desktop .foreground { max-width: 600px; }
   .con-block.max-width-8-desktop .foreground { max-width: 800px; }
   .con-block.max-width-10-desktop .foreground { max-width: 1000px; }
+  .con-block.max-width-12-desktop .foreground { max-width: 1200px; }
+}
+
+/* desktop large < 1440 */
+@media screen and (min-width: 1440px) {
+  .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
