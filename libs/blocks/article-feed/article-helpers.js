@@ -1,4 +1,4 @@
-import { getConfig, getMetadata } from '../../utils/utils.js';
+import { getConfig } from '../../utils/utils.js';
 import * as taxonomyLibrary from '../../scripts/taxonomy.js';
 
 /*
@@ -32,10 +32,9 @@ function calculateExcelDate(date) {
  * @param {Array} topics List of topics
  * @returns {Object} Taxonomy object
  */
-function computeTaxonomyFromTopics(topics, path) {
+export function computeTaxonomyFromTopics(topics, path) {
   // no topics: default to a randomly choosen category
   const category = topics?.length > 0 ? topics[0] : 'news';
-
   if (taxonomyModule) {
     const allTopics = [];
     const visibleTopics = [];
@@ -115,8 +114,7 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics')
-  // taxonomyModule = _taxonomyModule;
+  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics');
   if (taxonomyModule) {
     // taxonomy loaded, post loading adjustments
     // fix the links which have been created before the taxonomy has been loaded
@@ -134,7 +132,7 @@ export async function loadTaxonomy() {
       delete a.dataset.topicLink;
     });
 
-    const currentTags = getMetadata('article:tag') || [];
+    const currentTags = [...document.head.querySelectorAll('meta[property="article:tag"]')].map((el) => el.content) || [];
     const articleTax = computeTaxonomyFromTopics(currentTags);
 
     const allTopics = articleTax.allTopics || [];
@@ -261,7 +259,7 @@ export function getArticleTaxonomy(article) {
  * @param {string} topic The topic name
  * @returns {string} A link tag as a string
  */
-function getLinkForTopic(topic, path) {
+export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
   const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
@@ -271,7 +269,7 @@ function getLinkForTopic(topic, path) {
     console.warn(`Trying to get a link for an unknown topic: ${topic} ${path ? `on page ${path}` : '(current page)'}`);
   }
 
-  return `<a href="${catLink ?? ''}" ${catLink ?? `data-topic-link="${topic}"`}>${titleSubs[topic] ?? topic}</a>`;
+  return `<a href="${catLink ?? ''}" ${!catLink ? `data-topic-link="${topic}"` : ''}>${titleSubs[topic] ?? topic}</a>`;
 }
 
 /**
