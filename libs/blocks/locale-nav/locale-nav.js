@@ -7,8 +7,6 @@ const referrer = params.get('referrer');
 const owner = params.get('owner');
 const repo = params.get('repo');
 
-const isEditUrl = () => referrer.includes('google.com') || referrer.includes('sharepoint.com');
-
 const formatJson = (json) => {
   const { pathname } = new URL(json.preview.url);
   const locale = getLocale(locales, pathname);
@@ -35,10 +33,11 @@ const getDetails = async (path) => {
   }
 };
 
-const getCurrentDetails = async () => (
-  isEditUrl()
-    ? getDetails()
-    : getDetails(new URL(referrer).pathname));
+const getCurrentDetails = async () => {
+  const { origin, pathname } = new URL(referrer);
+  const isEdit = origin.endsWith('google.com') || origin.endsWith('sharepoint.com');
+  return isEdit ? getDetails() : getDetails(pathname);
+}
 
 const getStatus = async (li, localePath) => {
   const page = await getDetails(localePath);
