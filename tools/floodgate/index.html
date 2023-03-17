@@ -17,7 +17,7 @@
     <div class="project-overview">
       <div class="container">
         <h2 class="project-name">
-          <span class="detail">Project</span>
+          <span class="title">Project</span>
           <span id="project-url"></span>
         </h2>
         <div id="reloadProject" class="hidden">
@@ -36,6 +36,33 @@
         <div id="loading" class="hidden">
           <div id="status" class="modal level-4 wait">Application is loading...</div>
         </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="project-status" hidden>
+        <h2 class="title">Project Status</h2>
+        <table id="pr-status">
+          <tr>
+            <th>Action</th>
+            <th>Status</th>
+            <th>Last Run</th>
+          </tr>
+          <tr>
+            <td>Copy</td>
+            <td id="copy-status">NOT STARTED</td>
+            <td id="copy-status-ts">-</td>
+          </tr>
+          <tr>
+            <td>Promote</td>
+            <td id="promote-status">NOT STARTED</td>
+            <td id="promote-status-ts">-</td>
+          </tr>
+          <tr>
+            <td>Delete</td>
+            <td id="delete-status">NOT STARTED</td>
+            <td id="delete-status-ts">-</td>
+          </tr>
+        </table>
       </div>
     </div>
     <div class="container">
