@@ -34,12 +34,17 @@ function UrlItem({ item }) {
             <h3 class=locui-url-label>Source</h3>
             <div class=locui-url-source-actions>
               <a class="locui-url-action locui-url-action-edit" href="#">Edit</a>
-              <a class="locui-url-action locui-url-action-preview" href="#">Preview</a>
-              <a class="locui-url-action locui-url-action-live" href="#">Live</a>
+              <a class="locui-url-action locui-url-action-view" href="#">Preview</a>
+              <a class="locui-url-action locui-url-action-view" href="#">Live</a>
             </div>
           </div>
           <div class=locui-url-langstore>
             <h3 class=locui-url-label>Langstore (${item.langstore.lang})</h3>
+            <div class=locui-url-source-actions>
+              <a class="locui-url-action locui-url-action-edit" href="#">Edit</a>
+              <a class="locui-url-action locui-url-action-view" href="#">Preview</a>
+              <a class="locui-url-action locui-url-action-view" href="#">Live</a>
+            </div>
           </div>
         </div>
       </div>
