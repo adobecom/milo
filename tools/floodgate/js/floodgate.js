@@ -17,10 +17,12 @@ import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
+  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
+  updateProjectStatusUI,
   ACTION_BUTTON_IDS,
 } from './ui.js';
 import promoteFloodgatedFiles from './promote.js';
@@ -31,7 +33,7 @@ async function reloadProject() {
   await purgeAndReloadProjectFile();
 }
 
-async function refreshPage(config, projectDetail) {
+async function refreshPage(config, projectDetail, project) {
   // Inject Sharepoint file metadata
   loadingON('Updating Project with the Sharepoint Docs Data...');
   await updateProjectWithDocs(projectDetail);
@@ -39,6 +41,12 @@ async function refreshPage(config, projectDetail) {
   // Render the data on the page
   loadingON('Updating table with project details..');
   await updateProjectDetailsUI(projectDetail, config);
+
+  // Read the project action status
+  loadingON('Updating project status...');
+  const status = await updateProjectStatus(project);
+  updateProjectStatusUI(status);
+
   loadingON('UI updated..');
   loadingOFF();
 }
@@ -108,19 +116,18 @@ async function floodgateContent(project, projectDetail) {
   const failedPreviews = previewStatuses.filter((status) => !status.success)
     .map((status) => status.path);
 
-  const excelValues = [['COPY', startCopy, endCopy, failedCopies.join('\n')]];
+  const excelValues = [['COPY', startCopy, endCopy, failedCopies.join('\n'), failedPreviews.join('\n')]];
   await updateExcelTable(project.excelPath, 'COPY_STATUS', excelValues);
   loadingON('Project excel file updated with copy status... ');
   showButtons(ACTION_BUTTON_IDS);
 
   if (failedCopies.length > 0 || failedPreviews.length > 0) {
-    let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to floodgate content folder. Check project excel sheet for additional information\n` : '';
-    failureMessage += failedPreviews.length > 0 ? `Failed to preview ${failedPreviews}. Kindly manually preview these files.` : '';
-    loadingON(failureMessage);
+    loadingON('Error occurred when floodgating content. Check project excel sheet for additional information<br/><br/>'
+      + 'Reloading page... please wait.');
   } else {
-    loadingOFF();
-    await refreshPage();
+    loadingON('Copied content to floodgate tree successfully. Reloading page... please wait.');
   }
+  setTimeout(() => window.location.reload(), 3000);
 }
 
 function setListeners(project, projectDetail) {
@@ -163,7 +170,7 @@ async function init() {
       return;
     }
     loadingON('Connected to Sharepoint!');
-    await refreshPage(config, projectDetail);
+    await refreshPage(config, projectDetail, project);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);
