@@ -13,6 +13,7 @@
 
 main a.article-card:any-link {
   text-decoration: none;
+  color: var(--text-color);
 }
 
 .article-card .article-card-image {

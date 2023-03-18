@@ -7,7 +7,7 @@ function handleBackground(div, section) {
   } else {
     const color = div.textContent;
     if (color) {
-      section.style.backgroundColor = color;
+      section.style.background = color;
     }
   }
 }
