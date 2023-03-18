@@ -1,3 +1,5 @@
+import { getConfig, getLocale } from '../../../utils/utils.js';
+
 const LOC_CONFIG = 'https://main--milo--adobecom.hlx.page/drafts/localization/configs/config.json';
 const ADMIN = 'https://admin.hlx.page';
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
@@ -18,10 +20,18 @@ export async function getStatus() {
   return json;
 }
 
-function getPaths(urls) {
-  return urls.data.map((item) => {
-    const url = new URL(item.URL);
-    return url.pathname;
+export async function getUrlDetails(urls) {
+  const { locales } = getConfig();
+  // Assume all URLs will be the same locale as the first URL
+  const locale = getLocale(locales, urls[0].pathname);
+  const langstorePrefix = locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en';
+  // Loop through each url to get langstore information
+  return urls.map((url) => {
+    url.langstore = {
+      lang: locale.prefix ? locale.prefix.replace('/', '') : 'en',
+      pathname: url.pathname.replace(locale.prefix, langstorePrefix),
+    };
+    return url;
   });
 }
 
@@ -29,15 +39,15 @@ export async function getProjectDetails() {
   const resp = await fetch(resourcePath);
   if (!resp.ok) return null;
   const json = await resp.json();
-  const paths = getPaths(json.urls);
+  const projectUrls = json.urls.data.map((item) => new URL(item.URL));
   const languages = json.languages.data.reduce((rdx, lang) => {
     if (LANG_ACTIONS.includes(lang.Action)) {
-      lang.size = paths.length;
+      lang.size = projectUrls.length;
       rdx.push(lang);
     }
     return rdx;
   }, []);
-  return { languages, paths };
+  return { languages, projectUrls };
 }
 
 export async function getProjectHeading() {

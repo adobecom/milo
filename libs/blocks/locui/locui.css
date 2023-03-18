@@ -36,31 +36,30 @@
   background-repeat: no-repeat;
 }
 
-.locui-project-label {
+h2.locui-section-label {
   font-weight: 700;
   text-transform: uppercase;
-  margin: 0;
-}
-
-h2.locui-project-label {
+  margin: 24px 0 12px;
   font-size: 22px;
 }
 
 p.locui-project-label {
   font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .locui-subprojects {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
 li.locui-subproject {
-  width: 240px;
   min-height: 320px;
   border: 4px solid #CC66CC;
   background: #FCCEEA;
@@ -74,8 +73,40 @@ h3.locui-subproject-name {
   margin: 0 0 24px;
 }
 
-.locui-urls {
+ul.locui-urls {
   margin: 0;
   list-style: none;
-  padding: 0;
+  background: #F4F4F4;
+  padding: 0 18px;
+  border: 4px solid #e6e6e6;
+  border-radius: 6px;
+}
+
+li.locui-url {
+  padding: 18px 0;
+  border-bottom: 1px solid #ccc;
+  display: grid;
+  grid-template-columns: .8fr auto;
+}
+
+li.locui-url:last-child {
+  border-bottom: unset;
+}
+
+h3.locui-url-label {
+  font-size: 16px;
+  line-height: 1;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+p.locui-url-path {
+  font-size: 1.4rem;
+  margin: 12px 0 24px;
+}
+
+div.locui-url-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
