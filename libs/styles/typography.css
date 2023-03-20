@@ -224,7 +224,7 @@
   color: #000;
 }
 
-svg.icon-milo {
+svg.icon-milo, img.icon-milo {
   height: 1em;
   width: auto;
   top: .1em;
