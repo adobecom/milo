@@ -2,8 +2,8 @@ import { html, render, useEffect } from '../../deps/htm-preact.js';
 import { getProjectHeading, loadDetails, loadLocales } from './utils/utils.js';
 import { status, heading, languages, urls } from './utils/state.js';
 
-import Langs from './langs/ui.js';
-import Urls from './urls/ui.js';
+import Langs from './langs/view.js';
+import Urls from './urls/view.js';
 
 const LOC_NAME = 'Milo Localization';
 
