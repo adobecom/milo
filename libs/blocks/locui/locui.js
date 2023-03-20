@@ -27,11 +27,13 @@ function Localization() {
           <div class=locui-project-details-name>
             <span>${heading.value.name}</span>
             ${heading.value.editUrl
-              && html`<a class=locui-project-details-edit href="${heading.value.editUrl}" target="_blank">Edit</a>`}
+              && html`
+                <a class=locui-project-details-edit
+                   href="${heading.value.editUrl}"
+                   target="_blank">Edit</a>`}
           </div>
         </div>
       </div>
-
       ${hasLanguages && html`<${Langs} />`}
 
       ${hasUrls && html`<${Urls} urls=${urls.value} />`}
