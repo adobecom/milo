@@ -125,8 +125,8 @@
 
   .section.toc .marquee .foreground.container {
     margin-right: 0;
-    flex-wrap: wrap;
     align-content: space-between;
+    flex-flow: row wrap;
   }
 
   .table-of-contents .toc-container {
@@ -136,7 +136,6 @@
 
   .toc .table-of-contents .toc-container {
     margin-left: 0;
-    max-width: 400px;
     padding-right: 0;
   }
 
@@ -164,6 +163,10 @@
 @media screen and (min-width: 1440px) {
   .section.toc .marquee .foreground.container {
     width: calc(var(--grid-container-width) - 400px);
+  }
+
+  .toc .table-of-contents .toc-container {
+    max-width: 400px;
   }
 
   .toc .marquee .foreground {
