@@ -92,6 +92,7 @@ export async function loadLocales() {
     return;
   }
   languages.value = [...locales.languages];
+  status.value = {};
 }
 
 export async function loadDetails() {
