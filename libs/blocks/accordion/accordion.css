@@ -1,94 +1,142 @@
-.accordion {
-  padding-top: 50px;
-  margin: 0 24px;
-  padding-bottom: 40px;
+.accordion-container {
+  padding: var(--spacing-m) 0;
 }
 
-.dark button, .darkest button {
-  color: #FFFFFF;
+div.accordion {
+  display: none;
 }
 
 dl.accordion {
-  max-width: var(--grid-container-width);
   margin: 0 auto;
+  max-width: var(--grid-container-width);
+  border-bottom: 1px solid var(--color-gray-500);
 }
 
-.accordion dt {
-  border-top: 1px solid #E1E1E1;
-  border-left: 2px solid transparent;
-}
-.accordion dt:last-of-type {
-  border-bottom: 1px solid #E1E1E1;
-}
 .accordion dd {
   margin: 0;
-  border-left: 2px solid transparent;
-  padding: 0 var(--spacing-s) var(--spacing-s) calc(var(--spacing-s) * 2);
+  padding: var(--spacing-xs);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
 }
 
 .accordion dt button {
-  background: none;
-  border: none;
-  font-family: var(--body-font-family);
-  font-weight: 700;
-  font-size: var(--type-heading-m-size);
-  line-height: 25px;
-  padding: var(--spacing-s) var(--spacing-s) var(--spacing-s) 0;
-  width: 100%;
-  text-align: left;
-}
-.accordion button {
-  display: flex;
   align-items: center;
-}
-.accordion button:hover {
-  cursor: pointer;
-}
-.accordion dt button::before {
+  background: none;
+  border: 1px solid var(--color-gray-500);
+  border-width: 1px 0 0;
+  color: var(--text-color);
   display: flex;
+  font-family: var(--body-font-family);
+  font-size: var(--type-heading-xs-size);
+  font-weight: 700;
+  line-height: var(--type-heading-s-lh);
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
   position: relative;
-  width: 20px; 
-  height: 20px;
-  background: url('/libs/ui/img/chevron.svg') no-repeat;
-  background-size: contain;
-  background-position: center;
-  transform: rotate(-90deg);
-  content: '';
-  padding-right: var(--spacing-s);
-}
-.accordion dt.is-open button::before {
-  transform: rotate(0deg);
-}
-.accordion dt.is-open,
-.accordion dd.is-open,
-.accordion dt.has-focus,
-.accordion dd.has-focus {
-  border-left: 2px solid #e34850;
+  text-align: left;
+  width: 100%;
 }
 
-.accordion dt.has-focus,
-.accordion dd.has-focus {
-  background-color: rgb(206 206 206 / 20%);
+.accordion dt button:hover {
+  cursor: pointer;
+  color: var(--color-black);
 }
 
-.accordion button:focus {
-  outline: none;
+.accordion-icon {
+  position: absolute;
+  right: var(--spacing-xs);
+  top: 50%;
+  margin-top: -6px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.accordion-icon::before,
+.accordion-icon::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  background: var(--color-gray-600);
+  border-radius: 2px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  transition: all .2s ease;
+}
+
+.accordion-icon::after {
+  width: 12px;
+  height: 2px;
+}
+
+.accordion dt button::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: transparent;
+}
+
+.accordion dt button[aria-expanded="true"]::before {
+  background-color: var(--link-color-dark);
+}
+
+.quiet .accordion dt button[aria-expanded="true"]::before {
+  display: none;
+}
+
+.accordion dt button[aria-expanded="true"] .accordion-icon::before,
+.accordion dt button[aria-expanded="true"] .accordion-icon::after {
+  transform: rotate(90deg);
+}
+
+.accordion dt button[aria-expanded="true"] .accordion-icon::after {
+  opacity: 0;
+}
+
+.accordion dt button:hover .accordion-icon::before,
+.accordion dt button:hover .accordion-icon::after {
+  background: var(--color-black);
+}
+
+.accordion dt button:focus,
+.accordion dt button:hover,
+.accordion dt button[aria-expanded="true"] {
+  background: #00000005;
 }
 
 .accordion dd p:first-child {
   margin-top: 0;
 }
 
-.accordion dt.is-open:last-of-type {
-  border-bottom: none;
+/* dark */
+.dark .accordion dt button,
+.darkest .accordion dt button {
+  color: #fff;
 }
 
-.accordion dt.is-open button {
-  padding-bottom: 6px;
+.dark dl.accordion {
+  border-bottom-color: var(--color-gray-600);
 }
 
-@media screen and (min-width: 900px) {
-  dl.accordion {
-    max-width: calc(var(--grid-column-width) * 10);
-  }
+.dark .accordion dt button {
+  border-top-color: var(--color-gray-600);
+}
+
+.dark .accordion dt button:focus,
+.dark .accordion dt button:hover,
+.dark .accordion dt button[aria-expanded="true"] {
+  background: #00000060;
+}
+
+.dark .accordion dt button:hover .accordion-icon::before,
+.dark .accordion dt button:hover .accordion-icon::after {
+  background: var(--color-gray-100);
 }

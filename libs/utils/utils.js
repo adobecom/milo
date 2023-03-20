@@ -6,6 +6,7 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
+  'article-header',
   'aside',
   'author-header',
   'caas',
@@ -48,8 +49,10 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'tags',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -71,6 +74,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
 ];
 const ENVS = {
   local: {
@@ -246,8 +250,12 @@ export function appendHtmlPostfix(area = document) {
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
+    let url = { pathname: href };
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || href.endsWith('/')
+      || url.pathname?.endsWith('/')
       || href === pageUrl.origin
       || HAS_EXTENSION.test(href.split('/').pop())
       || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
@@ -439,6 +447,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
@@ -455,9 +469,13 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
-    const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
@@ -639,12 +657,22 @@ function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]');
   contents.forEach((meta) => {
+    if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
+  });
+
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
   });
 }
 

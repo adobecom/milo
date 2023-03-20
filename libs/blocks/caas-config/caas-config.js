@@ -215,7 +215,7 @@ const getTagTree = (root) => {
   return options;
 };
 
-const Select = ({ label, options, prop }) => {
+const Select = ({ label, options, prop, sort = false }) => {
   const context = useContext(ConfiguratorContext);
 
   const onSelectChange = (val) => {
@@ -230,6 +230,7 @@ const Select = ({ label, options, prop }) => {
     <${FormSelect}
       label=${label}
       name=${prop}
+      sort=${sort}
       onChange=${onSelectChange}
       options=${options}
       value=${context.state[prop]}
@@ -289,12 +290,28 @@ const BasicsPanel = ({ tagsData }) => {
   if (!tagsData) return '';
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
+
+  // Manually correct for Chinese + Greece
+  delete languageTags['caas:language/zh-Hans'];
+  delete languageTags['caas:language/zh-Hant'];
+  languageTags['caas:language/zh'] = 'Chinese';
+
+  if (languageTags['caas:language/indonesian']) {
+    languageTags['caas:language/id'] = languageTags['caas:language/indonesian'];
+    delete languageTags['caas:language/indonesian'];
+  }
+
+  if (countryTags['caas:country/gr_en']) {
+    countryTags['caas:country/gr'] = countryTags['caas:country/gr_en'];
+    delete countryTags['caas:country/gr_en'];
+  }
+
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-    <${Select} options=${countryTags} prop="country" label="Country" />
-    <${Select} options=${languageTags} prop="language" label="Language" />
+    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${Select} options=${languageTags} prop="language" label="Language" sort />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
   `;
