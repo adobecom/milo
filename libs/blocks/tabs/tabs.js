@@ -50,7 +50,7 @@ function getStringKeyName(str) {
 
 function configTabs(config, rootElem) {
   if (config['active-tab']) {
-    const id = `#tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
+    const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
     const sel = rootElem.querySelector(id);
     if (sel) sel.click();
   }
@@ -161,7 +161,7 @@ const init = (block) => {
       .forEach((d) => {
         const metaValue = getStringKeyName(d.children[1].textContent);
         const section = sectionMetadata.closest('.section');
-        const assocTabItem = rootElem.querySelector(`#tab-panel-${initCount}-${metaValue}`);
+        const assocTabItem = rootElem.querySelector(`#tab-panel-${initCount}-${CSS.escape(metaValue)}`);
         if (assocTabItem) assocTabItem.append(section);
       });
   });
