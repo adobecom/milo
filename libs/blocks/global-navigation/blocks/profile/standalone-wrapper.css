@@ -8,7 +8,7 @@
   justify-content: end;
 }
 
-.feds-signin {
+.feds-signIn {
   padding: 4px var(--feds-spacing-utilityNav);
   border-radius: var(--feds-radius-utilityIcon);
 }
