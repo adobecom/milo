@@ -76,6 +76,11 @@
   background-color: var(--feds-background-nav--light);
 }
 
+[dir = "rtl"] .feds-nav-wrapper {
+  left: 20px;
+  right: 0;
+}
+
 .global-navigation.is-open .feds-nav-wrapper {
   display: flex;
 }
@@ -426,6 +431,7 @@
     right: 0;
     justify-content: center;
     border-bottom: unset;
+    box-shadow: 0 3px 2px rgb(142 142 142 / 30%);
   }
 
   .feds-breadcrumbs {

@@ -1,7 +1,7 @@
 :root {
   --feds-color-profile-heading: #707070;
   --feds-color-profile: #4b4b4b;
-  --feds-color-profile-emphasis: #2c2c2c;
+  --feds-color-profile--emphasis: #2c2c2c;
   --feds-border-profile: 1px solid #e1e1e1;
 }
 
@@ -18,30 +18,16 @@
   display: none;
   line-height: 1;
   white-space: nowrap;
+  z-index: 1;
 }
 
-[dir='rtl'] .feds-profile-menu {
+[dir = "rtl"] .feds-profile-menu {
   right: initial;
   left: 0;
 }
 
-.feds-profile.is-open .feds-profile-menu {
+.feds-profile-button[aria-expanded = "true"] + .feds-profile-menu {
   display: block;
-}
-
-.feds-profile li a {
-  color: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
-}
-
-/* TODO be removable with refactoring the menu CSS  */
-.feds-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
-  position: absolute;
-  top: 100%;
-  left: auto;
-  margin-top: 0;
 }
 
 .feds-profile-header {
@@ -61,22 +47,23 @@
   overflow: hidden;
 }
 
-.feds-profile-name {
-  margin: 0;
-  padding: 0 0 4px;
-  font-size: 18px;
-  font-weight: 700;
+.feds-profile-name,
+.feds-profile-email {
   text-overflow: ellipsis;
   overflow: hidden;
-  color: var(--feds-color-profile-emphasis);
+}
+
+.feds-profile-name {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--feds-color-profile--emphasis);
 }
 
 .feds-profile-email {
   margin: 0 0 12px;
   font-size: 14px;
   color: var(--feds-color-profile-heading);
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .feds-profile-account {
@@ -91,24 +78,35 @@
   padding: 6px 0;
 }
 
-.feds-local-menu ul {
-  margin: 0;
-  padding: 0;
-}
-
 .feds-local-menu h5 {
   margin: 0;
-  padding: 5px 20px;
+  padding: 8px 20px;
   color: var(--feds-color-profile-heading);
   font-size: 11px;
   font-weight: 600;
+  line-height: 1.5;
   text-transform: uppercase;
 }
 
+.feds-local-menu p {
+  margin: 0;
+}
+
+.feds-local-menu a,
+.feds-profile-actions a {
+  display: block;
+  color: var(--feds-color-link--light);
+}
+
+.feds-local-menu a:hover,
+.feds-profile-actions a:hover {
+  color: var(--feds-color-link--hover--light);
+  background-color: var(--feds-background-link--hover--light);
+}
+
 .feds-local-menu a {
-  font-size: 14px;
-  padding: 9px 18px;
-  color: var(--feds-color-profile);
+  padding: 6px 20px;
+  line-height: 1.4;
   outline-offset: -1px;
 }
 
@@ -120,9 +118,4 @@
 .feds-profile-action {
   padding: 14px 20px;
   border-top: var(--feds-border-profile);
-}
-
-.feds-profile-menu li:hover {
-  color: var(--feds-color-profile-emphasis);
-  background-color: #f5f5f5;
 }
