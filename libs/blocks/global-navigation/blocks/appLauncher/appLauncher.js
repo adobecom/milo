@@ -47,9 +47,6 @@ function decorateAppsMenu(profileEl, appsDom, toggle) {
 }
 
 async function appLauncher(profileEl, appLauncherBlock, toggle) {
-  const gnav = profileEl.closest('nav.gnav');
-  gnav.classList.add('has-apps');
-
   const appsLink = appLauncherBlock.querySelector('a');
   appsLink.href = localizeLink(appsLink.href);
 

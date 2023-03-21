@@ -39,9 +39,8 @@ class Gnav {
   constructor(body, el) {
     this.blocks = {
       profile: {
-        blockEl: body.querySelector('.profile'),
-        decoratedEl: toFragment`<div class="feds-profile"></div>`,
-        config: {},
+        rawElem: body.querySelector('.profile'),
+        decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
     };
@@ -74,7 +73,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
-        ${this.blocks.profile.blockEl && this.blocks.profile.decoratedEl}
+        ${this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
     `;
@@ -127,22 +126,22 @@ class Gnav {
         { MenuControls },
         decorateDropdown,
         { appLauncher },
-        Profile,
-        { Search },
+        ProfileDropdown,
+        Search,
       ] = await Promise.all([
         loadBlock('./utilities/delayed-utilities.js'),
         loadBlock('./blocks/navDropdown/dropdown.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
-        loadBlock('./blocks/profile/profile.js'),
+        loadBlock('./blocks/profile/dropdown.js'),
         loadBlock('./blocks/search/gnav-search.js'),
-        loadStyles('./blocks/profile/profile.css'),
+        loadStyles('./blocks/profile/dropdown.css'),
         loadStyles('./blocks/navDropdown/dropdown.css'),
         loadStyles('./blocks/search/gnav-search.css'),
       ]);
       this.menuControls = new MenuControls(this.curtain);
       this.decorateDropdown = decorateDropdown;
+      this.ProfileDropdown = ProfileDropdown;
       this.appLauncher = appLauncher;
-      this.blocks.profile.ProfileClass = Profile;
       this.Search = Search;
       resolve();
     });
@@ -162,7 +161,10 @@ class Gnav {
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
-      onReady: () => this.decorateProfile(),
+      onReady: () => {
+        this.decorateProfile();
+        this.decorateAppLauncher();
+      },
     };
     const imsScript = document.querySelector('script[src$="/imslib.min.js"]') instanceof HTMLElement;
     if (!imsScript && !window.adobeIMS) {
@@ -172,57 +174,78 @@ class Gnav {
   };
 
   decorateProfile = async () => {
-    const { blockEl, decoratedEl } = this.blocks.profile;
-    if (!blockEl) return;
+    const { rawElem, decoratedElem } = this.blocks.profile;
+    if (!rawElem) return;
 
-    const accessToken = window.adobeIMS.getAccessToken();
-    const { env } = getConfig();
-    this.blocks.profile.profileRes = accessToken
-      ? await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) })
-      : {};
+    const isSignedInUser = window.adobeIMS.isSignedInUser();
 
-    if (this.blocks.profile.profileRes.status !== 200) {
+    // If user is not signed in, decorate the 'Sign In' element
+    if (!isSignedInUser) {
       const [decorateSignIn] = await Promise.all([
         loadBlock('./blocks/profile/signIn.js'),
         loadStyles('./blocks/profile/signIn.css'),
       ]);
-      const signInEl = await decorateSignIn({ blockEl, decoratedEl });
-      decoratedEl.append(signInEl);
-      window.addEventListener('feds:profileSignIn:clicked', async () => {
-        await this.loadDelayed();
-        this.menuControls.toggleMenu(decoratedEl);
-      });
+
+      decorateSignIn({ rawElem, decoratedElem });
+
+      return;
+    }
+
+    // If user is signed in, decorate the profile avatar
+    const accessToken = window.adobeIMS.getAccessToken();
+    const { env } = getConfig();
+    const headers = new Headers({ Authorization: `Bearer ${accessToken.token}` });
+    const profileData = await fetch(`https://${env.adobeIO}/profile`, { headers });
+
+    if (profileData.status !== 200) {
       return;
     }
 
     const [
       { sections, user: { avatar } },
-      { initProfileButton, initProfileMenu },
+      decorateButton,
     ] = await Promise.all([
-      this.blocks.profile.profileRes.json(),
-      loadBlock('./blocks/profile/milo-wrapper.js'),
-      loadStyles('./blocks/profile/milo-wrapper.css'),
+      profileData.json(),
+      loadBlock('./blocks/profile/button.js'),
+      loadStyles('./blocks/profile/button.css'),
     ]);
-    this.blocks.profile.sections = sections;
-    this.blocks.profile.avatar = avatar;
 
-    const profileButtonEl = await initProfileButton(this.blocks.profile);
-    decoratedEl.append(profileButtonEl);
-    window.addEventListener('feds:profileButton:clicked', async () => {
-      if (!this.blocks.profile.menu) {
-        await this.loadDelayed();
-        this.blocks.profile.menu = initProfileMenu(this.blocks.profile);
-        const appLauncherBlock = this.body.querySelector('.app-launcher');
-        if (appLauncherBlock) {
-          this.appLauncher(
-            decoratedEl,
-            appLauncherBlock,
-            this.menuControls.toggleMenu,
-          );
-        }
-      }
-      this.menuControls.toggleMenu(decoratedEl);
-    });
+    this.blocks.profile.buttonElem = await decorateButton({ avatar });
+    decoratedElem.append(this.blocks.profile.buttonElem);
+
+    // Decorate the profile dropdown
+    // after user interacts with button or after 3s have passed
+    let decorationTimeout;
+
+    const decorateDropdown = async (e) => {
+      this.blocks.profile.buttonElem.removeEventListener('click', decorateDropdown);
+      clearTimeout(decorationTimeout);
+      await this.loadDelayed();
+      this.blocks.profile.dropdownInstance = new this.ProfileDropdown({
+        rawElem,
+        decoratedElem,
+        avatar,
+        sections,
+        buttonElem: this.blocks.profile.buttonElem,
+        // If the dropdown has been decorated due to a click, open it
+        openOnInit: e instanceof Event,
+      });
+    };
+
+    this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
+    decorationTimeout = setTimeout(decorateDropdown, 3000);
+  };
+
+  decorateAppLauncher = () => {
+    // TODO: review App Launcher component
+    // const appLauncherBlock = this.body.querySelector('.app-launcher');
+    // if (appLauncherBlock) {
+    //   await this.loadDelayed();
+    //   this.appLauncher(
+    //     decoratedElem,
+    //     appLauncherBlock,
+    //   );
+    // }
   };
 
   loadSearch = () => {
