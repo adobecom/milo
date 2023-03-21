@@ -347,6 +347,7 @@ export const initFaas = (config, targetEl) => {
 
   if (window.location.pathname === '/tools/faas') {
     state.as = false;
+    state.ar = false;
   }
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
