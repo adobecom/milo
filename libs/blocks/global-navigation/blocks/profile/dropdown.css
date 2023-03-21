@@ -21,7 +21,7 @@
   z-index: 1;
 }
 
-[dir='rtl'] .feds-profile-menu {
+[dir = "rtl"] .feds-profile-menu {
   right: initial;
   left: 0;
 }

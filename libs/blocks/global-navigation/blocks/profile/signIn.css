@@ -24,7 +24,7 @@
   display: block;
 }
 
-[dir='rtl'] .feds-signIn-dropdown {
+[dir = "rtl"] .feds-signIn-dropdown {
   right: initial;
   left: 0;
 }
