@@ -13,11 +13,11 @@ export default async function init() {
   const ostEnvironment = 'STAGE';
   const ostWcsApiKey = 'wcms-commerce-ims-ro-user-cc';
   const ostAosApiKey = 'dexter-commerce-offers';
+  const checkoutClientId = 'creative';
   const ostAosAccessToken = sessionStorage.getItem('AOS_ACCESS_TOKEN') || localStorage.getItem('AOS_ACCESS_TOKEN');
   const ostRootContainer = document.querySelector('.ost');
   let url = new URL(window.location);
-  let searchParams = new URLSearchParams(url.search);
-  let offerIdSearch = searchParams.get('offerId');
+  let searchParameters = url.searchParams;
   ostRootContainer.removeChild(ostRootContainer.firstElementChild);
   window.ost.openOfferSelectorTool({
     ostCountry,
@@ -26,6 +26,7 @@ export default async function init() {
     ostWcsApiKey,
     ostAosApiKey,
     ostAosAccessToken,
-    offerIdSearch
+    checkoutClientId,
+    searchParameters,
   });
 }
