@@ -4,7 +4,7 @@ import {
   decorateLinks,
   getConfig,
   getMetadata,
-  loadScript,
+  loadIms,
   localizeLink,
 } from '../../utils/utils.js';
 
@@ -458,21 +458,11 @@ class Gnav {
       this.imsReady(blockEl, profileEl);
     };
 
-    const { locale, imsClientId, env, onReady } = getConfig();
+    const { imsClientId, onReady } = getConfig();
     if (!imsClientId) return null;
 
     if (!window.adobeIMS) {
-      window.adobeid = {
-        client_id: imsClientId,
-        scope: 'AdobeID,openid,gnav',
-        locale: locale || 'en-US',
-        // locale: locale?.ietf?.replace('-', '_') || 'en_US',
-        autoValidateToken: true,
-        environment: env.ims,
-        useLocalStorage: false,
-        onReady: onReady || defaultOnReady,
-      };
-      loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+      loadIms();
     } else if (!onReady) {
       defaultOnReady();
     }

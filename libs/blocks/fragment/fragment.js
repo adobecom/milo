@@ -1,4 +1,4 @@
-import { createTag, loadArea, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -29,7 +29,12 @@ const updateFragMap = (fragment, a, href) => {
 };
 
 export default async function init(a) {
-  const relHref = localizeLink(a.href);
+  const { experimentFragments } = getConfig();
+  let relHref = localizeLink(a.href);
+  if (experimentFragments[relHref]) {
+    a.href = experimentFragments[relHref];
+    relHref = experimentFragments[relHref];
+  }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;

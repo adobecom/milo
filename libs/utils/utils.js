@@ -67,6 +67,7 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
+  { fragment: '/experiments/' }, // TODO: CPEYER TEST THIS
   { instagram: 'https://www.instagram.com' },
   { slideshare: 'https://www.slideshare.net' },
   { tiktok: 'https://www.tiktok.com' },
@@ -388,12 +389,12 @@ export async function loadTemplate() {
 
 export async function loadBlock(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot, experiment } = getConfig();
+  const { miloLibs, codeRoot, experimentBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let blockPath = `${base}/blocks/${name}/${name}`;
-  if (experiment?.selectedVariant?.blocks?.[name]) {
-    blockPath = `${experiment.selectedVariant.blocks[name]}/${name}`;
+  if (experimentBlocks?.[name]) {
+    blockPath = `${experimentBlocks[name]}/${name}`;
   }
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
@@ -467,7 +468,6 @@ export function decorateAutoBlock(a) {
         return false;
       }
       if (key === 'fragment') {
-        // checkForExperimentFragment(a);
         if (url.hash === '') {
           const { parentElement } = a;
           const { nodeName, innerHTML } = parentElement;
@@ -629,69 +629,45 @@ function decorateFooterPromo(config) {
   const para = createTag('p', {}, createTag('a', { href }, href));
   const section = createTag('div', null, para);
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+
+export function loadIms() {
+  if (window.adobeIMS) return;
+
+  const { locale, imsClientId, env, onReady } = getConfig();
+  window.adobeid = {
+    client_id: imsClientId,
+    scope: 'AdobeID,openid,gnav',
+    locale: locale?.ietf?.replace('-', '_') || 'en_US',
+    autoValidateToken: true,
+    environment: env.ims,
+    useLocalStorage: false,
+    onReady,
+  };
+  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
 }
 
-async function loadMartech(config) {
+async function loadMartech(config, { experimentsEnabled = false } = {}) {
   if (window.marketingtech?.adobe?.launch !== undefined) {
     return true;
   }
 
   const query = new URL(window.location.href).searchParams.get('martech');
-  if (query !== 'off' && getMetadata('martech') !== 'off') {
-    // disable target hiding
-    window.targetGlobalSettings = { bodyHidingEnabled: false };
-    loadIms();
-
-    const getDetails = (env) => {
-      /* c8 ignore start */
-      if (env.name === 'prod') {
-        return {
-          url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js',
-          edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-        };
-      }
-      return {
-        url: 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-        edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-      };
-      /* c8 ignore stop */
-    };
-
-    const martech = async () => {
-      const { url, edgeConfigId } = getDetails(config.env);
-      preload(url);
-      window.alloy_load ??= {};
-      window.alloy_load.data ??= {};
-      window.alloy_all ??= {};
-      window.alloy_all.data ??= {};
-      window.alloy_all.data._adobe_corpnew ??= {};
-      window.alloy_all.data._adobe_corpnew.digitalData ??= {};
-      window.alloy_all.data._adobe_corpnew.digitalData.page ??= {};
-      window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo ??= {};
-      window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language = config.locale.ietf;
-
-      window.marketingtech = {
-        adobe: {
-          launch: { url, controlPageLoad: false },
-          alloy: { edgeConfigId },
-          target: false,
-        },
-      };
-
-      window.edgeConfigId = edgeConfigId;
-
-      window.digitalData ??= {};
-      window.digitalData.diagnostic ??= {};
-      window.digitalData.diagnostic.franklin = { implementation: 'milo' };
-
-      await loadScript('/libs/deps/martech.main.standard.min.js');
-      _satellite.track('pageload');
-    };
-
-    await martech();
-    return true;
+  if (query === 'off' || getMetadata('martech') === 'off') {
+    return false;
   }
-  return false;
+
+  window.targetGlobalSettings = { bodyHidingEnabled: false };
+  loadIms();
+
+  const { default: initMartech } = await import('../martech/martech.js');
+  await initMartech({
+    experimentsEnabled,
+    utilMethods: {
+      createTag, getConfig, setConfig, getMetadata, preload, loadScript,
+    },
+  });
+
+  return true;
 }
 
 async function loadPostLCP(config) {
@@ -767,142 +743,13 @@ function decorateMeta() {
   });
 }
 
-const handleAlloyResponse = (response) => {
-  const item = (response.decisions || response.propositions)?.[0]?.items?.[0];
-
-  if (item?.data?.content?.Experiments) {
-    return {
-      experimentPath: item.data.content.Experiments,
-      experimentName: item.meta['activity.name'],
-      variant: item.meta['experience.name'],
-    };
-  }
-
-  return {};
-};
-
-const loadIms = () => {
-  if (window.adobeIMS) return;
-
-  const { locale, imsClientId, env, onReady } = getConfig();
-  window.adobeid = {
-    client_id: imsClientId,
-    scope: 'AdobeID,openid,gnav',
-    locale: locale || 'en-US',
-    autoValidateToken: true,
-    environment: env.ims,
-    useLocalStorage: false,
-    onReady: onReady,
-  };
-  console.log('loadims');
-  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
-};
-
-const handleAlloyResponse = (response) => {
-  const items = response.propositions?.[0]?.items
-    || response.decisions?.[0]?.items;
-
-  if (!items) return [];
-  // loop through items for each manifest info
-
-  return items
-    .map((item) => {
-      if (item?.data?.content) {
-        const manifestData = JSON.parse(item.data.content);
-        return {
-          experimentPath: item.data.content.experiment || item.meta['offer.name'],
-          manifestData,
-          experimentName: item.meta['activity.name'],
-          variantLabel: item.meta['experience.name'],
-        };
-      }
-      return null;
-    })
-    .filter((item) => item !== null);
-};
-
-const getExperiments = async () => {
-  if (navigator.userAgent.match(/bot|crawl|spider/i)) {
-    return {};
-  }
-
-  const timeoutParam = parseInt(new URL(window.location.href).searchParams.get('timeout'), 10);
-  const EXPERIMENT_TIMEOUT_MS = timeoutParam || 3000;
-
-  const experimentParam = new URL(window.location.href).searchParams.get('experiment');
-
-  if (experimentParam) {
-    const lastSlash = experimentParam.lastIndexOf('/');
-    return {
-      experiments: [{
-        experimentPath: experimentParam.substring(0, lastSlash),
-        variantLabel: experimentParam.substring(lastSlash + 1)
-      }],
-    };
-  }
-
-  const timeout = new Promise((resolve) => {
-    setTimeout(() => resolve('TIMEOUT'), EXPERIMENT_TIMEOUT_MS, false);
-  });
-
-  let response = false;
-  try {
-    response = await Promise.race([alloy_load.sent, timeout]);
-    console.log('ALLOY RESPONSE:', response);
-  } catch (e) {
-    console.log('Promise error', e);
-  }
-
-  if (!response || response === 'TIMEOUT') return {};
-
-  let experiments = handleAlloyResponse(response);
-
-  if (!experiments?.length) {
-    experiments = [{
-      experimentPath: getMetadata('experiment')?.toLowerCase(),
-    }];
-  }
-
-  const instantExperiment = getMetadata('instant-experiment')?.toLowerCase();
-
-  return {
-    experiments,
-    instantExperiment,
-  };
-};
-
-const checkForExperiments = async () => {
-  const { experiments, instantExperiment } = await getExperiments();
-  if (!experiments) return null;
-  const {
-    experimentPath,
-    experimentName,
-    manifestData,
-    variantLabel,
-  } = experiments[0]; // TODO: Support multiple experiments
-  if (!manifestData || !variantLabel) return null;
-  performance.mark('start-runexperiment');
-  const { runExperiment } = await import('../scripts/experiments.js');
-  const experiment = await runExperiment(experimentPath, variantLabel, manifestData, instantExperiment, document.querySelector('main'), createTag);
-  performance.mark('finish-runexperiment');
-  console.log('experiment: ', experiment);
-  return experiment;
-};
-
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
   const config = getConfig();
 
   if (isDoc && getMetadata('experiment') === 'on') {
-    const martechIsRunning = await loadMartech(config);
-    if (martechIsRunning) {
-      preload('/libs/scripts/experiments.js', { crossorigin: 'use-credentials' });
-      const experiment = await checkForExperiments();
-      if (experiment) {
-        setConfig({ ...getConfig(), experiment });
-      }
-    }
+    await loadMartech(config, { experimentsEnabled: true });
   }
 
   appendHtmlPostfix(area);
@@ -943,7 +790,6 @@ export async function loadArea(area = document) {
 
   // Post section loading on document
   if (isDoc) {
-    console.log('georouting');
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
@@ -954,7 +800,6 @@ export async function loadArea(area = document) {
       const { default: addRichResults } = await import('../features/richresults.js');
       addRichResults(richResults, { createTag, getMetadata });
     }
-    console.log('load-footer');
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);

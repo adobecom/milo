@@ -406,15 +406,6 @@ const checkForPageReplacement = async (controlPages, selectedPages, id, content)
   }
 };
 
-const swapFragments = (fragMap) => {
-  if (!fragMap) return;
-
-  Object.entries(fragMap).forEach(([url, newUrl]) => {
-    const fragsToReplace = document.querySelectorAll(`a[href="${url}"]`);
-    fragsToReplace.forEach((frag) => (frag.href = newUrl));
-  });
-};
-
 const convertToMap = (blockName, control, selectedVariant) => {
   if (!control[blockName]?.length || !selectedVariant[blockName]?.length) return;
   const blockMap = control[blockName].reduce((map, block, idx) => {
@@ -432,7 +423,7 @@ export async function runExperiment(
   manifestData,
   instantExperiment,
   pageReplaceEl,
-  createTag
+  createTag,
 ) {
   const experiment = await getConfig(experimentPath, variantLabel, manifestData, instantExperiment);
   const { control } = experiment;
@@ -444,7 +435,7 @@ export async function runExperiment(
   window.hlx.experiment = experiment;
 
   if (!experiment.selectedVariant || experiment.selectedVariantName === experiment.controlName) {
-    return;
+    return {};
   }
 
   const { selectedVariant } = experiment;
@@ -467,7 +458,11 @@ export async function runExperiment(
   convertToMap('blocks', control, selectedVariant);
   convertToMap('fragments', control, selectedVariant);
 
-  swapFragments(selectedVariant.fragments);
+  // swapFragments(selectedVariant.fragments);
 
-  return experiment;
+  return {
+    experiment,
+    blocks: selectedVariant.blocks,
+    fragments: selectedVariant.fragments,
+  };
 }
