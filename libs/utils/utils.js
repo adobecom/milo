@@ -73,6 +73,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
+  { merch: '/tools/ost?' },
 ];
 const ENVS = {
   local: {
@@ -292,7 +293,7 @@ export function appendHtmlPostfix(area = document) {
   });
 }
 
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, async) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
@@ -300,6 +301,9 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     script.setAttribute('src', url);
     if (type) {
       script.setAttribute('type', type);
+    }
+    if (async) {
+      script.setAttribute('async', true);
     }
     head.append(script);
   }
@@ -445,6 +449,12 @@ export function decorateAutoBlock(a) {
       // slack uploaded mp4s
       if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
         return false;
+      }
+
+      // OST links
+      if (key === 'merch') {
+        a.className= 'merch';
+        return true;
       }
 
       a.className = `${key} link-block`;
@@ -783,4 +793,18 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
+}
+
+/**
+ * Removes undefined properties from an object
+ * @param {*} target Object with potentially undefined properties
+ * @returns new Object without undefined properties
+ */
+export function omitUndefined(target) {
+  if (target != null) {
+      Object.entries(target).forEach(([key, value]) => {
+          if (value == null) delete target[key];
+      });
+  }
+  return target;
 }

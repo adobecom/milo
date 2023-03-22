@@ -1,20 +1,16 @@
-.merch {
-  margin: 0 auto;
-  padding: 24px;
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
+span[data-wcs-osi] {
+  display: inline-block;
 }
 
-.merch div {
-  display: none;
+.price-strikethrough {
+  text-decoration: line-through;
 }
 
-.merch a.con-button.blue {
-  display: none;
+.placeholder-resolved[data-wcs-osi] {
+  visibility: unset;
 }
 
-.merch .placeholder-resolved + a.con-button.blue {
-  display: unset;
+.price-unit-type:not(.disabled)::before,
+.price-tax-inclusivity:not(.disabled)::before {
+  content: "\00a0";
 }
