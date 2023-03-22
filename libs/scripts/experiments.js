@@ -430,10 +430,6 @@ export async function runExperiment(
   // const supportData = parseExperimentSupport(manifestData);
   const supportData = { content: {} };
 
-  // Currently required for preview.js
-  window.hlx ??= {};
-  window.hlx.experiment = experiment;
-
   if (!experiment.selectedVariant || experiment.selectedVariantName === experiment.controlName) {
     return {};
   }

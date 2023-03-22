@@ -160,6 +160,10 @@ export default async function init({ experimentsEnabled = false, utilMethods }) 
     utils.preload('/libs/scripts/experiments.js', { crossorigin: 'use-credentials' });
     const experimentData = await checkForExperiments();
     if (experimentData) {
+      // Currently required for preview.js
+      window.hlx ??= {};
+      window.hlx.experiments = experimentData.experiments;
+
       utils.setConfig({
         ...utils.getConfig(),
         experiments: experimentData.experiments,
