@@ -43,7 +43,6 @@ const decorateHeadline = (elem) => {
 const decorateLinkGroup = (elem, index) => {
   if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return null;
 
-  // TODO: could it be something other than a 'picture'?
   // TODO: allow links with image and no label
   const image = elem.querySelector('picture');
   const link = elem.querySelector('a');

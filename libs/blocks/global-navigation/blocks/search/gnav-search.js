@@ -6,6 +6,7 @@ import {
   getFedsPlaceholderConfig,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
+import { getConfig } from '../../../../utils/utils.js';
 
 const CONFIG = {
   suggestions: {
@@ -82,9 +83,9 @@ class Search {
         // Pressing ESC when input has value resets the results
         if (this.input.value.length) {
           this.clearSearchForm();
-        } else {
-          // TODO: hide search form and focus search trigger;
-          // need the general Menu class to achieve this
+        } else if (this.isDesktop.matches) {
+          this.closeDropdown();
+          this.trigger.focus();
         }
       }
     });
@@ -112,9 +113,9 @@ class Search {
   }
 
   getSuggestions(query = this.query) {
-    // TODO: do we need a lower environment URL too?
-    // i.e.: adobesearch-stage.adobe.io
-    const api = `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
+    const { env } = getConfig();
+    const subdomain = env === 'prod' ? 'adobesearch' : 'adobesearch-stage';
+    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
 
     return window.fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
       .then((data) => data.json())
@@ -246,7 +247,6 @@ class Search {
   }
 
   getNoResultsTemplate(query = this.query) {
-    // TODO: should we style this element different than regular results?
     return toFragment`<li>
       <a href="${Search.getHelpxLink(query)}" class="feds-search-result"><span>${this.labels.tryAdvancedSearch}</span></a>
     </li>`;

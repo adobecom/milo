@@ -1,5 +1,5 @@
 .feds-signIn {
-  padding: 11px var(--feds-spacing-utilityNav);
+  padding: 11px var(--feds-gutter);
   border-radius: var(--feds-radius-utilityIcon);
   color: #4B4B4B;
   white-space: nowrap;

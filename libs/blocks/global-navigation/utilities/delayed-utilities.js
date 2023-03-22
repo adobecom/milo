@@ -37,7 +37,6 @@ class MenuControls {
   };
 
   closeOnEscape = (e) => {
-    // TODO: Search has different ESC logic, this should be adapted
     if (e.code === 'Escape') {
       this.toggleMenu(this.state.openMenu);
     }
@@ -73,11 +72,6 @@ class MenuControls {
       }
     } else {
       this.curtain.classList.add('is-open');
-      // Search template is not available yet
-      // TODO: better logic to focus elements that have not been added yet
-      if (el.querySelector('.feds-search-input')) {
-        el.querySelector('.feds-search-input').focus();
-      }
     }
     this.state.openMenu = el;
   };
