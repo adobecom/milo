@@ -8,7 +8,7 @@
   --feds-borderColor-link--light: #f3f3f3;
   --feds-background-link--hover--light: #f5f5f5;
   --feds-color-adobeBrand: #fa0f00;
-  --feds-spacing-utilityNav: 8px;
+  --feds-gutter: 8px;
   --feds-radius-utilityIcon: 4px;
   --feds-height-breadcrumbs: 33px;
 }
@@ -39,7 +39,7 @@
 }
 
 /* General */
-.global-navigation {
+header.global-navigation {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -100,7 +100,7 @@
   display: flex;
   align-items: center;
   outline-offset: 2px;
-  padding: 0 8px;
+  padding: 0 var(--feds-gutter);
   column-gap: 10px;
 }
 
@@ -176,7 +176,6 @@
   content: "";
 }
 
-/* TODO: maybe don't load RTL styles if not currently on an RTL locale */
 [dir = "rtl"] .feds-navLink--hoverCaret {
   padding-right: 12px;
   padding-left: 32px;
@@ -395,7 +394,7 @@
 
   .feds-search-trigger {
     display: flex;
-    padding: var(--feds-spacing-utilityNav);
+    padding: var(--feds-gutter);
     border: none;
     border-radius: var(--feds-radius-utilityIcon);
     outline-offset: 2px;
@@ -435,7 +434,7 @@
   }
 
   .feds-breadcrumbs {
-    padding: 0 8px; /* TODO: more consistent approach to lateral spacing */
+    padding: 0 var(--feds-gutter);
     width: 100%;
     max-width: var(--feds-maxWidth-nav);
     box-sizing: border-box;
@@ -565,6 +564,6 @@ header .app-launcher {
 
   .gnav-logo::before {
     content: "";
-    margin-left: var(--feds-spacing-utilityNav);
+    margin-left: var(--feds-gutter);
   }
 }
