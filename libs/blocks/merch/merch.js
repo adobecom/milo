@@ -16,11 +16,6 @@ const supportedLanguages = [
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
 
-/**
- * Removes undefined properties from an object
- * @param {*} target Object with potentially undefined properties
- * @returns new Object without undefined properties
- */
 export function omitUndefined(target) {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
@@ -31,17 +26,17 @@ export function omitUndefined(target) {
 }
 
 const getTacocatEnv = (envName, ietf) => {
-  const scriptUrl = (envName === envProd
+  const scriptUrl = envName === envProd
     ? 'https://www.adobe.com/special/tacocat/lib/1.12.0/tacocat.js'
-    : 'https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js');
+    : 'https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js';
   // eslint-disable-next-line prefer-const
   let [language, country = 'us'] = ietf.split('-', 2);
   if (!supportedLanguages.includes(language)) {
     language = 'en'; // default to english
   }
-  const literalScriptUrl = (envName === envProd
+  const literalScriptUrl = envName === envProd
     ? `https://www.adobe.com/special/tacocat/literals/${language}.js`
-    : `https://www.stage.adobe.com/special/tacocat/literals/${language}.js`);
+    : `https://www.stage.adobe.com/special/tacocat/literals/${language}.js`;
 
   return { scriptUrl, literalScriptUrl, country, language };
 };
