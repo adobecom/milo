@@ -7,24 +7,11 @@
 }
 
 header {
-  height: 57px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  overflow: hidden;
-  background: #FFF;
-  box-sizing: border-box;
-  visibility: visible;
+  display: block;
 }
 
-header nav {
-  display: none;
-}
-
-header ~ main {
-  margin-top: 57px;
+header.gnav {
+  overflow: visible;
 }
 
 header.is-open .gnav-curtain,
@@ -72,7 +59,10 @@ header nav.gnav {
   grid-template-columns: 1fr 12px;
   grid-template-rows: 56px 36px;
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 header.has-breadcrumbs nav.gnav {
@@ -644,7 +634,12 @@ nav.gnav .gnav-navitem-menu .gnav-promo.card img {
   right: 0;
 }
 
-.gnav-navitem.has-menu.is-open .gnav-navitem-menu > div > div > ul {
+.gnav-navitem:not(.large-menu) .gnav-navitem-menu {
+  box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
+  border-bottom: none;
+}
+
+.gnav-navitem.has-Menu.is-open .gnav-navitem-menu > div > div > ul {
   margin: 0;
 }
 
@@ -897,29 +892,8 @@ header .app-launcher {
 }
 
 /* END APP LAUNCHER */
+
 @media (min-width: 900px) {
-  header {
-    min-height: 64px;
-    border-bottom: 1px solid #EAEAEA;
-    overflow: unset;
-  }
-
-  header ~ main {
-    margin-top: 64px;
-  }
-
-  header.has-breadcrumbs {
-    min-height: 97px;
-  }
-
-  header nav {
-    display: unset;
-  }
-
-  header.has-breadcrumbs + main {
-    margin-top: 97px;
-  }
-
   header .gnav-wrapper {
     height: unset;
     grid-template-areas: 'main'

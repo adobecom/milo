@@ -181,7 +181,7 @@ describe('Localized Gnav', () => {
   });
 
   it('Test Gnav Cta Link', async () => {
-    const ctaLink = document.querySelector('.feds-cta').getElementsByTagName('a')[0];
+    const ctaLink = document.querySelector('.gnav-cta').getElementsByTagName('a')[0];
     expect(ctaLink.href.startsWith('http://localhost:2000/fi/'), "Cta Link should be localized").true;
   });
 
