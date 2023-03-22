@@ -10,7 +10,7 @@ import {
   getFloodgateUrl,
 } from './utils.js';
 
-const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles'];
+const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles'];
 
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
@@ -97,8 +97,17 @@ async function updateProjectDetailsUI(projectDetail, config) {
   showButtons(ACTION_BUTTON_IDS);
 }
 
+function updateProjectStatusUI(status) {
+  document.querySelector('#copy-status').innerHTML = status.copy.status;
+  document.querySelector('#copy-status-ts').innerHTML = status.copy.lastRun;
+  document.querySelector('#promote-status').innerHTML = status.promote.status;
+  document.querySelector('#promote-status-ts').innerHTML = status.promote.lastRun;
+  document.querySelector('.project-status').hidden = false;
+}
+
 export {
   updateProjectInfo,
   updateProjectDetailsUI,
+  updateProjectStatusUI,
   ACTION_BUTTON_IDS,
 };
