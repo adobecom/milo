@@ -2,7 +2,6 @@ import {
   loadScript,
   getConfig,
   createTag,
-  omitUndefined,
 } from '../../utils/utils.js';
 
 const wcs = { apiKey: 'wcms-commerce-ims-ro-user-cc' };
@@ -16,6 +15,20 @@ const supportedLanguages = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
+
+/**
+ * Removes undefined properties from an object
+ * @param {*} target Object with potentially undefined properties
+ * @returns new Object without undefined properties
+ */
+export function omitUndefined(target) {
+  if (target != null) {
+    Object.entries(target).forEach(([key, value]) => {
+      if (value == null) delete target[key];
+    });
+  }
+  return target;
+}
 
 const getTacocatEnv = (envName, ietf) => {
   const scriptUrl = (envName === envProd

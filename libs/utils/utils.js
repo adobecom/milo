@@ -794,17 +794,3 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
-
-/**
- * Removes undefined properties from an object
- * @param {*} target Object with potentially undefined properties
- * @returns new Object without undefined properties
- */
-export function omitUndefined(target) {
-  if (target != null) {
-      Object.entries(target).forEach(([key, value]) => {
-          if (value == null) delete target[key];
-      });
-  }
-  return target;
-}
