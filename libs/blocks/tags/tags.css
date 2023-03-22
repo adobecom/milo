@@ -1,0 +1,29 @@
+.tags {
+  margin: 64px auto 0;
+  border-top: 1px solid var(--color-gray-200);
+  max-width: var(--grid-container-width);
+}
+
+.tags p {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tags a {
+  text-decoration: none;
+  background: var(--color-white);
+  color: var(--color-gray-600);
+  font-weight: 400;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 0 16px 16px 0;
+  font-size: var(--type-body-xxs-size);
+  line-height: var(--type-heading-xxs-lh);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.tags a:hover {
+  color: var(--color-info-accent);
+}

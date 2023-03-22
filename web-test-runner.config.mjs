@@ -7,6 +7,7 @@ export default {
       '**/node_modules/**',
       '**/test/**',
       '**/deps/**',
+      '**/imslib/imslib.min.js',
       // TODO: folders below need to have tests written for 100% coverage
       '**/ui/controls/**',
       '**/blocks/library-config/**',
