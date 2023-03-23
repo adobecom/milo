@@ -11,6 +11,13 @@ const UNSUPPORTED_SITE = 'unsupported domain';
 const MAX_URLS_NUMBER = 1000;
 // TODO enable IMS sign in?
 const IMS_SIGN_IN_ENABLED = false;
+const THROTTLING_DELAY = 100;
+const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
+const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
+const BULK_URLS = 'bulkUrls';
+const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
+const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
+const ADMIN_BASE_URL = 'https://admin.hlx.page';
 
 const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
@@ -31,22 +38,22 @@ const signIn = async () => {
 };
 
 const getAuthorizedUsers = async () => {
-  let authorizedUsers = getLocalStorage('bulkAuthorizedUsers');
+  let authorizedUsers = getLocalStorage(BULK_AUTHORIZED_USERS);
   if (authorizedUsers) return authorizedUsers;
-  const resp = await fetch('/tools/bulk-config.json');
+  const resp = await fetch(BULK_CONFIG_FILE_PATH);
   const json = await resp.json();
   authorizedUsers = json.users.data.map((user) => user.user);
-  setLocalStorage('bulkAuthorizedUsers', authorizedUsers);
+  setLocalStorage(BULK_AUTHORIZED_USERS, authorizedUsers);
   return authorizedUsers;
 };
 
 const getSupportedSites = async () => {
-  let supportedSites = getLocalStorage('bulkSupportedSites');
+  let supportedSites = getLocalStorage(BULK_SUPPORTED_SITES);
   if (supportedSites) return supportedSites;
-  const resp = await fetch('/tools/bulk-config.json');
+  const resp = await fetch(BULK_CONFIG_FILE_PATH);
   const json = await resp.json();
   supportedSites = json.sites.data.map((site) => site.origin);
-  setLocalStorage('bulkSupportedSites', supportedSites);
+  setLocalStorage(BULK_SUPPORTED_SITES, supportedSites);
   return supportedSites;
 };
 
@@ -89,7 +96,7 @@ const executeAction = async (action, url) => {
   if (!siteAllowed) return UNSUPPORTED_SITE;
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
-  const adminURL = `https://admin.hlx.page/${operation}/${owner}/${repo}/${branch}${pathname}`;
+  const adminURL = `${ADMIN_BASE_URL}/${operation}/${owner}/${repo}/${branch}${pathname}`;
   const resp = await fetchWithTimeout(adminURL, { method: 'POST' });
   return resp.status;
 };
@@ -109,7 +116,7 @@ const executeActions = async (actions, urls, setResult) => {
       // eslint-disable-next-line no-await-in-loop
       status[action] = await executeAction(action, url);
       // eslint-disable-next-line no-await-in-loop
-      await delay(100);
+      await delay(THROTTLING_DELAY);
     }
     results.push({
       url,
@@ -186,9 +193,8 @@ const getReport = async (results, action) => {
 
 const sendReport = async (results, action) => {
   const rows = await getReport(results, action);
-  const reportFile = '/tools/bulk-report';
   rows.forEach((row) => {
-    fetch(reportFile, {
+    fetch(BULK_REPORT_FILE_PATH, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: row }),
@@ -328,7 +334,7 @@ function Bulk(props) {
   };
 
   const onSubmit = async () => {
-    setLocalStorage('bulkUrls', urlsElt.current.value);
+    setLocalStorage(BULK_URLS, urlsElt.current.value);
     // reset the result area
     setSubmittedAction(null);
     setResult(null);
@@ -373,7 +379,7 @@ function Bulk(props) {
                 <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
             </div>
         </div>
-        <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage('bulkUrls')}</textarea>
+        <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage(BULK_URLS)}</textarea>
         <div class="bulk-action">
             <${SubmitBtn}
                 onSubmit=${onSubmit}
