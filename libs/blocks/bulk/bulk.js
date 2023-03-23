@@ -1,5 +1,6 @@
 import { html, render, useState, useRef } from '../../deps/htm-preact.js';
 import { getImsToken } from '../../../tools/send-to-caas/send-utils.js';
+import { fetchWithTimeout } from '../caas/utils.js';
 import { loadScript } from '../../utils/utils.js';
 import {
   getLocalStorage,
@@ -89,7 +90,7 @@ const executeAction = async (action, url) => {
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
   const adminURL = `https://admin.hlx.page/${operation}/${owner}/${repo}/${branch}${pathname}`;
-  const resp = await fetch(adminURL, { method: 'POST' });
+  const resp = await fetchWithTimeout(adminURL, { method: 'POST' });
   return resp.status;
 };
 

@@ -3,7 +3,7 @@ import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../util
 
 const URL_ENCODED_COMMA = '%2C';
 
-const fetchWithTimeout = async (resource, options = {}) => {
+export const fetchWithTimeout = async (resource, options = {}) => {
   const { timeout = 5000 } = options;
 
   const controller = new AbortController();
