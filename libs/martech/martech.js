@@ -110,7 +110,8 @@ const checkForExperiments = async () => {
     if (!manifestData || !variantLabel) return null;
     return runExperiment(experimentPath, variantLabel, manifestData, instantExperiment, document.querySelector('main'), utils.createTag);
   }).filter(Boolean);
-  const results = await Promise.all(experimentPromises);
+  let results = await Promise.all(experimentPromises);
+  results = results.filter(Boolean);
   return {
     experiments: results.map((r) => r.experiment),
     fragments: consolidateObjects(results, 'fragments'),
