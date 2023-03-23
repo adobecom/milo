@@ -299,7 +299,7 @@ export function appendHtmlPostfix(area = document) {
   });
 }
 
-export const loadScript = (url, type, async) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, async = false) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;

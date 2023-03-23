@@ -117,7 +117,7 @@ describe('Utils', () => {
     });
 
     it('Load async script', async () => {
-      const asyncScript = await utils.loadScript('/test/utils/mocks/script.js', undefined, true);
+      const asyncScript = await utils.loadScript('/test/utils/mocks/async.js', undefined, true);
       expect(asyncScript).to.exist;
       expect(asyncScript.getAttribute('async')).to.equal('true');
     });
