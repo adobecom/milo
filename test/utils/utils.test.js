@@ -116,6 +116,12 @@ describe('Utils', () => {
       }
     });
 
+    it.only('Load async script', async () => {
+      const asyncScript = await utils.loadScript('/test/utils/mocks/script.js', undefined, true);
+      expect(asyncScript).to.exist;
+      expect(asyncScript.getAttribute('async')).to.equal('true');
+    });
+
     it('Does not setup nofollow links', async () => {
       const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
