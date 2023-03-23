@@ -1,0 +1,1538 @@
+{
+  "total": 170,
+  "offset": 0,
+  "limit": 170,
+  "data": [
+    {
+      "Type": "Categories",
+      "Level 1": "News",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "Insights & Inspiration",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Creativity",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "3D & AR",
+      "Link": "https://blog.adobe.com/en/topics/3d-ar.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Art",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Creative Inspiration & Trends",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Design",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Illustration",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Photography",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Typography",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Video & Audio",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Digital Transformation",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Advertising",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Analytics",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Campaign Management",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Commerce",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Content Management",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Customer Experience",
+      "Link": "https://blog.adobe.com/en/topics/customer-experience",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Email Marketing",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Personalization",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Social",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Leadership",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Trends & Research",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Future of Work",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Productivity",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Customer Stories",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Events",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Adobe Summit",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "",
+      "Level 3": "Adobe MAX",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "Responsibility",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Community",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Diversity & Inclusion",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Data & Privacy",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Sustainability",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Public Policy",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Security",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "Adobe Life",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Adobe Culture",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Employee Impact",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "University",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Career Advice",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Adobe Life - Asia",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Adobe Life - Europe",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "Technologies",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Categories",
+      "Level 1": "",
+      "Level 2": "Artificial Intelligence",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Creative Cloud",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Aero",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "After Effects",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Animate",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Audition",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Character Animator",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Adobe Express",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/creative-cloud-express",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Dimension",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Dreamweaver",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Frame.io",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Fresco",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Illustrator",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "InDesign",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Lightroom",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Photoshop",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Photoshop Elements",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Premiere Pro",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Premiere Elements",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Premiere Rush",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Portfolio",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Spark",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Stock",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Substance",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Typography",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "XD",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Experience Cloud",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Adobe Advertising",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/adobe-advertising",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Analytics",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Audience Manager",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Campaign",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Commerce Cloud",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Experience Manager",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Marketing Cloud",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Magento Commerce",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Marketo Engage",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/marketo-engage.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Target",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Workfront",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/workfront.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Experience Platform",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Document Cloud",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Acrobat",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Scan",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "Sign",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Adobe Sensei",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "Print & Publishing",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "FrameMaker",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "RoboHelp",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "",
+      "Level 2": "TechComm",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Products",
+      "Level 1": "ColdFusion",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "B2B",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Education",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Financial Services",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Government",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Healthcare",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "High Tech",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Manufacturing",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Media & Entertainment",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Non-profits",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Retail",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Telecom",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Industries",
+      "Level 1": "Travel & Hospitality",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "Corporate Alignment",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Brand",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Creative Cloud",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Document Cloud",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Experience Cloud",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "E-learning",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Print & Publishing",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/print-publishing.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "Regions",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "UK",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/uk.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "UK Exclusive",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "APAC",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/apac.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "APAC Exclusive",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "Content Series",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "#AdobeForAll",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/adobeforall.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "#AdobeLife at Home",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/adobelife-at-home.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Video leadership",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Document leadership",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Digital Imaging leadership",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Innovation",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "How I Cut This",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/how-i-cut-this.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Enterprise Customers",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/enterprise-customers.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Sundance",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Diverse Voices",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "COVID-19",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Brand Strategy",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Adobe Partner Stories",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Cookieless",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Content Authenticity",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Digital Literacy",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Emerging Technology",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Awards and Recognition",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Intern Insider",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Visual Trends",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Adobe Sensei",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "SMB",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "From Our Adobe Leaders",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Voices of Education",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "CMO by Adobe",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Adobe Creative Quotient",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Adobe MAX 2021",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Behance",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Create Change",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "SEO Features",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Partner Story",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Developers",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Retail and ECommerce Trends",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Metaverse",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/metaverse",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "New Year New You",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Celebrating Women",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Celebrating the Black Community",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Communications for government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Creativity and design in government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Content management for government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Digital strategy for government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Document management for government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Forms and electronic signatures for government",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Outlook 2021",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Digital government",
+      "Level 3": "",
+      "Link": "https://blog.adobe.com/en/topics/digital-government.html",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "DX Role",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Information Technology",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Marketing",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Sales",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "Support",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "",
+      "Level 2": "HR",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "",
+      "ExcludeFromMetadata": ""
+    },
+    {
+      "Type": "Internals",
+      "Level 1": "no-interlinks",
+      "Level 2": "",
+      "Level 3": "",
+      "Link": "",
+      "Hidden": "X",
+      "ExcludeFromMetadata": "X"
+    }
+  ],
+  ":type": "sheet"
+}

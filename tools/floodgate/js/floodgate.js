@@ -1,36 +1,26 @@
 import { getConfig } from './config.js';
-import {
-  loadingOFF,
-  loadingON,
-  simulatePreview,
-  stripExtension,
-  showButtons,
-  hideButtons,
-} from '../../loc/utils.js';
-import {
-  connect as connectToSP,
-  copyFile,
-  getFile,
-  saveFile,
-  updateExcelTable,
-} from '../../loc/sharepoint.js';
+import { loadingOFF, loadingON } from '../../loc/utils.js';
+import { connect as connectToSP } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
+  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
-  ACTION_BUTTON_IDS,
+  updateProjectStatusUI,
 } from './ui.js';
+import promoteFloodgatedFiles from './promote.js';
+import floodgateContent from './copy.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
 }
 
-async function refreshPage(config, projectDetail) {
+async function refreshPage(config, projectDetail, project) {
   // Inject Sharepoint file metadata
   loadingON('Updating Project with the Sharepoint Docs Data...');
   await updateProjectWithDocs(projectDetail);
@@ -38,94 +28,20 @@ async function refreshPage(config, projectDetail) {
   // Render the data on the page
   loadingON('Updating table with project details..');
   await updateProjectDetailsUI(projectDetail, config);
+
+  // Read the project action status
+  loadingON('Updating project status...');
+  const status = await updateProjectStatus(project);
+  updateProjectStatusUI(status);
+
   loadingON('UI updated..');
   loadingOFF();
-}
-
-async function floodgateContent(project, projectDetail) {
-  function updateAndDisplayCopyStatus(copyStatus, srcPath) {
-    const copyDisplayText = copyStatus
-      ? `Copied ${srcPath} to floodgated content folder`
-      : `Failed to copy ${srcPath} to floodgated content folder`;
-    loadingON(copyDisplayText);
-  }
-
-  async function copyFilesToFloodgateTree(urlInfo) {
-    const status = { success: false };
-    if (!urlInfo?.doc) return status;
-
-    try {
-      const srcPath = urlInfo.doc.filePath;
-      loadingON(`Copying ${srcPath} to pink folder`);
-      let copySuccess = false;
-      if (urlInfo.doc.fg?.sp?.status !== 200) {
-        const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
-        copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
-      } else {
-        // Get the source file
-        const file = await getFile(urlInfo.doc);
-        if (file) {
-          const destination = urlInfo.doc.filePath;
-          if (destination) {
-            // Save the file in the floodgate destination location
-            const saveStatus = await saveFile(file, destination, true);
-            if (saveStatus.success) {
-              copySuccess = true;
-            }
-          }
-        }
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
-      }
-      status.success = copySuccess;
-      status.srcPath = srcPath;
-      status.dstPath = srcPath;
-      status.url = urlInfo.doc.url;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(`Error occurred when trying to copy files to floodgated content folder ${error.message}`);
-    }
-    return status;
-  }
-
-  hideButtons(ACTION_BUTTON_IDS);
-  const startCopy = new Date();
-  const copyStatuses = await Promise.all(
-    [...projectDetail.urls].map((valueArray) => copyFilesToFloodgateTree(valueArray[1])),
-  );
-  const endCopy = new Date();
-
-  loadingON('Previewing for copied files... ');
-  const previewStatuses = await Promise.all(
-    copyStatuses
-      .filter((status) => status.success)
-      .map((status) => simulatePreview(stripExtension(status.dstPath), 1, true)),
-  );
-  loadingON('Completed Preview for copied files... ');
-
-  const failedCopies = copyStatuses.filter((status) => !status.success)
-    .map((status) => status.srcPath || 'Path Info Not available');
-  const failedPreviews = previewStatuses.filter((status) => !status.success)
-    .map((status) => status.path);
-
-  const excelValues = [['COPY', startCopy, endCopy, failedCopies.join('\n')]];
-  await updateExcelTable(project.excelPath, 'STATUS', excelValues);
-  loadingON('Project excel file updated with copy status... ');
-  showButtons(ACTION_BUTTON_IDS);
-
-  if (failedCopies.length > 0 || failedPreviews.length > 0) {
-    let failureMessage = failedCopies.length > 0 ? `Failed to copy ${failedCopies} to floodgate content folder. Check project excel sheet for additional information\n` : '';
-    failureMessage += failedPreviews.length > 0 ? `Failed to preview ${failedPreviews}. Kindly manually preview these files.` : '';
-    loadingON(failureMessage);
-  } else {
-    loadingOFF();
-    await refreshPage();
-  }
 }
 
 function setListeners(project, projectDetail) {
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
   document.querySelector('#copyFiles button').addEventListener('click', () => floodgateContent(project, projectDetail));
+  document.querySelector('#promoteFiles button').addEventListener('click', () => promoteFloodgatedFiles(project));
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -142,6 +58,7 @@ async function init() {
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
     const project = await initProject();
+    await project.purge();
     loadingON(`Fetching project details for ${project.url}`);
 
     // Update project name on the admin page
@@ -161,7 +78,7 @@ async function init() {
       return;
     }
     loadingON('Connected to Sharepoint!');
-    await refreshPage(config, projectDetail);
+    await refreshPage(config, projectDetail, project);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);

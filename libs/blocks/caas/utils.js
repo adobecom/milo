@@ -66,12 +66,12 @@ export const loadStrings = async (
 };
 
 export const loadCaasFiles = async () => {
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
+  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
 
-  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
+  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -182,16 +182,21 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
+const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
+  || tag[`title.${lang}`]
+  || tag.title;
+
 const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
+  const country = state.country.split('/')[1];
+  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-      const lang = state.language.split('/')[1];
-      const label = itemTag[`title.${lang}`] ? itemTag[`title.${lang}`] : itemTag.title;
+      const label = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
         label: label.replace('&amp;', '&'),
@@ -204,7 +209,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
     id: tagId,
     openedOnLoad: !!openedOnLoad,
     items,
-    group: tag.title,
+    group: getLocalTitle(tag, country, lang),
   };
 
   if (icon) {
