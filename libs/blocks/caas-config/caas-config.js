@@ -426,15 +426,6 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
-    <${MultiField}
-      onChange=${onChange('hideCtaIds')}
-      className="hideCtaIds"
-      values=${context.state.hideCtaIds}
-      title="Hidden CTAs"
-      subTitle="Enter the UUID for cards that should never have CTAs"
-    >
-      <${FormInput} name="contentId" onValidate${isValidUuid} />
-    <//>
   `;
 };
 

@@ -33,7 +33,6 @@ export const parseEncodedConfig = stub().returns({
   fallbackEndpoint: '',
   featuredCards: [],
   gutter: '4x',
-  hideCtaIds: [],
   language: 'caas:language/en',
   layoutType: '4up',
   loadMoreBtnStyle: 'primary',
