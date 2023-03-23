@@ -309,7 +309,7 @@ export const loadScript = (url, type, async = false) => new Promise((resolve, re
       script.setAttribute('type', type);
     }
     if (async) {
-      script.setAttribute('async', true);
+      script.setAttribute('async', 'true');
     }
     head.append(script);
   }
