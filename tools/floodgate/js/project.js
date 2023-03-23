@@ -57,7 +57,7 @@ async function updateProjectWithDocs(projectDetail) {
 async function readProjectFile(projectWebUrl) {
   const resp = await fetch(projectWebUrl, { cache: 'no-store' });
   const json = await resp.json();
-  if (json && json?.filepaths?.data) {
+  if (json?.filepaths?.data) {
     return json;
   }
   return undefined;
