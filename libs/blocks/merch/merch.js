@@ -25,12 +25,12 @@ export function omitUndefined(target) {
   return target;
 }
 
-const getTacocatEnv = (envName, ietf) => {
+const getTacocatEnv = (envName, locale) => {
   const scriptUrl = envName === envProd
     ? 'https://www.adobe.com/special/tacocat/lib/1.12.0/tacocat.js'
     : 'https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js';
   // eslint-disable-next-line prefer-const
-  let [language, country = 'us'] = ietf.split('-', 2);
+  let [language, country = 'us'] = locale.split('-', 2);
   if (!supportedLanguages.includes(language)) {
     language = 'en'; // default to english
   }
@@ -49,7 +49,7 @@ function initTacocat(envName, country, language) {
     },
     environment: envName,
     wcs,
-    literals: window.tacocat.literals[language],
+    literals: window.tacocat.literals?.[language] ?? {},
   });
 }
 
@@ -60,12 +60,12 @@ function loadTacocat() {
   initialized = true;
   const {
     env,
-    locale: { ietf },
+    locale: { ietf: ietfLocale },
   } = getConfig();
-  const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(env.name, ietf);
+  const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(env.name, ietfLocale);
 
   Promise.all([
-    loadScript(literalScriptUrl, undefined, true),
+    loadScript(literalScriptUrl, undefined, true).catch(() => ({})),
     loadScript(scriptUrl, undefined, true),
   ]).then(() => initTacocat(env.name, country, language));
 }
