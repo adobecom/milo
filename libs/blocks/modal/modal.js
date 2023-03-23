@@ -79,7 +79,6 @@ export async function getModal(details, custom) {
 
   const close = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
 
-  const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
   const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
   let firstFocusable;
@@ -100,12 +99,12 @@ export async function getModal(details, custom) {
 
     if (!isShiftKey && isTab && isCloseActive) {
       event.preventDefault();
-      firstFocusable.focus(focusVisible);
+      firstFocusable.focus({ focusVisible: true });
     }
 
     if (isTab && isShiftKey && document.activeElement === firstFocusable) {
       event.preventDefault();
-      close.focus(focusVisible);
+      close.focus({ focusVisible: true });
     }
   });
 
@@ -122,7 +121,7 @@ export async function getModal(details, custom) {
 
   dialog.append(close);
   document.body.append(dialog);
-  firstFocusable.focus(focusVisible);
+  firstFocusable.focus({ preventScroll: true, focusVisible: true });
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
