@@ -36,9 +36,6 @@ const defaultConfig = {
     ctaAction: '_blank',
     additionalRequestParams: {}
   },
-  hideCtaIds: [
-    '',
-  ],
   featuredCards: [
     '',
   ],
