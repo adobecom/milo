@@ -122,6 +122,9 @@
   position: relative;
 }
 
+.tabContent [role='tabpanel'] .section[class*='-up'] > .content {
+  width: 100%;
+}
 
 .tabs div[role="tablist"] button {
   background: transparent;
