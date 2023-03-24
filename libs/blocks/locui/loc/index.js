@@ -1,5 +1,6 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
 import { heading, languages, urls, getSiteConfig, setStatus } from '../utils/state.js';
+import loginToSharePoint from '../utils/sp/login.js';
 
 const ADMIN = 'https://admin.hlx.page';
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
@@ -21,7 +22,7 @@ export async function getStatus() {
   return json;
 }
 
-export function getUrls(jsonUrls) {
+function getUrls(jsonUrls) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
@@ -36,7 +37,7 @@ export function getUrls(jsonUrls) {
   });
 }
 
-export async function loadLocales() {
+async function loadLocales() {
   const config = await getSiteConfig();
   languages.value.forEach((language) => {
     const found = config.locales.data.find(
@@ -47,7 +48,7 @@ export async function loadLocales() {
   languages.value = [...languages.value];
 }
 
-export async function loadDetails() {
+async function loadDetails() {
   setStatus('details', 'info', 'Loading languages and URLs.');
   try {
     const resp = await fetch(resourcePath);
@@ -69,9 +70,16 @@ export async function loadDetails() {
   }
 }
 
-export async function getProjectHeading() {
+async function loadHeading() {
   const { edit } = await getStatus();
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectName = edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: edit.url, path };
+}
+
+export default async function setDetails() {
+  loginToSharePoint();
+  await loadHeading();
+  await loadDetails();
+  await loadLocales();
 }

@@ -13,10 +13,10 @@ function Toast({ status }) {
 }
 
 export default function Status() {
-  const alphaStatus = Object.keys(statuses.value).sort().map((key) => statuses.value[key]);
+  const alpha = Object.keys(statuses.value).sort().map((key) => statuses.value[key]);
   return html`
     <div class=locui-status-toast-section>
-      ${alphaStatus.map((status) => status && html`<${Toast} status=${status} />`)}
+      ${alpha.map((status) => status && html`<${Toast} status=${status} />`)}
     </div>
   `;
 }

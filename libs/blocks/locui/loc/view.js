@@ -1,7 +1,6 @@
 import { html, useEffect } from '../../../deps/htm-preact.js';
-import { getProjectHeading, loadDetails, loadLocales } from './index.js';
+import setDetails from './index.js';
 import { heading, languages, urls } from '../utils/state.js';
-import loginToSharePoint from '../utils/sp/login.js';
 
 import Heading from '../heading/view.js';
 import Langs from '../langs/view.js';
@@ -9,13 +8,6 @@ import Urls from '../urls/view.js';
 import Status from '../status/view.js';
 
 const LOC_NAME = 'Milo Localization';
-
-async function setDetails() {
-  loginToSharePoint();
-  await getProjectHeading();
-  await loadDetails();
-  await loadLocales();
-}
 
 export default function Localization() {
   useEffect(() => { setDetails(); }, []);
