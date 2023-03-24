@@ -2,6 +2,15 @@
   position: relative;
 }
 
+.dark .text,
+.text.dark {
+  color: #fff;
+}
+
+.text.min-height-500 {
+  min-height: 500px;
+}
+
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 

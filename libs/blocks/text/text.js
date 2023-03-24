@@ -22,6 +22,23 @@ const blockTypeSizes = {
   },
 };
 
+function decorateStaticLinks(el) {
+  if (!el.classList.contains('static-links')) return;
+  const textLinks = el.querySelectorAll('.text a:not([class])');
+  textLinks.forEach((link) => { link.classList.add('static') });
+}
+
+function decorateMinHeight(el) {
+  const regex = new RegExp(`^min-height-`); 
+  const classList = el.classList; 
+  for (let j = 0; j < classList.length; j++) {
+    const className = classList[j];
+    if (regex.test(className)) { // check if class name matches regex
+      el.setAttribute('style', 'min-height: 500px;');
+    }
+  }
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -56,4 +73,6 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
+  decorateStaticLinks(el);
+  // decorateMinHeight(el);
 }
