@@ -1,7 +1,10 @@
 /* global msal */
-import { loadScript, getConfig } from '../../../utils/utils.js';
+import { loadScript, getConfig } from '../../../../utils/utils.js';
+import { getSiteConfig } from '../state.js';
 
 let msalConfig;
+
+const login = { redirectUri: '/tools/loc/spauth' };
 
 const cache = {
   cacheLocation: 'sessionStorage',
@@ -10,23 +13,28 @@ const cache = {
 
 const telemetry = {
   application: {
-    appName: 'Adobe Localization',
+    appName: 'Adobe Franklin Localization',
     appVersion: '0.0.1',
   },
 };
 
-export default function getMSALConfig({ clientId, authority }) {
+export default function getMSALConfig() {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     if (!msalConfig) {
+      const { sp } = await getSiteConfig();
+      const { clientId, authority, site, rootFolders } = sp.data[0];
+
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
       await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
       msalConfig = {
+        login,
         auth,
         cache,
         telemetry,
+        baseUri: `${site}/drive/root:${rootFolders}`,
         system: {
           loggerOptions: {
             logLevel: msal.LogLevel.Error,

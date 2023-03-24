@@ -1,5 +1,5 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
-import { heading, languages, urls, getSiteConfig, setStatus } from './state.js';
+import { heading, languages, urls, getSiteConfig, setStatus } from '../utils/state.js';
 
 const ADMIN = 'https://admin.hlx.page';
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];

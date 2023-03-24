@@ -2,8 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import { setStatus } from '../utils/state.js';
 
 function handleEdit() {
-  setStatus('action', 'error', 'Testing 123');
-  setTimeout(() => { setStatus('action'); }, 1000);
+  setStatus('action', 'error', 'Testing 123', 1000);
 }
 
 export default function UrlItem({ item }) {
