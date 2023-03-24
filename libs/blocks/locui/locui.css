@@ -18,6 +18,7 @@
   flex: 1;
 }
 
+.locui-project-details-project,
 .locui-project-details-name {
   display: flex;
   gap: 12px;
@@ -25,6 +26,10 @@
   font-weight: 400;
   font-size: 28px;
   line-height: 35px;
+}
+
+.locui-project-details-name {
+  text-transform: lowercase;
 }
 
 .locui-project-details-edit {
@@ -41,7 +46,10 @@
   top: 0;
   left: 0;
   right: 0;
-  background: #009ace;
+}
+
+.locui-status-toast-type-info {
+  background: linear-gradient(0deg, rgb(0 154 206 / 100%) 0%, rgb(0 139 186 / 100%) 100%);
   color: #003d52;
 }
 

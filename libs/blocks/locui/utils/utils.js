@@ -1,7 +1,6 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
-import { status, heading, languages, urls } from './state.js';
+import { heading, languages, urls, getSiteConfig, setStatus } from './state.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config.json';
 const ADMIN = 'https://admin.hlx.page';
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demofoo.xlsx';
@@ -37,67 +36,42 @@ export function getUrls(jsonUrls) {
   });
 }
 
-async function getSiteConfig() {
-  const error = { type: 'error', text: 'There was a problem loading localization settings.' };
-  try {
-    const resp = await fetch(`${origin}${LOC_CONFIG}`);
-    if (!resp.ok) return { status: error };
-    const json = await resp.json();
-    return { status: undefined, config: json };
-  } catch {
-    // something bad happened
-  }
-  return { status: error };
-}
-
-export async function getProjectLocales(langs) {
+export async function loadLocales() {
   const config = await getSiteConfig();
-  if (config.status?.type === 'error') return { status: config.status };
-  langs.forEach((language) => {
-    const found = config.config.locales.data.find(
+  languages.value.forEach((language) => {
+    const found = config.locales.data.find(
       (locale) => language.Language === locale.language,
     );
     language.locales = found.livecopies.split(',');
   });
-  return { languages: langs };
+  languages.value = [...languages.value];
 }
 
-export async function getProjectDetails() {
-  const resp = await fetch(resourcePath);
-  if (!resp.ok) return null;
-  const json = await resp.json();
-  const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
-  const projectUrls = getUrls(jsonUrls);
-  const projectLangs = json.languages.data.reduce((rdx, lang) => {
-    if (LANG_ACTIONS.includes(lang.Action)) {
-      lang.size = projectUrls.length;
-      rdx.push(lang);
-    }
-    return rdx;
-  }, []);
-  return { origin, projectLangs, projectUrls };
+export async function loadDetails() {
+  setStatus('details', 'info', 'Loading languages and URLs.');
+  try {
+    const resp = await fetch(resourcePath);
+    const json = await resp.json();
+    const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
+    const projectUrls = getUrls(jsonUrls);
+    const projectLangs = json.languages.data.reduce((rdx, lang) => {
+      if (LANG_ACTIONS.includes(lang.Action)) {
+        lang.size = projectUrls.length;
+        rdx.push(lang);
+      }
+      return rdx;
+    }, []);
+    setStatus('details', null);
+    languages.value = projectLangs;
+    urls.value = projectUrls;
+  } catch {
+    setStatus('details', 'error', 'Error loading languages and URLs.');
+  }
 }
 
 export async function getProjectHeading() {
   const { edit } = await getStatus();
+  const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectName = edit.name.split('.').shift().replace('-', ' ');
-  heading.value = { name: projectName, editUrl: edit.url };
-}
-
-export async function loadLocales() {
-  status.value = { type: 'Status', text: 'Loading locales.' };
-  const locales = await getProjectLocales(languages.value);
-  if (locales.status) {
-    status.value = locales.status;
-    return;
-  }
-  languages.value = [...locales.languages];
-  status.value = {};
-}
-
-export async function loadDetails() {
-  status.value = { type: 'Status', text: 'Loading languages and URLs.' };
-  const { projectLangs, projectUrls } = await getProjectDetails();
-  languages.value = projectLangs;
-  urls.value = projectUrls;
+  heading.value = { name: projectName, editUrl: edit.url, path };
 }

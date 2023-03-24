@@ -1,5 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages, urls } from '../utils/state.js';
+import { findFragments } from './index.js';
 
 function Language({ item }) {
   const hasLocales = item.locales?.length > 0;
@@ -29,7 +30,7 @@ export default function Langs() {
         <h2 class=locui-section-label>Actions</h2>
       </div>
       <div class=locui-url-heading-actions>
-        <button class=locui-urls-heading-action>Find Fragments</button>
+        <button class=locui-urls-heading-action onClick=${findFragments}>Find Fragments</button>
         <button class=locui-urls-heading-action>Sync to Langstore <span>(${urls.value[0].langstore.lang})</span></button>
       </div>
     </div>
