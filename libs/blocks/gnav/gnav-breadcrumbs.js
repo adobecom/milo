@@ -159,9 +159,6 @@ async function getBreadcrumbs(element) {
       || await getBreadcrumbsFromUrl(document.location.pathname)
       || null;
   }
-  if (breadcrumbsConf === 'off' || breadcrumbsConf === 'false') {
-    return null;
-  }
   return null;
 }
 
