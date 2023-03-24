@@ -308,6 +308,8 @@ const BasicsPanel = ({ tagsData }) => {
 
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Input} label="Collection Title" prop="collectionTitle" type="text" />
+
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Select} options=${countryTags} prop="country" label="Country" sort />

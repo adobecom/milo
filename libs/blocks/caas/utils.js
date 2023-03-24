@@ -284,7 +284,7 @@ export const getConfig = async (state, strs = {}) => {
         prettyDateIntervalFormat:
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
-        title: strs.collectionTitle || '',
+        title: state.collectionTitle?.match(/^{.*}$/) ? strs[state.collectionTitle.replace(/{|}/g, '')] : state.collectionTitle || '',
         titleHeadingLevel: state.titleHeadingLevel,
         cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
