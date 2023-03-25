@@ -3,7 +3,7 @@ import { statuses } from '../utils/state.js';
 
 function Toast({ status }) {
   return html`
-    <div class="locui-status-toast-type-${status.type}">
+    <div class="locui-status-toast locui-status-toast-type-${status.type}">
       <div class=locui-status-toast-content>
         <span class=locui-status-toast-content-type>${status.type}</span>
         <span class=locui-status-toast-text>${status.text}</span>
@@ -13,10 +13,10 @@ function Toast({ status }) {
 }
 
 export default function Status() {
-  const alpha = Object.keys(statuses.value).sort().map((key) => statuses.value[key]);
+  const statusArr = Object.keys(statuses.value).map((key) => statuses.value[key]);
   return html`
     <div class=locui-status-toast-section>
-      ${alpha.map((status) => status && html`<${Toast} status=${status} />`)}
+      ${statusArr.map((status) => status && html`<${Toast} status=${status} />`)}
     </div>
   `;
 }

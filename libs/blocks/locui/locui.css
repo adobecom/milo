@@ -43,9 +43,14 @@
 
 .locui-status-toast-section {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  bottom: 0;
+  left: 20px;
+}
+
+.locui-status-toast {
+  border-radius: 4px;
+  margin-bottom: 20px;
+  min-width: 420px;
 }
 
 .locui-status-toast-type-info {
@@ -208,6 +213,10 @@ button.locui-url-action {
   border-radius: 4px;
   border: none;
   cursor: pointer;
+}
+
+button.locui-url-action[disabled] {
+  opacity: 0.25;
 }
 
 button.locui-url-action:hover {

@@ -4,6 +4,7 @@ import { heading, languages, urls } from '../utils/state.js';
 
 import Heading from '../heading/view.js';
 import Langs from '../langs/view.js';
+import Actions from '../actions/view.js';
 import Urls from '../urls/view.js';
 import Status from '../status/view.js';
 
@@ -16,6 +17,7 @@ export default function Localization() {
     <h1>${LOC_NAME}</h1>
     ${heading.value.editUrl && html`<${Heading} />`}
     ${languages.value.length > 0 && html`<${Langs} />`}
+    ${urls.value.length > 0 && html`<${Actions} />`}
     ${urls.value.length > 0 && html`<${Urls} />`}
     <${Status} />`;
 }
