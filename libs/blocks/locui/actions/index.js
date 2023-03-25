@@ -62,6 +62,13 @@ export async function findFragments() {
   }
 }
 
+export function noSource() {
+  return urls.value.find((url) => {
+    if (!url.actions) return true;
+    return url.actions?.edit?.status === 404;
+  });
+}
+
 export function syncToLangstore() {
 
 }
