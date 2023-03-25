@@ -28,11 +28,11 @@ async function findPageFragments(path) {
   decorateSections(doc, true);
   const fragments = [...doc.querySelectorAll('.fragment')];
   const fragmentUrls = fragments.reduce((rdx, fragment) => {
-    // Normalize the fragment path to support production urls.
+    // Normalize the fragment domain to the current project
     const pathname = new URL(fragment.href).pathname.replace('.html', '');
     const fragmentUrl = new URL(`${origin}${pathname}`);
     // Look for duplicates that are already in the urls
-    const dupe = urls.value.some((url) => url.href === fragmentUrl.href);
+    const dupe = urls.value.find((url) => url.href === fragmentUrl.href);
     if (!dupe) rdx.push(fragmentUrl);
     return rdx;
   }, []);
@@ -54,7 +54,7 @@ export async function findFragments() {
     }
     return rdx;
   }, []);
-  setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
+  setStatus('fragments', 'info', `${forExcel.length} fragments found.`, 1500);
   if (forExcel.length > 0) {
     urls.value = [...urls.value];
     updateExcelTable(forExcel);
@@ -62,18 +62,6 @@ export async function findFragments() {
   }
 }
 
-function checkSource() {
-  return urls.value.some((url) => {
-    if (!url.actions) return true;
-    return url.actions?.edit?.status === 404;
-  });
-}
-
 export function syncToLangstore() {
-  const noSource = checkSource();
-  if (noSource) {
-    const description = `There are missing source docs in the project. 
-       Remove the missing docs or create them.`;
-    setStatus('langstore', 'error', 'Missing source docs.', description);
-  }
+
 }

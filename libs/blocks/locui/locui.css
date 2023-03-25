@@ -56,9 +56,10 @@ main {
 }
 
 .locui-status-toast {
+  position: relative;
   border-radius: 4px;
   margin-bottom: 20px;
-  min-width: 420px;
+  width: 420px;
 }
 
 .locui-status-toast-type-info {
@@ -72,16 +73,56 @@ main {
 }
 
 .locui-status-toast-content {
-  max-width: 83.4%;
-  margin: 0 auto;
+  margin: 0 16px;
   display: flex;
   align-items: center;
 }
 
 .locui-status-toast-content-type {
-  margin: 12px 6px 12px 0;
+  margin: 0 6px 0 0;
   font-weight: 700;
   text-transform: uppercase;
+  line-height: 48px;
+}
+
+p.locui-status-toast-description {
+  display: none;
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(255 255 255 / 10%);
+}
+
+div.locui-status-toast-expand {
+  position: absolute;
+  right: 0;
+  top: 0;
+  text-indent: -1000px;
+  overflow: hidden;
+  width: 48px;
+  height: 48px;
+  transition: transform .2s ease-in-out;
+}
+
+div.locui-status-toast.open div.locui-status-toast-expand {
+  transform: rotate(90deg);
+}
+
+div.locui-status-toast-expand::after {
+  content: '';
+  position: absolute;
+  right: 20px;
+  top: 18px;
+  text-indent: -1000px;
+  overflow: hidden;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  transform: rotate(-45deg);
+  width: 10px;
+  height: 10px;
+}
+
+div.locui-status-toast.open p.locui-status-toast-description {
+  display: block;
 }
 
 
@@ -148,6 +189,11 @@ span.locui-subproject-locale {
   border-radius: 4px;
   font-size: 14px;
   line-height: 1;
+}
+
+div.locui-url-heading-actions {
+  display: flex;
+  gap: 12px;
 }
 
 button.locui-urls-heading-action {
