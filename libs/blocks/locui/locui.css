@@ -1,9 +1,17 @@
-.locui {
-  width: 83.4%;
-  margin: 0 auto;
+body {
   background: url('./img/bg.png');
   background-size: 100%;
   background-repeat: no-repeat;
+}
+
+main {
+  max-height: 100vh;
+  overflow: scroll;
+}
+
+.locui {
+  width: 83.4%;
+  margin: 0 auto;
   min-height: 100vh;
   padding: 48px;
 }
@@ -113,10 +121,12 @@ p.locui-project-label {
 
 li.locui-subproject {
   min-height: 320px;
-  border: 4px solid #CC66CC;
-  background: #FCCEEA;
+  border: 4px solid rgb(246 97 182);
+  background: rgb(255 100 194 / 30%);
   border-radius: 6px;
   padding: 18px;
+  -webkit-backdrop-filter: blur(.3em);
+  backdrop-filter: blur(.3em);
 }
 
 h3.locui-subproject-name {
