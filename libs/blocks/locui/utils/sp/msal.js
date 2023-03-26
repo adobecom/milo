@@ -1,6 +1,6 @@
 /* global msal */
 import { loadScript, getConfig } from '../../../../utils/utils.js';
-import { getSiteConfig } from '../state.js';
+import { getSiteConfig, spAccessToken } from '../state.js';
 
 let msalConfig;
 
@@ -18,13 +18,12 @@ const telemetry = {
   },
 };
 
-export default function getMSALConfig() {
+export function getMSALConfig() {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     if (!msalConfig) {
       const { sp } = await getSiteConfig();
       const { clientId, authority, site, rootFolders } = sp.data[0];
-
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
@@ -34,6 +33,7 @@ export default function getMSALConfig() {
         auth,
         cache,
         telemetry,
+        site,
         baseUri: `${site}/drive/root:${rootFolders}`,
         system: {
           loggerOptions: {
@@ -64,4 +64,13 @@ export default function getMSALConfig() {
     }
     resolve(msalConfig);
   });
+}
+
+export function getReqOptions({ body = null, method = 'GET' } = {}) {
+  const bearer = `Bearer ${spAccessToken.value}`;
+  const headerOpts = { Authorization: bearer, 'Content-Type': 'application/json' };
+  const headers = new Headers(headerOpts);
+  const options = { method, headers };
+  if (body) options.body = JSON.stringify(body);
+  return options;
 }

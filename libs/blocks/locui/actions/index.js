@@ -3,6 +3,7 @@ import { heading, setStatus, urls } from '../utils/state.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
+import copyFile from '../utils/sp/file.js';
 
 async function updateExcelJson() {
   let count = 1;
@@ -64,16 +65,44 @@ export async function findFragments() {
 
 function checkSource() {
   return urls.value.some((url) => {
-    if (!url.actions) return true;
-    return url.actions?.edit?.status === 404;
+    if (!url.actions || url.actions.edit?.status === 404) return true;
+    return false;
   });
 }
 
-export function syncToLangstore() {
-  const noSource = checkSource();
-  if (noSource) {
-    const description = `There are missing source docs in the project. 
-       Remove the missing docs or create them.`;
-    setStatus('langstore', 'error', 'Missing source docs.', description);
+async function syncFile(url) {
+  return new Promise(async (resolve) => {
+    const sourcePath = url.pathname;
+    const destPath = url.langstore.pathname;
+    const json = await copyFile(sourcePath, destPath);
+    url.langstore.actions = {
+      ...url.langstore.actions,
+      edit: {
+        url: json.webUrl,
+        status: 200,
+      },
+    };
+    resolve(url);
+  });
+}
+
+export async function syncToLangstore() {
+  if (checkSource()) {
+    const desc = `There are missing source docs in the project.
+                  Remove the missing docs or create them.`;
+    setStatus('langstore', 'error', 'Missing source docs.', desc);
+    return;
+  }
+  let count = urls.value.length;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [idx, url] of urls.value.entries()) {
+    setStatus('langstore', 'info', `Syncing - ${count} left.`, 'Syncing to Langstore.');
+    // eslint-disable-next-line no-await-in-loop
+    urls.value[idx] = await syncFile(url);
+    urls.value = [...urls.value];
+    count -= 1;
+    if (count === 0) {
+      setStatus('langstore');
+    }
   }
 }

@@ -124,6 +124,7 @@ async function getSpFiles(filePaths, isFloodgate) {
 
 async function getFile(doc) {
   if (doc && doc.sp && doc.sp.status === 200) {
+    const test = doc.sp['@microsoft.graph.downloadUrl'];
     const response = await fetch(doc.sp['@microsoft.graph.downloadUrl']);
     return response.blob();
   }

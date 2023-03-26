@@ -1,14 +1,5 @@
-import { spAccessToken, heading, setStatus } from '../state.js';
-import getMSALConfig from './msal.js';
-
-function getReqOptions({ body = null, method = 'GET' } = {}) {
-  const bearer = `Bearer ${spAccessToken.value}`;
-  const headerOpts = { Authorization: bearer, 'Content-Type': 'application/json' };
-  const headers = new Headers(headerOpts);
-  const options = { method, headers };
-  if (body) options.body = JSON.stringify(body);
-  return options;
-}
+import { heading, setStatus } from '../state.js';
+import { getMSALConfig, getReqOptions } from './msal.js';
 
 export default async function updateExcelTable(values) {
   setStatus('sharepoint', 'info', 'Adding URLs to your project.');
@@ -21,9 +12,7 @@ export default async function updateExcelTable(values) {
   const res = await fetch(path, options);
   if (!res.ok) {
     setStatus('sharepoint', 'error', 'Couldn\'t add URLs to project.');
-    return null;
+    return;
   }
-  const json = await res.json();
   setStatus('sharepoint');
-  return json;
 }

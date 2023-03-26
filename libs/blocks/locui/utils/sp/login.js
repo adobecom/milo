@@ -1,6 +1,6 @@
 /* global msal */
 import { user, spAccessToken } from '../state.js';
-import getMSALConfig from './msal.js';
+import { getMSALConfig } from './msal.js';
 
 export default async function loginToSharePoint() {
   const msalConfig = await getMSALConfig();

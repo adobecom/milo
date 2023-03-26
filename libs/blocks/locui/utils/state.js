@@ -12,7 +12,6 @@ export const user = signal();
 export const spAccessToken = signal();
 
 export function setStatus(name, type, text, description, timeout) {
-  console.log(description);
   const content = type && text ? { type, text, description } : null;
   statuses.value = { ...statuses.value, [name]: content };
   if (timeout) {
