@@ -38,10 +38,25 @@ async function getParent(path) {
   return { parentReference: { id: parent.id } };
 }
 
-async function renameFile(id, name) {
+async function getItem(path) {
+  const fullpath = `${baseUri}${path}`;
+  const options = getReqOptions();
+  const resp = await fetch(fullpath, options);
+  return resp.json();
+}
+
+async function renameFile(path, name, copy) {
+  const destArr = path.split('/');
+  destArr.pop();
+  const destParent = destArr.join('/');
+  const destCopy = await getItem(`${destParent}/${copy}`);
+
   const body = { ...BODY_BASE, name };
   const options = getReqOptions({ method: 'PATCH', body });
-  return fetch(`${site}/drive/items/${id}`, options);
+  const resp = await fetch(`${site}/drive/items/${destCopy.id}`, options);
+
+  if (resp.status === 200) return destCopy;
+  return { error: true };
 }
 
 function getFilename(path) {
@@ -49,13 +64,6 @@ function getFilename(path) {
   const file = name.includes('.json') ? name.replace('.json', '.xlsx') : `${name}.docx`;
   const split = file.split('.');
   return { name: file, copy: `${split[0]}-copy.${split[1]}` };
-}
-
-async function getItem(path) {
-  const fullpath = `${baseUri}${path}`;
-  const options = getReqOptions();
-  const resp = await fetch(fullpath, options);
-  return resp.json();
 }
 
 async function getItemTry(path) {
@@ -78,6 +86,13 @@ async function getItemTry(path) {
  *
  */
 
+/**
+ * Copy File - Copies any file. Will correctly create folders and handle conflicts.
+ *
+ * @param {String} sourcePath the source document path
+ * @param {String} destPath the destination document path
+ * @returns {Object} json an object describing the copied item
+ */
 export default async function copyFile(sourcePath, destPath) {
   const source = await getItem(`${sourcePath}.docx`);
   const dest = await getItem(`${destPath}.docx`);
@@ -89,19 +104,7 @@ export default async function copyFile(sourcePath, destPath) {
     const options = getReqOptions({ method: 'POST', body });
     const resp = await fetch(`${site}/drive/items/${source.id}/copy`, options);
     if (resp.status === 202) {
-      // Make a copy if destination file exists
-      if (dest.id) {
-        const destArr = destPath.split('/');
-        destArr.pop();
-        const destParent = destArr.join('/');
-        const destCopy = await getItem(`${destParent}/${copy}`);
-        const renameResp = await renameFile(destCopy.id, name);
-        if (renameResp.status === 200) {
-          return destCopy;
-        }
-      }
-      // Return the details of the non copy item
-      return getItemTry(`${destPath}.docx`);
+      return dest.id ? renameFile(destPath, name, copy) : getItemTry(`${destPath}.docx`);
     }
     return resp.json();
   }

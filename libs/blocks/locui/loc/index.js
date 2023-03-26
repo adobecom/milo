@@ -1,10 +1,9 @@
 import { getConfig, getLocale } from '../../../utils/utils.js';
 import { heading, languages, urls, getSiteConfig, setStatus } from '../utils/state.js';
-import loginToSharePoint from '../utils/sp/login.js';
-import { getStatus } from '../utils/franklin.js';
+import { getStatus, preview } from '../utils/franklin.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
-const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demofoo.xlsx';
+const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
 
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -60,15 +59,15 @@ async function loadDetails() {
 
 async function loadHeading() {
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
-  const json = await getStatus(null, editUrl);
+  const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
+  await preview(`${path}.json`);
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
 }
 
 export default async function setDetails() {
-  loginToSharePoint();
   await loadHeading();
   await loadDetails();
   await loadLocales();

@@ -27,8 +27,9 @@
       "id": "localize",
       "title": "Localize",
       "environments": [ "edit" ],
-      "url": "/tools/loc/index.html?project=milo--adobecom",
+      "url": "/drafts/cmillar/locui",
       "passReferrer": true,
+      "passConfig": true,
       "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },

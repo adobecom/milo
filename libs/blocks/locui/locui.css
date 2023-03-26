@@ -10,7 +10,7 @@ main {
 }
 
 .locui {
-  width: 83.4%;
+  max-width: 83.4%;
   margin: 0 auto;
   min-height: 100vh;
   padding: 48px;
@@ -34,6 +34,7 @@ main {
   font-weight: 400;
   font-size: 28px;
   line-height: 35px;
+  align-items: center;
 }
 
 .locui-project-details-name {
@@ -49,10 +50,25 @@ main {
   background-repeat: no-repeat;
 }
 
+.locui-project-details-refresh {
+  background: url(./img/spectrum-refresh.svg);
+  width: 36px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+  border: none;
+  background-position: 50%;
+  background-color: #0f7c41;
+  height: 26px;
+  border-radius: 2px;
+}
+
 .locui-status-toast-section {
   position: fixed;
-  bottom: 0;
-  left: 20px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .locui-status-toast {
@@ -290,4 +306,10 @@ button.locui-url-action-edit {
 
 button.locui-url-action-view {
   background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
+}
+
+@media screen and (min-width: 1200px) {
+  .locui {
+    max-width: 1200px;
+  }
 }

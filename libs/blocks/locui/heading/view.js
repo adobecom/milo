@@ -1,5 +1,13 @@
 import { html } from '../../../deps/htm-preact.js';
-import { heading, user } from '../utils/state.js';
+import { heading, user, urls, languages, statuses } from '../utils/state.js';
+import setDetails from '../loc/index.js';
+
+async function handleRefresh() {
+  languages.value = [];
+  urls.value = [];
+  statuses.value = {};
+  setDetails();
+}
 
 export default function Heading() {
   return html`
@@ -11,8 +19,10 @@ export default function Heading() {
           ${heading.value.editUrl
             && html`
               <a class=locui-project-details-edit
-                  href="${heading.value.editUrl}"
-                  target="_blank">Edit</a>`}
+                 href="${heading.value.editUrl}"
+                 target="_blank">Edit</a>`}
+          ${heading.value.name && html`
+            <button class=locui-project-details-refresh onClick=${handleRefresh}>Refresh</a>`}
         </div>
       </div>
       <div class=locui-project-heading-column>
