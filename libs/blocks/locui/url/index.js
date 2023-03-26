@@ -1,8 +1,10 @@
 import { getStatus } from '../utils/franklin.js';
-import { urls } from '../utils/state.js';
+import { urls, setStatus } from '../utils/state.js';
 
 async function getDetails(path) {
+  setStatus('url', 'info', 'Getting URL details.');
   const json = await getStatus(path);
+  setStatus('url');
   return {
     preview: { url: json.preview.url, status: json.preview.status },
     edit: { url: json.edit.url, status: json.edit.status },
