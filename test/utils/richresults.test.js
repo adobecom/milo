@@ -34,6 +34,20 @@ describe('Rich Results', () => {
     expect(script).to.be.null;
   });
 
+  it('add the Organization rich results', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
+    await loadArea(document);
+    const script = document.querySelector('script[type="application/ld+json"]');
+    const actual = JSON.parse(script.innerHTML);
+    const expected = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      url: 'https://www.adobe.com',
+      logo: 'https://www.adobe.com/favicon.ico',
+    };
+    expect(actual).to.deep.equal(expected);
+  });
+
   it('unsupported rich results type', async () => {
     sinon.stub(console, 'error');
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-unsupported-type.html' });
