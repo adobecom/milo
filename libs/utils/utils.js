@@ -82,6 +82,7 @@ const ENVS = {
     name: 'local',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+    tacocatVersion: '1.12.0',
   },
   stage: {
     name: 'stage',
@@ -91,6 +92,7 @@ const ENVS = {
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+    tacocatVersion: '1.12.0',
   },
   prod: {
     name: 'prod',
@@ -100,6 +102,7 @@ const ENVS = {
     account: 'account.adobe.com',
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
+    tacocatVersion: '1.12.0',
   },
 };
 const LANGSTORE = 'langstore';

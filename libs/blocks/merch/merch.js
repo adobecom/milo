@@ -4,7 +4,7 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const wcs = { apiKey: 'wcms-commerce-ims-ro-user-cc' };
+const wcs = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
 const envProd = 'prod';
 const ctaPrefix = /^CTA +/;
 
@@ -25,10 +25,10 @@ export function omitUndefined(target) {
   return target;
 }
 
-const getTacocatEnv = (envName, locale) => {
+const getTacocatEnv = (envName, tacocatVersion, locale) => {
   const scriptUrl = envName === envProd
-    ? 'https://www.adobe.com/special/tacocat/lib/1.12.0/tacocat.js'
-    : 'https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js';
+    ? `https://www.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`
+    : `https://www.stage.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`;
   // eslint-disable-next-line prefer-const
   let [language, country = 'us'] = locale.split('-', 2);
   if (!supportedLanguages.includes(language)) {
@@ -62,7 +62,12 @@ function loadTacocat() {
     env,
     locale: { ietf: ietfLocale },
   } = getConfig();
-  const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(env.name, ietfLocale);
+  const {
+    scriptUrl,
+    literalScriptUrl,
+    country,
+    language,
+  } = getTacocatEnv(env.name, env.tacocatVersion, ietfLocale);
 
   Promise.all([
     loadScript(literalScriptUrl, undefined, true).catch(() => ({})),
