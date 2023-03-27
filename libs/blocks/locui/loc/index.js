@@ -58,11 +58,13 @@ async function loadDetails() {
 }
 
 async function loadHeading() {
+  setStatus('details', 'info', 'Getting latest project info.');
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   await preview(`${path}.json`);
+  setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
 }

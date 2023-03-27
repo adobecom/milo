@@ -313,3 +313,7 @@ button.locui-url-action-view {
     max-width: 1200px;
   }
 }
+
+helix-sidekick {
+  display: none;
+}
