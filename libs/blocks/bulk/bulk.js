@@ -6,15 +6,17 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from '../review/utils/localStorageUtils.js';
+import createCopy from '../library-config/library-utils.js';
 
 const UNSUPPORTED_SITE = 'unsupported domain';
-const MAX_URLS_NUMBER = 1000;
+const URLS_ENTRY_LIMIT = 1000;
 // TODO enable IMS sign in?
 const IMS_SIGN_IN_ENABLED = false;
-const THROTTLING_DELAY = 100;
+const THROTTLING_DELAY_MS = 100;
 const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
 const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
 const BULK_URLS = 'bulkUrls';
+const BULK_LAST_EXECUTED_URL_IDX = 'bulkLastExecutedUrlIdx';
 const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
 const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
 const ADMIN_BASE_URL = 'https://admin.hlx.page';
@@ -116,13 +118,14 @@ const executeActions = async (actions, urls, setResult) => {
       // eslint-disable-next-line no-await-in-loop
       status[action] = await executeAction(action, url);
       // eslint-disable-next-line no-await-in-loop
-      await delay(THROTTLING_DELAY);
+      await delay(THROTTLING_DELAY_MS);
     }
     results.push({
       url,
       status,
     });
     setResult([...results]);
+    setLocalStorage(BULK_LAST_EXECUTED_URL_IDX, i);
   }
   return results;
 };
@@ -204,12 +207,12 @@ const sendReport = async (results, action) => {
 
 function StatusRow(props) {
   return html`
-    <div class="bulk-status-row">
-        <div class="bulk-status-url">${props.row.status.preview && props.row.url}</div>
-        <div class="bulk-status-preview">${props.row.status.preview && props.row.status.preview}</div>
-        <div class="bulk-status-url">${props.row.status.publish && props.row.url}</div>
-        <div class="bulk-status-publish">${props.row.status.publish && props.row.status.publish}</div>
-    </div>`;
+    <tr class="bulk-status-row">
+        <td class="bulk-status-url">${props.row.status.preview && props.row.url}</td>
+        <td class="bulk-status-preview">${props.row.status.preview && props.row.status.preview}</td>
+        <td class="bulk-status-url">${props.row.status.publish && props.row.url}</td>
+        <td class="bulk-status-publish">${props.row.status.publish && props.row.status.publish}</td>
+    </tr>`;
 }
 
 function prettyDate() {
@@ -227,24 +230,34 @@ function StatusTitle(props) {
   const name = getActionName(props.submittedAction, true);
   const URLS = (urls?.length > 1) ? 'URLS' : 'URL';
   return props.submittedAction && html`
-      <div class="bulk-status-title">
-          STATUS ${name} ${urls?.length} ${URLS}
+      <div class="bulk-status-head">
+          <div class="bulk-status-head-title">
+              STATUS ${name} ${urls?.length} ${URLS}
+          </div>
+          <div>
+              <button class="bulk-status-head-copy" onclick=${props.copyResults} title="Copy results"></button>
+              <button class="bulk-status-head-toggle-urls" ref="${props.bulkInputToggleElt}" onclick=${props.showHideUrls} title="show/hide urls"></button>
+          </div>
       </div>`;
 }
 
 function StatusContent(props) {
   return html`
-    <div class="bulk-status-content">
+    <table class="bulk-status-content" ref="${props.resultsElt}">
         ${props.result && html`
-            <div class="bulk-status-header">
-                <div class="bulk-status-header-url">Preview Status</div>
-                <div class="bulk-status-header-url">Publish Status</div>
-            </div>
-            <div class="bulk-status-rows">
+            <thead class="bulk-status-header">
+                <tr class="bulk-status-header-row">
+                    <th class="bulk-status-header-url">Preview</th>
+                    <th>Status</th>
+                    <th class="bulk-status-header-url">Publish</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody class="bulk-status-rows">
                 ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
-            </div>
+            </tbody>
         `}
-    </div>`;
+    </table>`;
 }
 
 function StatusFooter(props) {
@@ -274,10 +287,14 @@ function Status(props) {
         <div class="bulk-status-title-container">
             <${StatusTitle}
                 submittedAction=${props.submittedAction}
+                copyResults=${props.copyResults}
+                showHideUrls=${props.showHideUrls}
+                bulkInputToggleElt=${props.bulkInputToggleElt}
                 urlsElt=${props.urlsElt} />
         </div>
         <div class="bulk-status-content-container">
             <${StatusContent}
+                resultsElt=${props.resultsElt}
                 result=${props.result} />
         </div>
         <div class="bulk-status-footer-container">
@@ -308,8 +325,8 @@ function ErrorMessage(props) {
     message = 'You are not authorized to perform bulk operations';
   } else if (props.urlNumber === 0) {
     message = 'There are no URLs specified';
-  } else if (props.urlNumber > MAX_URLS_NUMBER) {
-    message = `There are too many URLs. You entered ${props.urlNumber} URLs. The max allowed number is ${MAX_URLS_NUMBER}`;
+  } else if (props.urlNumber > URLS_ENTRY_LIMIT) {
+    message = `There are too many URLs. You entered ${props.urlNumber} URLs. The max allowed number is ${URLS_ENTRY_LIMIT}`;
   }
   return !!message && html`
       <div class="bulk-error">
@@ -327,6 +344,9 @@ function Bulk(props) {
 
   const urlsElt = useRef(null);
   const actionElt = useRef(null);
+  const resultsElt = useRef(null);
+  const bulkInputElt = useRef(null);
+  const bulkInputToggleElt = useRef(null);
 
   const signOut = (e) => {
     e.preventDefault();
@@ -349,7 +369,7 @@ function Bulk(props) {
     const urls = getUrls(urlsElt);
     const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
-    if (urlNumberValue === 0 || urlNumberValue > MAX_URLS_NUMBER) return;
+    if (urlNumberValue === 0 || urlNumberValue > URLS_ENTRY_LIMIT) return;
 
     // perform the action
     const submittedActionValue = actionElt.current.value;
@@ -367,28 +387,40 @@ function Bulk(props) {
     setSelectedAction(actionElt.current.value);
   };
 
+  const copyResults = async () => {
+    const blob = new Blob([resultsElt.current.outerHTML], { type: 'text/html' });
+    createCopy(blob);
+  };
+
+  const showHideUrls = () => {
+    bulkInputElt.current.classList.toggle('is-hidden');
+    bulkInputToggleElt.current.classList.toggle('open');
+  };
+
   return html`
     <div class="bulk">
-        <div class="bulk-header">
-            <div class="bulk-urls">
-                <div class="bulk-urls-title">urls</div>
+        <div class="bulk-input" ref="${bulkInputElt}">
+            <div class="bulk-header">
+                <div class="bulk-urls">
+                    <div class="bulk-urls-title">urls</div>
+                </div>
+                <div class="bulk-user">
+                    <div class="bulk-user-header">logged in as</div>
+                    <${User} user=${props.user} />
+                    <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
+                </div>
             </div>
-            <div class="bulk-user">
-                <div class="bulk-user-header">logged in as</div>
-                <${User} user=${props.user} />
-                <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
+            <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage(BULK_URLS)}</textarea>
+            <div class="bulk-action">
+                <${SubmitBtn}
+                    onSubmit=${onSubmit}
+                    selectedAction=${selectedAction} />
+                <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
+                    <option value="preview">Preview</option>
+                    <option value="publish">Publish</option>
+                    <option value="preview&publish">Preview & Publish</option>
+                </select>
             </div>
-        </div>
-        <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage(BULK_URLS)}</textarea>
-        <div class="bulk-action">
-            <${SubmitBtn}
-                onSubmit=${onSubmit}
-                selectedAction=${selectedAction} />
-            <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
-                <option value="preview">Preview</option>
-                <option value="publish">Publish</option>
-                <option value="preview&publish">Preview & Publish</option>
-            </select>
         </div>
         <${ErrorMessage}
             authorized=${authorized}
@@ -397,7 +429,11 @@ function Bulk(props) {
             urlsElt=${urlsElt}
             submittedAction=${submittedAction}
             result=${result}
-            completion=${completion} />
+            resultsElt=${resultsElt}
+            completion=${completion}
+            copyResults=${copyResults}
+            showHideUrls=${showHideUrls}
+            bulkInputToggleElt=${bulkInputToggleElt} />
     </div>`;
 }
 

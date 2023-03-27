@@ -2,6 +2,10 @@
   margin: 0 30px;
 }
 
+.bulk-input.is-hidden {
+  display: none;
+}
+
 .bulk-user-name {
   font-size: 10pt;
 }
@@ -48,36 +52,61 @@
   margin-top: 50px;
 }
 
-.bulk-status-title {
+.bulk-status-head {
+  display: flex;
+  justify-content: space-between;
   font-size: 12pt;
   background-color: green;
   border-radius: 50px;
   margin: 30px 2px;
   color: white;
-  padding: 20px;
+  padding: 10px;
+}
+
+.bulk-status-head-title {
+  padding-left: 20px;
+  padding-top: 10px;
+}
+
+.bulk-status-head-copy {
+  border: none;
+  background-color: green;
+  background-image: url('../../ui/img/spectrum-copy.svg');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 22px;
+}
+
+.bulk-status-head-toggle-urls {
+  border: none;
+  background-color: green;
+  color: white;
+  font-size: 30px;
+}
+
+.bulk-status-head-toggle-urls::before {
+  content: '-';
+}
+
+.bulk-status-head-toggle-urls.open::before {
+  content: '+';
+}
+
+.bulk-status-url {
+  width: 35%
+}
+
+.bulk-status-preview, .bulk-status-publish {
+  width: 15%;
 }
 
 .bulk-status-header {
-  display: grid;
-  grid-template-columns: 50% 50%;
-  font-size: 12pt;
   text-transform: uppercase;
+  text-align: left;
 }
 
-.bulk-status-content-container {
-  margin-top: 30px;
-}
-
-.bulk-status-rows {
-  width: 100%;
-  height: 200px;
-  margin: 32px 0;
-  overflow-y:auto;
-}
-
-.bulk-status-row {
-  display: grid;
-  grid-template-columns: 35% 15% 35% 15%;
+.bulk-status-row, .bulk-status-header-row {
   font-size: 10pt;
 }
 
