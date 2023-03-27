@@ -48,7 +48,7 @@ function getRichResults(type, getMetadata) {
       return getRichResultsForNewsArticle(getMetadata);
     case 'SiteSearchBox':
       return getRichResultsForSiteSearchBox(getMetadata);
-    case 'organization':
+    case 'Organization':
       return getRichResultsForOrgLogo(getMetadata);
     default:
       // eslint-disable-next-line no-console
