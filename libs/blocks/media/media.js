@@ -18,6 +18,14 @@ import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/de
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
+const decorateVideo = (container) => {
+  const link = container.querySelector('a[href$=".mp4"]');
+
+  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+};
+
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
@@ -46,7 +54,13 @@ export default function init(el) {
       decorateBlockText(text, blockTypeSizes[size]);
     }
     const image = row.querySelector(':scope > div:not([class])');
-    if (image) image.classList.add('image');
+    const video = row.querySelector(':scope > div > a[href$=".mp4"]');
+    if (video) {
+      decorateVideo(video.closest('div'));
+      image.classList.add('ambient-video');
+    } else {
+      image.classList.add('image');
+    }
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
     container.append(row);

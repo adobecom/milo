@@ -41,3 +41,22 @@
     max-width: 1200px;
   }
 }
+
+/* Alternating proof of concept */
+.z-pattern.alternating > .media:nth-child(odd) > .container > .media-row {
+  flex-direction: row-reverse;
+}
+
+/* Ambient Video */
+@media screen and (min-width: 1200px) {
+  .ambient-video {
+    text-align: right;
+    min-width: 700px;
+    min-height: 640px;
+  }
+
+  .ambient-video > video {
+    object-fit: fill;
+    width: 100%;
+  }
+}
