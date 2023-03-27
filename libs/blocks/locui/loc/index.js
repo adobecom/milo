@@ -63,10 +63,10 @@ async function loadHeading() {
   const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
-  await preview(`${path}.json`);
   setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
+  await preview(`${path}.json`);
 }
 
 export default async function setDetails() {
