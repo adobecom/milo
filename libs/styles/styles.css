@@ -218,12 +218,6 @@ picture.bg-img img {
   visibility: hidden;
 }
 
-/* merch */
-[data-wcs-osi],
-a[href^="/tools/ost"] {
-  visibility: hidden; 
-}
-
 @media (min-width: 900px) {
   header {
     min-height: 64px;

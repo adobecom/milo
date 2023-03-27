@@ -70,8 +70,8 @@ function loadTacocat() {
   } = getTacocatEnv(env.name, env.tacocatVersion, ietfLocale);
 
   Promise.all([
-    loadScript(literalScriptUrl, undefined, true).catch(() => ({})),
-    loadScript(scriptUrl, undefined, true),
+    loadScript(literalScriptUrl).catch(() => ({})),
+    loadScript(scriptUrl),
   ]).then(() => initTacocat(env.name, country, language));
 }
 
