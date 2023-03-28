@@ -4,6 +4,7 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
+const tacocatVersion = '1.12.0';
 const wcs = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
 const envProd = 'prod';
 const ctaPrefix = /^CTA +/;
@@ -25,7 +26,7 @@ export function omitUndefined(target) {
   return target;
 }
 
-const getTacocatEnv = (envName, tacocatVersion, locale) => {
+const getTacocatEnv = (envName, locale) => {
   const scriptUrl = envName === envProd
     ? `https://www.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`
     : `https://www.stage.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`;
@@ -67,7 +68,7 @@ function loadTacocat() {
     literalScriptUrl,
     country,
     language,
-  } = getTacocatEnv(env.name, env.tacocatVersion, ietfLocale);
+  } = getTacocatEnv(env.name, ietfLocale);
 
   Promise.all([
     loadScript(literalScriptUrl).catch(() => ({})),

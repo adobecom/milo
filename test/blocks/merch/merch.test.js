@@ -200,14 +200,14 @@ describe('Merch Block', () => {
 
   describe('Tacocat config', () => {
     it('falls back to en for unsupported languages', async () => {
-      const { scriptUrl, literalScriptUrl, language } = getTacocatEnv('stage', '1.12.0', 'xx-US');
+      const { scriptUrl, literalScriptUrl, language } = getTacocatEnv('stage', 'xx-US');
       expect(scriptUrl).to.equal('https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js');
       expect(literalScriptUrl).to.equal('https://www.stage.adobe.com/special/tacocat/literals/en.js');
       expect(language).to.equal('en');
     });
 
     it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv('prod', '1.12.0', 'fr-CA');
+      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv('prod', 'fr-CA');
       expect(scriptUrl).to.equal('https://www.adobe.com/special/tacocat/lib/1.12.0/tacocat.js');
       expect(literalScriptUrl).to.equal('https://www.adobe.com/special/tacocat/literals/fr.js');
       expect(country).to.equal('CA');
