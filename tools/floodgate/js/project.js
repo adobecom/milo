@@ -1,16 +1,14 @@
 import { getConfig } from './config.js';
 import {
   getUrlInfo,
-  getDocPathFromUrl,
   fetchProjectFile,
 } from '../../loc/utils.js';
 import {
   getProjectFileStatus,
   getHelixAdminApiUrl,
-  readProjectFile,
 } from '../../loc/project.js';
 import { getSpFiles } from '../../loc/sharepoint.js';
-import { getFloodgateUrl } from './utils.js';
+import { getFloodgateUrl, handleExtension } from './utils.js';
 
 let project;
 
@@ -56,6 +54,15 @@ async function updateProjectWithDocs(projectDetail) {
   injectSharepointData(projectDetail.urls, filePaths, docPaths, fgSpBatchFiles, true);
 }
 
+async function readProjectFile(projectWebUrl) {
+  const resp = await fetch(projectWebUrl, { cache: 'no-store' });
+  const json = await resp.json();
+  if (json?.filepaths?.data) {
+    return json;
+  }
+  return undefined;
+}
+
 async function initProject() {
   if (project) return project;
   const config = await getConfig();
@@ -96,18 +103,18 @@ async function initProject() {
         return {};
       }
 
-      const urlsData = projectFileJson.urls.data;
+      const filesData = projectFileJson.filepaths.data;
       const urls = new Map();
       const filePaths = new Map();
-      urlsData.forEach((urlRow) => {
-        const url = urlRow.URL;
-        const docPath = getDocPathFromUrl(url);
-        urls.set(url, { doc: { filePath: docPath, url, fg: { url: getFloodgateUrl(url) } } });
+      filesData.forEach((filePathRow) => {
+        const filePath = filePathRow.FilePath;
+        const url = `${urlInfo.origin}${handleExtension(filePath)}`;
+        urls.set(url, { doc: { filePath, url, fg: { url: getFloodgateUrl(url) } } });
         // Add urls data to filePaths map
-        if (filePaths.has(docPath)) {
-          filePaths.get(docPath).push(url);
+        if (filePaths.has(filePath)) {
+          filePaths.get(filePath).push(url);
         } else {
-          filePaths.set(docPath, [url]);
+          filePaths.set(filePath, [url]);
         }
       });
 
