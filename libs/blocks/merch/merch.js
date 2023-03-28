@@ -17,7 +17,7 @@ const supportedLanguages = [
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
 
-export function omitUndefined(target) {
+function omitUndefined(target) {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
       if (value == null) delete target[key];
