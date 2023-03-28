@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
 
@@ -16,26 +16,62 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
-export const loadStrings = async (url) => {
-  // TODO: Loc based loading
+const pageConfig = pageConfigHelper();
+const pageLocales = Object.keys(pageConfig.locales || {});
+
+export function getPageLocale(currentPath, locales = pageLocales) {
+  const possibleLocale = currentPath.split('/')[1];
+  if (locales.includes(possibleLocale)) {
+    return possibleLocale;
+  }
+  // defaults to en_US
+  return '';
+}
+
+export const loadStrings = async (
+  url,
+  pathname = window.location.pathname,
+  locales = pageLocales,
+) => {
   if (!url) return {};
-  const resp = await fetch(url);
-  if (!resp.ok) return {};
-  const json = await resp.json();
-  const convertToObj = (data) => data.reduce((obj, { key, val }) => {
-    obj[key] = val;
-    return obj;
-  }, {});
-  return convertToObj(json.data);
+  try {
+    const locale = getPageLocale(pathname, locales);
+    const localizedURL = new URL(url);
+    if (locale) {
+      localizedURL.pathname = `${locale}${localizedURL.pathname}`;
+    }
+    let resp = await fetch(`${localizedURL}.plain.html`);
+    if (!resp.ok) {
+      resp = await fetch(`${url}.plain.html`);
+    }
+    if (!resp.ok) {
+      return {};
+    }
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const document = parser.parseFromString(html, 'text/html');
+    const nodes = document.querySelectorAll('.string-mappings > div');
+    return [...nodes].reduce((ans, parent) => {
+      const children = parent.querySelectorAll('div');
+      const key = children[0]?.innerText;
+      const val = children[1]?.innerHTML;
+      if (key) {
+        ans[key] = val || '';
+      }
+      return ans;
+    }, {});
+  } catch (err) {
+    return {};
+  }
 };
 
 export const loadCaasFiles = async () => {
-  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
+  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
 
-  loadStyle(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`);
+  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {
@@ -106,6 +142,7 @@ const getSortOptions = (state, strs) => {
     featured: 'Featured',
     dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
+    dateModified: 'Date: (Last Modified)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
@@ -145,18 +182,24 @@ const alphaSort = (a, b) => {
   return 0;
 };
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
+const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
+  || tag[`title.${lang}`]
+  || tag.title;
+
+const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
+  const country = state.country.split('/')[1];
+  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags.includes(itemTag.tagID)) return null;
-
+      const label = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
-        label: itemTag.title.replace('&amp;', '&'),
+        label: label.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -166,7 +209,7 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags) => {
     id: tagId,
     openedOnLoad: !!openedOnLoad,
     items,
-    group: tag.title,
+    group: getLocalTitle(tag, country, lang),
   };
 
   if (icon) {
@@ -183,10 +226,24 @@ const getFilterArray = async (state) => {
 
   const { tags } = await getTags(state.tagsUrl);
   const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags))
+    .map((filter) => getFilterObj(filter, tags, state))
     .filter((filter) => filter !== null);
   return filters;
 };
+
+export function arrayToObj(input = []) {
+  const obj = {};
+  if (!Array.isArray(input)) {
+    // eslint-disable-next-line no-param-reassign
+    input = [];
+  }
+  input.forEach((item) => {
+    if (item.key && item.value) {
+      obj[item.key] = item.value;
+    }
+  });
+  return obj;
+}
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -195,7 +252,7 @@ export const getConfig = async (state, strs = {}) => {
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
-    && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
+  && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
@@ -219,7 +276,7 @@ export const getConfig = async (state, strs = {}) => {
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
       }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
-      fallbackEndpoint: '',
+      fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
@@ -228,12 +285,15 @@ export const getConfig = async (state, strs = {}) => {
           strs.prettyDateIntervalFormat || '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: strs.totalResults || '{total} results',
         title: strs.collectionTitle || '',
+        titleHeadingLevel: state.titleHeadingLevel,
+        cardTitleAccessibilityLevel: state.cardTitleAccessibilityLevel,
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
       },
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
+      collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
           description: strs.registrationText || 'Sign Up',
@@ -249,12 +309,14 @@ export const getConfig = async (state, strs = {}) => {
         sample: state.sortReservoirSample,
         pool: state.sortReservoirPool,
       },
+      ctaAction: state.ctaAction,
+      additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
-      type: state.showFilters ? state.filterLocation : 'top',
+      type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state),
       filterLogic: state.filterLogic,
@@ -351,13 +413,17 @@ export const getConfig = async (state, strs = {}) => {
         filterInfo: { searchPlaceholderText: strs.searchPlaceholder || 'Search Here' },
       },
     },
-    language: 'en',
-    country: 'US',
+    language,
+    country,
     analytics: {
       trackImpressions: state.analyticsTrackImpression || '',
       collectionIdentifier: state.analyticsCollectionName,
     },
-    target: { enabled: state.targetEnabled || '' },
+    target: {
+      enabled: state.targetEnabled || '',
+      lastViewedSession: state.lastViewedSession || '',
+    },
+    customCard: ['card', `return \`${state.customCard}\``],
   };
   return config;
 };
@@ -383,18 +449,22 @@ export const initCaas = async (state, caasStrs, el) => {
 };
 
 export const defaultState = {
+  additionalRequestParams: [],
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
+  cardTitleAccessibilityLevel: 6,
   collectionBtnStyle: 'primary',
   collectionName: '',
   collectionSize: '',
   container: '1200MaxWidth',
   contentTypeTags: [],
   country: 'caas:country/us',
+  customCard: '',
+  ctaAction: '_blank',
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
@@ -432,6 +502,7 @@ export const defaultState = {
   showTotalResults: false,
   sortDateAsc: false,
   sortDateDesc: false,
+  sortDateModified: false,
   sortDefault: 'dateDesc',
   sortEnablePopup: false,
   sortEnableRandomSampling: false,
@@ -447,8 +518,10 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,
   useOverlayLinks: false,
+  collectionButtonStyle: 'primary',
   userInfo: [],
 };

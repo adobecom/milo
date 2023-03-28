@@ -9,7 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import getConfig from './config.js';
+import { getConfig } from './config.js';
+import {
+  getConfig as getFloodgateConfig
+} from '../floodgate/js/config.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
@@ -87,10 +90,11 @@ const loadSharepointData = (spBatchApi, payload) => {
   return fetch(spBatchApi, options);
 };
 
-function getSharepointFileRequest(spConfig, fileIndex, filePath) {
+function getSharepointFileRequest(spConfig, fileIndex, filePath, isFloodgate) {
+  const baseURI = isFloodgate ? spConfig.api.file.get.fgBaseURI : spConfig.api.file.get.baseURI;
   return {
     id: fileIndex,
-    url: `${spConfig.api.file.get.baseURI}${filePath}`.replace(spConfig.api.url, ''),
+    url: `${baseURI}${filePath}`.replace(spConfig.api.url, ''),
     method: 'GET',
   };
 }
@@ -100,17 +104,17 @@ async function getSpViewUrl() {
   return sp.shareUrl;
 }
 
-async function getSpFiles(filePaths) {
+async function getSpFiles(filePaths, isFloodgate) {
   let index = 0;
   const spFilePromises = [];
-  const { sp } = await getConfig();
+  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
   const spBatchApi = `${sp.api.batch.uri}`;
 
   while (index < filePaths.length) {
     const payload = { requests: [] };
     for (let i = 0; i < BATCH_REQUEST_LIMIT && index < filePaths.length; index += 1, i += 1) {
       const filePath = filePaths[index];
-      payload.requests.push(getSharepointFileRequest(sp, index, filePath));
+      payload.requests.push(getSharepointFileRequest(sp, index, filePath, isFloodgate));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
   }
@@ -126,14 +130,16 @@ async function getFile(doc) {
   return undefined;
 }
 
-async function createFolder(folder) {
+async function createFolder(folder, isFloodgate) {
   validateConnection();
-  const { sp } = await getConfig();
+  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
 
   const options = getAuthorizedRequestOption({ method: sp.api.directory.create.method });
   options.body = JSON.stringify(sp.api.directory.create.payload);
 
-  const res = await fetch(`${sp.api.directory.create.baseURI}${folder}`, options);
+  const baseURI = isFloodgate ? sp.api.directory.create.fgBaseURI : sp.api.directory.create.baseURI;
+
+  const res = await fetch(`${baseURI}${folder}`, options);
   if (res.ok) {
     return res.json();
   }
@@ -151,7 +157,7 @@ function getFileNameFromPath(path) {
   return path.split('/').pop().split('/').pop();
 }
 
-async function createUploadSession(sp, file, dest, filename) {
+async function createUploadSession(sp, file, dest, filename, isFloodgate) {
   const payload = {
     ...sp.api.file.createUploadSession.payload,
     description: 'Preview file',
@@ -161,7 +167,9 @@ async function createUploadSession(sp, file, dest, filename) {
   const options = getAuthorizedRequestOption({ method: sp.api.file.createUploadSession.method });
   options.body = JSON.stringify(payload);
 
-  const createdUploadSession = await fetch(`${sp.api.file.createUploadSession.baseURI}${dest}:/createUploadSession`, options);
+  const baseURI = isFloodgate ? sp.api.file.createUploadSession.fgBaseURI : sp.api.file.createUploadSession.baseURI;
+
+  const createdUploadSession = await fetch(`${baseURI}${dest}:/createUploadSession`, options);
   return createdUploadSession.ok ? createdUploadSession.json() : undefined;
 }
 
@@ -204,8 +212,8 @@ function getLockedFileNewName(filename) {
   return `${fileNameWithoutExtn}-locked-${Date.now()}${fileExtn}`;
 }
 
-async function createSessionAndUploadFile(sp, file, dest, filename) {
-  const createdUploadSession = await createUploadSession(sp, file, dest, filename);
+async function createSessionAndUploadFile(sp, file, dest, filename, isFloodgate) {
+  const createdUploadSession = await createUploadSession(sp, file, dest, filename, isFloodgate);
   const status = {};
   if (createdUploadSession) {
     const uploadSessionUrl = createdUploadSession.uploadUrl;
@@ -293,12 +301,13 @@ async function getMetadata(srcPath, file) {
   return metadata;
 }
 
-async function copyFile(srcPath, destinationFolder, newName) {
+async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloodgateLockedFile) {
   validateConnection();
-  await createFolder(destinationFolder);
-  const { sp } = await getConfig();
-  const { baseURI } = sp.api.file.copy;
-  const rootFolder = baseURI.split('/').pop();
+  await createFolder(destinationFolder, isFloodgate);
+  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
+  const baseURI = sp.api.file.copy.baseURI;
+  const fgBaseURI = sp.api.file.copy.fgBaseURI;
+  const rootFolder = isFloodgate ? fgBaseURI.split('/').pop() : baseURI.split('/').pop();
 
   const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${rootFolder}${destinationFolder}` } };
   if (newName) {
@@ -308,11 +317,14 @@ async function copyFile(srcPath, destinationFolder, newName) {
     method: sp.api.file.copy.method,
     body: JSON.stringify(payload),
   });
-  const copyStatusInfo = await fetch(`${baseURI}${srcPath}:/copy`, options);
+  // In case of FG copy action triggered via saveFile(), locked file copy happens in the floodgate content location
+  // So baseURI is updated to reflect the destination accordingly
+  const contentURI = isFloodgate && isFloodgateLockedFile ? fgBaseURI : baseURI;
+  const copyStatusInfo = await fetch(`${contentURI}${srcPath}:/copy`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
-  while (!copySuccess && copyStatusJson.status !== 'failed') {
+  while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
     const status = await fetch(statusUrl);
     if (status.ok) {
@@ -339,25 +351,26 @@ async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
   throw new Error(`Could not copy file ${destinationFolder}`);
 }
 
-async function saveFile(file, dest) {
+async function saveFile(file, dest, isFloodgate) {
   try {
     validateConnection();
     const folder = getFolderFromPath(dest);
     const filename = getFileNameFromPath(dest);
-    await createFolder(folder);
-    const { sp } = await getConfig();
-    let uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename);
+    await createFolder(folder, isFloodgate);
+    const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
+    let uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename, isFloodgate);
     if (uploadFileStatus.locked) {
       await releaseUploadSession(sp, uploadFileStatus.sessionUrl);
       const lockedFileNewName = getLockedFileNewName(filename);
-      const spFileUrl = `${sp.api.file.get.baseURI}${dest}`;
+      const baseURI = isFloodgate ? sp.api.file.get.fgBaseURI : sp.api.file.get.baseURI;
+      const spFileUrl = `${baseURI}${dest}`;
       await renameFile(spFileUrl, lockedFileNewName);
       const newLockedFilePath = `${folder}/${lockedFileNewName}`;
-      const copyFileStatus = await copyFile(newLockedFilePath, folder, filename);
+      const copyFileStatus = await copyFile(newLockedFilePath, folder, filename, isFloodgate, true);
       if (copyFileStatus) {
-        uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename);
+        uploadFileStatus = await createSessionAndUploadFile(sp, file, dest, filename, isFloodgate);
         if (uploadFileStatus.success) {
-          await deleteFile(sp, `${sp.api.file.get.baseURI}${newLockedFilePath}`);
+          await deleteFile(sp, `${baseURI}${newLockedFilePath}`);
         }
       }
     }
@@ -432,4 +445,6 @@ export {
   saveFileAndUpdateMetadata,
   updateExcelTable,
   addWorksheetToExcel,
+  validateConnection,
+  createFolder,
 };

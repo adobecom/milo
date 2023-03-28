@@ -10,13 +10,16 @@ describe('Accordion', () => {
     Object.keys(module).forEach((func) => {
       accordionFuncs[func] = module[func];
     });
+    const accordions = document.body.querySelectorAll('.accordion');
+    accordions.forEach((accordion) => {
+      module.default(accordion);
+    })
   });
-
+  
   it('Renders with accordion class', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const accordion = document.querySelector('.accordion');
-    await accordionFuncs.default(accordion);
-    expect(accordion).to.exist;
+    const accordionDl = document.querySelector('dl.accordion');
+    expect(accordionDl).to.exist;
   });
 
   it('Runs all basic functions of the accordion', async () => {
@@ -28,25 +31,14 @@ describe('Accordion', () => {
     expect(script).to.exist;
 
     // handleClick()
-    const firstAccordionHeading = document.querySelector('dt');
-    expect(firstAccordionHeading.classList.contains('is-open')).to.be.false;
-    firstAccordionHeading.querySelector('button').click();
-    expect(firstAccordionHeading.classList.contains('is-open')).to.be.true;
+    const firstAccordionButton = document.body.querySelector('dt button');
+    expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
+    firstAccordionButton.click();
+    expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('true');
 
     // handleClick() => expanded = true.
-    firstAccordionHeading.querySelector('button').click();
-    expect(firstAccordionHeading.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
-
-    // handleFocusOut()
-    const dt = document.querySelector('dt');
-    const focusIn = new Event('focusin');
-    dt.dispatchEvent(focusIn);
-    expect(dt.classList.contains('has-focus')).to.be.true;
-
-    // handleFocus()
-    const focusOut = new Event('focusout');
-    dt.dispatchEvent(focusOut);
-    expect(dt.classList.contains('has-focus')).to.be.false;
+    firstAccordionButton.click();
+    expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
   });
 
   it('Loads description in the JSON-LD with no null value', async () => {

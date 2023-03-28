@@ -6,7 +6,7 @@ const base = miloLibs || codeRoot;
 function buildButton(a, osi) {
   if (!a) return null;
   a.href = '#';
-  a.className = 'con-button blue button-M';
+  a.className = 'con-button blue button-m';
   a.dataset.checkoutClientid = 'mini_plans';
   a.dataset.checkoutWorkflow = 'UCv3';
   a.dataset.checkoutWorkflowStep = 'email';

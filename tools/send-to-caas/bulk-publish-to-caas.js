@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
+import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import {
   loadTingleModalFiles,
   showAlert,
@@ -42,7 +43,7 @@ const fetchExcelJson = async (url) => {
 };
 
 const checkIms = async () => {
-  const accessToken = await getImsToken();
+  const accessToken = await getImsToken(loadScript);
   if (!accessToken) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
@@ -107,7 +108,7 @@ const processData = async (data, accessToken) => {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
 
       const { pathname } = new URL(rawUrl);
-      const pageUrl = `${domain}${pathname}`;
+      const pageUrl = usepreview ? `${domain}${pathname.replace('.html', '')}` : `${domain}${pathname}`;
       const prodUrl = `${host}${pathname}`;
 
       index += 1;
@@ -197,7 +198,7 @@ const loadFromLS = () => {
 };
 
 const init = async () => {
-  await loadTingleModalFiles();
+  await loadTingleModalFiles(loadScript, loadStyle);
   await loadCaasTags();
   loadFromLS();
 
@@ -217,6 +218,7 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
+      caasEnv: document.getElementById('caasEnv').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,

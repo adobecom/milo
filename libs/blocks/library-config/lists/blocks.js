@@ -1,5 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
+import { getMetadata } from '../../section-metadata/section-metadata.js';
 
 function getAuthorName(block) {
   const blockSib = block.previousElementSibling;
@@ -50,10 +51,31 @@ function getTable(block, name, path) {
   return table.outerHTML;
 }
 
-export default async function loadBlocks(blocks, list) {
+function getBlockTags(block) {
+  if (block.nextElementSibling?.className !== 'library-metadata') {
+    return getBlockName(block);
+  }
+  const libraryMetadata = getMetadata(block.nextElementSibling);
+  return libraryMetadata?.searchtags?.text
+    ? `${libraryMetadata?.searchtags?.text} ${getBlockName(block)}`
+    : getBlockName(block);
+}
+
+function isMatchingBlock(pageBlock, query) {
+  const tagsString = getBlockTags(pageBlock);
+  if (!query || !tagsString) return false;
+  const searchTokens = query.split(' ');
+  return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
+}
+
+export default async function loadBlocks(blocks, list, query) {
+  list.textContent = '';
   blocks.forEach(async (block) => {
     const titleText = createTag('p', { class: 'item-title' }, block.name);
     const title = createTag('li', { class: 'block-group' }, titleText);
+    if (query) {
+      title.classList.add('is-hidden');
+    }
     const previewButton = createTag('button', { class: 'preview-group' }, 'Preview');
     title.append(previewButton);
     list.append(title);
@@ -77,7 +99,12 @@ export default async function loadBlocks(blocks, list) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const pageBlocks = doc.body.querySelectorAll('div[class]');
+    let matchingBlockFound = false;
     pageBlocks.forEach((pageBlock) => {
+      // don't display the library-metadata block used to set the block search tags
+      if (pageBlock.className === 'library-metadata') {
+        return;
+      }
       const item = document.createElement('li');
       const name = document.createElement('p');
       name.textContent = getAuthorName(pageBlock) || getBlockName(pageBlock);
@@ -90,7 +117,20 @@ export default async function loadBlocks(blocks, list) {
         createCopy(blob);
       });
       item.append(name, copy);
+
+      if (query) {
+        if (isMatchingBlock(pageBlock, query)) {
+          matchingBlockFound = true;
+        } else {
+          item.classList.add('is-hidden');
+        }
+      }
+
       blockList.append(item);
     });
+    if (query && matchingBlockFound) {
+      title.classList.remove('is-hidden');
+      title.classList.add('is-open');
+    }
   });
 }

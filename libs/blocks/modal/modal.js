@@ -1,4 +1,4 @@
-import { createTag, getMetadata, localizeLink } from '../../utils/utils.js';
+import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -9,7 +9,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
   </g>
 </svg>`;
 
-function findDetails(hash, el) {
+export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
@@ -18,12 +18,16 @@ function findDetails(hash, el) {
 
 function closeModal(modal) {
   const { id } = modal;
+  const closeEvent = new Event('milo:modal:closed');
+  window.dispatchEvent(closeEvent);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
       mod.nextElementSibling.remove();
     }
-    mod.remove();
+    if (mod.classList.contains('dialog-modal')) {
+      mod.remove();
+    }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
 
@@ -42,6 +46,8 @@ function isElementInView(element) {
 }
 
 function getCustomModal(custom, dialog) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
   if (custom.class) dialog.classList.add(custom.class);
   if (custom.closeEvent) {
@@ -66,6 +72,7 @@ export async function getModal(details, custom) {
   const { id } = details || custom;
 
   const dialog = createTag('div', { class: 'dialog-modal', id });
+  const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
@@ -116,6 +123,7 @@ export async function getModal(details, custom) {
   dialog.append(close);
   document.body.append(dialog);
   firstFocusable.focus(focusVisible);
+  window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
     const curtain = createTag('div', { class: 'modal-curtain is-open' });
@@ -137,12 +145,6 @@ export default function init(el) {
   }
   return null;
 }
-
-// Event-based modal
-window.addEventListener('modal:open', (e) => {
-  const details = findDetails(e.detail.hash);
-  if (details) getModal(details);
-});
 
 // Click-based modal
 window.addEventListener('hashchange', (e) => {

@@ -1,9 +1,7 @@
-import { getConfig, getMetadata, createTag } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';
-
-
 
 const getHelpxLink = (searchStr, country = 'US') => `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
 const getSearchLink = (searchStr, locale = 'en_US') => `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${SCOPE}&q[text]=${encodeURIComponent(searchStr)}`;
@@ -41,24 +39,22 @@ const wrapValueInSpan = (value, suggestion, linkEl) => {
 };
 
 const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
-  // If no value is provided, search results dropdown should not be populated
   if (!value.length) {
     resultsEl.replaceChildren();
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
     return;
   }
 
-  // Add a modifier class if the input is populated
+  resultsEl.classList.remove('no-results');
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
-  // If there are no suggestions, the advanced search option should be shown
   if (!suggestions.length) {
     const noResults = getNoResultsEl(value);
     resultsEl.replaceChildren(noResults);
+    resultsEl.classList.add('no-results');
     return;
   }
 
-  // Show suggestions in the dropdown if they exist
   const df = document.createDocumentFragment();
   suggestions.forEach((suggestion) => {
     const a = createTag('a', {
@@ -77,7 +73,7 @@ const getSuggestions = (json) => {
   return json.suggested_completions.map((suggestion) => suggestion?.name);
 };
 
-const onSearchInput = async (value, resultsEl, locale, searchInputEl) => {
+const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
   const results = await fetchResults(value, locale);
   const suggestions = getSuggestions(results);
   updateSearchResults(value, suggestions, resultsEl, searchInputEl);

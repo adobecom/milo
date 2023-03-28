@@ -14,9 +14,11 @@
 
   const w = window;
 
-  function isCorpAdobeCom() {
+  function isProd() {
     const host = window.location.host;
-    if (host.length > 15 && host.substring(host.length - 15) === '.corp.adobe.com') {
+    if (host.substring(host.length - 10) === '.adobe.com'
+      && host.substring(host.length - 15) !== '.corp.adobe.com'
+      && host.substring(host.length - 16) !== '.stage.adobe.com') {
       return true;
     }
     return false;
@@ -69,9 +71,9 @@
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
-    const isCorp = isCorpAdobeCom();
+    const isProdDomain = isProd();
 
-    const endpoint = (isCorp || !o.useProd) ? o.endpointStage : o.endpoint;
+    const endpoint = (!isProdDomain || !o.useProd) ? o.endpointStage : o.endpoint;
     const queryParams = [
       'm=' + encodeURIComponent(msg),
       'c=' + encodeURI(o.clientId),
@@ -83,7 +85,7 @@
       queryParams.push('tags=' + encodeURI(o.tags));
     }
 
-    if (w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
+    if (!isProdDomain || w.lana.debug || w.lana.localhost) console.log('LANA Msg: ', msg, '\nOpts:', o);
 
     if (!w.lana.localhost || w.lana.debug) {
       const xhr = new XMLHttpRequest();

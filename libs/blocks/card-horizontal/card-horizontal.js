@@ -42,11 +42,18 @@ function decorateContent(block) {
   card.append(content);
   const headings = content?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
-  heading?.classList?.add('heading-XS');
+  heading?.classList?.add('heading-xs');
   const paragraphs = content.querySelectorAll(':scope > p');
-  paragraphs.forEach((item) => item.classList.add('body-XS'));
+  paragraphs.forEach((item) => item.classList.add('body-xs'));
   const image = decorateImage(block);
   if (image) card.insertAdjacentElement('afterbegin', image);
+
+  const a = block.querySelector('a');
+
+  if (a && card) {
+    a.addEventListener('focus', () => card.classList.add('card-block-focus'));
+    a.addEventListener('blur', () => card.classList.remove('card-block-focus'));
+  }
 }
 
 export default function init(el) {

@@ -21,14 +21,6 @@ describe('Modals', () => {
     expect(document.getElementById('milo')).to.be.null;
   });
 
-  it('Opens a model from event', async () => {
-    const event = new CustomEvent('modal:open', { detail: { hash: '#milo' } });
-    window.dispatchEvent(event);
-    await waitForElement('#milo');
-    expect(document.getElementById('milo')).to.exist;
-    document.querySelectorAll('.dialog-modal').forEach((m) => { m.remove(); });
-  });
-
   it('Closes a modal on button click', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
@@ -103,7 +95,6 @@ describe('Modals', () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
     expect(document.getElementById('milo')).to.exist;
-    await sendKeys({ press: 'Tab' });
     await delay(100);
     expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
     await sendKeys({ press: 'Tab' });

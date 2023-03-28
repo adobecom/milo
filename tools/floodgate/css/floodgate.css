@@ -1,0 +1,14 @@
+.project-overview {
+  background: #8ecae6;
+}
+
+.project-status {
+  margin: 20px 0 50px;
+  width: fit-content;
+}
+
+.title {
+  font-size: 16px;
+  text-transform: uppercase;
+  display: block;
+}

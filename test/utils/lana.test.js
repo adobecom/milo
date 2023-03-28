@@ -57,7 +57,7 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://lana.adobeio.com/?m=Promise%20Rejection&c=testClientId&s=100&t=i',
+        'https://www.stage.adobe.com/lana/ll?m=Promise%20Rejection&c=testClientId&s=100&t=i',
       );
       done();
     };
@@ -72,7 +72,7 @@ describe('LANA', () => {
       expect(xhrRequests.length).to.equal(1);
       expect(xhrRequests[0].method).to.equal('GET');
       expect(xhrRequests[0].url).to.equal(
-        'https://lana.adobeio.com/?m=&c=testClientId&s=100&t=i',
+        'https://www.stage.adobe.com/lana/ll?m=&c=testClientId&s=100&t=i',
       );
       done();
     };
@@ -88,7 +88,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      `https://lana.adobeio.com/?m=${expectedMsg}&c=testClientId&s=100&t=e`,
+      `https://www.stage.adobe.com/lana/ll?m=${expectedMsg}&c=testClientId&s=100&t=e`,
     );
   });
 
@@ -153,7 +153,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://lana.adobeio.com/?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore',
+      'https://www.stage.adobe.com/lana/ll?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore',
     );
   });
 
@@ -167,7 +167,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e',
+      'https://www.stage.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e',
     );
   });
 });
