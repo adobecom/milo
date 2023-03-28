@@ -125,6 +125,12 @@
   transition: opacity 0.5s ease-in-out;
 }
 
+.none .carousel-slide {
+  opacity: 1;
+  transition: opacity;
+}
+
+
 .carousel-slide.reference-slide {
   order: 1;
 }
@@ -158,6 +164,13 @@
 .show-6 .carousel-slides.is-ready.is-reversing {
   transform: none;
   transition: transform .6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.none .carousel-slides.is-ready,
+.none .carousel-slides.is-ready.is-reversing,
+.fade .carousel-slides.is-ready,
+.fade .carousel-slides.is-ready.is-reversing {
+  transition: transform;
 }
 
 .carousel .carousel-controls {
