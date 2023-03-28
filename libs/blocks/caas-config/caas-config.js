@@ -456,7 +456,8 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
+      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />

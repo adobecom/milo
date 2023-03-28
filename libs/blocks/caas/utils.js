@@ -509,6 +509,8 @@ export const defaultState = {
   sortEnableRandomSampling: false,
   sortEventSort: false,
   sortFeatured: false,
+  sortModifiedAsc: false,
+  sortModifiedDesc: false,
   sortRandom: false,
   sortReservoirPool: 1000,
   sortReservoirSample: 3,
