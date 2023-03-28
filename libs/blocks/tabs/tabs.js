@@ -67,7 +67,6 @@ function initTabs(elm, config) {
     let tabFocus = 0;
     tabList.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        tabs[tabFocus].setAttribute('tabindex', -1);
         if (e.key === 'ArrowRight') {
           tabFocus += 1;
           /* c8 ignore next */

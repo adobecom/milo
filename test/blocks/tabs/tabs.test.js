@@ -32,16 +32,23 @@ describe('tabs', () => {
   });
 
   it('focus on tabList button, ArrowRight key to next tab and Enter key to select aria', async () => {
-    const unSelectedBtn = allTabs[0].querySelector('div[role="tablist"] button[aria-selected="false"]');
     const unSelectedBtn1 = allTabs[1].querySelector('div[role="tablist"] button[aria-selected="false"]');
-    unSelectedBtn.focus();
+    const unSelectedBtn2 = allTabs[2].querySelector('div[role="tablist"] button[aria-selected="false"]');
+    console.log('unSelectedBtn1', unSelectedBtn1);
+    unSelectedBtn1.focus();
     await sendKeys({ down: 'ArrowRight' });
     await sendKeys({ press: 'Enter' });
-    expect(unSelectedBtn.ariaSelected).to.equal('true');
+    console.log('unSelectedBtn1', unSelectedBtn1);
+    console.log('ariaSelected', unSelectedBtn1.ariaSelected);
+    expect(unSelectedBtn1.ariaSelected).to.equal('true');
 
-    unSelectedBtn1.focus();
+    console.log('unSelectedBtn2', unSelectedBtn2);
+    unSelectedBtn2.focus();
     await sendKeys({ down: 'ArrowLeft' });
     await sendKeys({ press: 'Space' });
-    expect(unSelectedBtn1.ariaSelected).to.equal('false');
+
+    console.log('unSelectedBtn2', unSelectedBtn2);
+    console.log('ariaSelected', unSelectedBtn2.ariaSelected);
+    expect(unSelectedBtn2.ariaSelected).to.equal('false');
   });
 });
