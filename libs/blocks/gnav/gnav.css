@@ -14,10 +14,6 @@ header.gnav {
   overflow: visible;
 }
 
-header.gnav {
-  overflow: visible;
-}
-
 header.is-open .gnav-curtain,
 .gnav-curtain.is-open {
   position: fixed;
