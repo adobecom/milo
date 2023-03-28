@@ -99,7 +99,7 @@ export default async function copyFile(sourcePath, destPath) {
   const { parentReference } = dest.error ? await getParent(destPath) : dest;
 
   if (source.id && parentReference) {
-    const { name, copy } = getFilename(sourcePath);
+    const { name, copy } = getFilename(destPath);
     const body = { ...BODY_BASE, parentReference, name: dest.id ? copy : name };
     const options = getReqOptions({ method: 'POST', body });
     const resp = await fetch(`${site}/drive/items/${source.id}/copy`, options);
