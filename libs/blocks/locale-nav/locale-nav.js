@@ -62,7 +62,7 @@ const decorateLocales = (current) => {
 };
 
 const handleSearch = (e, els) => {
-  const search = e.target.value;
+  const search = e.target.value.toLowerCase();
   els.forEach((subject) => {
     if (subject.textContent.includes(search)) {
       subject.style.display = 'flex';
