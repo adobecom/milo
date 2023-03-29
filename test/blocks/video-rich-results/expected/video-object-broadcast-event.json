@@ -1,7 +1,7 @@
 {
   "@context": "https://schema.org",
   "@type": "VideoObject",
-  "contentURL": "https://example.com/bald-eagle-at-the-park.mp4",
+  "contentUrl": "https://example.com/bald-eagle-at-the-park.mp4",
   "description": "Bald eagle at the park livestream.",
   "duration": "PT37M14S",
   "embedUrl": "https://example.com/bald-eagle-at-the-park",
