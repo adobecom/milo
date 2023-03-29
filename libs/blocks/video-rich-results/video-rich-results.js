@@ -1,17 +1,5 @@
 import { createTag } from '../../utils/utils.js';
 
-const KEYMAP = {
-  'description': 'description',
-  'name': 'name',
-  'thumbnail-url': 'thumbnailUrl',
-  'upload-date': 'uploadDate',
-  'content-url': 'contentUrl',
-  'duration': 'duration',
-  'embed-url': 'embedUrl',
-  'expires': 'expires',
-  'regions-allowed': 'regionsAllowed',
-};
-
 const LINES2ARRAY_SPLIT_RE = /\s*?\r?\n\s*/;
 const BROADCAST_EVENT_RE = /broadcast-event-(\d+)-([\w-]+)/;
 const CLIP_RE = /clip-(\d+)-([\w-]+)/;
@@ -58,7 +46,7 @@ function addBroadcastEventField(videoObj, blockKey, blockValue) {
       videoObj.publication[i][camelize(key)] = blockValue;
       break;
     default:
-      // console.error(`Invalid BroadcastEvent field: ${key}`)
+      window.lana.log(`VideoRichResults -- Unknown BroadcastEvent property: ${blockKey}`);
       break;
   }
 }
@@ -81,7 +69,7 @@ function addClipField(videoObj, blockKey, blockValue) {
       videoObj.hasPart[i][camelize(key)] = blockValue;
       break;
     default:
-      // console.error(`Invalid Clip field: ${key}`)
+      window.lana.log(`VideoRichResults -- Unknown Clip property: ${blockKey}`);
       break;
   }
 }
@@ -89,37 +77,47 @@ function addClipField(videoObj, blockKey, blockValue) {
 /**
  * createVideoObject transforms map or object of k/v pairs into VideoObject.
  */
-export function createVideoObject(map) {
+export function createVideoObject(blockMap) {
   const video = {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
   };
-  Object.entries(map).forEach(([k, v]) => {
+  Object.entries(blockMap).forEach(([k, v]) => {
     if (!v) return;
     const blockKey = k && k.replaceAll(' ', '-').toLowerCase();
-    // console.log(blockKey);
-    const objkey = KEYMAP[blockKey];
-    if (objkey) {
-      video[objkey] = v;
-    }
-    if (blockKey === 'thumbnail-url') {
-      const lines = video[objkey].split(LINES2ARRAY_SPLIT_RE);
-      if (lines.length > 1) video[objkey] = lines;
-      return;
-    }
-    if (blockKey === 'user-interaction-count') {
-      video.interactionStatistic = {
-        '@type': 'InteractionCounter',
-        interactionType: { '@type': 'WatchAction' },
-        userInteractionCount: parseInt(v, 10),
-      };
-      return;
-    }
-    if (BROADCAST_EVENT_RE.test(blockKey)) {
-      addBroadcastEventField(video, blockKey, v);
-    }
-    if (CLIP_RE.test(blockKey)) {
-      addClipField(video, blockKey, v);
+    switch (blockKey) {
+      case 'content-url':
+      case 'description':
+      case 'duration':
+      case 'embed-url':
+      case 'expires':
+      case 'name':
+      case 'regions-allowed':
+      case 'upload-date':
+        video[camelize(blockKey)] = v;
+        return;
+      case 'thumbnail-url':
+        video.thumbnailUrl = v.split(LINES2ARRAY_SPLIT_RE);
+        if (video.thumbnailUrl.length < 2) video.thumbnailUrl = v;
+        return;
+      case 'user-interaction-count':
+        video.interactionStatistic = {
+          '@type': 'InteractionCounter',
+          interactionType: { '@type': 'WatchAction' },
+          userInteractionCount: parseInt(v, 10),
+        };
+        return;
+      default:
+        if (BROADCAST_EVENT_RE.test(blockKey)) {
+          addBroadcastEventField(video, blockKey, v);
+          return;
+        }
+        if (CLIP_RE.test(blockKey)) {
+          addClipField(video, blockKey, v);
+          return;
+        }
+        window.lana.log(`VideoRichResults -- Unknown VideoObject property: ${blockKey}`);
+        break;
     }
   });
   return video;
@@ -128,8 +126,6 @@ export function createVideoObject(map) {
 export default function init(el) {
   const kv = parseKeyValueBlockEl(el);
   const obj = createVideoObject(kv);
-  // console.log(kv);
-  // console.log(obj);
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
   el.remove();

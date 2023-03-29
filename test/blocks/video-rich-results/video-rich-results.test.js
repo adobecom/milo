@@ -1,5 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
+
+window.lana = { log: stub() };
 
 const { default: init } = await import('../../../libs/blocks/video-rich-results/video-rich-results.js');
 
