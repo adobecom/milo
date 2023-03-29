@@ -164,7 +164,7 @@ describe('getConfig', () => {
           cardTitleAccessibilityLevel: 6,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
-          title: 'My Awesome Title',
+          title: '',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
           titleHeadingLevel: 'h3'
