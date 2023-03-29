@@ -8,12 +8,19 @@ describe('video-rich-results', () => {
   const blockQuery = '.video-rich-results';
   const jsonLdQuery = 'script[type="application/ld+json"]';
 
-  it('adds VideoObject as ld+json', async () => {
+  it('adds VideoObject with all required and some recommended fields', async () => {
     const mockPath = './mocks/body.html';
     const expectedJSON = {
       '@context': 'https://schema.org',
       '@type': 'VideoObject',
-      // TODO: Should I make my own examples or just use Google's?
+      // required
+      description: 'Revisit Summit all year long!',
+      name: 'Summit 2023 Highlights',
+      thumbnailUrl: 'https://ec-prod.scene7.com/is/image/ECPROD/summithighlights_500x281_desktop_tablet?$pjpeg$&jpegSize=100&wid=500',
+      uploadDate: '2023-03-22',
+      // recommended
+      embedUrl: 'https://video.tv.adobe.com/v/3416126',
+      // expires should not be defined
     };
     document.head.innerHTML = '';
     document.body.innerHTML = await readFile({ path: mockPath });
