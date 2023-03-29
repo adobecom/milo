@@ -13,7 +13,11 @@
 /*
  * Marketo Form
  */
-import { loadScript, createTag, getConfig } from '../../utils/utils.js';
+import { loadScript, createTag } from '../../utils/utils.js';
+
+const MARKETO_BASE_URL = '//app-aba.marketo.com';
+const MARKETO_FORM_ID = '1761';
+const MARKETO_MUNCHKIN_ID = '345-TTI-184';
 
 const DESTINATION_URL = 'destination url';
 const HIDDEN_FIELDS = 'hidden fields';
@@ -107,7 +111,7 @@ const readyForm = (error, form, formData) => {
     if (e.target.type === 'submit') return;
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
     const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
-    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight /2 ;
+    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
     window.scrollTo(0, offsetPosition);
   }, true);
   form.onValidate((success) => formValidate(form, success, error, errorMessage));
@@ -115,12 +119,11 @@ const readyForm = (error, form, formData) => {
 };
 
 const init = (el) => {
-  const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const formData = {
-    [FORM_ID]: marketoFormID,
-    [BASE_URL]: marketoBaseURL,
-    [MUNCHKIN_ID]: marketoMunchkinID,
+    [FORM_ID]: MARKETO_FORM_ID,
+    [BASE_URL]: MARKETO_BASE_URL,
+    [MUNCHKIN_ID]: MARKETO_MUNCHKIN_ID,
   };
 
   children.forEach((element) => {

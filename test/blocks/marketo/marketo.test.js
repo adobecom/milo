@@ -1,28 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
 import init, { formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
-const config = {
-  marketoBaseURL: '//app-aba.marketo.com',
-  marketoFormID: '1761',
-  marketoMunchkinID: '345-TTI-184',
-};
+
+const MARKETO_BASE_URL = '//app-aba.marketo.com';
+const MARKETO_FORM_ID = '1761';
 
 describe('marketo', () => {
-  it('hide form if no base url', async () => {
-    setConfig({});
-    document.body.innerHTML = innerHTML;
-    const el = document.querySelector('.marketo');
-    init(el);
-
-    expect(el.style.display).to.equal('none');
-  });
-
   it('init marketo form', async () => {
-    setConfig(config);
     document.body.innerHTML = innerHTML;
     const el = document.querySelector('.marketo');
     init(el);
@@ -39,7 +26,7 @@ describe('marketo', () => {
     expect(formRow).to.exist;
 
     const styleSheets = [...document.styleSheets];
-    const styleSheet = styleSheets.find((sheet) => sheet.href === `http:${config.marketoBaseURL}/js/forms2/css/forms2.css`);
+    const styleSheet = styleSheets.find((sheet) => sheet.href === `http:${MARKETO_BASE_URL}/js/forms2/css/forms2.css`);
     expect(styleSheet.disabled).to.be.true;
   });
 
@@ -55,7 +42,7 @@ describe('marketo', () => {
     expect(error).to.exist;
 
     expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
+    const form = window.MktoForms2.getForm(MARKETO_FORM_ID);
 
     formValidate(form, false, error, errorMessage);
     expect(error.classList.contains('alert')).to.be.true;
@@ -78,7 +65,7 @@ describe('marketo', () => {
     expect(error).to.exist;
 
     expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
+    const form = window.MktoForms2.getForm(MARKETO_FORM_ID);
 
     formValidate(form, true, error, errorMessage);
     expect(error.classList.contains('alert')).to.be.false;
@@ -88,7 +75,7 @@ describe('marketo', () => {
     const redirectUrl = '';
 
     expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
+    const form = window.MktoForms2.getForm(MARKETO_FORM_ID);
 
     formSuccess(form, redirectUrl);
     expect(window.mktoSubmitted).to.be.true;
