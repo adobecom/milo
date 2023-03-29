@@ -3,6 +3,7 @@ import { createTag } from '../../utils/utils.js';
 const LINES2ARRAY_SPLIT_RE = /\s*?\r?\n\s*/;
 const BROADCAST_EVENT_RE = /broadcast-event-(\d+)-([\w-]+)/;
 const CLIP_RE = /clip-(\d+)-([\w-]+)/;
+const SEEK_TO_ACTION_RE = /seek-to-action-([\w-]+)/;
 
 function camelize(s) {
   return s.replace(/-./, (x) => x[1].toUpperCase());
@@ -52,7 +53,23 @@ function addClipField(videoObj, blockKey, blockValue) {
       videoObj.hasPart[i][camelize(key)] = blockValue;
       break;
     default:
-      window.lana.log(`VideoRichResults -- Unknown Clip property: ${blockKey}`);
+      window.lana.log(`VideoRichResults -- Unhandled Clip property: ${blockKey}`);
+      break;
+  }
+}
+
+function addSeekToActionField(videoObj, blockKey, blockValue) {
+  const [, key] = blockKey.match(SEEK_TO_ACTION_RE);
+  if (!videoObj.potentialAction) videoObj.potentialAction = { '@type': 'SeekToAction' };
+  switch (key) {
+    case 'target':
+      videoObj.potentialAction.target = blockValue;
+      break;
+    case 'start-offset-input':
+      videoObj.potentialAction['startOffset-input'] = blockValue;
+      break;
+    default:
+      window.lana.log(`VideoRichResults -- Unhandled SeekToAction property: ${blockKey}`);
       break;
   }
 }
@@ -96,7 +113,11 @@ export function createVideoObject(blockMap) {
           addClipField(video, blockKey, v);
           return;
         }
-        window.lana.log(`VideoRichResults -- Unknown VideoObject property: ${blockKey}`);
+        if (SEEK_TO_ACTION_RE.test(blockKey)) {
+          addSeekToActionField(video, blockKey, v);
+          return;
+        }
+        window.lana.log(`VideoRichResults -- Unhandled VideoObject property: ${blockKey}`);
         break;
     }
   });
