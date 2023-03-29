@@ -8,26 +8,30 @@ describe('video-rich-results', () => {
   const blockQuery = '.video-rich-results';
   const jsonLdQuery = 'script[type="application/ld+json"]';
 
-  it('adds VideoObject with all required and some recommended fields', async () => {
-    const mockPath = './mocks/body.html';
-    const expectedJSON = {
-      '@context': 'https://schema.org',
-      '@type': 'VideoObject',
-      // required
-      description: 'Revisit Summit all year long!',
-      name: 'Summit 2023 Highlights',
-      thumbnailUrl: 'https://ec-prod.scene7.com/is/image/ECPROD/summithighlights_500x281_desktop_tablet?$pjpeg$&jpegSize=100&wid=500',
-      uploadDate: '2023-03-22',
-      // recommended
-      embedUrl: 'https://video.tv.adobe.com/v/3416126',
-      // expires should not be defined
-    };
-    document.head.innerHTML = '';
+  const compareJSON = async (mockPath, expectedJSONPath) => {
+    const expectedJSON = JSON.parse(await readFile({ path: expectedJSONPath }));
     document.body.innerHTML = await readFile({ path: mockPath });
+    document.head.innerHTML = '';
     const blockEl = document.querySelector(blockQuery);
     init(blockEl);
     const scriptEl = document.querySelector(jsonLdQuery);
     const actualJSON = JSON.parse(scriptEl.innerHTML);
     expect(actualJSON).to.deep.equal(expectedJSON);
+  };
+
+  it('adds VideoObject for Adobe TV', async () => {
+    await compareJSON('./mocks/body-adobe.html', './expected/video-object-adobe.json');
+  });
+
+  it('adds VideoObject', async () => {
+    await compareJSON('./mocks/body.html', './expected/video-object.json');
+  });
+
+  it('adds VideoObject with BroadcastEvent', async () => {
+    await compareJSON('./mocks/body-broadcast-event.html', './expected/video-object-broadcast-event.json');
+  });
+
+  it('adds VideoObject with Clip', async () => {
+    await compareJSON('./mocks/body-clip.html', './expected/video-object-clip.json');
   });
 });
