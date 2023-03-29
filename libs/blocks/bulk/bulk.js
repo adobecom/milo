@@ -8,18 +8,20 @@ import {
 } from '../review/utils/localStorageUtils.js';
 import createCopy from '../library-config/library-utils.js';
 
-const UNSUPPORTED_SITE = 'unsupported domain';
-const URLS_ENTRY_LIMIT = 1000;
 // TODO enable IMS sign in?
 const IMS_SIGN_IN_ENABLED = false;
+const ADMIN_BASE_URL = 'https://admin.hlx.page';
+const URLS_ENTRY_LIMIT = 1000;
 const THROTTLING_DELAY_MS = 100;
-const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
-const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
-const BULK_URLS = 'bulkUrls';
-const BULK_LAST_EXECUTED_URL_IDX = 'bulkLastExecutedUrlIdx';
 const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
 const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
-const ADMIN_BASE_URL = 'https://admin.hlx.page';
+const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
+const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
+const BULK_STORED_URLS = 'bulkStoredUrls';
+const BULK_STORED_URL_IDX = 'bulkStoredUrlIdx';
+const BULK_STORED_COMPLETED = 'bulkStoredCompleted';
+const BULK_STORED_OPERATION_NAME = 'bulkStoredOperationName';
+const UNSUPPORTED_SITE = 'unsupported domain';
 
 const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
@@ -80,6 +82,7 @@ const getUrls = (element) => element.current?.value.split('\n').filter((url) => 
 const getActionName = (action, gerund) => {
   let name;
   switch (action) {
+    case null:
     case 'preview':
       name = (!gerund) ? 'Preview' : 'Previewing';
       break;
@@ -106,10 +109,16 @@ const executeAction = async (action, url) => {
 // eslint-disable-next-line no-promise-executor-return
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-const executeActions = async (actions, urls, setResult) => {
+const executeActions = async (actions, urls, setResult, lastUrlIdx = 0) => {
+  setLocalStorage(BULK_STORED_COMPLETED, false);
   const results = [];
+  if (lastUrlIdx > urls.length - 1) {
+    // eslint-disable-next-line no-console
+    console.error(`incorrect url index: ${lastUrlIdx}`);
+    return null;
+  }
   // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < urls.length; i++) {
+  for (let i = lastUrlIdx; i < urls.length; i++) {
     const url = urls[i];
     const status = {};
     // eslint-disable-next-line no-plusplus
@@ -125,8 +134,9 @@ const executeActions = async (actions, urls, setResult) => {
       status,
     });
     setResult([...results]);
-    setLocalStorage(BULK_LAST_EXECUTED_URL_IDX, i);
+    setLocalStorage(BULK_STORED_URL_IDX, i);
   }
+  setLocalStorage(BULK_STORED_COMPLETED, true);
   return results;
 };
 
@@ -205,14 +215,64 @@ const sendReport = async (results, action) => {
   });
 };
 
-function StatusRow(props) {
+const getStoredOperation = () => {
+  const storedOperationName = getLocalStorage(BULK_STORED_OPERATION_NAME);
+  const storedUrlIdx = getLocalStorage(BULK_STORED_URL_IDX);
+  const storedUrls = getLocalStorage(BULK_STORED_URLS);
+  const completed = getLocalStorage(BULK_STORED_COMPLETED);
+  return {
+    storedOperationName,
+    storedUrlIdx,
+    storedUrls,
+    completed,
+  };
+};
+
+const getStoredUrlInput = () => {
+  const storedUrls = getLocalStorage(BULK_STORED_URLS);
+  return storedUrls ? storedUrls.join('\n') : '';
+};
+
+const signOut = (e) => {
+  e.preventDefault();
+  window.adobeIMS?.signOut();
+};
+
+function User({ user }) {
   return html`
-    <tr class="bulk-status-row">
-        <td class="bulk-status-url">${props.row.status.preview && props.row.url}</td>
-        <td class="bulk-status-preview">${props.row.status.preview && props.row.status.preview}</td>
-        <td class="bulk-status-url">${props.row.status.publish && props.row.url}</td>
-        <td class="bulk-status-publish">${props.row.status.publish && props.row.status.publish}</td>
-    </tr>`;
+      <div class="bulk-user">
+          <div class="bulk-user-header">logged in as</div>
+          <div class="bulk-user-name">
+              ${user.name}
+          </div>
+          <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
+      </div>
+  `;
+}
+
+function UrlInput({ urlsElt }) {
+  return html`
+      <textarea class="bulk-urls-input" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
+  `;
+}
+
+function SelectBtn({ actionElt, onSelectChange, storedOperationName}) {
+  return html`
+      <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
+          <option value="preview">Preview</option>
+          <option value="publish" selected="${storedOperationName === 'publish'}">Publish</option>
+          <option value="preview&publish" selected="${storedOperationName === 'preview&publish'}">Preview & Publish</option>
+      </select>
+  `;
+}
+
+function SubmitBtn({ submit, selectedAction }) {
+  const name = getActionName(selectedAction);
+  return html`
+      <button class="bulk-action-submit" onClick=${submit}>
+          ${name}
+      </button>
+  `;
 }
 
 function prettyDate() {
@@ -225,120 +285,154 @@ function prettyDate() {
   `;
 }
 
-function StatusTitle(props) {
-  const urls = getUrls(props.urlsElt);
-  const name = getActionName(props.submittedAction, true);
-  const URLS = (urls?.length > 1) ? 'URLS' : 'URL';
-  return props.submittedAction && html`
+function StatusRow({ row }) {
+  return html`
+    <tr class="bulk-status-row">
+        <td class="bulk-status-url">${row.status.preview && row.url}</td>
+        <td class="bulk-status-preview">${row.status.preview && row.status.preview}</td>
+        <td class="bulk-status-url">${row.status.publish && row.url}</td>
+        <td class="bulk-status-publish">${row.status.publish && row.status.publish}</td>
+    </tr>
+  `;
+}
+
+function StatusTitle({ bulkTriggered, submittedAction, copyResults, showHideUrls, bulkInputToggleElt, urlNumber }) {
+  const name = getActionName(submittedAction, true);
+  const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
+  return bulkTriggered && html`
       <div class="bulk-status-head">
           <div class="bulk-status-head-title">
-              STATUS ${name} ${urls?.length} ${URLS}
+              STATUS ${name} ${urlNumber} ${URLS}
           </div>
           <div>
-              <button class="bulk-status-head-copy" onclick=${props.copyResults} title="Copy results"></button>
-              <button class="bulk-status-head-toggle-urls" ref="${props.bulkInputToggleElt}" onclick=${props.showHideUrls} title="show/hide urls"></button>
+              <button class="bulk-status-head-copy" onclick=${copyResults} title="Copy results"></button>
+              <button class="bulk-status-head-toggle-urls" ref="${bulkInputToggleElt}" onclick=${showHideUrls} title="Show/hide urls"></button>
           </div>
-      </div>`;
+      </div>
+  `;
 }
 
-function StatusContent(props) {
+function StatusContent({ resultsElt, result }) {
   return html`
-    <table class="bulk-status-content" ref="${props.resultsElt}">
-        ${props.result && html`
-            <thead class="bulk-status-header">
-                <tr class="bulk-status-header-row">
-                    <th class="bulk-status-header-url">Preview</th>
-                    <th>Status</th>
-                    <th class="bulk-status-header-url">Publish</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody class="bulk-status-rows">
-                ${props.result.map((row) => html`<${StatusRow} row=${row} />`)}
-            </tbody>
+    <table class="bulk-status-content" ref="${resultsElt}">
+        ${result && html`
+            <colgroup>
+                <col class="bulk-status-content-col1"/>
+                <col class="bulk-status-content-col2"/>
+                <col class="bulk-status-content-col3"/>
+                <col class="bulk-status-content-col4"/>
+            </colgroup>
+            <tr class="bulk-status-header-row">
+                <th class="bulk-status-header-url">Preview</th>
+                <th>Status</th>
+                <th class="bulk-status-header-url">Publish</th>
+                <th>Status</th>
+            </tr>
+            ${result.map((row) => html`<${StatusRow} row=${row} />`)}
         `}
-    </table>`;
+    </table>
+  `;
 }
 
-function StatusFooter(props) {
+function StatusFooter({ completion }) {
   const timeStamp = prettyDate();
-  return props.completion && html`
-    <div class="bulk-status-footer">
-        <div class="bulk-status-footer-preview">
-            ${props.completion.preview.total > 0 && html`
-                <div class="bulk-status-footer-preview-complete">job complete</div>
-                <div class="bulk-status-footer-preview-date">${timeStamp}</div>
-                <div class="bulk-status-footer-preview-success">successful: ${props.completion.preview.success} / ${props.completion.preview.total}</div>
-            `}
-        </div>
-        <div class="bulk-status-footer-publish">
-            ${props.completion.publish.total > 0 && html`
-                <div class="bulk-status-footer-publish-complete">job complete</div>
-                <div class="bulk-status-footer-publish-date">${timeStamp}</div>
-                <div class="bulk-status-footer-publish-success">successful: ${props.completion.publish.success} / ${props.completion.publish.total}</div>
-        `}
-        </div>
-    </div>`;
+  return completion && html`
+      <table class="bulk-status-footer">
+          <colgroup>
+              <col class="bulk-status-content-col1"/>
+              <col class="bulk-status-content-col2"/>
+              <col class="bulk-status-content-col3"/>
+              <col class="bulk-status-content-col4"/>
+          </colgroup>
+          <tr>
+              <td>
+                  <div class="bulk-status-footer-preview">
+                      ${completion.preview.total > 0 && html`
+                          <div class="bulk-status-footer-preview-complete">job complete</div>
+                          <div class="bulk-status-footer-preview-date">${timeStamp}</div>
+                          <div class="bulk-status-footer-preview-success">successful: ${completion.preview.success} / ${completion.preview.total}</div>
+                      `}
+                  </div>
+              </td>
+              <td></td>
+              <td>
+                  <div class="bulk-status-footer-publish">
+                      ${completion.publish.total > 0 && html`
+                          <div class="bulk-status-footer-publish-complete">job complete</div>
+                          <div class="bulk-status-footer-publish-date">${timeStamp}</div>
+                          <div class="bulk-status-footer-publish-success">successful: ${completion.publish.success} / ${completion.publish.total}</div>
+                      `}
+                  </div>
+              </td>
+              <td></td>
+          </tr>
+      </table>
+  `;
 }
 
-function Status(props) {
-  return html`
+function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion, copyResults, showHideUrls, bulkInputToggleElt }) {
+  return valid && html`
     <div class="bulk-status">
         <div class="bulk-status-title-container">
             <${StatusTitle}
-                submittedAction=${props.submittedAction}
-                copyResults=${props.copyResults}
-                showHideUrls=${props.showHideUrls}
-                bulkInputToggleElt=${props.bulkInputToggleElt}
-                urlsElt=${props.urlsElt} />
+                bulkTriggered=${bulkTriggered}
+                submittedAction=${submittedAction}
+                copyResults=${copyResults}
+                showHideUrls=${showHideUrls}
+                bulkInputToggleElt=${bulkInputToggleElt}
+                urlNumber=${urlNumber} />
         </div>
         <div class="bulk-status-content-container">
             <${StatusContent}
-                resultsElt=${props.resultsElt}
-                result=${props.result} />
+                resultsElt=${resultsElt}
+                result=${result} />
         </div>
         <div class="bulk-status-footer-container">
             <${StatusFooter}
-                completion=${props.completion} />
+                completion=${completion} />
         </div>
-    </div>`;
+    </div>
+  `;
 }
 
-function User(props) {
-  return html`
-      <div class="bulk-user-name">
-          ${props.user.name}
-      </div>`;
-}
-
-function SubmitBtn(props) {
-  const name = getActionName(props.selectedAction);
-  return html`
-      <button class="bulk-action-submit" onClick=${props.onSubmit}>
-          ${name}
-      </button>`;
-}
-
-function ErrorMessage(props) {
+function ErrorMessage({ valid, authorized, urlNumber }) {
+  if (valid) return '';
   let message;
-  if (!props.authorized) {
+  if (!authorized) {
     message = 'You are not authorized to perform bulk operations';
-  } else if (props.urlNumber === 0) {
-    message = 'There are no URLs specified';
-  } else if (props.urlNumber > URLS_ENTRY_LIMIT) {
-    message = `There are too many URLs. You entered ${props.urlNumber} URLs. The max allowed number is ${URLS_ENTRY_LIMIT}`;
+  } else if (urlNumber === 0) {
+    message = 'There are no URL to process';
+  } else if (urlNumber > URLS_ENTRY_LIMIT) {
+    message = `There are too many URLs. You entered ${urlNumber} URLs. The max allowed number is ${URLS_ENTRY_LIMIT}`;
   }
   return !!message && html`
       <div class="bulk-error">
           ${message}
-      </div>`;
+      </div>
+  `;
 }
 
-function Bulk(props) {
+function ResumeModal({ displayResumeDialog, resumeModal, resume, hideModal }) {
+  return html`
+      <div class="bulk-resume-modal ${displayResumeDialog}" ref="${resumeModal}">
+          <div class="bulk-resume-modal-content">
+              <div>Previous bulk operation did not terminate. Would you like to resume processing the outstanding URLs?</div>
+              <div class="bulk-resume-modal-button">
+                  <button class="bulk-resume-modal-button-resume" onclick="${resume}">Resume</button>
+                  <button class="bulk-resume-modal-button-cancel" onclick="${hideModal}">Cancel</button>
+              </div>
+          </div>
+      </div>
+  `;
+}
+
+function Bulk({ user, storedOperation }) {
+  const [valid, setValid] = useState(true);
   const [authorized, setAuthorized] = useState(true);
   const [urlNumber, setUrlNumber] = useState(-1);
-  const [selectedAction, setSelectedAction] = useState('preview');
-  const [submittedAction, setSubmittedAction] = useState(null);
+  const [bulkTriggered, setBulkTriggered] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(storedOperation.storedOperationName);
+  const [submittedAction, setSubmittedAction] = useState(storedOperation.storedOperationName);
   const [result, setResult] = useState(null);
   const [completion, setCompletion] = useState(null);
 
@@ -347,40 +441,41 @@ function Bulk(props) {
   const resultsElt = useRef(null);
   const bulkInputElt = useRef(null);
   const bulkInputToggleElt = useRef(null);
+  const resumeModal = useRef(null);
 
-  const signOut = (e) => {
-    e.preventDefault();
-    window.adobeIMS?.signOut();
-  };
+  const displayResumeDialog = (storedOperation.completed === null || storedOperation.completed) ? '' : 'displayed';
 
-  const onSubmit = async () => {
-    setLocalStorage(BULK_URLS, urlsElt.current.value);
+  const executeBulk = async (operation, startUrlIdx) => {
     // reset the result area
-    setSubmittedAction(null);
     setResult(null);
     setCompletion(null);
 
     // validate the user
     const authorizedValue = await userIsAuthorized();
     setAuthorized(authorizedValue);
-    if (!authorizedValue) return;
+    if (!authorizedValue) {
+      setValid(false);
+      return;
+    }
 
     // validate the number of urls
     const urls = getUrls(urlsElt);
-    const urlNumberValue = urls.length;
+    setLocalStorage(BULK_STORED_URLS, urls);
+    const urlNumberValue = urls.length - startUrlIdx;
     setUrlNumber(urlNumberValue);
-    if (urlNumberValue === 0 || urlNumberValue > URLS_ENTRY_LIMIT) return;
+    if (urlNumberValue < 1 || urlNumberValue > URLS_ENTRY_LIMIT) {
+      setValid(false);
+      return;
+    }
 
     // perform the action
-    const submittedActionValue = actionElt.current.value;
-    setSubmittedAction(submittedActionValue);
-    const actions = submittedActionValue.split('&');
-    const results = await executeActions(actions, urls, setResult);
+    const actions = operation.split('&');
+    const results = await executeActions(actions, urls, setResult, startUrlIdx);
     const completionValue = getCompletion(results);
     setCompletion(completionValue);
 
-    // Log the actions on the server
-    await sendReport(results, submittedActionValue);
+    // log the actions on the server
+    await sendReport(results, operation);
   };
 
   const onSelectChange = () => {
@@ -397,6 +492,26 @@ function Bulk(props) {
     bulkInputToggleElt.current.classList.toggle('open');
   };
 
+  const hideModal = () => {
+    resumeModal.current.classList.remove('displayed');
+  };
+
+  const submit = async () => {
+    setBulkTriggered(true);
+    const operation = actionElt.current.value;
+    setSubmittedAction(operation);
+    setLocalStorage(BULK_STORED_OPERATION_NAME, operation);
+    await executeBulk(operation, 0);
+  };
+
+  const resume = async () => {
+    setBulkTriggered(true);
+    hideModal();
+    const operation = storedOperation.storedOperationName;
+    const urlIdx = storedOperation.storedUrlIdx;
+    await executeBulk(operation, urlIdx + 1);
+  };
+
   return html`
     <div class="bulk">
         <div class="bulk-input" ref="${bulkInputElt}">
@@ -404,29 +519,27 @@ function Bulk(props) {
                 <div class="bulk-urls">
                     <div class="bulk-urls-title">urls</div>
                 </div>
-                <div class="bulk-user">
-                    <div class="bulk-user-header">logged in as</div>
-                    <${User} user=${props.user} />
-                    <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
-                </div>
+                <${User} user=${user} />
             </div>
-            <textarea class="bulk-urls-input" ref="${urlsElt}">${getLocalStorage(BULK_URLS)}</textarea>
+            <${UrlInput} urlsElt=${urlsElt} />
             <div class="bulk-action">
                 <${SubmitBtn}
-                    onSubmit=${onSubmit}
+                    submit=${submit}
                     selectedAction=${selectedAction} />
-                <select class="bulk-action-select" ref="${actionElt}" onChange=${onSelectChange}>
-                    <option value="preview">Preview</option>
-                    <option value="publish">Publish</option>
-                    <option value="preview&publish">Preview & Publish</option>
-                </select>
+                <${SelectBtn}
+                    actionElt=${actionElt}
+                    onSelectChange=${onSelectChange}
+                    storedOperationName=${storedOperation.storedOperationName} />
             </div>
         </div>
         <${ErrorMessage}
+            valid=${valid}
             authorized=${authorized}
             urlNumber=${urlNumber} />
         <${Status}
-            urlsElt=${urlsElt}
+            valid=${valid}
+            urlNumber=${urlNumber}
+            bulkTriggered=${bulkTriggered}
             submittedAction=${submittedAction}
             result=${result}
             resultsElt=${resultsElt}
@@ -434,7 +547,13 @@ function Bulk(props) {
             copyResults=${copyResults}
             showHideUrls=${showHideUrls}
             bulkInputToggleElt=${bulkInputToggleElt} />
-    </div>`;
+        <${ResumeModal}
+            displayResumeDialog=${displayResumeDialog}
+            resumeModal=${resumeModal}
+            resume=${resume}
+            hideModal=${hideModal} />
+    </div>
+  `;
 }
 
 export default async function init(el) {
@@ -442,7 +561,8 @@ export default async function init(el) {
   if (!signedIn) return;
 
   const user = await getUser();
-  render(html`<${Bulk} user="${user}" />`, el);
+  const storedOperation = getStoredOperation();
+  render(html`<${Bulk} user="${user}" storedOperation="${storedOperation}" />`, el);
 }
 // TODO remove the anonymous user in bulk-config.xlsx
 // TODO: test edge cases + write tests
