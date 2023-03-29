@@ -6,6 +6,7 @@ import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import copyFile from '../utils/sp/file.js';
+import group from '../utils/group.js';
 
 async function updateExcelJson() {
   let count = 1;
@@ -109,25 +110,7 @@ export async function syncToLangstore() {
   }
 }
 
-function makeOne(num) {
-  return new Promise(async (resolve) => {
-    const sourcePath = '/drafts/cmillar/batch/Doc-';
-    const destPath = `/drafts/cmillar/batch/Doc-${num + 1}`;
-    const json = await copyFile(sourcePath, destPath);
-    console.log(destPath);
-    resolve(json);
-  });
-}
-
 export async function makeLots() {
-  const groups = [
-    [1, 2, 3, 4, 5, 6, 7, 8, 10],
-    [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-    [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
-  ];
-
-  for (const group of groups) {
-    const prom = group.map((num) => makeOne(num));
-    await Promise.all(prom);
-  }
+  const iters = [...Array(104).keys()];
+  const groups = group(iters);
 }
