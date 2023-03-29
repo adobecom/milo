@@ -8,19 +8,8 @@ function camelize(s) {
   return s.replace(/-./, (x) => x[1].toUpperCase());
 }
 
-/**
- * parseKeyValueBlockEl accepts div rendered from block table.
- * div is expected to have child divs representing rows.
- * Each row div has two column div children representing key/value pairs.
- */
 function parseKeyValueBlockEl(el) {
-  // if (!el) return null;
-  const rows = [...el.children];
-  return rows.reduce((map, row) => {
-    // if (row.children.length < 2) {
-    //   // `Skipping invalid row at ${idx}`
-    //   return map;
-    // }
+  return [...el.children].reduce((map, row) => {
     const k = row.children[0].textContent.trim();
     const v = row.children[1].textContent.trim();
     if (k) map[k] = v;
@@ -28,9 +17,6 @@ function parseKeyValueBlockEl(el) {
   }, {});
 }
 
-/**
- * addBroadcastEventField adds BroadcastEvent-related key/value to existing VideoObject.
- */
 function addBroadcastEventField(videoObj, blockKey, blockValue) {
   const [, num, key] = blockKey.match(BROADCAST_EVENT_RE);
   const i = num - 1;
@@ -51,9 +37,6 @@ function addBroadcastEventField(videoObj, blockKey, blockValue) {
   }
 }
 
-/**
- * addClipField adds Clip-related key/value to existing VideoObject.
- */
 function addClipField(videoObj, blockKey, blockValue) {
   const [, num, key] = blockKey.match(CLIP_RE);
   const i = num - 1;
@@ -74,9 +57,6 @@ function addClipField(videoObj, blockKey, blockValue) {
   }
 }
 
-/**
- * createVideoObject transforms map or object of k/v pairs into VideoObject.
- */
 export function createVideoObject(blockMap) {
   const video = {
     '@context': 'https://schema.org',
