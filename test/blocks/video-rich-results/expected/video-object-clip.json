@@ -1,5 +1,5 @@
 {
-  "@context": "https://schema.org/",
+  "@context": "https://schema.org",
   "@type": "VideoObject",
   "name": "Cat video",
   "duration": "PT10M",
