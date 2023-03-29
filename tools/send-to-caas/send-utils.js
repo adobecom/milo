@@ -250,14 +250,6 @@ const getTags = (s) => {
 const getDateProp = (dateStr, errorMsg) => {
   if (!dateStr) return undefined;
   try {
-    if (dateStr.length === 10) {
-      const [m, d, y] = dateStr.split('-');
-      if (m > 12) {
-        // must be in day-month-year format
-        // eslint-disable-next-line no-param-reassign
-        dateStr = `${d}-${m}-${y}`;
-      }
-    }
     const date = new Date(dateStr);
     if (date.getFullYear() < 2000) return { error: `${errorMsg} - Date is before the year 2000` };
     return date.toISOString();
