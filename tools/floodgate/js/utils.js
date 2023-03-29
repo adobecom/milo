@@ -30,3 +30,26 @@ export async function getFile(downloadUrl) {
   }
   return undefined;
 }
+
+export function getPathFromUrl(url) {
+  return new URL(url).pathname;
+}
+
+export function getDocPathFromUrl(url) {
+  let path = getPathFromUrl(url);
+  if (!path) {
+    return undefined;
+  }
+  if (path.endsWith('.json')) {
+    path = path.slice(0, -5);
+    return `${path}.xlsx`;
+  }
+
+  if (path.endsWith('/')) {
+    path += 'index';
+  } else if (path.endsWith('.html')) {
+    path = path.slice(0, -5);
+  }
+
+  return `${path}.docx`;
+}
