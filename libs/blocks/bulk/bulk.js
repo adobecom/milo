@@ -182,7 +182,7 @@ function ErrorMessage({ valid, authorized, urlNumber }) {
   let message;
   if (!authorized) {
     message = 'You are not authorized to perform bulk operations';
-  } else if (urlNumber === 0) {
+  } else if (urlNumber < 1) {
     message = 'There are no URL to process';
   } else if (urlNumber > URLS_ENTRY_LIMIT) {
     message = `There are too many URLs. You entered ${urlNumber} URLs. The max allowed number is ${URLS_ENTRY_LIMIT}`;
