@@ -39,7 +39,7 @@ const getCurrentDetails = async () => {
   const topLevel = split.slice(Math.max(split.length - 2, 1)).join('.');
   const isEdit = topLevel === 'google.com' || topLevel === 'sharepoint.com';
   return isEdit ? getDetails() : getDetails(pathname);
-}
+};
 
 const getStatus = async (li, localePath) => {
   const page = await getDetails(localePath);
@@ -62,7 +62,7 @@ const decorateLocales = (current) => {
 };
 
 const handleSearch = (e, els) => {
-  const search = e.target.value.toLowerCase();
+  const search = e.target.value.toLowerCase().trim();
   els.forEach((subject) => {
     if (subject.textContent.includes(search)) {
       subject.style.display = 'flex';
