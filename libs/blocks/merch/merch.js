@@ -4,12 +4,12 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const version = '1.12.0';
-const wcs = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
-const envProd = 'prod';
-const ctaPrefix = /^CTA +/;
+const VERSION = '1.12.0';
+const WCS = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
+const ENV_PROD = 'prod';
+const CTA_PREFIX = /^CTA +/;
 
-const SUPPORTED_LANGUAGES = [
+const SUPPORTED_LANGS = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
@@ -21,6 +21,11 @@ const GEO_MAPPINGS = {
   mena_ar: 'ar-DZ',
   id_id: 'in-ID',
   no: 'nb-NO',
+};
+
+const PLACEHOLDER_TYPE_MAPPINGS = {
+  optical: 'priceOptical',
+  strikethrough: 'priceStrikethrough',
 };
 
 let initialized = false;
@@ -38,13 +43,13 @@ const getTacocatEnv = (envName, locale) => {
   const wcsLocale = GEO_MAPPINGS[locale.prefix] ?? locale.ietf;
   // eslint-disable-next-line prefer-const
   let [language, country = 'US'] = wcsLocale.split('-', 2);
-  if (!SUPPORTED_LANGUAGES.includes(language)) {
+  if (!SUPPORTED_LANGS.includes(language)) {
     language = 'en';
   }
-  const host = envName === envProd
+  const host = envName === ENV_PROD
     ? 'https://www.adobe.com'
     : 'https://www.stage.adobe.com';
-  const scriptUrl = `${host}/special/tacocat/lib/${version}/tacocat.js`;
+  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
   const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
   return { scriptUrl, literalScriptUrl, country, language };
 };
@@ -56,7 +61,7 @@ function initTacocat(envName, country, language) {
       language,
     },
     environment: envName,
-    wcs,
+    wcs: WCS,
     literals: window.tacocat.literals?.[language] ?? {},
   });
 }
@@ -83,18 +88,13 @@ function loadTacocat() {
   ]).then(() => initTacocat(env.name, country, language));
 }
 
-const placeholderTypeMappings = {
-  optical: 'priceOptical',
-  strikethrough: 'priceStrikethrough',
-};
-
 function buildCheckoutButton(a, osi, options) {
   a.href = '#';
   a.dataset.wcsOsi = osi;
   a.dataset.template = 'checkoutUrl';
   a.className = 'con-button blue button-m';
   Object.assign(a.dataset, options);
-  a.textContent = a.textContent?.replace(ctaPrefix, '');
+  a.textContent = a.textContent?.replace(CTA_PREFIX, '');
   return a;
 }
 
@@ -145,7 +145,7 @@ export default async function init(el) {
   const displayPerUnit = searchParams.get('seat');
   const displayTax = searchParams.get('tax');
   const displayOldPrice = promotionCode ? searchParams.get('old') : undefined;
-  const price = buildPrice(osi, placeholderTypeMappings[type] || type, {
+  const price = buildPrice(osi, PLACEHOLDER_TYPE_MAPPINGS[type] || type, {
     displayRecurrence,
     displayPerUnit,
     displayTax,
