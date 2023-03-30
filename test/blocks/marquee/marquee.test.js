@@ -29,6 +29,10 @@ describe('marquee', () => {
       const iconArea = marquees[1].querySelector('.icon-area');
       expect(iconArea).to.exist;
     });
+    it('wraps the picture in a link if provided', () => {
+      const picture = marquees[1].querySelector('.foreground .image a picture');
+      expect(picture).to.exist;
+    });
   });
 
   describe('supports media credits', () => {
