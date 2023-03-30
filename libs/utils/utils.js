@@ -75,6 +75,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
+  { merch: '/tools/ost?' },
 ];
 const ENVS = {
   local: {

@@ -1,57 +1,159 @@
-import { loadScript, getConfig, createTag } from '../../utils/utils.js';
+import {
+  loadScript,
+  getConfig,
+  createTag,
+} from '../../utils/utils.js';
 
-const { miloLibs, codeRoot, env } = getConfig();
-const base = miloLibs || codeRoot;
+const VERSION = '1.12.0';
+const WCS = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
+const ENV_PROD = 'prod';
+const CTA_PREFIX = /^CTA +/;
 
-function buildButton(a, osi) {
-  if (!a) return null;
+const SUPPORTED_LANGS = [
+  'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
+  'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
+];
+
+const GEO_MAPPINGS = {
+  africa: 'en-ZA',
+  mena_en: 'en-DZ',
+  il_he: 'iw-IL',
+  mena_ar: 'ar-DZ',
+  id_id: 'in-ID',
+  no: 'nb-NO',
+};
+
+const PLACEHOLDER_TYPE_MAPPINGS = {
+  optical: 'priceOptical',
+  strikethrough: 'priceStrikethrough',
+};
+
+let initialized = false;
+
+function omitNullValues(target) {
+  if (target != null) {
+    Object.entries(target).forEach(([key, value]) => {
+      if (value == null) delete target[key];
+    });
+  }
+  return target;
+}
+
+const getTacocatEnv = (envName, locale) => {
+  const wcsLocale = GEO_MAPPINGS[locale.prefix] ?? locale.ietf;
+  // eslint-disable-next-line prefer-const
+  let [language, country = 'US'] = wcsLocale.split('-', 2);
+  if (!SUPPORTED_LANGS.includes(language)) {
+    language = 'en';
+  }
+  const host = envName === ENV_PROD
+    ? 'https://www.adobe.com'
+    : 'https://www.stage.adobe.com';
+  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
+  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
+  return { scriptUrl, literalScriptUrl, country, language };
+};
+
+function initTacocat(envName, country, language) {
+  window.tacocat.tacocat({
+    defaults: {
+      country,
+      language,
+    },
+    environment: envName,
+    wcs: WCS,
+    literals: window.tacocat.literals?.[language] ?? {},
+  });
+}
+
+function loadTacocat() {
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+  const {
+    env,
+    locale,
+  } = getConfig();
+  const {
+    scriptUrl,
+    literalScriptUrl,
+    country,
+    language,
+  } = getTacocatEnv(env.name, locale);
+
+  Promise.all([
+    loadScript(literalScriptUrl).catch(() => ({})),
+    loadScript(scriptUrl),
+  ]).then(() => initTacocat(env.name, country, language));
+}
+
+function buildCheckoutButton(a, osi, options) {
   a.href = '#';
-  a.className = 'con-button blue button-m';
-  a.dataset.checkoutClientid = 'mini_plans';
-  a.dataset.checkoutWorkflow = 'UCv3';
-  a.dataset.checkoutWorkflowStep = 'email';
   a.dataset.wcsOsi = osi;
   a.dataset.template = 'checkoutUrl';
+  a.className = 'con-button blue button-m';
+  Object.assign(a.dataset, options);
+  a.textContent = a.textContent?.replace(CTA_PREFIX, '');
   return a;
 }
 
-function buildPrice(osi, type) {
-  return createTag('span', { 'data-wcs-osi': osi, 'data-template': type });
+function buildPrice(osi, type, dataAttrs = {}) {
+  const span = createTag('span', {
+    'data-wcs-osi': osi,
+    'data-template': type,
+  });
+  Object.assign(span.dataset, omitNullValues(dataAttrs));
+  return span;
 }
 
-function getPriceType(name) {
-  switch (name) {
-    case 'price': { return 'price'; }
-    case 'optical': { return 'priceOptical'; }
-    case 'strikethrough': { return 'priceStrikethrough'; }
-    case 'with-tax': { return 'priceWithTax'; }
-    case 'with-strikethrough-tax': { return 'priceWithTaxStrikethrough'; }
-    default: return null;
-  }
+function isCTA(type) {
+  return type === 'checkoutUrl';
 }
 
 export default async function init(el) {
-  if (!window.tacocat) {
-    await loadScript(`${base}/deps/tacocat-index.js`);
-  }
-  const osi = el.querySelector(':scope > div:first-of-type > div').textContent;
-  if (!osi) return;
-  const priceType = getPriceType([...el.classList][1]);
-  if (priceType) {
-    const price = buildPrice(osi, priceType);
-    el.append(price);
-  }
-  const button = buildButton(el.querySelector('a'), osi);
-  if (button) {
-    el.append(button);
+  if (!el?.classList?.contains('merch')) return undefined;
+  loadTacocat();
+  const { searchParams } = new URL(el.href);
+  const osi = searchParams.get('osi');
+  const type = searchParams.get('type');
+  if (!(osi && type)) {
+    el.textContent = '';
+    el.setAttribute('aria-details', 'Invalid merch block');
+    return undefined;
   }
 
-  // Show *something* if there's just an OSI and nothing else.
-  if (!priceType && !button) {
-    const price = buildPrice(osi, 'price');
-    el.append(price);
-  }
+  const promotionCode = (searchParams.get('promo')
+    ?? el.closest('[data-promotion-code]')?.dataset.promotionCode) || undefined;
 
-  const wcs = { apiKey: 'wcms-commerce-ims-ro-user-cc' };
-  window.tacocat({ environment: env.name, wcs });
+  if (isCTA(type)) {
+    const checkoutContext = {}; // TODO: load dynamically
+    const checkoutWorkflow = searchParams.get('checkoutType');
+    const checkoutWorkflowStep = searchParams.get('workflowStep');
+    const options = omitNullValues({
+      ...checkoutContext,
+      ...omitNullValues({
+        promotionCode,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+      }),
+    });
+    buildCheckoutButton(el, osi, options);
+    return el;
+  }
+  const displayRecurrence = searchParams.get('term');
+  const displayPerUnit = searchParams.get('seat');
+  const displayTax = searchParams.get('tax');
+  const displayOldPrice = promotionCode ? searchParams.get('old') : undefined;
+  const price = buildPrice(osi, PLACEHOLDER_TYPE_MAPPINGS[type] || type, {
+    displayRecurrence,
+    displayPerUnit,
+    displayTax,
+    displayOldPrice,
+    promotionCode,
+  });
+  el.replaceWith(price);
+  return price;
 }
+
+export { getTacocatEnv, initTacocat };
