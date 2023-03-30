@@ -44,7 +44,7 @@ function getStringKeyName(str) {
   The \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
   */
   const regex = /[^\p{L}\p{N}_-]/gu;
-  return str.trim().toLowerCase().replace(regex, '').replace(/\s+/g, '-');
+  return str.trim().toLowerCase().replace(/\s+/g, '-').replace(regex, '');
 }
 
 function getUniqueId(el) {
@@ -53,6 +53,7 @@ function getUniqueId(el) {
 }
 
 function configTabs(config) {
+  console.log('configTabs', config);
   if (config['active-tab']) {
     const id = `tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
     const sel = document.getElementById(id);
@@ -90,6 +91,7 @@ function initTabs(elm, config) {
 function handleDeferredImages(e) {
   const images = e.querySelectorAll('img[loading="lazy"]');
   images.forEach((img) => {
+    /* c8 ignore next */
     img.removeAttribute('loading');
   });
   e.removeEventListener('milo:deferred', handleDeferredImages, true);
@@ -108,7 +110,9 @@ const init = (block) => {
   configRows.splice(0, 1);
   if (configRows) {
     configRows.forEach((row) => {
+      console.log('config row', row.children[0].textContent);
       const rowKey = getStringKeyName(row.children[0].textContent);
+      console.log('config rowKEY', rowKey);
       const rowVal = row.children[1].textContent.trim();
       config[rowKey] = rowVal;
       row.remove();
