@@ -200,18 +200,28 @@ describe('Merch Block', () => {
 
   describe('Tacocat config', () => {
     it('falls back to en for unsupported languages', async () => {
-      const { scriptUrl, literalScriptUrl, language } = getTacocatEnv('stage', 'xx-US');
+      const { scriptUrl, literalScriptUrl, language } = getTacocatEnv('stage', { ietf: 'xx-US' });
       expect(scriptUrl).to.equal('https://www.stage.adobe.com/special/tacocat/lib/1.12.0/tacocat.js');
       expect(literalScriptUrl).to.equal('https://www.stage.adobe.com/special/tacocat/literals/en.js');
       expect(language).to.equal('en');
     });
 
     it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv('prod', 'fr-CA');
+      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv('prod', { ietf: 'fr-CA' });
       expect(scriptUrl).to.equal('https://www.adobe.com/special/tacocat/lib/1.12.0/tacocat.js');
       expect(literalScriptUrl).to.equal('https://www.adobe.com/special/tacocat/literals/fr.js');
       expect(country).to.equal('CA');
       expect(language).to.equal('fr');
+    });
+
+    it('returns geo mapping', async () => {
+      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
+      expect(country).to.equal('ZA');
+      expect(language).to.equal('en');
+
+      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
+      expect(country).to.equal('NO');
+      expect(language).to.equal('nb');
     });
 
     it('initializes tacocat', async () => {
@@ -219,6 +229,12 @@ describe('Merch Block', () => {
       initTacocat('prod', 'CA', 'fr');
       expect(Object.keys(window.tacocat.tacocat.getCall(0).args[0]))
         .to.include.members(['defaults', 'environment', 'wcs', 'literals']);
+    });
+
+    it('initializes tacocat with incorrect language', async () => {
+      window.tacocat = { literals: { fr: { test: 'test' } }, tacocat: stub() };
+      initTacocat('prod', 'US', 'xx');
+      expect(window.tacocat.tacocat.getCall(0).args[0].literals).to.eql({});
     });
   });
 });

@@ -4,20 +4,28 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const tacocatVersion = '1.12.0';
+const version = '1.12.0';
 const wcs = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
 const envProd = 'prod';
 const ctaPrefix = /^CTA +/;
 
 let initialized = false;
 
-// supported languages for the price literals
 const supportedLanguages = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
 
-function omitUndefined(target) {
+const geoMappings = {
+  africa: 'en-ZA',
+  mena_en: 'en-DZ',
+  il_he: 'iw-IL',
+  mena_ar: 'ar-DZ',
+  id_id: 'in-ID',
+  no: 'nb-NO',
+};
+
+function omitNullValues(target) {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
       if (value == null) delete target[key];
@@ -28,10 +36,11 @@ function omitUndefined(target) {
 
 const getTacocatEnv = (envName, locale) => {
   const scriptUrl = envName === envProd
-    ? `https://www.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`
-    : `https://www.stage.adobe.com/special/tacocat/lib/${tacocatVersion}/tacocat.js`;
+    ? `https://www.adobe.com/special/tacocat/lib/${version}/tacocat.js`
+    : `https://www.stage.adobe.com/special/tacocat/lib/${version}/tacocat.js`;
+  const wcsLocale = geoMappings[locale.prefix] ?? locale.ietf;
   // eslint-disable-next-line prefer-const
-  let [language, country = 'us'] = locale.split('-', 2);
+  let [language, country = 'US'] = wcsLocale.split('-', 2);
   if (!supportedLanguages.includes(language)) {
     language = 'en'; // default to english
   }
@@ -61,14 +70,14 @@ function loadTacocat() {
   initialized = true;
   const {
     env,
-    locale: { ietf: ietfLocale },
+    locale,
   } = getConfig();
   const {
     scriptUrl,
     literalScriptUrl,
     country,
     language,
-  } = getTacocatEnv(env.name, ietfLocale);
+  } = getTacocatEnv(env.name, locale);
 
   Promise.all([
     loadScript(literalScriptUrl).catch(() => ({})),
@@ -96,7 +105,7 @@ function buildPrice(osi, type, dataAttrs = {}) {
     'data-wcs-osi': osi,
     'data-template': type,
   });
-  Object.assign(span.dataset, omitUndefined(dataAttrs));
+  Object.assign(span.dataset, omitNullValues(dataAttrs));
   return span;
 }
 
@@ -123,9 +132,9 @@ export default async function init(el) {
     const checkoutContext = {}; // TODO: load dynamically
     const checkoutWorkflow = searchParams.get('checkoutType');
     const checkoutWorkflowStep = searchParams.get('workflowStep');
-    const options = omitUndefined({
+    const options = omitNullValues({
       ...checkoutContext,
-      ...omitUndefined({
+      ...omitNullValues({
         promotionCode,
         checkoutWorkflow,
         checkoutWorkflowStep,
