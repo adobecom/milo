@@ -228,8 +228,14 @@ export function loadStyle(href, callback) {
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', href);
     if (callback) {
-      link.onload = (e) => callback(e.type);
-      link.onerror = (e) => callback(e.type);
+      link.onload = (e) => {
+        link.setAttribute('data-loaded', true);
+        callback(e.type)
+      }
+      link.onerror = (e) => {
+        link.setAttribute('data-loaded', false);
+        callback(e.type)
+      }
     }
     document.head.appendChild(link);
   } else if (callback) {
