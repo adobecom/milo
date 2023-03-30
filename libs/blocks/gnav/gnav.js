@@ -662,7 +662,7 @@ export default async function init(header) {
   if (!html) return null;
 
   const link = document.head.querySelector(`link[href="${miloLibs}/blocks/gnav/gnav.css"]`);
-  if(!link.getAttribute('data-loaded') === 'true'){
+  if(link.getAttribute('data-loaded') !== 'true'){
     header.style.display = 'none';
     const isStyleLoaded = setInterval(() => {
       if(link.getAttribute('data-loaded') === 'true'){
