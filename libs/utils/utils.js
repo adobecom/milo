@@ -228,14 +228,8 @@ export function loadStyle(href, callback) {
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', href);
     if (callback) {
-      link.onload = (e) => {
-        link.setAttribute('data-loaded', true);
-        callback(e.type)
-      }
-      link.onerror = (e) => {
-        link.setAttribute('data-loaded', false);
-        callback(e.type)
-      }
+      link.onload = (e) => callback(e.type);
+      link.onerror = (e) => callback(e.type);
     }
     document.head.appendChild(link);
   } else if (callback) {
@@ -588,7 +582,11 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { loadBlock(header); }
+  if (header) { 
+    header.classList.add('gnav-hide');
+    await loadBlock(header); 
+    header.classList.remove('gnav-hide');
+  }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);

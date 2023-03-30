@@ -655,26 +655,11 @@ async function fetchGnav(url) {
 }
 
 export default async function init(header) {
-  const { locale, imsClientId, miloLibs } = getConfig();
+  const { locale, imsClientId } = getConfig();
   const name = imsClientId ? `|${imsClientId}` : '';
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const html = await fetchGnav(url);
   if (!html) return null;
-
-  const link = document.head.querySelector(`link[href="${miloLibs}/blocks/gnav/gnav.css"]`);
-  if(link.getAttribute('data-loaded') !== 'true'){
-    header.style.display = 'none';
-    const isStyleLoaded = setInterval(() => {
-      if(link.getAttribute('data-loaded') === 'true'){
-        clearInterval(isStyleLoaded);
-        header.removeAttribute('style');
-      }
-      if(link.getAttribute('data-loaded') === 'false'){
-        clearInterval(isStyleLoaded);
-      }
-    },10);
-  }
-
   try {
     const initEvent = new Event('gnav:init');
     const parser = new DOMParser();
