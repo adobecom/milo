@@ -15,6 +15,9 @@ import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
 import { getFile, handleExtension } from './utils.js';
 
+const BATCH_REQUEST_PROMOTE = 20;
+const DELAY_TIME_PROMOTE = 3000;
+
 /**
  * Copies the Floodgated files back to the main content tree.
  * Creates intermediate folders if needed.
@@ -132,9 +135,24 @@ async function promoteFloodgatedFiles(project) {
   const startPromote = new Date();
   // Iterate the floodgate tree and get all files to promote
   const allFloodgatedFiles = await findAllFiles();
-  const promoteStatuses = await Promise.all(
-    allFloodgatedFiles.map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
-  );
+
+  // create batches to process the data
+  const batchArray = [];
+  for (let i = 0; i < allFloodgatedFiles.length; i += BATCH_REQUEST_PROMOTE) {
+    const arrayChunk = allFloodgatedFiles.slice(i, i + BATCH_REQUEST_PROMOTE);
+    batchArray.push(arrayChunk);
+  }
+
+  // process data in batches
+  const promoteStatuses = [];
+  for (let i = 0; i < batchArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    promoteStatuses.push(...await Promise.all(
+      batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+    ));
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
+  }
   const endPromote = new Date();
 
   loadingON('Previewing promoted files... ');
