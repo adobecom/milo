@@ -35,19 +35,17 @@ function omitNullValues(target) {
 }
 
 const getTacocatEnv = (envName, locale) => {
-  const scriptUrl = envName === envProd
-    ? `https://www.adobe.com/special/tacocat/lib/${version}/tacocat.js`
-    : `https://www.stage.adobe.com/special/tacocat/lib/${version}/tacocat.js`;
   const wcsLocale = geoMappings[locale.prefix] ?? locale.ietf;
   // eslint-disable-next-line prefer-const
   let [language, country = 'US'] = wcsLocale.split('-', 2);
   if (!supportedLanguages.includes(language)) {
-    language = 'en'; // default to english
+    language = 'en';
   }
-  const literalScriptUrl = envName === envProd
-    ? `https://www.adobe.com/special/tacocat/literals/${language}.js`
-    : `https://www.stage.adobe.com/special/tacocat/literals/${language}.js`;
-
+  const host = envName === envProd
+    ? 'https://www.adobe.com'
+    : 'https://www.stage.adobe.com';
+  const scriptUrl = `${host}/special/tacocat/lib/${version}/tacocat.js`;
+  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
   return { scriptUrl, literalScriptUrl, country, language };
 };
 
