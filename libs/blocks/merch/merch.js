@@ -9,14 +9,12 @@ const wcs = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
 const envProd = 'prod';
 const ctaPrefix = /^CTA +/;
 
-let initialized = false;
-
-const supportedLanguages = [
+const SUPPORTED_LANGUAGES = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
 
-const geoMappings = {
+const GEO_MAPPINGS = {
   africa: 'en-ZA',
   mena_en: 'en-DZ',
   il_he: 'iw-IL',
@@ -24,6 +22,8 @@ const geoMappings = {
   id_id: 'in-ID',
   no: 'nb-NO',
 };
+
+let initialized = false;
 
 function omitNullValues(target) {
   if (target != null) {
@@ -35,10 +35,10 @@ function omitNullValues(target) {
 }
 
 const getTacocatEnv = (envName, locale) => {
-  const wcsLocale = geoMappings[locale.prefix] ?? locale.ietf;
+  const wcsLocale = GEO_MAPPINGS[locale.prefix] ?? locale.ietf;
   // eslint-disable-next-line prefer-const
   let [language, country = 'US'] = wcsLocale.split('-', 2);
-  if (!supportedLanguages.includes(language)) {
+  if (!SUPPORTED_LANGUAGES.includes(language)) {
     language = 'en';
   }
   const host = envName === envProd
