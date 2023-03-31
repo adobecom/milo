@@ -7,11 +7,6 @@
   "embedUrl": "https://example.com/bald-eagle-at-the-park",
   "expires": "2018-10-30T14:37:14+00:00",
   "regionsAllowed": "US",
-  "interactionStatistic": {
-    "@type": "InteractionCounter",
-    "interactionType": { "@type": "WatchAction" },
-    "userInteractionCount": 4756
-  },
   "name": "Bald eagle nest livestream!",
   "thumbnailUrl": "https://example.com/bald-eagle-at-the-park",
   "uploadDate": "2018-10-27T14:00:00+00:00",

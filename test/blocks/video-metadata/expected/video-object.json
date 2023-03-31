@@ -12,10 +12,5 @@
   "duration": "PT1M54S",
   "contentUrl": "https://www.example.com/video/123/file.mp4",
   "embedUrl": "https://www.example.com/embed/123",
-  "interactionStatistic": {
-    "@type": "InteractionCounter",
-    "interactionType": { "@type": "WatchAction" },
-    "userInteractionCount": 5647018
-  },
   "regionsAllowed": "US,NL"
 }

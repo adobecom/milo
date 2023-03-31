@@ -90,13 +90,6 @@ export function createVideoObject(blockMap) {
         video.thumbnailUrl = blockVal.split(LINES2ARRAY_SPLIT_RE);
         if (video.thumbnailUrl.length < 2) video.thumbnailUrl = blockVal;
         return;
-      case 'user-interaction-count':
-        video.interactionStatistic = {
-          '@type': 'InteractionCounter',
-          interactionType: { '@type': 'WatchAction' },
-          userInteractionCount: parseInt(blockVal, 10),
-        };
-        return;
       default:
         if (BROADCAST_EVENT_RE.test(blockKey)) {
           addBroadcastEventField(video, blockKey, blockVal);
