@@ -17,6 +17,7 @@ import { getFile, handleExtension } from './utils.js';
 
 const BATCH_REQUEST_PROMOTE = 20;
 const DELAY_TIME_PROMOTE = 3000;
+const MAX_CHILDREN = 1000;
 
 /**
  * Copies the Floodgated files back to the main content tree.
@@ -56,7 +57,7 @@ async function promoteCopy(srcPath, destinationFolder) {
  */
 async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgFolders) {
   while (fgFolders.length !== 0) {
-    const uri = `${baseURI}${fgFolders.shift()}:/children`;
+    const uri = `${baseURI}${fgFolders.shift()}:/children?$top=${MAX_CHILDREN}`;
     // eslint-disable-next-line no-await-in-loop
     const res = await fetch(uri, options);
     if (res.ok) {
