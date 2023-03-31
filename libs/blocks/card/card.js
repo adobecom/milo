@@ -1,7 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
-import { decorateCommerce } from '../../features/merch.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -152,11 +151,6 @@ const init = (el) => {
 
   if (cardType === HALF || cardType === PRODUCT) {
     addFooter(links, row, merch);
-  }
-
-  if (merch) {
-    const merchLinks = el.querySelectorAll('a[href*="tools/ost?osi="], a[href*="tools/ost/?osi="]');
-    decorateCommerce(merchLinks);
   }
 };
 

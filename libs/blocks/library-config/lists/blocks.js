@@ -110,7 +110,10 @@ export default async function loadBlocks(blocks, list, query) {
       name.textContent = getAuthorName(pageBlock) || getBlockName(pageBlock);
       const copy = document.createElement('button');
       copy.addEventListener('click', (e) => {
-        const table = getTable(pageBlock, getBlockName(pageBlock), block.path);
+        let table = getTable(pageBlock, getBlockName(pageBlock), block.path);
+        table = pageBlock.className === 'section-metadata'
+          ? `${table} ---`
+          : table;
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
         const blob = new Blob([table], { type: 'text/html' });
