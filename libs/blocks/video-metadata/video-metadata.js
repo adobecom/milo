@@ -109,8 +109,8 @@ export function createVideoObject(blockMap) {
 
 export default function init(el) {
   const kv = getMetadata(el);
+  el.remove();
   const obj = createVideoObject(kv);
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
-  el.remove();
 }
