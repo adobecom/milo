@@ -75,34 +75,31 @@ export function createVideoObject(blockMap) {
     const blockVal = v.content && v.content.textContent.trim();
     if (!blockVal) return;
     const blockKey = k && k.replaceAll(' ', '-');
-    switch (blockKey) {
-      case 'content-url':
-      case 'description':
-      case 'duration':
-      case 'embed-url':
-      case 'expires':
-      case 'name':
-      case 'regions-allowed':
-      case 'upload-date':
+    switch (true) {
+      case blockKey === 'content-url':
+      case blockKey === 'description':
+      case blockKey === 'duration':
+      case blockKey === 'embed-url':
+      case blockKey === 'expires':
+      case blockKey === 'name':
+      case blockKey === 'regions-allowed':
+      case blockKey === 'upload-date':
         video[camelize(blockKey)] = blockVal;
-        return;
-      case 'thumbnail-url':
+        break;
+      case blockKey === 'thumbnail-url':
         video.thumbnailUrl = blockVal.split(LINES2ARRAY_SPLIT_RE);
         if (video.thumbnailUrl.length < 2) video.thumbnailUrl = blockVal;
-        return;
+        break;
+      case BROADCAST_EVENT_RE.test(blockKey):
+        addBroadcastEventField(video, blockKey, blockVal);
+        break;
+      case CLIP_RE.test(blockKey):
+        addClipField(video, blockKey, blockVal);
+        break;
+      case SEEK_TO_ACTION_RE.test(blockKey):
+        addSeekToActionField(video, blockKey, blockVal);
+        break;
       default:
-        if (BROADCAST_EVENT_RE.test(blockKey)) {
-          addBroadcastEventField(video, blockKey, blockVal);
-          return;
-        }
-        if (CLIP_RE.test(blockKey)) {
-          addClipField(video, blockKey, blockVal);
-          return;
-        }
-        if (SEEK_TO_ACTION_RE.test(blockKey)) {
-          addSeekToActionField(video, blockKey, blockVal);
-          return;
-        }
         window.lana.log(`VideoMetadata -- Unhandled VideoObject property: ${blockKey}`);
         break;
     }
