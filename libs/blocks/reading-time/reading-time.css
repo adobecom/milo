@@ -1,4 +1,4 @@
-@import '../share/inline-utils.css';
+@import '../../utils/inline.css';
 
 .reading-time > span {
   color: #adadad;
@@ -26,4 +26,22 @@ main > .section > .reading-time.inline > span {
 
 main > .section.center > .reading-time.inline > span {
   margin: 0 auto;
+}
+
+main > .section > .inline-wrapper > .inline + .inline.reading-time,
+main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
+  padding-left: 20px;
+  border-left: 1px solid #adadad;
+}
+
+@media screen and (max-width: 600px) {
+  main > .section > .inline-wrapper > .inline + .inline.reading-time,
+  main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
+    border-left: none;
+    padding-left: 0;
+  }
+  
+  main > .section > .inline-wrapper > .inline + .inline.reading-time {
+    border-top: 1px solid #adadad;
+  }
 }

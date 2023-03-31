@@ -20,9 +20,8 @@ main > .section.center > .inline {
 }
 
 main > .section > .inline-wrapper > .inline + .inline {
-  padding-left: 20px;
   margin-left: 20px;
-  border-left: 1px solid #adadad;
+  padding-left: 0;
 }
 
 @media screen and (max-width: 600px) {
@@ -37,9 +36,7 @@ main > .section > .inline-wrapper > .inline + .inline {
   }
 
   main > .section > .inline-wrapper > .inline + .inline {
-    border-left: none;
-    padding-left: 0;
     margin-left: 0;
-    border-top: 1px solid #adadad;
+    padding-left: 0;
   }
 }

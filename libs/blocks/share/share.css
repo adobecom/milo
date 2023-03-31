@@ -1,4 +1,4 @@
-@import './inline-utils.css';
+@import '../../utils/inline.css';
 
 .share {
   margin-left: auto;
