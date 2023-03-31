@@ -26,12 +26,7 @@ const decorateHeadline = (elem) => {
     }
 
     const currentState = headline.getAttribute('aria-expanded');
-
-    if (currentState === 'false') {
-      headline.setAttribute('aria-expanded', 'true');
-    } else {
-      headline.setAttribute('aria-expanded', 'false');
-    }
+    headline.setAttribute('aria-expanded', currentState === 'false');
   });
 
   // Since heading is turned into a div, it can be safely removed
@@ -111,7 +106,7 @@ const decoratePromo = (elem) => {
       elem.replaceChildren(promoImageElem);
     } else {
     // Otherwise, just replace the image container with the decorated image
-      imageWrapper.replaceWith(promoImageElem);
+      imageWrapper?.replaceWith(promoImageElem);
     }
   };
 
