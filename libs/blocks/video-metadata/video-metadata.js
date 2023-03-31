@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const LINES2ARRAY_SPLIT_RE = /\s*?\r?\n\s*/;
 const BROADCAST_EVENT_RE = /broadcast-event-(\d+)-([\w-]+)/;
@@ -7,15 +8,6 @@ const SEEK_TO_ACTION_RE = /seek-to-action-([\w-]+)/;
 
 function camelize(s) {
   return s.replace(/-./, (x) => x[1].toUpperCase());
-}
-
-function parseKeyValueBlockEl(el) {
-  return [...el.children].reduce((map, row) => {
-    const k = row.children[0].textContent.trim();
-    const v = row.children[1].textContent.trim();
-    if (k) map[k] = v;
-    return map;
-  }, {});
 }
 
 function addBroadcastEventField(videoObj, blockKey, blockValue) {
@@ -80,8 +72,9 @@ export function createVideoObject(blockMap) {
     '@type': 'VideoObject',
   };
   Object.entries(blockMap).forEach(([k, v]) => {
-    if (!v) return;
-    const blockKey = k && k.replaceAll(' ', '-').toLowerCase();
+    const blockVal = v.content && v.content.textContent.trim();
+    if (!blockVal) return;
+    const blockKey = k && k.replaceAll(' ', '-');
     switch (blockKey) {
       case 'content-url':
       case 'description':
@@ -91,30 +84,30 @@ export function createVideoObject(blockMap) {
       case 'name':
       case 'regions-allowed':
       case 'upload-date':
-        video[camelize(blockKey)] = v;
+        video[camelize(blockKey)] = blockVal;
         return;
       case 'thumbnail-url':
-        video.thumbnailUrl = v.split(LINES2ARRAY_SPLIT_RE);
-        if (video.thumbnailUrl.length < 2) video.thumbnailUrl = v;
+        video.thumbnailUrl = blockVal.split(LINES2ARRAY_SPLIT_RE);
+        if (video.thumbnailUrl.length < 2) video.thumbnailUrl = blockVal;
         return;
       case 'user-interaction-count':
         video.interactionStatistic = {
           '@type': 'InteractionCounter',
           interactionType: { '@type': 'WatchAction' },
-          userInteractionCount: parseInt(v, 10),
+          userInteractionCount: parseInt(blockVal, 10),
         };
         return;
       default:
         if (BROADCAST_EVENT_RE.test(blockKey)) {
-          addBroadcastEventField(video, blockKey, v);
+          addBroadcastEventField(video, blockKey, blockVal);
           return;
         }
         if (CLIP_RE.test(blockKey)) {
-          addClipField(video, blockKey, v);
+          addClipField(video, blockKey, blockVal);
           return;
         }
         if (SEEK_TO_ACTION_RE.test(blockKey)) {
-          addSeekToActionField(video, blockKey, v);
+          addSeekToActionField(video, blockKey, blockVal);
           return;
         }
         window.lana.log(`VideoMetadata -- Unhandled VideoObject property: ${blockKey}`);
@@ -125,7 +118,7 @@ export function createVideoObject(blockMap) {
 }
 
 export default function init(el) {
-  const kv = parseKeyValueBlockEl(el);
+  const kv = getMetadata(el);
   const obj = createVideoObject(kv);
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
