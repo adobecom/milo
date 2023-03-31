@@ -175,13 +175,8 @@ class ProfileDropdown {
   }
 
   toggleDropdown() {
-    const isOpen = this.buttonElem.getAttribute('aria-expanded') === 'true';
-
-    if (isOpen) {
-      this.buttonElem.setAttribute('aria-expanded', 'false');
-    } else {
-      this.buttonElem.setAttribute('aria-expanded', 'true');
-    }
+    const currentState = this.buttonElem.getAttribute('aria-expanded');
+    this.buttonElem.setAttribute('aria-expanded', currentState === 'false');
   }
 }
 
