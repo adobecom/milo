@@ -18,7 +18,7 @@ function addBroadcastEventField(videoObj, blockKey, blockValue) {
   switch (key) {
     case 'is-live':
     case 'is-live-broadcast':
-      videoObj.publication[i].isLiveBroadcast = blockValue.toLowerCase() === 'true';
+      videoObj.publication[i].isLiveBroadcast = ['yes', 'true'].includes(blockValue.toLowerCase());
       break;
     case 'start-date':
     case 'end-date':
