@@ -10,6 +10,10 @@ header {
   display: block;
 }
 
+header.gnav {
+  overflow: visible;
+}
+
 header.is-open .gnav-curtain,
 .gnav-curtain.is-open {
   position: fixed;
@@ -55,7 +59,10 @@ header nav.gnav {
   grid-template-columns: 1fr 12px;
   grid-template-rows: 56px 36px;
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
 
 header.has-breadcrumbs nav.gnav {

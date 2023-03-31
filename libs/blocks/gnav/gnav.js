@@ -117,18 +117,31 @@ class Gnav {
 
   decorateToggle = () => {
     const toggle = createTag('button', { class: 'gnav-toggle', 'aria-label': 'Navigation menu', 'aria-expanded': false });
+    const closeToggleOnDocClick = ({ target }) => {
+      if (target !== toggle && !target.closest('.mainnav-wrapper')) {
+        this.el.classList.remove(IS_OPEN);
+        this.desktop.removeEventListener('change', onMediaChange);
+        document.removeEventListener('click', closeToggleOnDocClick);
+      }
+    };
     const onMediaChange = (e) => {
       if (e.matches) {
         this.el.classList.remove(IS_OPEN);
+        document.removeEventListener('click', closeToggleOnDocClick);
       }
     };
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(IS_OPEN)) {
         this.el.classList.remove(IS_OPEN);
         this.desktop.removeEventListener('change', onMediaChange);
+        document.removeEventListener('click', closeToggleOnDocClick);
       } else {
+        if (this.state.openMenu) {
+          this.closeMenu();
+        }
         this.el.classList.add(IS_OPEN);
         this.desktop.addEventListener('change', onMediaChange);
+        document.addEventListener('click', closeToggleOnDocClick);
         this.loadSearch();
       }
     });
@@ -307,7 +320,6 @@ class Gnav {
     });
     navLink.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
       this.toggleMenu(navItem);
     });
     this.decorateButtons(menu);

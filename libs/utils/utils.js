@@ -75,6 +75,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
+  { merch: '/tools/ost?' },
 ];
 const ENVS = {
   local: {
@@ -719,8 +720,8 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
-      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

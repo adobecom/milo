@@ -1,7 +1,7 @@
 import { readFile, resetMouse, setViewport, sendKeys, sendMouse } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { delay } from '../../helpers/waitfor.js';
+import { delay, waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
@@ -16,7 +16,7 @@ await loadDefaultHtml();
 const mod = await import('../../../libs/blocks/gnav/gnav.js');
 let gnav;
 
-const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } }, imsClientId: 'milo' };
 setConfig(config);
 
 describe('Gnav', () => {
@@ -58,6 +58,26 @@ describe('Gnav', () => {
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.true;
     largeMenuBtn.click();
     expect(largeMenu.classList.contains(mod.IS_OPEN)).to.be.false;
+  });
+
+  it('doesn\'t have the toggle menu and sign-in dropdown open at the same time', async () => {
+    await waitForElement('.gnav-signin');
+    const signIn = document.querySelector('.gnav-signin');
+    const toggleButton = document.querySelector('.gnav-toggle');
+    const profile = document.querySelector('.gnav-profile');
+    const header = document.querySelector('header');
+
+    await setViewport({ width: 400, height: 640 });
+    signIn.click();
+    expect(profile.classList.contains(mod.IS_OPEN)).to.be.true;
+    toggleButton.click();
+    expect(header.classList.contains(mod.IS_OPEN)).to.be.true;
+    expect(profile.classList.contains(mod.IS_OPEN)).to.be.false;
+    signIn.click();
+    expect(header.classList.contains(mod.IS_OPEN)).to.be.false;
+    expect(profile.classList.contains(mod.IS_OPEN)).to.be.true;
+    signIn.click();
+    await setViewport({ width: 1250, height: 640 });
   });
 
   it('nav menu close on scroll', async () => {
