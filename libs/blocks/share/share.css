@@ -125,7 +125,7 @@
 .share.inline {
   margin: 0 auto;
   text-align: center;
-  padding: 8px 0 16px 0;
+  padding: 8px 0 16px;
 }
 
 .share.inline p.icon-container {
@@ -133,13 +133,13 @@
   margin: 0;
 }
 
+main > .section > .share.inline {
+  margin: 0 auto;
+}
+
 main > .section > .inline-wrapper > .share.inline {
   margin-top: 0;
   margin-bottom: 0;
-}
-
-main > .section > .share.inline {
-  margin: 0 auto;
 }
 
 main > .section.center .share.inline p.icon-container {
