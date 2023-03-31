@@ -22,6 +22,8 @@ main > .section.center > .inline {
 main > .section > .inline-wrapper > .inline + .inline {
   margin-left: 20px;
   padding-left: 0;
+  margin-right: 0;
+  padding-right: 0;
 }
 
 @media screen and (max-width: 600px) {
@@ -38,5 +40,7 @@ main > .section > .inline-wrapper > .inline + .inline {
   main > .section > .inline-wrapper > .inline + .inline {
     margin-left: 0;
     padding-left: 0;
+    margin-right: 0;
+    padding-right: 0;
   }
 }

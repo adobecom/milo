@@ -1,6 +1,6 @@
 import { createTag } from './utils.js';
 
-export default function inlineBlock(block) {
+export function inlineBlock(block) {
   if (!block.classList.contains('inline')) return;
 
   const section = block.closest('.section');

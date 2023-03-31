@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { inlineBlock } from '../../utils/inline.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { inlineBlock } from '../share/inline-utils.js';
 
 function getTextLength(node) {
   let textLength = 0;
