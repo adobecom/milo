@@ -4,11 +4,11 @@ import { stub } from 'sinon';
 
 window.lana = { log: stub() };
 
-const { default: init } = await import('../../../libs/blocks/video-rich-results/video-rich-results.js');
+const { default: init } = await import('../../../libs/blocks/video-metadata/video-metadata.js');
 
-// npm run test:file test/blocks/video-rich-results/video-rich-results.test.js
-describe('video-rich-results', () => {
-  const blockQuery = '.video-rich-results';
+// npm run test:file test/blocks/video-metadata/video-metadata.test.js
+describe('video-metadata', () => {
+  const blockQuery = '.video-metadata';
   const jsonLdQuery = 'script[type="application/ld+json"]';
 
   const compareJSON = async (mockPath, expectedJSONPath) => {
