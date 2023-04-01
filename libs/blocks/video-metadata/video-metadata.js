@@ -6,8 +6,8 @@ const BROADCAST_EVENT_RE = /broadcast-event-(\d+)-([\w-]+)/;
 const CLIP_RE = /clip-(\d+)-([\w-]+)/;
 const SEEK_TO_ACTION_RE = /seek-to-action-([\w-]+)/;
 
-function camelize(s) {
-  return s.replace(/-./, (x) => x[1].toUpperCase());
+function camelize(str) {
+  return str.replace(/-./, (match) => match[1].toUpperCase());
 }
 
 function addBroadcastEventField(videoObj, blockKey, blockValue) {
@@ -71,10 +71,10 @@ export function createVideoObject(blockMap) {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
   };
-  Object.entries(blockMap).forEach(([k, v]) => {
-    const blockVal = v.content && v.content.textContent.trim();
+  Object.entries(blockMap).forEach(([key, val]) => {
+    const blockVal = val.content && val.content.textContent.trim();
     if (!blockVal) return;
-    const blockKey = k && k.replaceAll(' ', '-');
+    const blockKey = key && key.replaceAll(' ', '-');
     switch (true) {
       case blockKey === 'content-url':
       case blockKey === 'description':
@@ -108,9 +108,9 @@ export function createVideoObject(blockMap) {
 }
 
 export default function init(el) {
-  const kv = getMetadata(el);
+  const metadata = getMetadata(el);
   el.remove();
-  const obj = createVideoObject(kv);
+  const obj = createVideoObject(metadata);
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
 }
