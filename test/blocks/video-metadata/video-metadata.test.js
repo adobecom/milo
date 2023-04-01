@@ -37,4 +37,13 @@ describe('video-metadata', () => {
   it('adds VideoObject with Clip', async () => {
     await compareJSON('./mocks/body-clip.html', './expected/video-object-clip.json');
   });
+
+  it('does not add VideoObject without any valid keys', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-bad.html' });
+    document.head.innerHTML = '';
+    const blockEl = document.querySelector(blockQuery);
+    init(blockEl);
+    const scriptEl = document.querySelector(jsonLdQuery);
+    expect(scriptEl).to.be.null;
+  });
 });

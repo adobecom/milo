@@ -67,10 +67,7 @@ function addSeekToActionField(videoObj, blockKey, blockValue) {
 }
 
 export function createVideoObject(blockMap) {
-  const video = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-  };
+  const video = {};
   Object.entries(blockMap).forEach(([key, val]) => {
     const blockVal = val.content && val.content.textContent.trim();
     if (!blockVal) return;
@@ -104,13 +101,20 @@ export function createVideoObject(blockMap) {
         break;
     }
   });
-  return video;
+  if (Object.keys(video).length) {
+    return Object.assign(video, {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+    });
+  }
+  return null;
 }
 
 export default function init(el) {
   const metadata = getMetadata(el);
   el.remove();
   const obj = createVideoObject(metadata);
+  if (!obj) return;
   const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
   document.head.append(script);
 }
