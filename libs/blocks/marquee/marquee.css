@@ -180,9 +180,9 @@
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .text .icon-area picture {
-  display: block;
-  line-height: 0;
+.marquee .text .icon-area picture,
+.marquee .text .icon-area a {
+  display: contents;
 }
 
 .marquee .text .icon-area img {
@@ -205,14 +205,16 @@
 
 .marquee.split .text .icon-area.icon-area-multiple {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .marquee.split .text .icon-area.icon-area-multiple img {
   height: 40px;
   max-height: 40px;
   max-width: 114px;
+}
+
+.marquee.split .text .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
+  margin-left: 8px;
 }
 
 .marquee .action-area {
