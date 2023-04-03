@@ -214,7 +214,7 @@
 }
 
 .marquee .text .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
-  margin-left: 8px;
+  margin-left: var(--spacing-xxs);
 }
 
 .marquee .action-area {
