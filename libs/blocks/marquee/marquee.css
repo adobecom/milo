@@ -203,17 +203,17 @@
   object-position: left bottom;
 }
 
-.marquee.split .text .icon-area.icon-area-multiple {
+.marquee .text .icon-area.icon-area-multiple {
   display: flex;
 }
 
-.marquee.split .text .icon-area.icon-area-multiple img {
+.marquee .text .icon-area.icon-area-multiple img {
   height: 40px;
   max-height: 40px;
   max-width: 114px;
 }
 
-.marquee.split .text .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
+.marquee .text .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
   margin-left: 8px;
 }
 
@@ -335,7 +335,7 @@
     max-height: 80px;
   }
 
-  .marquee.split .text .icon-area.icon-area-multiple img {
+  .marquee .text .icon-area.icon-area-multiple img {
     height: 40px;
     max-height: 40px;
     max-width: 114px;
@@ -402,7 +402,7 @@
     max-width: 159px;
   }
 
-  .marquee.split .text .icon-area.icon-area-multiple img {
+  .marquee .text .icon-area.icon-area-multiple img {
     height: 40px;
     max-height: 40px;
     max-width: 114px;
@@ -543,7 +543,7 @@
     max-width: 200px;
   }
 
-  .marquee.split .text .icon-area.icon-area-multiple img {
+  .marquee .text .icon-area.icon-area-multiple img {
     height: 40px;
     max-height: 40px;
     max-width: 114px;
