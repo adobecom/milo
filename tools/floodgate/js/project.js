@@ -1,7 +1,6 @@
 import { getConfig } from './config.js';
 import {
   getUrlInfo,
-  getDocPathFromUrl,
   fetchProjectFile,
 } from '../../loc/utils.js';
 import {
@@ -10,9 +9,15 @@ import {
   readProjectFile,
 } from '../../loc/project.js';
 import { getSpFiles } from '../../loc/sharepoint.js';
-import { getFloodgateUrl } from './utils.js';
+import { getDocPathFromUrl, getFloodgateUrl } from './utils.js';
 
 let project;
+
+const PROJECT_STATUS = {
+  NOT_STARTED: 'NOT STARTED',
+  COMPLETED: 'COMPLETED',
+  COMPLETED_WITH_ERROR: 'COMPLETED WITH ERROR',
+};
 
 /**
  * Makes the sharepoint file data part of `projectDetail` per URL.
@@ -121,8 +126,40 @@ async function purgeAndReloadProjectFile() {
   window.location.reload();
 }
 
+function getStatusData(projectJson, field) {
+  const actionData = projectJson[field].data;
+  const lastRun = actionData[actionData.length - 1]['End Timestamp'];
+  const failedPages = actionData[actionData.length - 1]['Failed Pages'];
+  const failedPreviews = actionData[actionData.length - 1]['Failed Previews'];
+  const status = (failedPages.length > 0 || failedPreviews.length > 0)
+    ? PROJECT_STATUS.COMPLETED_WITH_ERROR
+    : PROJECT_STATUS.COMPLETED;
+  return { lastRun, status };
+}
+
+async function updateProjectStatus(projectData) {
+  // Get project action data from excel
+  const projectJson = await readProjectFile(projectData.url);
+  const status = {};
+  let data = { lastRun: '-', status: PROJECT_STATUS.NOT_STARTED };
+
+  if (!projectJson) return status;
+
+  if (projectJson.copystatus?.data?.length > 0) {
+    data = getStatusData(projectJson, 'copystatus');
+  }
+  status.copy = data;
+
+  if (projectJson.promotestatus?.data?.length > 0) {
+    data = getStatusData(projectJson, 'promotestatus');
+  }
+  status.promote = data;
+  return status;
+}
+
 export {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
+  updateProjectStatus,
 };

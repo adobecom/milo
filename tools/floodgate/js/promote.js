@@ -1,0 +1,186 @@
+import {
+  createFolder,
+  getAuthorizedRequestOption,
+  saveFile,
+  updateExcelTable,
+  validateConnection,
+} from '../../loc/sharepoint.js';
+import {
+  hideButtons,
+  loadingON,
+  showButtons,
+  simulatePreview,
+} from '../../loc/utils.js';
+import { getConfig as getFloodgateConfig } from './config.js';
+import { ACTION_BUTTON_IDS } from './ui.js';
+import { getFile, handleExtension } from './utils.js';
+
+const BATCH_REQUEST_PROMOTE = 20;
+const DELAY_TIME_PROMOTE = 3000;
+const MAX_CHILDREN = 1000;
+
+/**
+ * Copies the Floodgated files back to the main content tree.
+ * Creates intermediate folders if needed.
+ */
+async function promoteCopy(srcPath, destinationFolder) {
+  validateConnection();
+  await createFolder(destinationFolder);
+  const { sp } = await getFloodgateConfig();
+  const destRootFolder = `${sp.api.file.copy.baseURI}`.split('/').pop();
+
+  const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${destRootFolder}${destinationFolder}` } };
+  const options = getAuthorizedRequestOption({
+    method: sp.api.file.copy.method,
+    body: JSON.stringify(payload),
+  });
+
+  // copy source is the pink directory for promote
+  const copyStatusInfo = await fetch(`${sp.api.file.copy.fgBaseURI}${srcPath}:/copy`, options);
+  const statusUrl = copyStatusInfo.headers.get('Location');
+  let copySuccess = false;
+  let copyStatusJson = {};
+  while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
+    // eslint-disable-next-line no-await-in-loop
+    const status = await fetch(statusUrl);
+    if (status.ok) {
+      // eslint-disable-next-line no-await-in-loop
+      copyStatusJson = await status.json();
+      copySuccess = copyStatusJson.status === 'completed';
+    }
+  }
+  return copySuccess;
+}
+
+/**
+ * Iteratively finds all files under a specified root folder.
+ */
+async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgFolders) {
+  while (fgFolders.length !== 0) {
+    const uri = `${baseURI}${fgFolders.shift()}:/children?$top=${MAX_CHILDREN}`;
+    // eslint-disable-next-line no-await-in-loop
+    const res = await fetch(uri, options);
+    if (res.ok) {
+      // eslint-disable-next-line no-await-in-loop
+      const json = await res.json();
+      const driveItems = json.value;
+      driveItems?.forEach((item) => {
+        const itemPath = `${item.parentReference.path.replace(`/drive/root:/${rootFolder}`, '')}/${item.name}`;
+        if (item.folder) {
+          // it is a folder
+          fgFolders.push(itemPath);
+        } else {
+          const downloadUrl = item['@microsoft.graph.downloadUrl'];
+          fgFiles.push({ fileDownloadUrl: downloadUrl, filePath: itemPath });
+        }
+      });
+    }
+  }
+
+  return fgFiles;
+}
+
+async function findAllFiles() {
+  const { sp } = await getFloodgateConfig();
+  const baseURI = `${sp.api.excel.update.fgBaseURI}`;
+  const rootFolder = baseURI.split('/').pop();
+  const options = getAuthorizedRequestOption({ method: 'GET' });
+
+  return findAllFloodgatedFiles(baseURI, options, rootFolder, [], ['']);
+}
+
+async function promoteFloodgatedFiles(project) {
+  function updateAndDisplayPromoteStatus(promoteStatus, srcPath) {
+    const promoteDisplayText = promoteStatus
+      ? `Promoted ${srcPath} to main content tree`
+      : `Failed to promote ${srcPath} to the main content tree`;
+    loadingON(promoteDisplayText);
+  }
+
+  async function promoteFile(downloadUrl, filePath) {
+    const status = { success: false };
+    try {
+      let promoteSuccess = false;
+      loadingON(`Promoting ${filePath} ...`);
+      const { sp } = await getFloodgateConfig();
+      const options = getAuthorizedRequestOption();
+      const res = await fetch(`${sp.api.file.get.baseURI}${filePath}`, options);
+      if (res.ok) {
+        // File exists at the destination (main content tree)
+        // Get the file in the pink directory using downloadUrl
+        const file = await getFile(downloadUrl);
+        if (file) {
+          // Save the file in the main content tree
+          const saveStatus = await saveFile(file, filePath);
+          if (saveStatus.success) {
+            promoteSuccess = true;
+          }
+        }
+      } else {
+        // File does not exist at the destination (main content tree)
+        // File can be copied directly
+        const destinationFolder = `${filePath.substring(0, filePath.lastIndexOf('/'))}`;
+        promoteSuccess = await promoteCopy(filePath, destinationFolder);
+      }
+      updateAndDisplayPromoteStatus(promoteSuccess, filePath);
+      status.success = promoteSuccess;
+      status.srcPath = filePath;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(`Error occurred when trying to promote files to main content tree ${error.message}`);
+    }
+    return status;
+  }
+
+  hideButtons(ACTION_BUTTON_IDS);
+  const startPromote = new Date();
+  // Iterate the floodgate tree and get all files to promote
+  const allFloodgatedFiles = await findAllFiles();
+
+  // create batches to process the data
+  const batchArray = [];
+  for (let i = 0; i < allFloodgatedFiles.length; i += BATCH_REQUEST_PROMOTE) {
+    const arrayChunk = allFloodgatedFiles.slice(i, i + BATCH_REQUEST_PROMOTE);
+    batchArray.push(arrayChunk);
+  }
+
+  // process data in batches
+  const promoteStatuses = [];
+  for (let i = 0; i < batchArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    promoteStatuses.push(...await Promise.all(
+      batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+    ));
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
+  }
+  const endPromote = new Date();
+
+  loadingON('Previewing promoted files... ');
+  const previewStatuses = await Promise.all(
+    promoteStatuses
+      .filter((status) => status.success)
+      .map((status) => simulatePreview(handleExtension(status.srcPath), 1)),
+  );
+  loadingON('Completed Preview for promoted files... ');
+
+  const failedPromotes = promoteStatuses.filter((status) => !status.success)
+    .map((status) => status.srcPath || 'Path Info Not available');
+  const failedPreviews = previewStatuses.filter((status) => !status.success)
+    .map((status) => status.path);
+
+  const excelValues = [['PROMOTE', startPromote, endPromote, failedPromotes.join('\n'), failedPreviews.join('\n')]];
+  await updateExcelTable(project.excelPath, 'PROMOTE_STATUS', excelValues);
+  loadingON('Project excel file updated with promote status... ');
+  showButtons(ACTION_BUTTON_IDS);
+
+  if (failedPromotes.length > 0 || failedPreviews.length > 0) {
+    loadingON('Error occurred when promoting floodgated content. Check project excel sheet for additional information<br/><br/>'
+      + 'Reloading page... please wait.');
+  } else {
+    loadingON('Promoted floodgate tree successfully. Reloading page... please wait.');
+  }
+  setTimeout(() => window.location.reload(), 3000);
+}
+
+export default promoteFloodgatedFiles;

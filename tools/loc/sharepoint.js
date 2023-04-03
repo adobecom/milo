@@ -117,6 +117,7 @@ async function getSpFiles(filePaths, isFloodgate) {
       payload.requests.push(getSharepointFileRequest(sp, index, filePath, isFloodgate));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
   const spFileResponses = await Promise.all(spFilePromises);
   return Promise.all(spFileResponses.map((file) => file.json()));
@@ -445,4 +446,6 @@ export {
   saveFileAndUpdateMetadata,
   updateExcelTable,
   addWorksheetToExcel,
+  validateConnection,
+  createFolder,
 };

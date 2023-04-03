@@ -6,6 +6,7 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
+  'article-header',
   'aside',
   'author-header',
   'caas',
@@ -48,6 +49,7 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'tags',
   'tiktok',
   'twitter',
   'video',
@@ -73,6 +75,7 @@ const AUTO_BLOCKS = [
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
+  { merch: '/tools/ost?' },
 ];
 const ENVS = {
   local: {
@@ -248,8 +251,12 @@ export function appendHtmlPostfix(area = document) {
 
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
+    let url = { pathname: href };
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || href.endsWith('/')
+      || url.pathname?.endsWith('/')
       || href === pageUrl.origin
       || HAS_EXTENSION.test(href.split('/').pop())
       || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
@@ -576,7 +583,11 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { loadBlock(header); }
+  if (header) { 
+    header.classList.add('gnav-hide');
+    await loadBlock(header); 
+    header.classList.remove('gnav-hide');
+  }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -659,6 +670,15 @@ function decorateMeta() {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
   });
+
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
+  });
 }
 
 export async function loadArea(area = document) {
@@ -704,8 +724,8 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
-      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

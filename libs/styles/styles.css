@@ -241,3 +241,7 @@ picture.bg-img img {
     margin-top: 97px;
   }
 }
+
+.gnav-hide {
+  opacity: 0;
+}

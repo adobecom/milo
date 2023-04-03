@@ -39,8 +39,8 @@ function changeTabs(e) {
 }
 
 function getStringKeyName(str) {
-  /* 
-  The [^...] character class is used to match any character that is not a valid CSS selector character. 
+  /*
+  The [^...] character class is used to match any character that is not a valid CSS selector character.
   The \p{L} and \p{N} Unicode properties are used to match any letter or digit character in any language.
   */
   const regex = /[^\p{L}\p{N}_-]/gu;
@@ -52,16 +52,15 @@ function getUniqueId(el) {
   return [...tabs].indexOf(el) + 1;
 }
 
-function configTabs(config) {
-  console.log('configTabs', config);
+function configTabs(config, rootElem) {
   if (config['active-tab']) {
-    const id = `tab-${config['tab-id']}-${getStringKeyName(config['active-tab'])}`;
-    const sel = document.getElementById(id);
+    const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
+    const sel = rootElem.querySelector(id);
     if (sel) sel.click();
   }
 }
 
-function initTabs(elm, config) {
+function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
   tabLists.forEach((tabList) => {
@@ -85,7 +84,7 @@ function initTabs(elm, config) {
   tabs.forEach((tab) => {
     tab.addEventListener('click', changeTabs);
   });
-  if (config) configTabs(config);
+  if (config) configTabs(config, rootElem);
 }
 
 function handleDeferredImages(e) {
@@ -98,6 +97,7 @@ function handleDeferredImages(e) {
 }
 
 const init = (block) => {
+  const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   const parentSection = block.closest('.section');
   /* c8 ignore next */
@@ -188,7 +188,7 @@ const init = (block) => {
       if (assocTabItem) assocTabItem.append(section);
     });
   });
-  initTabs(block, config);
+  initTabs(block, config, rootElem);
 };
 
 export default init;

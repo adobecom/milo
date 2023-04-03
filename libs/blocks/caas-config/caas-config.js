@@ -160,7 +160,8 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
-    dateModified: 'Date: (Last Modified)',
+    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
+    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -215,7 +216,7 @@ const getTagTree = (root) => {
   return options;
 };
 
-const Select = ({ label, options, prop }) => {
+const Select = ({ label, options, prop, sort = false }) => {
   const context = useContext(ConfiguratorContext);
 
   const onSelectChange = (val) => {
@@ -230,6 +231,7 @@ const Select = ({ label, options, prop }) => {
     <${FormSelect}
       label=${label}
       name=${prop}
+      sort=${sort}
       onChange=${onSelectChange}
       options=${options}
       value=${context.state[prop]}
@@ -290,17 +292,27 @@ const BasicsPanel = ({ tagsData }) => {
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
 
-  // Manually correct for Chinese
+  // Manually correct for Chinese + Greece
   delete languageTags['caas:language/zh-Hans'];
   delete languageTags['caas:language/zh-Hant'];
   languageTags['caas:language/zh'] = 'Chinese';
+
+  if (languageTags['caas:language/indonesian']) {
+    languageTags['caas:language/id'] = languageTags['caas:language/indonesian'];
+    delete languageTags['caas:language/indonesian'];
+  }
+
+  if (countryTags['caas:country/gr_en']) {
+    countryTags['caas:country/gr'] = countryTags['caas:country/gr_en'];
+    delete countryTags['caas:country/gr_en'];
+  }
 
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-    <${Select} options=${countryTags} prop="country" label="Country" />
-    <${Select} options=${languageTags} prop="language" label="Language" />
+    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${Select} options=${languageTags} prop="language" label="Language" sort />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
   `;
@@ -444,7 +456,8 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
+      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
