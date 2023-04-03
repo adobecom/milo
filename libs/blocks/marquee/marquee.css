@@ -249,6 +249,11 @@
   font-weight: 700;
 }
 
+.marquee.large.split p.action-area a:not(.con-button) {
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+}
+
 .marquee .media {
   order: 1;
   width: var(--grid-container-width); /* 10 grid / 83% */
