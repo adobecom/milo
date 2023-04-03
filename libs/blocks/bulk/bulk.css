@@ -1,0 +1,167 @@
+.bulk {
+  margin: 0 30px;
+}
+
+.bulk-input.is-hidden {
+  display: none;
+}
+
+.bulk-user-name {
+  font-size: 10pt;
+}
+
+.bulk-user-signout {
+  font-size: 10pt;
+}
+
+.bulk-urls-input {
+  width: 100%;
+  height: 150px;
+  margin: 10px 0;
+}
+
+.bulk-action {
+  margin-top: -10px;
+}
+
+.bulk-action-select, .bulk-action-submit {
+  padding: 10px 30px;
+  float: right;
+  width: 25%;
+}
+
+.bulk-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bulk-urls-title, .bulk-user-header {
+  text-transform: uppercase;
+}
+
+.bulk-error {
+  font-size: 12pt;
+  background-color: red;
+  border-radius: 50px;
+  margin: 60px 2px;
+  color: white;
+  padding: 20px;
+}
+
+.bulk-status {
+  margin-top: 50px;
+}
+
+.bulk-status-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12pt;
+  background-color: green;
+  border-radius: 50px;
+  margin: 60px 2px;
+  color: white;
+  padding: 20px;
+}
+
+.bulk-status-head-title {
+  padding-left: 20px;
+  padding-top: 10px;
+}
+
+.bulk-status-head-copy {
+  border: none;
+  background-color: green;
+  background-image: url('../../ui/img/spectrum-copy.svg');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  width: 44px;
+  height: 22px;
+}
+
+.bulk-status-head-toggle-urls {
+  border: none;
+  background-color: green;
+  color: white;
+  font-size: 30px;
+}
+
+.bulk-status-head-toggle-urls::before {
+  content: '-';
+}
+
+.bulk-status-head-toggle-urls.open::before {
+  content: '+';
+}
+
+.bulk-status-url {
+  width: 35%
+}
+
+.bulk-status-preview, .bulk-status-publish {
+  width: 15%;
+}
+
+.bulk-status-content {
+  width: 100%;
+}
+
+.bulk-status-content-col1, .bulk-status-content-col3 {
+  width: 35%;
+}
+
+.bulk-status-content-col2, .bulk-status-content-col4 {
+  width: 15%;
+}
+
+.bulk-status-header-row {
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.bulk-status-row, .bulk-status-header-row {
+  font-size: 10pt;
+}
+
+.bulk-status-footer {
+  width: 100%;
+  margin-top: 30px;
+  font-size: 12pt;
+  text-transform: uppercase;
+}
+
+.bulk-date {
+  margin-right: 10px;
+}
+
+.bulk-resume-modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0 0 0 / 40%);
+}
+
+.bulk-resume-modal.displayed {
+  display: block;
+}
+
+.bulk-resume-modal-content {
+  background: #FFF 0 0 no-repeat padding-box;
+  margin: 40% auto;
+  padding: 20px;
+  border: 1px solid #B1B1B1;
+  border-radius: 4px;
+  width: 80%;
+  height: 100px;
+}
+
+.bulk-resume-modal-button-resume, .bulk-resume-modal-button-cancel {
+  padding: 10px 30px;
+  margin-top: 20px;
+  margin-right: 10px;
+  width: 150px;
+}
