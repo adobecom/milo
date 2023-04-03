@@ -352,17 +352,17 @@
   position: relative;
 }
 
-/* Rest for nested blocks foreground */
+/* Multiple slides reset for nested blocks foreground */
+.carousel.show-2 .carousel-slide .foreground,
+.carousel.show-3 .carousel-slide .foreground,
+.carousel.show-4 .carousel-slide .foreground,
+.carousel.show-5 .carousel-slide .foreground,
+.carousel.show-6 .carousel-slide .foreground { width: auto; }
+
 .carousel.container .carousel-slide .foreground:not(.icon-block .foreground) {
   max-width: unset;
   margin: unset;
 }
-
-.carousel.show-2 .carousel-slide .foreground,
-.carousel.show-3 .carousel-slide .foreground
-.carousel.show-4 .carousel-slide .foreground
-.carousel.show-5 .carousel-slide .foreground
-.carousel.show-6 .carousel-slide .foreground { width: auto; }
 
 .carousel.container .carousel-slide .container {
   width: unset;
@@ -374,7 +374,8 @@
 .carousel.container .carousel-slide.section.m-spacing,
 .carousel.container .carousel-slide.section.l-spacing,
 .carousel.container .carousel-slide.section.xl-spacing,
-.carousel.container .carousel-slide.section.xxl-spacing { padding: 0; }
+.carousel.container .carousel-slide.section.xxl-spacing,
+.carousel.container .carousel-slide.section.xxxl-spacing { padding: 0; }
 
 /* Apply spacing token to block inside of slide */
 .carousel.container .carousel-slide.xs-spacing > div,
@@ -392,8 +393,11 @@
 .carousel.container .carousel-slide.xl-spacing > div,
 .carousel.container .carousel-slide .xl-spacing { padding: var(--spacing-xl); }
 
-.carousel.container .carousel-slide.xxl-spacing > div
+.carousel.container .carousel-slide.xxl-spacing > div,
 .carousel.container .carousel-slide .xxl-spacing { padding: var(--spacing-xxl); }
+
+.carousel.container .carousel-slide.xxxl-spacing > div,
+.carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
 
 @media (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {

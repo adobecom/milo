@@ -285,6 +285,7 @@ div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
 div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
 div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
 div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
 
 .con-block.max-width-6 .foreground { max-width: 600px; }
 .con-block.max-width-8 .foreground { max-width: 800px; }
