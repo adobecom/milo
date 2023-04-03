@@ -295,6 +295,7 @@
   .marquee.split {
     display: flex;
     justify-content: center;
+    min-height: 360px;
   }
 
   .marquee.split .action-area {
@@ -416,7 +417,8 @@
 }
 
 @media screen and (min-width: 1200px) {
-  .marquee {
+  .marquee,
+  .marquee.split {
     min-height: 560px;
   }
 
