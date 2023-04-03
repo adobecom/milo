@@ -47,8 +47,8 @@ function getStringKeyName(str) {
   return str.trim().toLowerCase().replace(/\s+/g, '-').replace(regex, '');
 }
 
-function getUniqueId(el) {
-  const tabs = document.querySelectorAll('.tabs');
+function getUniqueId(el, rootElem) {
+  const tabs = rootElem.querySelectorAll('.tabs');
   return [...tabs].indexOf(el) + 1;
 }
 
@@ -118,7 +118,7 @@ const init = (block) => {
       row.remove();
     });
   }
-  const tabsId = config.id ? config.id : getUniqueId(block);
+  const tabsId = config.id ? config.id : getUniqueId(block, rootElem);
   config['tab-id'] = tabsId;
   block.id = `tabs-${tabsId}`;
   parentSection?.classList.add(`tablist-${tabsId}-section`);
@@ -167,7 +167,7 @@ const init = (block) => {
   }
 
   // Tab Sections
-  const allSections = Array.from(document.querySelectorAll('div.section'));
+  const allSections = Array.from(rootElem.querySelectorAll('div.section'));
   allSections.forEach((e, i) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
@@ -184,7 +184,7 @@ const init = (block) => {
         val = getStringKeyName(String(values[1]));
       }
       const section = sectionMetadata.closest('.section');
-      const assocTabItem = document.getElementById(`tab-panel-${id}-${val}`);
+      const assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
       if (assocTabItem) assocTabItem.append(section);
     });
   });
