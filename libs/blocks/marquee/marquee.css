@@ -424,6 +424,10 @@
     min-height: 560px;
   }
 
+  marquee.small {
+    min-height: 360px;
+  }
+
   .marquee .background .mobileOnly.tabletOnly,
   .marquee .background .mobileOnly,
   .marquee .background .tabletOnly {
