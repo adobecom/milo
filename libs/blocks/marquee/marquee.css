@@ -424,7 +424,7 @@
     min-height: 560px;
   }
 
-  marquee.small {
+  .marquee.small {
     min-height: 360px;
   }
 
