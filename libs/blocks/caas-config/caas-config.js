@@ -160,7 +160,8 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
-    dateModified: 'Date: (Last Modified)',
+    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
+    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -426,15 +427,6 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
-    <${MultiField}
-      onChange=${onChange('hideCtaIds')}
-      className="hideCtaIds"
-      values=${context.state.hideCtaIds}
-      title="Hidden CTAs"
-      subTitle="Enter the UUID for cards that should never have CTAs"
-    >
-      <${FormInput} name="contentId" onValidate${isValidUuid} />
-    <//>
   `;
 };
 
@@ -464,7 +456,8 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
+      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
