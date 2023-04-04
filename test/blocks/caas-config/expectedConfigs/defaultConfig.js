@@ -88,7 +88,7 @@ const defaultConfig = {
     enabled: false,
     resultsQuantityShown: false,
     loadMoreButton: { style: 'primary', useThemeThree: false },
-    type: 'none',
+    type: 'paginator',
     i18n: {
       loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
       paginator: {
