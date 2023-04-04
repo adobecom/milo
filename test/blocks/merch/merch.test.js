@@ -177,7 +177,7 @@ describe('Merch Block', () => {
           },
         },
       });
-      const el = document.querySelector('.merch.cta');
+      const el = document.querySelector('.merch.cta.config');
       const { nodeName, textContent, dataset } = await merch(el);
       expect(nodeName).to.equal('A');
       expect(textContent).to.equal('Buy Now');
