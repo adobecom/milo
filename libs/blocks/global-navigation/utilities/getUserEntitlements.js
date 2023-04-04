@@ -126,7 +126,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
     })
     .then((response) => {
       clearTimeout(timeout);
-      return response.status === 200 ? response.json() : null;
+      return response.status === 200 ? response.json() : emptyEntitlements();
     });
   return res;
 };
