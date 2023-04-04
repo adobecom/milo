@@ -37,24 +37,24 @@ const getQueryParameters = (params) => {
   return result;
 };
 
-const emptyEntitlements = () => ({
+const emptyEntitlements = {
   clouds: {},
   arrangment_codes: {},
   fulfilled_codes: {},
   offer_families: {},
   list: { fulfilled_codes: [] },
-});
+};
 const CREATIVE_CLOUD = 'creative_cloud';
 const DOCUMENT_CLOUD = 'document_cloud';
 const EXPERIENCE_CLOUD = 'experience_cloud';
 
 /**
- * Breaks JIL offers(subscriptions) into easily addressable flate data structure.
+ * Breaks JIL offers(subscriptions) into easily addressable flat data structure.
  * @param {*} offers
  */
 const mapSubscriptionCodes = (offers) => {
   if (!Array.isArray(offers)) {
-    return emptyEntitlements();
+    return emptyEntitlements;
   }
 
   const {
@@ -63,7 +63,7 @@ const mapSubscriptionCodes = (offers) => {
     fulfilled_codes,
     offer_families,
     list,
-  } = emptyEntitlements();
+  } = emptyEntitlements;
 
   offers.forEach(({ fulfilled_items, offer = {} }) => {
     const cloud = offer.product_arrangement?.cloud;
@@ -71,7 +71,7 @@ const mapSubscriptionCodes = (offers) => {
     clouds[DOCUMENT_CLOUD] = clouds[DOCUMENT_CLOUD] || cloud === 'DOCUMENT';
     clouds[EXPERIENCE_CLOUD] = clouds[EXPERIENCE_CLOUD] || cloud === 'EXPERIENCE';
 
-    const family = offer?.product_arrangement?.family;
+    const family = offer.product_arrangement?.family;
     if (family) {
       offer_families[family.toLowerCase()] = true;
     }
@@ -126,7 +126,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
     })
     .then((response) => {
       clearTimeout(timeout);
-      return response.status === 200 ? response.json() : emptyEntitlements();
+      return response.status === 200 ? response.json() : emptyEntitlements;
     });
   return res;
 };
@@ -140,14 +140,15 @@ const getSubscriptions = async ({ queryParams, locale }) => {
  * @returns {object} JIL Entitlements
  */
 const getUserEntitlements = async ({ params, locale, format } = {}) => {
-  if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements());
+  if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements);
 
   const queryParams = getQueryParameters(params);
   if (entitlements[queryParams]) {
     return format === 'raw'
       ? entitlements[queryParams]
       : entitlements[queryParams]
-        .then((res) => mapSubscriptionCodes(res));
+        .then((res) => mapSubscriptionCodes(res))
+        .catch(() => emptyEntitlements);
   }
 
   entitlements[queryParams] = entitlements[queryParams]
@@ -155,14 +156,14 @@ const getUserEntitlements = async ({ params, locale, format } = {}) => {
      // TODO we might need to format data for analytics
      getSubscriptions({ queryParams, locale })
        .then((data) => resolve(data))
-       .catch(() => resolve(emptyEntitlements()));
+       .catch(() => resolve(emptyEntitlements));
    });
 
   return format === 'raw'
     ? entitlements[queryParams]
     : entitlements[queryParams]
       .then((res) => mapSubscriptionCodes(res))
-      .catch(() => emptyEntitlements());
+      .catch(() => emptyEntitlements);
 };
 
 export default getUserEntitlements;
