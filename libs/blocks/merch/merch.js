@@ -3,6 +3,7 @@ import {
   getConfig,
   createTag,
 } from '../../utils/utils.js';
+import getCheckoutContext from './checkout-context.js';
 
 const VERSION = '1.12.0';
 const WCS = { apiKey: 'wcms-commerce-ims-ro-user-milo' };
@@ -127,16 +128,9 @@ export default async function init(el) {
     ?? el.closest('[data-promotion-code]')?.dataset.promotionCode) || undefined;
 
   if (isCTA(type)) {
-    const checkoutContext = {}; // TODO: load dynamically
-    const checkoutWorkflow = searchParams.get('checkoutType');
-    const checkoutWorkflowStep = searchParams.get('workflowStep');
     const options = omitNullValues({
-      ...checkoutContext,
-      ...omitNullValues({
-        promotionCode,
-        checkoutWorkflow,
-        checkoutWorkflowStep,
-      }),
+      promotionCode,
+      ...getCheckoutContext(searchParams, getConfig()),
     });
     buildCheckoutButton(el, osi, options);
     return el;
