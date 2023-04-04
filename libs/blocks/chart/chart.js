@@ -46,7 +46,7 @@ export function processDataset(data) {
   const optionalHeaders = ['unit', 'group', 'color', 'subheading'];
   const headers = data?.[0];
   const unitKey = headers ? propertyNameCI(headers, 'unit') : null;
-  const units = headers?.[unitKey]?.split('-') || [];
+  const units = headers?.[unitKey]?.split('-') || [''];
   const cleanHeaders = Object.keys(headers).filter((header) => (
     !optionalHeaders.includes(header.toLowerCase())
   ));
@@ -342,7 +342,7 @@ export const pieSeriesOptions = (size) => {
  */
 export const getChartOptions = ({
   chartType,
-  processedData: { dataset, headers, units = [] } = {},
+  processedData: { dataset, headers, units = [''] } = {},
   series,
   size,
   colors,
