@@ -48,7 +48,7 @@
       "id": "sendtocaas",
       "environments": ["dev","preview", "live", "prod"],
       "event": "send-to-caas",
-      "excludePaths": ["/tools/caas**", "*.json"]
+      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
     {
       "containerId": "tools",
@@ -64,6 +64,14 @@
       "id": "preflight",
       "environments": ["dev", "preview", "live"],
       "event": "preflight"
+    },
+    {
+      "containerId": "tools",
+      "id": "tools",
+      "title": "Use offer",
+      "environments": [ "edit" ],
+      "url": "/tools/ost",
+      "includePaths": [ "**.docx**" ]
     },
     {
       "containerId": "tools",
