@@ -172,6 +172,11 @@ main>.section[class*='-up']>.content {
 }
 
 @media screen and (min-width: 1200px) {
+  .section.grid-width-full {
+    padding-left: var(--spacing-l);
+    padding-right: var(--spacing-l);
+  }
+
   .section.grid-width-10 {
     padding-left: var(--grid-margins-width-10);
     padding-right: var(--grid-margins-width-10);
