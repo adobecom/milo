@@ -362,7 +362,7 @@ function enableRetry() {
 }
 
 async function fetchWithRetry (apiUrl, options, retryCount)  {
-
+  // check if retryFlag is enabled
   if (!retryFlag) {
     return fetch(apiUrl, options);
   }
