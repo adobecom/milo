@@ -125,7 +125,7 @@ async function getSpFiles(filePaths, isFloodgate) {
 
 async function getFile(doc) {
   if (doc && doc.sp && doc.sp.status === 200) {
-    const response = await fetch(doc.sp['@microsoft.graph.downloadUrl']);
+    const response = await fetchWithRetry(doc.sp['@microsoft.graph.downloadUrl']);
     return response.blob();
   }
   return undefined;
@@ -140,7 +140,7 @@ async function createFolder(folder, isFloodgate) {
 
   const baseURI = isFloodgate ? sp.api.directory.create.fgBaseURI : sp.api.directory.create.baseURI;
 
-  const res = await fetch(`${baseURI}${folder}`, options);
+  const res = await fetchWithRetry(`${baseURI}${folder}`, options);
   if (res.ok) {
     return res.json();
   }
@@ -170,7 +170,7 @@ async function createUploadSession(sp, file, dest, filename, isFloodgate) {
 
   const baseURI = isFloodgate ? sp.api.file.createUploadSession.fgBaseURI : sp.api.file.createUploadSession.baseURI;
 
-  const createdUploadSession = await fetch(`${baseURI}${dest}:/createUploadSession`, options);
+  const createdUploadSession = await fetchWithRetry(`${baseURI}${dest}:/createUploadSession`, options);
   return createdUploadSession.ok ? createdUploadSession.json() : undefined;
 }
 
@@ -184,7 +184,7 @@ async function uploadFile(sp, uploadUrl, file) {
   options.headers.append('Content-Range', `bytes 0-${file.size - 1}/${file.size}`);
   options.headers.append('Prefer', 'bypass-shared-lock');
   options.body = file;
-  return fetch(`${uploadUrl}`, options);
+  return fetchWithRetry(`${uploadUrl}`, options);
 }
 
 async function deleteFile(sp, filePath) {
@@ -286,7 +286,7 @@ async function updateFile(dest, metadata, customMetadata = {}) {
     method: sp.api.file.update.method,
     body: JSON.stringify(payload),
   });
-  const updateMetadata = await fetch(`${sp.api.file.update.baseURI}${dest}:/listItem/fields`, options);
+  const updateMetadata = await fetchWithRetry(`${sp.api.file.update.baseURI}${dest}:/listItem/fields`, options);
   if (updateMetadata.ok) {
     return updateMetadata.json();
   }
@@ -321,13 +321,13 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   // In case of FG copy action triggered via saveFile(), locked file copy happens in the floodgate content location
   // So baseURI is updated to reflect the destination accordingly
   const contentURI = isFloodgate && isFloodgateLockedFile ? fgBaseURI : baseURI;
-  const copyStatusInfo = await fetch(`${contentURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
-    const status = await fetch(statusUrl);
+    const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
       // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
@@ -342,7 +342,7 @@ async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
   const fileName = srcPath.split('/').pop();
   if (copyStatus) {
     const { sp } = await getConfig();
-    const copiedFile = await fetch(`${sp.api.file.get.baseURI}${destinationFolder}/${getFileNameFromPath(srcPath)}`, getAuthorizedRequestOption());
+    const copiedFile = await fetchWithRetry(`${sp.api.file.get.baseURI}${destinationFolder}/${getFileNameFromPath(srcPath)}`, getAuthorizedRequestOption());
     if (copiedFile.ok) {
       const copiedFileJson = await copiedFile.json();
       await updateFile(`${destinationFolder}/${fileName}`, await getMetadata(srcPath, copiedFileJson));
@@ -350,6 +350,48 @@ async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
     }
   }
   throw new Error(`Could not copy file ${destinationFolder}`);
+}
+
+let nextCallAfter = 0;
+const reqThresh=5;
+let retryFlag = false;
+const TOO_MANY_REQUESTS = 429;
+
+function enableRetry() {
+  retryFlag = true;
+}
+
+async function fetchWithRetry (apiUrl, options, retryCount)  {
+
+  if (!retryFlag) {
+    return fetch(apiUrl, options);
+  }
+
+  retryCount = retryCount || 0;
+
+  return new Promise((resolve, reject) => {
+    let currentTime = Date.now();
+    if (retryCount > reqThresh) {
+      reject();
+    } else if (nextCallAfter != 0 && currentTime < nextCallAfter) {
+      setTimeout (
+         () => fetchWithRetry(apiUrl, options, retryCount).then(newResp => resolve(newResp)).catch(err => reject(err)),
+        nextCallAfter - currentTime
+      ); nextCallAfter=0;
+    } else {
+      retryCount++
+      fetch(apiUrl, options).then(resp => {
+        const retryAfter= resp.headers.get("ratelimit-reset") || resp.headers.get("retry-after") || 0;
+        if( (resp.headers.get("test-retry-status") == TOO_MANY_REQUESTS) || (resp.status ==TOO_MANY_REQUESTS)) {
+          nextCallAfter = Date.now() + retryAfter * 1000;
+          fetchWithRetry(apiUrl, options, retryCount).then(newResp => resolve(newResp)).catch(err => reject(err));
+        } else {
+          nextCallAfter = retryAfter != null ? Date.now() + retryAfter * 1000 : 0;
+          resolve(resp);
+        }}
+      ).catch(err => reject(err));
+    }
+  });
 }
 
 async function saveFile(file, dest, isFloodgate) {
@@ -402,7 +444,7 @@ async function updateExcelTable(excelPath, tableName, values) {
     method: sp.api.excel.update.method,
   });
 
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `${sp.api.excel.update.baseURI}${excelPath}:/workbook/tables/${tableName}/rows/add`,
     options,
   );
@@ -448,4 +490,5 @@ export {
   addWorksheetToExcel,
   validateConnection,
   createFolder,
+  enableRetry
 };
