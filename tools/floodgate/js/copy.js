@@ -8,9 +8,6 @@ import { hideButtons, loadingON, showButtons, simulatePreview } from '../../loc/
 import { ACTION_BUTTON_IDS } from './ui.js';
 import { handleExtension } from './utils.js';
 
-const BATCH_REQUEST_COPY = 20;
-const DELAY_TIME_COPY = 3000;
-
 async function floodgateContent(project, projectDetail) {
   function updateAndDisplayCopyStatus(copyStatus, srcPath) {
     const copyDisplayText = copyStatus
@@ -58,24 +55,9 @@ async function floodgateContent(project, projectDetail) {
 
   hideButtons(ACTION_BUTTON_IDS);
   const startCopy = new Date();
-  // create batches to process the data
-  const contentToFloodgate = [...projectDetail.urls];
-  const batchArray = [];
-  for (let i = 0; i < contentToFloodgate.length; i += BATCH_REQUEST_COPY) {
-    const arrayChunk = contentToFloodgate.slice(i, i + BATCH_REQUEST_COPY);
-    batchArray.push(arrayChunk);
-  }
-
-  // process data in batches
-  const copyStatuses = [];
-  for (let i = 0; i < batchArray.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    copyStatuses.push(...await Promise.all(
-      batchArray[i].map((files) => copyFilesToFloodgateTree(files[1])),
-    ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_COPY));
-  }
+  const copyStatuses = await Promise.all(
+    [...projectDetail.urls].map((valueArray) => copyFilesToFloodgateTree(valueArray[1])),
+  );
   const endCopy = new Date();
 
   loadingON('Previewing for copied files... ');
