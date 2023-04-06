@@ -122,8 +122,8 @@ const init = (block) => {
   parentSection?.classList.add(`tablist-${tabsId}-section`);
 
   // Tab Content
-  const tabContentContainer = createTag('div', { class: 'tabContent-container' });
-  const tabContent = createTag('div', { class: 'tabContent' }, tabContentContainer);
+  const tabContentContainer = createTag('div', { class: 'tab-content-container' });
+  const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
   block.append(tabContent);
 
   // Tab List

@@ -1,5 +1,3 @@
-/* stylelint-disable selector-class-pattern */
-
 :root {
   /* Tab Colors */
   --tabs-active-color: #1473e6;
@@ -53,14 +51,15 @@
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
-  /* ScrollProps */
-  /* If content exceeds height of container, overflow! */
+
+  /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   scrollbar-width: none; /* Firefox 64 */
-  /*default bg*/
+  
+  /* default bg */
   background: var(--tabs-list-bg-gradient);
 }
 
@@ -185,7 +184,6 @@
 .tabs.quiet div[role="tablist"] button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-color);
 }
-
 
 /* Section Metadata */
 .tabs-background-transparent .tabs,
