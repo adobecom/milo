@@ -162,30 +162,39 @@ describe('Merch Block', () => {
       expect(dataset.template).to.equal('checkoutUrl');
       expect(dataset.promotionCode).to.equal(undefined);
       expect(dataset.checkoutWorkflow).to.equal(undefined);
-      expect(dataset.checkoutWorkflowStep).to.equal('email');
-      expect(dataset.checkoutClientId).to.equal('adobe_com');
+      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
+      expect(dataset.checkoutClientId).to.equal(undefined);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
     it('merch link to CTA, config values', async () => {
-      setConfig({
-        commerce: {
-          checkoutContext: {
-            checkoutType: 'UCv2',
-            workflowStep: 'checkout/email',
-            clientId: 'dc',
-          },
-        },
-      });
+      setConfig({ commerce: { checkoutClientId: 'dc' } });
       const el = document.querySelector('.merch.cta.config');
       const { nodeName, textContent, dataset } = await merch(el);
       expect(nodeName).to.equal('A');
       expect(textContent).to.equal('Buy Now');
       expect(dataset.template).to.equal('checkoutUrl');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal('UCv2');
-      expect(dataset.checkoutWorkflowStep).to.equal('checkout/email');
+      expect(dataset.checkoutWorkflow).to.equal(undefined);
+      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
       expect(dataset.checkoutClientId).to.equal('dc');
+      expect(dataset.checkoutMarketSegment).to.equal(undefined);
+
+      setConfig(config);
+    });
+
+    it('merch link to CTA, metadata values', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head-metadata.html' });
+
+      const el = document.querySelector('.merch.cta.metadata');
+      const { nodeName, textContent, dataset } = await merch(el);
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Buy Now');
+      expect(dataset.template).to.equal('checkoutUrl');
+      expect(dataset.promotionCode).to.equal(undefined);
+      expect(dataset.checkoutWorkflow).to.equal('UCv2');
+      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
+      expect(dataset.checkoutClientId).to.equal(undefined);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
@@ -221,7 +230,7 @@ describe('Merch Block', () => {
       expect(dataset.promotionCode).to.equal('nicopromo');
     });
 
-    it('merch link to UCv2 cta with Link-level overrides.', async () => {
+    it('merch link to UCv2 cta with link-level overrides.', async () => {
       const el = document.querySelector('.merch.cta.link-overrides');
       const { nodeName, dataset } = await merch(el);
       expect(nodeName).to.equal('A');
