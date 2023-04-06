@@ -1,6 +1,6 @@
 import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
-import { connect as connectToSP } from '../../loc/sharepoint.js';
+import { enableRetry, connect as connectToSP } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
@@ -49,6 +49,7 @@ async function init() {
   try {
     // Read the Floodgate Sharepoint Config
     loadingON('Fetching Floodgate Config...');
+    enableRetry(); // Adding this for checking rate limit code for floodgate
     const config = await getConfig();
     if (!config) {
       return;
