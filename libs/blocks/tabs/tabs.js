@@ -110,9 +110,7 @@ const init = (block) => {
   configRows.splice(0, 1);
   if (configRows) {
     configRows.forEach((row) => {
-      console.log('config row', row.children[0].textContent);
       const rowKey = getStringKeyName(row.children[0].textContent);
-      console.log('config rowKEY', rowKey);
       const rowVal = row.children[1].textContent.trim();
       config[rowKey] = rowVal;
       row.remove();
