@@ -491,7 +491,7 @@ export const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationType: 'none',
+  paginationType: 'paginator',
   paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,

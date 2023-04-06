@@ -145,7 +145,6 @@ const defaultOptions = {
     incremental: 'Incremental',
   },
   paginationType: {
-    none: 'None',
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
