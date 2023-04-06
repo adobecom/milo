@@ -1,0 +1,27 @@
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "contentUrl": "https://example.com/bald-eagle-at-the-park.mp4",
+  "description": "Bald eagle at the park livestream.",
+  "duration": "PT37M14S",
+  "embedUrl": "https://example.com/bald-eagle-at-the-park",
+  "expires": "2018-10-30T14:37:14+00:00",
+  "regionsAllowed": "US",
+  "name": "Bald eagle nest livestream!",
+  "thumbnailUrl": "https://example.com/bald-eagle-at-the-park",
+  "uploadDate": "2018-10-27T14:00:00+00:00",
+  "publication": [
+    {
+      "@type": "BroadcastEvent",
+      "isLiveBroadcast": true,
+      "startDate": "2018-10-27T14:00:00+00:00",
+      "endDate": "2018-10-27T14:37:14+00:00"
+    },
+    {
+      "@type": "BroadcastEvent",
+      "isLiveBroadcast": true,
+      "startDate": "2018-10-27T18:00:00+00:00",
+      "endDate": "2018-10-27T18:37:14+00:00"
+    }
+  ]
+}
