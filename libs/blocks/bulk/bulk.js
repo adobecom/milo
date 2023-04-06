@@ -78,7 +78,9 @@ function StatusRow({ row }) {
   `;
 }
 
-function StatusTitle({ bulkTriggered, submittedAction, copyResults, showHideUrls, bulkInputToggleElt, urlNumber }) {
+function StatusTitle({
+  bulkTriggered, submittedAction, copyResults, showHideUrls, bulkInputToggleElt, urlNumber,
+}) {
   const name = getActionName(submittedAction, true);
   const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
   return bulkTriggered && html`
@@ -152,7 +154,10 @@ function StatusFooter({ completion }) {
   `;
 }
 
-function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion, copyResults, showHideUrls, bulkInputToggleElt }) {
+function Status({
+  valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt,
+  completion, copyResults, showHideUrls, bulkInputToggleElt,
+}) {
   return valid && html`
     <div class="bulk-status">
         <div class="bulk-status-title-container">
