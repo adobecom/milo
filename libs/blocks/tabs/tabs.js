@@ -106,7 +106,7 @@ const init = (block) => {
 
   // Tab Config
   const config = {};
-  const configRows = [].slice.call(rows);
+  const configRows = [...rows];
   configRows.splice(0, 1);
   if (configRows) {
     configRows.forEach((row) => {
@@ -116,7 +116,7 @@ const init = (block) => {
       row.remove();
     });
   }
-  const tabsId = config.id ? config.id : getUniqueId(block, rootElem);
+  const tabsId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabsId;
   block.id = `tabs-${tabsId}`;
   parentSection?.classList.add(`tablist-${tabsId}-section`);
