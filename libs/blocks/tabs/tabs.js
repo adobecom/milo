@@ -131,7 +131,7 @@ const init = (block) => {
   tabList.classList.add('tabList');
   tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
-  tabListContainer.classList.add('tabList-container');
+  tabListContainer.classList.add('tab-list-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
