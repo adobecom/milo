@@ -1,4 +1,4 @@
-import { createTag, getMetadata } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata } from '../../utils/utils.js';
 
 const BREADCRUMBS_HIDE_LAST = 'breadcrumbs-hide-last';
 
@@ -141,11 +141,25 @@ function setBreadcrumbSEO(breadcrumbs) {
 }
 
 async function getBreadcrumbs(element) {
-  if (!element || getMetadata('breadcrumbs') === 'off') return null;
-  return getBreadcrumbsFromPageBlock(element)
-    || await getBreadcrumbsFromFile()
-    || await getBreadcrumbsFromUrl(document.location.pathname)
-    || null;
+  if (!element) return null;
+  const breadcrumbs = getBreadcrumbsFromPageBlock(element);
+  if (breadcrumbs) return breadcrumbs;
+  const breadcrumbsMetadata = getMetadata('breadcrumbs')?.toLowerCase();
+  if (breadcrumbsMetadata === 'on' || breadcrumbsMetadata === 'true') {
+    return await getBreadcrumbsFromFile()
+      || await getBreadcrumbsFromUrl(document.location.pathname)
+      || null;
+  }
+  if (breadcrumbsMetadata === 'off' || breadcrumbsMetadata === 'false') {
+    return null;
+  }
+  const breadcrumbsConf = getConfig().breadcrumbs;
+  if (breadcrumbsConf === 'on' || breadcrumbsConf === 'true') {
+    return await getBreadcrumbsFromFile()
+      || await getBreadcrumbsFromUrl(document.location.pathname)
+      || null;
+  }
+  return null;
 }
 
 export default async function addBreadcrumbs(element, wrapper) {

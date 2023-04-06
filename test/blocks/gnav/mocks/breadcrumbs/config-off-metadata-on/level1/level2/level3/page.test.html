@@ -1,6 +1,6 @@
 <html>
 <head>
-    <meta name="breadcrumbs-hide-last" content="on">
+    <meta name="breadcrumbs" content="on">
     <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
     <link rel="stylesheet" href="/libs/blocks/gnav/gnav.css">
 </head>
@@ -13,7 +13,10 @@
             <h1 id="welcome-to-the-gnav-test">Welcome to the Gnav/Breadcrumbs Test</h1>
             <div id="wrong" class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/wrong-gnav"></div>
             <div style="height: 1000px">
-                - last breadcrumbs item is hidden
+                - no breadcrumbs block defined for this page<br/>
+                - config.breadcrumbs = off <br/>
+                - breadcrumbs metadata = on <br/>
+                -> breadcrumbs is rendered
             </div>
         </div>
     </div>
@@ -22,17 +25,17 @@
 <script type="module">
   import { runTests } from '@web/test-runner-mocha';
   import { expect } from '@esm-bundle/chai';
-  import { delay } from '../../../../../helpers/waitfor.js';
-  import gnav from '../../../../../../libs/blocks/gnav/gnav.js';
-  import getItems from '../utils.js';
-  import { setConfig } from '../../../../../../libs/utils/utils.js';
+  import { delay } from '../../../../../../../../helpers/waitfor.js';
+  import gnav from '../../../../../../../../../libs/blocks/gnav/gnav.js';
+  import getItems from '../../../../utils.js';
+  import { setConfig } from '../../../../../../../../../libs/utils/utils.js';
 
   runTests(() => {
-    const config = { breadcrumbs: 'on', locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+    const config = { breadcrumbs: 'off', locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
     setConfig(config);
 
     describe('breadcrumbs', () => {
-      it('last breadcrumbs item is hidden', async () => {
+      it('breadcrumbs automatically generated from the URL', async () => {
         await gnav(document.querySelector('header'));
         await delay(300);
         const expected = [
@@ -42,8 +45,11 @@
           {href: '/test/blocks/gnav', title: 'gnav'},
           {href: '/test/blocks/gnav/mocks', title: 'mocks'},
           {href: '/test/blocks/gnav/mocks/breadcrumbs', title: 'breadcrumbs'},
-          {href: '/test/blocks/gnav/mocks/breadcrumbs/hide-last', title: 'hide-last'},
-          {href: '', title: ''},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs/config-off-metadata-on', title: 'config-off-metadata-on'},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs/config-off-metadata-on/level1', title: 'level1 title'},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs/config-off-metadata-on/level1/level2', title: 'level2 title'},
+          {href: '/test/blocks/gnav/mocks/breadcrumbs/config-off-metadata-on/level1/level2/level3', title: 'level3 title'},
+          {href: '', title: 'page.test.html'},
         ];
         expect(getItems()).to.eql(expected);
       });

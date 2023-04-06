@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta name="breadcrumbs" content="off">
     <meta name="gnav-source" content="/test/blocks/gnav/mocks/gnav">
     <link rel="stylesheet" href="/libs/blocks/gnav/gnav.css">
 </head>
@@ -12,8 +13,10 @@
             <h1 id="welcome-to-the-gnav-test">Welcome to the Gnav/Breadcrumbs Test</h1>
             <div id="wrong" class="gnav" data-block-name="gnav" data-gnav-source="/test/blocks/gnav/mocks/wrong-gnav"></div>
             <div style="height: 1000px">
-                - no breadcrumbs block defined for this page.<br/>
-                - a breadscrumbs file is defined in the same folder as this page
+                - no breadcrumbs block defined for this page<br/>
+                - config.breadcrumbs = off <br/>
+                - breadcrumbs metadata = off <br/>
+                -> no breadcrumbs
             </div>
         </div>
     </div>
@@ -22,25 +25,20 @@
 <script type="module">
   import { runTests } from '@web/test-runner-mocha';
   import { expect } from '@esm-bundle/chai';
-  import { delay } from '../../../../../helpers/waitfor.js';
-  import gnav from '../../../../../../libs/blocks/gnav/gnav.js';
-  import getItems from '../utils.js';
-  import { setConfig } from '../../../../../../libs/utils/utils.js';
+  import { delay } from '../../../../../../../../helpers/waitfor.js';
+  import gnav from '../../../../../../../../../libs/blocks/gnav/gnav.js';
+  import getItems from '../../../../utils.js';
+  import { setConfig } from '../../../../../../../../../libs/utils/utils.js';
 
   runTests(() => {
-    const config = { breadcrumbs: 'on', locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
+    const config = { breadcrumbs: 'off', locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
     setConfig(config);
 
     describe('breadcrumbs', () => {
-      it('breadcrumbs defined in the breadcrumbs file in the same folder', async () => {
+      it('config.breadcrumbs = off and breadcrumbs metadata = off', async () => {
         await gnav(document.querySelector('header'));
         await delay(300);
-        const expected = [
-          {href: 'http://www.google.com/', title: 'from-file'},
-          {href: 'http://www.adobe.com/', title: 'Actors'},
-          {href: 'http://www.day.com/', title: 'Players'},
-          {href: '', title: 'page.test.html'},
-        ];
+        const expected = [];
         expect(getItems()).to.eql(expected);
       });
     });
