@@ -6,17 +6,17 @@
   --tabs-text-color: #7e7e7e;
   --tabs-active-text-color: #2C2C2C;
   --tabs-bg-color: #f1f1f1;
-  --tabs-active-bg-color: #ffffff;
-  --tabs-list-bg-gradient: linear-gradient(rgba(255,255,255,0) 60%, rgba(245,245,245,.8));
+  --tabs-active-bg-color: #fff;
+  --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / .8%));
 }
 
 :root .dark {
-  --tabs-border-color: rgb(56,56,56);
+  --tabs-border-color: rgb(56 56 56);
   --tabs-text-color: #cdcdcd;
-  --tabs-active-text-color: #ffffff;
+  --tabs-active-text-color: #fff;
   --tabs-bg-color: #1a1a1a;
-  --tabs-active-bg-color: #111111;
-  --tabs-list-bg-gradient: linear-gradient(rgba(0,0,0,0) 60%, rgba(0,0,0,.8));
+  --tabs-active-bg-color: #111;
+  --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / .8%));
 }
 
 .tabs {
