@@ -172,7 +172,7 @@ const init = (block) => {
     const rows = sectionMetadata.querySelectorAll(':scope > div');
     rows.forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
-      if (key != 'tab') return;
+      if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
       if (!val) return;
       let id = tabsId;
