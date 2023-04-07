@@ -6,7 +6,7 @@ export function decorateBlockAnalytics(blockEl) {
   blockEl.setAttribute('daa-lh', [...blockEl.classList].join('|'));
 }
 
-export function decorateLinkAnalytics(textEl, headings) {
+export async function decorateLinkAnalytics(textEl, headings) {
   const headingText = [...headings].map((heading) => heading.textContent);
   textEl.setAttribute('daa-lh', headingText.join('|'));
   const links = textEl.querySelectorAll('a, button');

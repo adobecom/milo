@@ -22,7 +22,49 @@ const blockTypeSizes = {
   },
 };
 
-export default function init(el) {
+function findElementWithClassStartingOrEndingWith(element, searchString) {
+  var classes = element.classList;
+  var foundClass = "";
+  for (var i = 0; i < classes.length; i++) {
+    if (classes[i].startsWith(searchString) || classes[i].endsWith(searchString)) {
+      foundClass = classes[i];
+      break;
+    }
+  }
+  if (foundClass) {
+    var parts = foundClass.split("-");
+    var newStr = parts[1] + "-" + parts[0];
+    return { element: element, class: foundClass, newStr: newStr };
+  } else {
+    return null;
+  }
+}
+
+function replaceClassName(el, str) {
+  const foundEl = findElementWithClassStartingOrEndingWith(el, str);
+  if (foundEl) {
+    const findClass = str.slice(1) + str[0];
+    const els = foundEl.element.querySelectorAll(`[class^="${findClass}"]`);
+    if (!els) return;
+    [...els].forEach( (e, i) => {
+      for (let i = 0; i < e.classList.length; i++) {
+        const className = e.classList[i];
+        if (className.startsWith(findClass)) {
+          e.classList.replace(className, foundEl.newStr);
+        }
+      }
+    });
+  };
+}
+
+async function applyOverrides(el) {
+  const overrides = ['-heading', '-body', '-detail'];
+  overrides.forEach((str, i) => {
+    replaceClassName(el, str);
+  });
+}
+
+export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -42,12 +84,7 @@ export default function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
-  });
-  decorateBlockText(el, config);
+  await decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -56,4 +93,5 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
+  await applyOverrides(el);
 }

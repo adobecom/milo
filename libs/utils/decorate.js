@@ -1,6 +1,6 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
-export function decorateButtons(el, size) {
+export async function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
@@ -26,7 +26,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm']) {
+export async function decorateBlockText(el, config = ['m', 's', 'm']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
@@ -41,8 +41,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
     const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
-  decorateButtons(el);
-  decorateLinkAnalytics(el, headings);
+  await decorateButtons(el);
+  await decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {
