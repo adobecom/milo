@@ -10,9 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { getConfig } from './config.js';
-import {
-  getConfig as getFloodgateConfig
-} from '../floodgate/js/config.js';
+import { getConfig as getFloodgateConfig } from '../floodgate/js/config.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
@@ -82,6 +80,53 @@ function getAuthorizedRequestOption({
   }
 
   return options;
+}
+
+let nextCallAfter = 0;
+const reqThresh = 5;
+let retryFlag = false;
+const TOO_MANY_REQUESTS = 429;
+
+function enableRetry() {
+  retryFlag = true;
+}
+
+async function fetchWithRetry(apiUrl, options, retryCounts) {
+  // check if retryFlag is enabled
+  let retryCount = retryCounts;
+  if (!retryFlag) {
+    return fetch(apiUrl, options);
+  }
+
+  retryCount = retryCount || 0;
+
+  return new Promise((resolve, reject) => {
+    const currentTime = Date.now();
+    if (retryCount > reqThresh) {
+      reject();
+    } else if (nextCallAfter !== 0 && currentTime < nextCallAfter) {
+      setTimeout(
+        () => fetchWithRetry(apiUrl, options, retryCount).then((newResp) => resolve(newResp))
+          .catch((err) => reject(err)),
+        nextCallAfter - currentTime,
+      );
+    } else {
+      retryCount += 1;
+      fetch(apiUrl, options).then((resp) => {
+        const retryAfter = resp.headers.get('ratelimit-reset') || resp.headers.get('retry-after') || 0;
+        if ((resp.headers.get('test-retry-status') === TOO_MANY_REQUESTS) || (resp.status === TOO_MANY_REQUESTS)) {
+          nextCallAfter = Date.now() + retryAfter * 1000;
+          fetchWithRetry(apiUrl, options, retryCount)
+            .then((newResp) => resolve(newResp)).catch((err) => reject(err));
+        } else {
+          nextCallAfter = retryAfter ? Math.max(Date.now() + retryAfter * 1000, nextCallAfter)
+            : nextCallAfter;
+          resolve(resp);
+        }
+      })
+        .catch((err) => reject(err));
+    }
+  });
 }
 
 const loadSharepointData = (spBatchApi, payload) => {
@@ -318,7 +363,8 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
     method: sp.api.file.copy.method,
     body: JSON.stringify(payload),
   });
-  // In case of FG copy action triggered via saveFile(), locked file copy happens in the floodgate content location
+  // In case of FG copy action triggered via saveFile(),
+  // locked file copy happens in the floodgate content location
   // So baseURI is updated to reflect the destination accordingly
   const contentURI = isFloodgate && isFloodgateLockedFile ? fgBaseURI : baseURI;
   const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy`, options);
@@ -350,48 +396,6 @@ async function copyFileAndUpdateMetadata(srcPath, destinationFolder) {
     }
   }
   throw new Error(`Could not copy file ${destinationFolder}`);
-}
-
-let nextCallAfter = 0;
-const reqThresh=5;
-let retryFlag = false;
-const TOO_MANY_REQUESTS = 429;
-
-function enableRetry() {
-  retryFlag = true;
-}
-
-async function fetchWithRetry (apiUrl, options, retryCount)  {
-  // check if retryFlag is enabled
-  if (!retryFlag) {
-    return fetch(apiUrl, options);
-  }
-
-  retryCount = retryCount || 0;
-
-  return new Promise((resolve, reject) => {
-    let currentTime = Date.now();
-    if (retryCount > reqThresh) {
-      reject();
-    } else if (nextCallAfter != 0 && currentTime < nextCallAfter) {
-      setTimeout (
-         () => fetchWithRetry(apiUrl, options, retryCount).then(newResp => resolve(newResp)).catch(err => reject(err)),
-        nextCallAfter - currentTime
-      ); nextCallAfter=0;
-    } else {
-      retryCount++
-      fetch(apiUrl, options).then(resp => {
-        const retryAfter= resp.headers.get("ratelimit-reset") || resp.headers.get("retry-after") || 0;
-        if( (resp.headers.get("test-retry-status") == TOO_MANY_REQUESTS) || (resp.status ==TOO_MANY_REQUESTS)) {
-          nextCallAfter = Date.now() + retryAfter * 1000;
-          fetchWithRetry(apiUrl, options, retryCount).then(newResp => resolve(newResp)).catch(err => reject(err));
-        } else {
-          nextCallAfter = retryAfter != null ? Date.now() + retryAfter * 1000 : 0;
-          resolve(resp);
-        }}
-      ).catch(err => reject(err));
-    }
-  });
 }
 
 async function saveFile(file, dest, isFloodgate) {
@@ -490,5 +494,6 @@ export {
   addWorksheetToExcel,
   validateConnection,
   createFolder,
-  enableRetry
+  enableRetry,
+  fetchWithRetry,
 };
