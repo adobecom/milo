@@ -10,7 +10,7 @@ import {
   getVersionOfFile,
   saveFileAndUpdateMetadata, updateFile,
 } from './sharepoint.js';
-import { loadingON, simulatePreview, stripExtension } from './utils.js';
+import { getUrlInfo, loadingON, simulatePreview, stripExtension } from './utils.js';
 
 const types = new Set();
 const hashToContentMap = new Map();
@@ -65,7 +65,7 @@ function processMdast(nodes) {
 async function getMd(path) {
   const mdPath = `${path}.md`;
   await simulatePreview(mdPath);
-  const mdFile = await fetch(mdPath);
+  const mdFile = await fetch(`${getUrlInfo().origin}${mdPath}`);
   return mdFile.text();
 }
 
