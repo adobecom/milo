@@ -80,8 +80,16 @@ const decorateImage = (media) => {
 
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
+  const isPlayButton = imageLink.dataset?.modalHash.includes('_play-button');
 
-  if (imageLink && picture) {
+  if (isPlayButton) {
+    imageLink.parentElement.classList.add('play-button');
+    imageLink.setAttribute('role', 'button');
+    const mediaParent = imageLink.closest('.media');
+    mediaParent.style.position = 'relative';
+  }
+
+  if (imageLink && picture && !isPlayButton) {
     imageLink.textContent = '';
     imageLink.append(picture);
   }
