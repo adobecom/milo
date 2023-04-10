@@ -40,20 +40,26 @@ async function refreshPage(config, projectDetail, project) {
 
 function setListeners(project, projectDetail) {
   const modal = document.getElementById('fg-modal');
+  const handleFloodgateConfirm = ({ target }) => {
+    modal.style.display = 'none';
+    floodgateContent(project, projectDetail);
+    target.removeEventListener('click', handleFloodgateConfirm);
+  };
+  const handlePromoteConfirm = ({ target }) => {
+    modal.style.display = 'none';
+    promoteFloodgatedFiles(project);
+    target.removeEventListener('click', handlePromoteConfirm);
+  };
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
   document.querySelector('#copyFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
-    document.querySelector('#fg-modal #yes-btn').addEventListener('click', () => {
-      modal.style.display = 'none'; floodgateContent(project, projectDetail);
-    });
     modal.style.display = 'block';
+    document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleFloodgateConfirm);
   });
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
-    document.querySelector('#fg-modal #yes-btn').addEventListener('click', () => {
-      modal.style.display = 'none'; promoteFloodgatedFiles(project);
-    });
     modal.style.display = 'block';
+    document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
   document.querySelector('#fg-modal #no-btn').addEventListener('click', () => { modal.style.display = 'none'; });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
