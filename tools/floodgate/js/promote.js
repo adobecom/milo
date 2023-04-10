@@ -4,6 +4,7 @@ import {
   saveFile,
   updateExcelTable,
   validateConnection,
+  fetchWithRetry,
 } from '../../loc/sharepoint.js';
 import {
   hideButtons,
@@ -14,6 +15,10 @@ import {
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
 import { getFile, handleExtension } from './utils.js';
+
+const BATCH_REQUEST_PROMOTE = 20;
+const DELAY_TIME_PROMOTE = 3000;
+const MAX_CHILDREN = 1000;
 
 /**
  * Copies the Floodgated files back to the main content tree.
@@ -32,13 +37,13 @@ async function promoteCopy(srcPath, destinationFolder) {
   });
 
   // copy source is the pink directory for promote
-  const copyStatusInfo = await fetch(`${sp.api.file.copy.fgBaseURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetchWithRetry(`${sp.api.file.copy.fgBaseURI}${srcPath}:/copy`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
-    const status = await fetch(statusUrl);
+    const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
       // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
@@ -53,9 +58,9 @@ async function promoteCopy(srcPath, destinationFolder) {
  */
 async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgFolders) {
   while (fgFolders.length !== 0) {
-    const uri = `${baseURI}${fgFolders.shift()}:/children`;
+    const uri = `${baseURI}${fgFolders.shift()}:/children?$top=${MAX_CHILDREN}`;
     // eslint-disable-next-line no-await-in-loop
-    const res = await fetch(uri, options);
+    const res = await fetchWithRetry(uri, options);
     if (res.ok) {
       // eslint-disable-next-line no-await-in-loop
       const json = await res.json();
@@ -100,7 +105,7 @@ async function promoteFloodgatedFiles(project) {
       loadingON(`Promoting ${filePath} ...`);
       const { sp } = await getFloodgateConfig();
       const options = getAuthorizedRequestOption();
-      const res = await fetch(`${sp.api.file.get.baseURI}${filePath}`, options);
+      const res = await fetchWithRetry(`${sp.api.file.get.baseURI}${filePath}`, options);
       if (res.ok) {
         // File exists at the destination (main content tree)
         // Get the file in the pink directory using downloadUrl
@@ -132,9 +137,24 @@ async function promoteFloodgatedFiles(project) {
   const startPromote = new Date();
   // Iterate the floodgate tree and get all files to promote
   const allFloodgatedFiles = await findAllFiles();
-  const promoteStatuses = await Promise.all(
-    allFloodgatedFiles.map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
-  );
+
+  // create batches to process the data
+  const batchArray = [];
+  for (let i = 0; i < allFloodgatedFiles.length; i += BATCH_REQUEST_PROMOTE) {
+    const arrayChunk = allFloodgatedFiles.slice(i, i + BATCH_REQUEST_PROMOTE);
+    batchArray.push(arrayChunk);
+  }
+
+  // process data in batches
+  const promoteStatuses = [];
+  for (let i = 0; i < batchArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    promoteStatuses.push(...await Promise.all(
+      batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+    ));
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
+  }
   const endPromote = new Date();
 
   loadingON('Previewing promoted files... ');
