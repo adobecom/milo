@@ -257,11 +257,6 @@
   order: -1;
 }
 
-.aside.notification .foreground.container [data-align=center] {
-  text-align: center;
-  justify-content: center;
-}
-
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
   font-weight: normal;
@@ -352,11 +347,6 @@
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text>* {
-  justify-content: flex-start;
-}
-
 .aside.notification.center.small .foreground.container .text p {
   text-align: left;
 }
@@ -368,6 +358,13 @@
 
 .aside.notification.large .foreground.container.no-image {
   max-width: 800px;
+}
+
+.aside.notification .foreground.container [data-align=center],
+.aside.notification.center .foreground.container,
+.aside.notification.center .foreground.container > * {
+  text-align: center;
+  justify-content: center;
 }
 
 @media screen and (min-width: 600px) {
