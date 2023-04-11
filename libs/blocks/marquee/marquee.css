@@ -176,16 +176,16 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.marquee .text p.icon-area {
+.marquee .icon-area {
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .text .icon-area picture,
-.marquee .text .icon-area a {
+.marquee .icon-area picture,
+.marquee .icon-area a {
   display: contents;
 }
 
-.marquee .text .icon-area img {
+.marquee .icon-area img {
   height: 48px;
   width: auto;
   display: block;
@@ -203,17 +203,17 @@
   object-position: left bottom;
 }
 
-.marquee .text .icon-area.icon-area-multiple {
+.marquee .icon-area.icon-area-multiple {
   display: flex;
 }
 
-.marquee .text .icon-area.icon-area-multiple img {
+.marquee .icon-area.icon-area-multiple img {
   height: 40px;
   max-height: 40px;
   max-width: 114px;
 }
 
-.marquee .text .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
+.marquee .icon-area.icon-area-multiple > :not(:nth-child(1)) img {
   margin-left: var(--spacing-xxs);
 }
 
@@ -340,12 +340,6 @@
     max-height: 80px;
   }
 
-  .marquee .text .icon-area.icon-area-multiple img {
-    height: 40px;
-    max-height: 40px;
-    max-width: 114px;
-  }
-
   .marquee.split.row-reversed .media.bleed {
     right: auto;
     left: 0;
@@ -405,12 +399,6 @@
   .marquee.split.one-third .text .icon-area img {
     max-height: 56px;
     max-width: 159px;
-  }
-
-  .marquee .text .icon-area.icon-area-multiple img {
-    height: 40px;
-    max-height: 40px;
-    max-width: 114px;
   }
 
   .marquee.split.one-third.row-reversed .media-credit {
@@ -550,12 +538,6 @@
   .marquee.split.one-third .text .icon-area img {
     max-height: 80px;
     max-width: 200px;
-  }
-
-  .marquee .text .icon-area.icon-area-multiple img {
-    height: 40px;
-    max-height: 40px;
-    max-width: 114px;
   }
 }
 
