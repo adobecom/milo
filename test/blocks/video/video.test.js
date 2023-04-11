@@ -29,4 +29,16 @@ describe('video uploaded using franklin bot', () => {
 
     expect(block.firstElementChild.hasAttribute('autoplay')).to.be.true;
   });
+
+  it('decorates video with autoplay and no loop', async () => {
+    const block = document.querySelector('.video.no-loop');
+    const a = block.querySelector('a');
+    const { href } = a;
+    a.textContent = href;
+    block.append(a);
+
+    init(a);
+
+    expect(block.firstElementChild.hasAttribute('loop')).to.be.false;
+  });
 });
