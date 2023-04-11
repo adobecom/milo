@@ -80,20 +80,18 @@ const decorateImage = (media) => {
 
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
-  const buttonSvg = imageLink.querySelector('picture img[src$=".svg"]');
+  const buttonImage = imageLink.querySelector('img[src$=".svg"]');
 
-  if (imageLink && picture) {
+  if (buttonImage) {
+    imageLink.parentElement.classList.add('play-button');
+    imageLink.setAttribute('role', 'button');
+    const mediaParent = imageLink.closest('.media');
+    mediaParent.style.position = 'relative';
+  }
+
+  if (imageLink && picture && !buttonImage) {
     imageLink.textContent = '';
     imageLink.append(picture);
-    if (buttonSvg) {
-      const playButton = imageLink.parentElement;
-      playButton.classList.add('play-button');
-      playButton.append(buttonSvg);
-      media.append(imageLink);
-      const mediaParent = imageLink.closest('.media');
-      mediaParent.style.position = 'relative';
-      picture.append(playButton);
-    }
   }
 };
 
