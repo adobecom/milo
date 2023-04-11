@@ -103,9 +103,6 @@ const mapSubscriptionCodes = (offers) => {
 };
 
 const getSubscriptions = async ({ queryParams, locale }) => {
-  const controller = new AbortController();
-  const { signal } = controller;
-  const timeout = setTimeout(() => controller.abort(), API_WAIT_TIMEOUT);
   const profile = await window.adobeIMS.getProfile();
   const apiUrl = getConfig().env.name === 'prod'
     ? `https://www.adobe.com/aos-api/users/${profile.userId}/subscriptions`
@@ -115,7 +112,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
       method: 'GET',
       cache: 'no-cache',
       credentials: 'same-origin',
-      signal,
+      signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
@@ -124,10 +121,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
         'Accept-Language': getAcceptLanguage(locale).join(','),
       },
     })
-    .then((response) => {
-      clearTimeout(timeout);
-      return response.status === 200 ? response.json() : emptyEntitlements;
-    });
+    .then((response) => (response.status === 200 ? response.json() : emptyEntitlements));
   return res;
 };
 
