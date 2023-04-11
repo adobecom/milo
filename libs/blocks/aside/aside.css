@@ -10,13 +10,6 @@
 .dark .aside,
 .aside.dark {
   color: var(--color-white);
-  background-color: #1E1E1E;
-}
-
-.light .aside,
-.aside.light {
-  color: var(--text-color);
-  background-color: #f5f5f5;
 }
 
 .aside p {
@@ -272,6 +265,7 @@
 
 .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
   margin-left: var(--spacing-xs);
+  color: var(--link-color);
 }
 
 .aside.notification.small .foreground.container .text a.con-button {
