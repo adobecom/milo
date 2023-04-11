@@ -78,7 +78,7 @@
   justify-content: center;
 }
 
-.marquee .play-button .link-block img {
+.marquee .link-block .play-button img {
   min-height: 100%;
   height: 72px;
   width: 72px;
