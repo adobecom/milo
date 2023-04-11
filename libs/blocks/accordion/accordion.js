@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 
@@ -64,4 +65,6 @@ export default function init(el) {
   el.classList.add('con-block', maxWidthClass || 'max-width-10-desktop');
   accordion.classList.add('foreground');
   el.append(accordion);
+  decorateBlockAnalytics(el);
+  decorateLinkAnalytics(accordion, headings);
 }
