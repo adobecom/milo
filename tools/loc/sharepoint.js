@@ -114,7 +114,7 @@ async function fetchWithRetry(apiUrl, options, retryCounts) {
       retryCount += 1;
       fetch(apiUrl, options).then((resp) => {
         const retryAfter = resp.headers.get('ratelimit-reset') || resp.headers.get('retry-after') || 0;
-        if ((resp.headers.get('test-retry-status') === TOO_MANY_REQUESTS) || (resp.status === TOO_MANY_REQUESTS)) {
+        if((resp.headers.get('test-retry-status') == TOO_MANY_REQUESTS) || (resp.status ==TOO_MANY_REQUESTS)) {
           nextCallAfter = Date.now() + retryAfter * 1000;
           fetchWithRetry(apiUrl, options, retryCount)
             .then((newResp) => resolve(newResp)).catch((err) => reject(err));
