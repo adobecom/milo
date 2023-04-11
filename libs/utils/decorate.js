@@ -70,3 +70,38 @@ export function getBlockSize(el, defaultSize = 1) {
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
+
+export function findElementWithClassStartingOrEndingWith(element, searchString) {
+  var classes = element.classList;
+  var foundClass = "";
+  for (var i = 0; i < classes.length; i++) {
+    if (classes[i].startsWith(searchString) || classes[i].endsWith(searchString)) {
+      foundClass = classes[i];
+      break;
+    }
+  }
+  if (foundClass) {
+    var parts = foundClass.split("-");
+    var newStr = parts[1] + "-" + parts[0];
+    return { element: element, class: foundClass, newStr: newStr };
+  } else {
+    return null;
+  }
+}
+
+export function replaceClassName(el, str) {
+  const foundEl = findElementWithClassStartingOrEndingWith(el, str);
+  if (foundEl) {
+    const findClass = str.slice(1) + str[0];
+    const els = foundEl.element.querySelectorAll(`[class^="${findClass}"]`);
+    if (!els) return;
+    [...els].forEach( (e, i) => {
+      for (let i = 0; i < e.classList.length; i++) {
+        const className = e.classList[i];
+        if (className.startsWith(findClass)) {
+          e.classList.replace(className, foundEl.newStr);
+        }
+      }
+    });
+  };
+}
