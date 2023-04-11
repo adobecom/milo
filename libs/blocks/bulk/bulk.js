@@ -34,7 +34,7 @@ function User({ user }) {
 
 function UrlInput({ urlsElt }) {
   return html`
-      <textarea class="bulk-urls-input" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
+    <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
 
@@ -51,9 +51,9 @@ function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
 function SubmitBtn({ submit, selectedAction }) {
   const name = getActionName(selectedAction);
   return html`
-      <button class="bulk-action-submit" onClick=${submit}>
-          ${name}
-      </button>
+    <button class="bulk-action-submit" onClick=${submit}>
+      Run process
+    </button>
   `;
 }
 
@@ -68,29 +68,55 @@ function prettyDate() {
 }
 
 function bulkPublishStatus(row) {
-  const status = row.status.publish > 400 ? `Failed` : '';
-  return row.status.publish > 400 && html`
+  const status = row.status.publish !== 200
+    ? `Error  - Status: ${row.status.publish}`
+    : '';
+  return row.status.publish !== 200 && row.status.publish !== undefined  && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkPreviewStatus(row) {
-  const status = row.status.preview > 400 ? `Failed ` : '';
-  return row.status.preview > 400 && html`
+  const status = row.status.preview !== 200
+    ? `Error - Status: ${row.status.preview}`
+    : '';
+  return row.status.preview !== 200 && row.status.preview !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
-function StatusTitle({ bulkTriggered, submittedAction, showHideUrls, bulkInputToggleElt, urlNumber }) {
+function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
   const name = getActionName(submittedAction, true);
   const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
   return bulkTriggered && html`
     <div class="bulk-status-head">
       <ul class="bulk-status-head-title">
         <li><span>STATUS:</span> ${name} ${urlNumber} ${URLS}</li>
-        <li><button class="bulk-status-head-toggle-urls" ref="${bulkInputToggleElt}" onclick=${showHideUrls} title="Show/hide urls"></button></li>
       </ul>
     </div>
+  `;
+}
+
+function StatusRow({ row }) {
+  const timeStamp = prettyDate();
+  const errorStyle = 'status-error';
+  const previewStatusError = row.status.preview !== 200
+    ? errorStyle
+    : '';
+  const publishStatusError = row.status.publish !== 200
+    ? errorStyle
+    : '';
+
+  return html`
+    <tr class="bulk-status-row">
+      <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
+      <td class="bulk-status-preview ${previewStatusError}">
+        ${row.status.preview === 200 && timeStamp} ${bulkPreviewStatus(row)}
+      </td>
+      <td class="bulk-status-publish ${publishStatusError}">
+        ${row.status.publish === 200 && timeStamp} ${bulkPublishStatus(row)}
+      </td>
+    </tr>
   `;
 }
 
@@ -103,32 +129,17 @@ function StatusContent({ resultsElt, result, submittedAction }) {
     <table class="bulk-status-content" ref="${resultsElt}">
       ${result && html`
         <tr class="bulk-status-header-row">
-          <th>Page</th>
+          <th>URL</th>
           <th class="${bulkPreviewed}">Previewed</th>
           <th class="${bulkPublished}">Published</th>
         </tr>
-        ${result.map((row) => html`<${StatusRow} row=${row} />`)}
+        ${result.reverse().map((row) => html`<${StatusRow} row=${row} />`)}
       `}
     </table>
   `;
 }
 
-function StatusRow({ row }) {
-  const timeStamp = prettyDate();
-  const errorStyle = 'status-error';
-  const previewStatusError = row.status.preview > 400 ? errorStyle : '';
-  const publishStatusError = row.status.publish > 400 ? errorStyle : '';
-
-  return html`
-    <tr class="bulk-status-row">
-      <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
-      <td class="bulk-status-preview ${previewStatusError}">${row.status.preview && timeStamp} ${bulkPreviewStatus(row)}</td>
-      <td class="bulk-status-publish ${publishStatusError}">${row.status.publish && timeStamp} ${bulkPublishStatus(row)}</td>
-    </tr>
-  `;
-}
-
-function BulkStatus({ completion, copyResults }) {
+function BulkStatus({ completion }) {
   const timeStamp = prettyDate();
   return completion && html`
     <div class="bulk-job">
@@ -146,24 +157,20 @@ function BulkStatus({ completion, copyResults }) {
         </ul>
         `}
       </div>
-      <button class="bulk-status-head-copy" onclick=${copyResults} title="Copy results"></button>
     </div>
   `;
 }
 
-function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion, copyResults, showHideUrls, bulkInputToggleElt }) {
+function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion }) {
   return valid && html`
     <div class="bulk-status">
       <div class="bulk-status-info">
         <${StatusTitle}
           bulkTriggered=${bulkTriggered}
           submittedAction=${submittedAction}
-          showHideUrls=${showHideUrls}
-          bulkInputToggleElt=${bulkInputToggleElt}
           urlNumber=${urlNumber} />
         <${BulkStatus}
-          completion=${completion} 
-          copyResults=${copyResults} />
+          completion=${completion} />
       </div>
       <div class="bulk-status-content-container">
         <${StatusContent}
@@ -196,7 +203,7 @@ function ResumeModal({ displayResumeDialog, resumeModal, resume, hideModal }) {
   return html`
       <div class="bulk-resume-modal ${displayResumeDialog}" ref="${resumeModal}">
           <div class="bulk-resume-modal-content">
-              <div>Previous bulk operation did not terminate. Would you like to resume processing the outstanding URLs?</div>
+              <div>The previous bulk operation was interrupted before it could finish. Would you like to resume processing the outstanding URLS?</div>
               <div class="bulk-resume-modal-button">
                   <button class="bulk-resume-modal-button-resume" onclick="${resume}">Resume</button>
                   <button class="bulk-resume-modal-button-cancel" onclick="${hideModal}">Cancel</button>
@@ -220,7 +227,6 @@ function Bulk({ user, storedOperation }) {
   const actionElt = useRef(null);
   const resultsElt = useRef(null);
   const bulkInputElt = useRef(null);
-  const bulkInputToggleElt = useRef(null);
   const resumeModal = useRef(null);
 
   const displayResumeDialog = (storedOperation.completed === null || storedOperation.completed) ? '' : 'displayed';
@@ -260,16 +266,6 @@ function Bulk({ user, storedOperation }) {
 
   const onSelectChange = () => {
     setSelectedAction(actionElt.current.value);
-  };
-
-  const copyResults = async () => {
-    const blob = new Blob([resultsElt.current.outerHTML], { type: 'text/html' });
-    createCopy(blob);
-  };
-
-  const showHideUrls = () => {
-    bulkInputElt.current.classList.toggle('is-hidden');
-    bulkInputToggleElt.current.classList.toggle('open');
   };
 
   const hideModal = () => {
@@ -326,10 +322,7 @@ function Bulk({ user, storedOperation }) {
       submittedAction=${submittedAction}
       result=${result}
       resultsElt=${resultsElt}
-      completion=${completion}
-      copyResults=${copyResults}
-      showHideUrls=${showHideUrls}
-      bulkInputToggleElt=${bulkInputToggleElt} />
+      completion=${completion} />
     <${ResumeModal}
       displayResumeDialog=${displayResumeDialog}
       resumeModal=${resumeModal}
