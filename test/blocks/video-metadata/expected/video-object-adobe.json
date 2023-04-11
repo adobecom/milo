@@ -1,0 +1,14 @@
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "description": "Revisit Summit all year long!",
+  "embedUrl": "https://video.tv.adobe.com/v/3416126",
+  "name": "Summit 2023 Highlights",
+  "thumbnailUrl": "https://ec-prod.scene7.com/is/image/ECPROD/summithighlights_500x281_desktop_tablet?$pjpeg$&jpegSize=100&wid=500",
+  "uploadDate": "2023-03-22",
+  "potentialAction" : {
+    "@type": "SeekToAction",
+    "target": "https://video.example.com/watch/videoID?t={seek_to_second_number}",
+    "startOffset-input": "required name=seek_to_second_number"
+  }
+}
