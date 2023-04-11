@@ -145,7 +145,6 @@ const defaultOptions = {
     incremental: 'Incremental',
   },
   paginationType: {
-    none: 'None',
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
@@ -239,7 +238,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -259,6 +258,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
       label=${label}
       name=${prop}
       type=${type}
+      title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
     />
@@ -309,6 +309,7 @@ const BasicsPanel = ({ tagsData }) => {
 
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Select} options=${countryTags} prop="country" label="Country" sort />
