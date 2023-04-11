@@ -6,7 +6,9 @@ import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
 import copyFile from '../utils/sp/file.js';
-import group from '../utils/group.js';
+import makeGroups from '../utils/group.js';
+
+const MISSING_SOURCE = 'There are missing source docs in the project. Remove the missing docs or create them.';
 
 async function updateExcelJson() {
   let count = 1;
@@ -78,39 +80,60 @@ async function syncFile(url) {
     const sourcePath = url.pathname;
     const destPath = url.langstore.pathname;
     const json = await copyFile(sourcePath, destPath);
-    url.langstore.actions = {
-      ...url.langstore.actions,
-      edit: {
-        url: json.webUrl,
-        status: 200,
-      },
-    };
-    resolve(url);
+    if (json.webUrl) {
+      url.langstore.actions = {
+        ...url.langstore.actions,
+        edit: {
+          url: json.webUrl,
+          status: 200,
+        },
+      };
+      resolve(url);
+    }
   });
 }
 
+// function makeOne(num) {
+//   return new Promise((resolve) => {
+//     // Do expensive stuff here
+//     setTimeout(() => {
+//       resolve(num);
+//     }, 1000);
+//   });
+// }
+
+// export async function makeLots() {
+//   const iters = [...Array(104).keys()];
+//   const groups = group(iters);
+//   for (const groupOne of groups) {
+//     const res = groupOne.map(async (num) => makeOne(num));
+//     const numArr = await Promise.all(res);
+//     console.log(numArr);
+//   }
+// }
+
 export async function syncToLangstore() {
   if (checkSource()) {
-    const desc = `There are missing source docs in the project.
-                  Remove the missing docs or create them.`;
-    setStatus('langstore', 'error', 'Missing source docs.', desc);
+    setStatus('langstore', 'error', 'Missing source docs.', MISSING_SOURCE);
     return;
   }
-  let count = urls.value.length;
-  // eslint-disable-next-line no-restricted-syntax
-  for (const [idx, url] of urls.value.entries()) {
-    setStatus('langstore', 'info', `Syncing - ${count} left.`, 'Syncing to Langstore.');
-    // eslint-disable-next-line no-await-in-loop
-    urls.value[idx] = await syncFile(url);
-    urls.value = [...urls.value];
-    count -= 1;
-    if (count === 0) {
-      setStatus('langstore');
-    }
-  }
-}
 
-export async function makeLots() {
-  const iters = [...Array(104).keys()];
-  const groups = group(iters);
+  const groups = makeGroups(urls.value);
+  for (const group of groups) {
+    const groupResult = group.map((url) => syncFile(url));
+    await Promise.all(groupResult);
+  }
+
+  // let count = urls.value.length;
+  // // eslint-disable-next-line no-restricted-syntax
+  // for (const [idx, url] of urls.value.entries()) {
+  //   setStatus('langstore', 'info', `Syncing - ${count} left.`, 'Syncing to Langstore.');
+  //   // eslint-disable-next-line no-await-in-loop
+  //   urls.value[idx] = await syncFile(url);
+  //   urls.value = [...urls.value];
+  //   count -= 1;
+  //   if (count === 0) {
+  //     setStatus('langstore');
+  //   }
+  // }
 }

@@ -5,79 +5,109 @@ const BODY_BASE = { '@microsoft.graph.conflictBehavior': 'replace' };
 
 const { baseUri, site } = await getMSALConfig();
 
-// async function downloadFile(downloadUrl) {
-//   const response = await fetch(downloadUrl);
-//   return response.blob();
+async function downloadFile(id) {
+  const options = getReqOptions({ method: 'GET' });
+  const resp = await fetch(`${site}/drive/items/${id}/content`, options);
+  return resp.blob();
+}
+
+// async function createFolder(parentId, name) {
+//   const body = { ...BODY_BASE, name, folder: {} };
+//   const options = getReqOptions({ method: 'POST', body });
+//   const resp = await fetch(`${site}/drive/items/${parentId}/children`, options);
+//   return resp.json();
 // }
-
-async function createFolder(parentId, name) {
-  const body = { ...BODY_BASE, name, folder: {} };
-  const options = getReqOptions({ method: 'POST', body });
-  const resp = await fetch(`${site}/drive/items/${parentId}/children`, options);
-  return resp.json();
-}
-
-async function getParent(path) {
-  const destArr = path.split('/');
-  destArr.pop();
-  let parent;
-  const reverseDest = [];
-  while (!parent) {
-    const item = await getItem(destArr.join('/'));
-    if (item.error) {
-      reverseDest.push(destArr.pop());
-    } else {
-      parent = item;
-    }
-  }
-  if (reverseDest.length > 0) {
-    while (reverseDest.length > 0) {
-      parent = await createFolder(parent.id, reverseDest.pop());
-    }
-  }
-  return { parentReference: { id: parent.id } };
-}
 
 async function getItem(path) {
   const fullpath = `${baseUri}${path}`;
   const options = getReqOptions();
   const resp = await fetch(fullpath, options);
+  const json = await resp.json();
+  return json;
+}
+
+async function copyItem(id, parentReference, folder, name) {
+  const body = { ...BODY_BASE, parentReference, name };
+  const options = getReqOptions({ method: 'POST', body });
+  const resp = await fetch(`${site}/drive/items/${id}/copy`, options);
+  if (resp.status !== 202) return {};
+  return getItem(`${folder}/${name}`);
+}
+
+async function moveFile(id, parentReference, name) {
+  const body = { parentReference, name };
+  const opts = getReqOptions({ body, method: 'PATCH' });
+  opts.headers.append('Prefer', 'bypass-shared-lock');
+  const resp = await fetch(`${site}/drive/items/${id}`, opts);
+  const json = await resp.json();
+  return json;
+}
+
+async function deleteFile({ path, item }) {
+  const itemToDelete = item || await getItem(path);
+  const opts = getReqOptions({ method: 'DELETE' });
+  opts.headers.append('Prefer', 'bypass-shared-lock');
+  const resp = await fetch(`${site}/drive/items/${itemToDelete.id}`, opts);
+  return { ...itemToDelete, deleted: resp.status === 204 };
+}
+
+async function getUploadSession(folder, name, fileSize) {
+  const path = `${folder}/${name}`;
+  const body = { ...BODY_BASE, name, fileSize };
+  const opts = getReqOptions({ body, method: 'POST' });
+  const resp = await fetch(`${baseUri}${path}:/createUploadSession`, opts);
   return resp.json();
 }
 
-async function renameFile(path, name, copy) {
-  const destArr = path.split('/');
-  destArr.pop();
-  const destParent = destArr.join('/');
-  const destCopy = await getItem(`${destParent}/${copy}`);
-
-  const body = { ...BODY_BASE, name };
-  const options = getReqOptions({ method: 'PATCH', body });
-  const resp = await fetch(`${site}/drive/items/${destCopy.id}`, options);
-
-  if (resp.status === 200) return destCopy;
-  return { error: true };
+async function uploadFile(url, blob) {
+  const opts = getReqOptions({ method: 'PUT' });
+  opts.headers.append('Content-Length', blob.size);
+  opts.headers.append('Content-Range', `bytes 0-${blob.size - 1}/${blob.size}`);
+  opts.headers.append('Prefer', 'bypass-shared-lock');
+  const resp = await fetch(url, { ...opts, body: blob });
+  return resp.json();
 }
 
-function getFilename(path) {
-  const name = path.split('/').pop();
-  const file = name.includes('.json') ? name.replace('.json', '.xlsx') : `${name}.docx`;
+async function breakLock(dest, destItem, size) {
+  const { parentReference, id } = destItem;
+  const copiedItem = await copyItem(id, parentReference, dest.folder, dest.lockName);
+  await deleteFile({ item: destItem });
+  await moveFile(copiedItem.id, parentReference, dest.name);
+  return getUploadSession(dest.folder, dest.name, size);
+}
+
+/**
+ * Attempt an upload.
+ *
+ * Work around SharePoint giving an upload URL even though a file is 423 locked.
+ *
+ * @param {Object} dest contains folder, name, and sync name
+ * @param {Object} destItem the destination represented by SharePoint details
+ * @param {String} uploadUrl the URL to upload to
+ * @param {Blob} blob the blob to upload
+ * @returns {Object} a SharePoint item representing the copied file.
+ */
+async function uploadAttempt(dest, destItem, uploadUrl, blob) {
+  let count = 1;
+  let uploadItem;
+  let url = uploadUrl;
+  while (!uploadItem || uploadItem.error || count > 2) {
+    uploadItem = await uploadFile(url, blob);
+    if (!uploadItem.error) break;
+    count += 1;
+    const session = await breakLock(dest, destItem, blob.size);
+    url = session.uploadUrl;
+  }
+  return uploadItem;
+}
+
+function getDocDetails(path) {
+  const parentArr = path.split('/');
+  const name = parentArr.pop();
+  const file = name.endsWith('.json') ? name.replace('.json', '.xlsx') : `${name}.docx`;
+  const folder = parentArr.join('/');
   const split = file.split('.');
-  return { name: file, copy: `${split[0]}-copy.${split[1]}` };
-}
-
-async function getItemTry(path) {
-  return new Promise((resolve) => {
-    let count = 1;
-    const found = setInterval(async () => {
-      const json = await getItem(path);
-      count += 1;
-      if (count > 10 || json.webPath) {
-        clearInterval(found);
-        resolve(json);
-      }
-    }, 100);
-  });
+  return { folder, name: file, lockName: `${split[0]} (lock copy).${split[1]}` };
 }
 
 /**
@@ -87,26 +117,22 @@ async function getItemTry(path) {
  */
 
 /**
- * Copy File - Copies any file. Will correctly create folders and handle conflicts.
+ * Copy File - Copies any file.
  *
  * @param {String} sourcePath the source document path
  * @param {String} destPath the destination document path
  * @returns {Object} json an object describing the copied item
  */
 export default async function copyFile(sourcePath, destPath) {
-  const source = await getItem(`${sourcePath}.docx`);
-  const dest = await getItem(`${destPath}.docx`);
-  const { parentReference } = dest.error ? await getParent(destPath) : dest;
+  const source = getDocDetails(sourcePath);
+  const dest = getDocDetails(destPath);
 
-  if (source.id && parentReference) {
-    const { name, copy } = getFilename(destPath);
-    const body = { ...BODY_BASE, parentReference, name: dest.id ? copy : name };
-    const options = getReqOptions({ method: 'POST', body });
-    const resp = await fetch(`${site}/drive/items/${source.id}/copy`, options);
-    if (resp.status === 202) {
-      return dest.id ? renameFile(destPath, name, copy) : getItemTry(`${destPath}.docx`);
-    }
-    return resp.json();
-  }
-  return { status: 500 };
+  const sourceItem = await getItem(`${source.folder}/${source.name}`);
+  const destItem = await getItem(`${dest.folder}/${dest.name}`);
+
+  const blob = await downloadFile(sourceItem.id);
+  const session = await getUploadSession(dest.folder, dest.name, blob.size);
+  const { uploadUrl } = session.error ? await breakLock(dest, destItem, blob.size) : session;
+  if (uploadUrl) return uploadAttempt(dest, destItem, uploadUrl, blob);
+  return { error: { msg: 'Couldn\'t copy file. Contact Milo Community.' } };
 }

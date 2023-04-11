@@ -6,7 +6,7 @@ body {
 
 main {
   max-height: 100vh;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .locui {
