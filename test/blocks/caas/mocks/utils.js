@@ -42,7 +42,7 @@ export const parseEncodedConfig = stub().returns({
   paginationEnabled: false,
   paginationQuantityShown: false,
   paginationUseTheme3: false,
-  paginationType: 'none',
+  paginationType: '',
   placeholderUrl: '/my/placeholder.json',
   resultsPerPage: 5,
   searchFields: [],
