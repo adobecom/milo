@@ -1,7 +1,6 @@
 import { getConfig } from './config.js';
 import {
   getUrlInfo,
-  getDocPathFromUrl,
   fetchProjectFile,
 } from '../../loc/utils.js';
 import {
@@ -10,7 +9,7 @@ import {
   readProjectFile,
 } from '../../loc/project.js';
 import { getSpFiles } from '../../loc/sharepoint.js';
-import { getFloodgateUrl } from './utils.js';
+import { getDocPathFromUrl, getFloodgateUrl } from './utils.js';
 
 let project;
 

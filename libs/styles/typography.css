@@ -278,40 +278,14 @@ span.icon.margin-left { margin-left: 8px; }
 .con-block.xxl-spacing-static-bottom { padding-bottom: var(--spacing-xxl-static); }
 .con-block.xxxl-spacing-static-bottom { padding-bottom: var(--spacing-xxxl-static); }
 
-.carousel-slide .con-block.has-bg,
-div[class*='-up'] .con-block.has-bg,
-.carousel-slide[style*='background-color'] .con-block,
-.carousel-slide.has-background .con-block { padding: var(--spacing-m); }
-
-.carousel-slide .con-block.has-bg.xs-spacing,
-div[class*='-up'] .con-block.has-bg.xs-spacing,
-.carousel-slide[style*='background-color'] .con-block.xs-spacing,
-.carousel-slide.has-background .con-block.xs-spacing { padding: var(--spacing-xs); }
-
-.carousel-slide .con-block.has-bg.s-spacing,
-div[class*='-up'] .con-block.has-bg.s-spacing,
-.carousel-slide[style*='background-color'] .con-block.s-spacing,
-.carousel-slide.has-background .con-block.s-spacing { padding: var(--spacing-s); }
-
-.carousel-slide .con-block.has-bg.m-spacing,
-div[class*='-up'] .con-block.has-bg.m-spacing,
-.carousel-slide[style*='background-color'] .con-block.m-spacing,
-.carousel-slide.has-background .con-block.m-spacing { padding: var(--spacing-m); }
-
-.carousel-slide .con-block.has-bg.l-spacing,
-div[class*='-up'] .con-block.has-bg.l-spacing,
-.carousel-slide[style*='background-color'] .con-block.l-spacing,
-.carousel-slide.has-background .con-block.l-spacing { padding: var(--spacing-l); }
-
-.carousel-slide .con-block.has-bg.xl-spacing,
-div[class*='-up'] .con-block.has-bg.xl-spacing,
-.carousel-slide[style*='background-color'] .con-block.xl-spacing,
-.carousel-slide.has-background .con-block.xl-spacing { padding: var(--spacing-xl); }
-
-.carousel-slide .con-block.has-bg.xxl-spacing,
-div[class*='-up'] .con-block.has-bg.xxl-spacing,
-.carousel-slide[style*='background-color'] .con-block.xxl-spacing,
-.carousel-slide.has-background .con-block.xxl-spacing { padding: var(--spacing-xxl); }
+div[class*='-up'] .con-block.has-bg { padding: var(--spacing-m); }
+div[class*='-up'] .con-block.has-bg.xs-spacing { padding: var(--spacing-xs); }
+div[class*='-up'] .con-block.has-bg.s-spacing { padding: var(--spacing-s); }
+div[class*='-up'] .con-block.has-bg.m-spacing { padding: var(--spacing-m); }
+div[class*='-up'] .con-block.has-bg.l-spacing { padding: var(--spacing-l); }
+div[class*='-up'] .con-block.has-bg.xl-spacing { padding: var(--spacing-xl); }
+div[class*='-up'] .con-block.has-bg.xxl-spacing { padding: var(--spacing-xxl); }
+div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl); }
 
 .con-block.max-width-6 .foreground { max-width: 600px; }
 .con-block.max-width-8 .foreground { max-width: 800px; }

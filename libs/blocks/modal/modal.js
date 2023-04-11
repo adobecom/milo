@@ -122,7 +122,7 @@ export async function getModal(details, custom) {
 
   dialog.append(close);
   document.body.append(dialog);
-  firstFocusable.focus(focusVisible);
+  firstFocusable.focus({ preventScroll: true, ...focusVisible });
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {

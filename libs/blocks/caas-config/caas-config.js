@@ -145,7 +145,6 @@ const defaultOptions = {
     incremental: 'Incremental',
   },
   paginationType: {
-    none: 'None',
     paginator: 'Paginator',
     loadMore: 'Load More',
   },
@@ -160,7 +159,8 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
-    dateModified: 'Date: (Last Modified)',
+    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
+    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -238,7 +238,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -258,6 +258,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
       label=${label}
       name=${prop}
       type=${type}
+      title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
     />
@@ -308,6 +309,7 @@ const BasicsPanel = ({ tagsData }) => {
 
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Select} options=${countryTags} prop="country" label="Country" sort />
@@ -455,7 +457,8 @@ const SortPanel = () => {
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
       <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date: (Last Modified)" prop="sortDateModified" type="checkbox" />
+      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />

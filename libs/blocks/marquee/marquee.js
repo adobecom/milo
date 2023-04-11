@@ -75,6 +75,18 @@ function extendButtonsClass(text) {
   buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
 
+const decorateImage = (media) => {
+  media.classList.add('image');
+
+  const imageLink = media.querySelector('a');
+  const picture = media.querySelector('picture');
+
+  if (imageLink && picture) {
+    imageLink.textContent = '';
+    imageLink.append(picture);
+  }
+};
+
 export default function init(el) {
   decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
@@ -90,12 +102,15 @@ export default function init(el) {
   const text = headline.closest('div');
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-  media?.classList.add('media');
 
-  if (media?.querySelector('a[href$=".mp4"]')) {
-    decorateVideo(media);
-  } else {
-    media?.classList.add('image');
+  if (media) {
+    media.classList.add('media');
+
+    if (media.querySelector('a[href$=".mp4"]')) {
+      decorateVideo(media);
+    } else {
+      decorateImage(media);
+    }
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
