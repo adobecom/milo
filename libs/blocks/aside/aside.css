@@ -367,6 +367,11 @@
   justify-content: center;
 }
 
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.small .foreground.container .text > * {
+  justify-content: flex-start;
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
