@@ -80,7 +80,7 @@ const decorateImage = (media) => {
 
   const imageLink = media.querySelector('a');
   const picture = media.querySelector('picture');
-  const buttonImage = imageLink.querySelector('img[src$=".svg"]');
+  const buttonImage = imageLink && imageLink.querySelector('img[src$=".svg"]');
 
   if (buttonImage) {
     imageLink.parentElement.classList.add('play-button');

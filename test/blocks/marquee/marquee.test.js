@@ -66,4 +66,14 @@ describe('marquee', () => {
       expect(marquee.querySelector('.foreground video')).to.exist;
     });
   });
+
+  describe('marquee with button overlay', () => {
+    it('converts and svg link to a button overlay', () => {
+      const svgMarquee = marquees[14];
+      const playButton = svgMarquee.querySelector('.play-button');
+      expect(playButton).to.exist;
+      expect(playButton.querySelector('a').dataset.modalHash).to.not.be.null;
+      expect(playButton.querySelector('img')).to.exist;
+    });
+  });
 });
