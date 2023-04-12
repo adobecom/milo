@@ -353,4 +353,3 @@ export default async function init(el) {
   render(html`<${Bulk} user="${user}" storedOperation="${storedOperation}" />`, el);
 }
 // TODO remove the anonymous user in bulk-config.xlsx
-// TODO: test edge cases + write tests
