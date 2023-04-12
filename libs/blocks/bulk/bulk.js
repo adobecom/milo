@@ -1,5 +1,4 @@
 import { html, render, useState, useRef } from '../../deps/htm-preact.js';
-import createCopy from '../library-config/library-utils.js';
 import {
   signOut,
   getStoredUrlInput,
@@ -34,7 +33,7 @@ function User({ user }) {
 
 function UrlInput({ urlsElt }) {
   return html`
-      <textarea class="bulk-urls-input" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
+    <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
 
@@ -49,11 +48,10 @@ function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
 }
 
 function SubmitBtn({ submit, selectedAction }) {
-  const name = getActionName(selectedAction);
   return html`
-      <button class="bulk-action-submit" onClick=${submit}>
-          ${name}
-      </button>
+    <button class="bulk-action-submit" onClick=${submit}>
+      Run process
+    </button>
   `;
 }
 
@@ -67,117 +65,117 @@ function prettyDate() {
   `;
 }
 
+function bulkPublishStatus(row) {
+  const status = row.status.publish !== 200
+    ? `Error  - Status: ${row.status.publish}`
+    : '';
+  return row.status.publish !== 200 && row.status.publish !== undefined  && html`
+    <span class=page-status>${status}</span>
+  `;
+}
+
+function bulkPreviewStatus(row) {
+  const status = row.status.preview !== 200
+    ? `Error - Status: ${row.status.preview}`
+    : '';
+  return row.status.preview !== 200 && row.status.preview !== undefined && html`
+    <span class=page-status>${status}</span>
+  `;
+}
+
+function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
+  const name = getActionName(submittedAction, true);
+  const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
+  return bulkTriggered && html`
+    <div class="bulk-status-head">
+      <ul class="bulk-status-head-title">
+        <li><span>STATUS:</span> ${name} ${urlNumber} ${URLS}</li>
+      </ul>
+    </div>
+  `;
+}
+
 function StatusRow({ row }) {
+  const timeStamp = prettyDate();
+  const errorStyle = 'status-error';
+  const previewStatusError = row.status.preview !== 200
+    ? errorStyle
+    : '';
+  const publishStatusError = row.status.publish !== 200
+    ? errorStyle
+    : '';
+
   return html`
     <tr class="bulk-status-row">
-        <td class="bulk-status-url">${row.status.preview && row.url}</td>
-        <td class="bulk-status-preview">${row.status.preview && row.status.preview}</td>
-        <td class="bulk-status-url">${row.status.publish && row.url}</td>
-        <td class="bulk-status-publish">${row.status.publish && row.status.publish}</td>
+      <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
+      <td class="bulk-status-preview ${previewStatusError}">
+        ${row.status.preview === 200 && timeStamp} ${bulkPreviewStatus(row)}
+      </td>
+      <td class="bulk-status-publish ${publishStatusError}">
+        ${row.status.publish === 200 && timeStamp} ${bulkPublishStatus(row)}
+      </td>
     </tr>
   `;
 }
 
-function StatusTitle({
-  bulkTriggered, submittedAction, copyResults, showHideUrls, bulkInputToggleElt, urlNumber,
-}) {
-  const name = getActionName(submittedAction, true);
-  const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
-  return bulkTriggered && html`
-      <div class="bulk-status-head">
-          <div class="bulk-status-head-title">
-              STATUS ${name} ${urlNumber} ${URLS}
-          </div>
-          <div>
-              <button class="bulk-status-head-copy" onclick=${copyResults} title="Copy results"></button>
-              <button class="bulk-status-head-toggle-urls" ref="${bulkInputToggleElt}" onclick=${showHideUrls} title="Show/hide urls"></button>
-          </div>
-      </div>
-  `;
-}
-
-function StatusContent({ resultsElt, result }) {
+function StatusContent({ resultsElt, result, submittedAction }) {
+  const name = getActionName(submittedAction);
+  const displayClass = 'did-bulk';
+  const bulkPreviewed = name.toLowerCase().includes('preview') ? displayClass : '';
+  const bulkPublished = name.toLowerCase().includes('publish') ? displayClass : '';
   return html`
     <table class="bulk-status-content" ref="${resultsElt}">
-        ${result && html`
-            <colgroup>
-                <col class="bulk-status-content-col1"/>
-                <col class="bulk-status-content-col2"/>
-                <col class="bulk-status-content-col3"/>
-                <col class="bulk-status-content-col4"/>
-            </colgroup>
-            <tr class="bulk-status-header-row">
-                <th class="bulk-status-header-url">Preview</th>
-                <th>Status</th>
-                <th class="bulk-status-header-url">Publish</th>
-                <th>Status</th>
-            </tr>
-            ${result.map((row) => html`<${StatusRow} row=${row} />`)}
-        `}
+      ${result && html`
+        <tr class="bulk-status-header-row">
+          <th>URL</th>
+          <th class="${bulkPreviewed}">Previewed</th>
+          <th class="${bulkPublished}">Published</th>
+        </tr>
+        ${result.reverse().map((row) => html`<${StatusRow} row=${row} />`)}
+      `}
     </table>
   `;
 }
 
-function StatusFooter({ completion }) {
+function StatusCompletion({ completion }) {
   const timeStamp = prettyDate();
   return completion && html`
-      <table class="bulk-status-footer">
-          <colgroup>
-              <col class="bulk-status-content-col1"/>
-              <col class="bulk-status-content-col2"/>
-              <col class="bulk-status-content-col3"/>
-              <col class="bulk-status-content-col4"/>
-          </colgroup>
-          <tr>
-              <td>
-                  <div class="bulk-status-footer-preview">
-                      ${completion.preview.total > 0 && html`
-                          <div class="bulk-status-footer-preview-complete">job complete</div>
-                          <div class="bulk-status-footer-preview-date">${timeStamp}</div>
-                          <div class="bulk-status-footer-preview-success">successful: ${completion.preview.success} / ${completion.preview.total}</div>
-                      `}
-                  </div>
-              </td>
-              <td></td>
-              <td>
-                  <div class="bulk-status-footer-publish">
-                      ${completion.publish.total > 0 && html`
-                          <div class="bulk-status-footer-publish-complete">job complete</div>
-                          <div class="bulk-status-footer-publish-date">${timeStamp}</div>
-                          <div class="bulk-status-footer-publish-success">successful: ${completion.publish.success} / ${completion.publish.total}</div>
-                      `}
-                  </div>
-              </td>
-              <td></td>
-          </tr>
-      </table>
+    <div class="bulk-job">
+      <div class="bulk-job-status">
+        ${completion.preview.total > 0 && html`
+          <ul class="bulk-job-preview">
+            <li><span>Preview Job Complete:</span> ${timeStamp}</li>
+            <li><span>Successful:</span> ${completion.preview.success} / ${completion.preview.total}</li>
+          </ul>
+        `}
+        ${completion.publish.total > 0 && html`
+        <ul class="bulk-job-publish">
+          <li><span>Publish Job Complete:</span> ${timeStamp}</li>
+          <li><span>Successful:</span> ${completion.publish.success} / ${completion.publish.total}</li>
+        </ul>
+        `}
+      </div>
+    </div>
   `;
 }
 
-function Status({
-  valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt,
-  completion, copyResults, showHideUrls, bulkInputToggleElt,
-}) {
+function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion }) {
   return valid && html`
     <div class="bulk-status">
-        <div class="bulk-status-title-container">
-            <${StatusTitle}
-                bulkTriggered=${bulkTriggered}
-                submittedAction=${submittedAction}
-                copyResults=${copyResults}
-                showHideUrls=${showHideUrls}
-                bulkInputToggleElt=${bulkInputToggleElt}
-                urlNumber=${urlNumber} />
-        </div>
-        <div class="bulk-status-content-container">
-            <${StatusContent}
-                resultsElt=${resultsElt}
-                result=${result} />
-        </div>
-        <div class="bulk-status-footer-container">
-            <${StatusFooter}
-                completion=${completion} />
-        </div>
+      <div class="bulk-status-info">
+        <${StatusTitle}
+          bulkTriggered=${bulkTriggered}
+          submittedAction=${submittedAction}
+          urlNumber=${urlNumber} />
+        <${StatusCompletion}
+          completion=${completion} />
+      </div>
+      <div class="bulk-status-content-container">
+        <${StatusContent}
+          resultsElt=${resultsElt}
+          result=${result}
+          submittedAction=${submittedAction} />
+      </div>
     </div>
   `;
 }
@@ -203,7 +201,7 @@ function ResumeModal({ displayResumeDialog, resumeModal, resume, hideModal }) {
   return html`
       <div class="bulk-resume-modal ${displayResumeDialog}" ref="${resumeModal}">
           <div class="bulk-resume-modal-content">
-              <div>Previous bulk operation did not terminate. Would you like to resume processing the outstanding URLs?</div>
+              <div>The previous bulk operation was interrupted before it could finish. Would you like to resume processing the outstanding URLS?</div>
               <div class="bulk-resume-modal-button">
                   <button class="bulk-resume-modal-button-resume" onclick="${resume}">Resume</button>
                   <button class="bulk-resume-modal-button-cancel" onclick="${hideModal}">Cancel</button>
@@ -227,7 +225,6 @@ function Bulk({ user, storedOperation }) {
   const actionElt = useRef(null);
   const resultsElt = useRef(null);
   const bulkInputElt = useRef(null);
-  const bulkInputToggleElt = useRef(null);
   const resumeModal = useRef(null);
 
   const displayResumeDialog = (storedOperation.completed === null || storedOperation.completed) ? '' : 'displayed';
@@ -269,16 +266,6 @@ function Bulk({ user, storedOperation }) {
     setSelectedAction(actionElt.current.value);
   };
 
-  const copyResults = async () => {
-    const blob = new Blob([resultsElt.current.outerHTML], { type: 'text/html' });
-    createCopy(blob);
-  };
-
-  const showHideUrls = () => {
-    bulkInputElt.current.classList.toggle('is-hidden');
-    bulkInputToggleElt.current.classList.toggle('open');
-  };
-
   const hideModal = () => {
     resumeModal.current.classList.remove('displayed');
   };
@@ -299,46 +286,46 @@ function Bulk({ user, storedOperation }) {
   };
 
   return html`
-    <div class="bulk">
-        <div class="bulk-input" ref="${bulkInputElt}">
-            <div class="bulk-header">
-                <div class="bulk-urls">
-                    <div class="bulk-urls-title">urls</div>
-                </div>
-                <${User} user=${user} />
-            </div>
-            <${UrlInput} urlsElt=${urlsElt} />
-            <div class="bulk-action">
-                <${SubmitBtn}
-                    submit=${submit}
-                    selectedAction=${selectedAction} />
-                <${SelectBtn}
-                    actionElt=${actionElt}
-                    onSelectChange=${onSelectChange}
-                    storedOperationName=${storedOperation.name} />
-            </div>
+  <div class="bulk-container">
+    <div class="bulk-input" ref="${bulkInputElt}">
+      <div class="bulk-header">
+        <div class="tool-header">
+          <h1>Bulk Publishing</div>
         </div>
-        <${ErrorMessage}
-            valid=${valid}
-            authorized=${authorized}
-            urlNumber=${urlNumber} />
-        <${Status}
-            valid=${valid}
-            urlNumber=${urlNumber}
-            bulkTriggered=${bulkTriggered}
-            submittedAction=${submittedAction}
-            result=${result}
-            resultsElt=${resultsElt}
-            completion=${completion}
-            copyResults=${copyResults}
-            showHideUrls=${showHideUrls}
-            bulkInputToggleElt=${bulkInputToggleElt} />
-        <${ResumeModal}
-            displayResumeDialog=${displayResumeDialog}
-            resumeModal=${resumeModal}
-            resume=${resume}
-            hideModal=${hideModal} />
+        <${User} user=${user} />
+      </div>
+      <div class="bulk-controls">
+        <div class="bulk-urls-title">Add URLS</div>
+        <div class="bulk-action">
+          <${SelectBtn}
+            actionElt=${actionElt}
+            onSelectChange=${onSelectChange}
+            storedOperationName=${storedOperation.name} />
+          <${SubmitBtn}
+            submit=${submit}
+            selectedAction=${selectedAction} />
+        </div>
+      </div>
+      <${UrlInput} urlsElt=${urlsElt} />
     </div>
+    <${ErrorMessage}
+      valid=${valid}
+      authorized=${authorized}
+      urlNumber=${urlNumber} />
+    <${Status}
+      valid=${valid}
+      urlNumber=${urlNumber}
+      bulkTriggered=${bulkTriggered}
+      submittedAction=${submittedAction}
+      result=${result}
+      resultsElt=${resultsElt}
+      completion=${completion} />
+    <${ResumeModal}
+      displayResumeDialog=${displayResumeDialog}
+      resumeModal=${resumeModal}
+      resume=${resume}
+      hideModal=${hideModal} />
+  </div>
   `;
 }
 
