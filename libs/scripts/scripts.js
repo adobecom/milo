@@ -80,7 +80,7 @@ const locales = {
   ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
   mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
   sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  // Asia Pacific
+  // Asia Pacific a
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
   in: { ietf: 'en-GB', tk: 'pps7abe.css' },
