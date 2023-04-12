@@ -64,7 +64,7 @@ export default function init(el) {
   const maxWidthClass = Array.from(el.classList).find((style) => style.startsWith('max-width-'));
   el.classList.add('con-block', maxWidthClass || 'max-width-10-desktop');
   accordion.classList.add('foreground');
-  el.append(accordion);
   decorateBlockAnalytics(el);
   decorateLinkAnalytics(accordion, headings);
+  el.append(accordion);
 }
