@@ -182,7 +182,7 @@ const init = (block) => {
         val = getStringKeyName(String(values[1]));
       }
       const section = sectionMetadata.closest('.section');
-      const assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
+      const assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       if (assocTabItem) assocTabItem.append(section);
     });
   });
