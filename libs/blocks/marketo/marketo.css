@@ -1,7 +1,7 @@
 :root {
   --marketo-form-text: #535353;
   --marketo-form-background: #FAFAFA;
-  --marketo-form-border: #A5A5A5;
+  --marketo-form-border: #6E6E6E;
   --marketo-form-error: #C9252D;
 }
 
@@ -10,8 +10,8 @@
   box-sizing: border-box;
   max-width: 600px;
   min-height: 200px;
-  margin: 56px auto;
-  padding: 56px 40px;
+  margin: var(--spacing-xxl) auto 104px;
+  padding: var(--spacing-xl) var(--spacing-l);
   background-color: var(--marketo-form-background);
 }
 
@@ -22,36 +22,82 @@
 }
 
 .marketo .marketo-description {
-  margin: 0 0 32px;
+  margin: 0 0 18px;
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
 }
 
 .marketo .mktoForm {
   font-size: 16px;
   font-weight: bold;
-  width: 100%!important;
-}
-
-.marketo .mktoForm .mktoFormCol {
-  float: none;
-}
-
-.marketo .mktoForm .mktoFieldWrap {
-  width: 100%;
+  width: 100% !important;
   display: flex;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
 }
 
-.marketo .mktoFormRow:first-child .mktoFieldWrap {
-  padding-top: 0;
+.marketo form.mktoForm--fade-in {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.marketo form.mktoForm--fade-in.mktoVisible {
+  display: flex;
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 1s ease-in, height 1s ease-in;
+}
+
+.marketo .mktoFormRow {
+  transition: height 0.5s ease-in;
+  height: auto;
+}
+
+.marketo .mktoFormRowTop {
+  display: contents;
+}
+
+.marketo .mktoFormCol.mktoVisible {
+  width: 100%;
+  margin-bottom: 11px;
+}
+
+.marketo .mktoPlaceholder {
+  display: none;
+}
+
+.marketo .mktoFormRow .mktoClear,
+.marketo .mktoFormRow .mktoInstruction,
+.marketo .mktoFormRow .mktoOffset,
+.marketo .mktoFormRow label:empty,
+.marketo .mktoFormRow .mktoGutter {
+  display: none;
+}
+
+.marketo .mktoFormRow fieldset {
+  padding: 0 
+}
+
+.marketo .mktoForm--fade-in .mktoFieldDescriptor {
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+}
+
+.marketo .mktoForm--fade-in .mktoFieldDescriptor.mktoVisible {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  height: auto;
+  transition: opacity 0.5s ease-in, height 0.5s ease-in;
 }
 
 .marketo .mktoForm .mktoLabel {
   color: var(--marketo-form-text);
-  padding-bottom: 6px;
-  width: auto!important;
+  padding-bottom: 4px;
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
 }
 
 .marketo .mktoForm .mktoAsterix {
@@ -60,10 +106,11 @@
 }
 
 .marketo .mktoForm .mktoField {
-  width: 100%!important;
-  padding: 11.25px;
+  width: 100% !important;
+  padding: 9px var(--spacing-xs);
   font-size: 16px;
-  color: var(--color-black);
+  font-family: var(--body-font-family);
+  color: var(--text-color);
   background-color: var(--color-white);
   border: 1px solid var(--marketo-form-border);
   border-radius: 4px;
@@ -77,13 +124,17 @@
 
 .marketo .mktoForm .mktoField::placeholder {
   font-weight: normal;
-  color: #222;
+  color: var(--marketo-form-text);
   opacity: 1;
+}
+
+.marketo .mktoForm .mktoField:focus::placeholder {
+  display: none !important;
 }
 
 .marketo .mktoForm .mktoField:focus-visible {
   outline: 0;
-  box-shadow: inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
+  border-color: var(--link-color-dark);
 }
 
 .marketo .mktoForm select {
@@ -93,8 +144,13 @@
   background-size: 1em 1em;
 }
 
-.marketo .mktoForm .mktoClear {
-  display: none;
+.marketo .mktoForm .mktoCheckboxList input {
+  width: auto !important;
+  margin: 0 6px 0 0;
+}
+
+.marketo .mktoForm .mktoCheckboxList label {
+  font-weight: 400;
 }
 
 .marketo .mktoForm .mktoGutter {
@@ -103,8 +159,9 @@
 }
 
 .marketo .mktoForm .mktoHtmlText {
-  width: 100%!important;
+  width: 100% !important;
   font-size: 14px;
+  line-height: 20px;
   font-weight: normal;
   color: var(--marketo-form-text);
 }
@@ -127,6 +184,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  margin-top: 21px;
 }
 
 .marketo .mktoForm .mktoButton {
@@ -180,7 +238,7 @@
 
 .marketo .mktoForm.show-warnings .mktoField.mktoInvalid:not(:focus) {
   border: 1px solid var(--marketo-form-error);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E") no-repeat 95% 50%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E") no-repeat 95% 50% var(--color-white);
   background-size: 19.5px;
 }
 
@@ -281,16 +339,16 @@
 }
 
 @media screen and (min-width: 600px) {
-  .marketo .marketo-form-wrapper {
-    margin: 40px auto 80px;
+  .marketo .mktoFormCol.mktoVisible {
+    width: 47.7%;
   }
 
-  .marketo .mktoForm .mktoField {
-    width: 50%!important;
+  .marketo .marketo-privacy .mktoFormCol.mktoVisible {
+    width: 100%;
   }
 
-  .marketo .mktoForm .mktoLabel {
-    padding-bottom: 0;
+  .marketo .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
+    width: 100%;
   }
 
   .marketo .mktoForm.show-warnings .mktoError {
@@ -311,12 +369,6 @@
   .columns .marketo .mktoForm.show-warnings .mktoError {
     width: 50%;
     margin-left: 50%;
-  }
-}
-
-@media screen and (min-width: 1440px) {
-  .marketo .marketo-form-wrapper {
-    margin: 40px auto;
   }
 }
 

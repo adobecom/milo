@@ -22,29 +22,8 @@ const FORM_ID = 'form id';
 const MUNCHKIN_ID = 'munchkin id';
 const ERROR_MESSAGE = 'error message';
 
-/* Marketo adds default styles that we want to remove */
-const cleanStyleSheets = (baseURL) => {
-  const { styleSheets } = document;
-
-  [...styleSheets].forEach((sheet) => {
-    if (sheet.href?.includes(baseURL)) {
-      sheet.disabled = true;
-    }
-  });
-};
-
-const cleanFormStyles = (form) => {
-  const formEl = form.getFormElem().get(0);
-
-  formEl?.querySelectorAll('style').forEach((e) => { e.remove(); });
-  formEl?.parentElement?.querySelectorAll('*[style]').forEach((e) => e.removeAttribute('style'));
-};
-
 const loadForm = (form, formData) => {
   if (!form) return;
-
-  cleanFormStyles(form);
-  cleanStyleSheets(formData[BASE_URL]);
 
   if (formData[HIDDEN_FIELDS]) {
     const hiddenFields = {};
@@ -61,7 +40,6 @@ export const formValidate = (form, success, error, errorMessage) => {
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
 
-  cleanFormStyles(form);
   if (!success && errorMessage) {
     error.textContent = errorMessage;
     error.classList.add('alert');
@@ -98,10 +76,11 @@ const readyForm = (error, form, formData) => {
   const formEl = form.getFormElem().get(0);
   const redirectUrl = formData[DESTINATION_URL];
   const errorMessage = formData[ERROR_MESSAGE];
+  console.log('Megan', formEl);
 
   // Set row width of legal language, without knowing position
   const formTexts = formEl.querySelectorAll('.mktoHtmlText');
-  formTexts[formTexts.length - 1].closest('.mktoFormRow').classList.add('marketo-privacy');
+  formEl.querySelector('.mktoPlaceholderFieldSet_2020-10-29T12').closest('.mktoFormRow').classList.add('marketo-privacy');
 
   formEl.addEventListener('focus', (e) => {
     if (e.target.type === 'submit') return;
@@ -156,8 +135,12 @@ const init = (el) => {
         formWrapper.append(description);
       }
 
-      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors' });
-      formWrapper.append(marketoForm);
+      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors my-form', style: 'opacity:0;visibility:hidden;' });
+      const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
+      const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
+      formWrapper.append(span1, span2, marketoForm);
+
+
       fragment.append(error, formWrapper);
       el.replaceChildren(fragment);
 
