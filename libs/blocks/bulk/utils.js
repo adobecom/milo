@@ -79,7 +79,12 @@ const siteIsSupported = async (url) => {
   }
 };
 
-export const getUrls = (element) => element.current?.value.split('\n').filter((url) => url.length > 0).map((e) => e.trim());
+export const getUrls = (element) => {
+  const urls = element.current?.value.split('\n')
+    .filter((url) => url.length > 0)
+    .map((e) => e.trim());
+  return [...new Set(urls)];
+};
 
 export const getActionName = (action, gerund) => {
   let name;
