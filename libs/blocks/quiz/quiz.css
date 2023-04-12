@@ -750,9 +750,19 @@ TODO: Need to check if we can skip this somehow.
   justify-content: center;
 }
 
-
-
 .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option .icon {
   width: 4rem !important;
   height: 4rem !important;
+}
+
+.show {
+ display: block; 
+}
+
+.hide {
+  display: none;
+}
+
+.footer-info {
+  margin-top: 12px !important;
 }

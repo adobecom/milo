@@ -1,14 +1,29 @@
+import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
+
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 
-let getConfigPath;
-
+let getConfigPath, getQuizKey, getAnalyticsType, getAnalyticsQuiz;
+let metaData;
 const initConfigPath = (roolElm) => {
   const link = roolElm.querySelector('.quiz > div > div > a');
   const quizConfigPath = link.text.toLowerCase();
 
   return filepath => `${quizConfigPath}${filepath}`;
+}
+
+const initQuizKey = () => {
+  getQuizKey = metaData.storagepath.text
+  return getQuizKey;
+}
+
+const initAnalyticsType = () => {
+  return metaData['analytics-type'].text;
+}
+
+const initAnalyticsQuiz = () => {
+  return metaData['analytics-quiz'].text;
 }
 
 async function fetchContentOfFile(path) {
@@ -17,13 +32,16 @@ async function fetchContentOfFile(path) {
 }
 
 export const initConfigPathGlob = (rootElement) => {
+  metaData = getMetadata(rootElement);
   getConfigPath = initConfigPath(rootElement);
+  getQuizKey = initQuizKey(rootElement);
+  getAnalyticsType = initAnalyticsType();
+  getAnalyticsQuiz = initAnalyticsQuiz();
 }
 
 export const getQuizData = async () => {
   try {
     const [questions, datastrings] = await Promise.all([fetchContentOfFile(QUESTIONS_EP_NAME), fetchContentOfFile(STRINGS_EP_NAME)]);
-
     return [questions, datastrings]
   } catch (ex) {
     console.log('Error while fetching data : ', ex);
@@ -32,14 +50,16 @@ export const getQuizData = async () => {
 
 /**
  * Handling the result flow from here. Will need to make sure we capture all the data so that we can come back.
- *
  */
 export const handleResultFlow = async (answers = []) => {
   console.log('We are at the end of the flow! Route to result page');
   console.log('flow observed till now :: ', answers);
-
+  // debugger;
   const { primary: primaryProducts } = await parseResultData(answers);
-  const resultData = await parseResultData(answers);
+  // const {resultData: filteredResults, restultResources: restultResources}  = await parseResultData(answers);
+  const entireResultData  = await parseResultData(answers);
+  const resultData = entireResultData.filteredResults;
+  const resultResources = entireResultData.resultResources;
   let destinationPage = '',
    primaryProductCodes = [],
   secondaryProductCodes = [], 
@@ -52,20 +72,71 @@ export const handleResultFlow = async (answers = []) => {
     primaryProductCodes = resultData['primary']
     secondaryProductCodes = resultData['secondary']
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result']
-    secondaryProductCodes = resultData.matchedResults[0]['structure-fragments']
-    nestedFragments = resultData.matchedResults[0]['nested-fragments']
   }
 
-  const redirectUrl = getRedirectUrl(destinationPage, primaryProducts, answers);
+  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
   console.log("redirectUrl: ", redirectUrl);
-  // window.location.href = redirectUrl;
+
+  storeResultInLocalStorage(resultData, resultResources, primaryProductCodes, secondaryProductCodes, umbrellaProduct);
+  
+  window.location.href = redirectUrl;
 
 };
-const getRedirectUrl = (primaryProducts, answers) => {
-  let redirectUrl = `https://main--milo--adobecom.hlx.page/drafts/sabya/quiz-2/photoshop-results' +
-    '?products=${primaryProducts}&${buildQueryParam(answers)}`;
 
-    return redirectUrl;
+const storeResultInLocalStorage = (resultData, resultResources, primaryProducts, secondaryProductCodes, umbrellaProduct) => {
+  console.log('resultData is while storing in localstorage : ', resultData)
+  const nestedFrags = resultData.matchedResults[0]['nested-fragments']
+
+  let nestedStuffsToPull = ''
+  let structureFrags = resultData.matchedResults[0]['structure-fragments']
+  let structureFragmentsObj = []
+
+
+  let structureFragsArray = structureFrags.split(',')
+
+  // Creating the structured fragment object
+  if (umbrellaProduct) {
+    // nestedStuffsToPull = umbrellaProduct;
+    // pull the structure cards from the umbrella
+    // pull the nested frags for the primary products
+    console.log('structureFrags  :', structureFrags)
+    structureFragsArray.forEach(frag => {
+      resultResources.data.forEach(row => {
+        if (umbrellaProduct && row.product === umbrellaProduct) {
+          frag = frag.trim()
+          structureFragmentsObj.push(row[frag])
+        }
+      })
+    })
+  } else {
+    // productToMatch = secondaryProductCodes;
+    // structure frags get picked up by primary product
+    // nested frags get picked up by matching the secondary product
+    structureFragsArray.forEach(frag => { // marquee,card-list
+      resultResources.data.forEach(row => { // lr
+        if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
+          frag = frag.trim()
+          if (row[frag]) {
+            structureFragmentsObj.push(row[frag])
+          }
+        }
+      })
+    })
+  }
+
+  // structureFragments
+  const resultToDelegate = {
+    primaryProducts : primaryProducts,
+    secondaryProducts : secondaryProductCodes,
+    umbrellaProduct : umbrellaProduct,
+    structureFragments : structureFragmentsObj,
+    nestedFragments : resultData.matchedResults[0]['nested-fragments']
+  }
+  localStorage.setItem(getQuizKey, JSON.stringify(resultToDelegate));
+}
+
+const getRedirectUrl = (destinationPage, primaryProducts, answers) => {
+  return `${destinationPage}?primary=${primaryProducts}&quizKey=${getQuizKey}`;
 }
 
 const buildQueryParam = (answers) => {
@@ -76,7 +147,7 @@ const buildQueryParam = (answers) => {
 
 const parseResultData = async (answers) => {
   const results  = await fetchContentOfFile(RESULTS_EP_NAME);
-
+  // debugger
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
       let hasMatch = false;
@@ -122,13 +193,16 @@ const parseResultData = async (answers) => {
     results['result-destination'].data,
     filteredResults
   );
-  console.log('matched results from Sanu bhai is:', matchedResults);
+  console.log('matched results :', matchedResults);
   console.log('filteredResults.primary :', filteredResults.primary);
 
   filteredResults.matchedResults = matchedResults;
-  return filteredResults;
 
+  let rObj = {};
+  rObj.filteredResults = filteredResults;
+  rObj.resultResources = results['result-resources'];
 
+  return rObj;
 };
 
 const getRecomandationResults = (selectedDestination, deafult) =>
@@ -210,10 +284,29 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
       if (options === selection) {
         let flowStepsList = next.split(',');
 
+        let regexStepsToSkip;
+        flowStepsList.forEach(step => {
+          if (step.startsWith('NOT('))
+          regexStepsToSkip = step;
+        })
+
+        // regexStepsToSkip = 'NOT(q-rather)'
+        if (regexStepsToSkip) {
+          let stepsToSkip = regexStepsToSkip.substring(
+            regexStepsToSkip.indexOf("(") + 1, 
+            regexStepsToSkip.lastIndexOf(")")
+          );
+  
+          // stepsToSkip = 'q-rather'
+          let stepsToSkipArr = stepsToSkip.split(',');
+          stepsToSkipArr.forEach(skip => {
+              nextQuizViews = nextQuizViews.filter((val) => val != skip);
+          })
+        }
 
         // RESET the queue and add only the next question.
+
         if (flowStepsList.includes('RESET')) { // Reset to intial question
-          console.log('flowStepsList : while reset is encountered : ', flowStepsList)
           nextQuizViews = []; // Resetting the nextQuizViews
           userFlow = [] // Resetting the userFlow as well
         }
@@ -222,7 +315,9 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
           hasResultTigger = flowStepsList.includes('RESULT');
         }
 
-        const filteredNextSteps = flowStepsList.filter((val) => (val != 'RESULT' && val != 'RESET'));
+        const filteredNextSteps = flowStepsList.filter((val) => 
+            (val != 'RESULT' && val != 'RESET' && !val.startsWith('NOT('))
+          );
 
         nextQuizViews = [...nextQuizViews, ...filteredNextSteps];
       }
