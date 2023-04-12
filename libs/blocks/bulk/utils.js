@@ -6,17 +6,20 @@ import {
   setLocalStorage,
 } from '../review/utils/localStorageUtils.js';
 
-const ADMIN_BASE_URL = 'https://admin.hlx.page';
+export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 100;
-const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
-const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
+export const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
+export const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
 const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
-const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
+export const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
 const BULK_STORED_URL_IDX = 'bulkStoredUrlIdx';
 const BULK_STORED_COMPLETED = 'bulkStoredCompleted';
 const BULK_STORED_URLS = 'bulkStoredUrls';
 const BULK_STORED_OPERATION = 'bulkStoredOperation';
 const UNSUPPORTED_SITE_STATUS = 'unsupported domain';
+
+// eslint-disable-next-line no-promise-executor-return
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 export const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
@@ -39,7 +42,8 @@ export const signOut = (e) => {
   e.preventDefault();
   window.adobeIMS?.signOut();
 };
-const getAuthorizedUsers = async () => {
+
+export const getAuthorizedUsers = async () => {
   let authorizedUsers = getLocalStorage(BULK_AUTHORIZED_USERS);
   if (authorizedUsers) return authorizedUsers;
   const resp = await fetch(BULK_CONFIG_FILE_PATH);
@@ -104,19 +108,16 @@ const executeAction = async (action, url) => {
   return resp.status;
 };
 
-// eslint-disable-next-line no-promise-executor-return
-const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-
-export const executeActions = async (actions, urls, setResult, lastUrlIdx = 0) => {
+export const executeActions = async (actions, urls, setResult, startUrlIdx = 0) => {
   setLocalStorage(BULK_STORED_COMPLETED, false);
   const results = [];
-  if (lastUrlIdx > urls.length - 1) {
+  if (startUrlIdx > urls.length - 1) {
     // eslint-disable-next-line no-console
-    console.error(`incorrect url index: ${lastUrlIdx}`);
+    console.error(`incorrect url index: ${startUrlIdx}`);
     return null;
   }
   // eslint-disable-next-line no-plusplus
-  for (let i = lastUrlIdx; i < urls.length; i++) {
+  for (let i = startUrlIdx; i < urls.length; i++) {
     const url = urls[i];
     const status = {};
     // eslint-disable-next-line no-plusplus
@@ -162,7 +163,7 @@ export const getCompletion = (results) => {
   };
 };
 
-const getReport = async (results, action) => {
+export const getReport = async (results, action) => {
   const origins = {};
   results.forEach((result) => {
     let origin;
