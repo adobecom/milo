@@ -181,9 +181,11 @@ const init = (block) => {
         id = values[0];
         val = getStringKeyName(String(values[1]));
       }
-      const section = sectionMetadata.closest('.section');
-      const assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
-      if (assocTabItem) assocTabItem.append(section);
+      const assocTabItem = config.id ? rootElem.getElementById(`tab-panel-${id}-${val}`) : rootElem.querySelector(`#tab-panel-${id}-${val}`);
+      if (assocTabItem) {
+        const section = sectionMetadata.closest('.section');
+        assocTabItem.append(section);
+      }
     });
   });
   initTabs(block, config, rootElem);
