@@ -21,6 +21,7 @@ button:hover {
   --primary-button-color: #FF1593;
   --primary-button-hover: #ff1563;
   --error-color: #d9534f;
+  --bulk-status-bg-color: #000;
 }
 
 .bulk::after {
@@ -120,6 +121,11 @@ button:hover {
   outline-color: #d2d2d2;
 }
 
+.max-urls {
+  font-style: italic;
+  font-size: 14px;;
+}
+
 .bulk-action {
   display: flex;
   gap: 15px;
@@ -196,33 +202,36 @@ button:hover {
 }
 
 .bulk-error {
-  font-size: 12pt;
-  background-color: var(--error-color);
-  border-radius: 50px;
-  margin: 60px 2px;
-  color: white;
+  background-color: var(--bulk-status-bg-color);
+  font-weight: 700;
+  margin-top: 20px;
   padding: 20px;
+  position: relative;
+  z-index: 1;
+  animation: fadein .5s ease;
 }
 
-.bulk-status {
+.bulk-status,
+.bulk-error {
   margin-top: 20px;
   position: relative;
   z-index: 1;
 }
 
-.bulk-status-info {
+.bulk-status-info,
+.bulk-error {
   font-size: 16px;
   color: #d8d8d8;
 }
 
-.bulk-status-head{
+.bulk-status-head {
   padding: 20px 20px 0;
-  background-color: #000;
+  background-color: var(--bulk-status-bg-color);
   animation: fadein .5s ease;
 }
 
 .bulk-job {
-  background-color: #000;
+  background-color: var(--bulk-status-bg-color);
   display: flex;
   justify-content: space-between;
   transform-origin: top;

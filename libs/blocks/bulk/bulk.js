@@ -33,6 +33,7 @@ function User({ user }) {
 
 function UrlInput({ urlsElt }) {
   return html`
+    <span class="max-urls">Maximum number of URLS processed: ${URLS_ENTRY_LIMIT} </span>
     <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
@@ -186,9 +187,9 @@ function ErrorMessage({ valid, authorized, urlNumber }) {
   if (!authorized) {
     message = 'You are not authorized to perform bulk operations';
   } else if (urlNumber < 1) {
-    message = 'There are no URL to process';
+    message = 'There are no URLS to process. Add URLS to the text area to start bulk publishing.';
   } else if (urlNumber > URLS_ENTRY_LIMIT) {
-    message = `There are too many URLs. You entered ${urlNumber} URLs. The max allowed number is ${URLS_ENTRY_LIMIT}`;
+    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${URLS_ENTRY_LIMIT}`;
   }
   return !!message && html`
       <div class="bulk-error">
