@@ -9,6 +9,7 @@ import {
 
 const TEST_TIMEOUT_MS = 3 * 60 * 1000;
 const ORIGIN = 'https://main--milo--adobecom.hlx.page';
+// TODO: use a generic page that is always available
 const PAGE_PATH = '/drafts/jck/seo-event/test-seo-event';
 const PAGE_URL = `${ORIGIN}${PAGE_PATH}`;
 
