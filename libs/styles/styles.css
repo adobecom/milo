@@ -104,12 +104,17 @@ a.fragment {
 
 a {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
   color: var(--link-hover-color);
+}
+
+/* Links Quiet */
+a.quiet,
+a.quiet:hover {
+  text-decoration: none;
 }
 
 /* Links Static */
