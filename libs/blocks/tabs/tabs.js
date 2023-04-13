@@ -176,12 +176,13 @@ const init = (block) => {
       let val = getStringKeyName(row.children[1].textContent);
       if (!val) return;
       let id = tabsId;
+      let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       if (config.id) {
         const values = row.children[1].textContent.split(',');
         id = values[0];
         val = getStringKeyName(String(values[1]));
+        assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
       }
-      const assocTabItem = config.id ? rootElem.getElementById(`tab-panel-${id}-${val}`) : rootElem.querySelector(`#tab-panel-${id}-${val}`);
       if (assocTabItem) {
         const section = sectionMetadata.closest('.section');
         assocTabItem.append(section);
