@@ -164,7 +164,7 @@ describe('getConfig', () => {
           cardTitleAccessibilityLevel: 6,
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
-          title: 'My Awesome Title',
+          title: '',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
           titleHeadingLevel: 'h3'
@@ -279,7 +279,7 @@ describe('getConfig', () => {
         enabled: false,
         resultsQuantityShown: false,
         loadMoreButton: { style: 'primary', useThemeThree: false },
-        type: 'none',
+        type: 'paginator',
         i18n: {
           loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
           paginator: {

@@ -23,7 +23,7 @@ const Select = ({ label, name, onChange, options, value, sort = false }) => {
   `;
 };
 
-const Input = ({ label, name, onChange, onValidate, type = 'text', value }) => {
+const Input = ({ label, name, onChange, onValidate, type = 'text', value, title }) => {
   const [isValid, setIsValid] = useState(true);
 
   useEffect(() => {
@@ -60,6 +60,7 @@ const Input = ({ label, name, onChange, onValidate, type = 'text', value }) => {
         type=${type}
         id=${id}
         name=${name}
+        title=${title}
         ...${computedValue}
         onChange=${onInputChange}
       />
