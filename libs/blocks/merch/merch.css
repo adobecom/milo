@@ -1,4 +1,5 @@
-span[data-wcs-osi],
+.bad-content,
+span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 
 }
