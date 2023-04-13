@@ -30,11 +30,7 @@
 .marketo .mktoForm {
   font-size: 16px;
   font-weight: bold;
-  width: 100% !important;
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  width: 100%!important;
 }
 
 .marketo form.mktoForm--fade-in {
@@ -44,6 +40,9 @@
 
 .marketo form.mktoForm--fade-in.mktoVisible {
   display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-start;
   visibility: visible;
   opacity: 1;
   transition: opacity 1s ease-in, height 1s ease-in;
@@ -96,6 +95,7 @@
 .marketo .mktoForm .mktoLabel {
   color: var(--marketo-form-text);
   padding-bottom: 4px;
+  width: auto!important;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
 }
@@ -106,7 +106,7 @@
 }
 
 .marketo .mktoForm .mktoField {
-  width: 100% !important;
+  width: 100%!important;
   padding: 9px var(--spacing-xs);
   font-size: 16px;
   font-family: var(--body-font-family);
@@ -126,10 +126,6 @@
   font-weight: normal;
   color: var(--marketo-form-text);
   opacity: 1;
-}
-
-.marketo .mktoForm .mktoField:focus::placeholder {
-  display: none !important;
 }
 
 .marketo .mktoForm .mktoField:focus-visible {
@@ -159,7 +155,7 @@
 }
 
 .marketo .mktoForm .mktoHtmlText {
-  width: 100% !important;
+  width: 100%!important;
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;

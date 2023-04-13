@@ -140,7 +140,6 @@ const init = (el) => {
       const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
       formWrapper.append(span1, span2, marketoForm);
 
-
       fragment.append(error, formWrapper);
       el.replaceChildren(fragment);
 
