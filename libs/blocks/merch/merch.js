@@ -68,7 +68,7 @@ export const getTacocatEnv = (envName, locale) => {
   return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
 };
 
-window.tacocat.loadPromise = () => new Promise((resolve) => {
+window.tacocat.loadPromise = new Promise((resolve) => {
   const { env, locale } = getConfig();
   const {
     literalScriptUrl,
