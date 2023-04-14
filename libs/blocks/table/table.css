@@ -1,0 +1,63 @@
+
+.table,
+.table.merch {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px 0;
+}
+
+.table.merch > .row {
+  display: grid;
+  gap: var(--spacing-m);
+  /* margin-bottom: 0; */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.table > .row {
+  display: grid;
+  /* gap: var(--spacing-m); */
+  /* margin-bottom: var(--spacing-xs); */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.table div[class*="col-"],
+.table.merch div[class*="col-"] {
+  border-right: 1px #d9d9d9 solid;
+  border-left: 1px #d9d9d9 solid;
+  border-bottom: 1px #d9d9d9 solid;
+}
+
+.table.merch div[class*="col-"]  {
+  text-align: center;
+}
+
+.table.merch .row-1 [class*="col-"],
+.table .row-1 [class*="col-"]{
+  border-right: none;
+  border-left: none ;
+}
+
+.table.merch .row-1  {
+  border-left: gray;
+}
+
+.table.merch .highlight,
+.table .highlight {
+  background-color: #f3d94a;
+  text-transform: capitalize;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+  text-align: center;
+  padding: 5px;
+}
+
+.emptyHeader .row.row-1 .col.col-1{
+  border-bottom: none !important;
+}
+.emptyHeader .row.row-2 .col.col-1 {
+  border-left: none;
+}
+
+.sectionHead .col {
+  background-color: grey;
+}
