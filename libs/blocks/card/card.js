@@ -32,7 +32,14 @@ const addWrapper = (el, section, cardType) => {
 
   if (prevGrid) return;
 
-  const upClass = getUpFromSectionMetadata(section);
+  let upClass = getUpFromSectionMetadata(section);
+  const compat = ['two-up', 'three-up', 'four-up', 'five-up']; // 2-up
+  const upIndex = compat.findIndex(i => i.includes(upClass));
+  if (upIndex !== undefined) {
+    upClass = `${upIndex+2}-up`;
+    section.classList.remove(compat[upIndex]);
+    section.classList.add(upClass);
+  }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
   const grid = createTag('div', { class: gridClass });
