@@ -1,7 +1,7 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
 export const VERSION = '1.15.0';
-const ENV_LOCAL = 'local';
+const ENV_PROD = 'prod';
 const CTA_PREFIX = /^CTA +/;
 
 const SUPPORTED_LANGS = [
@@ -18,16 +18,18 @@ const GEO_MAPPINGS = {
   no: 'nb-NO',
 };
 
-function omitNullValues(target) {
+const omitNullValues = (target) => {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
       if (value == null) delete target[key];
     });
   }
   return target;
-}
+};
 
-const imsCountryPromise = new Promise((resolve) => {
+window.tacocat = window.tacocat || {};
+
+export const imsCountryPromise = () => new Promise((resolve) => {
   let count = 0;
   const check = setInterval(() => {
     count += 1;
@@ -47,6 +49,7 @@ const imsCountryPromise = new Promise((resolve) => {
     }
   }, 200);
 });
+window.tacocat.imsCountryPromise = imsCountryPromise();
 
 export const getTacocatEnv = (envName, locale) => {
   const wcsLocale = (GEO_MAPPINGS[locale.prefix] ?? locale.ietf).split('-', 2);
@@ -55,17 +58,17 @@ export const getTacocatEnv = (envName, locale) => {
   if (!SUPPORTED_LANGS.includes(language)) {
     language = 'en';
   }
-  const host = envName === ENV_LOCAL
-    ? 'https://www.stage.adobe.com'
-    : 'https://www.adobe.com';
+  const host = envName === ENV_PROD
+    ? 'https://www.adobe.com'
+    : 'https://www.stage.adobe.com';
 
   const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
   const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const tacocatEnv = envName === ENV_LOCAL ? 'STAGE' : 'PRODUCTION';
+  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
   return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
 };
 
-const loadTacocatPromise = new Promise((resolve) => {
+window.tacocat.loadPromise = () => new Promise((resolve) => {
   const { env, locale } = getConfig();
   const {
     literalScriptUrl,
@@ -94,15 +97,12 @@ function buildCheckoutButton(link, dataAttrs = {}) {
   a.setAttribute('class', 'con-button blue button-m');
   Object.assign(a.dataset, dataAttrs);
   a.textContent = link.textContent?.replace(CTA_PREFIX, '');
-  imsCountryPromise
-    .then((countryCode) => {
-      if (countryCode) {
-        a.dataset.imsCountry = countryCode;
-      }
-    })
-    .catch(() => {
-      /* do nothing */
-    });
+  window.tacocat.imsCountryPromise.then((countryCode) => {
+    if (countryCode) {
+      a.dataset.imsCountry = countryCode;
+    }
+  })
+    .catch(() => { /* do nothing */ });
   return a;
 }
 
@@ -148,7 +148,7 @@ function getCheckoutContext(searchParams, config) {
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
   try {
-    await loadTacocatPromise;
+    await window.tacocat.loadPromise;
   } catch (e) {
     console.error('Tacocat not loaded', e);
     return undefined;

@@ -1,24 +1,18 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
-
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import merch, { VERSION, getTacocatEnv, imsCountryPromise } from '../../../libs/blocks/merch/merch.js';
 
 const config = { codeRoot: '/libs', env: { name: 'local' } };
 setConfig(config);
 
-let merch;
+document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Merch Block', () => {
-  let getTacocatEnv;
-  let VERSION;
   before(async () => {
-    const mod = await import('../../../libs/blocks/merch/merch.js');
-    merch = mod.default;
-    getTacocatEnv = mod.getTacocatEnv;
-    VERSION = mod.VERSION;
-
-    window.tacocat = {
+    Object.assign(window.tacocat, {
+      loadPromise: Promise.resolve(),
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
@@ -33,11 +27,7 @@ describe('Merch Block', () => {
         workflow: 'UCv3',
         workflowStep: 'email',
       },
-    };
-  });
-
-  beforeEach(async () => {
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+    });
   });
 
   it('Doesnt decorate merch with bad content', async () => {
@@ -208,8 +198,8 @@ describe('Merch Block', () => {
     });
 
     it('merch link to CTA, metadata values', async () => {
-      document.head.innerHTML = await readFile({ path: './mocks/head-metadata.html' });
-
+      const metadata = createTag('meta', { name: 'checkout-type', content: 'UCv2' });
+      document.head.appendChild(metadata);
       let el = document.querySelector('.merch.cta.metadata');
       el = await merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -221,6 +211,7 @@ describe('Merch Block', () => {
       expect(dataset.checkoutWorkflowStep).to.equal(undefined);
       expect(dataset.checkoutClientId).to.equal(undefined);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
+      document.head.removeChild(metadata);
     });
 
     it('merch link to cta with empty promo', async () => {
@@ -269,6 +260,26 @@ describe('Merch Block', () => {
       expect(dataset.checkoutWorkflowStep).to.equal('checkout/email');
       expect(dataset.checkoutMarketSegment).to.equal('EDU');
     });
+
+    it('should add ims country to checkout link', async () => {
+      window.tacocat.imsCountryPromise = Promise.resolve('CH');
+      let el = document.querySelector('.merch.cta.ims');
+      el = await merch(el);
+      const { dataset: { imsCountry } } = el;
+      expect(imsCountry).to.equal('CH');
+    });
+
+    it('should esolve IMS country', async () => {
+      window.adobeIMS = { isSignedInUser: () => true, getProfile: () => Promise.resolve({ countryCode: 'CH' }) };
+      const imsCountry = await imsCountryPromise();
+      expect(imsCountry).to.equal('CH');
+    });
+
+    it('should resolve ims country', async () => {
+      window.adobeIMS = { isSignedInUser: () => false };
+      const imsCountry = await imsCountryPromise();
+      expect(imsCountry).to.undefined;
+    });
   });
 
   describe('Tacocat config', () => {
@@ -303,6 +314,27 @@ describe('Merch Block', () => {
       ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
       expect(country).to.equal('NO');
       expect(language).to.equal('nb');
+
+      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
+      expect(country).to.equal('NO');
+      expect(language).to.equal('nb');
+    });
+
+    it('returns geo mapping', async () => {
+      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
+      expect(country).to.equal('ZA');
+      expect(language).to.equal('en');
+
+      ({ country, language } = getTacocatEnv('prod', { ietf: 'en' }));
+      expect(country).to.equal('US');
+      expect(language).to.equal('en');
+    });
+
+    it('does not initialize the block when tacocat fails to load', async () => {
+      window.tacocat.loadPromise = Promise.reject(new Error('404'));
+      let el = document.querySelector('.merch.cta.notacocat');
+      el = await merch(el);
+      expect(el).to.be.undefined;
     });
   });
 });
