@@ -3,7 +3,7 @@ import { getMetadata, handleStyle } from '../section-metadata/section-metadata.j
 const getIndexedValues = (text) => text.split('\n').map((value) => value.split(/,(.*)/s).map((v) => v.trim()));
 
 function handleHighlight(text, table) {
-  if (!(text || table)) return;
+  if (!text) return;
   const highLights = getIndexedValues(text);
   highLights.forEach((hl) => {
     const hlCol = hl[0];
@@ -18,7 +18,7 @@ function handleHighlight(text, table) {
 }
 
 function handleSectionHead(text, table) {
-  if (!(text || table)) return;
+  if (!text) return;
   const sectionsHeads = text.split('\n');
   sectionsHeads.forEach((sh) => {
     const sectionHead = table.querySelector(`.row-${sh}`);
@@ -27,7 +27,7 @@ function handleSectionHead(text, table) {
 }
 
 const handleColumnColor = (text, table, columnType) => {
-  if (!(text || table)) return;
+  if (!text) return;
   const colors = getIndexedValues(text);
   colors.forEach((color) => {
     const colorIndex = color[0];
@@ -37,7 +37,7 @@ const handleColumnColor = (text, table, columnType) => {
 };
 
 const handleColumnBgColor = (text, table, columnType) => {
-  if (!(text || table)) return;
+  if (!text) return;
   const bgColors = getIndexedValues(text);
   bgColors.forEach((color) => {
     const bgColorIndex = color[0];
@@ -49,6 +49,8 @@ const handleColumnBgColor = (text, table, columnType) => {
 
 export default function init(el) {
   const table = el.closest('.section').querySelector('.table');
+  if (!table) return;
+
   const metadata = getMetadata(el);
   if (metadata.highlight) handleHighlight(metadata.highlight.text, table);
   if (metadata.section) handleSectionHead(metadata.section.text, table);
