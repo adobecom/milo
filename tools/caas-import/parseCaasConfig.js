@@ -33,7 +33,7 @@ const defaultState = {
   paginationAnimationStyle: 'paged',
   paginationEnabled: false,
   paginationQuantityShown: false,
-  paginationType: 'none',
+  paginationType: '',
   paginationUseTheme3: false,
   placeholderUrl: '',
   resultsPerPage: 5,
