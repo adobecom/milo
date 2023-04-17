@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize, replaceClassName } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, applyTypographyOverrides } from '../../utils/decorate.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -22,14 +22,7 @@ const blockTypeSizes = {
   },
 };
 
-async function applyOverrides(el) {
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((str, i) => {
-    replaceClassName(el, str);
-  });
-}
-
-export default async function init(el) {
+export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -49,7 +42,7 @@ export default async function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
-  await decorateBlockText(el, config);
+  decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -58,5 +51,5 @@ export default async function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
-  await applyOverrides(el);
+  applyTypographyOverrides(el);
 }

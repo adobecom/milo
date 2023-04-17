@@ -1,6 +1,6 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
 
-export async function decorateButtons(el, size) {
+export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a');
   if (buttons.length === 0) return;
   buttons.forEach((button) => {
@@ -26,7 +26,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export async function decorateBlockText(el, config = ['m', 's', 'm']) {
+export function decorateBlockText(el, config = ['m', 's', 'm']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
@@ -38,11 +38,11 @@ export async function decorateBlockText(el, config = ['m', 's', 'm']) {
         decorateIconArea(el);
       }
     }
-    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    const emptyPs = el.querySelectorAll(':scope > p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
-  await decorateButtons(el);
-  await decorateLinkAnalytics(el, headings);
+  decorateButtons(el);
+  decorateLinkAnalytics(el, headings);
 }
 
 export function decorateBlockBg(block, node) {
@@ -71,7 +71,7 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
-export function findElementWithClassStartingOrEndingWith(element, searchString) {
+function findElementWithClassStartingOrEndingWith(element, searchString) {
   var classes = element.classList;
   var foundClass = "";
   for (var i = 0; i < classes.length; i++) {
@@ -89,7 +89,7 @@ export function findElementWithClassStartingOrEndingWith(element, searchString) 
   }
 }
 
-export function replaceClassName(el, str) {
+function replaceClassName(el, str) {
   const foundEl = findElementWithClassStartingOrEndingWith(el, str);
   if (foundEl) {
     const findClass = str.slice(1) + str[0];
@@ -104,4 +104,11 @@ export function replaceClassName(el, str) {
       }
     });
   };
+}
+
+export function applyTypographyOverrides(el) {
+  const overrides = ['-heading', '-body', '-detail'];
+  overrides.forEach((str, i) => {
+    replaceClassName(el, str);
+  });
 }
