@@ -39,6 +39,5 @@ export default function init(el) {
   if (metadata.highlight.text) handleHighlight(metadata.highlight.text, table);
   if (metadata.section.text) handleSectionHead(metadata.section.text, table);
   if (metadata.compare.text) handleCompare(metadata.compare.text, table);
-
 }
 
