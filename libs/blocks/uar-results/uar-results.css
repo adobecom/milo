@@ -1,0 +1,7 @@
+.uar-results {
+  visibility: hidden;
+}
+
+.uar-results.show {
+  visibility: unset;
+}
