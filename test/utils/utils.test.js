@@ -52,24 +52,21 @@ describe('Utils', () => {
         expect(link.target).to.equal('_blank');
       });
     });
-    
+
     describe('Configure Auto Block', () => {
-      it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+      it('Disable auto block when #_dnb in url', async () => {
+        await waitForElement('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
-        expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
-        );
+        expect(disableAutoBlockLink.href).to.equal('https://www.instagram.com/');
       });
 
-      it('Auto block works as expected when #_dnb is not added to url', () => {
-        const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
-        );
+      it('Auto block works as expected when #_dnb is not added to url', async () => {
+        await waitForElement('[href="https://twitter.com/Adobe"]');
+        const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
-    }); 
+    });
 
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
