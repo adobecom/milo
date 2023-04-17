@@ -61,3 +61,15 @@
 .sectionHead .col {
   background-color: grey;
 }
+
+.col-1 {
+  border: 2px red solid !important;
+  display: none;
+}
+
+@media only screen and (max-width: 37.5rem) {
+  .table.merch > .row {
+    background-color: yellow;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}

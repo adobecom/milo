@@ -17,17 +17,28 @@ function handleSectionHead(text, table) {
   if (!(text || table)) return;
   const sectionsHeads = text.split('\n');
   sectionsHeads.forEach(sh => {
-    const sectionHead = table.querySelector(`.row-${sh}`);
+    const sectionHead = table.querySelector(`.row-${sh.trim()}`);
     sectionHead.classList.add('sectionHead');
+  });
+}
+
+function handleCompare(text, table) {
+  if (!(text || table)) return;
+  const comparisonGroup  = text.split('\n');
+  comparisonGroup.forEach((comp, i) => {
+    const col = comp.trim().split(' ')[1];
+    const comparable = table.querySelector(`.col-${col}`);
+    comparable.classList.add(`comp_${i + 1}`);
   });
 }
 
 export default function init(el) {
   const table = el.closest('.section').querySelector('.table');
   const metadata = getMetadata(el);
-
+  console.log(metadata);
   if (metadata.highlight.text) handleHighlight(metadata.highlight.text, table);
   if (metadata.section.text) handleSectionHead(metadata.section.text, table);
+  if (metadata.compare.text) handleCompare(metadata.compare.text, table);
 
 }
 
