@@ -1,5 +1,5 @@
 import { getConfig } from '../../../../utils/utils.js';
-import { toFragment, getFedsPlaceholderConfig } from '../../utilities/utilities.js';
+import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 
 const getLanguage = (ietfLocale) => {
@@ -63,7 +63,7 @@ class ProfileDropdown {
     this.dropdown = this.decorateDropdown();
     this.addEventListeners();
 
-    if (this.openOnInit) this.toggleDropdown();
+    if (this.openOnInit) trigger({ element: this.buttonElem });
 
     this.decoratedElem.append(this.dropdown);
   }
@@ -170,14 +170,9 @@ class ProfileDropdown {
   }
 
   addEventListeners() {
-    this.buttonElem.addEventListener('click', () => {
-      this.toggleDropdown();
-    });
-  }
-
-  toggleDropdown() {
-    const currentState = this.buttonElem.getAttribute('aria-expanded');
-    this.buttonElem.setAttribute('aria-expanded', currentState === 'false');
+    this.buttonElem.addEventListener('click', () => trigger({ element: this.buttonElem }));
+    this.buttonElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
+    this.dropdown.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
   }
 }
 
