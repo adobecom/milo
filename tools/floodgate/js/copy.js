@@ -6,10 +6,9 @@ import {
 } from '../../loc/sharepoint.js';
 import { hideButtons, loadingON, showButtons, simulatePreview } from '../../loc/utils.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { handleExtension } from './utils.js';
+import { handleExtension, getLimiter } from './utils.js';
 
-const BATCH_REQUEST_COPY = 20;
-const DELAY_TIME_COPY = 3000;
+const BATCH_REQUEST_COPY = 10;
 
 async function floodgateContent(project, projectDetail) {
   function updateAndDisplayCopyStatus(copyStatus, srcPath) {
@@ -58,8 +57,11 @@ async function floodgateContent(project, projectDetail) {
 
   hideButtons(ACTION_BUTTON_IDS);
   const startCopy = new Date();
-  // create batches to process the data
+
+  // get all urls to copy
   const contentToFloodgate = [...projectDetail.urls];
+
+  // create batches to process the data
   const batchArray = [];
   for (let i = 0; i < contentToFloodgate.length; i += BATCH_REQUEST_COPY) {
     const arrayChunk = contentToFloodgate.slice(i, i + BATCH_REQUEST_COPY);
@@ -70,12 +72,13 @@ async function floodgateContent(project, projectDetail) {
   const copyStatuses = [];
   for (let i = 0; i < batchArray.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    copyStatuses.push(...await Promise.all(
-      batchArray[i].map((files) => copyFilesToFloodgateTree(files[1])),
+    copyStatuses.push(...await getLimiter().schedule(
+      () => Promise.all(
+        batchArray[i].map((files) => copyFilesToFloodgateTree(files[1])),
+      ),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_COPY));
   }
+
   const endCopy = new Date();
 
   loadingON('Previewing for copied files... ');

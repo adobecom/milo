@@ -14,10 +14,9 @@ import {
 } from '../../loc/utils.js';
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { getFile, handleExtension } from './utils.js';
+import { getFile, handleExtension, getLimiter } from './utils.js';
 
-const BATCH_REQUEST_PROMOTE = 20;
-const DELAY_TIME_PROMOTE = 3000;
+const BATCH_REQUEST_PROMOTE = 10;
 const MAX_CHILDREN = 1000;
 
 /**
@@ -149,12 +148,13 @@ async function promoteFloodgatedFiles(project) {
   const promoteStatuses = [];
   for (let i = 0; i < batchArray.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    promoteStatuses.push(...await Promise.all(
-      batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+    promoteStatuses.push(...await getLimiter().schedule(
+      () => Promise.all(
+        batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
+      ),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
   }
+
   const endPromote = new Date();
 
   loadingON('Previewing promoted files... ');
