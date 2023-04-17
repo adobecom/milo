@@ -15,7 +15,7 @@ import {
   storeOperation,
 } from './utils.js';
 
-const IMS_SIGN_IN_ENABLED = false;
+const IMS_SIGN_IN_ENABLED = true;
 const URLS_ENTRY_LIMIT = 1000;
 
 function User({ user }) {
