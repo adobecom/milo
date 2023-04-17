@@ -20,8 +20,8 @@ function handleHighlight(text, table) {
 function handleSectionHead(text, table) {
   if (!(text || table)) return;
   const sectionsHeads = text.split('\n');
-  sectionsHeads.forEach((sh) => {
-    const sectionHead = table.querySelector(`.row-${sh}`);
+  sectionsHeads.forEach(sh => {
+    const sectionHead = table.querySelector(`.row-${sh.trim()}`);
     sectionHead.classList.add('sectionHead');
   });
 }
@@ -47,11 +47,22 @@ const handleColumnBgColor = (text, table, columnType) => {
   });
 };
 
+function handleCompare(text, table) {
+  if (!(text || table)) return;
+  const comparisonGroup  = text.split('\n');
+  comparisonGroup.forEach((comp, i) => {
+    const col = comp.trim().split(' ')[1];
+    const comparable = table.querySelector(`.col-${col}`);
+    comparable.classList.add(`comp_${i + 1}`);
+  });
+}
+
 export default function init(el) {
   const table = el.closest('.section').querySelector('.table');
   const metadata = getMetadata(el);
   if (metadata.highlight) handleHighlight(metadata.highlight.text, table);
   if (metadata.section) handleSectionHead(metadata.section.text, table);
+  if (metadata.compare) handleCompare(metadata.compare.text, table);
   if (metadata['heading color']) handleColumnColor(metadata['heading color'].text, table, 'heading');
   if (metadata['heading background color']) handleColumnBgColor(metadata['heading background color'].text, table, 'heading');
   if (metadata['highlight color']) handleColumnColor(metadata['heading color'].text, table, 'highlight');
