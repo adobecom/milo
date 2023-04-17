@@ -47,7 +47,7 @@ function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
   `;
 }
 
-function SubmitBtn({ submit, selectedAction }) {
+function SubmitBtn({ submit }) {
   return html`
     <button class="bulk-action-submit" onClick=${submit}>
       Run process
@@ -69,7 +69,7 @@ function bulkPublishStatus(row) {
   const status = row.status.publish !== 200
     ? `Error  - Status: ${row.status.publish}`
     : '';
-  return row.status.publish !== 200 && row.status.publish !== undefined  && html`
+  return row.status.publish !== 200 && row.status.publish !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
@@ -233,6 +233,7 @@ function Bulk({ user, storedOperation }) {
     // reset the result area
     setResult(null);
     setCompletion(null);
+    setValid(null);
 
     // validate the user
     const authorizedValue = await userIsAuthorized();
@@ -253,6 +254,7 @@ function Bulk({ user, storedOperation }) {
     }
 
     // perform the action
+    setValid(true);
     const actions = operation.split('&');
     const results = await executeActions(actions, urls, setResult, startUrlIdx);
     const completionValue = getCompletion(results);
