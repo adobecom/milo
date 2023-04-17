@@ -15,7 +15,9 @@ import {
   storeOperation,
 } from './utils.js';
 
-const IMS_SIGN_IN_ENABLED = true;
+// eslint-disable-next-line max-len
+// TODO: enable IMS sign in when the code is merged on the main branch, as IMS does not work on the PR branch
+const IMS_SIGN_IN_ENABLED = false;
 const URLS_ENTRY_LIMIT = 1000;
 
 function User({ user }) {
