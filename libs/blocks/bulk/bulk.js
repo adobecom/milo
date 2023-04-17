@@ -15,8 +15,7 @@ import {
   storeOperation,
 } from './utils.js';
 
-// TODO enable IMS sign in?
-const IMS_SIGN_IN_ENABLED = false;
+const IMS_SIGN_IN_ENABLED = true;
 const URLS_ENTRY_LIMIT = 1000;
 
 function User({ user }) {
@@ -340,4 +339,3 @@ export default async function init(el) {
   const storedOperation = getStoredOperation();
   render(html`<${Bulk} user="${user}" storedOperation="${storedOperation}" />`, el);
 }
-// TODO remove the anonymous user in bulk-config.xlsx
