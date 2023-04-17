@@ -1,4 +1,3 @@
-
 .table,
 .table.merch {
   max-width: 1200px;
@@ -18,6 +17,10 @@
   /* gap: var(--spacing-m); */
   /* margin-bottom: var(--spacing-xs); */
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.table .light {
+  color: var(--color-white);
 }
 
 .table div[class*="col-"],
@@ -41,8 +44,8 @@
   border-left: gray;
 }
 
-.table.merch .highlight,
-.table .highlight {
+.table.merch .col-highlight,
+.table .col-highlight {
   background-color: #f3d94a;
   text-transform: capitalize;
   border-top-right-radius: 15px;
