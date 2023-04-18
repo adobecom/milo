@@ -12,15 +12,42 @@ export const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
 export const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
 const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
 export const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
-const BULK_STORED_URL_IDX = 'bulkStoredUrlIdx';
+export const BULK_STORED_URL_IDX = 'bulkStoredUrlIdx';
 const BULK_STORED_COMPLETED = 'bulkStoredCompleted';
 const BULK_STORED_URLS = 'bulkStoredUrls';
+const BULK_STORED_RESULTS = 'bulkStoredResults';
 const BULK_STORED_OPERATION = 'bulkStoredOperation';
 const UNSUPPORTED_SITE_STATUS = 'unsupported domain';
+const DUPLICATE_STATUS = 'duplicate';
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
+export const getStoredOperation = () => {
+  const name = getLocalStorage(BULK_STORED_OPERATION);
+  const urlIdx = getLocalStorage(BULK_STORED_URL_IDX);
+  const urls = getLocalStorage(BULK_STORED_URLS);
+  const completed = getLocalStorage(BULK_STORED_COMPLETED);
+  return {
+    name,
+    urlIdx,
+    urls,
+    completed,
+  };
+};
+
+export const getStoredUrlInput = () => {
+  const storedUrls = getStoredOperation().urls;
+  return storedUrls ? storedUrls.join('\n') : '';
+};
+
+export const storeUrls = (urls) => {
+  setLocalStorage(BULK_STORED_URLS, urls);
+};
+
+export const storeOperation = (operation) => {
+  setLocalStorage(BULK_STORED_OPERATION, operation);
+};
 export const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
   return profile
@@ -80,10 +107,9 @@ const siteIsSupported = async (url) => {
 };
 
 export const getUrls = (element) => {
-  const urls = element.current?.value.split('\n')
+  return element.current?.value.split('\n')
     .filter((url) => url.length > 0)
     .map((e) => e.trim());
-  return [...new Set(urls)];
 };
 
 export const getActionName = (action, gerund) => {
@@ -113,14 +139,30 @@ const executeAction = async (action, url) => {
   return resp.status;
 };
 
-export const executeActions = async (actions, urls, setResult, startUrlIdx = 0) => {
-  setLocalStorage(BULK_STORED_COMPLETED, false);
+const isProcessed = (url, results) => results.some((result) => result.url === url);
+
+export const executeActions = async (resume, setResult) => {
   const results = [];
+  const operation = getStoredOperation().name;
+  const actions = operation.split('&');
+  const { urls } = getStoredOperation();
+  const startUrlIdx = resume ? getLocalStorage(BULK_STORED_URL_IDX) + 1 : 0;
+  setLocalStorage(BULK_STORED_COMPLETED, false);
   if (startUrlIdx > urls.length - 1) {
     // eslint-disable-next-line no-console
     console.error(`incorrect url index: ${startUrlIdx}`);
     return null;
   }
+
+  // display results from previous run
+  const storedResults = getLocalStorage(BULK_STORED_RESULTS);
+  if (storedResults && startUrlIdx > 0) {
+    storedResults.forEach((result) => {
+      results.push(result);
+      setResult([...results]);
+    });
+  }
+
   // eslint-disable-next-line no-plusplus
   for (let i = startUrlIdx; i < urls.length; i++) {
     const url = urls[i];
@@ -128,10 +170,14 @@ export const executeActions = async (actions, urls, setResult, startUrlIdx = 0) 
     // eslint-disable-next-line no-plusplus
     for (let j = 0; j < actions.length; j++) {
       const action = actions[j];
-      // eslint-disable-next-line no-await-in-loop
-      status[action] = await executeAction(action, url);
-      // eslint-disable-next-line no-await-in-loop
-      await delay(THROTTLING_DELAY_MS);
+      if (isProcessed(url, results)) {
+        status[action] = DUPLICATE_STATUS;
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        status[action] = await executeAction(action, url);
+        // eslint-disable-next-line no-await-in-loop
+        await delay(THROTTLING_DELAY_MS);
+      }
     }
     results.push({
       url,
@@ -139,6 +185,7 @@ export const executeActions = async (actions, urls, setResult, startUrlIdx = 0) 
     });
     setResult([...results]);
     setLocalStorage(BULK_STORED_URL_IDX, i);
+    setLocalStorage(BULK_STORED_RESULTS, results);
   }
   setLocalStorage(BULK_STORED_COMPLETED, true);
   return results;
@@ -217,30 +264,4 @@ export const sendReport = async (results, action) => {
       body: JSON.stringify({ data: row }),
     });
   });
-};
-
-export const getStoredOperation = () => {
-  const name = getLocalStorage(BULK_STORED_OPERATION);
-  const urlIdx = getLocalStorage(BULK_STORED_URL_IDX);
-  const urls = getLocalStorage(BULK_STORED_URLS);
-  const completed = getLocalStorage(BULK_STORED_COMPLETED);
-  return {
-    name,
-    urlIdx,
-    urls,
-    completed,
-  };
-};
-
-export const getStoredUrlInput = () => {
-  const storedUrls = getStoredOperation().urls;
-  return storedUrls ? storedUrls.join('\n') : '';
-};
-
-export const storeUrls = (urls) => {
-  setLocalStorage(BULK_STORED_URLS, urls);
-};
-
-export const storeOperation = (operation) => {
-  setLocalStorage(BULK_STORED_OPERATION, operation);
 };

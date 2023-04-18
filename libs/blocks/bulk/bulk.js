@@ -100,12 +100,8 @@ function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
 function StatusRow({ row }) {
   const timeStamp = prettyDate();
   const errorStyle = 'status-error';
-  const previewStatusError = row.status.preview !== 200
-    ? errorStyle
-    : '';
-  const publishStatusError = row.status.publish !== 200
-    ? errorStyle
-    : '';
+  const previewStatusError = row.status.preview === 200 ? '' : errorStyle;
+  const publishStatusError = row.status.publish === 200 ? '' : errorStyle;
 
   return html`
     <tr class="bulk-status-row">
@@ -231,7 +227,7 @@ function Bulk({ user, storedOperation }) {
 
   const displayResumeDialog = (storedOperation.completed === null || storedOperation.completed) ? '' : 'displayed';
 
-  const executeBulk = async (operation, startUrlIdx = 0) => {
+  const executeBulk = async (resume) => {
     // reset the result area
     setResult(null);
     setCompletion(null);
@@ -246,9 +242,8 @@ function Bulk({ user, storedOperation }) {
     }
 
     // validate the number of urls
-    const urls = getUrls(urlsElt);
-    storeUrls(urls);
-    const urlNumberValue = urls.length - startUrlIdx;
+    const { urls } = getStoredOperation();
+    const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
     if (urlNumberValue < 1 || urlNumberValue > URLS_ENTRY_LIMIT) {
       setValid(false);
@@ -257,8 +252,8 @@ function Bulk({ user, storedOperation }) {
 
     // perform the action
     setValid(true);
-    const actions = operation.split('&');
-    const results = await executeActions(actions, urls, setResult, startUrlIdx);
+    const operation = getStoredOperation().name;
+    const results = await executeActions(resume, setResult);
     const completionValue = getCompletion(results);
     setCompletion(completionValue);
 
@@ -279,14 +274,15 @@ function Bulk({ user, storedOperation }) {
     const operation = actionElt.current.value;
     setSubmittedAction(operation);
     storeOperation(operation);
-    await executeBulk(operation);
+    const urls = getUrls(urlsElt);
+    storeUrls(urls);
+    await executeBulk();
   };
 
   const resume = async () => {
     setBulkTriggered(true);
     hideModal();
-    const startUrlIdx = storedOperation.urlIdx !== null ? storedOperation.urlIdx + 1 : 0;
-    await executeBulk(storedOperation.name, startUrlIdx);
+    await executeBulk(true);
   };
 
   return html`

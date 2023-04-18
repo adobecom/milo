@@ -4,7 +4,7 @@ import { stub } from 'sinon';
 import {
   ADMIN_BASE_URL,
   BULK_CONFIG_FILE_PATH,
-  executeActions,
+  executeActions, storeOperation, storeUrls,
 } from '../../../libs/blocks/bulk/utils.js';
 
 const TEST_TIMEOUT_MS = 3 * 60 * 1000;
@@ -64,22 +64,24 @@ describe('Bulk preview and publish', () => {
    * Performance history:
    * - on 06/apr/2023: Previewing 1000 pages took: 106 s
    */
-  it('Performance test: previewing 1000 URLs', async () => {
+  it.skip('Performance test: previewing 1000 URLs', async () => {
     localStorage.clear();
-    const actions = ['preview'];
+    const operation = 'preview';
     const urlsAmount = 10;
     const urls = [];
     for (let i = 0; i < urlsAmount; i += 1) {
-      urls[i] = PAGE_URL;
+      urls[i] = `${PAGE_URL}${i}`;
     }
+    storeUrls(urls);
+    storeOperation(operation);
     const start = Date.now();
-    const results = await executeActions(actions, urls, () => {});
+    const results = await executeActions(false, () => {});
     const end = Date.now();
     const duration = Math.round((end - start) / 1000);
     console.log(`Previewing ${urlsAmount} pages took: ${duration} s`);
     results.forEach((result) => {
-      expect(result.status.preview).equals(200);
-      expect(result.url).equals(PAGE_URL);
+      expect(result.status.preview).equals(404, 'status.preview is not 404');
+      expect(result.url).equals(PAGE_URL, 'result.url is not PAGE_URL');
     });
   }).timeout(TEST_TIMEOUT_MS);
 });

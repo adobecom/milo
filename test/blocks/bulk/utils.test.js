@@ -3,6 +3,7 @@ import { stub } from 'sinon';
 
 import {
   BULK_CONFIG_FILE_PATH,
+  BULK_STORED_URL_IDX,
   userIsAuthorized,
   getAuthorizedUsers,
   executeActions,
@@ -10,7 +11,10 @@ import {
   getStoredOperation,
   getReport,
   sendReport,
+  storeUrls,
+  storeOperation,
 } from '../../../libs/blocks/bulk/utils.js';
+import { setLocalStorage } from '../../../libs/blocks/review/utils/localStorageUtils.js';
 
 const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
 const NON_EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/nonexisting';
@@ -124,17 +128,23 @@ describe('Bulk preview and publish', () => {
 
   it('Bulk preview URLs', async () => {
     const operation = 'preview';
-    const actions = [operation];
-    const results = await executeActions(actions, URLS, () => {});
+    storeUrls(URLS);
+    storeOperation(operation);
+    const results = await executeActions(false, () => {});
     const storedOperation = getStoredOperation();
     const completion = getCompletion(results);
     const report = await getReport(results, operation);
     await sendReport(results, operation);
     const expectedStoredOperation = {
       completed: true,
-      name: null,
+      name: 'preview',
       urlIdx: 2,
-      urls: null,
+      urls: [
+        'https://main--milo--adobecom.hlx.page/existing',
+        'https://main--milo--adobecom.hlx.page/nonexisting',
+        'https://main--nonexisting--adobecom.hlx.page/',
+      ]
+      ,
     };
     const expectedResults = [
       {
@@ -178,17 +188,19 @@ describe('Bulk preview and publish', () => {
         success: 0,
       },
     ];
-    expect(results).to.deep.equals(expectedResults);
-    expect(storedOperation).to.deep.equals(expectedStoredOperation);
-    expect(completion).to.deep.equals(expectedCompletion);
-    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'));
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(storedOperation).to.deep.equals(expectedStoredOperation, 'stored operation');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
   });
 
   it('Bulk publish URLs', async () => {
-    const actions = ['publish'];
-    const results = await executeActions(actions, URLS, () => {});
+    const operation = 'publish';
+    storeUrls(URLS);
+    storeOperation(operation);
+    const results = await executeActions(false, () => {});
     const completion = getCompletion(results);
-    const report = await getReport(results, 'publish');
+    const report = await getReport(results, operation);
     const expectedResults = [
       {
         url: EXISTING_PAGE_URL,
@@ -231,16 +243,18 @@ describe('Bulk preview and publish', () => {
         success: 0,
       },
     ];
-    expect(results).to.deep.equals(expectedResults);
-    expect(completion).to.deep.equals(expectedCompletion);
-    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'));
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
   });
 
   it('Bulk preview and publish URLs', async () => {
-    const actions = ['preview', 'publish'];
-    const results = await executeActions(actions, URLS, () => {});
+    const operation = 'preview&publish';
+    storeUrls(URLS);
+    storeOperation(operation);
+    const results = await executeActions(false, () => {});
     const completion = getCompletion(results);
-    const report = await getReport(results, 'preview&publish');
+    const report = await getReport(results, operation);
     const expectedResults = [
       {
         url: EXISTING_PAGE_URL,
@@ -292,17 +306,19 @@ describe('Bulk preview and publish', () => {
         success: 0,
       },
     ];
-    expect(results).to.deep.equals(expectedResults);
-    expect(completion).to.deep.equals(expectedCompletion);
-    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'));
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
   });
 
   it('Bulk preview and publish URLs: resume at last index', async () => {
-    const actions = ['preview', 'publish'];
-    const startUrlIdx = 2;
-    const results = await executeActions(actions, URLS, () => {}, startUrlIdx);
+    const operation = 'preview&publish';
+    storeUrls(URLS);
+    storeOperation(operation);
+    setLocalStorage(BULK_STORED_URL_IDX, 1);
+    const results = await executeActions(true, () => {});
     const completion = getCompletion(results);
-    const report = await getReport(results, 'preview&publish');
+    const report = await getReport(results, operation);
     const expectedResults = [
       {
         url: NON_EXISTING_REPO_URL,
@@ -332,15 +348,15 @@ describe('Bulk preview and publish', () => {
         success: 0,
       },
     ];
-    expect(results).to.deep.equals(expectedResults);
-    expect(completion).to.deep.equals(expectedCompletion);
-    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'));
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
   });
 
   it('Verify authorized users', async () => {
     const expectedAuthorizedUsers = ['user1@adobe.com', 'user2@adobe.com', 'anonymous'];
     const authorizedUsers = await getAuthorizedUsers();
-    expect(authorizedUsers).to.deep.equals(expectedAuthorizedUsers);
+    expect(authorizedUsers).to.deep.equals(expectedAuthorizedUsers, 'authorized users');
   });
 
   it('Verify anonymous user', async () => {
