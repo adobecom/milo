@@ -71,44 +71,22 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
-function findElementWithClassStartingOrEndingWith(element, searchString) {
-  var classes = element.classList;
-  var foundClass = "";
-  for (var i = 0; i < classes.length; i++) {
-    if (classes[i].startsWith(searchString) || classes[i].endsWith(searchString)) {
-      foundClass = classes[i];
-      break;
-    }
-  }
-  if (foundClass) {
-    var parts = foundClass.split("-");
-    var newStr = parts[1] + "-" + parts[0];
-    return { element: element, class: foundClass, newStr: newStr };
-  } else {
-    return null;
-  }
+function applyOverrides(el, override) {
+  const parts = override.split("-");
+  const type = parts[1];
+  const els = el.querySelectorAll(`[class^="${type}"]`);
+  if (!els.length) return;
+  els.forEach(elem => {
+    const replace = [...elem.classList].find(i => i.startsWith(type));
+    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+  });
 }
 
-function replaceClassName(el, str) {
-  const foundEl = findElementWithClassStartingOrEndingWith(el, str);
-  if (foundEl) {
-    const findClass = str.slice(1) + str[0];
-    const els = foundEl.element.querySelectorAll(`[class^="${findClass}"]`);
-    if (!els) return;
-    [...els].forEach( (e, i) => {
-      for (let i = 0; i < e.classList.length; i++) {
-        const className = e.classList[i];
-        if (className.startsWith(findClass)) {
-          e.classList.replace(className, foundEl.newStr);
-        }
-      }
-    });
-  };
-}
-
-export function applyTypographyOverrides(el) {
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((str, i) => {
-    replaceClassName(el, str);
+export function applyTypographyOverrides(el, options = ['-heading', '-body', '-detail']) {
+  const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
+  if (!overrides.length) return;
+  overrides.forEach(override => {
+    applyOverrides(el, override);
+    el.classList.remove(override);
   });
 }
