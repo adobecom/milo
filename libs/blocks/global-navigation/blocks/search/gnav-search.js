@@ -27,14 +27,8 @@ function debounceCallback(callback, time = 200) {
   };
 }
 
-// TODO: should we replace these with proper Locale/country service(s)?
-function getLocale() {
-  return getConfig().locale.ietf;
-}
-
-function getCountry() {
-  return getLocale()?.split('-').pop() || 'US';
-}
+const getLocale = () => getConfig().locale.ietf;
+const getCountry = () => getLocale()?.split('-').pop() || 'US';
 
 class Search {
   constructor(config) {
