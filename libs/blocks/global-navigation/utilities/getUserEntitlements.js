@@ -107,20 +107,19 @@ const getSubscriptions = async ({ queryParams, locale }) => {
   const apiUrl = getConfig().env.name === 'prod'
     ? `https://www.adobe.com/aos-api/users/${profile.userId}/subscriptions`
     : `https://www.stage.adobe.com/aos-api/users/${profile.userId}/subscriptions`;
-  const res = await window
-    .fetch(`${apiUrl}${queryParams}`, {
-      method: 'GET',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
-        'X-Api-Key': window.adobeIMS.adobeIdData.client_id,
-        Accept: 'application/json',
-        'Accept-Language': getAcceptLanguage(locale).join(','),
-      },
-    })
+  const res = await fetch(`${apiUrl}${queryParams}`, {
+    method: 'GET',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
+      'X-Api-Key': window.adobeIMS.adobeIdData.client_id,
+      Accept: 'application/json',
+      'Accept-Language': getAcceptLanguage(locale).join(','),
+    },
+  })
     .then((response) => (response.status === 200 ? response.json() : emptyEntitlements));
   return res;
 };

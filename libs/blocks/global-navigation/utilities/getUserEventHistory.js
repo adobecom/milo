@@ -15,12 +15,11 @@ const getUserEventHistory = async (id) => {
   const apiUrl = getConfig().env.name === 'prod'
     ? 'https://www.adobe.com/gating/api/realtime-profile'
     : 'https://www.stage.adobe.com/gating/api/realtime-profile';
-  const res = await window
-    .fetch(`${apiUrl}?guid=${id || profile.userId}`, {
-      method: 'GET',
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    })
+  const res = await fetch(`${apiUrl}?guid=${id || profile.userId}`, {
+    method: 'GET',
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  })
     .then((resp) => (resp.status === 200 ? resp.json() : null));
   if (res) resolve(res);
   reject(new Error('Error retrieving a response'));
