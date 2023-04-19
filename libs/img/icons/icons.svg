@@ -40,6 +40,10 @@
     <path fill="currentcolor" d="M15.656,3.8625l-.7275-.5665a.5.5,0,0,0-.7.0875L7.411,12.1415,4.0875,8.8355a.5.5,0,0,0-.707,0L2.718,9.5a.5.5,0,0,0,0,.707l4.463,4.45a.5.5,0,0,0,.75-.0465L15.7435,4.564A.5.5,0,0,0,15.656,3.8625Z" />
   </symbol>
 
+  <symbol id="checkmark2" viewBox="0 0 18 18">
+    <path d="M17.9788 1.3125L6.95623 13.6875L1.021 8.4375" stroke="#478C6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
   <symbol id="facebook" viewBox="0 0 18 18">
     <title>Facebook</title>
     <desc>Facebook Logo</desc>
