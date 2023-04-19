@@ -38,7 +38,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
         decorateIconArea(el);
       }
     }
-    const emptyPs = el.querySelectorAll(':scope > p:not([class])');
+    const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
@@ -87,6 +87,6 @@ export function applyTypographyOverrides(el, options = ['-heading', '-body', '-d
   if (!overrides.length) return;
   overrides.forEach(override => {
     applyOverrides(el, override);
-    el.classList.remove(override);
+    // el.classList.remove(override);
   });
 }
