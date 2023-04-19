@@ -71,7 +71,7 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
-function applyOverrides(el, override) {
+function applyTextOverrides(el, override) {
   const parts = override.split("-");
   const type = parts[1];
   const els = el.querySelectorAll(`[class^="${type}"]`);
@@ -82,11 +82,11 @@ function applyOverrides(el, override) {
   });
 }
 
-export function applyTypographyOverrides(el, options = ['-heading', '-body', '-detail']) {
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
   const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach(override => {
-    applyOverrides(el, override);
-    // el.classList.remove(override);
+    applyTextOverrides(el, override);
+    el.classList.remove(override);
   });
 }

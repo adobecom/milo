@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize, applyTypographyOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -51,5 +51,5 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
-  applyTypographyOverrides(el);
+  decorateTextOverrides(el);
 }

@@ -14,7 +14,7 @@
  * media - consonant v5.1
  */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, applyTypographyOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -54,5 +54,5 @@ export default function init(el) {
   el.append(container);
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
-  applyTypographyOverrides(el)
+  decorateTextOverrides(el)
 }
