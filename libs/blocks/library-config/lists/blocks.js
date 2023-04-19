@@ -27,6 +27,8 @@ function getTable(block, name, path) {
     const ratio = width > 200 ? 200 / width : 1;
     img.width = width * ratio;
     img.height = height * ratio;
+    const pic = img.closest('picture');
+    pic.parentElement.replaceChild(img, pic);
   });
   const rows = [...block.children];
   const maxCols = rows.reduce((cols, row) => (

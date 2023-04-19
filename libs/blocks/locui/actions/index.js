@@ -75,42 +75,29 @@ function checkSource() {
   });
 }
 
-async function syncFile(url) {
-  return new Promise(async (resolve) => {
-    const sourcePath = url.pathname;
-    const destPath = url.langstore.pathname;
-    const json = await copyFile(sourcePath, destPath);
-    if (json.webUrl) {
-      url.langstore.actions = {
-        ...url.langstore.actions,
-        edit: {
-          url: json.webUrl,
-          status: 200,
-        },
-      };
-      resolve(url);
-    }
-  });
+function getFilePath(pathname, filename) {
+  const pathArr = pathname.split('/');
+  pathArr.pop();
+  pathArr.push(filename);
+  return pathArr.join('/');
 }
 
-// function makeOne(num) {
-//   return new Promise((resolve) => {
-//     // Do expensive stuff here
-//     setTimeout(() => {
-//       resolve(num);
-//     }, 1000);
-//   });
-// }
-
-// export async function makeLots() {
-//   const iters = [...Array(104).keys()];
-//   const groups = group(iters);
-//   for (const groupOne of groups) {
-//     const res = groupOne.map(async (num) => makeOne(num));
-//     const numArr = await Promise.all(res);
-//     console.log(numArr);
-//   }
-// }
+async function syncFile(url) {
+  return new Promise((resolve) => {
+    const sourcePath = getFilePath(url.pathname, url.actions.edit.filename);
+    const destPath = getFilePath(url.langstore.pathname, url.actions.edit.filename);
+    console.log(sourcePath);
+    copyFile(sourcePath, destPath).then((json) => {
+      if (json.webUrl) {
+        url.langstore.actions = {
+          ...url.langstore.actions,
+          edit: { url: json.webUrl, status: 200 },
+        };
+      }
+      resolve(url);
+    });
+  });
+}
 
 export async function syncToLangstore() {
   if (checkSource()) {
@@ -118,22 +105,30 @@ export async function syncToLangstore() {
     return;
   }
 
-  const groups = makeGroups(urls.value);
-  for (const group of groups) {
-    const groupResult = group.map((url) => syncFile(url));
-    await Promise.all(groupResult);
+  for (const [idx, url] of urls.value.entries()) {
+    setStatus(`langstore-${idx}`, 'info', `Syncing - ${url.pathname}`);
+    urls.value[idx] = await syncFile(url);
+    setStatus(`langstore-${idx}`);
+    urls.value = [...urls.value];
   }
-
-  // let count = urls.value.length;
-  // // eslint-disable-next-line no-restricted-syntax
-  // for (const [idx, url] of urls.value.entries()) {
-  //   setStatus('langstore', 'info', `Syncing - ${count} left.`, 'Syncing to Langstore.');
-  //   // eslint-disable-next-line no-await-in-loop
-  //   urls.value[idx] = await syncFile(url);
-  //   urls.value = [...urls.value];
-  //   count -= 1;
-  //   if (count === 0) {
-  //     setStatus('langstore');
-  //   }
-  // }
 }
+
+// async function makeOne(num) {
+//   return new Promise((resolve) => {
+//     const source = '/drafts/cmillar/batch/Doc_';
+//     const dest = `/drafts/cmillar/batch/Doc_${num}`;
+//     copyFile(source, dest).then((json) => {
+//       resolve(json);
+//     });
+//   });
+// }
+
+// (async function loadPage() {
+//   setTimeout(async () => {
+//     const iters = [...Array(200).keys()];
+//     for (const num of iters) {
+//       const json = await makeOne(num);
+//       console.log(json);
+//     }
+//   }, 1500);
+// }());

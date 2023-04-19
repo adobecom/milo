@@ -30,6 +30,7 @@ async function copyItem(id, parentReference, folder, name) {
   const body = { ...BODY_BASE, parentReference, name };
   const options = getReqOptions({ method: 'POST', body });
   const resp = await fetch(`${site}/drive/items/${id}/copy`, options);
+  console.log(resp.headers.get('Location'));
   if (resp.status !== 202) return {};
   return getItem(`${folder}/${name}`);
 }
@@ -104,10 +105,9 @@ async function uploadAttempt(dest, destItem, uploadUrl, blob) {
 function getDocDetails(path) {
   const parentArr = path.split('/');
   const name = parentArr.pop();
-  const file = name.endsWith('.json') ? name.replace('.json', '.xlsx') : `${name}.docx`;
   const folder = parentArr.join('/');
-  const split = file.split('.');
-  return { folder, name: file, lockName: `${split[0]} (lock copy).${split[1]}` };
+  const split = name.split('.');
+  return { folder, name, lockName: `${split[0]} (lock copy).${split[1]}` };
 }
 
 /**
