@@ -41,7 +41,7 @@
   </symbol>
 
   <symbol id="checkmark2" viewBox="0 0 18 18">
-    <path d="M17.9788 1.3125L6.95623 13.6875L1.021 8.4375" stroke="#478C6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M17.9788 1.3125L6.95623 13.6875L1.021 8.4375" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="transparent"/>
   </symbol>
 
   <symbol id="facebook" viewBox="0 0 18 18">
