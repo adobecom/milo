@@ -63,7 +63,6 @@ export function getLimiter() {
   if (!limiter) {
     // eslint-disable-next-line new-cap
     limiter = new bottleneck({
-      // minTime: 333,
       maxConcurrent: 4, // max concurrent jobs (useful if jobs don't complete within interval time)
       reservoir: 2, // number of jobs to be processed in each interval
       reservoirRefreshAmount: 2, // number of jobs to be processed after refresh
