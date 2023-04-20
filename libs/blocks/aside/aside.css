@@ -10,13 +10,6 @@
 .dark .aside,
 .aside.dark {
   color: var(--color-white);
-  background-color: #1E1E1E;
-}
-
-.light .aside,
-.aside.light {
-  color: var(--text-color);
-  background-color: #f5f5f5;
 }
 
 .aside p {
@@ -257,11 +250,6 @@
   order: -1;
 }
 
-.aside.notification .foreground.container [data-align=center] {
-  text-align: center;
-  justify-content: center;
-}
-
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
   font-weight: normal;
@@ -277,6 +265,7 @@
 
 .aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
   margin-left: var(--spacing-xs);
+  color: var(--link-color);
 }
 
 .aside.notification.small .foreground.container .text a.con-button {
@@ -352,11 +341,6 @@
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text>* {
-  justify-content: flex-start;
-}
-
 .aside.notification.center.small .foreground.container .text p {
   text-align: left;
 }
@@ -368,6 +352,18 @@
 
 .aside.notification.large .foreground.container.no-image {
   max-width: 800px;
+}
+
+.aside.notification .foreground.container [data-align=center],
+.aside.notification.center .foreground.container,
+.aside.notification.center .foreground.container > * {
+  text-align: center;
+  justify-content: center;
+}
+
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.small .foreground.container .text > * {
+  justify-content: flex-start;
 }
 
 @media screen and (min-width: 600px) {
