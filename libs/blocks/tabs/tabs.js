@@ -87,13 +87,16 @@ function initTabs(elm, config, rootElem) {
   if (config) configTabs(config, rootElem);
 }
 
-function handleDeferredImages(e) {
-  const images = e.querySelectorAll('img[loading="lazy"]');
-  images.forEach((img) => {
-    /* c8 ignore next */
-    img.removeAttribute('loading');
-  });
-  e.removeEventListener('milo:deferred', handleDeferredImages, true);
+const handleDeferredImages = (block) => {
+  const loadLazyImages = () => {
+    const images = block.querySelectorAll('img[loading="lazy"]');
+		  images.forEach((img) => {
+		    /* c8 ignore next */
+		    img.removeAttribute('loading');
+		  });
+		  document.removeEventListener('milo:deferred', loadLazyImages, true);
+  };
+  document.addEventListener('milo:deferred', loadLazyImages, true);
 }
 
 const init = (block) => {
@@ -102,24 +105,21 @@ const init = (block) => {
   const parentSection = block.closest('.section');
   /* c8 ignore next */
   if (!rows.length) return;
-  block.addEventListener('milo:deferred', handleDeferredImages(block), true);
 
   // Tab Config
   const config = {};
   const configRows = [...rows];
   configRows.splice(0, 1);
-  if (configRows) {
-    configRows.forEach((row) => {
-      const rowKey = getStringKeyName(row.children[0].textContent);
-      const rowVal = row.children[1].textContent.trim();
-      config[rowKey] = rowVal;
-      row.remove();
-    });
-  }
-  const tabsId = config.id || getUniqueId(block, rootElem);
-  config['tab-id'] = tabsId;
-  block.id = `tabs-${tabsId}`;
-  parentSection?.classList.add(`tablist-${tabsId}-section`);
+  configRows.forEach((row) => {
+    const rowKey = getStringKeyName(row.children[0].textContent);
+    const rowVal = row.children[1].textContent.trim();
+    config[rowKey] = rowVal;
+    row.remove();
+  });
+  const tabId = config.id || getUniqueId(block, rootElem);
+  config['tab-id'] = tabId;
+  block.id = `tabs-${tabId}`;
+  parentSection?.classList.add(`tablist-${tabId}-section`);
 
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
@@ -140,24 +140,24 @@ const init = (block) => {
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
-        id: `tab-${tabsId}-${tabName}`,
+        id: `tab-${tabId}-${tabName}`,
         tabindex: '0',
         'aria-selected': (i === 0) ? 'true' : 'false',
-        'aria-controls': `tab-panel-${tabsId}-${tabName}`,
+        'aria-controls': `tab-panel-${tabId}-${tabName}`,
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
       tabListContainer.append(tabBtn);
 
       const tabContentAttributes = {
-        id: `tab-panel-${tabsId}-${tabName}`,
+        id: `tab-panel-${tabId}-${tabName}`,
         role: 'tabpanel',
         class: 'tabpanel',
         tabindex: '0',
-        'aria-labelledby': `tab-${tabsId}-${tabName}`,
+        'aria-labelledby': `tab-${tabId}-${tabName}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
-      tabListContent.setAttribute('aria-labelledby', `tab-${tabsId}-${tabName}`);
+      tabListContent.setAttribute('aria-labelledby', `tab-${tabId}-${tabName}`);
       if (i > 0) tabListContent.setAttribute('hidden', '');
       tabContentContainer.append(tabListContent);
     });
@@ -175,7 +175,7 @@ const init = (block) => {
       if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
       if (!val) return;
-      let id = tabsId;
+      let id = tabId;
       let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       if (config.id) {
         const values = row.children[1].textContent.split(',');
@@ -189,6 +189,7 @@ const init = (block) => {
       }
     });
   });
+  handleDeferredImages(block);
   initTabs(block, config, rootElem);
 };
 
