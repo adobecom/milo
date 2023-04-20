@@ -46,6 +46,7 @@
 .ambient-video > video {
   object-fit: fill;
 }
+
 @media screen and (min-width: 600px) {
   .z-pattern.alternating > .media:nth-child(odd) > .container > .media-row {
     flex-direction: row-reverse;
