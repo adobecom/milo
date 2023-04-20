@@ -1,6 +1,6 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
-export const VERSION = '1.15.0';
+export const VERSION = '1.15.2';
 const ENV_PROD = 'prod';
 const CTA_PREFIX = /^CTA +/;
 
@@ -166,7 +166,7 @@ export default async function init(el) {
       ?? el.closest('[data-promotion-code]')?.dataset.promotionCode)
     || undefined;
 
-  const perpetual = searchParams.get('perp') === 'true';
+  const perpetual = searchParams.get('perp') === 'true' || undefined;
 
   if (isCTA(type)) {
     const options = omitNullValues({
