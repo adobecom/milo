@@ -112,18 +112,18 @@ export const getUrls = (element) => {
     .map((e) => e.trim());
 };
 
-export const getActionName = (action, gerund) => {
+export const getActionName = (action, useGerund) => {
   let name;
   switch (action) {
     case null:
     case 'preview':
-      name = (!gerund) ? 'Preview' : 'Previewing';
+      name = (!useGerund) ? 'Preview' : 'Previewing';
       break;
     case 'publish':
-      name = (!gerund) ? 'Publish' : 'Publishing';
+      name = (!useGerund) ? 'Publish' : 'Publishing';
       break;
     default:
-      name = (!gerund) ? 'Preview & publish' : 'Previewing & publishing';
+      name = (!useGerund) ? 'Preview & publish' : 'Previewing & publishing';
   }
   return name;
 };
@@ -188,6 +188,8 @@ export const executeActions = async (resume, setResult) => {
     setLocalStorage(BULK_STORED_RESULTS, results);
   }
   setLocalStorage(BULK_STORED_COMPLETED, true);
+  window.localStorage.removeItem(BULK_AUTHORIZED_USERS);
+  window.localStorage.removeItem(BULK_SUPPORTED_SITES);
   return results;
 };
 
