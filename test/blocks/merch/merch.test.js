@@ -24,8 +24,8 @@ describe('Merch Block', () => {
         clientId: 'adobe_com',
         language: 'en',
         locale: 'en_US',
-        workflow: 'UCv3',
-        workflowStep: 'email',
+        checkoutWorkflow: 'UCv3',
+        checkoutWorkflowStep: 'email',
       },
     });
   });
