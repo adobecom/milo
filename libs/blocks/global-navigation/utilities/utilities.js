@@ -18,36 +18,21 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-export function debounceCallback(callback, time = 200) {
-  if (typeof callback !== 'function') return undefined;
-
-  let timeout = null;
-
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => callback(...args), time);
-  };
-}
-
-// TODO: should we replace these with proper Locale/country service(s)?
-export function getLocale() {
-  return document.documentElement.getAttribute('lang') || 'en-US';
-}
-
-export function getCountry() {
-  return getLocale()?.split('-').pop() || 'US';
-}
-
 // TODO this is just prototyped
 export const getFedsPlaceholderConfig = () => {
-  const { locale, miloLibs } = getConfig();
+  const { locale, miloLibs, env } = getConfig();
   let libOrigin = 'https://adobe.com/libs';
   if (window.location.origin.includes('localhost')) {
     libOrigin = `${window.location.origin}/libs`;
   }
+
   if (window.location.origin.includes('.hlx.')) {
-    libOrigin = miloLibs?.replace('hlx.live', 'hlx.page') || 'https://main--milo--adobecom.hlx.page/libs';
+    const baseMiloUrl = env.name === 'prod'
+      ? 'https://main--milo--adobecom.hlx.live'
+      : 'https://main--milo--adobecom.hlx.page';
+    libOrigin = miloLibs || `${baseMiloUrl}/libs`;
   }
+
   return {
     locale: {
       ...locale,

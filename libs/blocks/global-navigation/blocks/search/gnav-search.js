@@ -1,8 +1,5 @@
 import {
   toFragment,
-  debounceCallback,
-  getLocale,
-  getCountry,
   getFedsPlaceholderConfig,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
@@ -18,6 +15,20 @@ const CONFIG = {
     inputIsPopulated: 'feds-search-input--isPopulated',
   },
 };
+
+function debounceCallback(callback, time = 200) {
+  if (typeof callback !== 'function') return undefined;
+
+  let timeout = null;
+
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => callback(...args), time);
+  };
+}
+
+const getLocale = () => getConfig().locale.ietf;
+const getCountry = () => getLocale()?.split('-').pop() || 'US';
 
 class Search {
   constructor(config) {
@@ -117,7 +128,7 @@ class Search {
     const subdomain = env === 'prod' ? 'adobesearch' : 'adobesearch-stage';
     const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
 
-    return window.fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
+    return fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
       .then((data) => data.json())
       .catch(() => {
         // do nothing
