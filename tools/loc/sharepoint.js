@@ -114,7 +114,7 @@ async function fetchWithRetry(apiUrl, options, retryCounts) {
       retryCount += 1;
       fetch(apiUrl, options).then((resp) => {
         const retryAfter = resp.headers.get('ratelimit-reset') || resp.headers.get('retry-after') || 0;
-        if((resp.headers.get('test-retry-status') === TOO_MANY_REQUESTS) || (resp.status === TOO_MANY_REQUESTS)) {
+        if ((resp.headers.get('test-retry-status') === TOO_MANY_REQUESTS) || (resp.status === TOO_MANY_REQUESTS)) {
           nextCallAfter = Date.now() + retryAfter * 1000;
           fetchWithRetry(apiUrl, options, retryCount)
             .then((newResp) => resolve(newResp)).catch((err) => reject(err));
@@ -162,10 +162,38 @@ async function getSpFiles(filePaths, isFloodgate) {
       payload.requests.push(getSharepointFileRequest(sp, index, filePath, isFloodgate));
     }
     spFilePromises.push(loadSharepointData(spBatchApi, payload));
-    await new Promise((resolve) => setTimeout(resolve, 200));
   }
   const spFileResponses = await Promise.all(spFilePromises);
   return Promise.all(spFileResponses.map((file) => file.json()));
+}
+
+async function getFilesData(filePaths, isFloodgate) {
+
+  async function getFileData(filePath, isFloodgate) {
+    validateConnection();
+    const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
+    const options = getAuthorizedRequestOption();
+    const baseURI = isFloodgate ? sp.api.directory.create.fgBaseURI : sp.api.directory.create.baseURI;
+    const resp = await fetchWithRetry(`${baseURI}${filePath}`, options);
+    return await resp.json();
+  }
+
+  const batchArray = [];
+  for (let i = 0; i < filePaths.length; i += BATCH_REQUEST_LIMIT) {
+    const arrayChunk = filePaths.slice(i, i + BATCH_REQUEST_LIMIT);
+    batchArray.push(arrayChunk);
+  }
+  // process data in batches
+  const fileJsonResp = [];
+  for (let i = 0; i < batchArray.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    fileJsonResp.push(...await Promise.all(
+      batchArray[i].map((file) => getFileData(file, isFloodgate)),
+    ));
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  return fileJsonResp;
 }
 
 async function getFile(doc) {
@@ -486,6 +514,7 @@ export {
   getFileVersionInfo,
   getFileMetadata,
   getSpFiles,
+  getFilesData,
   getSpViewUrl,
   getVersionOfFile,
   saveFile,
