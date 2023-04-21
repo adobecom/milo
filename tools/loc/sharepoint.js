@@ -14,6 +14,7 @@ import { getConfig as getFloodgateConfig } from '../floodgate/js/config.js';
 
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
+const BATCH_DELAY_TIME = 200;
 
 const getAccessToken = () => accessToken;
 
@@ -191,7 +192,7 @@ async function getFilesData(filePaths, isFloodgate) {
       batchArray[i].map((file) => getFileData(file, isFloodgate)),
     ));
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_TIME));
   }
   return fileJsonResp;
 }
