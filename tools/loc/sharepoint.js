@@ -168,17 +168,17 @@ async function getSpFiles(filePaths, isFloodgate) {
   return Promise.all(spFileResponses.map((file) => file.json()));
 }
 
+async function getFileData(filePath, isFloodgate) {
+  validateConnection();
+  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
+  const options = getAuthorizedRequestOption();
+  const baseURI = isFloodgate ? sp.api.directory.create.fgBaseURI : sp.api.directory.create.baseURI;
+  const resp = await fetchWithRetry(`${baseURI}${filePath}`, options);
+  const json = await resp.json();
+  return json;
+}
+
 async function getFilesData(filePaths, isFloodgate) {
-
-  async function getFileData(filePath, isFloodgate) {
-    validateConnection();
-    const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
-    const options = getAuthorizedRequestOption();
-    const baseURI = isFloodgate ? sp.api.directory.create.fgBaseURI : sp.api.directory.create.baseURI;
-    const resp = await fetchWithRetry(`${baseURI}${filePath}`, options);
-    return await resp.json();
-  }
-
   const batchArray = [];
   for (let i = 0; i < filePaths.length; i += BATCH_REQUEST_LIMIT) {
     const arrayChunk = filePaths.slice(i, i + BATCH_REQUEST_LIMIT);
