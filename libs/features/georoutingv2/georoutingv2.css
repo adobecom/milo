@@ -78,7 +78,7 @@
   background: initial;
 }
 
-.dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tabList-container {
+.dialog-modal.locale-modal-v2 .tabs div[role="tablist"] .tab-list-container {
   padding: initial;
   margin: initial;
 }
@@ -91,7 +91,7 @@
   margin-left: 24px;
 }
 
-.dialog-modal.locale-modal-v2 .tabs .tabContent {
+.dialog-modal.locale-modal-v2 .tabs .tab-content {
   border-bottom: initial;
   padding: initial;
 }
