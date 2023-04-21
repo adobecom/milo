@@ -371,7 +371,6 @@ header.global-navigation {
   background-color: var(--feds-background-link--hover--light);;
 }
 
-
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
@@ -513,7 +512,6 @@ header.global-navigation {
   }
 }
 
-
 /* TODO: Old styles, to be refactored */
 .gnav-logo {
   display: none;
@@ -569,8 +567,6 @@ header .app-launcher {
 }
 
 /* END APP LAUNCHER */
-
-
 
 @media (min-width: 900px) {
   /* APP LAUNCHER */

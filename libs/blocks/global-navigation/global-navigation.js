@@ -35,7 +35,7 @@ const loadStyles = (path) => {
 const loadBlock = (path) => import(path)
   .then((module) => module.default);
 
-// signIn, decorateSignIn and decorateButton can be removed if IMS takes over the profile
+// signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
   if (typeof window.adobeIMS?.signIn !== 'function') return;
 
@@ -85,7 +85,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   decoratedElem.prepend(signInElem);
 };
 
-const decorateButton = async ({ avatar }) => {
+const decorateProfileTrigger = async ({ avatar }) => {
   const label = await replaceKey(
     'profile-button',
     getFedsPlaceholderConfig(),
@@ -267,7 +267,7 @@ class Gnav {
 
     const [{ sections, user: { avatar } }] = await profileData.json();
 
-    this.blocks.profile.buttonElem = await decorateButton({ avatar });
+    this.blocks.profile.buttonElem = await decorateProfileTrigger({ avatar });
     decoratedElem.append(this.blocks.profile.buttonElem);
 
     // Decorate the profile dropdown

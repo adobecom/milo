@@ -122,7 +122,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
  * @param {string} object.format format function, raw or default
  * @returns {object} JIL Entitlements
  */
-// TODO the locale could use the milo format, currently that's an AEM relict.
+// TODO the locale could use the milo format, currently that's an AEM relic.
 const getUserEntitlements = async ({ params, locale, format } = {}) => {
   if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements);
 
