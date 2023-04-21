@@ -141,19 +141,13 @@ async function updateProjectStatus(projectData) {
   // Get project action data from excel
   const projectJson = await readProjectFile(projectData.url);
   const status = {};
-  let data = { lastRun: '-', status: PROJECT_STATUS.NOT_STARTED };
+  const defaultData = { lastRun: '-', status: PROJECT_STATUS.NOT_STARTED };
 
   if (!projectJson) return status;
 
-  if (projectJson.copystatus?.data?.length > 0) {
-    data = getStatusData(projectJson, 'copystatus');
-  }
-  status.copy = data;
+  status.copy = projectJson.copystatus?.data?.length > 0 ? getStatusData(projectJson, 'copystatus') : defaultData;
+  status.promote = projectJson.promotestatus?.data?.length > 0 ? getStatusData(projectJson, 'promotestatus') : defaultData;
 
-  if (projectJson.promotestatus?.data?.length > 0) {
-    data = getStatusData(projectJson, 'promotestatus');
-  }
-  status.promote = data;
   return status;
 }
 
