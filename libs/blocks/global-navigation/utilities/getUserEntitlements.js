@@ -19,7 +19,6 @@ const getAcceptLanguage = (locale) => {
 };
 
 const getQueryParameters = (params) => {
-  let result = '';
   const query = [];
   if (Array.isArray(params) && params.length) {
     params.forEach((parameter = {}) => {
@@ -28,13 +27,9 @@ const getQueryParameters = (params) => {
         query.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
       }
     });
-
-    if (query.length) {
-      result = `?${query.join('&')}`;
-    }
   }
 
-  return result;
+  return query.length ? `?${query.join('&')}` : '';
 };
 
 const emptyEntitlements = {
@@ -82,12 +77,9 @@ const mapSubscriptionCodes = (offers) => {
 
     if (Array.isArray(fulfilled_items)) {
       fulfilled_items.forEach(({ code }) => {
-        if (code) {
+        if (code && list.fulfilled_codes.indexOf(code) === -1) {
           fulfilled_codes[code] = true;
-          // Avoid duplicates
-          if (list.fulfilled_codes.indexOf(code) === -1) {
-            list.fulfilled_codes.push(code);
-          }
+          list.fulfilled_codes.push(code);
         }
       });
     }
@@ -113,10 +105,8 @@ const getSubscriptions = async ({ queryParams, locale }) => {
     credentials: 'same-origin',
     signal: AbortSignal.timeout(API_WAIT_TIMEOUT),
     headers: {
-      'Content-Type': 'application/json',
       Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
       'X-Api-Key': window.adobeIMS.adobeIdData.client_id,
-      Accept: 'application/json',
       'Accept-Language': getAcceptLanguage(locale).join(','),
     },
   })
@@ -132,6 +122,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
  * @param {string} object.format format function, raw or default
  * @returns {object} JIL Entitlements
  */
+// TODO the locale could use the milo format, currently that's an AEM relict.
 const getUserEntitlements = async ({ params, locale, format } = {}) => {
   if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements);
 

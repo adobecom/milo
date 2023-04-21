@@ -302,7 +302,7 @@ header.global-navigation {
   content: '/';
 }
 
-/* Profile styles */
+/* Profile styles - to be removed after IMS takes over the profile */
 .feds-profile {
   display: flex;
   align-items: center;
@@ -310,6 +310,67 @@ header.global-navigation {
   position: relative;
   justify-content: end;
 }
+
+/* Profile styles */
+.feds-profile-img {
+  max-height: 30px;
+  max-width: 30px;
+  display: block;
+}
+
+.feds-profile-button {
+  padding: 5px var(--feds-gutter);
+  border-radius: var(--feds-radius-utilityIcon);
+  border: none;
+}
+
+.feds-signIn {
+  padding: 11px var(--feds-gutter);
+  border-radius: var(--feds-radius-utilityIcon);
+  color: #4B4B4B;
+  white-space: nowrap;
+}
+
+.feds-signIn-dropdown {
+  position: absolute;
+  display: none;
+  right: 0;
+  top: 100%;
+  border: 1px solid #e1e1e1;
+  border-radius: 0 0 4px 4px;
+  background: #fafafa;
+  overflow: hidden;
+  box-shadow: 0 2px 6px -1px rgb(0 0 0 / 10%);
+  line-height: 1.4;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.feds-signIn[aria-expanded = "true"] + .feds-signIn-dropdown {
+  display: block;
+}
+
+[dir = "rtl"] .feds-signIn-dropdown {
+  right: initial;
+  left: 0;
+}
+
+.feds-signIn-dropdown ul {
+  margin: 0;
+  padding: 12px 0;
+}
+
+.feds-signIn-dropdown li > a {
+  display: block;
+  color: var(--feds-color-link--light);
+  padding: 6px 32px;
+}
+
+.feds-signIn-dropdown li > a:hover {
+  color: var(--feds-color-link--hover--light);
+  background-color: var(--feds-background-link--hover--light);;
+}
+
 
 /* Desktop styles */
 @media (min-width: 900px) {
@@ -508,6 +569,8 @@ header .app-launcher {
 }
 
 /* END APP LAUNCHER */
+
+
 
 @media (min-width: 900px) {
   /* APP LAUNCHER */

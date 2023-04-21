@@ -35,6 +35,79 @@ const loadStyles = (path) => {
 const loadBlock = (path) => import(path)
   .then((module) => module.default);
 
+// signIn, decorateSignIn and decorateButton can be removed if IMS takes over the profile
+const signIn = () => {
+  if (typeof window.adobeIMS?.signIn !== 'function') return;
+
+  window.adobeIMS.signIn();
+};
+
+const decorateSignIn = async ({ rawElem, decoratedElem }) => {
+  const dropdownElem = rawElem.querySelector(':scope > div:nth-child(2)');
+  const signInLabel = await replaceKey('sign-in', getFedsPlaceholderConfig(), 'feds');
+  let signInElem;
+
+  if (!dropdownElem) {
+    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</a>`;
+
+    signInElem.addEventListener('click', (e) => {
+      e.preventDefault();
+      signIn();
+    });
+  } else {
+    signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn" role="button" aria-expanded="false" aria-haspopup="true">${signInLabel}</a>`;
+
+    signInElem.addEventListener('click', () => {
+      const isOpen = signInElem.getAttribute('aria-expanded') === 'true';
+
+      if (isOpen) {
+        signInElem.setAttribute('aria-expanded', 'false');
+      } else {
+        signInElem.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    dropdownElem.classList.add('feds-signIn-dropdown');
+
+    // TODO we don't have a good way of adding config properties to links
+    const dropdownSignIn = dropdownElem.querySelector('[href="https://adobe.com?sign-in=true"]');
+
+    if (dropdownSignIn) {
+      dropdownSignIn.addEventListener('click', (e) => {
+        e.preventDefault();
+        signIn();
+      });
+    }
+
+    decoratedElem.append(dropdownElem);
+  }
+
+  decoratedElem.prepend(signInElem);
+};
+
+const decorateButton = async ({ avatar }) => {
+  const label = await replaceKey(
+    'profile-button',
+    getFedsPlaceholderConfig(),
+    'feds',
+  );
+
+  const buttonElem = toFragment`
+      <button 
+        class="feds-profile-button" 
+        aria-expanded="false" 
+        aria-controls="feds-profile-menu"
+        aria-label="${label}"
+        daa-ll="Account"
+        aria-haspopup="true"
+      > 
+        <img class="feds-profile-img" src="${avatar}"></img>
+      </button>
+    `;
+
+  return buttonElem;
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -123,13 +196,11 @@ class Gnav {
     this.ready = this.ready || new Promise(async (resolve) => {
       this.el.removeEventListener('click', this.loadDelayed);
       const [
-        { MenuControls },
         decorateDropdown,
         { appLauncher },
         ProfileDropdown,
         Search,
       ] = await Promise.all([
-        loadBlock('./utilities/delayed-utilities.js'),
         loadBlock('./blocks/navDropdown/dropdown.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/dropdown.js'),
@@ -138,7 +209,6 @@ class Gnav {
         loadStyles('./blocks/navDropdown/dropdown.css'),
         loadStyles('./blocks/search/gnav-search.css'),
       ]);
-      this.menuControls = new MenuControls(this.curtain);
       this.decorateDropdown = decorateDropdown;
       this.ProfileDropdown = ProfileDropdown;
       this.appLauncher = appLauncher;
@@ -181,13 +251,7 @@ class Gnav {
 
     // If user is not signed in, decorate the 'Sign In' element
     if (!isSignedInUser) {
-      const [decorateSignIn] = await Promise.all([
-        loadBlock('./blocks/profile/signIn.js'),
-        loadStyles('./blocks/profile/signIn.css'),
-      ]);
-
       decorateSignIn({ rawElem, decoratedElem });
-
       return;
     }
 
@@ -201,14 +265,7 @@ class Gnav {
       return;
     }
 
-    const [
-      { sections, user: { avatar } },
-      decorateButton,
-    ] = await Promise.all([
-      profileData.json(),
-      loadBlock('./blocks/profile/button.js'),
-      loadStyles('./blocks/profile/button.css'),
-    ]);
+    const [{ sections, user: { avatar } }] = await profileData.json();
 
     this.blocks.profile.buttonElem = await decorateButton({ avatar });
     decoratedElem.append(this.blocks.profile.buttonElem);
@@ -486,7 +543,7 @@ class Gnav {
       </div>`;
 
     // Replace the aria-label value once placeholder is fetched
-    replaceKey('search', getFedsPlaceholderConfig()).then((placeholder) => {
+    replaceKey('search', getFedsPlaceholderConfig(), 'feds').then((placeholder) => {
       if (placeholder && placeholder.length) {
         this.blocks.search.config.trigger.setAttribute('aria-label', placeholder);
       }

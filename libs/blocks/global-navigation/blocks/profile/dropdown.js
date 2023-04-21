@@ -84,6 +84,7 @@ class ProfileDropdown {
       replaceKeyArray(
         ['profile-button', 'sign-out', 'view-account', 'manage-teams', 'manage-enterprise'],
         getFedsPlaceholderConfig(),
+        'feds',
       ),
       window.adobeIMS.getProfile(),
     ]);
