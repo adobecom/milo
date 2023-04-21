@@ -7,12 +7,12 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const { env, miloLibs, codeRoot } = getConfig();
+const { miloLibs, codeRoot } = getConfig();
 let state = {};
 
 export const getFaasHostSubDomain = (environment) => {
-  const faasEnv = environment ?? env.name;
-  // TODO: prod should be updated as '' when QA is done from FAAS team.
+  const { searchParams } = new URL(window.location.href);
+  const faasEnv = environment ?? searchParams.get('faasEnv');
   if (faasEnv === 'prod') {
     return '';
   }
@@ -25,16 +25,12 @@ export const getFaasHostSubDomain = (environment) => {
   if (faasEnv === 'qa') {
     return 'qa.';
   }
-  return 'qa.';
+  return 'dev.';
 };
 
 const base = miloLibs || codeRoot;
-
-export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
-let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-if (env.name === 'local') {
-  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
-}
+export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`
+const faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
