@@ -1,0 +1,75 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - run: |
+          DEFAULT_SKMS_URL='api.skms.adobe.com'
+          function skms_request() {
+              local username=$1
+              local passkey=$2
+              local object=$3
+              local method=$4
+              local method_params=$5
+              local url=$6
+              if [ -z "$username" ]; then
+                  echo "First parameter missing, must be SKMS username"
+                  return 1
+              fi
+              if [ -z "$passkey" ]; then
+                  echo "Second parameter missing, must be SKMS passkey"
+                  return 1
+                fi
+              if [ -z "$object" ]; then
+                  echo "Third parameter missing, must be an SKMS dao object"
+                  return 1
+              fi
+              if [ -z "$method" ]; then
+                  echo "Fourth parameter missing, must be SKMS dao method"
+                  return 1
+              fi
+              if [ -z "$method_params" ]; then
+                  method_params='{}'
+              fi
+              if [ -z "$url" ]; then
+                  url=$DEFAULT_SKMS_URL
+              fi
+              if ! type "jq" >/dev/null; then
+                  echo "jq is required but not installed"
+              fi
+              if ! type "curl" >/dev/null; then
+                  echo "curl is required but not installed"
+              fi
+              local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
+              params=$(echo "$params $method_params" | jq -s add)
+              curl https://${url}/web_api --data-urlencode "_parameters=${params}"
+              echo ''
+          }
+          skms_request wp-adobecom-chimera_cmr_skms_api_user '${{ secrets.SKMS_DEV }}' CmrDao createCmr '{"change_executor":"jmichnow","change_model":655075,"maintenance_type":"internal_change","maintenance_window_end_time":"2023-04-04 12:00","maintenance_window_start_time":"2023-04-04 10:00","priority":"normal","save_as_draft":false,"summary":"chimera release"}'
