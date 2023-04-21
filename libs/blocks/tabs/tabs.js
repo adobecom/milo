@@ -94,9 +94,8 @@ const handleDeferredImages = (block) => {
 		    /* c8 ignore next */
 		    img.removeAttribute('loading');
 		  });
-		  document.removeEventListener('milo:deferred', loadLazyImages, true);
   };
-  document.addEventListener('milo:deferred', loadLazyImages, true);
+  document.addEventListener('milo:deferred', loadLazyImages, { once: true, capture: true });
 }
 
 const init = (block) => {
