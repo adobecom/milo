@@ -7,10 +7,11 @@ import {
   executeActions, storeOperation, storeUrls,
 } from '../../../libs/blocks/bulk/utils.js';
 
-const TEST_TIMEOUT_MS = 3 * 60 * 1000;
+const TEST_TIMEOUT_MS = 30 * 60 * 1000;
 const ORIGIN = 'https://main--milo--adobecom.hlx.page';
-const PAGE_PATH = '/test/features/test-page-for-bulk-publishing-tool';
-const PAGE_URL = `${ORIGIN}${PAGE_PATH}`;
+const BASE_PAGE_PATH = '/drafts/jck/bulk-publish/test/test';
+const BASE_PAGE_URL = `${ORIGIN}${BASE_PAGE_PATH}`;
+const URLS_AMOUNT = 10;
 
 const ogFetch = window.fetch;
 window.fetch = stub();
@@ -36,13 +37,15 @@ const stubFetchForBulkConfig = () => {
 
 const unstubFetchForAdminAPI = () => {
   const controller = new AbortController();
-  const { hostname, pathname } = new URL(PAGE_URL);
-  const [branch, repo, owner] = hostname.split('.')[0].split('--');
-  const adminUrl = `${ADMIN_BASE_URL}/preview/${owner}/${repo}/${branch}${pathname}`;
   const options = { method: 'POST', signal: controller.signal };
-  window.fetch.withArgs(adminUrl, options).returns(
-    ogFetch(adminUrl, options),
-  );
+  for (let i = 0; i < URLS_AMOUNT; i += 1) {
+    const { hostname, pathname } = new URL(`${BASE_PAGE_URL}-${i}`);
+    const [branch, repo, owner] = hostname.split('.')[0].split('--');
+    const adminUrl = `${ADMIN_BASE_URL}/preview/${owner}/${repo}/${branch}${pathname}`;
+    window.fetch.withArgs(adminUrl, options).returns(
+      ogFetch(adminUrl, options),
+    );
+  }
 };
 
 const restoreFetch = () => {
@@ -60,17 +63,16 @@ describe('Bulk preview and publish', () => {
 
   /**
    * This test measures the performance of the bulk preview/publish tool.
-   * Set 'urlsAmount' to 1000 and run the test to measure the time it took.
+   * Set 'URLS_AMOUNT' to 1000 and run the test to measure the time it took.
    * Performance history:
-   * - on 06/apr/2023: Previewing 1000 pages took: 106 s
+   * - on 21/apr/2023: Previewing 1000 pages took: 115 s
    */
-  it.skip('Performance test: previewing 1000 URLs', async () => {
+  it('Performance test: previewing 1000 URLs', async () => {
     localStorage.clear();
     const operation = 'preview';
-    const urlsAmount = 10;
     const urls = [];
-    for (let i = 0; i < urlsAmount; i += 1) {
-      urls[i] = `${PAGE_URL}${i}`;
+    for (let i = 0; i < URLS_AMOUNT; i += 1) {
+      urls[i] = `${BASE_PAGE_URL}-${i}`;
     }
     storeUrls(urls);
     storeOperation(operation);
@@ -78,10 +80,10 @@ describe('Bulk preview and publish', () => {
     const results = await executeActions(false, () => {});
     const end = Date.now();
     const duration = Math.round((end - start) / 1000);
-    console.log(`Previewing ${urlsAmount} pages took: ${duration} s`);
-    results.forEach((result) => {
-      expect(result.status.preview).equals(404, 'status.preview is not 404');
-      expect(result.url).equals(PAGE_URL, 'result.url is not PAGE_URL');
+    console.log(`Previewing ${URLS_AMOUNT} pages took: ${duration} s`);
+    results.forEach((result, i) => {
+      expect(result.status.preview).equals(200, 'status.preview is not 404');
+      expect(result.url).equals(`${BASE_PAGE_URL}-${i}`, 'result.url is not PAGE_URL');
     });
   }).timeout(TEST_TIMEOUT_MS);
 });
