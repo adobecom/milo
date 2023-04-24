@@ -21,22 +21,22 @@ export function toFragment(htmlStrings, ...values) {
 // TODO this is just prototyped
 export const getFedsPlaceholderConfig = () => {
   const { locale, miloLibs, env } = getConfig();
-  let libOrigin = 'https://adobe.com/libs';
+  let libOrigin = 'https://milo.adobe.com';
   if (window.location.origin.includes('localhost')) {
-    libOrigin = `${window.location.origin}/libs`;
+    libOrigin = `${window.location.origin}`;
   }
 
   if (window.location.origin.includes('.hlx.')) {
     const baseMiloUrl = env.name === 'prod'
       ? 'https://main--milo--adobecom.hlx.live'
       : 'https://main--milo--adobecom.hlx.page';
-    libOrigin = miloLibs || `${baseMiloUrl}/libs`;
+    libOrigin = miloLibs || `${baseMiloUrl}`;
   }
 
   return {
     locale: {
       ...locale,
-      contentRoot: `${libOrigin}/feds${locale.prefix}`,
+      contentRoot: `${libOrigin}${locale.prefix}`,
     },
   };
 };
