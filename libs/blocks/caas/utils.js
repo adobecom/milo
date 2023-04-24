@@ -232,6 +232,21 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
+const getCountryAndLang = ({ autoCountryLang, country, language }) => {
+  if (autoCountryLang) {
+    const htmlLang = document.documentElement.getAttribute('lang')?.toLowerCase() || 'en-us';
+    const [lang, cntry] = htmlLang.split('-');
+    return {
+      country: cntry,
+      language: lang,
+    };
+  }
+  return {
+    country: country ? country.split('/').pop() : 'us',
+    language: language ? language.split('/').pop() : 'en',
+  };
+};
+
 export function arrayToObj(input = []) {
   const obj = {};
   if (!Array.isArray(input)) {
@@ -248,8 +263,7 @@ export function arrayToObj(input = []) {
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const language = state.language ? state.language.split('/').pop() : 'en';
-  const country = state.country ? state.country.split('/').pop() : 'us';
+  const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
@@ -454,6 +468,7 @@ export const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
+  autoCountryLang: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
