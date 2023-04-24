@@ -93,7 +93,7 @@ function buildCheckoutButton(a, osi, options) {
   a.href = '#';
   a.dataset.wcsOsi = osi;
   a.dataset.template = 'checkoutUrl';
-  a.className = 'con-button blue button-m';
+  a.className = 'con-button';
   Object.assign(a.dataset, options);
   a.textContent = a.textContent?.replace(CTA_PREFIX, '');
   return a;
