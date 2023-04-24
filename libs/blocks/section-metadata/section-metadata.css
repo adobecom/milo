@@ -224,3 +224,12 @@ main>.section[class*='-up']>.content {
     grid-template-columns: 3fr 1fr;
   }
 }
+
+@media screen and (min-width: 1920px) {
+  .section.grid-width-full {
+    max-width: 1824px;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
