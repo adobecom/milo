@@ -7,13 +7,13 @@ import {
   createTag,
 } from '../../utils/utils.js';
 
-const { miloLibs, codeRoot } = getConfig();
+const { env, miloLibs, codeRoot } = getConfig();
 let state = {};
 
 export const getFaasHostSubDomain = (environment) => {
   const { searchParams } = new URL(window.location.href);
   const faasEnv = environment ?? searchParams.get('faas-env');
-  if (faasEnv === 'prod') {
+  if (env.name || faasEnv === 'prod') {
     return '';
   }
   if (faasEnv === 'stage') {
