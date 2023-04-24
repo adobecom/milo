@@ -4,6 +4,7 @@
   max-width: 700px;
   padding: 80px 24px;
   grid-template-columns: 1fr 1fr;
+
   /* grid-template-rows: 1fr; */
   grid-auto-rows: min-content;
   grid-template-areas:
@@ -13,11 +14,8 @@
 
 .how-to > ol {
   list-style-type: none;
-  padding: 0;;
-}
-
-.how-to > ol > li:first-of-type {
-  border-top: 1px solid #DDDDDD;
+  padding: 0;
+  grid-area: list;
 }
 
 .how-to > ol > li {
@@ -27,7 +25,11 @@
   padding: 24px 0;
   font-size: 18px;
   line-height: 27px;
-  border-bottom: 1px solid #DDDDDD;
+  border-bottom: 1px solid var(--color-gray-300);;
+}
+
+.how-to > ol > li:first-of-type {
+  border-top: 1px solid var(--color-gray-300);
 }
 
 .how-to > ol > li > picture {
@@ -44,10 +46,6 @@
 
 .how-to-heading {
   grid-area: heading;
-}
-
-.how-to > ol {
-  grid-area: list;
 }
 
 .how-to-image {
@@ -73,7 +71,7 @@
   grid-template-rows: 1fr;
   grid-template-areas:
     "heading image"
-    "list image"
+    "list image";
 }
 
 
