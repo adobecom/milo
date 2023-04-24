@@ -33,11 +33,12 @@ const addWrapper = (el, section, cardType) => {
   if (prevGrid) return;
 
   let upClass = getUpFromSectionMetadata(section);
-  const compat = ['two-up', 'three-up', 'four-up', 'five-up']; // 2-up
-  const upIndex = compat.findIndex(i => i.includes(upClass));
-  if (upIndex !== undefined) {
-    upClass = `${upIndex+2}-up`;
-    section.classList.remove(compat[upIndex]);
+  // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
+  const list = ['two-up', 'three-up', 'four-up', 'five-up'];
+  const ixd = list.findIndex(i => i.includes(upClass));
+  if (ixd > -1) {
+    upClass = `${ixd+2}-up`;
+    section.classList.remove(list[ixd]);
     section.classList.add(upClass);
   }
   const up = upClass?.replace('-', '') || '3up';
