@@ -17,7 +17,7 @@ export const getFaasHostSubDomain = (environment) => {
     return '';
   }
   if (faasEnv === 'stage') {
-    return 'dev.';
+    return 'staging.';
   }
   if (faasEnv === 'dev') {
     return 'dev.';
@@ -347,7 +347,8 @@ export const initFaas = (config, targetEl) => {
   ${state.style_backgroundTheme || 'white'}
   ${state.style_layout || 'column1'}
   ${state.isGate ? 'gated' : ''}
-  ${isNext ? 'next' : ''}`,
+  ${isNext ? 'next' : ''}
+  ${`faas-form-${state.id}` || ''}`,
   });
 
   const formTitleWrapperEl = createTag('div', { class: `faas-title text-${state.title_align || 'center'}` });
