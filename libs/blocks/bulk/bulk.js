@@ -27,7 +27,9 @@ function User({ user }) {
           <div class="bulk-user-name">
               ${user.name}
           </div>
-          <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
+          ${IMS_SIGN_IN_ENABLED && html`
+              <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
+          `}
       </div>
   `;
 }
@@ -331,7 +333,7 @@ function Bulk({ user, storedOperation }) {
 
 export default async function init(el) {
   if (IMS_SIGN_IN_ENABLED) {
-    const signedIn = await signIn(IMS_SIGN_IN_ENABLED);
+    const signedIn = await signIn();
     if (!signedIn) return;
   }
 

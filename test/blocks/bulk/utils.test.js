@@ -122,11 +122,12 @@ describe('Bulk preview and publish', () => {
   after(() => {
     restoreFetch();
   });
-  afterEach(() => {
+  beforeEach(() => {
     localStorage.clear();
   });
 
   it('Bulk preview URLs', async () => {
+    localStorage.clear();
     const operation = 'preview';
     storeUrls(URLS);
     storeOperation(operation);
