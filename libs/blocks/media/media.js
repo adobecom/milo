@@ -54,5 +54,5 @@ export default function init(el) {
   el.append(container);
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
-  decorateTextOverrides(el)
+  decorateTextOverrides(el);
 }
