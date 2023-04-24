@@ -13,8 +13,8 @@ import {
   sendReport,
   storeUrls,
   storeOperation,
-} from '../../../libs/blocks/bulk/utils.js';
-import { setLocalStorage } from '../../../libs/blocks/review/utils/localStorageUtils.js';
+} from '../../../tools/bulk-publish/js/utils.js';
+import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
 const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
 const NON_EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/nonexisting';
@@ -127,7 +127,6 @@ describe('Bulk preview and publish', () => {
   });
 
   it('Bulk preview URLs', async () => {
-    localStorage.clear();
     const operation = 'preview';
     storeUrls(URLS);
     storeOperation(operation);

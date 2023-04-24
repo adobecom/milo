@@ -1,20 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
-
-export const fetchWithTimeout = async (resource, options = {}) => {
-  const { timeout = 5000 } = options;
-
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(resource, {
-    ...options,
-    signal: controller.signal,
-  });
-  clearTimeout(id);
-  return response;
-};
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});

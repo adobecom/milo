@@ -1,4 +1,4 @@
-import { html, render, useState, useRef } from '../../deps/htm-preact.js';
+import { html, render, useState, useRef } from '../../../libs/deps/htm-preact.js';
 import {
   signOut,
   getStoredUrlInput,

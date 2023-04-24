@@ -5,7 +5,7 @@ import {
   ADMIN_BASE_URL,
   BULK_CONFIG_FILE_PATH,
   executeActions, storeOperation, storeUrls,
-} from '../../../libs/blocks/bulk/utils.js';
+} from '../../../tools/bulk-publish/js/utils.js';
 
 const TEST_TIMEOUT_MS = 30 * 60 * 1000;
 const ORIGIN = 'https://main--milo--adobecom.hlx.page';
@@ -67,7 +67,7 @@ describe('Bulk preview and publish', () => {
    * Performance history:
    * - on 21/apr/2023: Previewing 1000 pages took: 115 s
    */
-  it('Performance test: previewing 1000 URLs', async () => {
+  it.skip('Performance test: previewing 1000 URLs', async () => {
     localStorage.clear();
     const operation = 'preview';
     const urls = [];

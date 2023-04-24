@@ -42,7 +42,7 @@ button:hover {
 
 .bulk-container::before {
   content: '';
-  background: url('img/mesh.svg') no-repeat;
+  background: url('../img/mesh.svg') no-repeat;
   opacity: .07;
   position: absolute;
   top: 0;
@@ -53,7 +53,7 @@ button:hover {
 
 .bulk-container::after {
   content: '';
-  background-image: url('img/dots.svg'), url('img/emphasis-shape.svg');
+  background-image: url('../img/dots.svg'), url('../img/emphasis-shape.svg');
   background-repeat: no-repeat;
   background-position: 100% 10px, 3% 125px;
   mix-blend-mode: overlay;
@@ -181,7 +181,7 @@ button:hover {
 
 .bulk-urls-title::after {
   content: '';
-  background: url('img/arrow-group.svg') no-repeat;
+  background: url('../img/arrow-group.svg') no-repeat;
   width: 43px;
   height: 9px;
   position: absolute;
@@ -192,7 +192,7 @@ button:hover {
 
 .bulk-user-header::before {
   content: '';
-  background: url('img/arrow-group.svg') no-repeat;
+  background: url('../img/arrow-group.svg') no-repeat;
   width: 43px;
   height: 9px;
   position: absolute;
@@ -417,7 +417,7 @@ button:hover {
 
 .bulk-resume-modal-button-resume:hover {
   background: var(--primary-button-hover);
-} 
+}
 
 .bulk-resume-modal-button-cancel {
   background: #3C3C3C;

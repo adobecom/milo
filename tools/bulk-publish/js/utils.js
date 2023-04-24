@@ -1,10 +1,6 @@
-import { getImsToken } from '../../../tools/send-to-caas/send-utils.js';
-import { fetchWithTimeout } from '../caas/utils.js';
-import { loadScript } from '../../utils/utils.js';
-import {
-  getLocalStorage,
-  setLocalStorage,
-} from '../review/utils/localStorageUtils.js';
+import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../../../libs/blocks/utils/utils.js';
+import { loadScript } from '../../../libs/utils/utils.js';
+import { getImsToken } from '../../utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 100;
