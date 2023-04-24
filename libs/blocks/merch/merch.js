@@ -2,6 +2,7 @@ import {
   loadScript,
   getConfig,
   createTag,
+  getMetadata,
 } from '../../utils/utils.js';
 
 const VERSION = '1.12.0';
@@ -111,6 +112,32 @@ function isCTA(type) {
   return type === 'checkoutUrl';
 }
 
+/**
+ * Checkout parameter can be set Merch link, code config (scripts.js) or be a default from tacocat.
+ * To get the default, 'undefinded' should be passed, empty string will trigger an error!
+ *
+ * clientId - code config -> default (adobe_com)
+ * checkoutType - merch link -> metadata -> default (UCv3)
+ * workflowStep - merch link -> default (email)
+ * marketSegment - merch link -> default (COM)
+ * @param {*} searchParams link level overrides for checkout parameters
+ * @returns checkout context object required to build a checkout url
+ */
+function getCheckoutContext(searchParams, config) {
+  const { commerce } = config;
+  const checkoutClientId = commerce?.checkoutClientId;
+  const checkoutWorkflow = searchParams.get('checkoutType') ?? getMetadata('checkout-type');
+  const checkoutWorkflowStep = searchParams?.get('workflowStep')?.replace('_', '/');
+  const checkoutMarketSegment = searchParams.get('marketSegment');
+
+  return {
+    checkoutClientId,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    checkoutMarketSegment,
+  };
+}
+
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
   loadTacocat();
@@ -127,16 +154,9 @@ export default async function init(el) {
     ?? el.closest('[data-promotion-code]')?.dataset.promotionCode) || undefined;
 
   if (isCTA(type)) {
-    const checkoutContext = {}; // TODO: load dynamically
-    const checkoutWorkflow = searchParams.get('checkoutType');
-    const checkoutWorkflowStep = searchParams.get('workflowStep');
     const options = omitNullValues({
-      ...checkoutContext,
-      ...omitNullValues({
-        promotionCode,
-        checkoutWorkflow,
-        checkoutWorkflowStep,
-      }),
+      promotionCode,
+      ...getCheckoutContext(searchParams, getConfig()),
     });
     buildCheckoutButton(el, osi, options);
     return el;
