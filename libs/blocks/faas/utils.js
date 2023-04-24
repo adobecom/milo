@@ -13,7 +13,7 @@ let state = {};
 export const getFaasHostSubDomain = (environment) => {
   const { searchParams } = new URL(window.location.href);
   const faasEnv = environment ?? searchParams.get('faas-env');
-  if (env.name || faasEnv === 'prod') {
+  if (env.name === 'prod' || faasEnv === 'prod') {
     return '';
   }
   if (faasEnv === 'stage') {
