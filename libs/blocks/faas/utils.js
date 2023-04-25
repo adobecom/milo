@@ -11,13 +11,13 @@ const { env, miloLibs, codeRoot } = getConfig();
 let state = {};
 
 export const getFaasHostSubDomain = (environment) => {
-  const faasEnv = environment ?? env.name;
-  // TODO: prod should be updated as '' when QA is done from FAAS team.
-  if (faasEnv === 'prod') {
+  const { searchParams } = new URL(window.location.href);
+  const faasEnv = environment ?? searchParams.get('faas-env');
+  if (env.name === 'prod' || faasEnv === 'prod') {
     return '';
   }
   if (faasEnv === 'stage') {
-    return 'dev.';
+    return 'staging.';
   }
   if (faasEnv === 'dev') {
     return 'dev.';
@@ -25,16 +25,12 @@ export const getFaasHostSubDomain = (environment) => {
   if (faasEnv === 'qa') {
     return 'qa.';
   }
-  return 'qa.';
+  return 'dev.';
 };
 
 const base = miloLibs || codeRoot;
-
-export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
-let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-if (env.name === 'local') {
-  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
-}
+export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`
+const faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
@@ -347,7 +343,8 @@ export const initFaas = (config, targetEl) => {
   ${state.style_backgroundTheme || 'white'}
   ${state.style_layout || 'column1'}
   ${state.isGate ? 'gated' : ''}
-  ${isNext ? 'next' : ''}`,
+  ${isNext ? 'next' : ''}
+  ${`faas-form-${state.id}` || ''}`,
   });
 
   const formTitleWrapperEl = createTag('div', { class: `faas-title text-${state.title_align || 'center'}` });
