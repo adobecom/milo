@@ -2,7 +2,7 @@
   --marketo-form-text: #535353;
   --marketo-form-background: #FAFAFA;
   --marketo-form-border: #6E6E6E;
-  --marketo-form-error: #C9252D;
+  --marketo-form-error: #D7373F;
 }
 
 /* stylelint-disable selector-class-pattern */
@@ -11,7 +11,7 @@
   max-width: 600px;
   min-height: 200px;
   margin: var(--spacing-xxl) auto 104px;
-  padding: var(--spacing-xl) var(--spacing-l);
+  padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
 }
 
@@ -53,8 +53,10 @@
   height: auto;
 }
 
+/* Keep or remove? */
 .marketo .mktoFormRow.reivew-statetranslations,
-.marketo .mktoFormRow.will-be-hid {
+.marketo .mktoFormRow.will-be-hid,
+.marketo .mktoFormRow.example-fieldstesting {
   display: none;
 }
 
@@ -67,6 +69,12 @@
   margin-bottom: 11px;
 }
 
+.marketo .mktoFormRow fieldset.mktoFormCol {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
 .marketo fieldset legend,
 .marketo .mktoPlaceholder,
 .marketo .mktoFormRow .mktoClear,
@@ -76,12 +84,6 @@
 .marketo .mktoFormRow .mktoGutter,
 .marketo .mktoForm .mktoAsterix {
   display: none;
-}
-
-.marketo .mktoFormRow fieldset {
-  border: none;
-  margin: 0;
-  padding: 0;
 }
 
 .marketo .mktoForm--fade-in .mktoFieldDescriptor {
@@ -145,13 +147,20 @@
   background-size: 1em 1em;
 }
 
-.marketo .mktoForm .mktoCheckboxList input {
+.marketo .mktoForm .mktoCheckboxList input,
+.marketo .mktoForm .mktoRadioList input {
   width: auto !important;
   margin: 0 6px 0 0;
 }
 
-.marketo .mktoForm .mktoCheckboxList label {
+.marketo .mktoForm .mktoCheckboxList label,
+.marketo .mktoForm .mktoRadioList label {
   font-weight: 400;
+}
+
+.marketo .mktoForm .mktoCheckboxList label + input,
+.marketo .mktoForm .mktoRadioList label + input {
+  margin-left: 6px;
 }
 
 .marketo .mktoForm .mktoGutter {
@@ -167,8 +176,8 @@
   color: var(--marketo-form-text);
 }
 
-.marketo .mktoForm .adobe-privacy {
-  padding: 20px 0;
+.marketo .mktoFormRow.adobe-privacy .mktoFormCol:not(fieldset) {
+  margin-top: 21px;
 }
 
 .marketo .mktoForm .mktoHtmlText a {
@@ -219,30 +228,39 @@
   outline: 2px solid var(--color-accent-focus-ring);
 }
 
-/* ToDo: Fix This */
 .marketo .mktoForm .mktoFormRow.msg-error {
   display: none;
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  margin: 40px auto;
-  color: var(--marketo-form-error);
 }
 
 .marketo .mktoForm.show-warnings .mktoFormRow.msg-error {
-  display: block;
+  display: contents;
 }
 
-.marketo .mktoForm .msg-error::after {
-  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E");
+.marketo .mktoForm .mktoFormRow.msg-error .mktoHtmlText {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin: 20px auto;
+  color: var(--marketo-form-error);
+}
+
+.marketo .mktoForm .mktoFormRow.msg-error .mktoHtmlText::after {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23D7373F'/%3E%3C/svg%3E");
   vertical-align: middle;
   margin: 0 16px;
 }
 
 .marketo .mktoForm.show-warnings .mktoField.mktoInvalid:not(:focus) {
   border: 1px solid var(--marketo-form-error);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E") no-repeat 95% 50% var(--color-white);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23D7373F'/%3E%3C/svg%3E") no-repeat 95% 50% var(--color-white);
   background-size: 19.5px;
+}
+
+.marketo .mktoForm.show-warnings select.mktoField.mktoInvalid:not(:focus) {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23D7373F'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-58 29 32 34' style='enable-background:new -58 29 32 34' xml:space='preserve'%3E%3Cpath d='m-56 43 6-12 6 12h-12zm12 6-6 12-6-12h12z' fill='%23D7373F'/%3E%3C/svg%3E"), var(--color-white);
+  background-repeat: no-repeat;
+  background-position: 86% 50%, 97% 50%;
+  background-size: 19.5px, 1em 1em;
 }
 
 .marketo .mktoForm.show-warnings .mktoError {
@@ -342,14 +360,16 @@
 }
 
 @media screen and (min-width: 600px) {
+  .marketo .marketo-form-wrapper {
+    padding: var(--spacing-xxl);
+  }
+
   .marketo .mktoFormCol.mktoVisible {
     width: 47.7%;
   }
 
-  .marketo .adobe-privacy .mktoFormCol.mktoVisible {
-    width: 100%;
-  }
-
+  .marketo .adobe-privacy .mktoFormCol.mktoVisible,
+  .marketo .msg-error .mktoFormCol.mktoVisible,
   .marketo .mktoFormCol.mktoVisible .mktoFormCol.mktoVisible {
     width: 100%;
   }
@@ -361,6 +381,10 @@
 }
 
 @media screen and (min-width: 900px) {
+  .marketo .marketo-form-wrapper {
+    padding: 56px var(--spacing-l);
+  }
+
   .columns .marketo .mktoForm .mktoField {
     width: 50%!important;
   }
