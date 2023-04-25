@@ -76,11 +76,6 @@ const readyForm = (error, form, formData) => {
   const formEl = form.getFormElem().get(0);
   const redirectUrl = formData[DESTINATION_URL];
   const errorMessage = formData[ERROR_MESSAGE];
-  console.log('Megan', formEl);
-
-  // Set row width of legal language, without knowing position
-  const formTexts = formEl.querySelectorAll('.mktoHtmlText');
-  formEl.querySelector('.mktoPlaceholderFieldSet_2020-10-29T12').closest('.mktoFormRow').classList.add('marketo-privacy');
 
   formEl.addEventListener('focus', (e) => {
     if (e.target.type === 'submit') return;

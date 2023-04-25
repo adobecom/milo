@@ -53,6 +53,11 @@
   height: auto;
 }
 
+.marketo .mktoFormRow.reivew-statetranslations,
+.marketo .mktoFormRow.will-be-hid {
+  display: none;
+}
+
 .marketo .mktoFormRowTop {
   display: contents;
 }
@@ -62,20 +67,21 @@
   margin-bottom: 11px;
 }
 
-.marketo .mktoPlaceholder {
-  display: none;
-}
-
+.marketo fieldset legend,
+.marketo .mktoPlaceholder,
 .marketo .mktoFormRow .mktoClear,
 .marketo .mktoFormRow .mktoInstruction,
 .marketo .mktoFormRow .mktoOffset,
 .marketo .mktoFormRow label:empty,
-.marketo .mktoFormRow .mktoGutter {
+.marketo .mktoFormRow .mktoGutter,
+.marketo .mktoForm .mktoAsterix {
   display: none;
 }
 
 .marketo .mktoFormRow fieldset {
-  padding: 0 
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .marketo .mktoForm--fade-in .mktoFieldDescriptor {
@@ -100,9 +106,8 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.marketo .mktoForm .mktoAsterix {
-  float: right;
-  color: var(--marketo-form-text);
+.marketo .mktoRequiredField label::after {
+  content: '*';
 }
 
 .marketo .mktoForm .mktoField {
@@ -162,7 +167,7 @@
   color: var(--marketo-form-text);
 }
 
-.marketo .mktoForm .marketo-privacy {
+.marketo .mktoForm .adobe-privacy {
   padding: 20px 0;
 }
 
@@ -214,19 +219,21 @@
   outline: 2px solid var(--color-accent-focus-ring);
 }
 
-.marketo .marketo-error {
+/* ToDo: Fix This */
+.marketo .mktoForm .mktoFormRow.msg-error {
+  display: none;
   font-size: 18px;
   font-weight: bold;
   text-align: center;
-  margin: 0 auto;
+  margin: 40px auto;
   color: var(--marketo-form-error);
 }
 
-.marketo .marketo-error.alert {
-  margin: 40px auto;
+.marketo .mktoForm.show-warnings .mktoFormRow.msg-error {
+  display: block;
 }
 
-.marketo .marketo-error.alert::after {
+.marketo .mktoForm .msg-error::after {
   content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Cpath data-name='Path 356676' d='m10.564 2.206-9.249 16.55a.5.5 0 0 0 .436.744h18.5a.5.5 0 0 0 .436-.744l-9.251-16.55a.5.5 0 0 0-.872 0ZM12 17.25a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1.5a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Zm0-3.5a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-6a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25Z' fill='%23c9252d'/%3E%3C/svg%3E");
   vertical-align: middle;
   margin: 0 16px;
@@ -294,7 +301,7 @@
   width: 100%;
 }
 
-.dialog-modal .marketo .mktoFormRow.marketo-privacy {
+.dialog-modal .marketo .mktoFormRow.adobe-privacy {
   width: 100%;
 }
 
@@ -339,7 +346,7 @@
     width: 47.7%;
   }
 
-  .marketo .marketo-privacy .mktoFormCol.mktoVisible {
+  .marketo .adobe-privacy .mktoFormCol.mktoVisible {
     width: 100%;
   }
 
