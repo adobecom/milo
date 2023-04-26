@@ -53,13 +53,6 @@
   height: auto;
 }
 
-/* Keep or remove? */
-.marketo .mktoFormRow.reivew-statetranslations,
-.marketo .mktoFormRow.will-be-hid,
-.marketo .mktoFormRow.example-fieldstesting {
-  display: none;
-}
-
 .marketo .mktoFormRowTop {
   display: contents;
 }
@@ -279,6 +272,12 @@
   overflow: hidden;
   padding: 0;
   position: absolute;
+}
+
+.marketo .mktoFormRow.reivew-statetranslations,
+.marketo .mktoFormRow.will-be-hid,
+.marketo .mktoFormRow.example-fieldstesting {
+  display: none;
 }
 
 .dialog-modal .marketo {
