@@ -137,7 +137,7 @@ img {
 
 /* Not blocks */
 div:not([class]) > div > div img[src^="./media_"] {
-  width: 100%;
+  max-width: 100%;
 }
 
 .container {
