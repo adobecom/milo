@@ -119,7 +119,7 @@ const init = (el) => {
         formWrapper.append(description);
       }
 
-      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors my-form', style: 'opacity:0;visibility:hidden;' });
+      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });
       const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
       const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
       formWrapper.append(span1, span2, marketoForm);
