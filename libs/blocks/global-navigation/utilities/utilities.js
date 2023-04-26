@@ -1,4 +1,4 @@
-import { getConfig, localizeLink } from '../../../utils/utils.js';
+import { getConfig } from '../../../utils/utils.js';
 
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
@@ -56,7 +56,7 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   return toFragment`
     <div class="feds-cta-wrapper">
       <a 
-        href="${localizeLink(elem.href)}"
+        href="${elem.href}"
         class="feds-cta feds-cta--${modifier}"
         daa-ll="${getAnalyticsValue(elem.textContent, index)}">
           ${elem.textContent}
