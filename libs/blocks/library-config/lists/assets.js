@@ -2,7 +2,7 @@ import createCopy from '../library-utils.js';
 import { createTag } from '../../../utils/utils.js';
 
 function buildLink(href) {
-  return createTag('a', { href, style: 'background-color: #FF00B9' }, href).outerHTML;
+  return createTag('img', { src: href }).outerHTML;
 }
 
 export default async function assetsList(content, list) {
@@ -14,7 +14,7 @@ export default async function assetsList(content, list) {
     img.addEventListener('click', async () => {
       const html = href.endsWith('.svg') ? buildLink(href) : img.outerHTML;
       const blob = new Blob([html], { type: 'text/html' });
-      document.body.querySelector('.section').append(img);
+      // document.body.querySelector('.section').append(img);
       createCopy(blob);
     });
   });
