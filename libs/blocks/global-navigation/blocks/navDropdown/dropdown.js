@@ -1,5 +1,5 @@
 import { getAnalyticsValue, toFragment, decorateCta } from '../../utilities/utilities.js';
-import { localizeLink } from '../../../../utils/utils.js';
+import { decorateLinks } from '../../../../utils/utils.js';
 
 const decorateHeadline = (elem) => {
   if (!(elem instanceof HTMLElement)) return null;
@@ -50,7 +50,7 @@ const decorateLinkGroup = (elem, index) => {
       ${descriptionElem}
     </div>` : '';
   const linkGroup = toFragment`<a 
-    href="${localizeLink(link.href)}"
+    href="${link.href}"
     class="feds-navLink"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
@@ -90,7 +90,7 @@ const decoratePromo = (elem) => {
     let promoImageElem;
 
     if (linkElem instanceof HTMLElement) {
-      promoImageElem = toFragment`<a class="feds-promo-image" href="${localizeLink(linkElem.href)}">
+      promoImageElem = toFragment`<a class="feds-promo-image" href="${linkElem.href}">
           ${imageElem}
         </a>`;
     } else {
@@ -135,22 +135,27 @@ const decoratePopupElement = (elem, index) => {
     decoratedElem = decorateLinkGroup(elem, index);
   }
 
-  // Decorate Primary CTA
-  if (!elem.classList.contains('gnav-promo')
-   && elem.querySelector('strong > a')) {
-    decoratedElem = decorateCta({ elem, index });
-  }
+  if (!elem.classList.contains('gnav-promo')) {
+    // Decorate Primary CTA
+    const primaryCta = elem.querySelector('strong > a');
 
-  // Decorate Secondary CTA
-  if (!elem.classList.contains('gnav-promo')
-   && elem.querySelector('em > a')) {
-    decoratedElem = decorateCta({ elem, type: 'secondaryCta', index });
+    if (primaryCta) {
+      decoratedElem = decorateCta({ elem: primaryCta, index });
+    }
+
+    // Decorate Secondary CTA
+    const secondaryCta = elem.querySelector('em > a');
+
+    if (secondaryCta) {
+      decoratedElem = decorateCta({ elem: secondaryCta, type: 'secondaryCta', index });
+    }
   }
 
   return decoratedElem;
 };
 
 const decorateColumns = (content) => {
+  decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
   // The resulting template structure should follow these rules:
@@ -249,7 +254,7 @@ const decorateDropdown = async (config) => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = localizeLink(pathElement.href);
+    const path = pathElement.href;
 
     const res = await fetch(`${path}.plain.html`);
     if (res.status !== 200) return;
