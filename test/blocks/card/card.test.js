@@ -75,4 +75,15 @@ describe('Card', () => {
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
   });
+  
+  describe('Two-Up Cards', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });
+    });
+
+    it('are supported when authored with a two-up refernce in section-metadata', () => {
+      init(document.querySelector('.card'));
+      expect(document.querySelector('.consonant-CardsGrid--2up')).to.exist;
+    });
+  });
 });

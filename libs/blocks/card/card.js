@@ -39,7 +39,6 @@ const addWrapper = (el, section, cardType) => {
   if (ixd > -1) {
     upClass = `${ixd+2}-up`;
     section.classList.remove(list[ixd]);
-    section.classList.add(upClass);
   }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
