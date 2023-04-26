@@ -94,7 +94,7 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
-  a.setAttribute('class', 'con-button blue button-m');
+  a.setAttribute('class', 'con-button');
   Object.assign(a.dataset, dataAttrs);
   a.textContent = link.textContent?.replace(CTA_PREFIX, '');
   window.tacocat.imsCountryPromise.then((countryCode) => {
