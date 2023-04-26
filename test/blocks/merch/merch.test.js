@@ -1,10 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
-import merch, { VERSION, getTacocatEnv, imsCountryPromise } from '../../../libs/blocks/merch/merch.js';
 
-const config = { codeRoot: '/libs', env: { name: 'local' } };
-setConfig(config);
+const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
+const { default: merch, VERSION, getTacocatEnv, imsCountryPromise } = await import('../../../libs/blocks/merch/merch.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -279,6 +278,15 @@ describe('Merch Block', () => {
       window.adobeIMS = { isSignedInUser: () => false };
       const imsCountry = await imsCountryPromise();
       expect(imsCountry).to.undefined;
+    });
+
+    it('should render blue CTAs', async () => {
+      const ctas = document.querySelectorAll('.merch.cta.strong');
+      expect(ctas.length).to.equal(2);
+      const cta1 = await merch(ctas[0]);
+      expect(cta1.classList.contains('blue')).to.be.true;
+      const cta2 = await merch(ctas[1]);
+      expect(cta2.classList.contains('blue')).to.be.true;
     });
   });
 

@@ -94,7 +94,11 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
-  a.setAttribute('class', 'con-button');
+  const classes = ['con-button button-l'];
+  if (link.firstElementChild?.tagName === 'STRONG' || link.parentElement?.tagName === 'STRONG') {
+    classes.push('blue');
+  }
+  a.setAttribute('class', classes.join(' '));
   Object.assign(a.dataset, dataAttrs);
   a.textContent = link.textContent?.replace(CTA_PREFIX, '');
   window.tacocat.imsCountryPromise.then((countryCode) => {
