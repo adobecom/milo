@@ -281,12 +281,18 @@ describe('Merch Block', () => {
     });
 
     it('should render blue CTAs', async () => {
-      const ctas = document.querySelectorAll('.merch.cta.strong');
-      expect(ctas.length).to.equal(2);
-      const cta1 = await merch(ctas[0]);
+      const els = document.querySelectorAll('.merch.cta.strong');
+      expect(els.length).to.equal(2);
+      const cta1 = await merch(els[0]);
       expect(cta1.classList.contains('blue')).to.be.true;
-      const cta2 = await merch(ctas[1]);
+      const cta2 = await merch(els[1]);
       expect(cta2.classList.contains('blue')).to.be.true;
+    });
+
+    it('should render large CTA inside a marquee', async () => {
+      const el = document.querySelector('.merch.cta.inside-marquee');
+      const cta = await merch(el);
+      expect(cta.classList.contains('button-l')).to.be.true;
     });
   });
 

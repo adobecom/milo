@@ -94,7 +94,10 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
-  const classes = ['con-button button-l'];
+  const classes = ['con-button'];
+  if (link.closest('.marquee')) {
+    classes.push('button-l');
+  }
   if (link.firstElementChild?.tagName === 'STRONG' || link.parentElement?.tagName === 'STRONG') {
     classes.push('blue');
   }
