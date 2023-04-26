@@ -134,6 +134,7 @@
 
 .con-button:hover {
   background-color: var(--color-black);
+  border-color: var(--color-black);
   color: var(--color-white);
   text-decoration: none;
 }
@@ -232,6 +233,25 @@ svg.icon-milo, img.icon-milo {
   display: inline-block;
   height: 1em;
   width: 1em;
+}
+
+.con-button[aria-disabled="true"],
+.con-button.blue[aria-disabled="true"], 
+.con-button.fill[aria-disabled="true"] {
+  border-color: var(--color-gray-500);
+  color: var(--color-gray-500);
+}
+
+.con-button.blue[aria-disabled="true"], 
+.con-button.fill[aria-disabled="true"] {
+  background-color: var(--color-gray-500);
+  color: var(--color-gray-300);
+}
+
+.con-button[aria-disabled="true"]:hover,
+.con-button.blue[aria-disabled="true"]:hover, 
+.con-button.fill[aria-disabled="true"]:hover {
+  cursor: default;
 }
 
 span.icon.margin-right { margin-right: 8px; }
