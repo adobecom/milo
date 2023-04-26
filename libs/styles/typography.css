@@ -114,38 +114,44 @@
 .detail-l,
 .detail-m,
 .detail-s {
-  text-transform: uppercase;
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .con-button {
-  color: #FFF;
-  border: 2px solid;
   background-color: transparent;
   border-radius: 16px;
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
   display: inline-block;
-  padding: 5px 14px;
-  text-decoration: none;
   font-size: 15px;
-  line-height: 16px;
   font-style: normal;
   font-weight: 700;
+  line-height: 16px;
+  padding: 5px 14px;
+  text-decoration: none;
+}
+
+.con-button:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  text-decoration: none;
 }
 
 .con-button.button-l {
-  padding: 7px 18px 8px;
-  line-height: 20px;
   border-radius: 20px;
   font-size: 17px;
+  line-height: 20px;
   min-height: 21px;
+  padding: 7px 18px 8px;
 }
 
 .con-button.button-xl {
-  padding: 10px 24px 8px;
-  line-height: 24px;
   border-radius: 25px;
   font-size: 19px;
+  line-height: 24px;
   min-height: 28px;
+  padding: 10px 24px 8px;
 }
 
 .con-button.button-justified {
@@ -154,14 +160,33 @@
   width: 100%;
 }
 
+.dark .con-button {
+  border-color: #fff;
+  color: #fff;
+}
+
 .light .con-button {
+  color: var(--text-color);
+  border-color: var(--text-color);
+}
+
+.light .con-button:hover,
+.light .con-button:active  {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.dark .con-button:hover {
+  background-color: #fff;
   color: #000;
+  text-decoration: none;
 }
 
 .con-button.blue {
-  color: #FFF;
   background: var(--color-accent);
-  border: 2px solid var(--color-accent);
+  border-color: var(--color-accent);
+  color: #FFF;
 }
 
 .con-button.blue:hover,
@@ -170,14 +195,10 @@
   border-color: var(--color-accent-hover);
 }
 
-.con-button.blue:hover {
-  text-decoration: none;
-}
-
 .con-button.fill {
-  color: #fff;
   background: var(--text-color);
-  border: 2px solid var(--text-color);
+  border-color: var(--text-color);
+  color: #fff;
 }
 
 .con-button.fill:hover,
@@ -186,56 +207,31 @@
   border-color: #000;
 }
 
-.con-button.fill:hover {
-  text-decoration: none;
-}
-
-.con-button.outline {
-  border: 2px solid #000;
-  color: #000;
-}
-
-.con-button.outline:hover {
-  background-color: #000;
-  color: #fff;
-  text-decoration: none;
-}
-
 .dark .con-button.fill {
-  color: var(--text-color);
   background: #fff;
   border-color: #fff;
+  color: var(--text-color);
 }
 
 .dark .con-button.fill:hover,
 .dark .con-button.fill:active {
-  color: #000;
   background: #fff;
   border-color: #fff;
-}
-
-.dark .con-button.outline {
-  border: 2px solid #fff;
-  color: #fff;
-}
-
-.dark .con-button.outline:hover {
-  background-color: #fff;
   color: #000;
 }
 
 svg.icon-milo, img.icon-milo {
   height: 1em;
-  width: auto;
-  top: .1em;
-  position: relative;
   overflow: visible;
+  position: relative;
+  top: .1em;
+  width: auto;
 }
 
 .con-button svg.icon-milo {
+  display: inline-block;
   height: 1em;
   width: 1em;
-  display: inline-block;
 }
 
 span.icon.margin-right { margin-right: 8px; }
