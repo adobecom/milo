@@ -2,8 +2,6 @@ import getUuid from '../../libs/utils/getUuid.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
-const IMS_CLIENT_ID = 'milo_ims';
-const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const URL_POSTXDM = 'https://14257-milocaasproxy-stage.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 
@@ -337,19 +335,6 @@ const getBadges = (p) => {
   return badges;
 };
 
-const getImsToken = async (loadScript) => {
-  window.adobeid = {
-    client_id: IMS_CLIENT_ID,
-    environment: 'prod',
-    scope: 'AdobeID,openid',
-  };
-
-  if (!window.adobeIMS) {
-    await loadScript(IMS_PROD_URL);
-  }
-  return window.adobeIMS?.getAccessToken()?.token;
-};
-
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
@@ -631,7 +616,6 @@ export {
   getCardMetadata,
   getCaasProps,
   getConfig,
-  getImsToken,
   isPagePublished,
   loadCaasTags,
   postDataToCaaS,
