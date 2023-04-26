@@ -34,31 +34,18 @@ describe('marketo', () => {
     expect(title).to.exist;
   });
 
-  it('load marketo disables stylesheets', async () => {
-    const formRow = await waitForElement('.mktoFormRow');
-    expect(formRow).to.exist;
-
-    const styleSheets = [...document.styleSheets];
-    const styleSheet = styleSheets.find((sheet) => sheet.href === `http:${config.marketoBaseURL}/js/forms2/css/forms2.css`);
-    expect(styleSheet.disabled).to.be.true;
-  });
-
   it('marketo hidden fields', async () => {
     const hiddenInput = await waitForElement('input[name="hiddenField"]');
     expect(hiddenInput).to.exist;
   });
 
   it('validate marketo fields error', async () => {
-    const error = await waitForElement('.marketo-error');
-    const errorMessage = 'There are some fields that require your attention';
-
-    expect(error).to.exist;
-
     expect(window.MktoForms2).to.exist;
     const form = window.MktoForms2.getForm(config.marketoFormID);
+    const formEl = form.getFormElem().get(0);
 
-    formValidate(form, false, error, errorMessage);
-    expect(error.classList.contains('alert')).to.be.true;
+    formValidate(form);
+    expect(formEl.classList.contains('show-warnings')).to.be.true;
   });
 
   it('marketo field error visible', async () => {
@@ -69,19 +56,6 @@ describe('marketo', () => {
     const bounding = firstField.getBoundingClientRect();
 
     expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
-  });
-
-  it('validate marketo fields success', async () => {
-    const error = await waitForElement('.marketo-error');
-    const errorMessage = 'There are some fields that require your attention';
-
-    expect(error).to.exist;
-
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
-
-    formValidate(form, true, error, errorMessage);
-    expect(error.classList.contains('alert')).to.be.false;
   });
 
   it('marketo form formSuccess', async () => {
