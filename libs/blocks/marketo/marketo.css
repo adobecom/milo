@@ -233,7 +233,7 @@
   font-size: 18px;
   font-weight: bold;
   text-align: center;
-  margin: 20px auto;
+  margin: 0 auto;
   color: var(--marketo-form-error);
 }
 
