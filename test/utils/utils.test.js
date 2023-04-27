@@ -348,6 +348,11 @@ describe('Utils', () => {
       });
     });
 
+    it('decorates footer promo fragment', () => {
+      const a = document.querySelector('main > div:last-of-type .fragment');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
     it('creates an IntersectionObserver', (done) => {
       const block = document.createElement('div');
       block.id = 'myblock';
