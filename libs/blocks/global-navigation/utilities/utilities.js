@@ -82,7 +82,6 @@ export function closeAllDropdowns({ e } = {}) {
 }
 
 /**
- *
  * @param {*} param0
  * @param {*} param0.element - the DOM element of the trigger to expand
  * @returns true if the element has been expanded, false if it was already expanded

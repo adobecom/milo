@@ -217,6 +217,7 @@ class Gnav {
       this.ProfileDropdown = ProfileDropdown;
       this.appLauncher = appLauncher;
       this.Search = Search;
+      // TODO we might only want to load the keyboard navigation on keydown when it's actually used
       this.keyboardNavigation = new KeyboardNavigation();
       resolve();
     });
