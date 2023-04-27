@@ -5,8 +5,6 @@ import KeyboardNavigation from '../../../../libs/blocks/global-navigation/utilit
 import { selectors, isElementVisible, getNextVisibleItemPosition, getPreviousVisibleItemPosition } from '../../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 import css from '../../../../libs/blocks/global-navigation/global-navigation.css' assert { type: 'css' };
 import searchCss from '../../../../libs/blocks/global-navigation/blocks/search/gnav-search.css' assert { type: 'css' };
-import signInCss from '../../../../libs/blocks/global-navigation/blocks/profile/signIn.css' assert { type: 'css' };
-import buttonCss from '../../../../libs/blocks/global-navigation/blocks/profile/button.css' assert { type: 'css' };
 import dropdownCss from '../../../../libs/blocks/global-navigation/blocks/profile/dropdown.css' assert { type: 'css' };
 import navDropdownCss from '../../../../libs/blocks/global-navigation/blocks/navDropdown/dropdown.css' assert { type: 'css' };
 import { setViewport } from '@web/test-runner-commands';
@@ -23,7 +21,7 @@ let keyboardNavigation;
 let allNavItems;
 describe('keyboard navigation', () => {
   before(() => {
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, css, searchCss, signInCss, buttonCss, dropdownCss, navDropdownCss]
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, css, searchCss, dropdownCss, navDropdownCss]
   });
 
   beforeEach(async () => {
