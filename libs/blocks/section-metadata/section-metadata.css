@@ -234,7 +234,7 @@ main>.section[class*='-up']>.content {
 }
 
 @media screen and (min-width: 1920px) {
-  .section.grid-width-full {
+  .section[class*='-up'].full-width-desktop {
     max-width: 1824px;
     margin: 0 auto;
     padding-left: 0;
