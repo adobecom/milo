@@ -12,7 +12,7 @@ const config = {
 };
 
 describe('marketo', () => {
-  it('hide form if no base url', async () => {
+  it('hides form if no base url', async () => {
     setConfig({});
     document.body.innerHTML = innerHTML;
     const el = document.querySelector('.marketo');
@@ -21,7 +21,7 @@ describe('marketo', () => {
     expect(el.style.display).to.equal('none');
   });
 
-  describe('with correct config', () => {
+  describe('marketo with correct config', () => {
     before(() => {
       setConfig(config);
       document.body.innerHTML = innerHTML;
@@ -29,7 +29,7 @@ describe('marketo', () => {
       init(el);
     });
 
-    it('init marketo form', async () => {
+    it('initializes', async () => {
       const wrapper = await waitForElement('.marketo-form-wrapper');
       expect(wrapper).to.exist;
 
@@ -37,13 +37,13 @@ describe('marketo', () => {
       expect(title).to.exist;
     });
 
-    it('marketo hidden fields', async function () {
+    it('loads hidden fields', async function () {
       this.timeout(3000);
       const hiddenInput = await waitForElement('.marketo form input[name="hiddenField"]');
       expect(hiddenInput).to.exist;
     });
 
-    it('validate marketo fields error', async () => {
+    it('shows form errors', async () => {
       expect(window.MktoForms2).to.exist;
       const form = window.MktoForms2.getForm(config.marketoFormID);
       const formEl = await waitForElement(`#mktoForm_${config.marketoFormID}`);
@@ -53,7 +53,7 @@ describe('marketo', () => {
       expect(formEl.classList.contains('show-warnings')).to.be.true;
     });
 
-    it('marketo field error visible', async () => {
+    it('scrolls to top upon submitting with errors', async () => {
       const button = await waitForElement('.marketo button');
       button.click();
 
@@ -63,7 +63,7 @@ describe('marketo', () => {
       expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
     });
 
-    it('marketo form formSuccess', async () => {
+    it('submits successfully', async () => {
       const redirectUrl = '';
 
       expect(window.MktoForms2).to.exist;
