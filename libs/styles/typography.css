@@ -194,6 +194,7 @@
 .con-button.blue:active {
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
+  color: var(--color-white);
 }
 
 .con-button.fill {
