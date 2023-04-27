@@ -159,6 +159,14 @@ main>.section[class*='-up']>.content {
   background-color: var(--color-white);
 }
 
+
+@media (max-width: 600px) {
+  .section[class*='-up'].full-width-mobile {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 @media (min-width: 900px) {
   .section.sticky-top {
     top: 64px;
@@ -172,7 +180,7 @@ main>.section[class*='-up']>.content {
 }
 
 @media screen and (min-width: 1200px) {
-  .section.grid-width-full {
+  .section[class*='-up'].full-width-desktop {
     padding-left: var(--spacing-l);
     padding-right: var(--spacing-l);
   }
