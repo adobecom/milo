@@ -654,6 +654,16 @@ export function loadPrivacy() {
   });
 }
 
+async function loadJarvisChat() {
+  const config = getConfig();
+  const jarvis = getMetadata('jarvis-chat');
+  if (!config.jarvis?.id || !config.jarvis?.version) return;
+  if (jarvis === 'on') {
+    const { default: initJarvisChat } = await import('../features/jarvis-chat.js');
+    initJarvisChat(config);
+  }
+}
+
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
@@ -759,6 +769,7 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
+      loadJarvisChat();
       if (getMetadata('interlinks') === 'on') {
         const path = `${getConfig().locale.contentRoot}/keywords.json`;
         import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
