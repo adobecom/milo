@@ -160,10 +160,12 @@ main>.section[class*='-up']>.content {
 }
 
 
+/* mobile only */
 @media (max-width: 600px) {
   .section[class*='-up'].full-width-mobile {
     padding-left: 0;
     padding-right: 0;
+    grid-template-columns: auto;
   }
 }
 
