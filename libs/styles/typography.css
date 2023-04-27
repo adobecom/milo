@@ -162,8 +162,8 @@
 }
 
 .dark .con-button {
-  border-color: #fff;
-  color: #fff;
+  border-color: var(--color-white);
+  color: var(--color-white);
 }
 
 .light .con-button {
@@ -179,15 +179,15 @@
 }
 
 .dark .con-button:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--color-white);
+  color: var(--color-black);
   text-decoration: none;
 }
 
 .con-button.blue {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #FFF;
+  color: var(--color-white);
 }
 
 .con-button.blue:hover,
@@ -199,26 +199,26 @@
 .con-button.fill {
   background: var(--text-color);
   border-color: var(--text-color);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .con-button.fill:hover,
 .con-button.fill:active {
-  background: #000;
-  border-color: #000;
+  background: var(--color-black);
+  border-color: var(--color-black);
 }
 
 .dark .con-button.fill {
-  background: #fff;
-  border-color: #fff;
+  background: var(--color-white);
+  border-color: var(--color-white);
   color: var(--text-color);
 }
 
 .dark .con-button.fill:hover,
 .dark .con-button.fill:active {
-  background: #fff;
-  border-color: #fff;
-  color: #000;
+  background: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--color-black);
 }
 
 svg.icon-milo, img.icon-milo {
