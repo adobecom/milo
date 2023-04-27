@@ -6,9 +6,9 @@ import init, { formValidate, formSuccess } from '../../../libs/blocks/marketo/ma
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 const config = {
-  marketoBaseURL: '//app-aba.marketo.com',
-  marketoFormID: '1761',
-  marketoMunchkinID: '345-TTI-184',
+  marketoBaseURL: '//engage.adobe.com',
+  marketoFormID: '1723',
+  marketoMunchkinID: '360-KCI-804',
 };
 
 describe('marketo', () => {
@@ -21,50 +21,56 @@ describe('marketo', () => {
     expect(el.style.display).to.equal('none');
   });
 
-  it('init marketo form', async () => {
-    setConfig(config);
-    document.body.innerHTML = innerHTML;
-    const el = document.querySelector('.marketo');
-    init(el);
+  describe('with correct config', () => {
+    before(() => {
+      setConfig(config);
+      document.body.innerHTML = innerHTML;
+      const el = document.querySelector('.marketo');
+      init(el);
+    });
 
-    const wrapper = await waitForElement('.marketo-form-wrapper');
-    expect(wrapper).to.exist;
+    it('init marketo form', async () => {
+      const wrapper = await waitForElement('.marketo-form-wrapper');
+      expect(wrapper).to.exist;
 
-    const title = el.querySelector('.marketo-title');
-    expect(title).to.exist;
-  });
+      const title = document.querySelector('.marketo-title');
+      expect(title).to.exist;
+    });
 
-  it('marketo hidden fields', async () => {
-    const hiddenInput = await waitForElement('input[name="hiddenField"]');
-    expect(hiddenInput).to.exist;
-  });
+    it('marketo hidden fields', async function () {
+      this.timeout(3000);
+      const hiddenInput = await waitForElement('.marketo form input[name="hiddenField"]');
+      expect(hiddenInput).to.exist;
+    });
 
-  it('validate marketo fields error', async () => {
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
-    const formEl = form.getFormElem().get(0);
+    it('validate marketo fields error', async () => {
+      expect(window.MktoForms2).to.exist;
+      const form = window.MktoForms2.getForm(config.marketoFormID);
+      const formEl = await waitForElement(`#mktoForm_${config.marketoFormID}`);
 
-    formValidate(form);
-    expect(formEl.classList.contains('show-warnings')).to.be.true;
-  });
+      formValidate(form);
 
-  it('marketo field error visible', async () => {
-    const button = await waitForElement('.marketo button');
-    button.click();
+      expect(formEl.classList.contains('show-warnings')).to.be.true;
+    });
 
-    const firstField = document.querySelector('.mktoField');
-    const bounding = firstField.getBoundingClientRect();
+    it('marketo field error visible', async () => {
+      const button = await waitForElement('.marketo button');
+      button.click();
 
-    expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
-  });
+      const firstField = document.querySelector('.mktoField');
+      const bounding = firstField.getBoundingClientRect();
 
-  it('marketo form formSuccess', async () => {
-    const redirectUrl = '';
+      expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
+    });
 
-    expect(window.MktoForms2).to.exist;
-    const form = window.MktoForms2.getForm(config.marketoFormID);
+    it('marketo form formSuccess', async () => {
+      const redirectUrl = '';
 
-    formSuccess(form, redirectUrl);
-    expect(window.mktoSubmitted).to.be.true;
+      expect(window.MktoForms2).to.exist;
+      const form = window.MktoForms2.getForm(config.marketoFormID);
+
+      formSuccess(form, redirectUrl);
+      expect(window.mktoSubmitted).to.be.true;
+    });
   });
 });
