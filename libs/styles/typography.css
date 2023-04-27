@@ -293,6 +293,8 @@ div[class*='-up'] .con-block.has-bg.xxxl-spacing { padding: var(--spacing-xxxl);
 .con-block.max-width-12 .foreground { max-width: 1200px; }
 .con-block.max-width-auto .foreground { max-width: unset; }
 
+.con-block.min-height-500 { min-height: 500px; }
+
 /* mobile only */
 @media (max-width: 600px) {
   .con-button.button-justified-mobile {
