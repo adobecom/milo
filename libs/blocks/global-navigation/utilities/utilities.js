@@ -1,5 +1,8 @@
 import { getConfig } from '../../../utils/utils.js';
 
+const curtainSelector = '.feds-curtain';
+const navLinkClassName = 'feds-nav-link';
+const globalNavSelector = '.global-navigation';
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -62,4 +65,40 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
           ${elem.textContent}
       </a>
     </div>`;
+}
+
+export function closeAllDropdowns({ e } = {}) {
+  const openElements = document.querySelectorAll(`${globalNavSelector} [aria-expanded='true']`);
+  if (!openElements) return;
+  if (e) e.preventDefault();
+  [...openElements].forEach((el) => {
+    el.setAttribute('aria-expanded', 'false');
+    if (el.classList.contains(navLinkClassName)) {
+      el.setAttribute('daa-lh', 'header|Open');
+    }
+  });
+  // TODO the curtain will be refactored
+  document.querySelector(curtainSelector)?.classList.remove('is-open');
+}
+
+/**
+ * @param {*} param0
+ * @param {*} param0.element - the DOM element of the trigger to expand
+ * @returns true if the element has been expanded, false if it was already expanded
+ */
+export function trigger({ element } = {}) {
+  const isOpen = element?.getAttribute('aria-expanded') === 'true';
+  closeAllDropdowns();
+  if (isOpen) return false;
+  element.setAttribute('aria-expanded', 'true');
+  return true;
+}
+
+export function expandTrigger({ element } = {}) {
+  if (!element) return;
+  closeAllDropdowns();
+  if (element.classList.contains(navLinkClassName)) {
+    element.setAttribute('daa-lh', 'header|Close');
+  }
+  element.setAttribute('aria-expanded', 'true');
 }
