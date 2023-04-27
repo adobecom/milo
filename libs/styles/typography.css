@@ -167,8 +167,8 @@
 }
 
 .light .con-button {
-  color: var(--text-color);
   border-color: var(--text-color);
+  color: var(--text-color);
 }
 
 .light .con-button:hover,
