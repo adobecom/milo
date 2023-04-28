@@ -2,7 +2,7 @@
   display: grid;
   gap: var(--spacing-m);
   margin-bottom: var(--spacing-xs);
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .columns.contained {
@@ -56,6 +56,12 @@
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 1px;
+}
+
+@media screen and (min-width:900px) {
+  .columns > .row {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }  
 }
 
 /* For desktop only */
