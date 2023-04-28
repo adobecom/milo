@@ -413,7 +413,9 @@ class Gnav {
     const searchResults = createTag('div', { class: 'gnav-search-results' });
     const searchResultsUl = createTag('ul');
     searchResults.append(searchResultsUl);
-    const locale = getLocale();
+    const { locale } = getConfig();
+
+    locale.geo = getCountry();
 
     searchInput.addEventListener('input', (e) => {
       this.onSearchInput({
@@ -427,7 +429,7 @@ class Gnav {
 
     searchInput.addEventListener('keydown', (e) => {
       if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, getCountry()));
+        window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo));
       }
     });
 

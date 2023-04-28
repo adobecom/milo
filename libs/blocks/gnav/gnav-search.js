@@ -3,7 +3,7 @@ import { createTag } from '../../utils/utils.js';
 const SCOPE = 'adobecom';
 const API_KEY = 'adobedotcom2';
 
-const getHelpxLink = (searchStr, country = 'US') => `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
+const getHelpxLink = (searchStr, prefix = '', country = 'US') => `https://helpx.adobe.com${prefix}/globalsearch.html?q=${encodeURIComponent(searchStr)}&start_index=0&country=${country}`;
 const getSearchLink = (searchStr, locale = 'en_US') => `https://adobesearch.adobe.io/autocomplete/completions?q[locale]=${locale}&scope=${SCOPE}&q[text]=${encodeURIComponent(searchStr)}`;
 
 const fetchResults = async (searchStr, locale = 'en_US') => {
@@ -18,10 +18,10 @@ const fetchResults = async (searchStr, locale = 'en_US') => {
   return null;
 };
 
-const getNoResultsEl = (value) => {
+const getNoResultsEl = (value, prefix, country = 'US') => {
   const noResultsTxt = 'Try our advanced search';
   const a = createTag('a', {
-    href: getHelpxLink(value),
+    href: getHelpxLink(value, prefix, country),
     'aria-label': noResultsTxt,
   }, noResultsTxt);
   return createTag('li', {}, a);
@@ -38,7 +38,7 @@ const wrapValueInSpan = (value, suggestion, linkEl) => {
   }, linkEl);
 };
 
-const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
+const updateSearchResults = (value, suggestions, locale, resultsEl, searchInputEl) => {
   if (!value.length) {
     resultsEl.replaceChildren();
     searchInputEl.classList.remove('gnav-search-input--isPopulated');
@@ -49,7 +49,7 @@ const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
   searchInputEl.classList.add('gnav-search-input--isPopulated');
 
   if (!suggestions.length) {
-    const noResults = getNoResultsEl(value);
+    const noResults = getNoResultsEl(value, locale.prefix, locale.geo);
     resultsEl.replaceChildren(noResults);
     resultsEl.classList.add('no-results');
     return;
@@ -58,7 +58,7 @@ const updateSearchResults = (value, suggestions, resultsEl, searchInputEl) => {
   const df = document.createDocumentFragment();
   suggestions.forEach((suggestion) => {
     const a = createTag('a', {
-      href: getHelpxLink(suggestion),
+      href: getHelpxLink(suggestion, locale.prefix, locale.geo),
       'aria-label': suggestion,
     });
     const linkEl = wrapValueInSpan(value, suggestion, a);
@@ -74,9 +74,9 @@ const getSuggestions = (json) => {
 };
 
 const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
-  const results = await fetchResults(value, locale);
+  const results = await fetchResults(value, window.adobeid?.locale);
   const suggestions = getSuggestions(results);
-  updateSearchResults(value, suggestions, resultsEl, searchInputEl);
+  updateSearchResults(value, suggestions, locale, resultsEl, searchInputEl);
 };
 
 export {
