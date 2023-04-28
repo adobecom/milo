@@ -18,6 +18,7 @@
 .heading-m,
 .heading-s,
 .heading-xs,
+.body-xxl,
 .body-xl,
 .body-l,
 .body-m,
@@ -63,6 +64,11 @@
 .heading-xs {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
+}
+
+.body-xxl {
+  font-size: var(--type-body-xxl-size);
+  line-height: var(--type-body-xxl-lh);
 }
 
 .body-xl {
