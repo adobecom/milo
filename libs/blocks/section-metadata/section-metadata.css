@@ -74,6 +74,26 @@
   width: 100%;
 }
 
+.section .section-background.left-focalpoint img {
+  object-position: left;
+}
+
+.section .section-background.right-focalpoint img {
+  object-position: right;
+}
+
+.section .section-background.top-focalpoint img {
+  object-position: top;
+}
+
+.section .section-background.bottom-focalpoint img {
+  object-position: bottom;
+}
+
+.section .section-background.center-focalpoint img {
+  object-position: center;
+}
+
 .section.center .content>h1,
 .section.center .content>h2,
 .section.center .content>h3,

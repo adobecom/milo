@@ -1,8 +1,11 @@
 function handleBackground(div, section) {
-  const pic = div.querySelector('picture');
+  const pic = div.background.content.querySelector('picture');
   if (pic) {
     section.classList.add('has-background');
     pic.classList.add('section-background');
+    if (div.focalpoint) {
+      handleFocalpoint(pic, div.focalpoint.text);
+    }
     section.insertAdjacentElement('afterbegin', pic);
   } else {
     const color = div.textContent;
@@ -10,6 +13,11 @@ function handleBackground(div, section) {
       section.style.background = color;
     }
   }
+}
+
+function handleFocalpoint(pic, text) {
+  if (!(text)) return;
+  pic.classList.add(`${text}-focalpoint`.trim());
 }
 
 function debounce(func, timeout = 300) {
@@ -70,6 +78,6 @@ export default function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
   if (metadata.style) handleStyle(metadata.style.text, section);
-  if (metadata.background) handleBackground(metadata.background.content, section);
+  if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
 }
