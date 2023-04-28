@@ -129,20 +129,33 @@ main>.section[class*='-up']>.content {
   gap: var(--spacing-xxxl);
 }
 
-.section.two-up,
-.section.three-up,
-.section.four-up,
-.section.five-up {
+.section[class*='-up'] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(276px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--spacing-m);
   align-items: start;
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
 }
 
-.section.five-up {
-  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+@media screen and (min-width:900px){
+  .section.two-up,
+  .section.three-up,
+  .section.four-up {
+    grid-template-columns: repeat(auto-fit, minmax(234px, 1fr));
+  }
+
+  .section.five-up {
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+  }
+}
+
+/* mobile only */
+@media (max-width: 600px) {
+  .section[class*='-up'] .full-width-mobile {
+    margin-left: calc(var(--grid-margins-width) * -1 / 2);
+    margin-right: calc(var(--grid-margins-width) * -1 / 2);
+  }
 }
 
 .section.sticky-top {
