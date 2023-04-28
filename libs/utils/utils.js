@@ -23,6 +23,8 @@ const MILO_BLOCKS = [
   'figure',
   'fragment',
   'featured-article',
+  'global-footer',
+  'global-navigation',
   'footer',
   'gnav',
   'how-to',
@@ -572,6 +574,15 @@ function decorateSections(el, isDoc) {
   });
 }
 
+function decorateFooterPromo(config) {
+  const footerPromo = getMetadata('footer-promo-tag');
+  if (!footerPromo) return;
+  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
+  const para = createTag('p', {}, createTag('a', { href }, href));
+  const section = createTag('div', null, para);
+  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+}
+
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
@@ -691,6 +702,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     decorateMeta();
     decorateHeader();
+    decorateFooterPromo(config);
 
     import('./samplerum.js').then(({ addRumListeners }) => {
       addRumListeners();
