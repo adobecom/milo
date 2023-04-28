@@ -20,6 +20,8 @@ const loadStyles = (path) => new Promise((resolve) => {
   loadStyle(`../../../../libs/blocks/global-navigation/${path}`, resolve);
 });
 
+// TODO properly instantiate the whole global nav to get all the event listeners
+// disabled tests should then run again.
 describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
