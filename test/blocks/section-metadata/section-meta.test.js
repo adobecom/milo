@@ -23,9 +23,9 @@ describe('Section Metdata', () => {
   it('Handles background image focal point', () => {
     const sec = document.querySelector('.section.image');
     const sm = sec.querySelector('.section-metadata');
-    const pic = sec.querySelector('img');
+    const pic = sec.querySelector('picture');
     init(sm);
-    expect(pic.classList.contains('.left-focalpoint')).to.be.true;
+    expect(pic.classList.contains('left-focalpoint')).to.be.true;
   });
 
   it('Handles background color', () => {
