@@ -8,7 +8,7 @@ function handleBackground(div, section) {
     }
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.textContent;
+    const color = div.background.content.textContent;
     if (color) {
       section.style.background = color;
     }
