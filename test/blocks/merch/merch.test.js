@@ -1,9 +1,10 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 
 const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
-const { default: merch, VERSION, getTacocatEnv, imsCountryPromise } = await import('../../../libs/blocks/merch/merch.js');
+const { default: merch, VERSION, getTacocatEnv, imsCountryPromise, runTacocat } = await import('../../../libs/blocks/merch/merch.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -349,6 +350,21 @@ describe('Merch Block', () => {
       let el = document.querySelector('.merch.cta.notacocat');
       el = await merch(el);
       expect(el).to.be.undefined;
+    });
+  });
+
+  describe('Tacocat trigger', () => {
+    it('should trigger tacocat', async () => {
+      window.tacocat.tacocat = sinon.spy();
+      window.tacocat.initLanaLogger = sinon.spy();
+      runTacocat('PRODUCTION', 'US', 'en');
+
+      expect(window.tacocat.initLanaLogger.calledWith('merch-at-scale', 'PRODUCTION', { country: 'US' }, { consumer: 'milo' })).to.be.true;
+      expect(window.tacocat.tacocat.calledWith({
+        env: 'PRODUCTION',
+        country: 'US',
+        language: 'en',
+      })).to.be.true;
     });
   });
 });
