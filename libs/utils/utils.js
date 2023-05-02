@@ -6,6 +6,7 @@ const MILO_BLOCKS = [
   'accordion',
   'adobetv',
   'article-feed',
+  'article-header',
   'aside',
   'author-header',
   'caas',
@@ -48,8 +49,10 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'tags',
   'tiktok',
   'twitter',
+  'video',
   'vimeo',
   'youtube',
   'z-pattern',
@@ -71,6 +74,8 @@ const AUTO_BLOCKS = [
   { youtube: 'https://www.youtube.com' },
   { youtube: 'https://youtu.be' },
   { 'pdf-viewer': '.pdf' },
+  { video: '.mp4' },
+  { merch: '/tools/ost?' },
 ];
 const ENVS = {
   local: {
@@ -97,7 +102,6 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const SUPPORTED_RICH_RESULTS_TYPES = ['NewsArticle'];
 const LANGSTORE = 'langstore';
 
 function getEnv(conf) {
@@ -236,23 +240,26 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlPostfix(area = document) {
-  const config = getConfig();
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
 
-  const relativeAutoBlocks = config.autoBlocks
+  const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const relativeAutoBlocks = autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
 
-  const { htmlExclude = [] } = getConfig();
-
   const HAS_EXTENSION = /\..*$/;
   const shouldNotConvert = (href) => {
+    let url = { pathname: href };
+
+    try { url = new URL(href, pageUrl) } catch (e) {}
+
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || href.endsWith('/')
+      || url.pathname?.endsWith('/')
       || href === pageUrl.origin
-      || htmlExclude.includes(href)
-      || HAS_EXTENSION.test(href.split('/').pop())) {
+      || HAS_EXTENSION.test(href.split('/').pop())
+      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
       return true;
     }
     const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
@@ -441,6 +448,12 @@ export function decorateAutoBlock(a) {
         a.className = 'modal link-block';
         return true;
       }
+
+      // slack uploaded mp4s
+      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+        return false;
+      }
+
       a.className = `${key} link-block`;
       return true;
     }
@@ -457,9 +470,13 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
-    const autoBLock = decorateAutoBlock(a);
-    if (autoBLock) {
-      rdx.push(a);
+    if (a.href.includes('#_dnb')) {
+      a.href = a.href.replace('#_dnb', '');
+    } else {
+      const autoBlock = decorateAutoBlock(a);
+      if (autoBlock) {
+        rdx.push(a);
+      }
     }
     return rdx;
   }, []);
@@ -566,7 +583,11 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { loadBlock(header); }
+  if (header) { 
+    header.classList.add('gnav-hide');
+    await loadBlock(header); 
+    header.classList.remove('gnav-hide');
+  }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
@@ -595,11 +616,24 @@ export async function loadDeferred(area, blocks, config) {
 }
 
 export function loadPrivacy() {
+  const domains = {
+    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
+  };
+  const currentDomain = Object.keys(domains)
+    .find((domain) => window.location.host.includes(domain)) || domains[0];
+  let domainId = domains[currentDomain];
+  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
+  if (getConfig().env.name === 'stage') {
+    domainId += '-test';
+  }
   window.fedsConfig = {
     privacy: {
-      otDomainId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
+      otDomainId: domainId,
+      documentLanguage: true,
     },
-};
+  };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
   const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
@@ -628,13 +662,22 @@ function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]');
   contents.forEach((meta) => {
+    if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
       meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
-      window.lana.log('Cannot make URL from metadata');
     } catch (e) {
-      // Not a valid URL.
+      window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
+  });
+
+  // Event-based modal
+  window.addEventListener('modal:open', async (e) => {
+    const { miloLibs } = getConfig();
+    const { findDetails, getModal } = await import('../blocks/modal/modal.js');
+    loadStyle(`${miloLibs}/blocks/modal/modal.css`);
+    const details = findDetails(e.detail.hash);
+    if (details) getModal(details);
   });
 }
 
@@ -681,8 +724,8 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
-      const { default: loadGeoRouting } = await import('../features/georouting/georouting.js');
-      loadGeoRouting(config, createTag, getMetadata);
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
@@ -744,14 +787,14 @@ export function loadLana(options = {}) {
   if (window.lana) return;
 
   const lanaError = (e) => {
-    window.lana.log(e.reason || e.error || e.message, { errorType: 'i' });
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
   };
 
   window.lana = {
     log: async (...args) => {
-      await import('./lana.js');
       window.removeEventListener('error', lanaError);
       window.removeEventListener('unhandledrejection', lanaError);
+      await import('./lana.js');
       return window.lana.log(...args);
     },
     debug: false,

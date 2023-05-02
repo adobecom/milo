@@ -307,6 +307,7 @@ async function buildFilter(type, tax, block, config) {
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
+  // console.log(category);
   category.forEach((topic) => {
     const item = tax.get(topic, tax[`${type.toUpperCase()}`]);
     if (item.level === 1) {
@@ -460,7 +461,7 @@ async function decorateArticleFeed(
   }
   if (articles.length > pageEnd || !feed.complete) {
     const loadMore = document.createElement('a');
-    loadMore.className = 'load-more button small primary light';
+    loadMore.className = 'load-more con-button outline';
     loadMore.href = '#';
     loadMore.textContent = await replacePlaceholder('load-more');
     articleFeedEl.append(loadMore);
@@ -475,7 +476,7 @@ async function decorateArticleFeed(
 
 async function decorateFeedFilter(articleFeedEl, config) {
   const taxonomy = getTaxonomyModule();
-  const parent = document.querySelector('.article-feed-container');
+  const parent = document.querySelector('.article-feed');
 
   const curtain = createTag('div', { class: 'filter-curtain hide' });
   document.querySelector('main').append(curtain);
@@ -488,8 +489,8 @@ async function decorateFeedFilter(articleFeedEl, config) {
   filterText.classList.add('filter-text');
   filterText.textContent = await replacePlaceholder('filters');
 
-  const productsDropdown = buildFilter('products', taxonomy, articleFeedEl, config);
-  const industriesDropdown = buildFilter('industries', taxonomy, articleFeedEl, config);
+  const productsDropdown = await buildFilter('products', taxonomy, articleFeedEl, config);
+  const industriesDropdown = await buildFilter('industries', taxonomy, articleFeedEl, config);
 
   filterWrapper.append(filterText, productsDropdown, industriesDropdown);
   filterContainer.append(filterWrapper);
@@ -525,7 +526,7 @@ const clearBlock = (block) => { block.innerHTML = ''; };
 export default async function init(articleFeed) {
   const config = readBlockConfig(articleFeed);
   clearBlock(articleFeed);
-  loadTaxonomy();
+  await loadTaxonomy();
   if (config.filters) {
     decorateFeedFilter(articleFeed, config);
   }

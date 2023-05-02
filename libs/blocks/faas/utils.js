@@ -262,13 +262,25 @@ export const makeFaasConfig = (targetState) => {
     state = defaultState;
     return state;
   }
+  
+  let url = targetState.d;
+  let destinationURL = '';
+  try {
+    // checking if URL is absolute.
+    new URL(url);
+    destinationURL = targetState.d;
+  }
+  catch (e) {
+    // in case of relative:
+    destinationURL = window.location.origin + targetState.d;
+  }
 
   const config = {
     multicampaignradiostyle: targetState.multicampaignradiostyle ?? false,
     hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
-    d: targetState.d,
+    d: destinationURL,
     as: targetState.as,
     ar: targetState.ar,
     pc: {
@@ -343,6 +355,11 @@ export const initFaas = (config, targetEl) => {
     const formTitleEl = createTag(state.title_size || 'h3');
     formTitleEl.textContent = state.title;
     formTitleWrapperEl.append(formTitleEl);
+  }
+
+  if (window.location.pathname === '/tools/faas') {
+    state.as = false;
+    state.ar = false;
   }
 
   const formEl = createTag('div', { class: 'faas-form-wrapper' });

@@ -16,6 +16,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             report: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/report',
               tagID: 'caas:content-type/report',
               name: 'report',
@@ -38,6 +42,10 @@ const caasTags = {
               tags: {},
             },
             'customer-story': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/customer-story',
               tagID: 'caas:content-type/customer-story',
               name: 'customer-story',
@@ -60,6 +68,10 @@ const caasTags = {
               tags: {},
             },
             video: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/video',
               tagID: 'caas:content-type/video',
               name: 'video',
@@ -82,6 +94,10 @@ const caasTags = {
               tags: {},
             },
             article: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/article',
               tagID: 'caas:content-type/article',
               name: 'article',
@@ -104,6 +120,10 @@ const caasTags = {
               tags: {},
             },
             blog: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/blog',
               tagID: 'caas:content-type/blog',
               name: 'blog',
@@ -126,6 +146,10 @@ const caasTags = {
               tags: {},
             },
             documentation: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/documentation',
               tagID: 'caas:content-type/documentation',
               name: 'documentation',
@@ -148,6 +172,10 @@ const caasTags = {
               tags: {},
             },
             webinar: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/webinar',
               tagID: 'caas:content-type/webinar',
               name: 'webinar',
@@ -170,6 +198,10 @@ const caasTags = {
               tags: {},
             },
             quiz: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/quiz',
               tagID: 'caas:content-type/quiz',
               name: 'quiz',
@@ -192,6 +224,10 @@ const caasTags = {
               tags: {},
             },
             'event-session': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/event-session',
               tagID: 'caas:content-type/event-session',
               name: 'event-session',
@@ -214,6 +250,10 @@ const caasTags = {
               tags: {},
             },
             event: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/event',
               tagID: 'caas:content-type/event',
               name: 'event',
@@ -236,6 +276,10 @@ const caasTags = {
               tags: {},
             },
             infographic: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/infographic',
               tagID: 'caas:content-type/infographic',
               name: 'infographic',
@@ -258,6 +302,10 @@ const caasTags = {
               tags: {},
             },
             ebook: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/ebook',
               tagID: 'caas:content-type/ebook',
               name: 'ebook',
@@ -280,6 +328,10 @@ const caasTags = {
               tags: {},
             },
             demo: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/demo',
               tagID: 'caas:content-type/demo',
               name: 'demo',
@@ -302,6 +354,10 @@ const caasTags = {
               tags: {},
             },
             'event-speaker': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/event-speaker',
               tagID: 'caas:content-type/event-speaker',
               name: 'event-speaker',
@@ -312,6 +368,10 @@ const caasTags = {
               tags: {},
             },
             tutorial: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/tutorial',
               tagID: 'caas:content-type/tutorial',
               name: 'tutorial',
@@ -334,6 +394,10 @@ const caasTags = {
               tags: {},
             },
             'product-tour': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/product-tour',
               tagID: 'caas:content-type/product-tour',
               name: 'product-tour',
@@ -356,6 +420,10 @@ const caasTags = {
               tags: {},
             },
             template: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/template',
               tagID: 'caas:content-type/template',
               name: 'template',
@@ -378,6 +446,10 @@ const caasTags = {
               tags: {},
             },
             promotion: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/promotion',
               tagID: 'caas:content-type/promotion',
               name: 'promotion',
@@ -400,6 +472,10 @@ const caasTags = {
               tags: {},
             },
             certification: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/certification',
               tagID: 'caas:content-type/certification',
               name: 'certification',
@@ -422,6 +498,10 @@ const caasTags = {
               tags: {},
             },
             application: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/application',
               tagID: 'caas:content-type/application',
               name: 'application',
@@ -444,6 +524,10 @@ const caasTags = {
               tags: {},
             },
             podcast: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/podcast',
               tagID: 'caas:content-type/podcast',
               name: 'podcast',
@@ -466,6 +550,10 @@ const caasTags = {
               tags: {},
             },
             guide: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/guide',
               tagID: 'caas:content-type/guide',
               name: 'guide',
@@ -488,6 +576,10 @@ const caasTags = {
               tags: {},
             },
             consulting: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/consulting',
               tagID: 'caas:content-type/consulting',
               name: 'consulting',
@@ -510,6 +602,10 @@ const caasTags = {
               tags: {},
             },
             product: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/product',
               tagID: 'caas:content-type/product',
               name: 'product',
@@ -532,6 +628,10 @@ const caasTags = {
               tags: {},
             },
             partner: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/partner',
               tagID: 'caas:content-type/partner',
               name: 'partner',
@@ -554,6 +654,10 @@ const caasTags = {
               tags: {},
             },
             solution: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/solution',
               tagID: 'caas:content-type/solution',
               name: 'solution',
@@ -576,6 +680,10 @@ const caasTags = {
               tags: {},
             },
             course: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/course',
               tagID: 'caas:content-type/course',
               name: 'course',
@@ -598,6 +706,10 @@ const caasTags = {
               tags: {},
             },
             document: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/document',
               tagID: 'caas:content-type/document',
               name: 'document',
@@ -608,6 +720,10 @@ const caasTags = {
               tags: {},
             },
             'solution-brief': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/solution-brief',
               tagID: 'caas:content-type/solution-brief',
               name: 'solution-brief',
@@ -618,6 +734,10 @@ const caasTags = {
               tags: {},
             },
             'how-to': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/how-to',
               tagID: 'caas:content-type/how-to',
               name: 'how-to',
@@ -628,6 +748,10 @@ const caasTags = {
               tags: {},
             },
             'white-paper': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/white-paper',
               tagID: 'caas:content-type/white-paper',
               name: 'white-paper',
@@ -638,6 +762,10 @@ const caasTags = {
               tags: {},
             },
             'plans-&-pricing': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/plans-&-pricing',
               tagID: 'caas:content-type/plans-&-pricing',
               name: 'plans-&-pricing',
@@ -648,6 +776,10 @@ const caasTags = {
               tags: {},
             },
             features: {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/features',
               tagID: 'caas:content-type/features',
               name: 'features',
@@ -658,6 +790,10 @@ const caasTags = {
               tags: {},
             },
             'progressive-offer': {
+              parent: {
+                id: 'caas:content-type',
+                title: 'Content Type',
+              },
               path: '/content/cq:tags/caas/content-type/progressive-offer',
               tagID: 'caas:content-type/progressive-offer',
               name: 'progressive-offer',
@@ -680,6 +816,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             'read-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/read-now',
               tagID: 'caas:cta/read-now',
               name: 'read-now',
@@ -703,6 +843,10 @@ const caasTags = {
               tags: {},
             },
             'get-details': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/get-details',
               tagID: 'caas:cta/get-details',
               name: 'get-details',
@@ -725,6 +869,10 @@ const caasTags = {
               tags: {},
             },
             'watch-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/watch-now',
               tagID: 'caas:cta/watch-now',
               name: 'watch-now',
@@ -747,6 +895,10 @@ const caasTags = {
               tags: {},
             },
             'take-quiz': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/take-quiz',
               tagID: 'caas:cta/take-quiz',
               name: 'take-quiz',
@@ -769,6 +921,10 @@ const caasTags = {
               tags: {},
             },
             'listen-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/listen-now',
               tagID: 'caas:cta/listen-now',
               name: 'listen-now',
@@ -779,6 +935,10 @@ const caasTags = {
               tags: {},
             },
             'try-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/try-now',
               tagID: 'caas:cta/try-now',
               name: 'try-now',
@@ -789,6 +949,10 @@ const caasTags = {
               tags: {},
             },
             'buy-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/buy-now',
               tagID: 'caas:cta/buy-now',
               name: 'buy-now',
@@ -799,6 +963,10 @@ const caasTags = {
               tags: {},
             },
             'learn-more': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/learn-more',
               tagID: 'caas:cta/learn-more',
               name: 'learn-more',
@@ -809,6 +977,10 @@ const caasTags = {
               tags: {},
             },
             'visit-shop': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/visit-shop',
               tagID: 'caas:cta/visit-shop',
               name: 'visit-shop',
@@ -819,6 +991,10 @@ const caasTags = {
               tags: {},
             },
             'register-now': {
+              parent: {
+                id: 'caas:cta',
+                title: 'CTA',
+              },
               path: '/content/cq:tags/caas/cta/register-now',
               tagID: 'caas:cta/register-now',
               name: 'register-now',
@@ -843,6 +1019,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             featured: {
+              parent: {
+                id: 'caas:badge',
+                title: 'Badge',
+              },
               path: '/content/cq:tags/caas/badge/featured',
               tagID: 'caas:badge/featured',
               name: 'featured',
@@ -864,6 +1044,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             default: {
+              parent: {
+                id: 'caas:card-style',
+                title: 'Card Style',
+              },
               path: '/content/cq:tags/caas/card-style/default',
               tagID: 'caas:card-style/default',
               name: 'default',
@@ -874,6 +1058,10 @@ const caasTags = {
               tags: {},
             },
             'event-session': {
+              parent: {
+                id: 'caas:card-style',
+                title: 'Card Style',
+              },
               path: '/content/cq:tags/caas/card-style/event-session',
               tagID: 'caas:card-style/event-session',
               name: 'event-session',
@@ -884,6 +1072,10 @@ const caasTags = {
               tags: {},
             },
             'single-tall-image': {
+              parent: {
+                id: 'caas:card-style',
+                title: 'Card Style',
+              },
               path: '/content/cq:tags/caas/card-style/single-tall-image',
               tagID: 'caas:card-style/single-tall-image',
               name: 'single-tall-image',
@@ -894,6 +1086,10 @@ const caasTags = {
               tags: {},
             },
             'single-image': {
+              parent: {
+                id: 'caas:card-style',
+                title: 'Card Style',
+              },
               path: '/content/cq:tags/caas/card-style/single-image',
               tagID: 'caas:card-style/single-image',
               name: 'single-image',
@@ -904,6 +1100,10 @@ const caasTags = {
               tags: {},
             },
             'half-height-featured': {
+              parent: {
+                id: 'caas:card-style',
+                title: 'Card Style',
+              },
               path: '/content/cq:tags/caas/card-style/half-height-featured',
               tagID: 'caas:card-style/half-height-featured',
               name: 'half-height-featured',
@@ -925,6 +1125,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             'creative-cloud': {
+              parent: {
+                id: 'caas:business-unit',
+                title: 'Business Unit',
+              },
               path: '/content/cq:tags/caas/business-unit/creative-cloud',
               tagID: 'caas:business-unit/creative-cloud',
               name: 'creative-cloud',
@@ -935,6 +1139,10 @@ const caasTags = {
               tags: {},
             },
             'experience-cloud': {
+              parent: {
+                id: 'caas:business-unit',
+                title: 'Business Unit',
+              },
               path: '/content/cq:tags/caas/business-unit/experience-cloud',
               tagID: 'caas:business-unit/experience-cloud',
               name: 'experience-cloud',
@@ -945,6 +1153,10 @@ const caasTags = {
               tags: {},
             },
             'document-cloud': {
+              parent: {
+                id: 'caas:business-unit',
+                title: 'Business Unit',
+              },
               path: '/content/cq:tags/caas/business-unit/document-cloud',
               tagID: 'caas:business-unit/document-cloud',
               name: 'document-cloud',
@@ -955,6 +1167,10 @@ const caasTags = {
               tags: {},
             },
             'commerce-cloud': {
+              parent: {
+                id: 'caas:business-unit',
+                title: 'Business Unit',
+              },
               path: '/content/cq:tags/caas/business-unit/commerce-cloud',
               tagID: 'caas:business-unit/commerce-cloud',
               name: 'commerce-cloud',
@@ -976,6 +1192,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             discover: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/discover',
               tagID: 'caas:journey-phase/discover',
               name: 'discover',
@@ -998,6 +1218,10 @@ const caasTags = {
               tags: {},
             },
             explore: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/explore',
               tagID: 'caas:journey-phase/explore',
               name: 'explore',
@@ -1020,6 +1244,10 @@ const caasTags = {
               tags: {},
             },
             evaluate: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/evaluate',
               tagID: 'caas:journey-phase/evaluate',
               name: 'evaluate',
@@ -1042,6 +1270,10 @@ const caasTags = {
               tags: {},
             },
             'use-re-invest': {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/use-re-invest',
               tagID: 'caas:journey-phase/use-re-invest',
               name: 'use-re-invest',
@@ -1064,6 +1296,10 @@ const caasTags = {
               tags: {},
             },
             acquisition: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/acquisition',
               tagID: 'caas:journey-phase/acquisition',
               name: 'acquisition',
@@ -1086,6 +1322,10 @@ const caasTags = {
               tags: {},
             },
             acceleration: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/acceleration',
               tagID: 'caas:journey-phase/acceleration',
               name: 'acceleration',
@@ -1108,6 +1348,10 @@ const caasTags = {
               tags: {},
             },
             expansion: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/expansion',
               tagID: 'caas:journey-phase/expansion',
               name: 'expansion',
@@ -1130,6 +1374,10 @@ const caasTags = {
               tags: {},
             },
             retention: {
+              parent: {
+                id: 'caas:journey-phase',
+                title: 'Journey Phase',
+              },
               path: '/content/cq:tags/caas/journey-phase/retention',
               tagID: 'caas:journey-phase/retention',
               name: 'retention',
@@ -1163,6 +1411,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             it: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/it',
               tagID: 'caas:role/it',
               name: 'it',
@@ -1185,6 +1437,10 @@ const caasTags = {
               tags: {},
             },
             marketing: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/marketing',
               tagID: 'caas:role/marketing',
               name: 'marketing',
@@ -1207,6 +1463,10 @@ const caasTags = {
               tags: {},
             },
             advertising: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/advertising',
               tagID: 'caas:role/advertising',
               name: 'advertising',
@@ -1229,6 +1489,10 @@ const caasTags = {
               tags: {},
             },
             digital: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/digital',
               tagID: 'caas:role/digital',
               name: 'digital',
@@ -1251,6 +1515,10 @@ const caasTags = {
               tags: {},
             },
             'vision-leader': {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/vision-leader',
               tagID: 'caas:role/vision-leader',
               name: 'vision-leader',
@@ -1273,6 +1541,10 @@ const caasTags = {
               tags: {},
             },
             'decision-maker': {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/decision-maker',
               tagID: 'caas:role/decision-maker',
               name: 'decision-maker',
@@ -1295,6 +1567,10 @@ const caasTags = {
               tags: {},
             },
             'feature-evaluator': {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/feature-evaluator',
               tagID: 'caas:role/feature-evaluator',
               name: 'feature-evaluator',
@@ -1317,6 +1593,10 @@ const caasTags = {
               tags: {},
             },
             'compliance-evaluator': {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/compliance-evaluator',
               tagID: 'caas:role/compliance-evaluator',
               name: 'compliance-evaluator',
@@ -1339,6 +1619,10 @@ const caasTags = {
               tags: {},
             },
             commerce: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/commerce',
               tagID: 'caas:role/commerce',
               name: 'commerce',
@@ -1361,6 +1645,10 @@ const caasTags = {
               tags: {},
             },
             sales: {
+              parent: {
+                id: 'caas:role',
+                title: 'Role',
+              },
               path: '/content/cq:tags/caas/role/sales',
               tagID: 'caas:role/sales',
               name: 'sales',
@@ -1394,6 +1682,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             'financial-services': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/financial-services',
               tagID: 'caas:industry/financial-services',
               name: 'financial-services',
@@ -1416,6 +1708,10 @@ const caasTags = {
               tags: {},
             },
             'media-and-entertainment': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/media-and-entertainment',
               tagID: 'caas:industry/media-and-entertainment',
               name: 'media-and-entertainment',
@@ -1438,6 +1734,10 @@ const caasTags = {
               tags: {},
             },
             retail: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/retail',
               tagID: 'caas:industry/retail',
               name: 'retail',
@@ -1460,6 +1760,10 @@ const caasTags = {
               tags: {},
             },
             'travel-and-hospitality': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/travel-and-hospitality',
               tagID: 'caas:industry/travel-and-hospitality',
               name: 'travel-and-hospitality',
@@ -1482,6 +1786,10 @@ const caasTags = {
               tags: {},
             },
             healthcare: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/healthcare',
               tagID: 'caas:industry/healthcare',
               name: 'healthcare',
@@ -1504,6 +1812,10 @@ const caasTags = {
               tags: {},
             },
             government: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/government',
               tagID: 'caas:industry/government',
               name: 'government',
@@ -1526,6 +1838,10 @@ const caasTags = {
               tags: {},
             },
             telecommunications: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/telecommunications',
               tagID: 'caas:industry/telecommunications',
               name: 'telecommunications',
@@ -1548,6 +1864,10 @@ const caasTags = {
               tags: {},
             },
             education: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/education',
               tagID: 'caas:industry/education',
               name: 'education',
@@ -1570,6 +1890,10 @@ const caasTags = {
               tags: {},
             },
             manufacturing: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/manufacturing',
               tagID: 'caas:industry/manufacturing',
               name: 'manufacturing',
@@ -1592,6 +1916,10 @@ const caasTags = {
               tags: {},
             },
             'high-tech': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/high-tech',
               tagID: 'caas:industry/high-tech',
               name: 'high-tech',
@@ -1614,6 +1942,10 @@ const caasTags = {
               tags: {},
             },
             'non-profit': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/non-profit',
               tagID: 'caas:industry/non-profit',
               name: 'non-profit',
@@ -1636,6 +1968,10 @@ const caasTags = {
               tags: {},
             },
             'food-and-beverage': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/food-and-beverage',
               tagID: 'caas:industry/food-and-beverage',
               name: 'food-and-beverage',
@@ -1658,6 +1994,10 @@ const caasTags = {
               tags: {},
             },
             'life-sciences': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/life-sciences',
               tagID: 'caas:industry/life-sciences',
               name: 'life-sciences',
@@ -1680,6 +2020,10 @@ const caasTags = {
               tags: {},
             },
             aviation: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/aviation',
               tagID: 'caas:industry/aviation',
               name: 'aviation',
@@ -1690,6 +2034,10 @@ const caasTags = {
               tags: {},
             },
             advertising: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/advertising',
               tagID: 'caas:industry/advertising',
               name: 'advertising',
@@ -1700,6 +2048,10 @@ const caasTags = {
               tags: {},
             },
             'energy-utilities': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/energy-utilities',
               tagID: 'caas:industry/energy-utilities',
               name: 'energy-utilities',
@@ -1710,6 +2062,10 @@ const caasTags = {
               tags: {},
             },
             'logistics-transportation': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/logistics-transportation',
               tagID: 'caas:industry/logistics-transportation',
               name: 'logistics-transportation',
@@ -1720,6 +2076,10 @@ const caasTags = {
               tags: {},
             },
             'print-publishing': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/print-publishing',
               tagID: 'caas:industry/print-publishing',
               name: 'print-publishing',
@@ -1730,6 +2090,10 @@ const caasTags = {
               tags: {},
             },
             pharmaceuticals: {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/pharmaceuticals',
               tagID: 'caas:industry/pharmaceuticals',
               name: 'pharmaceuticals',
@@ -1740,6 +2104,10 @@ const caasTags = {
               tags: {},
             },
             'professional-services': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/professional-services',
               tagID: 'caas:industry/professional-services',
               name: 'professional-services',
@@ -1750,6 +2118,10 @@ const caasTags = {
               tags: {},
             },
             'technology-software-services': {
+              parent: {
+                id: 'caas:industry',
+                title: 'Industry',
+              },
               path: '/content/cq:tags/caas/industry/technology-software-services',
               tagID: 'caas:industry/technology-software-services',
               name: 'technology-software-services',
@@ -1771,6 +2143,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             'session-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/session-type',
               tagID: 'caas:events/session-type',
               name: 'session-type',
@@ -2152,6 +2528,10 @@ const caasTags = {
               },
             },
             max: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/max',
               tagID: 'caas:events/max',
               name: 'max',
@@ -3817,6 +4197,10 @@ const caasTags = {
               },
             },
             year: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/year',
               tagID: 'caas:events/year',
               name: 'year',
@@ -3859,6 +4243,10 @@ const caasTags = {
               },
             },
             'speaker-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/speaker-type',
               tagID: 'caas:events/speaker-type',
               name: 'speaker-type',
@@ -4040,6 +4428,10 @@ const caasTags = {
               },
             },
             'event-session-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/event-session-type',
               tagID: 'caas:events/event-session-type',
               name: 'event-session-type',
@@ -4102,6 +4494,10 @@ const caasTags = {
               },
             },
             day: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/day',
               tagID: 'caas:events/day',
               name: 'day',
@@ -4265,6 +4661,10 @@ const caasTags = {
               },
             },
             'podcast-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/podcast-type',
               tagID: 'caas:events/podcast-type',
               name: 'podcast-type',
@@ -4341,6 +4741,10 @@ const caasTags = {
               },
             },
             speaker: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/speaker',
               tagID: 'caas:events/speaker',
               name: 'speaker',
@@ -4368,6 +4772,10 @@ const caasTags = {
               },
             },
             'sponsor-level': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/sponsor-level',
               tagID: 'caas:events/sponsor-level',
               name: 'sponsor-level',
@@ -4439,6 +4847,10 @@ const caasTags = {
               },
             },
             summit: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/summit',
               tagID: 'caas:events/summit',
               name: 'summit',
@@ -5295,6 +5707,10 @@ const caasTags = {
               },
             },
             'technical-level': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/technical-level',
               tagID: 'caas:events/technical-level',
               name: 'technical-level',
@@ -5381,6 +5797,10 @@ const caasTags = {
               },
             },
             'audience-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/audience-type',
               tagID: 'caas:events/audience-type',
               name: 'audience-type',
@@ -5981,6 +6401,10 @@ const caasTags = {
               },
             },
             products: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/products',
               tagID: 'caas:events/products',
               name: 'products',
@@ -6808,6 +7232,10 @@ const caasTags = {
               },
             },
             region: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/region',
               tagID: 'caas:events/region',
               name: 'region',
@@ -6919,6 +7347,10 @@ const caasTags = {
               },
             },
             'business-type': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/business-type',
               tagID: 'caas:events/business-type',
               name: 'business-type',
@@ -6960,6 +7392,10 @@ const caasTags = {
               },
             },
             sponsored: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/sponsored',
               tagID: 'caas:events/sponsored',
               name: 'sponsored',
@@ -6973,6 +7409,10 @@ const caasTags = {
               tags: {},
             },
             industry: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/industry',
               tagID: 'caas:events/industry',
               name: 'industry',
@@ -7164,6 +7604,10 @@ const caasTags = {
               },
             },
             type: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/type',
               tagID: 'caas:events/type',
               name: 'type',
@@ -7605,6 +8049,10 @@ const caasTags = {
               },
             },
             'presentation-style': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/presentation-style',
               tagID: 'caas:events/presentation-style',
               name: 'presentation-style',
@@ -7666,7 +8114,11 @@ const caasTags = {
               },
             },
             eml: {
-              path: '/content/cq:tags/caas/events/eml',
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
+             path: '/content/cq:tags/caas/events/eml',
               tagID: 'caas:events/eml',
               name: 'eml',
               tagImage: '',
@@ -7980,6 +8432,10 @@ const caasTags = {
               },
             },
             emgf: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/emgf',
               tagID: 'caas:events/emgf',
               name: 'emgf',
@@ -8042,6 +8498,10 @@ const caasTags = {
               },
             },
             diversity: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/diversity',
               tagID: 'caas:events/diversity',
               name: 'diversity',
@@ -8163,6 +8623,10 @@ const caasTags = {
               },
             },
             sessions: {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/sessions',
               tagID: 'caas:events/sessions',
               name: 'sessions',
@@ -8271,6 +8735,10 @@ const caasTags = {
               },
             },
             'session-format': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/session-format',
               tagID: 'caas:events/session-format',
               name: 'session-format',
@@ -8339,6 +8807,10 @@ const caasTags = {
               },
             },
             'speaker-event': {
+              parent: {
+                id: 'caas:events',
+                title: 'Events',
+              },
               path: '/content/cq:tags/caas/events/speaker-event',
               tagID: 'caas:events/speaker-event',
               name: 'speaker-event',
@@ -8394,6 +8866,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             us: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/us',
               tagID: 'caas:country/us',
               name: 'us',
@@ -8404,6 +8880,10 @@ const caasTags = {
               tags: {},
             },
             at: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/at',
               tagID: 'caas:country/at',
               name: 'at',
@@ -8414,6 +8894,10 @@ const caasTags = {
               tags: {},
             },
             be: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/be',
               tagID: 'caas:country/be',
               name: 'be',
@@ -8424,6 +8908,10 @@ const caasTags = {
               tags: {},
             },
             bg: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/bg',
               tagID: 'caas:country/bg',
               name: 'bg',
@@ -8434,6 +8922,10 @@ const caasTags = {
               tags: {},
             },
             br: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/br',
               tagID: 'caas:country/br',
               name: 'br',
@@ -8444,6 +8936,10 @@ const caasTags = {
               tags: {},
             },
             ca: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ca',
               tagID: 'caas:country/ca',
               name: 'ca',
@@ -8454,6 +8950,10 @@ const caasTags = {
               tags: {},
             },
             ch: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ch',
               tagID: 'caas:country/ch',
               name: 'ch',
@@ -8464,6 +8964,10 @@ const caasTags = {
               tags: {},
             },
             cis: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/cis',
               tagID: 'caas:country/cis',
               name: 'cis',
@@ -8474,6 +8978,10 @@ const caasTags = {
               tags: {},
             },
             cn: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/cn',
               tagID: 'caas:country/cn',
               name: 'cn',
@@ -8484,6 +8992,10 @@ const caasTags = {
               tags: {},
             },
             cz: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/cz',
               tagID: 'caas:country/cz',
               name: 'cz',
@@ -8494,6 +9006,10 @@ const caasTags = {
               tags: {},
             },
             de: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/de',
               tagID: 'caas:country/de',
               name: 'de',
@@ -8504,6 +9020,10 @@ const caasTags = {
               tags: {},
             },
             dk: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/dk',
               tagID: 'caas:country/dk',
               name: 'dk',
@@ -8514,6 +9034,10 @@ const caasTags = {
               tags: {},
             },
             ee: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ee',
               tagID: 'caas:country/ee',
               name: 'ee',
@@ -8524,6 +9048,10 @@ const caasTags = {
               tags: {},
             },
             es: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/es',
               tagID: 'caas:country/es',
               name: 'es',
@@ -8534,6 +9062,10 @@ const caasTags = {
               tags: {},
             },
             fi: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/fi',
               tagID: 'caas:country/fi',
               name: 'fi',
@@ -8544,6 +9076,10 @@ const caasTags = {
               tags: {},
             },
             fr: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/fr',
               tagID: 'caas:country/fr',
               name: 'fr',
@@ -8554,6 +9090,10 @@ const caasTags = {
               tags: {},
             },
             hk: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/hk',
               tagID: 'caas:country/hk',
               name: 'hk',
@@ -8564,6 +9104,10 @@ const caasTags = {
               tags: {},
             },
             hr: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/hr',
               tagID: 'caas:country/hr',
               name: 'hr',
@@ -8574,6 +9118,10 @@ const caasTags = {
               tags: {},
             },
             hu: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/hu',
               tagID: 'caas:country/hu',
               name: 'hu',
@@ -8584,6 +9132,10 @@ const caasTags = {
               tags: {},
             },
             il: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/il',
               tagID: 'caas:country/il',
               name: 'il',
@@ -8594,6 +9146,10 @@ const caasTags = {
               tags: {},
             },
             it: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/it',
               tagID: 'caas:country/it',
               name: 'it',
@@ -8604,6 +9160,10 @@ const caasTags = {
               tags: {},
             },
             jp: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/jp',
               tagID: 'caas:country/jp',
               name: 'jp',
@@ -8614,6 +9174,10 @@ const caasTags = {
               tags: {},
             },
             kr: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/kr',
               tagID: 'caas:country/kr',
               name: 'kr',
@@ -8624,6 +9188,10 @@ const caasTags = {
               tags: {},
             },
             la: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/la',
               tagID: 'caas:country/la',
               name: 'la',
@@ -8634,6 +9202,10 @@ const caasTags = {
               tags: {},
             },
             lt: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/lt',
               tagID: 'caas:country/lt',
               name: 'lt',
@@ -8644,6 +9216,10 @@ const caasTags = {
               tags: {},
             },
             lu: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/lu',
               tagID: 'caas:country/lu',
               name: 'lu',
@@ -8654,6 +9230,10 @@ const caasTags = {
               tags: {},
             },
             lv: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/lv',
               tagID: 'caas:country/lv',
               name: 'lv',
@@ -8664,6 +9244,10 @@ const caasTags = {
               tags: {},
             },
             mena: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/mena',
               tagID: 'caas:country/mena',
               name: 'mena',
@@ -8674,6 +9258,10 @@ const caasTags = {
               tags: {},
             },
             mx: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/mx',
               tagID: 'caas:country/mx',
               name: 'mx',
@@ -8684,6 +9272,10 @@ const caasTags = {
               tags: {},
             },
             nl: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/nl',
               tagID: 'caas:country/nl',
               name: 'nl',
@@ -8694,6 +9286,10 @@ const caasTags = {
               tags: {},
             },
             no: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/no',
               tagID: 'caas:country/no',
               name: 'no',
@@ -8704,6 +9300,10 @@ const caasTags = {
               tags: {},
             },
             pl: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/pl',
               tagID: 'caas:country/pl',
               name: 'pl',
@@ -8714,6 +9314,10 @@ const caasTags = {
               tags: {},
             },
             ro: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ro',
               tagID: 'caas:country/ro',
               name: 'ro',
@@ -8724,6 +9328,10 @@ const caasTags = {
               tags: {},
             },
             rs: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/rs',
               tagID: 'caas:country/rs',
               name: 'rs',
@@ -8734,6 +9342,10 @@ const caasTags = {
               tags: {},
             },
             ru: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ru',
               tagID: 'caas:country/ru',
               name: 'ru',
@@ -8744,6 +9356,10 @@ const caasTags = {
               tags: {},
             },
             se: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/se',
               tagID: 'caas:country/se',
               name: 'se',
@@ -8754,6 +9370,10 @@ const caasTags = {
               tags: {},
             },
             si: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/si',
               tagID: 'caas:country/si',
               name: 'si',
@@ -8764,6 +9384,10 @@ const caasTags = {
               tags: {},
             },
             sk: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/sk',
               tagID: 'caas:country/sk',
               name: 'sk',
@@ -8774,6 +9398,10 @@ const caasTags = {
               tags: {},
             },
             tr: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/tr',
               tagID: 'caas:country/tr',
               name: 'tr',
@@ -8784,6 +9412,10 @@ const caasTags = {
               tags: {},
             },
             tw: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/tw',
               tagID: 'caas:country/tw',
               name: 'tw',
@@ -8794,6 +9426,10 @@ const caasTags = {
               tags: {},
             },
             ua: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ua',
               tagID: 'caas:country/ua',
               name: 'ua',
@@ -8804,6 +9440,10 @@ const caasTags = {
               tags: {},
             },
             co: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/co',
               tagID: 'caas:country/co',
               name: 'co',
@@ -8814,6 +9454,10 @@ const caasTags = {
               tags: {},
             },
             nz: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/nz',
               tagID: 'caas:country/nz',
               name: 'nz',
@@ -8824,6 +9468,10 @@ const caasTags = {
               tags: {},
             },
             gb: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/gb',
               tagID: 'caas:country/gb',
               name: 'gb',
@@ -8834,6 +9482,10 @@ const caasTags = {
               tags: {},
             },
             ph: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ph',
               tagID: 'caas:country/ph',
               name: 'ph',
@@ -8844,6 +9496,10 @@ const caasTags = {
               tags: {},
             },
             ar: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/ar',
               tagID: 'caas:country/ar',
               name: 'ar',
@@ -8854,6 +9510,10 @@ const caasTags = {
               tags: {},
             },
             pe: {
+              parent: {
+                id: 'caas:country',
+                title: 'Country',
+              },
               path: '/content/cq:tags/caas/country/pe',
               tagID: 'caas:country/pe',
               name: 'pe',
@@ -8875,6 +9535,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             en: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/en',
               tagID: 'caas:language/en',
               name: 'en',
@@ -8885,6 +9549,10 @@ const caasTags = {
               tags: {},
             },
             de: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/de',
               tagID: 'caas:language/de',
               name: 'de',
@@ -8895,6 +9563,10 @@ const caasTags = {
               tags: {},
             },
             fr: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/fr',
               tagID: 'caas:language/fr',
               name: 'fr',
@@ -8905,6 +9577,10 @@ const caasTags = {
               tags: {},
             },
             nl: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/nl',
               tagID: 'caas:language/nl',
               name: 'nl',
@@ -8915,6 +9591,10 @@ const caasTags = {
               tags: {},
             },
             bg: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/bg',
               tagID: 'caas:language/bg',
               name: 'bg',
@@ -8925,6 +9605,10 @@ const caasTags = {
               tags: {},
             },
             pt: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/pt',
               tagID: 'caas:language/pt',
               name: 'pt',
@@ -8935,6 +9619,10 @@ const caasTags = {
               tags: {},
             },
             it: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/it',
               tagID: 'caas:language/it',
               name: 'it',
@@ -8945,6 +9633,10 @@ const caasTags = {
               tags: {},
             },
             ru: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/ru',
               tagID: 'caas:language/ru',
               name: 'ru',
@@ -8955,6 +9647,10 @@ const caasTags = {
               tags: {},
             },
             'zh-Hans': {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/zh-Hans',
               tagID: 'caas:language/zh-Hans',
               name: 'zh-Hans',
@@ -8965,6 +9661,10 @@ const caasTags = {
               tags: {},
             },
             cs: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/cs',
               tagID: 'caas:language/cs',
               name: 'cs',
@@ -8975,6 +9675,10 @@ const caasTags = {
               tags: {},
             },
             da: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/da',
               tagID: 'caas:language/da',
               name: 'da',
@@ -8985,6 +9689,10 @@ const caasTags = {
               tags: {},
             },
             et: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/et',
               tagID: 'caas:language/et',
               name: 'et',
@@ -8995,6 +9703,10 @@ const caasTags = {
               tags: {},
             },
             es: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/es',
               tagID: 'caas:language/es',
               name: 'es',
@@ -9005,6 +9717,10 @@ const caasTags = {
               tags: {},
             },
             fi: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/fi',
               tagID: 'caas:language/fi',
               name: 'fi',
@@ -9015,6 +9731,10 @@ const caasTags = {
               tags: {},
             },
             'zh-Hant': {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/zh-Hant',
               tagID: 'caas:language/zh-Hant',
               name: 'zh-Hant',
@@ -9025,6 +9745,10 @@ const caasTags = {
               tags: {},
             },
             hr: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/hr',
               tagID: 'caas:language/hr',
               name: 'hr',
@@ -9035,6 +9759,10 @@ const caasTags = {
               tags: {},
             },
             hu: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/hu',
               tagID: 'caas:language/hu',
               name: 'hu',
@@ -9045,6 +9773,10 @@ const caasTags = {
               tags: {},
             },
             he: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/he',
               tagID: 'caas:language/he',
               name: 'he',
@@ -9055,6 +9787,10 @@ const caasTags = {
               tags: {},
             },
             ja: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/ja',
               tagID: 'caas:language/ja',
               name: 'ja',
@@ -9065,6 +9801,10 @@ const caasTags = {
               tags: {},
             },
             ko: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/ko',
               tagID: 'caas:language/ko',
               name: 'ko',
@@ -9075,6 +9815,10 @@ const caasTags = {
               tags: {},
             },
             lt: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/lt',
               tagID: 'caas:language/lt',
               name: 'lt',
@@ -9085,6 +9829,10 @@ const caasTags = {
               tags: {},
             },
             lv: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/lv',
               tagID: 'caas:language/lv',
               name: 'lv',
@@ -9095,6 +9843,10 @@ const caasTags = {
               tags: {},
             },
             ar: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/ar',
               tagID: 'caas:language/ar',
               name: 'ar',
@@ -9105,6 +9857,10 @@ const caasTags = {
               tags: {},
             },
             no: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/no',
               tagID: 'caas:language/no',
               name: 'no',
@@ -9115,6 +9871,10 @@ const caasTags = {
               tags: {},
             },
             pl: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/pl',
               tagID: 'caas:language/pl',
               name: 'pl',
@@ -9125,6 +9885,10 @@ const caasTags = {
               tags: {},
             },
             ro: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/ro',
               tagID: 'caas:language/ro',
               name: 'ro',
@@ -9135,6 +9899,10 @@ const caasTags = {
               tags: {},
             },
             sr: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/sr',
               tagID: 'caas:language/sr',
               name: 'sr',
@@ -9145,6 +9913,10 @@ const caasTags = {
               tags: {},
             },
             sv: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/sv',
               tagID: 'caas:language/sv',
               name: 'sv',
@@ -9155,6 +9927,10 @@ const caasTags = {
               tags: {},
             },
             sl: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/sl',
               tagID: 'caas:language/sl',
               name: 'sl',
@@ -9165,6 +9941,10 @@ const caasTags = {
               tags: {},
             },
             sk: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/sk',
               tagID: 'caas:language/sk',
               name: 'sk',
@@ -9175,6 +9955,10 @@ const caasTags = {
               tags: {},
             },
             tr: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/tr',
               tagID: 'caas:language/tr',
               name: 'tr',
@@ -9185,6 +9969,10 @@ const caasTags = {
               tags: {},
             },
             uk: {
+              parent: {
+                id: 'caas:language',
+                title: 'Language',
+              },
               path: '/content/cq:tags/caas/language/uk',
               tagID: 'caas:language/uk',
               name: 'uk',
@@ -9206,6 +9994,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             'build-info': {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/build-info',
               tagID: 'caas:source/build-info',
               name: 'build-info',
@@ -9216,6 +10008,10 @@ const caasTags = {
               tags: {},
             },
             northstar: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/northstar',
               tagID: 'caas:source/northstar',
               name: 'northstar',
@@ -9226,6 +10022,10 @@ const caasTags = {
               tags: {},
             },
             hawks: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/hawks',
               tagID: 'caas:source/hawks',
               name: 'hawks',
@@ -9236,6 +10036,10 @@ const caasTags = {
               tags: {},
             },
             doccloud: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/doccloud',
               tagID: 'caas:source/doccloud',
               name: 'doccloud',
@@ -9246,6 +10050,10 @@ const caasTags = {
               tags: {},
             },
             marketo: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/marketo',
               tagID: 'caas:source/marketo',
               name: 'marketo',
@@ -9256,6 +10064,10 @@ const caasTags = {
               tags: {},
             },
             magento: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/magento',
               tagID: 'caas:source/magento',
               name: 'magento',
@@ -9266,6 +10078,10 @@ const caasTags = {
               tags: {},
             },
             workfront: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/workfront',
               tagID: 'caas:source/workfront',
               name: 'workfront',
@@ -9276,6 +10092,10 @@ const caasTags = {
               tags: {},
             },
             experienceleague: {
+              parent: {
+                id: 'caas:source',
+                title: 'Source',
+              },
               path: '/content/cq:tags/caas/source/experienceleague',
               tagID: 'caas:source/experienceleague',
               name: 'experienceleague',
@@ -9298,6 +10118,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             acrobat: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/acrobat',
               tagID: 'caas:products/acrobat',
               name: 'acrobat',
@@ -9309,6 +10133,10 @@ const caasTags = {
               tags: {},
             },
             'after-effects': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/after-effects',
               tagID: 'caas:products/after-effects',
               name: 'after-effects',
@@ -9320,6 +10148,10 @@ const caasTags = {
               tags: {},
             },
             audition: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/audition',
               tagID: 'caas:products/audition',
               name: 'audition',
@@ -9331,6 +10163,10 @@ const caasTags = {
               tags: {},
             },
             bridge: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/bridge',
               tagID: 'caas:products/bridge',
               name: 'bridge',
@@ -9342,6 +10178,10 @@ const caasTags = {
               tags: {},
             },
             'character-animator': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/character-animator',
               tagID: 'caas:products/character-animator',
               name: 'character-animator',
@@ -9353,6 +10193,10 @@ const caasTags = {
               tags: {},
             },
             dimension: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/dimension',
               tagID: 'caas:products/dimension',
               name: 'dimension',
@@ -9364,6 +10208,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-fresco': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-fresco',
               tagID: 'caas:products/adobe-fresco',
               name: 'adobe-fresco',
@@ -9375,6 +10223,10 @@ const caasTags = {
               tags: {},
             },
             indesign: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/indesign',
               tagID: 'caas:products/indesign',
               name: 'indesign',
@@ -9386,6 +10238,10 @@ const caasTags = {
               tags: {},
             },
             'lightroom-classic': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/lightroom-classic',
               tagID: 'caas:products/lightroom-classic',
               name: 'lightroom-classic',
@@ -9397,6 +10253,10 @@ const caasTags = {
               tags: {},
             },
             'medium-by-adobe': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/medium-by-adobe',
               tagID: 'caas:products/medium-by-adobe',
               name: 'medium-by-adobe',
@@ -9408,6 +10268,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-sdk': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/pdf-sdk',
               tagID: 'caas:products/pdf-sdk',
               name: 'pdf-sdk',
@@ -9419,6 +10283,10 @@ const caasTags = {
               tags: {},
             },
             'photoshop-camera': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/photoshop-camera',
               tagID: 'caas:products/photoshop-camera',
               name: 'photoshop-camera',
@@ -9430,6 +10298,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-pro': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/premiere-pro',
               tagID: 'caas:products/premiere-pro',
               name: 'premiere-pro',
@@ -9441,6 +10313,10 @@ const caasTags = {
               tags: {},
             },
             reader: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/reader',
               tagID: 'caas:products/reader',
               name: 'reader',
@@ -9452,6 +10328,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-sign': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-sign',
               tagID: 'caas:products/adobe-sign',
               name: 'adobe-sign',
@@ -9463,6 +10343,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-stock': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-stock',
               tagID: 'caas:products/adobe-stock',
               name: 'adobe-stock',
@@ -9474,6 +10358,10 @@ const caasTags = {
               tags: {},
             },
             'substance-painter': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-painter',
               tagID: 'caas:products/substance-painter',
               name: 'substance-painter',
@@ -9485,6 +10373,10 @@ const caasTags = {
               tags: {},
             },
             xd: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/xd',
               tagID: 'caas:products/xd',
               name: 'xd',
@@ -9496,6 +10388,10 @@ const caasTags = {
               tags: {},
             },
             aero: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/aero',
               tagID: 'caas:products/aero',
               name: 'aero',
@@ -9507,6 +10403,10 @@ const caasTags = {
               tags: {},
             },
             animate: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/animate',
               tagID: 'caas:products/animate',
               name: 'animate',
@@ -9518,6 +10418,10 @@ const caasTags = {
               tags: {},
             },
             behance: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/behance',
               tagID: 'caas:products/behance',
               name: 'behance',
@@ -9529,6 +10433,10 @@ const caasTags = {
               tags: {},
             },
             capture: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/capture',
               tagID: 'caas:products/capture',
               name: 'capture',
@@ -9540,6 +10448,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/creative-cloud',
               tagID: 'caas:products/creative-cloud',
               name: 'creative-cloud',
@@ -9551,6 +10463,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-fonts': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-fonts',
               tagID: 'caas:products/adobe-fonts',
               name: 'adobe-fonts',
@@ -9562,6 +10478,10 @@ const caasTags = {
               tags: {},
             },
             illustrator: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/illustrator',
               tagID: 'caas:products/illustrator',
               name: 'illustrator',
@@ -9573,6 +10493,10 @@ const caasTags = {
               tags: {},
             },
             lightroom: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/lightroom',
               tagID: 'caas:products/lightroom',
               name: 'lightroom',
@@ -9584,6 +10508,10 @@ const caasTags = {
               tags: {},
             },
             'lightroom-on-mobile': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/lightroom-on-mobile',
               tagID: 'caas:products/lightroom-on-mobile',
               name: 'lightroom-on-mobile',
@@ -9595,6 +10523,10 @@ const caasTags = {
               tags: {},
             },
             'not-product-specific': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/not-product-specific',
               tagID: 'caas:products/not-product-specific',
               name: 'not-product-specific',
@@ -9606,6 +10538,10 @@ const caasTags = {
               tags: {},
             },
             photoshop: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/photoshop',
               tagID: 'caas:products/photoshop',
               name: 'photoshop',
@@ -9617,6 +10553,10 @@ const caasTags = {
               tags: {},
             },
             portfolio: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/portfolio',
               tagID: 'caas:products/portfolio',
               name: 'portfolio',
@@ -9628,6 +10568,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-rush': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/premiere-rush',
               tagID: 'caas:products/premiere-rush',
               name: 'premiere-rush',
@@ -9639,6 +10583,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-scan': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-scan',
               tagID: 'caas:products/adobe-scan',
               name: 'adobe-scan',
@@ -9650,6 +10598,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-spark': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-spark',
               tagID: 'caas:products/adobe-spark',
               name: 'adobe-spark',
@@ -9661,6 +10613,10 @@ const caasTags = {
               tags: {},
             },
             'substance-alchemist': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-alchemist',
               tagID: 'caas:products/substance-alchemist',
               name: 'substance-alchemist',
@@ -9672,6 +10628,10 @@ const caasTags = {
               tags: {},
             },
             'substance-source': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-source',
               tagID: 'caas:products/substance-source',
               name: 'substance-source',
@@ -9683,6 +10643,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-api': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/pdf-api',
               tagID: 'caas:products/pdf-api',
               name: 'pdf-api',
@@ -9693,6 +10657,10 @@ const caasTags = {
               tags: {},
             },
             preview: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/preview',
               tagID: 'caas:products/preview',
               name: 'preview',
@@ -9703,6 +10671,10 @@ const caasTags = {
               tags: {},
             },
             substance: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance',
               tagID: 'caas:products/substance',
               name: 'substance',
@@ -9713,6 +10685,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-advertising-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-advertising-cloud',
               tagID: 'caas:products/adobe-advertising-cloud',
               name: 'adobe-advertising-cloud',
@@ -9723,6 +10699,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-analytics': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-analytics',
               tagID: 'caas:products/adobe-analytics',
               name: 'adobe-analytics',
@@ -9733,6 +10713,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-audience-manager': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-audience-manager',
               tagID: 'caas:products/adobe-audience-manager',
               name: 'adobe-audience-manager',
@@ -9743,6 +10727,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-campaign': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-campaign',
               tagID: 'caas:products/adobe-campaign',
               name: 'adobe-campaign',
@@ -9753,6 +10741,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-commerce-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-commerce-cloud',
               tagID: 'caas:products/adobe-commerce-cloud',
               name: 'adobe-commerce-cloud',
@@ -9763,6 +10755,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-creative-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-creative-cloud',
               tagID: 'caas:products/adobe-creative-cloud',
               name: 'adobe-creative-cloud',
@@ -9773,6 +10769,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-document-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-document-cloud',
               tagID: 'caas:products/adobe-document-cloud',
               name: 'adobe-document-cloud',
@@ -9783,6 +10783,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-manager',
               tagID: 'caas:products/adobe-experience-manager',
               name: 'adobe-experience-manager',
@@ -9793,6 +10797,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-cloud': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-cloud',
               tagID: 'caas:products/adobe-experience-cloud',
               name: 'adobe-experience-cloud',
@@ -9803,6 +10811,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-platform': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-platform',
               tagID: 'caas:products/adobe-experience-platform',
               name: 'adobe-experience-platform',
@@ -9813,6 +10825,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-primetime': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-primetime',
               tagID: 'caas:products/adobe-primetime',
               name: 'adobe-primetime',
@@ -9823,6 +10839,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-sensei': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-sensei',
               tagID: 'caas:products/adobe-sensei',
               name: 'adobe-sensei',
@@ -9833,6 +10853,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-target': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-target',
               tagID: 'caas:products/adobe-target',
               name: 'adobe-target',
@@ -9843,6 +10867,10 @@ const caasTags = {
               tags: {},
             },
             'magento-business-intelligence': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/magento-business-intelligence',
               tagID: 'caas:products/magento-business-intelligence',
               name: 'magento-business-intelligence',
@@ -9853,6 +10881,10 @@ const caasTags = {
               tags: {},
             },
             'magento-commerce': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/magento-commerce',
               tagID: 'caas:products/magento-commerce',
               name: 'magento-commerce',
@@ -9863,6 +10895,10 @@ const caasTags = {
               tags: {},
             },
             'magento-order-management': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/magento-order-management',
               tagID: 'caas:products/magento-order-management',
               name: 'magento-order-management',
@@ -9873,6 +10909,10 @@ const caasTags = {
               tags: {},
             },
             'marketo-engage-bizible': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/marketo-engage-bizible',
               tagID: 'caas:products/marketo-engage-bizible',
               name: 'marketo-engage-bizible',
@@ -9883,6 +10923,10 @@ const caasTags = {
               tags: {},
             },
             workfront: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/workfront',
               tagID: 'caas:products/workfront',
               name: 'workfront',
@@ -9893,6 +10937,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-commerce': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-commerce',
               tagID: 'caas:products/adobe-commerce',
               name: 'adobe-commerce',
@@ -9903,6 +10951,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-workfront': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-workfront',
               tagID: 'caas:products/adobe-workfront',
               name: 'adobe-workfront',
@@ -9913,6 +10965,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-express': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/creative-cloud-express',
               tagID: 'caas:products/creative-cloud-express',
               name: 'creative-cloud-express',
@@ -9923,6 +10979,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-libraries': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/creative-cloud-libraries',
               tagID: 'caas:products/creative-cloud-libraries',
               name: 'creative-cloud-libraries',
@@ -9933,6 +10993,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-express': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/premiere-express',
               tagID: 'caas:products/premiere-express',
               name: 'premiere-express',
@@ -9943,6 +11007,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-assets': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-assets',
               tagID: 'caas:products/substance-3d-assets',
               name: 'substance-3d-assets',
@@ -9953,6 +11021,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-designer': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-designer',
               tagID: 'caas:products/substance-3d-designer',
               name: 'substance-3d-designer',
@@ -9963,6 +11035,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-modeler': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-modeler',
               tagID: 'caas:products/substance-3d-modeler',
               name: 'substance-3d-modeler',
@@ -9973,6 +11049,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-painter': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-painter',
               tagID: 'caas:products/substance-3d-painter',
               name: 'substance-3d-painter',
@@ -9983,6 +11063,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-sampler': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-sampler',
               tagID: 'caas:products/substance-3d-sampler',
               name: 'substance-3d-sampler',
@@ -9993,6 +11077,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-stager': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-stager',
               tagID: 'caas:products/substance-3d-stager',
               name: 'substance-3d-stager',
@@ -10003,6 +11091,10 @@ const caasTags = {
               tags: {},
             },
             'photoshop-express': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/photoshop-express',
               tagID: 'caas:products/photoshop-express',
               name: 'photoshop-express',
@@ -10013,6 +11105,10 @@ const caasTags = {
               tags: {},
             },
             'media-encoder': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/media-encoder',
               tagID: 'caas:products/media-encoder',
               name: 'media-encoder',
@@ -10023,6 +11119,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager-sites': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-manager-sites',
               tagID: 'caas:products/adobe-experience-manager-sites',
               name: 'adobe-experience-manager-sites',
@@ -10033,6 +11133,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager-forms': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-manager-forms',
               tagID: 'caas:products/adobe-experience-manager-forms',
               name: 'adobe-experience-manager-forms',
@@ -10043,6 +11147,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager-assets': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-manager-assets',
               tagID: 'caas:products/adobe-experience-manager-assets',
               name: 'adobe-experience-manager-assets',
@@ -10053,6 +11161,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-real-time-cdp': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-real-time-cdp',
               tagID: 'caas:products/adobe-real-time-cdp',
               name: 'adobe-real-time-cdp',
@@ -10063,6 +11175,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-for-teams': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/creative-cloud-for-teams',
               tagID: 'caas:products/creative-cloud-for-teams',
               name: 'creative-cloud-for-teams',
@@ -10073,6 +11189,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-collection': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/substance-3d-collection',
               tagID: 'caas:products/substance-3d-collection',
               name: 'substance-3d-collection',
@@ -10083,6 +11203,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-journey-optimizer': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-journey-optimizer',
               tagID: 'caas:products/adobe-journey-optimizer',
               name: 'adobe-journey-optimizer',
@@ -10093,6 +11217,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-for-enterprise': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/creative-cloud-for-enterprise',
               tagID: 'caas:products/creative-cloud-for-enterprise',
               name: 'creative-cloud-for-enterprise',
@@ -10103,6 +11231,10 @@ const caasTags = {
               tags: {},
             },
             'experience-manager-cloud-service': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/experience-manager-cloud-service',
               tagID: 'caas:products/experience-manager-cloud-service',
               name: 'experience-manager-cloud-service',
@@ -10113,6 +11245,10 @@ const caasTags = {
               tags: {},
             },
             'experience-manager-managed-service': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/experience-manager-managed-service',
               tagID: 'caas:products/experience-manager-managed-service',
               name: 'experience-manager-managed-service',
@@ -10123,6 +11259,10 @@ const caasTags = {
               tags: {},
             },
             connect: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/connect',
               tagID: 'caas:products/connect',
               name: 'connect',
@@ -10133,6 +11273,10 @@ const caasTags = {
               tags: {},
             },
             captivate: {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/captivate',
               tagID: 'caas:products/captivate',
               name: 'captivate',
@@ -10143,6 +11287,10 @@ const caasTags = {
               tags: {},
             },
             'marketo-measure': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/marketo-measure',
               tagID: 'caas:products/marketo-measure',
               name: 'marketo-measure',
@@ -10153,6 +11301,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager-guides': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-experience-manager-guides',
               tagID: 'caas:products/adobe-experience-manager-guides',
               name: 'adobe-experience-manager-guides',
@@ -10163,6 +11315,10 @@ const caasTags = {
               tags: {},
             },
             'customer-journey-analytics': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/customer-journey-analytics',
               tagID: 'caas:products/customer-journey-analytics',
               name: 'customer-journey-analytics',
@@ -10173,6 +11329,10 @@ const caasTags = {
               tags: {},
             },
             'learning-manager': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/learning-manager',
               tagID: 'caas:products/learning-manager',
               name: 'learning-manager',
@@ -10183,6 +11343,10 @@ const caasTags = {
               tags: {},
             },
             'frame-io': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/frame-io',
               tagID: 'caas:products/frame-io',
               name: 'frame-io',
@@ -10193,6 +11357,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-consulting-services': {
+              parent: {
+                id: 'caas:products',
+                title: 'Products',
+              },
               path: '/content/cq:tags/caas/products/adobe-consulting-services',
               tagID: 'caas:products/adobe-consulting-services',
               name: 'adobe-consulting-services',
@@ -10214,6 +11382,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             photo: {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/photo',
               tagID: 'caas:product-categories/photo',
               name: 'photo',
@@ -10224,6 +11396,10 @@ const caasTags = {
               tags: {},
             },
             'graphic-design': {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/graphic-design',
               tagID: 'caas:product-categories/graphic-design',
               name: 'graphic-design',
@@ -10234,6 +11410,10 @@ const caasTags = {
               tags: {},
             },
             video: {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/video',
               tagID: 'caas:product-categories/video',
               name: 'video',
@@ -10244,6 +11424,10 @@ const caasTags = {
               tags: {},
             },
             illustration: {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/illustration',
               tagID: 'caas:product-categories/illustration',
               name: 'illustration',
@@ -10254,6 +11438,10 @@ const caasTags = {
               tags: {},
             },
             'ui-and-ux': {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/ui-and-ux',
               tagID: 'caas:product-categories/ui-and-ux',
               name: 'ui-and-ux',
@@ -10264,6 +11452,10 @@ const caasTags = {
               tags: {},
             },
             'acrobat-and-pdf': {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/acrobat-and-pdf',
               tagID: 'caas:product-categories/acrobat-and-pdf',
               name: 'acrobat-and-pdf',
@@ -10274,6 +11466,10 @@ const caasTags = {
               tags: {},
             },
             '3d-and-ar': {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/3d-and-ar',
               tagID: 'caas:product-categories/3d-and-ar',
               name: '3d-and-ar',
@@ -10284,6 +11480,10 @@ const caasTags = {
               tags: {},
             },
             'social-media': {
+              parent: {
+                id: 'caas:product-categories',
+                title: 'Product Categories',
+              },
               path: '/content/cq:tags/caas/product-categories/social-media',
               tagID: 'caas:product-categories/social-media',
               name: 'social-media',
@@ -10305,6 +11505,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             acrobat: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/acrobat',
               tagID: 'caas:mnemonics/acrobat',
               name: 'acrobat',
@@ -10317,6 +11521,10 @@ const caasTags = {
               tags: {},
             },
             'after-effects': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/after-effects',
               tagID: 'caas:mnemonics/after-effects',
               name: 'after-effects',
@@ -10329,6 +11537,10 @@ const caasTags = {
               tags: {},
             },
             audition: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/audition',
               tagID: 'caas:mnemonics/audition',
               name: 'audition',
@@ -10341,6 +11553,10 @@ const caasTags = {
               tags: {},
             },
             bridge: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/bridge',
               tagID: 'caas:mnemonics/bridge',
               name: 'bridge',
@@ -10353,6 +11569,10 @@ const caasTags = {
               tags: {},
             },
             'character-animator': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/character-animator',
               tagID: 'caas:mnemonics/character-animator',
               name: 'character-animator',
@@ -10364,6 +11584,10 @@ const caasTags = {
               tags: {},
             },
             dimension: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/dimension',
               tagID: 'caas:mnemonics/dimension',
               name: 'dimension',
@@ -10375,6 +11599,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-fresco': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-fresco',
               tagID: 'caas:mnemonics/adobe-fresco',
               name: 'adobe-fresco',
@@ -10386,6 +11614,10 @@ const caasTags = {
               tags: {},
             },
             indesign: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/indesign',
               tagID: 'caas:mnemonics/indesign',
               name: 'indesign',
@@ -10397,6 +11629,10 @@ const caasTags = {
               tags: {},
             },
             'lightroom-classic': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/lightroom-classic',
               tagID: 'caas:mnemonics/lightroom-classic',
               name: 'lightroom-classic',
@@ -10408,6 +11644,10 @@ const caasTags = {
               tags: {},
             },
             'medium-by-adobe': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/medium-by-adobe',
               tagID: 'caas:mnemonics/medium-by-adobe',
               name: 'medium-by-adobe',
@@ -10419,6 +11659,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-sdk': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/pdf-sdk',
               tagID: 'caas:mnemonics/pdf-sdk',
               name: 'pdf-sdk',
@@ -10430,6 +11674,10 @@ const caasTags = {
               tags: {},
             },
             'photoshop-camera': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/photoshop-camera',
               tagID: 'caas:mnemonics/photoshop-camera',
               name: 'photoshop-camera',
@@ -10441,6 +11689,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-pro': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/premiere-pro',
               tagID: 'caas:mnemonics/premiere-pro',
               name: 'premiere-pro',
@@ -10452,6 +11704,10 @@ const caasTags = {
               tags: {},
             },
             reader: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/reader',
               tagID: 'caas:mnemonics/reader',
               name: 'reader',
@@ -10463,6 +11719,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-sign': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-sign',
               tagID: 'caas:mnemonics/adobe-sign',
               name: 'adobe-sign',
@@ -10474,6 +11734,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-stock': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-stock',
               tagID: 'caas:mnemonics/adobe-stock',
               name: 'adobe-stock',
@@ -10485,6 +11749,10 @@ const caasTags = {
               tags: {},
             },
             'substance-painter': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-painter',
               tagID: 'caas:mnemonics/substance-painter',
               name: 'substance-painter',
@@ -10496,6 +11764,10 @@ const caasTags = {
               tags: {},
             },
             xd: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/xd',
               tagID: 'caas:mnemonics/xd',
               name: 'xd',
@@ -10508,6 +11780,10 @@ const caasTags = {
               tags: {},
             },
             aero: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/aero',
               tagID: 'caas:mnemonics/aero',
               name: 'aero',
@@ -10519,6 +11795,10 @@ const caasTags = {
               tags: {},
             },
             animate: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/animate',
               tagID: 'caas:mnemonics/animate',
               name: 'animate',
@@ -10530,6 +11810,10 @@ const caasTags = {
               tags: {},
             },
             behance: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/behance',
               tagID: 'caas:mnemonics/behance',
               name: 'behance',
@@ -10541,6 +11825,10 @@ const caasTags = {
               tags: {},
             },
             capture: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/capture',
               tagID: 'caas:mnemonics/capture',
               name: 'capture',
@@ -10553,6 +11841,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/creative-cloud',
               tagID: 'caas:mnemonics/creative-cloud',
               name: 'creative-cloud',
@@ -10564,6 +11856,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-fonts': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-fonts',
               tagID: 'caas:mnemonics/adobe-fonts',
               name: 'adobe-fonts',
@@ -10576,6 +11872,10 @@ const caasTags = {
               tags: {},
             },
             illustrator: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/illustrator',
               tagID: 'caas:mnemonics/illustrator',
               name: 'illustrator',
@@ -10588,6 +11888,10 @@ const caasTags = {
               tags: {},
             },
             lightroom: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/lightroom',
               tagID: 'caas:mnemonics/lightroom',
               name: 'lightroom',
@@ -10599,6 +11903,10 @@ const caasTags = {
               tags: {},
             },
             'lightroom-on-mobile': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/lightroom-on-mobile',
               tagID: 'caas:mnemonics/lightroom-on-mobile',
               name: 'lightroom-on-mobile',
@@ -10610,6 +11918,10 @@ const caasTags = {
               tags: {},
             },
             'not-product-specific': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/not-product-specific',
               tagID: 'caas:mnemonics/not-product-specific',
               name: 'not-product-specific',
@@ -10621,6 +11933,10 @@ const caasTags = {
               tags: {},
             },
             photoshop: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/photoshop',
               tagID: 'caas:mnemonics/photoshop',
               name: 'photoshop',
@@ -10632,6 +11948,10 @@ const caasTags = {
               tags: {},
             },
             portfolio: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/portfolio',
               tagID: 'caas:mnemonics/portfolio',
               name: 'portfolio',
@@ -10643,6 +11963,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-rush': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/premiere-rush',
               tagID: 'caas:mnemonics/premiere-rush',
               name: 'premiere-rush',
@@ -10654,6 +11978,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-scan': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-scan',
               tagID: 'caas:mnemonics/adobe-scan',
               name: 'adobe-scan',
@@ -10665,6 +11993,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-spark': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-spark',
               tagID: 'caas:mnemonics/adobe-spark',
               name: 'adobe-spark',
@@ -10676,6 +12008,10 @@ const caasTags = {
               tags: {},
             },
             'substance-alchemist': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-alchemist',
               tagID: 'caas:mnemonics/substance-alchemist',
               name: 'substance-alchemist',
@@ -10687,6 +12023,10 @@ const caasTags = {
               tags: {},
             },
             'substance-source': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-source',
               tagID: 'caas:mnemonics/substance-source',
               name: 'substance-source',
@@ -10698,6 +12038,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-api': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/pdf-api',
               tagID: 'caas:mnemonics/pdf-api',
               name: 'pdf-api',
@@ -10708,6 +12052,10 @@ const caasTags = {
               tags: {},
             },
             preview: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/preview',
               tagID: 'caas:mnemonics/preview',
               name: 'preview',
@@ -10718,6 +12066,10 @@ const caasTags = {
               tags: {},
             },
             substance: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance',
               tagID: 'caas:mnemonics/substance',
               name: 'substance',
@@ -10728,6 +12080,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-advertising-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-advertising-cloud',
               tagID: 'caas:mnemonics/adobe-advertising-cloud',
               name: 'adobe-advertising-cloud',
@@ -10738,6 +12094,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-analytics': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-analytics',
               tagID: 'caas:mnemonics/adobe-analytics',
               name: 'adobe-analytics',
@@ -10748,6 +12108,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-audience-manager': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-audience-manager',
               tagID: 'caas:mnemonics/adobe-audience-manager',
               name: 'adobe-audience-manager',
@@ -10758,6 +12122,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-campaign': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-campaign',
               tagID: 'caas:mnemonics/adobe-campaign',
               name: 'adobe-campaign',
@@ -10768,6 +12136,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-commerce-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-commerce-cloud',
               tagID: 'caas:mnemonics/adobe-commerce-cloud',
               name: 'adobe-commerce-cloud',
@@ -10778,6 +12150,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-creative-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-creative-cloud',
               tagID: 'caas:mnemonics/adobe-creative-cloud',
               name: 'adobe-creative-cloud',
@@ -10788,6 +12164,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-document-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-document-cloud',
               tagID: 'caas:mnemonics/adobe-document-cloud',
               name: 'adobe-document-cloud',
@@ -10798,6 +12178,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-manager': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-experience-manager',
               tagID: 'caas:mnemonics/adobe-experience-manager',
               name: 'adobe-experience-manager',
@@ -10808,6 +12192,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-cloud': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-experience-cloud',
               tagID: 'caas:mnemonics/adobe-experience-cloud',
               name: 'adobe-experience-cloud',
@@ -10818,6 +12206,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-experience-platform': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-experience-platform',
               tagID: 'caas:mnemonics/adobe-experience-platform',
               name: 'adobe-experience-platform',
@@ -10828,6 +12220,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-primetime': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-primetime',
               tagID: 'caas:mnemonics/adobe-primetime',
               name: 'adobe-primetime',
@@ -10838,6 +12234,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-sensei': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-sensei',
               tagID: 'caas:mnemonics/adobe-sensei',
               name: 'adobe-sensei',
@@ -10848,6 +12248,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-target': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-target',
               tagID: 'caas:mnemonics/adobe-target',
               name: 'adobe-target',
@@ -10858,6 +12262,10 @@ const caasTags = {
               tags: {},
             },
             'magento-business-intelligence': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/magento-business-intelligence',
               tagID: 'caas:mnemonics/magento-business-intelligence',
               name: 'magento-business-intelligence',
@@ -10868,6 +12276,10 @@ const caasTags = {
               tags: {},
             },
             'magento-commerce': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/magento-commerce',
               tagID: 'caas:mnemonics/magento-commerce',
               name: 'magento-commerce',
@@ -10878,6 +12290,10 @@ const caasTags = {
               tags: {},
             },
             'magento-order-management': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/magento-order-management',
               tagID: 'caas:mnemonics/magento-order-management',
               name: 'magento-order-management',
@@ -10888,6 +12304,10 @@ const caasTags = {
               tags: {},
             },
             'marketo-engage-bizible': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/marketo-engage-bizible',
               tagID: 'caas:mnemonics/marketo-engage-bizible',
               name: 'marketo-engage-bizible',
@@ -10898,6 +12318,10 @@ const caasTags = {
               tags: {},
             },
             workfront: {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/workfront',
               tagID: 'caas:mnemonics/workfront',
               name: 'workfront',
@@ -10908,6 +12332,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-commerce': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-commerce',
               tagID: 'caas:mnemonics/adobe-commerce',
               name: 'adobe-commerce',
@@ -10918,6 +12346,10 @@ const caasTags = {
               tags: {},
             },
             'adobe-workfront': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/adobe-workfront',
               tagID: 'caas:mnemonics/adobe-workfront',
               name: 'adobe-workfront',
@@ -10928,6 +12360,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-express': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/creative-cloud-express',
               tagID: 'caas:mnemonics/creative-cloud-express',
               name: 'creative-cloud-express',
@@ -10938,6 +12374,10 @@ const caasTags = {
               tags: {},
             },
             'creative-cloud-libraries': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/creative-cloud-libraries',
               tagID: 'caas:mnemonics/creative-cloud-libraries',
               name: 'creative-cloud-libraries',
@@ -10948,6 +12388,10 @@ const caasTags = {
               tags: {},
             },
             'premiere-express': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/premiere-express',
               tagID: 'caas:mnemonics/premiere-express',
               name: 'premiere-express',
@@ -10958,6 +12402,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-assets': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-assets',
               tagID: 'caas:mnemonics/substance-3d-assets',
               name: 'substance-3d-assets',
@@ -10968,6 +12416,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-designer': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-designer',
               tagID: 'caas:mnemonics/substance-3d-designer',
               name: 'substance-3d-designer',
@@ -10978,6 +12430,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-modeler': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-modeler',
               tagID: 'caas:mnemonics/substance-3d-modeler',
               name: 'substance-3d-modeler',
@@ -10988,6 +12444,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-painter': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-painter',
               tagID: 'caas:mnemonics/substance-3d-painter',
               name: 'substance-3d-painter',
@@ -10998,6 +12458,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-sampler': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-sampler',
               tagID: 'caas:mnemonics/substance-3d-sampler',
               name: 'substance-3d-sampler',
@@ -11008,6 +12472,10 @@ const caasTags = {
               tags: {},
             },
             'substance-3d-stager': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/substance-3d-stager',
               tagID: 'caas:mnemonics/substance-3d-stager',
               name: 'substance-3d-stager',
@@ -11018,6 +12486,10 @@ const caasTags = {
               tags: {},
             },
             'photoshop-express': {
+              parent: {
+                id: 'caas:mnemonics',
+                title: 'Mnemonics',
+              },
               path: '/content/cq:tags/caas/mnemonics/photoshop-express',
               tagID: 'caas:mnemonics/photoshop-express',
               name: 'photoshop-express',
@@ -11039,6 +12511,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             enterprise: {
+              parent: {
+                id: 'caas:audience',
+                title: 'Audience',
+              },
               path: '/content/cq:tags/caas/audience/enterprise',
               tagID: 'caas:audience/enterprise',
               name: 'enterprise',
@@ -11049,6 +12525,10 @@ const caasTags = {
               tags: {},
             },
             individual: {
+              parent: {
+                id: 'caas:audience',
+                title: 'Audience',
+              },
               path: '/content/cq:tags/caas/audience/individual',
               tagID: 'caas:audience/individual',
               name: 'individual',
@@ -11059,6 +12539,10 @@ const caasTags = {
               tags: {},
             },
             smb: {
+              parent: {
+                id: 'caas:audience',
+                title: 'Audience',
+              },
               path: '/content/cq:tags/caas/audience/smb',
               tagID: 'caas:audience/smb',
               name: 'smb',
@@ -11080,6 +12564,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             agreements: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/agreements',
               tagID: 'caas:topic/agreements',
               name: 'agreements',
@@ -11090,6 +12578,10 @@ const caasTags = {
               tags: {},
             },
             'work-from-anywhere': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/work-from-anywhere',
               tagID: 'caas:topic/work-from-anywhere',
               name: 'work-from-anywhere',
@@ -11100,6 +12592,10 @@ const caasTags = {
               tags: {},
             },
             'electronic-signature': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/electronic-signature',
               tagID: 'caas:topic/electronic-signature',
               name: 'electronic-signature',
@@ -11110,6 +12606,10 @@ const caasTags = {
               tags: {},
             },
             'digital-signature': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/digital-signature',
               tagID: 'caas:topic/digital-signature',
               name: 'digital-signature',
@@ -11120,6 +12620,10 @@ const caasTags = {
               tags: {},
             },
             contracts: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/contracts',
               tagID: 'caas:topic/contracts',
               name: 'contracts',
@@ -11130,6 +12634,10 @@ const caasTags = {
               tags: {},
             },
             invoices: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/invoices',
               tagID: 'caas:topic/invoices',
               name: 'invoices',
@@ -11140,6 +12648,10 @@ const caasTags = {
               tags: {},
             },
             'digital-transformation': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/digital-transformation',
               tagID: 'caas:topic/digital-transformation',
               name: 'digital-transformation',
@@ -11150,6 +12662,10 @@ const caasTags = {
               tags: {},
             },
             'campaign-management': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/campaign-management',
               tagID: 'caas:topic/campaign-management',
               name: 'campaign-management',
@@ -11160,6 +12676,10 @@ const caasTags = {
               tags: {},
             },
             'artificial-intelligence': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/artificial-intelligence',
               tagID: 'caas:topic/artificial-intelligence',
               name: 'artificial-intelligence',
@@ -11170,6 +12690,10 @@ const caasTags = {
               tags: {},
             },
             commerce: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/commerce',
               tagID: 'caas:topic/commerce',
               name: 'commerce',
@@ -11180,6 +12704,10 @@ const caasTags = {
               tags: {},
             },
             trust: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/trust',
               tagID: 'caas:topic/trust',
               name: 'trust',
@@ -11190,6 +12718,10 @@ const caasTags = {
               tags: {},
             },
             advertising: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/advertising',
               tagID: 'caas:topic/advertising',
               name: 'advertising',
@@ -11200,6 +12732,10 @@ const caasTags = {
               tags: {},
             },
             analytics: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/analytics',
               tagID: 'caas:topic/analytics',
               name: 'analytics',
@@ -11210,6 +12746,10 @@ const caasTags = {
               tags: {},
             },
             'content-management': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/content-management',
               tagID: 'caas:topic/content-management',
               name: 'content-management',
@@ -11220,6 +12760,10 @@ const caasTags = {
               tags: {},
             },
             'customer-intelligence': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/customer-intelligence',
               tagID: 'caas:topic/customer-intelligence',
               name: 'customer-intelligence',
@@ -11230,6 +12774,10 @@ const caasTags = {
               tags: {},
             },
             'data-management': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/data-management',
               tagID: 'caas:topic/data-management',
               name: 'data-management',
@@ -11240,6 +12788,10 @@ const caasTags = {
               tags: {},
             },
             'digital-trends': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/digital-trends',
               tagID: 'caas:topic/digital-trends',
               name: 'digital-trends',
@@ -11250,6 +12802,10 @@ const caasTags = {
               tags: {},
             },
             'marketing-automation': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/marketing-automation',
               tagID: 'caas:topic/marketing-automation',
               name: 'marketing-automation',
@@ -11260,6 +12816,10 @@ const caasTags = {
               tags: {},
             },
             personalization: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/personalization',
               tagID: 'caas:topic/personalization',
               name: 'personalization',
@@ -11270,6 +12830,10 @@ const caasTags = {
               tags: {},
             },
             'email-marketing': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/email-marketing',
               tagID: 'caas:topic/email-marketing',
               name: 'email-marketing',
@@ -11280,6 +12844,10 @@ const caasTags = {
               tags: {},
             },
             'digital-foundation': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/digital-foundation',
               tagID: 'caas:topic/digital-foundation',
               name: 'digital-foundation',
@@ -11290,6 +12858,10 @@ const caasTags = {
               tags: {},
             },
             'work-management': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/work-management',
               tagID: 'caas:topic/work-management',
               name: 'work-management',
@@ -11300,6 +12872,10 @@ const caasTags = {
               tags: {},
             },
             'creative-leadership': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/creative-leadership',
               tagID: 'caas:topic/creative-leadership',
               name: 'creative-leadership',
@@ -11310,6 +12886,10 @@ const caasTags = {
               tags: {},
             },
             collaboration: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/collaboration',
               tagID: 'caas:topic/collaboration',
               name: 'collaboration',
@@ -11320,6 +12900,10 @@ const caasTags = {
               tags: {},
             },
             'process-and-scale': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/process-and-scale',
               tagID: 'caas:topic/process-and-scale',
               name: 'process-and-scale',
@@ -11330,6 +12914,10 @@ const caasTags = {
               tags: {},
             },
             'business-impact': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/business-impact',
               tagID: 'caas:topic/business-impact',
               name: 'business-impact',
@@ -11340,6 +12928,10 @@ const caasTags = {
               tags: {},
             },
             branding: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/branding',
               tagID: 'caas:topic/branding',
               name: 'branding',
@@ -11350,6 +12942,10 @@ const caasTags = {
               tags: {},
             },
             'web-design': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/web-design',
               tagID: 'caas:topic/web-design',
               name: 'web-design',
@@ -11360,6 +12956,10 @@ const caasTags = {
               tags: {},
             },
             'print-design': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/print-design',
               tagID: 'caas:topic/print-design',
               name: 'print-design',
@@ -11370,6 +12970,10 @@ const caasTags = {
               tags: {},
             },
             '3d-design': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/3d-design',
               tagID: 'caas:topic/3d-design',
               name: '3d-design',
@@ -11380,6 +12984,10 @@ const caasTags = {
               tags: {},
             },
             'video-production': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/video-production',
               tagID: 'caas:topic/video-production',
               name: 'video-production',
@@ -11390,6 +12998,10 @@ const caasTags = {
               tags: {},
             },
             'marketing-strategy': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/marketing-strategy',
               tagID: 'caas:topic/marketing-strategy',
               name: 'marketing-strategy',
@@ -11400,6 +13012,10 @@ const caasTags = {
               tags: {},
             },
             'admininstrative-management': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/admininstrative-management',
               tagID: 'caas:topic/admininstrative-management',
               name: 'admininstrative-management',
@@ -11410,6 +13026,10 @@ const caasTags = {
               tags: {},
             },
             'jpg-to-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/jpg-to-pdf',
               tagID: 'caas:topic/jpg-to-pdf',
               name: 'jpg-to-pdf',
@@ -11420,6 +13040,10 @@ const caasTags = {
               tags: {},
             },
             'merge-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/merge-pdf',
               tagID: 'caas:topic/merge-pdf',
               name: 'merge-pdf',
@@ -11430,6 +13054,10 @@ const caasTags = {
               tags: {},
             },
             'compress-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/compress-pdf',
               tagID: 'caas:topic/compress-pdf',
               name: 'compress-pdf',
@@ -11440,6 +13068,10 @@ const caasTags = {
               tags: {},
             },
             'edit-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/edit-pdf',
               tagID: 'caas:topic/edit-pdf',
               name: 'edit-pdf',
@@ -11450,6 +13082,10 @@ const caasTags = {
               tags: {},
             },
             'word-to-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/word-to-pdf',
               tagID: 'caas:topic/word-to-pdf',
               name: 'word-to-pdf',
@@ -11460,6 +13096,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-to-word': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/pdf-to-word',
               tagID: 'caas:topic/pdf-to-word',
               name: 'pdf-to-word',
@@ -11470,6 +13110,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-to-excel': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/pdf-to-excel',
               tagID: 'caas:topic/pdf-to-excel',
               name: 'pdf-to-excel',
@@ -11480,6 +13124,10 @@ const caasTags = {
               tags: {},
             },
             'reorder-pdf-pages': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/reorder-pdf-pages',
               tagID: 'caas:topic/reorder-pdf-pages',
               name: 'reorder-pdf-pages',
@@ -11490,6 +13138,10 @@ const caasTags = {
               tags: {},
             },
             'request-signatures': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/request-signatures',
               tagID: 'caas:topic/request-signatures',
               name: 'request-signatures',
@@ -11500,6 +13152,10 @@ const caasTags = {
               tags: {},
             },
             'add-pages-to-a-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/add-pages-to-a-pdf',
               tagID: 'caas:topic/add-pages-to-a-pdf',
               name: 'add-pages-to-a-pdf',
@@ -11510,6 +13166,10 @@ const caasTags = {
               tags: {},
             },
             'extract-pdf-pages': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/extract-pdf-pages',
               tagID: 'caas:topic/extract-pdf-pages',
               name: 'extract-pdf-pages',
@@ -11520,6 +13180,10 @@ const caasTags = {
               tags: {},
             },
             'convert-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/convert-pdf',
               tagID: 'caas:topic/convert-pdf',
               name: 'convert-pdf',
@@ -11530,6 +13194,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-to-jpg': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/pdf-to-jpg',
               tagID: 'caas:topic/pdf-to-jpg',
               name: 'pdf-to-jpg',
@@ -11540,6 +13208,10 @@ const caasTags = {
               tags: {},
             },
             'fill-&-sign': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/fill-&-sign',
               tagID: 'caas:topic/fill-&-sign',
               name: 'fill-&-sign',
@@ -11550,6 +13222,10 @@ const caasTags = {
               tags: {},
             },
             'pdf-to-ppt': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/pdf-to-ppt',
               tagID: 'caas:topic/pdf-to-ppt',
               name: 'pdf-to-ppt',
@@ -11560,6 +13236,10 @@ const caasTags = {
               tags: {},
             },
             'excel-to-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/excel-to-pdf',
               tagID: 'caas:topic/excel-to-pdf',
               name: 'excel-to-pdf',
@@ -11570,6 +13250,10 @@ const caasTags = {
               tags: {},
             },
             'ppt-to-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/ppt-to-pdf',
               tagID: 'caas:topic/ppt-to-pdf',
               name: 'ppt-to-pdf',
@@ -11580,6 +13264,10 @@ const caasTags = {
               tags: {},
             },
             'split-a-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/split-a-pdf',
               tagID: 'caas:topic/split-a-pdf',
               name: 'split-a-pdf',
@@ -11590,6 +13278,10 @@ const caasTags = {
               tags: {},
             },
             'delete-pdf-pages': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/delete-pdf-pages',
               tagID: 'caas:topic/delete-pdf-pages',
               name: 'delete-pdf-pages',
@@ -11600,6 +13292,10 @@ const caasTags = {
               tags: {},
             },
             'rotate-pdf-pages': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/rotate-pdf-pages',
               tagID: 'caas:topic/rotate-pdf-pages',
               name: 'rotate-pdf-pages',
@@ -11610,6 +13306,10 @@ const caasTags = {
               tags: {},
             },
             'password-protect-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/password-protect-pdf',
               tagID: 'caas:topic/password-protect-pdf',
               name: 'password-protect-pdf',
@@ -11620,6 +13320,10 @@ const caasTags = {
               tags: {},
             },
             integration: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/integration',
               tagID: 'caas:topic/integration',
               name: 'integration',
@@ -11630,6 +13334,10 @@ const caasTags = {
               tags: {},
             },
             'free-trial': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/free-trial',
               tagID: 'caas:topic/free-trial',
               name: 'free-trial',
@@ -11640,6 +13348,10 @@ const caasTags = {
               tags: {},
             },
             frictionless: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/frictionless',
               tagID: 'caas:topic/frictionless',
               name: 'frictionless',
@@ -11650,6 +13362,10 @@ const caasTags = {
               tags: {},
             },
             compare: {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/compare',
               tagID: 'caas:topic/compare',
               name: 'compare',
@@ -11660,6 +13376,10 @@ const caasTags = {
               tags: {},
             },
             'crop-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/crop-pdf',
               tagID: 'caas:topic/crop-pdf',
               name: 'crop-pdf',
@@ -11670,6 +13390,10 @@ const caasTags = {
               tags: {},
             },
             'rearrange-pdf': {
+              parent: {
+                id: 'caas:topic',
+                title: 'Topic',
+              },
               path: '/content/cq:tags/caas/topic/rearrange-pdf',
               tagID: 'caas:topic/rearrange-pdf',
               name: 'rearrange-pdf',
@@ -11691,6 +13415,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             beginner: {
+              parent: {
+                id: 'caas:technical-level',
+                title: 'Technical Level',
+              },
               path: '/content/cq:tags/caas/technical-level/beginner',
               tagID: 'caas:technical-level/beginner',
               name: 'beginner',
@@ -11701,6 +13429,10 @@ const caasTags = {
               tags: {},
             },
             intermediate: {
+              parent: {
+                id: 'caas:technical-level',
+                title: 'Technical Level',
+              },
               path: '/content/cq:tags/caas/technical-level/intermediate',
               tagID: 'caas:technical-level/intermediate',
               name: 'intermediate',
@@ -11711,6 +13443,10 @@ const caasTags = {
               tags: {},
             },
             advanced: {
+              parent: {
+                id: 'caas:technical-level',
+                title: 'Technical Level',
+              },
               path: '/content/cq:tags/caas/technical-level/advanced',
               tagID: 'caas:technical-level/advanced',
               name: 'advanced',
@@ -11732,6 +13468,10 @@ const caasTags = {
           'cq:movedTo': '',
           tags: {
             brushes: {
+              parent: {
+                id: 'caas:features',
+                title: 'Features',
+              },
               path: '/content/cq:tags/caas/features/brushes',
               tagID: 'caas:features/brushes',
               name: 'brushes',
@@ -11742,6 +13482,10 @@ const caasTags = {
               tags: {},
             },
             'edit-photos': {
+              parent: {
+                id: 'caas:features',
+                title: 'Features',
+              },
               path: '/content/cq:tags/caas/features/edit-photos',
               tagID: 'caas:features/edit-photos',
               name: 'edit-photos',
@@ -11752,6 +13496,10 @@ const caasTags = {
               tags: {},
             },
             color: {
+              parent: {
+                id: 'caas:features',
+                title: 'Features',
+              },
               path: '/content/cq:tags/caas/features/color',
               tagID: 'caas:features/color',
               name: 'color',
@@ -11762,6 +13510,10 @@ const caasTags = {
               tags: {},
             },
             layers: {
+              parent: {
+                id: 'caas:features',
+                title: 'Features',
+              },
               path: '/content/cq:tags/caas/features/layers',
               tagID: 'caas:features/layers',
               name: 'layers',

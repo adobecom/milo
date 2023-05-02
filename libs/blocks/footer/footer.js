@@ -19,7 +19,7 @@ const SPECTRUM_CHEVRON = '<svg class="icon-chevron-down" xmlns="http://www.w3.or
 const ADCHOICE_IMG = `<img class="footer-link-img" loading="lazy" alt="AdChoices icon" src="${base}/blocks/footer/adchoices-small.svg" height="9" width="9">`;
 const SUPPORTED_SOCIAL = ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'];
 
-class Footer {
+export class Footer {
   constructor(body, footerEl) {
     this.footerEl = footerEl;
     this.body = body;
@@ -82,7 +82,7 @@ class Footer {
   decorateGrid = () => {
     const navGrid = createTag('div', { class: 'footer-nav-grid' });
     const columns = [...this.body.querySelectorAll('body > div')]
-      .filter((col) => col.firstElementChild.nodeName === 'H2');
+      .filter((col) => col.firstElementChild?.nodeName === 'H2');
 
     if (!columns.length) {
       this.footerEl.classList.add('footer-small');
@@ -193,23 +193,45 @@ class Footer {
 
   decoratePrivacy = () => {
     const copyrightEl = this.body.querySelector('div > p > em');
-    const links = copyrightEl?.parentElement.querySelectorAll('a');
-    if (!copyrightEl || !links) return null;
+    if (!copyrightEl) return null;
+    const container = copyrightEl.closest('div');
     const privacyWrapper = createTag('div', { class: 'footer-privacy' });
     const copyright = createTag('p', { class: 'footer-privacy-copyright' });
     const year = new Date().getFullYear();
     copyright.textContent = `Copyright © ${year} ${copyrightEl.textContent}`;
     privacyWrapper.append(copyright);
-    const infoLinks = createTag('ul', { class: 'footer-privacy-links' });
-    links.forEach((link) => {
-      const li = createTag('li', { class: 'footer-privacy-link' });
-      if (link.hash === '#interest-based-ads') {
-        link.insertAdjacentHTML('afterbegin', ADCHOICE_IMG);
-      }
-      li.append(link);
-      infoLinks.append(li);
-    });
-    privacyWrapper.append(infoLinks);
+
+    const adchoice = container.querySelector('a[href*="#interest-based-ads"]');
+    adchoice?.insertAdjacentHTML('afterbegin', ADCHOICE_IMG);
+
+    const ulClass = 'footer-privacy-links';
+    const liClass = 'footer-privacy-link';
+    let ul = container.querySelector('ul');
+
+    if (ul) {
+      ul.classList.add(ulClass);
+      const listItems = ul.querySelectorAll('li');
+      [...listItems].forEach((item) => {
+        item.classList.add(liClass);
+      });
+    } else {
+      const links = container.querySelectorAll('a');
+      if (!links) return null;
+      ul = createTag('ul', { class: ulClass });
+      links.forEach((link) => {
+        const li = createTag('li', { class: liClass });
+        li.append(link);
+        ul.append(li);
+      });
+    }
+    privacyWrapper.append(ul);
+
+    const secondLine = container.querySelector('p:nth-of-type(2)');
+    if (secondLine) {
+      secondLine.classList.add('footer-copyright-second');
+      privacyWrapper.append(secondLine);
+    }
+
     return privacyWrapper;
   };
 

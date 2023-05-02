@@ -7,14 +7,14 @@ export function decorateButtons(el, size) {
     const parent = button.parentElement;
     const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
     button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-L, button-XL */
+    if (size) button.classList.add(size); /* button-l, button-xl */
     parent.insertAdjacentElement('afterend', button);
     parent.remove();
   });
   const actionArea = buttons[0].closest('p, div');
   if (actionArea) {
     actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-XL');
+    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
   }
 }
 
@@ -26,7 +26,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, config = ['M', 'S', 'M']) {
+export function decorateBlockText(el, config = ['m', 's', 'm']) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {

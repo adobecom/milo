@@ -7,6 +7,18 @@
   overflow: hidden;
 }
 
+.dark .aside,
+.aside.dark {
+  color: var(--color-white);
+  background-color: #1E1E1E;
+}
+
+.light .aside,
+.aside.light {
+  color: var(--text-color);
+  background-color: #f5f5f5;
+}
+
 .aside p {
   margin: 0;
 }
@@ -23,18 +35,8 @@
   min-height: 700px;
 }
 
-.aside.dark {
-  background-color: #1E1E1E;
-}
-
-.aside.dark h1,
-.aside.dark h2,
-.aside.dark h3,
-.aside.dark h4,
-.aside.dark h5,
-.aside.dark h6,
-.aside.dark p {
-  color: white;
+.aside.split picture {
+  display: flex;
 }
 
 .aside .background {
@@ -50,6 +52,7 @@
   height: 100%;
 }
 
+.aside .split-image img,
 .aside .background img {
   object-fit: cover;
   min-height: 700px;
@@ -60,27 +63,47 @@
 .aside .foreground.container {
   display: flex;
   position: relative;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.aside:not(.notification):not(.inline) .foreground.container> :first-child {
+  padding: var(--spacing-xxxl) 0 0;
+}
+
+.aside:not(.notification):not(.inline) .foreground.container> :last-child {
+  margin-bottom: var(--spacing-xxxl);
 }
 
 .aside .foreground.container .text {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
-  padding: var(--spacing-xxxl) 0 0;
 }
 
-.aside .foreground.container .text>* {
+.aside.notification .foreground.container .text {
+  max-width: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.aside.notification .foreground.container .text a {
+  white-space: nowrap;
+}
+
+.aside:not(.notification) .foreground.container .text > * {
   width: 100%;
 }
 
-.aside .foreground.container .text .heading-XL {
-  margin: var(--spacing-xs) 0;
+.aside .foreground.container .text .heading-xl {
+  margin: 0;
+  margin-bottom: var(--spacing-xs);
 }
 
-.aside .foreground.container .text .body-S {
+.aside .foreground.container .text .body-m,
+.aside .foreground.container .text .body-s {
   margin-bottom: var(--spacing-s);
 }
 
@@ -88,23 +111,27 @@
   margin-bottom: 0;
 }
 
-.aside .foreground.container .text .action-area>a {
+.aside .foreground.container .text .action-area > a {
   margin-right: var(--spacing-s);
 }
 
-.aside .foreground.container div {
-  flex: 1 1 auto;
+.aside .foreground.container .text .action-area > a:last-child {
+  margin-right: 0;
 }
 
-.aside .foreground.container .image {
-  margin-top: 32px;
-  margin-bottom: var(--spacing-xxxl);
+.aside .foreground.container > div {
+  flex-grow: 1;
+  flex-basis: 0;
+  min-width: 0;
 }
 
-.aside .foreground.container img {
-  object-fit: contain;
-  height: 100%;
-  width: 100%;
+.aside.notification .foreground.container > div {
+  flex-basis: 100%;
+}
+
+.aside .foreground.container .image,
+.aside .foreground.container div:has(.milo-video) {
+  display: flex;
 }
 
 .aside .foreground.container .icon-area {
@@ -115,6 +142,11 @@
 
 .aside .foreground.container .icon-area .icon {
   color: transparent;
+}
+
+.aside.split .split-image img {
+  position: relative;
+  min-height: 270px;
 }
 
 .aside .foreground.container .icon-area img {
@@ -135,11 +167,6 @@
 
 .aside.split {
   flex-direction: column;
-  background-color: #1E1E1E;
-}
-
-.aside.split.light {
-  background-color: white;
 }
 
 .aside.split.large {
@@ -148,14 +175,21 @@
 
 .aside.split .foreground.container {
   width: 100%;
+  max-width: 100%;
+  flex-direction: column;
+  z-index: 1;
 }
 
 .aside.split .foreground.container .text {
-  color: white;
+  padding: var(--spacing-l) 0;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
 }
 
-.aside.split.light .foreground.container .text {
-  color: var(--text-color);
+.aside.inline .foreground.container .image,
+.aside.inline .foreground.container div:has(.milo-video),
+.aside.inline .foreground.container .text {
+  padding: 0;
 }
 
 .aside.split .background {
@@ -166,46 +200,25 @@
   background-color: transparent;
 }
 
-.aside.split .background img {
-  position: relative;
-  min-height: 270px;
-}
-
-.aside.split .foreground.container {
-  max-width: 100%;
-}
-
-.aside.split .foreground.container .text {
-  padding: 40px 0;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-}
-
 .aside.split .foreground.container .image {
   margin: 0;
   display: none;
 }
 
-.aside.split .foreground.container img {
+.aside.notification .foreground.container img {
+  display: block;
+}
+
+.aside .foreground.container .image video,
+.aside .foreground.container .image picture,
+.aside .foreground.container .image picture img {
+  width: 100%;
+  display: flex;
+}
+
+.aside.split .foreground.container .split-image img {
   object-fit: cover;
   height: 270px;
-}
-
-.aside.split .foreground.container {
-  flex-direction: column;
-}
-
-.aside.augmented-image .foreground.container {
-  justify-content: center;
-  align-items: center;
-}
-
-.aside.augmented-image .foreground.container .text {
-  margin: 0;
-}
-
-.aside.augmented-image .foreground.container .image {
-  margin: 0;
 }
 
 .aside.inline {
@@ -215,25 +228,16 @@
 .aside.inline .foreground.container {
   width: 100%;
   min-height: 0;
-  margin: 32px;
-}
-
-.aside.inline .foreground.container .image,
-.aside.inline .foreground.container .text {
-  padding: 0;
+  margin: 0 var(--spacing-m);
+  gap: var(--spacing-m);
 }
 
 .aside.inline .foreground.container .image {
   margin-top: 0;
-  margin-bottom: 24px;
 }
 
-.aside.inline .heading-S {
-  margin-bottom: 16px;
-}
-
-.aside.inline .action-area {
-  margin-top: 24px;
+.aside.inline .heading-s {
+  margin-bottom: var(--spacing-s);
 }
 
 .aside.notification {
@@ -244,76 +248,48 @@
   padding-top: var(--spacing-s);
   padding-bottom: var(--spacing-s);
   box-sizing: border-box;
+  justify-content: flex-start;
 }
 
 .aside.notification .foreground.container .image {
   max-width: 75px;
-  margin-top: 0;
-  margin-bottom: var(--spacing-xs);
+  margin: 0;
   order: -1;
 }
 
-.aside.notification .foreground.container img {
-  display: block;
-}
-
-.aside.notification .foreground.container .text {
-  max-width: none;
-  padding-top: 0;
-  padding-bottom: 0;
-  justify-content: center;
-}
-
-.aside.notification .foreground.container .text > * {
-  display: flex;
-  align-items: center;
-  flex: 0 1 auto;
-}
-
-.aside.notification .foreground.container .text[data-align=center],
-.aside.notification .foreground.container .text[data-align=center] > * {
-  justify-content: center;
-}
-
-.aside.notification .foreground.container .text[data-align=center] p {
+.aside.notification .foreground.container [data-align=center] {
   text-align: center;
-}
-
-.aside.notification .foreground.container .text .action-area {
-  margin-top: var(--spacing-s);
-}
-
-.aside.notification .foreground.container .text a {
-  white-space: nowrap;
+  justify-content: center;
 }
 
 .aside.notification .foreground.container .text a:not(.con-button) {
   width: auto;
-  margin-left: 5px;
-}
-
-.aside.notification .foreground.container .text .action-area>a {
-  margin-right: 0;
-}
-
-.aside.notification .foreground.container .text .body-area a {
-  text-decoration: underline;
-}
-
-.aside.notification .foreground.container .text .body-area a:first-of-type {
-  color: var(--text-color);
   font-weight: normal;
 }
 
-.aside.notification.dark .foreground.container .text .body-area a:first-of-type {
-  color: white;
+.aside.notification .foreground.container .text .action-area > a {
+  margin-right: 0;
 }
 
-.aside.notification .foreground.container .text .heading-L {
+.aside.notification.extra-small .foreground.container a:last-child {
+  font-weight: bold;
+}
+
+.aside.notification.extra-small .foreground.container a:not(.con-button):last-of-type {
+  margin-left: var(--spacing-xs);
+}
+
+.aside.notification.small .foreground.container .text a.con-button {
+  display: table;
+  margin-left: 0;
+}
+
+.aside.notification .foreground.container .text .heading-l {
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.notification .foreground.container .text .body-S {
+.aside.notification .foreground.container:not(.no-image) .text .body-s.action-area,
+.aside.notification .foreground.container:not(.no-image) .text .body-m.action-area {
   margin-bottom: 0;
 }
 
@@ -334,69 +310,108 @@
 }
 
 .aside.notification.extra-small .foreground.container .text {
-  flex-wrap: nowrap;
-}
-
-.aside.notification.extra-small .foreground.container .text .body-M,
-.aside.notification.small .foreground.container .text .body-M {
-  font-weight: bold;
-}
-
-.aside.notification.small {
-  min-height: 88px;
-}
-
-.aside.notification.small .foreground.container .text {
-  flex-direction: column;
-}
-
-.aside.notification.small .foreground.container .text[data-align=center],
-.aside.notification.small .foreground.container .text[data-align=center] > * {
-  justify-content: flex-start;
-}
-
-.aside.notification.small .foreground.container .text[data-align=center] p {
-  text-align: left;
-}
-
-.aside.notification.small .foreground.container .body-area {
-  width: auto;
-}
-
-.aside.notification.medium {
-  min-height: 160px;
+  display: block;
 }
 
 .aside.notification.medium .foreground.container .text {
   flex-direction: column;
 }
 
-.aside.notification.medium .foreground.container .text .heading-S {
+.aside.notification.small .foreground.container .text {
+  flex-direction: column;
+  max-width: 1000px;
+}
+
+.aside.notification.center.small .foreground.container .text {
+  text-align: left;
+}
+
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.extra-small .foreground.container .text {
+  margin: 0 auto;
+}
+
+.aside.notification.small {
+  min-height: 88px;
+}
+
+.aside.notification.medium {
+  min-height: 160px;
+}
+
+.aside.notification.large {
+  min-height: 250px;
+}
+
+.aside.notification.medium .foreground.container {
+  max-width: 800px;
+  gap: var(--spacing-xs);
+}
+
+.aside.notification.medium .foreground.container .text .heading-s {
   margin-bottom: var(--spacing-xxs);
+}
+
+.aside.notification.center.small .foreground.container .text,
+.aside.notification.center.small .foreground.container .text>* {
+  justify-content: flex-start;
+}
+
+.aside.notification.center.small .foreground.container .text p {
+  text-align: left;
+}
+
+.aside.notification.large .foreground.container {
+  max-width: 1000px;
+  gap: var(--spacing-xs);
+}
+
+.aside.notification.large .foreground.container.no-image {
+  max-width: 800px;
 }
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
-    justify-content: space-between;
-    align-items: stretch;
+    align-items: center;
     flex-direction: row;
     margin: 0 auto;
+    padding: var(--spacing-m) 0;
   }
 
-  .aside .foreground.container .image {
+  .aside:not(.notification):not(.inline) .foreground.container> :first-child {
+    padding: 0;
+  }
+
+  .aside:not(.notification):not(.inline) .foreground.container> :last-child {
+    margin-bottom: 0;
+  }
+
+  .aside .foreground.container .image,
+  .aside .foreground.container div:has(.milo-video) {
     margin: 0;
-    flex: 0 0 50%;
-    display: block;
-    max-width: 302px;
-    padding-left: 16px;
+  }
+
+  .aside .foreground.container .text.image {
+    justify-content: flex-start;
+  }
+
+  .aside .background,
+  .aside.split .split-image {
+    overflow: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
   }
 
   .aside .foreground.container .text {
     margin-bottom: 0;
-    padding: var(--spacing-xxxl) 0;
-    flex: 1 0 50%;
-    max-width: 302px;
-    padding-right: 16px;
+    padding-right: var(--spacing-s);
+  }
+
+  .aside.split-right .foreground.container .text {
+    padding-left: var(--spacing-s);
   }
 
   .aside.simple .foreground.container .text {
@@ -405,25 +420,35 @@
     padding-right: 0;
   }
 
+  .aside.split .split-image {
+    overflow: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+
+  .aside.split-right .split-image img {
+    left: 0;
+  }
+
   .aside.split.large {
     flex-direction: column;
   }
 
-  .aside.split .background {
-    position: absolute;
-  }
-
-  .aside.split .background img {
+  .aside.split .split-image img {
     width: 60.5vw;
-    max-width: 1396px;
+    max-width: 56%;
     position: absolute;
     right: 0;
     object-fit: cover;
     object-position: center top;
   }
-  
-  .aside.split.right .background img,
-  .aside.split.half .background img {
+
+  .aside.split.half .split-image img {
+    width: 50vw;
+    max-width: 1396px;
     object-position: left top;
   }
 
@@ -436,8 +461,7 @@
   }
 
   .aside.split .foreground.container .text {
-    color: white;
-    flex: 0 0 212px;
+    flex: 0 0 31vw;
     padding: var(--spacing-xxl) 0;
     max-width: 100%;
     margin: 0;
@@ -450,67 +474,61 @@
     padding: 0;
   }
 
-  .aside.split.half .background img {
-    width: 50vw;
-    max-width: 1396px;
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(60% - var(--spacing-s));
+    max-width: none;
+  }
+
+  .aside.notification .foreground.container .text {
+    padding-right: 0;
+  }
+
+  .aside.notification.small .foreground.container .text {
+    flex-flow: row nowrap;
+    align-items: center;
+    flex-grow: 1;
+  }
+
+  .aside.notification.small .foreground.container .text .body-m {
+    margin: 0;
+  }
+
+  .aside.notification.small .foreground.container .text .body-m.action-area {
+    margin-left: 24px;
   }
 
   .aside.split.half .foreground.container .text {
     flex: 0 0 41.72%;
   }
 
-  .aside.split.right .foreground.container {
+  .aside.split-right .foreground.container {
     flex-direction: row-reverse;
   }
 
-  .aside.split.right .background img {
-    left: 0;
-  }
-
-  .aside.augmented-image .background {
-    clip-path: inset(19% 0);
-  }
-
-  .aside.augmented-image .foreground.container .image {
-    flex: 0 0 57%;
-    max-width: none;
-  }
-
-  .aside.augmented-image .foreground.container .text {
-    flex: 0 0 43%;
-  }
-
   .aside.inline .foreground.container .image {
-    flex: 0 0 calc(40% - 16px);
-    margin-right: 32px;
+    flex: 0 0 calc(40% - var(--spacing-s));
     margin-bottom: 0;
-  }
-
-  .aside.inline .foreground.container .text {
-    flex: 0 0 calc(60% - 16px);
-    max-width: none;
   }
 
   .aside.notification .foreground.container {
     flex-direction: row;
   }
 
+  .aside.notification.medium .foreground.container,
+  .aside.notification.large .foreground.container {
+    gap: var(--spacing-s);
+  }
+
   .aside.notification .foreground.container .image {
     width: 30%;
     max-width: 188px;
-    margin-right: var(--spacing-s);
-    margin-left: 0;
-    margin-bottom: 0;
+    margin: 0;
+    padding: 0;
     order: unset;
   }
 
-  .aside.notification .foreground.container .text + .image {
-    margin-left: var(--spacing-s);
+  .aside.notification .foreground.container .text+.image {
     margin-right: 0;
-  }
-
-  .aside.notification .foreground.container .text {
-    padding-right: 0;
   }
 
   .aside.notification .foreground.container .icon-area {
@@ -519,14 +537,22 @@
     margin-bottom: 0;
   }
 
-  .aside.notification.small .foreground.container .text {
-    flex-flow: row nowrap;
+  .aside.notification.extra-small .foreground.container.no-image .text {
+    display: flex;
+  }
+
+  .aside.notification.extra-small .foreground.container.no-image .text a {
+    margin-left: 5px;
   }
 
   .aside.notification.small .foreground.container .text .action-area {
     width: auto;
     margin-top: 0;
-    margin-left: var(--spacing-s);
+  }
+
+  .aside.notification.small .foreground.container .text .icon-area {
+    width: 40px;
+    height: 40px;
   }
 }
 
@@ -536,15 +562,13 @@
     width: var(--grid-container-width);
   }
 
-  .aside .foreground.container .image {
-    flex: 0 0 50%;
-    max-width: 500px;
+  .aside .foreground.container>div,
+  .aside .foreground.container div:has(.milo-video) {
     object-fit: cover;
     padding-left: 0;
   }
 
   .aside .foreground.container .text {
-    max-width: 500px;
     padding: var(--spacing-xxl) 0;
   }
 
@@ -552,8 +576,13 @@
     max-width: 400px;
   }
 
-  .aside .foreground.container .text .heading-XL {
-    margin: var(--spacing-xs) 0;
+  .aside .foreground.container .text .heading-xl {
+    margin: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .aside.inline .foreground.container .text {
+    flex: 0 0 calc(64% - var(--spacing-s));
   }
 
   .aside.simple .foreground.container .text {
@@ -571,16 +600,12 @@
     object-fit: cover;
   }
 
+  .aside.split .split-image img {
+    max-width: 1396px;
+  }
+
   .aside.split.half .foreground.container .text {
     max-width: 500px;
-  }
-
-  .aside.augmented-image {
-    min-height: 700px;
-  }
-
-  .aside.augmented-image .foreground.container .image img {
-    width: 130%;
   }
 
   .aside.inline {
@@ -590,57 +615,57 @@
   }
 
   .aside.inline .foreground.container .image {
-    flex: 0 0 calc(36% - 16px);
-  }
-
-  .aside.inline .foreground.container .text {
-    flex: 0 0 calc(64% - 16px);
-  }
-
-  .aside.notification {
-    min-height: 250px;
+    flex: 0 0 calc(36% - var(--spacing-s));
   }
 
   .aside.notification .foreground.container {
     min-height: 0;
   }
 
-  .aside.notification .foreground.container .image {
-    width: 20%;
-    max-width: 168px;
-    margin-right: var(--spacing-l);
+  .aside.notification.extra-small .foreground.container {
+    padding-top: var(--spacing-xxs);
+    padding-bottom: var(--spacing-xxs);
   }
 
-  .aside.notification .foreground.container .text + .image {
-    margin-left: var(--spacing-l);
+  .aside.notification.medium .foreground.container {
+    gap: var(--spacing-m);
+  }
+
+  .aside.notification.large .foreground.container {
+    gap: var(--spacing-l);
+  }
+
+  .aside.notification .foreground.container .image {
+    width: 20%;
+  }
+
+  .aside.notification .foreground.container .text+.image {
     margin-right: 0;
   }
 
-  .aside.notification.extra-small,
-  .aside.notification.small,
-  .aside.notification.medium {
-    min-height: auto;
-  }
-
   .aside.notification.small .foreground.container .text {
+    align-items: center;
     justify-content: flex-start;
   }
 
-  .aside.notification.small .foreground.container .text[data-align=center],
-  .aside.notification.small .foreground.container .text[data-align=center] > * {
+  .aside.notification.center.small .foreground.container .text,
+  .aside.notification.center.small .foreground.container .text>* {
     justify-content: center;
   }
 
-  .aside.notification.small .foreground.container .text[data-align=center] p {
+  .aside.notification.center.small .foreground.container .text p {
     text-align: center;
   }
 
   .aside.notification.medium .foreground.container .image {
-    margin-right: var(--spacing-m);
+    max-width: 168px;
   }
 
-  .aside.notification.medium .foreground.container .text + .image {
-    margin-left: var(--spacing-m);
+  .aside.notification.large .foreground.container .image {
+    max-width: 304px;
+  }
+
+  .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
   }
 }

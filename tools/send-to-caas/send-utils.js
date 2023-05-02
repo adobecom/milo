@@ -12,86 +12,88 @@ const isValidUrl = (u) => VALID_URL_RE.test(u);
 
 const LOCALES = {
   // Americas
-  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
-  br: { ietf: 'pt-BR', tk: 'inq1xob.css' },
-  ca: { ietf: 'en-CA', tk: 'pps7abe.css' },
-  ca_fr: { ietf: 'fr-CA', tk: 'vrk5vyv.css' },
-  cl: { ietf: 'es-CL', tk: 'oln4yqj.css' },
-  co: { ietf: 'es-CO', tk: 'oln4yqj.css' },
-  la: { ietf: 'es-LA', tk: 'oln4yqj.css' },
-  mx: { ietf: 'es-MX', tk: 'oln4yqj.css' },
-  pe: { ietf: 'es-PE', tk: 'oln4yqj.css' },
-  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  ar: { ietf: 'es-AR' },
+  br: { ietf: 'pt-BR' },
+  ca: { ietf: 'en-CA' },
+  ca_fr: { ietf: 'fr-CA' },
+  cl: { ietf: 'es-CL' },
+  co: { ietf: 'es-CO' },
+  la: { ietf: 'es-LA' },
+  mx: { ietf: 'es-MX' },
+  pe: { ietf: 'es-PE' },
+  '': { ietf: 'en-US' },
   // EMEA
-  africa: { ietf: 'en', tk: 'pps7abe.css' },
-  be_fr: { ietf: 'fr-BE', tk: 'vrk5vyv.css' },
-  be_en: { ietf: 'en-BE', tk: 'pps7abe.css' },
-  be_nl: { ietf: 'nl-BE', tk: 'cya6bri.css' },
-  cy_en: { ietf: 'en-CY', tk: 'pps7abe.css' },
-  dk: { ietf: 'da-DK', tk: 'aaz7dvd.css' },
-  de: { ietf: 'de-DE', tk: 'vin7zsi.css' },
-  ee: { ietf: 'et-EE', tk: 'aaz7dvd.css' },
-  es: { ietf: 'es-ES', tk: 'oln4yqj.css' },
-  fr: { ietf: 'fr-FR', tk: 'vrk5vyv.css' },
-  gr_en: { ietf: 'en-GR', tk: 'pps7abe.css' },
-  ie: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  il_en: { ietf: 'en-IL', tk: 'pps7abe.css' },
-  it: { ietf: 'it-IT', tk: 'bbf5pok.css' },
-  lv: { ietf: 'lv-LV', tk: 'aaz7dvd.css' },
-  lt: { ietf: 'lt-LT', tk: 'aaz7dvd.css' },
-  lu_de: { ietf: 'de-LU', tk: 'vin7zsi.css' },
-  lu_en: { ietf: 'en-LU', tk: 'pps7abe.css' },
-  lu_fr: { ietf: 'fr-LU', tk: 'vrk5vyv.css' },
-  hu: { ietf: 'hu-HU', tk: 'aaz7dvd.css' },
-  mt: { ietf: 'en-MT', tk: 'pps7abe.css' },
-  mena_en: { ietf: 'en', tk: 'pps7abe.css' },
-  nl: { ietf: 'nl-NL', tk: 'cya6bri.css' },
-  no: { ietf: 'no-NO', tk: 'aaz7dvd.css' },
-  pl: { ietf: 'pl-PL', tk: 'aaz7dvd.css' },
-  pt: { ietf: 'pt-PT', tk: 'inq1xob.css' },
-  ro: { ietf: 'ro-RO', tk: 'aaz7dvd.css' },
-  sa_en: { ietf: 'en', tk: 'pps7abe.css' },
-  ch_de: { ietf: 'de-CH', tk: 'vin7zsi.css' },
-  si: { ietf: 'sl-SI', tk: 'aaz7dvd.css' },
-  sk: { ietf: 'sk-SK', tk: 'aaz7dvd.css' },
-  ch_fr: { ietf: 'fr-CH', tk: 'vrk5vyv.css' },
-  fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
-  se: { ietf: 'sv-SE', tk: 'fpk1pcd.css' },
-  ch_it: { ietf: 'it-CH', tk: 'bbf5pok.css' },
-  tr: { ietf: 'tr-TR', tk: 'aaz7dvd.css' },
-  ae_en: { ietf: 'en', tk: 'pps7abe.css' },
-  uk: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  at: { ietf: 'de-AT', tk: 'vin7zsi.css' },
-  cz: { ietf: 'cs-CZ', tk: 'aaz7dvd.css' },
-  bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
-  ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
-  ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
-  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  africa: { ietf: 'en-africa' },
+  be_fr: { ietf: 'fr-BE' },
+  be_en: { ietf: 'en-BE' },
+  be_nl: { ietf: 'nl-BE' },
+  cy_en: { ietf: 'en-CY' },
+  dk: { ietf: 'da-DK' },
+  de: { ietf: 'de-DE' },
+  ee: { ietf: 'et-EE' },
+  es: { ietf: 'es-ES' },
+  fr: { ietf: 'fr-FR' },
+  gr_en: { ietf: 'en-GR' },
+  ie: { ietf: 'en-IE' },
+  il_en: { ietf: 'en-IL' },
+  it: { ietf: 'it-IT' },
+  lv: { ietf: 'lv-LV' },
+  lt: { ietf: 'lt-LT' },
+  lu_de: { ietf: 'de-LU' },
+  lu_en: { ietf: 'en-LU' },
+  lu_fr: { ietf: 'fr-LU' },
+  hu: { ietf: 'hu-HU' },
+  mt: { ietf: 'en-MT' },
+  mena: { ietf: 'en-mena' },
+  mena_en: { ietf: 'en-mena' },
+  mena_ar: { ietf: 'ar-mena' },
+  mena_fr: { ietf: 'fr-mena' },
+  nl: { ietf: 'nl-NL' },
+  no: { ietf: 'no-NO' },
+  pl: { ietf: 'pl-PL' },
+  pt: { ietf: 'pt-PT' },
+  ro: { ietf: 'ro-RO' },
+  sa_en: { ietf: 'en-sa' },
+  ch_fr: { ietf: 'fr-CH' },
+  ch_de: { ietf: 'de-CH' },
+  ch_it: { ietf: 'it-CH' },
+  si: { ietf: 'sl-SI' },
+  sk: { ietf: 'sk-SK' },
+  fi: { ietf: 'fi-FI' },
+  se: { ietf: 'sv-SE' },
+  tr: { ietf: 'tr-TR' },
+  ae_en: { ietf: 'en-ae' },
+  uk: { ietf: 'en-GB' },
+  at: { ietf: 'de-AT' },
+  cz: { ietf: 'cs-CZ' },
+  bg: { ietf: 'bg-BG' },
+  ru: { ietf: 'ru-RU' },
+  ua: { ietf: 'uk-UA' },
+  il_he: { ietf: 'he-il' },
+  ae_ar: { ietf: 'ar-ae' },
+  sa_ar: { ietf: 'ar-sa' },
   // Asia Pacific
-  au: { ietf: 'en-AU', tk: 'pps7abe.css' },
-  hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
-  in: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  id_id: { ietf: 'id', tk: 'czc0mun.css' },
-  id_en: { ietf: 'en', tk: 'pps7abe.css' },
-  my_ms: { ietf: 'ms', tk: 'sxj4tvo.css' },
-  my_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  nz: { ietf: 'en-GB', tk: 'pps7abe.css' },
-  ph_en: { ietf: 'en', tk: 'pps7abe.css' },
-  ph_fil: { ietf: 'fil-PH', tk: 'ict8rmp.css' },
-  sg: { ietf: 'en-SG', tk: 'pps7abe.css' },
-  th_en: { ietf: 'en', tk: 'pps7abe.css' },
-  in_hi: { ietf: 'hi', tk: 'aaa8deh.css' },
-  th_th: { ietf: 'th', tk: 'aaz7dvd.css' },
-  cn: { ietf: 'zh-CN', tk: 'puu3xkp' },
-  hk_zh: { ietf: 'zh-HK', tk: 'jay0ecd' },
-  tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
-  jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
-  kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
-  vn_en: { ietf: 'en', tk: 'pps7abe.css' },
-  vn_vi: { ietf: 'vi-VN', tk: 'jii8bki.css' },
+  au: { ietf: 'en-AU' },
+  hk_en: { ietf: 'en-HK' },
+  in: { ietf: 'en-in' },
+  id_id: { ietf: 'id-id' },
+  id_en: { ietf: 'en-id' },
+  my_ms: { ietf: 'ms-my' },
+  my_en: { ietf: 'en-my' },
+  nz: { ietf: 'en-nz' },
+  ph_en: { ietf: 'en-ph' },
+  ph_fil: { ietf: 'fil-PH' },
+  sg: { ietf: 'en-SG' },
+  th_en: { ietf: 'en-th' },
+  in_hi: { ietf: 'hi-in' },
+  th_th: { ietf: 'th-th' },
+  cn: { ietf: 'zh-CN' },
+  hk_zh: { ietf: 'zh-HK' },
+  tw: { ietf: 'zh-TW' },
+  jp: { ietf: 'ja-JP' },
+  kr: { ietf: 'ko-KR' },
+  vn_en: { ietf: 'en-vn' },
+  vn_vi: { ietf: 'vi-VN' },
 };
 
 const [setConfig, getConfig] = (() => {
@@ -221,7 +223,7 @@ const getTag = (tagName, errors) => {
 const getTags = (s) => {
   let rawTags = [];
   if (s) {
-    rawTags = s.toLowerCase().split(',').map((t) => t.trim());
+    rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
   } else {
     rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
       (metaEl) => metaEl.content,
@@ -395,6 +397,21 @@ const getCountryAndLang = async (options) => {
   };
 };
 
+const parseCardMetadata = () => {
+  const pageMd = {};
+  const mdEl = getConfig().doc.querySelector('.card-metadata');
+  if (mdEl) {
+    mdEl.childNodes.forEach((n) => {
+      const key = n.children?.[0]?.textContent?.toLowerCase();
+      const val = n.children?.[1]?.textContent;
+      if (!key) return;
+
+      pageMd[key] = val;
+    });
+  }
+  return pageMd;
+};
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -427,8 +444,12 @@ const props = {
     if (s) {
       return getDateProp(s, `Invalid Created Date: ${s}`);
     }
+    const cardDate = parseCardMetadata()?.carddate;
+    if (cardDate) {
+      return getDateProp(cardDate, `Invalid Date: ${cardDate}`);
+    }
 
-    const pubDate = getMetaContent('name', 'publication-date');
+    const pubDate = getMetaContent('name', 'publishdate') || getMetaContent('name', 'publication-date');
     const { doc, lastModified } = getConfig();
     return pubDate
       ? getDateProp(pubDate, `publication-date metadata is not a valid date: ${pubDate}`)
@@ -574,21 +595,6 @@ const getCaaSMetadata = async (pageMd, options) => {
   }
 
   return { caasMetadata: md, errors, tags, tagErrors };
-};
-
-const parseCardMetadata = () => {
-  const pageMd = {};
-  const mdEl = getConfig().doc.querySelector('.card-metadata');
-  if (mdEl) {
-    mdEl.childNodes.forEach((n) => {
-      const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
-      if (!key) return;
-
-      pageMd[key] = val;
-    });
-  }
-  return pageMd;
 };
 
 const getCardMetadata = async (options) => {

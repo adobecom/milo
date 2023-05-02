@@ -1,34 +1,52 @@
 import { getConfig } from './config.js';
-import {
-  loadingOFF,
-  loadingON,
-} from '../../loc/utils.js';
+import { loadingOFF, loadingON } from '../../loc/utils.js';
 import { connect as connectToSP } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
+  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
+  updateProjectStatusUI,
 } from './ui.js';
+import promoteFloodgatedFiles from './promote.js';
+import floodgateContent from './copy.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
 }
 
-function setListeners() {
+async function refreshPage(config, projectDetail, project) {
+  // Inject Sharepoint file metadata
+  loadingON('Updating Project with the Sharepoint Docs Data...');
+  await updateProjectWithDocs(projectDetail);
+
+  // Render the data on the page
+  loadingON('Updating table with project details..');
+  await updateProjectDetailsUI(projectDetail, config);
+
+  // Read the project action status
+  loadingON('Updating project status...');
+  const status = await updateProjectStatus(project);
+  updateProjectStatusUI(status);
+
+  loadingON('UI updated..');
+  loadingOFF();
+}
+
+function setListeners(project, projectDetail) {
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
+  document.querySelector('#copyFiles button').addEventListener('click', () => floodgateContent(project, projectDetail));
+  document.querySelector('#promoteFiles button').addEventListener('click', () => promoteFloodgatedFiles(project));
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
 async function init() {
   try {
-    // Set the listeners on the floodgate action buttons
-    setListeners();
-
     // Read the Floodgate Sharepoint Config
     loadingON('Fetching Floodgate Config...');
     const config = await getConfig();
@@ -40,6 +58,7 @@ async function init() {
     // Initialize the Floodgate Project by setting the required project info
     loadingON('Fetching Project Config...');
     const project = await initProject();
+    await project.purge();
     loadingON(`Fetching project details for ${project.url}`);
 
     // Update project name on the admin page
@@ -49,6 +68,9 @@ async function init() {
     const projectDetail = await project.getDetails();
     loadingON('Project Details loaded...');
 
+    // Set the listeners on the floodgate action buttons
+    setListeners(project, projectDetail);
+
     loadingON('Connecting now to Sharepoint...');
     const connectedToSp = await connectToSP();
     if (!connectedToSp) {
@@ -56,15 +78,7 @@ async function init() {
       return;
     }
     loadingON('Connected to Sharepoint!');
-
-    // Inject Sharepoint file metadata
-    loadingON('Updating Project with the Sharepoint Docs Data...');
-    await updateProjectWithDocs(projectDetail);
-
-    // Render the data on the page
-    loadingON('Updating UI..');
-    await updateProjectDetailsUI(projectDetail, config);
-    loadingON('UI updated..');
+    await refreshPage(config, projectDetail, project);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);

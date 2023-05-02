@@ -3,22 +3,22 @@ import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/de
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
   standard: {
-    small: ['S', 'S', 'S'],
-    medium: ['M', 'M', 'M'],
-    large: ['L', 'L', 'L'],
-    xlarge: ['XL', 'XL', 'XL'],
+    small: ['s', 's', 's'],
+    medium: ['m', 'm', 'm'],
+    large: ['l', 'l', 'l'],
+    xlarge: ['xl', 'xl', 'xl'],
   },
   inset: {
-    small: ['S', 'M'],
-    medium: ['M', 'L'],
-    large: ['L', 'XL'],
-    xlarge: ['XL', 'XXL'],
+    small: ['s', 'm'],
+    medium: ['m', 'l'],
+    large: ['l', 'xl'],
+    xlarge: ['xl', 'xxl'],
   },
   text: {
-    small: ['M', 'S', 'S'],
-    medium: ['L', 'M', 'M'],
-    large: ['XL', 'M', 'L'],
-    xlarge: ['XXL', 'L', 'XL'],
+    small: ['m', 's', 's'],
+    medium: ['l', 'm', 'm'],
+    large: ['xl', 'm', 'l'],
+    xlarge: ['xxl', 'l', 'xl'],
   },
 };
 
@@ -45,7 +45,7 @@ export default function init(el) {
   const overrides = ['-heading', '-body', '-detail'];
   overrides.forEach((override, index) => {
     const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toUpperCase();
+    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
   });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
@@ -53,7 +53,7 @@ export default function init(el) {
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
-    if (elAction) elAction.classList.add('body-S');
+    if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
 }

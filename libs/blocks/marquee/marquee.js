@@ -66,7 +66,7 @@ function decorateText(el, size) {
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'XXL', 'XL', 'L') : decorate(heading, 'XL', 'M', 'M');
+  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
 }
 
 function extendButtonsClass(text) {
@@ -74,6 +74,18 @@ function extendButtonsClass(text) {
   if (buttons.length === 0) return;
   buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
+
+const decorateImage = (media) => {
+  media.classList.add('image');
+
+  const imageLink = media.querySelector('a');
+  const picture = media.querySelector('picture');
+
+  if (imageLink && picture) {
+    imageLink.textContent = '';
+    imageLink.append(picture);
+  }
+};
 
 export default function init(el) {
   decorateBlockAnalytics(el);
@@ -90,19 +102,22 @@ export default function init(el) {
   const text = headline.closest('div');
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-  media?.classList.add('media');
 
-  if (media?.querySelector('a[href$=".mp4"]')) {
-    decorateVideo(media);
-  } else {
-    media?.classList.add('image');
+  if (media) {
+    media.classList.add('media');
+
+    if (media.querySelector('a[href$=".mp4"]')) {
+      decorateVideo(media);
+    } else {
+      decorateImage(media);
+    }
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
-  decorateButtons(text, size === 'large' ? 'button-XL' : 'button-L');
+  decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);
@@ -113,7 +128,7 @@ export default function init(el) {
       foreground.insertAdjacentElement('beforebegin', media);
     }
     if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-S' }, media.lastChild.textContent);
+      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
