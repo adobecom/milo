@@ -13,7 +13,7 @@ import {
   sendReport,
   storeUrls,
   storeOperation,
-} from '../../../tools/bulk-publish/js/utils.js';
+} from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
 const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
