@@ -1,29 +1,28 @@
-import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 
-let getConfigPath, getQuizKey, getAnalyticsType, getAnalyticsQuiz;
-let metaData;
+let getConfigPath, getQuizKey, getAnalyticsType, getAnalyticsQuiz, metaData;
+
 const initConfigPath = (roolElm) => {
   const link = roolElm.querySelector('.quiz > div > div > a');
-  const quizConfigPath = link.text.toLowerCase();
-
+  const quizConfigPath = link?.text.toLowerCase();
   return filepath => `${quizConfigPath}${filepath}`;
 }
 
 const initQuizKey = () => {
-  getQuizKey = metaData.storagepath.text
+  getQuizKey = metaData['storagepath']?.text
   return getQuizKey;
 }
 
 const initAnalyticsType = () => {
-  return metaData['analytics-type'].text;
+  return metaData['analytics-type']?.text;
 }
 
 const initAnalyticsQuiz = () => {
-  return metaData['analytics-quiz'].text;
+  return metaData['analytics-quiz']?.text;
 }
 
 async function fetchContentOfFile(path) {
@@ -52,20 +51,13 @@ export const getQuizData = async () => {
  * Handling the result flow from here. Will need to make sure we capture all the data so that we can come back.
  */
 export const handleResultFlow = async (answers = []) => {
-  console.log('We are at the end of the flow! Route to result page');
-  console.log('flow observed till now :: ', answers);
-  // debugger;
-  const { primary: primaryProducts } = await parseResultData(answers);
-  // const {resultData: filteredResults, restultResources: restultResources}  = await parseResultData(answers);
   const entireResultData  = await parseResultData(answers);
   const resultData = entireResultData.filteredResults;
   const resultResources = entireResultData.resultResources;
   let destinationPage = '',
    primaryProductCodes = [],
   secondaryProductCodes = [], 
-  umbrellaProduct = '', 
-  structureFragments = '',
-  nestedFragments = '';
+  umbrellaProduct = '';
 
   if (resultData.matchedResults.length > 0) {
     destinationPage = resultData.matchedResults[0]['url']
@@ -74,66 +66,77 @@ export const handleResultFlow = async (answers = []) => {
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result']
   }
 
-  const redirectUrl = getRedirectUrl(destinationPage, primaryProductCodes, answers);
-  console.log("redirectUrl: ", redirectUrl);
-
   storeResultInLocalStorage(resultData, resultResources, primaryProductCodes, secondaryProductCodes, umbrellaProduct);
-  
-  window.location.href = redirectUrl;
+  window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);;
 
 };
 
 const storeResultInLocalStorage = (resultData, resultResources, primaryProducts, secondaryProductCodes, umbrellaProduct) => {
-  console.log('resultData is while storing in localstorage : ', resultData)
   const nestedFrags = resultData.matchedResults[0]['nested-fragments']
+  let structureFrags = resultData.matchedResults[0]['basic-fragments']
 
-  let nestedStuffsToPull = ''
-  let structureFrags = resultData.matchedResults[0]['structure-fragments']
-  let structureFragmentsObj = []
+  let structureFragsArray = structureFrags?.split(',')
+  let nestedFragsArray = nestedFrags?.split(',')
 
-
-  let structureFragsArray = structureFrags.split(',')
-
-  // Creating the structured fragment object
-  if (umbrellaProduct) {
-    // nestedStuffsToPull = umbrellaProduct;
-    // pull the structure cards from the umbrella
-    // pull the nested frags for the primary products
-    console.log('structureFrags  :', structureFrags)
-    structureFragsArray.forEach(frag => {
-      resultResources.data.forEach(row => {
-        if (umbrellaProduct && row.product === umbrellaProduct) {
-          frag = frag.trim()
-          structureFragmentsObj.push(row[frag])
-        }
-      })
-    })
-  } else {
-    // productToMatch = secondaryProductCodes;
-    // structure frags get picked up by primary product
-    // nested frags get picked up by matching the secondary product
-    structureFragsArray.forEach(frag => { // marquee,card-list
-      resultResources.data.forEach(row => { // lr
-        if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
-          frag = frag.trim()
-          if (row[frag]) {
-            structureFragmentsObj.push(row[frag])
-          }
-        }
-      })
-    })
-  }
-
-  // structureFragments
   const resultToDelegate = {
     primaryProducts : primaryProducts,
     secondaryProducts : secondaryProductCodes,
     umbrellaProduct : umbrellaProduct,
-    structureFragments : structureFragmentsObj,
-    nestedFragments : resultData.matchedResults[0]['nested-fragments']
+    basicFragments : structuredFragments(structureFragsArray, resultResources, primaryProducts, umbrellaProduct),
+    nestedFragments : nestedFragments(nestedFragsArray, resultResources, primaryProducts, secondaryProductCodes, umbrellaProduct)
   }
   localStorage.setItem(getQuizKey, JSON.stringify(resultToDelegate));
 }
+
+const structuredFragments = (structureFragsArray, resultResources, primaryProducts, umbrellaProduct) => {
+  let structureFragments = [];
+  structureFragsArray.forEach(frag => {
+    frag = frag.trim()
+    resultResources.data.forEach(row => {
+      if (umbrellaProduct) {
+        if (umbrellaProduct && row.product === umbrellaProduct) {
+          structureFragments.push(row[frag])
+        }
+      } else {
+        if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
+          if (row[frag]) {
+            structureFragments.push(row[frag])
+          }
+        }
+      }
+    })
+  })
+  return structureFragments;
+}
+
+const nestedFragments = (nestedFragsArray, resultResources,primaryProducts, secondaryProductCodes, isUmbrella) => {
+  let nestedObject = {}
+  nestedFragsArray.forEach(frag => {
+    let fragKey = frag.trim();
+    let fragArray = []
+    resultResources.data.forEach(row => {
+      if (isUmbrella) {
+        // Get nested frags for all the primary products.
+        if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
+          if (row[fragKey]) {
+            fragArray.push(row[fragKey])
+          }
+        }
+      } else {
+        // Get nested frags for all the secondary products.
+        if (secondaryProductCodes.length > 0 && secondaryProductCodes.includes(row.product)) {
+          if (row[fragKey]) {
+            fragArray.push(row[fragKey])
+          }
+        }
+      }
+    });
+    nestedObject[fragKey] = fragArray;
+  });
+
+  return nestedObject;
+}
+
 
 const getRedirectUrl = (destinationPage, primaryProducts, answers) => {
   return `${destinationPage}?primary=${primaryProducts}&quizKey=${getQuizKey}`;
@@ -147,7 +150,6 @@ const buildQueryParam = (answers) => {
 
 const parseResultData = async (answers) => {
   const results  = await fetchContentOfFile(RESULTS_EP_NAME);
-  // debugger
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
       let hasMatch = false;
@@ -193,14 +195,12 @@ const parseResultData = async (answers) => {
     results['result-destination'].data,
     filteredResults
   );
-  console.log('matched results :', matchedResults);
-  console.log('filteredResults.primary :', filteredResults.primary);
 
   filteredResults.matchedResults = matchedResults;
 
   let rObj = {};
   rObj.filteredResults = filteredResults;
-  rObj.resultResources = results['result-resources'];
+  rObj.resultResources = results['result-fragments'];
 
   return rObj;
 };
@@ -305,7 +305,6 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
         }
 
         // RESET the queue and add only the next question.
-
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
           userFlow = [] // Resetting the userFlow as well

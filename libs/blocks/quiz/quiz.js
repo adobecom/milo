@@ -1,6 +1,5 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
-
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData } from './utils.js';
@@ -11,9 +10,7 @@ loadStyle(`${codeRoot}/deps/caas.css`);
 const App = () => { 
   const [questionData, setQuestionData] = useState({});
   const [stringData, setStringData] = useState({});
-  const [url, setUrl] = useState();
   const [isDataLoaded, setDataLoaded] = useState(false);
-
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [questionList, setQuestionList] = useState({});
   const [stringQuestionList, setStringQuestionList] = useState({});
@@ -21,8 +18,6 @@ const App = () => {
   const [userFlow, setUserFlow] = useState([]);
   const [selectedCards, setSelectedCards] = useState({});
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
-
-  const [items, setItems] = useState([]); // used for local storage.
 
   useEffect(() => {
     (async () => { 
@@ -66,19 +61,10 @@ const App = () => {
     }
   }, [userSelection.length]);
 
-  useEffect(() => {
-    let rootElem = document.querySelectorAll('.quiz')[0]
-    if (!isDataLoaded){
-      rootElem.classList.toggle('hide')
-    } else {
-      rootElem.classList.toggle('hide')
-    }
-  }, [isDataLoaded]);
-
   const buildQParam = (userSelection) => {
     let params = ''
     userSelection.forEach((selection) => {
-      if (params != '') {
+      if (params) {
         params = `${params}&${selection.selectedQuestion.questions}=${Object.getOwnPropertyNames(selection.selectedCards)}`;
       } else {
         params = `?${selection.selectedQuestion.questions}=${Object.getOwnPropertyNames(selection.selectedCards)}`;
@@ -94,8 +80,6 @@ const App = () => {
       return [ ...userSelection, ...[{ selectedQuestion, selectedCards }]]
     });
 
-    console.log('userSelection are on next click', userSelection);
-
     setSelectedCards({});
     setCountOfSelectedCards(0);
 
@@ -106,6 +90,7 @@ const App = () => {
     }
   }
 
+  
   const onOptionClick = (option) => (e) => {
     const newState = { ...selectedCards };
 
@@ -139,8 +124,6 @@ const App = () => {
   const minSelections = +selectedQuestion['min-selections'];
   const maxSelections = +selectedQuestion['max-selections'];
 
-  // debugger;
-
   return html `<div class="quiz-container">
                   <div class="background">
                       ${DecorateBlockBackground(getStringValue)}
@@ -165,7 +148,6 @@ const App = () => {
 }
 
 export default async function init(el) {
-  console.log('Initiating quiz.....')
   initConfigPathGlob(el);
   render(html `<${App} />`, el);
 }
