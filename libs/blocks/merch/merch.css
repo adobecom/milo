@@ -12,7 +12,7 @@ span[data-wcs-osi] {
 }
 
 .placeholder-resolved[data-wcs-osi] {
-  visibility: unset;
+  visibility: inherit;
 }
 
 .price-unit-type:not(.disabled)::before,
