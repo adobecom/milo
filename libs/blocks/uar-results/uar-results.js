@@ -23,6 +23,8 @@ export default async function init(el) {
   const params = new URL(document.location).searchParams;
   const localStoreKey = params.get('quizKey');
   const quizUrl = data['quiz-url'];
+  const BASIC_KEY = 'basicFragments';
+  const NESTED_KEY = 'nestedFragments';
 
   let results = localStorage.getItem(localStoreKey);
 
@@ -38,10 +40,10 @@ export default async function init(el) {
   results = JSON.parse(results);
 
   if(data['nested-fragments'] && el.classList.contains('nested')) {
-    const nested = results[data['nested-fragments'].text];
+    const nested = results[NESTED_KEY][data['nested-fragments'].text];
     if (nested) loadFragments(el, nested);
   } else if (el.classList.contains('basic')) {
-    const structure = results['structure-fragments'];
+    const structure = results[BASIC_KEY];
     if (!structure) { 
       redirectPage(quizUrl);
       return
