@@ -75,7 +75,7 @@ function decorateMultipleIconArea(iconArea) {
     const a = picture.nextElementSibling;
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
     
-    if (!a.querySelector('img') && !a.textContent.endsWith('.svg') && !a.textContent.includes('.svg |')) {
+    if (!a.querySelector('img')) {
       a.innerHTML = '';
       a.className = '';
       a.appendChild(picture);
