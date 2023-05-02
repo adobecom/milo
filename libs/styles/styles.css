@@ -153,7 +153,7 @@ img {
 }
 
 /* Not blocks */
-div:not([class]) > div > div img[src^="./media_"] {
+div:not([class]) > div > div > img[src^="./media_"] {
   width: 100%;
 }
 
