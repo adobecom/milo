@@ -1,4 +1,5 @@
-import { getAnalyticsValue, toFragment, decorateCta } from '../../utilities/utilities.js';
+/* eslint-disable no-restricted-syntax */
+import { getAnalyticsValue, toFragment, decorateCta, yieldToMain } from '../../utilities/utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 
 const decorateHeadline = (elem) => {
@@ -154,7 +155,7 @@ const decoratePopupElement = (elem, index) => {
   return decoratedElem;
 };
 
-const decorateColumns = (content) => {
+const decorateColumns = async (content) => {
   decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
@@ -162,7 +163,8 @@ const decorateColumns = (content) => {
   // * a popup can have multiple columns;
   // * a column can have multiple sections;
   // * a section can have a headline and a collection of item(s)
-  Array.prototype.forEach.call(content.children, (column) => {
+  for await (const column of [...content.children]) {
+    await yieldToMain();
     const wrapperClass = hasMultipleColumns ? 'feds-popup-column' : 'feds-popup-content';
     const itemDestinationClass = hasMultipleColumns ? 'feds-popup-section' : 'feds-popup-column';
     const wrapper = toFragment`<div class="${wrapperClass}"></div>`;
@@ -183,6 +185,8 @@ const decorateColumns = (content) => {
     };
 
     while (column.children.length) {
+      // eslint-disable-next-line no-await-in-loop
+      await yieldToMain();
       const columnElem = column.firstElementChild;
 
       if (columnElem.tagName === 'H5') {
@@ -229,14 +233,13 @@ const decorateColumns = (content) => {
     wrapper.append(itemDestination);
     // Replace column with parsed template
     column.replaceWith(wrapper);
-  });
+  }
 };
 
 // Current limitation: after an h5 is found in a dropdown column,
 // no new sections can be created without a heading
 const decorateDropdown = async (config) => {
   let popupTemplate;
-
   if (config.type === 'syncDropdownTrigger') {
     const itemTopParent = config.item.closest('div');
     // The initial heading is already part of the item template,
@@ -248,7 +251,7 @@ const decorateDropdown = async (config) => {
         ${itemTopParent}
       </div>`;
 
-    decorateColumns(popupTemplate);
+    await decorateColumns(popupTemplate);
   }
 
   if (config.type === 'asyncDropdownTrigger') {
@@ -265,7 +268,7 @@ const decorateDropdown = async (config) => {
         </div>
       </div>`;
 
-    decorateColumns(popupTemplate.firstElementChild);
+    await decorateColumns(popupTemplate.firstElementChild);
     config.template.classList.add('feds-navItem--megaMenu');
   }
 

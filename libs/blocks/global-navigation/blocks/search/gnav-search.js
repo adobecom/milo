@@ -97,10 +97,14 @@ class Search {
         if (this.input.value.length) {
           this.clearSearchForm();
         } else if (this.isDesktop.matches) {
-          this.clearSearchForm();
           closeAllDropdowns();
           this.trigger.focus();
         }
+      }
+
+      if (e.code === 'Enter') {
+        if (!this.query) return;
+        window.location.href = Search.getHelpxLink(this.query);
       }
     });
 
@@ -277,6 +281,8 @@ class Search {
     if (hasBeenOpened) {
       this.curtain.classList.add('is-open');
       this.focusInput();
+    } else {
+      this.clearSearchForm();
     }
   }
 
