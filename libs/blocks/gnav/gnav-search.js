@@ -18,7 +18,7 @@ const fetchResults = async (searchStr, locale = 'en_US') => {
   return null;
 };
 
-const getNoResultsEl = (value, prefix, country = 'US') => {
+const getNoResultsEl = (value, prefix, country) => {
   const noResultsTxt = 'Try our advanced search';
   const a = createTag('a', {
     href: getHelpxLink(value, prefix, country),
@@ -74,6 +74,7 @@ const getSuggestions = (json) => {
 };
 
 const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
+  // Search use locale with underscore. locale.ietf has hyphen.
   const results = await fetchResults(value, window.adobeid?.locale);
   const suggestions = getSuggestions(results);
   updateSearchResults(value, suggestions, locale, resultsEl, searchInputEl);
