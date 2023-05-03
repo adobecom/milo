@@ -3,7 +3,7 @@
 }
 
 .feds-search-dropdown {
-  border-bottom: 1px solid var(--feds-color-border--light);
+  border-bottom: 1px solid var(--feds-borderColor--light);
   background-color: var(--feds-background-nav--light);
 }
 
@@ -131,7 +131,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    border-top: 1px solid var(--feds-color-border--light);
+    border-top: 1px solid var(--feds-borderColor--light);
     display: none;
     z-index: 1;
   }
