@@ -5,7 +5,7 @@ import {
   ADMIN_BASE_URL,
   BULK_CONFIG_FILE_PATH,
   executeActions, storeOperation, storeUrls,
-} from '../../../tools/bulk-publish/js/utils.js';
+} from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 
 const TEST_TIMEOUT_MS = 30 * 60 * 1000;
 const ORIGIN = 'https://main--milo--adobecom.hlx.page';

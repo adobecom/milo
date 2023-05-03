@@ -12,7 +12,7 @@ button:hover {
   filter: brightness(1.2);
 }
 
-.bulk {
+.bulk-publish {
   padding-top: 48px;
   background: linear-gradient(180deg, rgb(91 192 246 / 100%) 0%, rgb(15 228 240 / 100%) 50%, rgb(255 255 255 / 100%) 100%) no-repeat;
   color: #141414;
@@ -24,7 +24,7 @@ button:hover {
   --bulk-status-bg-color: #000;
 }
 
-.bulk::after {
+.bulk-publish::after {
   content: '';
   background: linear-gradient(180deg, rgb(255 255 255 / 0%) 0%, rgb(255 255 255 / 100%) 100%);
   position: absolute;
@@ -42,7 +42,7 @@ button:hover {
 
 .bulk-container::before {
   content: '';
-  background: url('../img/mesh.svg') no-repeat;
+  background: url('img/mesh.svg') no-repeat;
   opacity: .07;
   position: absolute;
   top: 0;
@@ -53,7 +53,7 @@ button:hover {
 
 .bulk-container::after {
   content: '';
-  background-image: url('../img/dots.svg'), url('../img/emphasis-shape.svg');
+  background-image: url('img/dots.svg'), url('img/emphasis-shape.svg');
   background-repeat: no-repeat;
   background-position: 100% 10px, 3% 125px;
   mix-blend-mode: overlay;
@@ -181,7 +181,7 @@ button:hover {
 
 .bulk-urls-title::after {
   content: '';
-  background: url('../img/arrow-group.svg') no-repeat;
+  background: url('img/arrow-group.svg') no-repeat;
   width: 43px;
   height: 9px;
   position: absolute;
@@ -192,7 +192,7 @@ button:hover {
 
 .bulk-user-header::before {
   content: '';
-  background: url('../img/arrow-group.svg') no-repeat;
+  background: url('img/arrow-group.svg') no-repeat;
   width: 43px;
   height: 9px;
   position: absolute;
