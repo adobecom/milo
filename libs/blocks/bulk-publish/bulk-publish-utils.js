@@ -1,11 +1,11 @@
-import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../../../libs/blocks/utils/utils.js';
-import { loadScript } from '../../../libs/utils/utils.js';
-import { getImsToken } from '../../utils/utils.js';
+import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../utils/utils.js';
+import { loadScript } from '../../utils/utils.js';
+import { getImsToken } from '../../../tools/utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 100;
-export const BULK_CONFIG_FILE_PATH = '/tools/bulk-config.json';
-export const BULK_REPORT_FILE_PATH = '/tools/bulk-report';
+export const BULK_CONFIG_FILE_PATH = '/tools/bulk-publish/config.json';
+export const BULK_REPORT_FILE_PATH = '/tools/bulk-publish/report';
 const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
 export const BULK_SUPPORTED_SITES = 'bulkSupportedSites';
 export const BULK_STORED_URL_IDX = 'bulkStoredUrlIdx';
@@ -15,6 +15,7 @@ const BULK_STORED_RESULTS = 'bulkStoredResults';
 const BULK_STORED_OPERATION = 'bulkStoredOperation';
 const UNSUPPORTED_SITE_STATUS = 'unsupported domain';
 const DUPLICATE_STATUS = 'duplicate';
+export const ANONYMOUS = 'anonymous';
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -48,7 +49,7 @@ export const getUser = async () => {
   const profile = await window.adobeIMS?.getProfile();
   return profile
     ? { name: profile.name, email: profile.email }
-    : { name: 'anonymous', email: 'anonymous' };
+    : { name: ANONYMOUS, email: ANONYMOUS };
 };
 
 export const signIn = async () => {

@@ -1,6 +1,6 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
-export const VERSION = '1.15.2';
+export const VERSION = '1.16.0';
 const ENV_PROD = 'prod';
 const CTA_PREFIX = /^CTA +/;
 
@@ -68,6 +68,17 @@ export const getTacocatEnv = (envName, locale) => {
   return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
 };
 
+export const runTacocat = (tacocatEnv, country, language) => {
+  // init lana logger
+  window.tacocat.initLanaLogger('merch-at-scale', tacocatEnv, { country }, { consumer: 'milo' });
+  // launch tacocat library
+  window.tacocat.tacocat({
+    env: tacocatEnv,
+    country,
+    language,
+  });
+};
+
 window.tacocat.loadPromise = new Promise((resolve) => {
   const { env, locale } = getConfig();
   const {
@@ -82,11 +93,7 @@ window.tacocat.loadPromise = new Promise((resolve) => {
     .catch(() => ({})) /* ignore if literals fail */
     .then(() => loadScript(scriptUrl))
     .then(() => {
-      window.tacocat.tacocat({
-        env: tacocatEnv,
-        country,
-        language,
-      });
+      runTacocat(tacocatEnv, country, language);
       resolve();
     });
 });
