@@ -46,6 +46,12 @@ const decorateBlockBg = (block, node) => {
     if (child.querySelector('a[href$=".mp4"]')) {
       decorateVideo(child);
     }
+
+    if (child.querySelector('table')) {
+      const tableEle = child.querySelector('table');
+      const metadata = getMetadata(tableEle);
+      if (metadata.focalpoint) child.classList.add(`${metadata.focalpoint.text}-focalpoint`);
+    }
   });
 
   if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
@@ -53,6 +59,16 @@ const decorateBlockBg = (block, node) => {
     node.remove();
   }
 };
+
+export const getMetadata = (el) => [...el.rows].reduce((obj, row) => {
+  if (row.children) {
+    const key = row.children[0].textContent.trim().toLowerCase();
+    const content = row.children[1];
+    const text = content.textContent.trim().toLowerCase();
+    if (key && content) obj[key] = { content, text };
+  }
+  return obj;
+}, {});
 
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');

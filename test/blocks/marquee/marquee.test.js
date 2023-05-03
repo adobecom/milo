@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
+const { default: init, getMetadata } = await import('../../../libs/blocks/marquee/marquee.js');
 const video = await readFile({ path: './mocks/video.html' });
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
@@ -40,6 +40,14 @@ describe('marquee', () => {
       const mediaCredit = marquees[8].querySelector('.media-credit .body-s');
       expect(mediaCredit).to.exist;
       expect(mediaCredit.textContent.trim()).to.have.lengthOf.above(0);
+    });
+  });
+
+  describe('supports focal point for backgound', () => {
+    it('it has focal point given to backgound image', () => {
+      const marqueeEle = marquees[14];
+      const metadata = getMetadata(marqueeEle.querySelector('table'));
+      expect(metadata.focalpoint.text).to.equal('left');
     });
   });
 
