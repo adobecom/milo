@@ -102,24 +102,23 @@ const decorateProfileTrigger = async ({ avatar }) => {
   );
 
   const buttonElem = toFragment`
-      <button 
-        class="feds-profile-button" 
-        aria-expanded="false" 
-        aria-controls="feds-profile-menu"
-        aria-label="${label}"
-        daa-ll="Account"
-        aria-haspopup="true"
-      > 
-        <img class="feds-profile-img" src="${avatar}"></img>
-      </button>
-    `;
+    <button 
+      class="feds-profile-button" 
+      aria-expanded="false" 
+      aria-controls="feds-profile-menu"
+      aria-label="${label}"
+      daa-ll="Account"
+      aria-haspopup="true"
+    > 
+      <img class="feds-profile-img" src="${avatar}"></img>
+    </button>
+  `;
 
   return buttonElem;
 };
 
 let keyboardNav;
 const setupKeyboardNav = async () => {
-  if (keyboardNav) return;
   keyboardNav = keyboardNav || new Promise(async (resolve) => {
     const KeyboardNavigation = await loadBlock('./utilities/keyboard/index.js');
     const instance = new KeyboardNavigation();
@@ -170,23 +169,23 @@ class Gnav {
 
   decorateTopNav = () => {
     this.elements.topnav = toFragment`
-    <nav class="feds-topnav" aria-label="Main">
-      <div class="feds-brand-container">
-        ${this.mobileToggle()}
-        ${this.decorateBrand()}
-      </div>
-      ${this.elements.navWrapper}
-      ${this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : ''}
-      ${this.decorateLogo()}
-    </nav>
-  `;
+      <nav class="feds-topnav" aria-label="Main">
+        <div class="feds-brand-container">
+          ${this.mobileToggle()}
+          ${this.decorateBrand()}
+        </div>
+        ${this.elements.navWrapper}
+        ${this.blocks.profile.rawElem ? this.blocks.profile.decoratedElem : ''}
+        ${this.decorateLogo()}
+      </nav>
+    `;
   };
 
   decorateTopnavWrapper = () => {
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
-    ${this.elements.topnav}
-    ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
-  </div>`;
+      ${this.elements.topnav}
+      ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+    </div>`;
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
@@ -433,12 +432,13 @@ class Gnav {
   decorateMainNav = async () => {
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-    <div class="feds-nav-wrapper">
-      ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
-      ${this.isDesktop.matches ? '' : this.decorateSearch()}
-      ${this.elements.mainNav}
-      ${this.isDesktop.matches ? this.decorateSearch() : ''}
-    </div>`;
+      <div class="feds-nav-wrapper">
+        ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+        ${this.isDesktop.matches ? '' : this.decorateSearch()}
+        ${this.elements.mainNav}
+        ${this.isDesktop.matches ? this.decorateSearch() : ''}
+      </div>
+    `;
 
     const items = this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a');
     for await (const [index, item] of items.entries()) {
