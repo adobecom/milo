@@ -19,19 +19,18 @@ const setDeep = (obj, path, value) => {
 };
 
 const handleAlloyResponse = (response) => {
-  const items = response.propositions?.[0]?.items
-    || response.decisions?.[0]?.items;
+  const items = ((response.propositions.length && response.propositions)
+    || (response.decisions.length && response.decisions)
+    || []).map((i) => i.items).flat();
 
-  if (!items) return [];
-  // loop through items for each manifest info
+  if (!items?.length) return [];
 
   return items
     .map((item) => {
       if (item?.data?.content) {
-        // const manifestData = JSON.parse(item.data.content);
         return {
-          experimentPath: item.data.content.experiment || item.meta['offer.name'],
-          manifestData: item.data.content.manifest,
+          manifestLocation: item.data.content.manifestLocation,
+          manifestData: item.data.content.manifestContent?.data,
           experimentName: item.meta['activity.name'],
           variantLabel: item.meta['experience.name'],
           meta: item.meta,
@@ -100,16 +99,14 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
 const checkForExperiments = async () => {
   const { experiments, instantExperiment } = await getExperiments();
   if (!experiments) return null;
+
   const { runExperiment } = await import('../scripts/experiments.js');
-  const experimentPromises = experiments.map(async (experiment) => {
-    const {
-      experimentPath,
-      manifestData,
-      variantLabel,
-    } = experiment;
-    if (!manifestData || !variantLabel) return null;
-    return runExperiment(experimentPath, variantLabel, manifestData, instantExperiment, document.querySelector('main'), utils.createTag);
-  }).filter(Boolean);
+
+  const experimentPromises = experiments.map(async (experimentInfo) => runExperiment(
+    experimentInfo,
+    utils.createTag,
+  )).filter(Boolean);
+
   let results = await Promise.all(experimentPromises);
   results = results.filter(Boolean);
   return {

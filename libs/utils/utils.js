@@ -670,6 +670,14 @@ async function loadMartech(config, { experimentsEnabled = false } = {}) {
   return true;
 }
 
+async function checkForPageMods() {
+  const personalizationMd = getMetadata('personalization');
+  const targetMd = getMetadata('target');
+  if (personalizationMd || targetMd) {
+    await loadMartech(getConfig(), { experimentsEnabled: true, personalizationMd, targetMd });
+  }
+}
+
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
@@ -748,9 +756,7 @@ export async function loadArea(area = document) {
 
   const config = getConfig();
 
-  if (isDoc && getMetadata('experiment') === 'on') {
-    await loadMartech(config, { experimentsEnabled: true });
-  }
+  if (isDoc) await checkForPageMods();
 
   appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);

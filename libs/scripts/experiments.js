@@ -1,5 +1,12 @@
 const ALL = 'all';
 
+const MANIFEST_KEYS = [
+  'action',
+  'selector',
+  'pageFilter',
+  'pageFilterOptional',
+];
+
 const COMMANDS = {
   before: (el, fragment) => el.insertAdjacentElement('beforebegin', fragment),
   after: (el, fragment) => el.insertAdjacentElement('afterend', fragment),
@@ -34,43 +41,28 @@ const handleCommands = (
   const nameIndex = {};
 
   cmdList.forEach((name) => {
-    let all = false;
     let cmd = name;
-    if (name.endsWith('All')) {
-      all = true;
-      cmd = name.slice(0, -3);
-    }
 
     const i = nameIndex[name] === undefined ? 0 : nameIndex[name] + 1;
     nameIndex[name] = i;
 
     if (validCommands.includes(cmd) && control[name][i] && selectedVariant[name][i]) {
-      let targetEls;
       const query = control[name][i].startsWith('.') ? control[name][i] : `.${control[name][i]}`;
-      if (all) {
-        targetEls = [...mainEl.querySelectorAll(query)];
-      } else {
-        targetEls = [mainEl.querySelector(query)];
+      let targetEl = mainEl.querySelector(query);
+
+      if (!targetEl) return;
+
+      if (targetEl.classList[0] === 'section-metadata') {
+        targetEl = targetEl.parentElement || targetEl;
       }
-      if (!targetEls.length) return;
 
-      targetEls = targetEls.map((el) => {
-        if (el.classList[0] === 'section-metadata') {
-          return el.parentElement;
-        }
-        return el;
-      });
-
-      targetEls.forEach((el) => {
-        if (!el) return;
-        if (cmd !== 'remove' && content[selectedVariant[name][i]]) {
-          const parser = new DOMParser();
-          const dom = parser.parseFromString(content[selectedVariant[name][i]], 'text/html');
-          COMMANDS[cmd](el, dom);
-        } else {
-          COMMANDS[cmd](el, cmd !== 'remove' && createFragment(selectedVariant[name][i]));
-        }
-      });
+      if (cmd !== 'remove' && content[selectedVariant[name][i]]) {
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(content[selectedVariant[name][i]], 'text/html');
+        COMMANDS[cmd](targetEl, dom);
+      } else {
+        COMMANDS[cmd](targetEl, cmd !== 'remove' && createFragment(selectedVariant[name][i]));
+      }
     }
   });
 };
@@ -85,7 +77,11 @@ export const toClassName = (name) => (
     : ''
 );
 
-export const toCamelCase = (name) => toClassName(name).replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+export const toCamelCase = (...names) => {
+  const ccNames = names.map((name) => toClassName(name)
+    .replace(/-([a-z])/g, (g) => g[1].toUpperCase()));
+  return ccNames.length === 1 ? ccNames[0] : ccNames;
+};
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
@@ -114,70 +110,70 @@ export function getMetadata(name) {
  *        }
  *      };
  */
-export function parseExperimentConfig(json) {
-  const config = {};
-  const arrayProperties = [
-    'after',
-    'afterAll',
-    'before',
-    'beforeAll',
-    'blocks',
-    'fragments',
-    'pages',
-    'remove',
-    'removeAll',
-    'replace',
-    'replaceAll',
-    'scripts',
+export function parseExperimentConfig(experiences) {
+  const config = { replacepage: {} };
+  const ACTIONS = [
+    'useblockcode',
+    'insertscript',
+    'replacecontent',
+    'replacefragment',
+    'replacepage',
+    'insertcontentbefore',
+    'insertcontentafter',
+    'removecontent',
   ];
   try {
-    if (json.settings) {
-      json.settings.data.forEach((line) => {
-        const key = toCamelCase(line.Name);
-        config[key] = line.Value;
-      });
-    }
-    const experiences = json.experiences || json;
+    // if (json.settings) {
+    //   json.settings.data.forEach((line) => {
+    //     const key = toCamelCase(line.Name);
+    //     config[key] = line.Value;
+    //   });
+    // }
+    // const experiences = json.experiences || json;
     const variants = {};
-    let variantNames = Object.keys(experiences.data[0]);
-    variantNames.shift();
-    variantNames = variantNames.map((vn) => toCamelCase(vn));
+    const variantNames = Object.keys(experiences[0])
+      .map((vn) => toCamelCase(vn))
+      .filter((vn) => !MANIFEST_KEYS.includes(vn));
+
     variantNames.forEach((variantName) => {
-      variants[variantName] = {};
+      variants[variantName] = [];
     });
-    let lastKey = 'default';
-    config.names = [];
-    experiences.data.forEach((line) => {
-      let key = toCamelCase(line.Name);
-      config.names.push(key || lastKey);
-      if (!key) key = lastKey;
-      lastKey = key;
-      const vns = Object.keys(line);
-      vns.shift();
-      vns.forEach((vn) => {
-        const camelVN = toCamelCase(vn);
-        if (arrayProperties.includes(key)) {
-          variants[camelVN][key] = variants[camelVN][key] || [];
-          if (key === 'pages') {
-            variants[camelVN][key].push(line[vn] ? new URL(line[vn]).pathname : '');
+
+    experiences.forEach((line) => {
+      const action = toCamelCase(line.action);
+      const { selector } = line;
+      const pageFilter = line.pageFilter || line.pageFilterOptional;
+
+      variantNames.forEach((vn) => {
+        if (!line[vn]) return;
+
+        if (ACTIONS.includes(action)) {
+          const variantInfo = {
+            action,
+            selector,
+            pageFilter,
+            target: line[vn],
+          };
+          if (action === 'replacepage') {
+            config.replacepage[vn] = variantInfo;
           } else {
-            variants[camelVN][key].push(line[vn]);
+            variants[vn].push(variantInfo);
           }
         } else {
-          variants[camelVN][key] = line[vn];
+          console.log('Invalid action found: ', line);
         }
       });
     });
     config.variants = variants;
     config.variantNames = variantNames;
-    config.variantLabels = Object.entries(variants).reduce((labelMap, [variantName, variant]) => {
-      labelMap[variant.label] = variantName;
-      return labelMap;
-    }, {});
+    // config.variantLabels = Object.entries(variants).reduce((labelMap, [variantName, variant]) => {
+    //   labelMap[variant.label] = variantName;
+    //   return labelMap;
+    // }, {});
     return config;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.log('error parsing experiment config:', e, json);
+    console.log('error parsing experiment config:', e, experiences);
   }
   return null;
 }
@@ -326,35 +322,39 @@ export function getConfigForInstantExperiment(experimentId, instantExperiment) {
  * @param {object} cfg
  * @returns {object} containing the experiment manifest
  */
-export async function getConfigForFullExperiment(experiment = '', manifestData = undefined) {
+export async function getConfigForFullExperiment(experiment, manifestData, manifestLocation) {
   const experimentId = experiment.includes('/')
     ? experiment.slice(experiment.lastIndexOf('/') + 1)
     : experiment;
-  let path = experiment.includes('/')
-    ? `${experiment}.json`
-    : `/experiments/${experimentId}/manifest.json`;
+
+  let path = manifestLocation
+    || (experiment.includes('/')
+      ? `${experiment}.json`
+      : `/experiments/${experimentId}/manifest.json`);
+
   if (!path.startsWith('/')) {
     path = `/${path}`;
   }
+
   try {
-    let json;
+    let data;
     if (manifestData) {
-      json = manifestData;
+      data = manifestData;
     } else {
       const resp = await fetch(path);
       if (!resp.ok) {
         console.log('error loading experiment config:', resp);
         return null;
       }
-      json = await resp.json();
+      const json = await resp.json();
+      data = json.data;
     }
-    const config = parseExperimentConfig(json);
+    const config = parseExperimentConfig(data);
     if (!config) {
       return null;
     }
     config.id = experimentId;
     config.manifest = path;
-    // config.basePath = `${cfg.root}/${experimentId}`;
     return config;
   } catch (e) {
     console.log(`error loading experiment manifest: ${path}`, e);
@@ -362,31 +362,24 @@ export async function getConfigForFullExperiment(experiment = '', manifestData =
   return null;
 }
 
-export async function getConfig(experimentName, variantLabel, manifestData, instantExperiment) {
-  let config;
-  if (instantExperiment) {
-    console.log('Instant Experiment: ', instantExperiment);
-    config = getConfigForInstantExperiment(experimentName || 'not defined', instantExperiment);
-  } else {
-    console.log('Experiment: ', experimentName);
-    config = await getConfigForFullExperiment(experimentName, manifestData);
-  }
+export async function getConfig(experimentName, variantLabel, manifestData, manifestLocation) {
+  console.log('Experiment: ', experimentName);
+  const config = await getConfigForFullExperiment(experimentName, manifestData, manifestLocation);
 
   if (!config) {
     console.log('Error loading experiment config: ', experimentName);
     return {};
   }
 
-  const variant = config.variantLabels[variantLabel] || variantLabel;
-  if (config.variantNames.includes(variant)) {
+  if (config.variantNames.includes(variantLabel)) {
     config.run = true;
-    config.selectedVariantName = variant;
-    config.selectedVariant = config.variants[variant];
+    config.selectedVariantName = variantLabel;
+    config.selectedVariant = config.variants[variantLabel];
   }
 
   config.experimentName = experimentName;
-  config.controlName = config.variantNames[0];
-  config.control = config.variants[config.variantNames[0]];
+  // config.controlName = config.variantNames[0];
+  // config.control = config.variants[config.variantNames[0]];
 
   return config;
 }
@@ -418,14 +411,17 @@ const convertToMap = (blockName, control, selectedVariant) => {
 };
 
 export async function runExperiment(
-  experimentPath,
-  variantLabel,
-  manifestData,
-  instantExperiment,
-  pageReplaceEl,
+  experimentInfo,
   createTag,
 ) {
-  const experiment = await getConfig(experimentPath, variantLabel, manifestData, instantExperiment);
+  const {
+    experimentName,
+    manifestData,
+    manifestLocation,
+    variantLabel,
+  } = experimentInfo;
+
+  const experiment = await getConfig(experimentName, variantLabel, manifestData, manifestLocation);
   const { control } = experiment;
   // const supportData = parseExperimentSupport(manifestData);
   const supportData = { content: {} };
