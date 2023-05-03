@@ -1,3 +1,5 @@
+/* eslint-disable no-async-promise-executor */
+/* eslint-disable no-restricted-syntax */
 import {
   getConfig,
   getMetadata,
@@ -12,6 +14,7 @@ import {
   decorateCta,
   trigger,
   closeAllDropdowns,
+  yieldToMain,
 } from './utilities/utilities.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -19,6 +22,11 @@ const CONFIG = {
   icons: {
     company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
     search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
+  },
+  delays: {
+    mainNavDropdowns: 800,
+    loadDelayed: 2000,
+    keyboardNav: 8000,
   },
 };
 
@@ -94,19 +102,28 @@ const decorateProfileTrigger = async ({ avatar }) => {
   );
 
   const buttonElem = toFragment`
-      <button 
-        class="feds-profile-button" 
-        aria-expanded="false" 
-        aria-controls="feds-profile-menu"
-        aria-label="${label}"
-        daa-ll="Account"
-        aria-haspopup="true"
-      > 
-        <img class="feds-profile-img" src="${avatar}"></img>
-      </button>
-    `;
+    <button 
+      class="feds-profile-button" 
+      aria-expanded="false" 
+      aria-controls="feds-profile-menu"
+      aria-label="${label}"
+      daa-ll="Account"
+      aria-haspopup="true"
+    > 
+      <img class="feds-profile-img" src="${avatar}"></img>
+    </button>
+  `;
 
   return buttonElem;
+};
+
+let keyboardNav;
+const setupKeyboardNav = async () => {
+  keyboardNav = keyboardNav || new Promise(async (resolve) => {
+    const KeyboardNavigation = await loadBlock('./utilities/keyboard/index.js');
+    const instance = new KeyboardNavigation();
+    resolve(instance);
+  });
 };
 
 class Gnav {
@@ -129,16 +146,28 @@ class Gnav {
     });
   }
 
-  init = () => {
+  init = async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
-    this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper">
-        ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
-        ${this.isDesktop.matches ? '' : this.decorateSearch()}
-        ${this.decorateMainNav()}
-        ${this.isDesktop.matches ? this.decorateSearch() : ''}
-      </div>`;
+    // Order is important, decorateTopnavWrapper will render the nav
+    // Ensure any critical task is executed before it
+    const tasks = [
+      this.decorateMainNav,
+      this.decorateTopNav,
+      this.decorateTopnavWrapper,
+      this.addChangeEventListener,
+      this.loadIMS,
+    ];
+    this.el.addEventListener('click', this.loadDelayed);
+    this.el.addEventListener('keydown', setupKeyboardNav);
+    setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
+    setTimeout(setupKeyboardNav, CONFIG.delays.keyboardNav);
+    for await (const task of tasks) {
+      await yieldToMain();
+      await task();
+    }
+  };
 
+  decorateTopNav = () => {
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
         <div class="feds-brand-container">
@@ -150,18 +179,17 @@ class Gnav {
         ${this.decorateLogo()}
       </nav>
     `;
+  };
 
+  decorateTopnavWrapper = () => {
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
-        ${this.elements.topnav}
-        ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
-      </div>`;
-
-    this.el.addEventListener('click', this.loadDelayed);
-    this.el.addEventListener('keydown', this.loadDelayed);
-    setTimeout(() => this.loadDelayed(), 3000);
-    this.loadIMS();
+      ${this.elements.topnav}
+      ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+    </div>`;
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+  };
 
+  addChangeEventListener = () => {
     // Ensure correct DOM order for elements between mobile and desktop
     this.isDesktop.addEventListener('change', () => {
       if (this.isDesktop.matches) {
@@ -193,32 +221,23 @@ class Gnav {
   };
 
   loadDelayed = async () => {
-    // eslint-disable-next-line no-async-promise-executor
     this.ready = this.ready || new Promise(async (resolve) => {
       this.el.removeEventListener('click', this.loadDelayed);
       this.el.removeEventListener('keydown', this.loadDelayed);
       const [
-        decorateDropdown,
         { appLauncher },
         ProfileDropdown,
         Search,
-        KeyboardNavigation,
       ] = await Promise.all([
-        loadBlock('./blocks/navDropdown/dropdown.js'),
         loadBlock('./blocks/appLauncher/appLauncher.js'),
         loadBlock('./blocks/profile/dropdown.js'),
         loadBlock('./blocks/search/gnav-search.js'),
-        loadBlock('./utilities/keyboard/index.js'),
         loadStyles('./blocks/profile/dropdown.css'),
-        loadStyles('./blocks/navDropdown/dropdown.css'),
         loadStyles('./blocks/search/gnav-search.css'),
       ]);
-      this.decorateDropdown = decorateDropdown;
       this.ProfileDropdown = ProfileDropdown;
       this.appLauncher = appLauncher;
       this.Search = Search;
-      // TODO we might only want to load the keyboard navigation on keydown when it's actually used
-      this.keyboardNavigation = new KeyboardNavigation();
       resolve();
     });
     return this.ready;
@@ -237,9 +256,15 @@ class Gnav {
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
-      onReady: () => {
-        this.decorateProfile();
-        this.decorateAppLauncher();
+      onReady: async () => {
+        const tasks = [
+          this.decorateProfile,
+          this.decorateAppLauncher,
+        ];
+        for await (const task of tasks) {
+          await yieldToMain();
+          await task();
+        }
       },
     };
     const imsScript = document.querySelector('script[src$="/imslib.min.js"]') instanceof HTMLElement;
@@ -296,7 +321,7 @@ class Gnav {
     };
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
-    decorationTimeout = setTimeout(decorateDropdown, 3000);
+    decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
   decorateAppLauncher = () => {
@@ -404,13 +429,22 @@ class Gnav {
     `;
   };
 
-  decorateMainNav = () => {
+  decorateMainNav = async () => {
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
+    this.elements.navWrapper = toFragment`
+      <div class="feds-nav-wrapper">
+        ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+        ${this.isDesktop.matches ? '' : this.decorateSearch()}
+        ${this.elements.mainNav}
+        ${this.isDesktop.matches ? this.decorateSearch() : ''}
+      </div>
+    `;
 
     const items = this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a');
-    items.forEach((item, index) => this.elements.mainNav
-      .appendChild(this.decorateMainNavItem(item, index)));
-
+    for await (const [index, item] of items.entries()) {
+      await yieldToMain();
+      this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
+    }
     return this.elements.mainNav;
   };
 
@@ -432,6 +466,18 @@ class Gnav {
     return 'link';
   };
 
+  loadDecorateDropdown = async () => {
+    this.decorateDropdownLoaded = this.decorateDropdownLoaded || new Promise(async (resolve) => {
+      const [decorateDropdown] = await Promise.all([
+        loadBlock('./blocks/navDropdown/dropdown.js'),
+        loadStyles('./blocks/navDropdown/dropdown.css'),
+      ]);
+      this.decorateDropdown = decorateDropdown;
+      resolve();
+    });
+    return this.decorateDropdownLoaded;
+  };
+
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -442,7 +488,7 @@ class Gnav {
       const decorateDropdown = async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-        await this.loadDelayed();
+        await this.loadDecorateDropdown();
         this.decorateDropdown({
           item,
           template,
@@ -451,7 +497,7 @@ class Gnav {
       };
 
       template.addEventListener('click', decorateDropdown);
-      decorationTimeout = setTimeout(decorateDropdown, 3000);
+      decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
 
     // Decorate item based on its type
@@ -474,6 +520,7 @@ class Gnav {
           <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
+        dropdownTrigger.addEventListener('click', () => trigger({ element: dropdownTrigger }));
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
       }

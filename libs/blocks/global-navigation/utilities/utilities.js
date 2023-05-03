@@ -102,3 +102,5 @@ export function expandTrigger({ element } = {}) {
   }
   element.setAttribute('aria-expanded', 'true');
 }
+
+export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
