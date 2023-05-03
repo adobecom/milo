@@ -7,7 +7,7 @@ import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, 
 const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas.css`);
 
-const App = () => { 
+const App = () => {
   const [questionData, setQuestionData] = useState({});
   const [stringData, setStringData] = useState({});
   const [isDataLoaded, setDataLoaded] = useState(false);
@@ -20,7 +20,7 @@ const App = () => {
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
 
   useEffect(() => {
-    (async () => { 
+    (async () => {
       const [questions, datastrings] = await getQuizData();
       const qMap = {};
       questions.questions.data.forEach((question) => {
@@ -46,35 +46,35 @@ const App = () => {
   }, [setQuestionData, setStringData, setStringQuestionList, setQuestionList]);
 
   useEffect(() => {
-    if (userFlow.length){
+    if (userFlow.length) {
       const currentflow = userFlow.shift();
       if (!currentflow.length) {
-        console.log("No next view so setting select question to empty");
+        console.log('No next view so setting select question to empty');
       }
       setSelectedQuestion(questionList[currentflow] || []);
     }
   }, [userFlow, questionList]);
 
   useEffect(() => {
-    if (userSelection.length){
-      window.history.pushState("", "", buildQParam(userSelection));
+    if (userSelection.length) {
+      window.history.pushState('', '', buildQParam(userSelection));
     }
   }, [userSelection.length]);
 
-  const buildQParam = (userSelection) => {
-    let params = ''
-    userSelection.forEach((selection) => {
+  const buildQParam = (selection) => {
+    let params = '';
+    selection.forEach((sel) => {
       if (params) {
-        params = `${params}&${selection.selectedQuestion.questions}=${Object.getOwnPropertyNames(selection.selectedCards)}`;
+        params = `${params}&${sel.selectedQuestion.questions}=${Object.getOwnPropertyNames(sel.selectedCards)}`;
       } else {
-        params = `?${selection.selectedQuestion.questions}=${Object.getOwnPropertyNames(selection.selectedCards)}`;
+        params = `?${sel.selectedQuestion.questions}=${Object.getOwnPropertyNames(sel.selectedCards)}`;
       }
-    })
+    });
     return params;
-  }
+  };
 
-  const handleOnNextClick = (selectedCards) => {
-    const { nextQuizViews } = handleNext(questionData, selectedQuestion, selectedCards, userFlow);
+  const handleOnNextClick = (selCards) => {
+    const { nextQuizViews } = handleNext(questionData, selectedQuestion, selCards, userFlow);
     const nextQuizViewsLen = nextQuizViews.length;
     updateUserSelection((userSelection) => {
       return [ ...userSelection, ...[{ selectedQuestion, selectedCards }]]
@@ -88,10 +88,9 @@ const App = () => {
     } else {
       setUserFlow(nextQuizViews);
     }
-  }
+  };
 
-  
-  const onOptionClick = (option) => (e) => {
+  const onOptionClick = (option) => () => {
     const newState = { ...selectedCards };
 
     if (Object.keys(newState).length >= maxSelections && !newState[option.options]) {
@@ -106,25 +105,27 @@ const App = () => {
 
     setSelectedCards(newState);
     setCountOfSelectedCards(Object.keys(newState).length);
-  }
+  };
 
   if (!isDataLoaded || !selectedQuestion) {
-    return html `<div>Loading</div>`;
+    return html`<div>Loading</div>`;
   }
 
-  const getStringValue = propName => {
+  const getStringValue = (propName) => {
     const question = stringQuestionList[selectedQuestion.questions];
     return question ? question[propName] || '' : '';
   };
   const getOptionsIcons = (optionsType, prop) => {
-    const optionItem = stringData[selectedQuestion.questions].data.find(item => item.options === optionsType);
+    const optionItem = stringData[selectedQuestion.questions].data.find(
+      (item) => item.options === optionsType,
+    );
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
 
   const minSelections = +selectedQuestion['min-selections'];
   const maxSelections = +selectedQuestion['max-selections'];
 
-  return html `<div class="quiz-container">
+  return html`<div class="quiz-container">
                   <div class="background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>
@@ -149,5 +150,5 @@ const App = () => {
 
 export default async function init(el) {
   initConfigPathGlob(el);
-  render(html `<${App} />`, el);
+  render(html`<${App} />`, el);
 }
