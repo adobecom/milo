@@ -14,16 +14,6 @@ class MainNavItem {
 
   addEventListeners() {
     document.querySelector(selectors.globalNav)
-      .addEventListener('click', (e) => {
-        if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
-          return;
-        }
-        const open = document.querySelector(selectors.expandedPopupTrigger);
-        closeAllDropdowns();
-        if (open !== e.target) this.open({ triggerEl: e.target });
-      });
-
-    document.querySelector(selectors.globalNav)
       .addEventListener('keydown', (e) => {
         if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
           return;
