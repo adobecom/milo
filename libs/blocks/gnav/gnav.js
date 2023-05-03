@@ -382,7 +382,16 @@ class Gnav {
 
     const label = searchBlock.querySelector('p').textContent;
     const searchEl = createTag('div', { class: `gnav-search ${isContextual ? SEARCH_TYPE_CONTEXTUAL : ''}` });
-    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper);
+    const searchDivs = this.body.querySelector('.search').querySelectorAll('div');
+    searchDivs.forEach((div) => {
+      if (div.textContent === 'Open In New tab') {
+        openInNewTab = div.nextElementSibling.textContent;
+      }
+      if (div.textContent === 'Search url') {
+        searchURL = div.nextElementSibling.textContent;
+      }
+    });
+    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper, openInNewTab, searchURL);
     const searchButton = createTag(
       'button',
       {
@@ -402,7 +411,7 @@ class Gnav {
     return searchEl;
   };
 
-  decorateSearchBar = (label, advancedSearchEl) => {
+  decorateSearchBar = (label, advancedSearchEl, openInNewTab, searchURL) => {
     const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
     const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
     const searchInput = createTag('input', {
@@ -426,8 +435,13 @@ class Gnav {
     });
 
     searchInput.addEventListener('keydown', (e) => {
+      const openSearchURLMode = openInNewTab?.toLowerCase() === 'no' ? '_self' : '';
       if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, getCountry()));
+        if (searchURL) {
+          window.open(`${searchURL}?q=${encodeURIComponent(e.target.value)}&start_index=0&country=${getCountry()}`, openSearchURLMode);
+        } else {
+          window.open(this.getHelpxLink(e.target.value, getCountry()), openSearchURLMode);
+        }
       }
     });
 
