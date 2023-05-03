@@ -28,7 +28,7 @@ const cycleOnOpenSearch = ({ e, isDesktop }) => {
 const closeOnClickOutside = (e) => {
   if (
     !e.target.closest(selectors.globalNav)
-    || e.target.classList.contains(selectors.curtain.replace('.', ''))
+    || e.target.closest(selectors.curtain)
   ) {
     closeAllDropdowns();
   }
@@ -51,14 +51,14 @@ class KeyboardNavigation {
           break;
         }
         case 'Enter': {
-          if (e.target.classList.contains(selectors.searchField.replace('.', ''))) return;
+          if (e.target.closest(selectors.searchField)) return;
           e.stopPropagation();
           e.preventDefault();
           e.target.click();
           break;
         }
         case 'Space': {
-          if (e.target.classList.contains(selectors.searchField.replace('.', ''))) return;
+          if (e.target.closest(selectors.searchField)) return;
           e.stopPropagation();
           e.preventDefault();
           e.target.click();
