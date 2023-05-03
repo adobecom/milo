@@ -12,8 +12,6 @@ import {
   updateProjectDetailsUI,
   updateProjectStatusUI,
 } from './ui.js';
-import promoteFloodgatedFiles from './promote.js';
-import floodgateContent from './copy.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
@@ -48,30 +46,52 @@ async function postData(url = '', data = {}) {
   return response.json(); // parses JSON response into native JavaScript objects
 }
 
-function floodgateContentAction(project) {
+function floodgateContentAction(project, config) {
   const params = {
     spToken: getAccessToken(),
     adminPageUri: window.location.href,
     projectExcelPath: project.excelPath,
+    projectRoot: config.sp.rootFolders,
   };
-  return postData('https://14257-milofg-sirivuri.adobeioruntime.net/api/v1/web/milo-fg/copy.json', params);
+  return postData(config.sp.aioCopyAction, params);
 }
 
-async function projectStatus(project) {
-  const params = { projectExcelPath: project.excelPath };
-  return postData('https://14257-milofg-sirivuri.adobeioruntime.net/api/v1/web/milo-fg/status.json', params);
+function promoteContentAction(project, config) {
+  const params = {
+    spToken: getAccessToken(),
+    adminPageUri: window.location.href,
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.fgRootFolder,
+  };
+  return postData(config.sp.aioPromoteAction, params);
 }
 
-function setListeners(project) {
+async function floodgateStatus(project, config) {
+  const params = {
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.rootFolders,
+  };
+  return postData(config.sp.aioStatusAction, params);
+}
+
+async function promoteStatus(project, config) {
+  const params = {
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.fgRootFolder,
+  };
+  return postData(config.sp.aioStatusAction, params);
+}
+
+function setListeners(project, config) {
   const modal = document.getElementById('fg-modal');
   const handleFloodgateConfirm = ({ target }) => {
     modal.style.display = 'none';
-    floodgateContentAction(project);
+    floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
-    promoteFloodgatedFiles(project);
+    promoteContentAction(project, config);
     target.removeEventListener('click', handlePromoteConfirm);
   };
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
@@ -85,8 +105,15 @@ function setListeners(project) {
     modal.style.display = 'block';
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
-  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => { modal.style.display = 'none'; });
-  document.querySelector('#projectStatus button').addEventListener('click', () => { projectStatus(project); });
+  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  document.querySelector('#floodgateStatus button').addEventListener('click', () => {
+    floodgateStatus(project, config);
+  });
+  document.querySelector('#promoteStatus button').addEventListener('click', () => {
+    promoteStatus(project, config);
+  });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -115,7 +142,7 @@ async function init() {
     loadingON('Project Details loaded...');
 
     // Set the listeners on the floodgate action buttons
-    setListeners(project, projectDetail);
+    setListeners(project, config);
 
     loadingON('Connecting now to Sharepoint...');
     const connectedToSp = await connectToSP();
@@ -126,8 +153,6 @@ async function init() {
     loadingON('Connected to Sharepoint!');
     await refreshPage(config, projectDetail, project);
 
-    // Check status of recent floodgate action.
-    projectStatus(project);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);
