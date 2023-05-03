@@ -23,11 +23,11 @@
   padding: 24px 0;
   font-size: 18px;
   line-height: 27px;
-  border-bottom: 1px solid #DDDDDD;
+  border-bottom: 1px solid var(--color-gray-300);
 }
 
 .how-to > ol > li:first-of-type {
-  border-top: 1px solid #DDDDDD;
+  border-top: 1px solid var(--color-gray-300);
 }
 
 .how-to > ol > li > picture {
