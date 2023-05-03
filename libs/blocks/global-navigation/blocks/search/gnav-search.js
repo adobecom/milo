@@ -102,6 +102,11 @@ class Search {
           this.trigger.focus();
         }
       }
+
+      if (e.code === 'Enter') {
+        if (!this.query) return;
+        window.location.href = Search.getHelpxLink(this.query);
+      }
     });
 
     // If a search result is focused, return focus to input when ESC is pressed

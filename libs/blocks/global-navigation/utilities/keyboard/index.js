@@ -51,12 +51,14 @@ class KeyboardNavigation {
           break;
         }
         case 'Enter': {
+          if (e.target.classList.contains(selectors.searchField.replace('.', ''))) return;
           e.stopPropagation();
           e.preventDefault();
           e.target.click();
           break;
         }
         case 'Space': {
+          if (e.target.classList.contains(selectors.searchField.replace('.', ''))) return;
           e.stopPropagation();
           e.preventDefault();
           e.target.click();
