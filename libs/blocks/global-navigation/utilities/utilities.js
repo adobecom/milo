@@ -1,4 +1,4 @@
-import { getConfig } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
 
 const curtainSelector = '.feds-curtain';
 const navLink = '.feds-navLink';
@@ -51,6 +51,48 @@ export function getAnalyticsValue(str, index) {
   analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
 
   return analyticsValue;
+}
+
+export function getExperienceName() {
+  const experiencePath = getMetadata('gnav-source');
+
+  return experiencePath?.split('/').at(-1) || '';
+}
+
+export function loadStyles(path) {
+  const { miloLibs, codeRoot } = getConfig();
+  return new Promise((resolve) => {
+    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
+  });
+}
+
+// Base styles are shared between top navigation and footer,
+// since they can be independent of each other.
+// CSS imports were not used due to duplication of file include
+export async function loadBaseStyles() {
+  await loadStyles('base.css');
+}
+
+export function loadBlock(path) {
+  return import(path).then((module) => module.default);
+}
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  // eslint-disable-next-line no-async-promise-executor
+  cachedDecorateMenu = cachedDecorateMenu || new Promise(async (resolve) => {
+    const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+      loadBlock('./menu/menu.js'),
+      loadStyles('utilities/menu/menu.css'),
+    ]);
+
+    resolve({
+      decorateMenu,
+      decorateLinkGroup,
+    });
+  });
+
+  return cachedDecorateMenu;
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
