@@ -525,7 +525,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  const headerQuery = new URLSearchParams(window.location.search).get('fedsNavQA');
+  const headerQuery = new URLSearchParams(window.location.search).get('headerQA');
   header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
@@ -558,7 +558,7 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  const footerQuery = new URLSearchParams(window.location.search).get('fedsFooterQA');
+  const footerQuery = new URLSearchParams(window.location.search).get('footerQA');
   footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
