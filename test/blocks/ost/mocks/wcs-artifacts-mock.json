@@ -1,66 +1,7 @@
 {
     "stockOffer": {
-        "offer_id": "0133AE34E68F36920F5B33482A251DE7",
-        "spec_id": "5b18d4cc-59e5-46e4-a703-96d52c6bd161",
-        "offer_type": "BASE",
-        "price_point": "Stock_CP1",
+        "offer_id": "aeb0bf53517d46e89a1b039f859cf573",
         "commitment": "PERPETUAL",
-        "term": "MONTHLY",
-        "product_code": "STEL",
-        "product_arrangement_code": "stel_1credit_direct_individual",
-        "customer_segment": "INDIVIDUAL",
-        "sales_channel": "DIRECT",
-        "language": "MULT",
-        "platform": "Mac/Win",
-        "merchant": "ADOBE",
-        "market_segments": [
-            "COM"
-        ],
-        "buying_program": "RETAIL",
-        "customer_ui": [
-            "www_adobe_com_products"
-        ],
-        "countries": [
-            "FR",
-            "GB"
-        ],
-        "compliance": {
-            "terms_href": "https://adobeid-na1-stg1.services.adobe.com/ims/person/fetch_tc/v2?client_id={imsClientIdOfCaller}&service_name=tc_stock_credit_pack&locale={RengaLocale}"
-        },
-        "pricing": {
-            "currency": {
-                "format_string": "'US$'#,##0.00",
-                "code": "USD",
-                "use_precision": true,
-                "symbol": "US $",
-                "delimiter": "."
-            },
-            "prices": [
-                {
-                    "sku": "65283082",
-                    "price_details": {
-                        "display_rules": {
-                            "price": 9.99,
-                            "tax": "excluded",
-                            "tax_term": "TAX"
-                        },
-                        "unit": {
-                            "amount_without_tax": 9.99,
-                            "includes_discount": false
-                        },
-                        "tax_code": "ASTOCK"
-                    }
-                }
-            ]
-        },
-        "ordering": {
-            "max_quantity": 1
-        },
-        "payment_structure": "PAID_IN_ADVANCE",
-        "product_arrangement_version_id": "-xyB240tvnSbefak2DPMJHGYPE_Ox_-RoqR1CDSDulo",
-        "planType": "PERP",
-        "id": "0133AE34E68F36920F5B33482A251DE7",
-        "name": "Adobe Stock – 1 credit pack",
-        "icon": "https://wwwimages.adobe.com/content/dam/acom/one-console/icons_rebrand/st_appicon.svg"
+        "name": "Stock"
     }
 }

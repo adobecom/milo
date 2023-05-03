@@ -48,7 +48,7 @@ export function createLinkMarkup(
 
     if (isCheckoutPlaceholder) {
       const { workflow, workflowStep } = placeholderOptions;
-      url.searchParams.set('text', 'buy-now');
+      url.searchParams.set('text', ctaText);
       url.searchParams.set('checkoutType', workflow);
       url.searchParams.set(
         'workflowStep',
