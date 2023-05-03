@@ -1,5 +1,7 @@
-import { html, render, useState, useRef } from '../../../libs/deps/htm-preact.js';
+import { html, render, useState, useRef } from '../../deps/htm-preact.js';
+import { getMetadata } from '../../utils/utils.js';
 import {
+  ANONYMOUS,
   signOut,
   getStoredUrlInput,
   getActionName,
@@ -13,11 +15,9 @@ import {
   getStoredOperation,
   storeUrls,
   storeOperation,
-} from './utils.js';
+} from './bulk-publish-utils.js';
 
 // eslint-disable-next-line max-len
-// TODO: enable IMS sign in when the code is merged on the main branch, as IMS does not work on the PR branch
-const IMS_SIGN_IN_ENABLED = false;
 const URLS_ENTRY_LIMIT = 1000;
 
 function User({ user }) {
@@ -27,7 +27,7 @@ function User({ user }) {
           <div class="bulk-user-name">
               ${user.name}
           </div>
-          ${IMS_SIGN_IN_ENABLED && html`
+          ${user.name !== ANONYMOUS && html`
               <a class="bulk-user-signout" onclick=${signOut}>Sign out</a>
           `}
       </div>
@@ -211,7 +211,7 @@ function ResumeModal({ displayResumeDialog, resumeModal, resume, hideModal }) {
   `;
 }
 
-function Bulk({ user, storedOperation }) {
+function BulkPublish({ user, storedOperation }) {
   const [valid, setValid] = useState(true);
   const [authorized, setAuthorized] = useState(true);
   const [urlNumber, setUrlNumber] = useState(-1);
@@ -332,12 +332,13 @@ function Bulk({ user, storedOperation }) {
 }
 
 export default async function init(el) {
-  if (IMS_SIGN_IN_ENABLED) {
+  const imsSignIn = getMetadata('ims-sign-in');
+  if (imsSignIn === 'on' || imsSignIn === 'true') {
     const signedIn = await signIn();
     if (!signedIn) return;
   }
 
   const user = await getUser();
   const storedOperation = getStoredOperation();
-  render(html`<${Bulk} user="${user}" storedOperation="${storedOperation}" />`, el);
+  render(html`<${BulkPublish} user="${user}" storedOperation="${storedOperation}" />`, el);
 }

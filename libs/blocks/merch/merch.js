@@ -1,6 +1,6 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
-export const VERSION = '1.15.2';
+export const VERSION = '1.16.0';
 const ENV_PROD = 'prod';
 const CTA_PREFIX = /^CTA +/;
 
@@ -68,6 +68,17 @@ export const getTacocatEnv = (envName, locale) => {
   return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
 };
 
+export const runTacocat = (tacocatEnv, country, language) => {
+  // init lana logger
+  window.tacocat.initLanaLogger('merch-at-scale', tacocatEnv, { country }, { consumer: 'milo' });
+  // launch tacocat library
+  window.tacocat.tacocat({
+    env: tacocatEnv,
+    country,
+    language,
+  });
+};
+
 window.tacocat.loadPromise = new Promise((resolve) => {
   const { env, locale } = getConfig();
   const {
@@ -82,11 +93,7 @@ window.tacocat.loadPromise = new Promise((resolve) => {
     .catch(() => ({})) /* ignore if literals fail */
     .then(() => loadScript(scriptUrl))
     .then(() => {
-      window.tacocat.tacocat({
-        env: tacocatEnv,
-        country,
-        language,
-      });
+      runTacocat(tacocatEnv, country, language);
       resolve();
     });
 });
@@ -94,7 +101,14 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
-  a.setAttribute('class', 'con-button');
+  const classes = ['con-button'];
+  if (link.closest('.marquee')) {
+    classes.push('button-l');
+  }
+  if (link.firstElementChild?.tagName === 'STRONG' || link.parentElement?.tagName === 'STRONG') {
+    classes.push('blue');
+  }
+  a.setAttribute('class', classes.join(' '));
   Object.assign(a.dataset, dataAttrs);
   a.textContent = link.textContent?.replace(CTA_PREFIX, '');
   window.tacocat.imsCountryPromise.then((countryCode) => {

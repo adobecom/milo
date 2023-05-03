@@ -1,10 +1,10 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
-import merch, { VERSION, getTacocatEnv, imsCountryPromise } from '../../../libs/blocks/merch/merch.js';
 
-const config = { codeRoot: '/libs', env: { name: 'local' } };
-setConfig(config);
+const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
+const { default: merch, VERSION, getTacocatEnv, imsCountryPromise, runTacocat } = await import('../../../libs/blocks/merch/merch.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -280,6 +280,21 @@ describe('Merch Block', () => {
       const imsCountry = await imsCountryPromise();
       expect(imsCountry).to.undefined;
     });
+
+    it('should render blue CTAs', async () => {
+      const els = document.querySelectorAll('.merch.cta.strong');
+      expect(els.length).to.equal(2);
+      const cta1 = await merch(els[0]);
+      expect(cta1.classList.contains('blue')).to.be.true;
+      const cta2 = await merch(els[1]);
+      expect(cta2.classList.contains('blue')).to.be.true;
+    });
+
+    it('should render large CTA inside a marquee', async () => {
+      const el = document.querySelector('.merch.cta.inside-marquee');
+      const cta = await merch(el);
+      expect(cta.classList.contains('button-l')).to.be.true;
+    });
   });
 
   describe('Tacocat config', () => {
@@ -335,6 +350,21 @@ describe('Merch Block', () => {
       let el = document.querySelector('.merch.cta.notacocat');
       el = await merch(el);
       expect(el).to.be.undefined;
+    });
+  });
+
+  describe('Tacocat trigger', () => {
+    it('should trigger tacocat', async () => {
+      window.tacocat.tacocat = sinon.spy();
+      window.tacocat.initLanaLogger = sinon.spy();
+      runTacocat('PRODUCTION', 'US', 'en');
+
+      expect(window.tacocat.initLanaLogger.calledWith('merch-at-scale', 'PRODUCTION', { country: 'US' }, { consumer: 'milo' })).to.be.true;
+      expect(window.tacocat.tacocat.calledWith({
+        env: 'PRODUCTION',
+        country: 'US',
+        language: 'en',
+      })).to.be.true;
     });
   });
 });
