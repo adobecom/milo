@@ -35,11 +35,10 @@ const addWrapper = (el, section, cardType) => {
   let upClass = getUpFromSectionMetadata(section);
   // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
   const list = ['two-up', 'three-up', 'four-up', 'five-up'];
-  const ixd = list.findIndex(i => i.includes(upClass));
+  const ixd = list.findIndex((i) => i.includes(upClass));
   if (ixd > -1) {
-    upClass = `${ixd+2}-up`;
+    upClass = `${ixd + 2}-up`;
     section.classList.remove(list[ixd]);
-    section.classList.add(upClass);
   }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
