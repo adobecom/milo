@@ -1,6 +1,6 @@
 import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
-import { enableRetry, connect as connectToSP } from '../../loc/sharepoint.js';
+import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
@@ -38,11 +38,35 @@ async function refreshPage(config, projectDetail, project) {
   loadingOFF();
 }
 
-function setListeners(project, projectDetail) {
+async function postData(url = '', data = {}) {
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
+  return response.json(); // parses JSON response into native JavaScript objects
+}
+
+function floodgateContentAction(project) {
+  const params = {
+    spToken: getAccessToken(),
+    adminPageUri: window.location.href,
+    projectExcelPath: project.excelPath,
+  };
+  return postData('https://14257-milofg-sirivuri.adobeioruntime.net/api/v1/web/milo-fg/copy.json', params);
+}
+
+async function projectStatus(project) {
+  const params = { projectExcelPath: project.excelPath };
+  return postData('https://14257-milofg-sirivuri.adobeioruntime.net/api/v1/web/milo-fg/status.json', params);
+}
+
+function setListeners(project) {
   const modal = document.getElementById('fg-modal');
   const handleFloodgateConfirm = ({ target }) => {
     modal.style.display = 'none';
-    floodgateContent(project, projectDetail);
+    floodgateContentAction(project);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
   const handlePromoteConfirm = ({ target }) => {
@@ -62,6 +86,7 @@ function setListeners(project, projectDetail) {
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
   document.querySelector('#fg-modal #no-btn').addEventListener('click', () => { modal.style.display = 'none'; });
+  document.querySelector('#projectStatus button').addEventListener('click', () => { projectStatus(project); });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -100,6 +125,9 @@ async function init() {
     }
     loadingON('Connected to Sharepoint!');
     await refreshPage(config, projectDetail, project);
+
+    // Check status of recent floodgate action.
+    projectStatus(project);
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);
