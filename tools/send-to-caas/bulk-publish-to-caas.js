@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
+import { getImsToken } from '../utils/utils.js';
 import {
   loadTingleModalFiles,
   showAlert,
@@ -9,7 +10,6 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
-  getImsToken,
   loadCaasTags,
   postDataToCaaS,
   getConfig,

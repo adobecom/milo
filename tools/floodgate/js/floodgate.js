@@ -22,7 +22,7 @@ async function reloadProject() {
 
 async function refreshPage(config, projectDetail, project) {
   // Inject Sharepoint file metadata
-  loadingON('Updating Project with the Sharepoint Docs Data...');
+  loadingON('Updating Project with the Sharepoint Docs Data... please wait');
   await updateProjectWithDocs(projectDetail);
 
   // Render the data on the page
