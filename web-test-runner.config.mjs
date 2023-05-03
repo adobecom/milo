@@ -2,6 +2,11 @@ import { importMapsPlugin } from '@web/dev-server-import-maps';
 
 export default {
   coverageConfig: {
+    include: [
+      '**/libs/**',
+      '**/tools/**',
+      '**/build/**',
+    ],
     exclude: [
       '**/mocks/**',
       '**/node_modules/**',

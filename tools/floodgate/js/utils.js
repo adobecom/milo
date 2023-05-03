@@ -1,3 +1,5 @@
+import { fetchWithRetry } from '../../loc/sharepoint.js';
+
 export function getFloodgateUrl(url) {
   if (!url) {
     return undefined;
@@ -24,7 +26,7 @@ export function handleExtension(path) {
 }
 
 export async function getFile(downloadUrl) {
-  const response = await fetch(downloadUrl);
+  const response = await fetchWithRetry(downloadUrl);
   if (response) {
     return response.blob();
   }
