@@ -238,7 +238,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -258,6 +258,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '' }) => {
       label=${label}
       name=${prop}
       type=${type}
+      title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
     />
@@ -287,7 +288,10 @@ const DropdownSelect = ({ label, options, prop }) => {
 };
 
 const BasicsPanel = ({ tagsData }) => {
+  const { state } = useContext(ConfiguratorContext);
+
   if (!tagsData) return '';
+
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
 
@@ -306,14 +310,20 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
+  const countryLangOptions = html`
+    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+
   return html`
     <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
+    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
+    <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
+    ${!state.autoCountryLang && countryLangOptions}
+
   `;
 };
 
@@ -576,12 +586,14 @@ const AdvancedPanel = () => {
     });
   };
 
-  function getAdditionalQueryParams(){
-    if(Array.isArray(context.state.additionalRequestParams)){
+  function getAdditionalQueryParams() {
+    if (Array.isArray(context.state.additionalRequestParams)) {
       return context.state.additionalRequestParams;
     }
-    return Object.entries(context.state.additionalRequestParams).map(([key, value]) => ({key, value}));
+    return Object.entries(context.state.additionalRequestParams)
+      .map(([key, value]) => ({ key, value }));
   }
+
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
