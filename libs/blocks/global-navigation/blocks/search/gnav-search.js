@@ -97,7 +97,6 @@ class Search {
         if (this.input.value.length) {
           this.clearSearchForm();
         } else if (this.isDesktop.matches) {
-          this.clearSearchForm();
           closeAllDropdowns();
           this.trigger.focus();
         }
@@ -277,6 +276,8 @@ class Search {
     if (hasBeenOpened) {
       this.curtain.classList.add('is-open');
       this.focusInput();
+    } else {
+      this.clearSearchForm();
     }
   }
 
