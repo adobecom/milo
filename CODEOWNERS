@@ -1,10 +1,34 @@
 # Milo CODEOWNERS
-# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# When you create a new block or tool please establish ownership in this file.
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-/libs/utils/ @adobecom/admins
+# Milo Core (alphabetical order)
 /libs/features/ @adobecom/admins
-/libs/blocks/video-metadata/ @hparra
-/libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
+/libs/utils/ @adobecom/admins
+
+# Milo Tools (alphabetical order)
+
+# Milo Blocks (alphabetical order)
+/libs/blocks/accordion/ @fullcolorcoder @ryanmparrish
+/libs/blocks/aside/ @Sartxi
+/libs/blocks/carousel/ @rgclayton
+/libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin @sanjayms01
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
-/libs/blocks/carousel/ @rgclayton 
+/libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
+/libs/blocks/how-to/ @fullcolorcoder @ryanmparrish
+/libs/blocks/icon-block/ @elan-tbx
+/libs/blocks/local-nav/ @seanchoi-dev
+/libs/blocks/marketo/ @Brandon32 
+/libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
+/libs/blocks/media/ @ryanmparrish
+/libs/blocks/merch/ @yesil @3ch023 @honstar @VKniaz @npeltier
+/libs/blocks/pdf-vewer/ @sanjayms01
+/libs/blocks/quote/ @ryanmparrish
+/libs/blocks/table-of-contents/ @Brandon32
+/libs/blocks/tabs/ @ryanmparrish
+/libs/blocks/text/ @ryanmparrish
+/libs/blocks/video-metadata/ @hparra
+/libs/blocks/z-pattern/ @ryanmparrish
+
+
