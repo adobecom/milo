@@ -2,6 +2,7 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 /libs/utils/ @adobecom/admins
+/libs/features/ @adobecom/admins
 /libs/blocks/video-metadata/ @hparra
 /libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/faas/ @seanchoi-dev
