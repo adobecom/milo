@@ -74,8 +74,7 @@ const getSuggestions = (json) => {
 };
 
 const onSearchInput = async ({ value, resultsEl, locale, searchInputEl }) => {
-  // Search use locale with underscore. locale.ietf has hyphen.
-  const results = await fetchResults(value, window.adobeid?.locale);
+  const results = await fetchResults(value, locale?.ietf?.replace('-', '_'));
   const suggestions = getSuggestions(results);
   updateSearchResults(value, suggestions, locale, resultsEl, searchInputEl);
 };
