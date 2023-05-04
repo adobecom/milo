@@ -1,4 +1,4 @@
-.how-to {
+.how-to .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
   padding: var(--spacing-xxl) 0;
@@ -10,13 +10,13 @@
     "image"
 }
 
-.how-to > ol {
+.how-to ol {
   list-style-type: none;
   padding: 0;;
   grid-area: list;
 }
 
-.how-to > ol > li {
+.how-to ol > li {
   counter-increment: step-counter;
   display: flex;
   align-items: center;
@@ -26,16 +26,16 @@
   border-bottom: 1px solid var(--color-gray-300);
 }
 
-.how-to > ol > li:first-of-type {
+.how-to ol > li:first-of-type {
   border-top: 1px solid var(--color-gray-300);
 }
 
-.how-to > ol > li > picture {
+.how-to ol > li > picture {
   margin-right: 20px;
   max-width: 25%;
 }
 
-.how-to > ol > li::before {
+.how-to ol > li::before {
   content: counter(step-counter);
   margin-right: 20px;
   font-size: 28px;
@@ -50,7 +50,6 @@
   grid-area: image;
   align-self: center;
   justify-self: center;
-  /* height: 0; */
   min-height: 100%;
   order: 3;
 }
@@ -66,12 +65,7 @@
 
 /* Tablet */
 @media screen and (min-width: 600px) {
-  .how-to-image {
-    order: unset;
-    height: 0;
-  }
-
-  .how-to{
+  .how-to .foreground {
     column-gap: var(--spacing-m);
     grid-template-rows: 1fr;
     grid-template-areas:
@@ -79,12 +73,17 @@
       "list list"
   }
 
-  .how-to.large-image {
+  .how-to.large-image .foreground {
     grid-template-rows: 1fr;
     grid-auto-rows: min-content;
     grid-template-areas:
       "heading image"
       "list image"
+  }
+
+  .how-to-image {
+    order: unset;
+    height: 0;
   }
 
   .how-to.large-image .how-to-image {
@@ -95,10 +94,6 @@
 
 /* Desktop */
 @media screen and (min-width: 1200px) {
-  /* .how-to-image {
-    height: unset;
-  } */
-
   .how-to.large-image {
     grid-template-columns: 1fr 2fr;
   }

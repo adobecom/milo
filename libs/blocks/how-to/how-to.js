@@ -134,5 +134,9 @@ export default function init(el) {
     setJsonLd(heading?.textContent, desc?.textContent, mainImage, stepsLd);
   }
   decorateTextOverrides(el);
-  el.appendChild(orderedList);
+  const rows = el.querySelectorAll(':scope > div');
+  const foreground = createTag('div', { class: 'foreground' });
+  rows.forEach((row) => { foreground.appendChild(row); });
+  foreground.appendChild(orderedList);
+  el.appendChild(foreground);
 }
