@@ -47,7 +47,7 @@ export function handleStyle(text, section) {
   if (sticky) {
     handleStickySection(sticky, section);
   }
-  if (styles.includes('masonry')) styles.push('six-up');
+  if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
 }
 
