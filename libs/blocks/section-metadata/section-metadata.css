@@ -114,6 +114,10 @@ main>.section[class*='-up']>.content {
   padding-right: var(--grid-margins-width);
 }
 
+.section.masonry {
+  grid-template-columns: 1fr;
+}
+
 .section[class*='-up'].no-gap {
   gap: 0;
 }
@@ -182,15 +186,19 @@ main>.section[class*='-up']>.content {
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
-  .section.five-up {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+@media screen and (min-width: 600px) {
+  .section.masonry {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section.masonry > div.full-width-pod {
+    grid-column: span 2;
   }
 }
 
-@media screen and (min-width: 820px) {
-  .section.masonry > div.full-width-pod {
-    grid-column: span 2;
+@media screen and (min-width: 600px) and (max-width: 1200px) {
+  .section.five-up {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
@@ -237,10 +245,6 @@ main>.section[class*='-up']>.content {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .section.masonry {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
   .section.grid-template-columns-1-2 {
     grid-template-columns: 1fr 2fr;
   }
@@ -275,23 +279,33 @@ main>.section[class*='-up']>.content {
     grid-column: span 5;
   }
 
-  .section[class*='-up'] > div.six-wide,
-  .section.masonry > div.full-width-pod,
-  .section.masonry > div.full-width-pod-desktop-only {
+  .section[class*='-up'] > div.six-wide {
     grid-column: span 6;
   }
 
-  .section.masonry > div {
-    grid-column: span 2;
+  .section.masonry {
+    grid-template-columns: repeat(12, 1fr);
   }
 
-  .section.masonry > div.two-thirds-row-width,
-  .section.masonry > div.double-pod {
+  .section.masonry > div {
     grid-column: span 4;
   }
 
-  .section.masonry > div.half-width-pod {
+  .section.masonry > div.quarter-width-pod {
     grid-column: span 3;
   }
-}
+  
+  .section.masonry > div.half-width-pod {
+    grid-column: span 6;
+  }
+  
+  .section.masonry > div.two-thirds-width-pod,
+  .section.masonry > div.double-pod {
+    grid-column: span 8;
+  }
 
+  .section.masonry > div.full-width-pod,
+  .section.masonry > div.full-width-pod-desktop-only {
+    grid-column: span 12;
+  }
+}

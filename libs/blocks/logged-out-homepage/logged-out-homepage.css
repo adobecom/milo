@@ -1,0 +1,184 @@
+.logged-out-homepage {
+  position: relative;
+}
+
+.logged-out-homepage p,
+.logged-out-homepage [class^="body-"] { margin: var(--spacing-xs) 0; }
+
+.logged-out-homepage [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+
+.logged-out-homepage.heading-xs [class^="heading"] {
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+  margin-bottom: 0;
+}
+
+.logged-out-homepage.heading-xs p.body-m {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  margin: 4px 0;
+}
+
+.logged-out-homepage.link-pod hr {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  margin: var(--spacing-s) 0;
+}
+
+.logged-out-homepage [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+
+.logged-out-homepage p.action-area { margin-top: var(--spacing-s); }
+
+.logged-out-homepage div > *:last-child { margin-bottom: 0; }
+
+.grid .logged-out-homepage div > *:last-child { margin-bottom: var(--spacing-s); }
+
+.logged-out-homepage .foreground > div *:first-child { margin-top: 0; }
+
+.logged-out-homepage .background {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.logged-out-homepage .background > div {
+  height: 100%;
+}
+
+.logged-out-homepage .background img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+
+.logged-out-homepage .foreground {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+[class*=-up] .logged-out-homepage .foreground {
+  max-width: none;
+  margin: 0;
+}
+
+.logged-out-homepage .action-area {
+  margin-top: var(--spacing-s);
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.logged-out-homepage.dark {
+  color: #FFF;
+}
+
+.logged-out-homepage.inherit-color-links:not(.con-button) a,
+.logged-out-homepage.click-pod a:not(.con-button),
+.logged-out-homepage.link-pod a:not(.con-button) {
+  color: inherit;
+}
+
+.logged-out-homepage.click-pod a:not(.con-button),
+.logged-out-homepage.link-pod a:not(.con-button) {
+  font-size: var(--type-body-xs-size);
+  font-weight: 700;
+}
+
+.logged-out-homepage.click-pod .foreground p.detail-m:first-child {
+  font-size: var(--type-detail-l-size);
+  line-height: var(--type-detail-l-lh);
+}
+
+.logged-out-homepage.click-pod {
+  cursor: pointer;
+}
+
+.logged-out-homepage.link-pod h4 {
+    font-size: var(--type-body-s-size);
+    margin-bottom: 0;
+}
+
+.logged-out-homepage,
+.logged-out-homepage[class*="highlight"] > div {
+  padding: var(--spacing-s);
+}
+
+.logged-out-homepage[class*="highlight"] {
+  padding: 0 !important;
+}
+
+.logged-out-homepage[class*="highlight"] > div.highlight-empty {
+  padding: var(--spacing-xs);
+}
+
+div[class*='-up'] .logged-out-homepage.highlight-dark > .highlight-row {
+  color: #FFF;
+}
+
+/* Alignment */
+.logged-out-homepage.center {
+  text-align: center;
+  align-items: center;
+}
+
+.logged-out-homepage.center .action-area { justify-content: center; }
+
+.logged-out-homepage.right {
+  text-align: right;
+  align-items: end;
+}
+
+.logged-out-homepage.right .action-area { justify-content: end; }
+
+/* Vertical */
+.vertical.logged-out-homepage .foreground {
+  padding-bottom: var(--spacing-m);
+}
+
+/* Inset */
+.inset.logged-out-homepage .foreground {
+  position: relative;
+  padding-top: var(--spacing-m);
+  padding-bottom: var(--spacing-m);
+}
+
+.inset.logged-out-homepage .foreground::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  left: -8.3%;
+  top: 0;
+  background: var(--color-gray-400);
+}
+
+.inset.logged-out-homepage [class^="heading"]:nth-child(n+2) {
+  margin-top: var(--spacing-xxl);
+}
+
+.inset.logged-out-homepage .foreground ul,
+.inset.logged-out-homepage .foreground ol {
+  list-style: outside;
+  padding-left: var(--spacing-xs);;
+}
+
+/* Tablet */
+@media screen and (min-width: 600px) {
+  .inset.logged-out-homepage .foreground::before {
+    display: none;
+  }
+
+  .inset.logged-out-homepage .foreground {
+    border-left: 2px solid var(--color-gray-400);
+  }
+
+  .inset.logged-out-homepage .foreground > div {
+    padding-left: var(--spacing-l);
+  }
+}
