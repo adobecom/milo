@@ -116,8 +116,10 @@ const config = {
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
   jarvis: {
-    id: 'adobedotcom2',
-    version: '1.83',
+    // TODO: check jarvis onboarding
+    id: 'milo',
+    version: '1.0',
+    onDemand: false,
   },
 };
 
