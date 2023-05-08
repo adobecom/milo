@@ -191,7 +191,7 @@ main>.section[class*='-up']>.content {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .section.masonry > div.full-width-pod {
+  .section.masonry .full-width-pod {
     grid-column: span 2;
   }
 }
@@ -261,25 +261,25 @@ main>.section[class*='-up']>.content {
     grid-template-columns: 3fr 1fr;
   }
 
-  .section[class*='-up'] > div.two-wide,
-  .section[class*='-up'] > div.double-pod {
+  .section[class*='-up'] .two-wide,
+  .section[class*='-up'] .double-pod {
     grid-column: span 2;
   }
 
-  .section[class*='-up'] > div.three-wide,
-  .section[class*='-up'] > div.triple-pod {
+  .section[class*='-up'] .three-wide,
+  .section[class*='-up'] .triple-pod {
     grid-column: span 3;
   }
   
-  .section[class*='-up'] > div.four-wide {
+  .section[class*='-up'] .four-wide {
     grid-column: span 4;
   }
 
-  .section[class*='-up'] > div.five-wide {
+  .section[class*='-up'] .five-wide {
     grid-column: span 5;
   }
 
-  .section[class*='-up'] > div.six-wide {
+  .section[class*='-up'] .six-wide {
     grid-column: span 6;
   }
 
@@ -291,21 +291,21 @@ main>.section[class*='-up']>.content {
     grid-column: span 4;
   }
 
-  .section.masonry > div.quarter-width-pod {
+  .section.masonry .quarter-width-pod {
     grid-column: span 3;
   }
   
-  .section.masonry > div.half-width-pod {
+  .section.masonry .half-width-pod {
     grid-column: span 6;
   }
   
-  .section.masonry > div.two-thirds-width-pod,
-  .section.masonry > div.double-pod {
+  .section.masonry .two-thirds-width-pod,
+  .section.masonry .double-pod {
     grid-column: span 8;
   }
 
-  .section.masonry > div.full-width-pod,
-  .section.masonry > div.full-width-pod-desktop-only {
+  .section.masonry .full-width-pod,
+  .section.masonry .full-width-pod-desktop-only {
     grid-column: span 12;
   }
 }
