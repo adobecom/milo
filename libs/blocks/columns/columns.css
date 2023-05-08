@@ -58,14 +58,12 @@
   letter-spacing: 1px;
 }
 
-@media screen and (min-width:900px) {
+/* tablet up */
+@media screen and (min-width:600px) {
   .columns > .row {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }  
-}
+  }
 
-/* For desktop only */
-@media (min-width:600px) {
   .columns.table > .row {
     padding: var(--spacing-xs);
   }

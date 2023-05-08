@@ -141,25 +141,6 @@ main>.section[class*='-up']>.content {
   padding-right: var(--grid-margins-width);
 }
 
-@media screen and (min-width:900px){
-  .section.two-up,
-  .section.three-up,
-  .section.four-up {
-    grid-template-columns: repeat(auto-fit, minmax(234px, 1fr));
-  }
-
-  .section.five-up {
-    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .section[class*='-up'] .mobile-max-width {
-    margin-left: calc(var(--grid-margins-width) * -1 / 2);
-    margin-right: calc(var(--grid-margins-width) * -1 / 2);
-  }
-}
-
 .section.sticky-top {
   position: sticky;
   top: 57px;
@@ -174,18 +155,41 @@ main>.section[class*='-up']>.content {
   background-color: var(--color-white);
 }
 
+/* mobile only */
+@media (max-width: 600px) {
+  .section[class*='-up'] .max-width-mobile {
+    margin-left: calc(var(--grid-margins-width) * -1 / 2);
+    margin-right: calc(var(--grid-margins-width) * -1 / 2);
+  }
+}
+
+/* tablet up */
+@media screen and (min-width: 600px) {
+  .section.two-up,
+  .section.three-up,
+  .section.four-up {
+    grid-template-columns: repeat(auto-fit, minmax(234px, 1fr));
+  }
+
+  .section.five-up {
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+  }
+}
+
 @media (min-width: 900px) {
   .section.sticky-top {
     top: 64px;
   }
 }
 
+/* tablet up to desktop */
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
+/* desktop up */
 @media screen and (min-width: 1200px) {
   .section.grid-width-10 {
     padding-left: var(--grid-margins-width-10);

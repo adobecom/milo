@@ -386,7 +386,7 @@ input[type="checkbox"] + label {
   line-height: 1.375em;
 }
 
-/* for mobile */
+/* mobile only */
 @media (max-width:600px) {
   .faas-form label,
   .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
