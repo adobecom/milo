@@ -554,6 +554,8 @@ const getCaasProps = (p) => {
     },
     origin: p.origin,
     ...(p.arbitrary?.length && { arbitrary: p.arbitrary }),
+    offerURL: p.offerURL,
+    strikeThroughURL: p.strikeThroughURL,
   };
   return caasProps;
 };
