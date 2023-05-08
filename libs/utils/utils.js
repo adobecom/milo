@@ -84,6 +84,7 @@ const ENVS = {
     name: 'local',
     ims: 'stg1',
     adobeIO: 'cc-collab-stage.adobe.io',
+    account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
