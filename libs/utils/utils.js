@@ -82,9 +82,6 @@ const AUTO_BLOCKS = [
 const ENVS = {
   local: {
     name: 'local',
-    ims: 'stg1',
-    adobeIO: 'cc-collab-stage.adobe.io',
-    account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
@@ -115,7 +112,7 @@ function getEnv(conf) {
   const query = location.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
-  if (host.includes('localhost:') || host.includes('localhost.adobe.com:')) return { ...ENVS.local, consumer: conf.local };
+  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
     || host.includes('hlx.live')
