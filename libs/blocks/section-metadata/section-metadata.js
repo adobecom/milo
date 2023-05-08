@@ -17,7 +17,10 @@ function handleBackground(div, section) {
 
 function handleFocalpoint(pic, text) {
   if (!(text)) return;
-  pic.classList.add(`${text}-focalpoint`.trim());
+  const image = pic.querySelector('img');
+  const directions = text.slice(text.indexOf(':') + 1).split(',');
+  const [x,y = ''] = directions
+  image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
 }
 
 function debounce(func, timeout = 300) {

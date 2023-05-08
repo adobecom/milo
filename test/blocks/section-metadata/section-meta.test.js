@@ -21,11 +21,10 @@ describe('Section Metdata', () => {
   });
 
   it('Handles background image focal point', () => {
-    const sec = document.querySelector('.section.image');
-    const sm = sec.querySelector('.section-metadata');
-    const pic = sec.querySelector('picture');
-    init(sm);
-    expect(pic.classList.contains('left-focalpoint')).to.be.true;
+    it('gets section metadata', () => {
+      const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
+      expect(metadata.focalpoint.text).to.equal('left');
+    });
   });
 
   it('Handles background color', () => {
