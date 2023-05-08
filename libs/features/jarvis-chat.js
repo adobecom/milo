@@ -242,7 +242,7 @@ const openChat = (event) => {
 };
 
 const startInitialization = async (config, event) => {
-  const asset = `https://${config.env.jarvisChat}/latest/AdobeMessagingClient`;
+  const asset = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient';
   await Promise.all([
     loadStyle(`${asset}.css`),
     loadScript(`${asset}.js`),
@@ -264,7 +264,7 @@ const startInitialization = async (config, event) => {
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
     lazyLoad: true,
     loadedVia: 'milo',
-    language,
+    language: language || 'en',
     region,
     cookiesEnabled: window.adobePrivacy?.activeCookieGroups()?.length > 1,
     cookies: {
@@ -317,25 +317,28 @@ const startInitialization = async (config, event) => {
   });
 };
 
-const initJarvisChat = (config, loadScriptFunction, loadStyleFunction) => {
+const initJarvisChat = async (config, loadScriptFunction, loadStyleFunction) => {
   if (!config?.jarvis) return;
 
   loadScript = loadScriptFunction;
   loadStyle = loadStyleFunction;
 
-  document.addEventListener('click', (event) => {
+  document.addEventListener('click', async (event) => {
     if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
     event.preventDefault();
     if (config.jarvis.onDemand && !chatInitialized) {
-      startInitialization(config, event);
+      await startInitialization(config, event);
     } else {
       openChat(event);
     }
   });
 
   if (!config.jarvis.onDemand) {
-    startInitialization(config);
+    await startInitialization(config);
   }
 };
 
-export default initJarvisChat;
+export {
+  initJarvisChat,
+  openChat,
+};

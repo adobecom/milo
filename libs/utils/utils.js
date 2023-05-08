@@ -86,7 +86,6 @@ const ENVS = {
     adobeIO: 'cc-collab-stage.adobe.io',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-    jarvisChat: 'stage-client.messaging.adobe.com',
   },
   stage: {
     name: 'stage',
@@ -96,7 +95,6 @@ const ENVS = {
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-    jarvisChat: 'stage-client.messaging.adobe.com',
   },
   prod: {
     name: 'prod',
@@ -106,7 +104,6 @@ const ENVS = {
     account: 'account.adobe.com',
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
-    jarvisChat: 'client.messaging.adobe.com',
   },
 };
 const LANGSTORE = 'langstore';
@@ -664,7 +661,7 @@ async function loadJarvisChat() {
   const jarvis = getMetadata('jarvis-chat');
   if (!config.jarvis?.id || !config.jarvis?.version) return;
   if (jarvis === 'on') {
-    const { default: initJarvisChat } = await import('../features/jarvis-chat.js');
+    const { initJarvisChat } = await import('../features/jarvis-chat.js');
     initJarvisChat(config, loadScript, loadStyle);
   }
 }
