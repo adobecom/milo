@@ -162,16 +162,8 @@ main>.section[class*='-up']>.content {
 /* mobile only */
 @media (max-width: 600px) {
   .section[class*='-up'] .max-width-mobile {
-    /* margin-left: calc(var(--grid-margins-width) * -1 / 2);
-    margin-right: calc(var(--grid-margins-width) * -1 / 2); */
     margin-left: -8.33%;
     margin-right: -8.33%;
-  }
-}
-
-@media (min-width: 900px) {
-  .section.sticky-top {
-    top: 64px;
   }
 }
 
@@ -192,9 +184,11 @@ main>.section[class*='-up']>.content {
   .section.four-up-tablet {
     grid-template-columns: repeat(4, 1fr);
   }
+}
 
-  .section.five-up-tablet {
-    grid-template-columns: repeat(5, 1fr);
+@media (min-width: 900px) {
+  .section.sticky-top {
+    top: 64px;
   }
 }
 
