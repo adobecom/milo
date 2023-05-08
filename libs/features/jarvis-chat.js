@@ -268,8 +268,8 @@ const startInitialization = async (config, event) => {
     region,
     cookiesEnabled: window.adobePrivacy?.activeCookieGroups()?.length > 1,
     cookies: {
-      // TODO: marketing cloud id,
-      mcid: 'mcid',
+      mcid: window.alloy ? await window.alloy('getIdentity')
+        .then((data) => data?.identity?.ECID) : undefined,
     },
     callbacks: {
       initCallback: (data) => {

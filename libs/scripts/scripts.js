@@ -108,7 +108,7 @@ const config = {
   geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
-  imsClientId: 'adobedotcom2',
+  imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
   prodDomains,
@@ -116,7 +116,6 @@ const config = {
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
   jarvis: {
-    // TODO: check jarvis onboarding
     id: 'milo',
     version: '1.0',
     onDemand: false,
