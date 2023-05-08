@@ -16,4 +16,5 @@ export default {
     ],
   },
   plugins: [importMapsPlugin({})],
+  files: '**/jarvis-chat.test.js',
 };
