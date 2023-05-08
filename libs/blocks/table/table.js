@@ -12,9 +12,11 @@ const positionStickyRows = (table) => {
   const headerCells = headerRow.querySelectorAll(':scope > div');
   const nextRow = table.querySelector('.row-header + div');
   const nextCells = nextRow ? nextRow.querySelectorAll(':scope > div') : null;
+  const lastRow = table.querySelector(':scope > div:last-child');
+  const lastRowRec = lastRow.getBoundingClientRect();
 
   if (!nextRow) return;
-  if (tableRec.top < gnavHeight && tableBottom - 10 > headerRowBottom) {
+  if (tableRec.top < gnavHeight && tableBottom > gnavHeight) {
     nextCells.forEach((cell, index) => {
       const cellWidth = getComputedStyle(cell).width;
       if (highlightCells && highlightCells[index]) highlightCells[index].style.width = `${cellWidth}px`;
@@ -23,10 +25,21 @@ const positionStickyRows = (table) => {
     table.classList.add('table-sticky-on');
     nextRow.style.marginTop = `${highlightHeight + headerRowHeight}px`;
     headerRow.style.width = `${tableRec.width}px`;
-    headerRow.style.top = `${gnavHeight + highlightHeight}px`;
     if (highlightRow) {
       highlightRow.style.width = `${tableRec.width}px`;
-      highlightRow.style.top = `${gnavHeight}px`;
+    }
+    if (headerRowBottom < lastRowRec.top) {
+      // lock under gnav
+      if (highlightRow) {
+        highlightRow.style.top = `${gnavHeight}px`;
+      }
+      headerRow.style.top = `${gnavHeight + highlightHeight}px`;
+    } else {
+      // scroll off
+      if (highlightRow) {
+        highlightRow.style.top = `${lastRowRec.top - headerRowHeight - highlightHeight}px`;
+      }
+      headerRow.style.top = `${lastRowRec.top - headerRowHeight}px`;
     }
   } else {
     highlightCells?.forEach((cell) => {
