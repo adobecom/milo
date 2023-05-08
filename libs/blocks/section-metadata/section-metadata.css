@@ -145,6 +145,11 @@ main>.section[class*='-up']>.content {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
+.up-align-center { align-items: center; }
+.up-align-end { align-items: end; }
+.up-align-stretch { align-items: stretch; }
+.up-align-baseline { align-items: baseline; }
+
 .section.sticky-top {
   position: sticky;
   top: 57px;
