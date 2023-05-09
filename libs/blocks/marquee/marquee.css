@@ -67,26 +67,6 @@
   left: 0;
 }
 
-.marquee .background .left-focalpoint img{
-  object-position: left;
-}
-
-.marquee .background .right-focalpoint img{
-  object-position: right;
-}
-
-.marquee .background .top-focalpoint img{
-  object-position: top;
-}
-
-.marquee .background .bottom-focalpoint img{
-  object-position: bottom;
-}
-
-.marquee .background .center-focalpoint img{
-  object-position: center;
-}
-
 /* Split */
 .marquee.split {
   flex-direction: column;

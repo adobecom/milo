@@ -46,8 +46,8 @@ describe('marquee', () => {
   describe('supports focal point for backgound', () => {
     it('it has focal point given to backgound image', () => {
       const marqueeEle = marquees[14];
-      const metadata = getMetadata(marqueeEle.querySelector('table'));
-      expect(metadata.focalpoint.text).to.equal('left');
+      const focalPointBlock = marqueeEle.children[1].classList.contains('focalPointBlock');
+      expect(focalPointBlock).to.be.true;
     });
   });
 

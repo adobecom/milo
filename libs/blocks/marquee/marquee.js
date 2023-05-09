@@ -26,7 +26,7 @@ const decorateVideo = (container) => {
   container.classList.add('has-video');
 };
 
-const decorateBlockBg = (block, node) => {
+const decorateBlockBg = (block, node, metaNode) => {
   const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
   const childCount = node.childElementCount;
   const { children } = node;
@@ -47,10 +47,15 @@ const decorateBlockBg = (block, node) => {
       decorateVideo(child);
     }
 
-    if (child.querySelector('table')) {
-      const tableEle = child.querySelector('table');
-      const metadata = getMetadata(tableEle);
-      if (metadata.focalpoint) child.classList.add(`${metadata.focalpoint.text}-focalpoint`);
+    if (metaNode.classList.contains('focalPointBlock')) {
+      const metaChildren = metaNode.children;
+      if (child.querySelector('img') && metaChildren[index]) {
+        const image = child.querySelector('img');
+        const text = metaChildren[index].textContent;
+        const directions = text.slice(text.indexOf(':') + 1).split(',');
+        const [x,y = ''] = directions
+        image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+      }
     }
   });
 
@@ -111,7 +116,10 @@ export default function init(el) {
   const foreground = children[children.length - 1];
   if (children.length > 1) {
     children[0].classList.add('background');
-    decorateBlockBg(el, children[0]);
+    if (children[1] !== foreground) {
+      children[1].classList.add('focalPointBlock');
+    }
+    decorateBlockBg(el, children[0], children[1]);
   }
   foreground.classList.add('foreground', 'container');
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
