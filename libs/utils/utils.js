@@ -583,9 +583,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { 
+  if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header); 
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
@@ -604,7 +604,18 @@ export async function loadDeferred(area, blocks, config) {
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
     import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+      const budouxSelector = getMetadata('jpwordwrap:budoux-selector') || 'h1, h2, h3, h4, h5, h6'
+      const budouxThres = Number(getMetadata('jpwordwrap:budoux-thres')) || 1000
+      const bwSelector = getMetadata('jpwordwrap:bw-selector') || 'h1, h2, h3, h4, h5, h6'
+      const lineBreakOkPatterns = (getMetadata('jpwordwrap:line-break-ok') || "").split(',')
+      const lineBreakNgPatterns = (getMetadata('jpwordwrap:line-break-ng') || "").split(',')
+      controlLineBreaksJapanese(config, {
+        budouxSelector,
+        budouxThres,
+        bwSelector,
+        lineBreakOkPatterns,
+        lineBreakNgPatterns
+      }, area);
     });
   }
 
