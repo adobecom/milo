@@ -365,6 +365,8 @@ class Gnav {
   };
 
   decorateSearch = () => {
+    let openInNewTab = null;
+    let searchURL = null;
     const searchBlock = this.body.querySelector('.search');
     if (!searchBlock) return null;
 
