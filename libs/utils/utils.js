@@ -541,13 +541,26 @@ async function decorateIcons(area, config) {
   loadIcons(domIcons, config);
 }
 
-async function decoratePlaceholders(area, config) {
+async function decorateTextPattern(area, config, options) {
   const el = area.documentElement ? area.body : area;
-  const regex = /{{(.*?)}}/g;
-  const found = regex.test(el.innerHTML);
+  const found = options.regex.test(el.innerHTML);
   if (!found) return;
-  const { replaceText } = await import('../features/placeholders.js');
-  el.innerHTML = await replaceText(el.innerHTML, config, regex);
+  const { replaceText } = await import(options.script);
+  el.innerHTML = await replaceText(el.innerHTML, config, options.regex);
+}
+
+async function decoratePlaceholders(area, config) {
+  await decorateTextPattern(area, config, {
+    regex: /{{(.*?)}}/g,
+    script: '../features/placeholders.js',
+  });
+}
+
+async function decorateTooltips(area, config) {
+  await decorateTextPattern(area, config, {
+    regex: /\[(.*?)\]\(## "(.*?)"(|\s([a-z,]+))\)/g,
+    script: '../features/tooltips.js'
+  });
 }
 
 async function loadFooter() {
@@ -711,6 +724,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   appendHtmlPostfix(area);
+  await decorateTooltips(area, config);
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
