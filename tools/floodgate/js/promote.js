@@ -25,9 +25,9 @@ const MAX_CHILDREN = 1000;
  * Copies the Floodgated files back to the main content tree.
  * Creates intermediate folders if needed.
  */
- async function promoteCopy(srcPath, destinationFolder, newName, isFloodgate) {
+ async function promoteCopy(srcPath, destinationFolder, newName) {
   validateConnection();
-  const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
+  const { sp } = await getFloodgateConfig();
   const baseURI = sp.api.file.copy.baseURI;
   const fgBaseURI = sp.api.file.copy.fgBaseURI;
   const rootFolder = baseURI.split('/').pop();
@@ -107,7 +107,7 @@ async function promoteFloodgatedFiles(project) {
       loadingON(`Promoting ${filePath} ...`);
       const folder = getFolderFromPath(filePath);
       const filename = getFileNameFromPath(filePath);
-      const copyFileStatus = await promoteCopy(filePath, folder, filename, true, false);
+      const copyFileStatus = await promoteCopy(filePath, folder, filename);
       if (copyFileStatus) {
         promoteSuccess = true;
       } else {
