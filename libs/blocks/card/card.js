@@ -18,12 +18,12 @@ const getCardType = (styles) => {
   return cardTypes[authoredType] || HALF;
 };
 
-const getUpFromSectionMetadata = (section) => {
+const getClassFromSectionMetadata = (section, str) => {
   const sectionMetadata = section.querySelector('.section-metadata');
   if (!sectionMetadata) return null;
   const metadata = getMetadata(sectionMetadata);
   const styles = metadata.style?.text.split(', ').map((style) => style.replaceAll(' ', '-'));
-  return styles?.find((style) => style.includes('-up'));
+  return styles?.find((style) => style.includes(str));
 };
 
 const addWrapper = (el, section, cardType) => {
@@ -32,20 +32,27 @@ const addWrapper = (el, section, cardType) => {
 
   if (prevGrid) return;
 
-  let upClass = getUpFromSectionMetadata(section);
+  let upClass = getClassFromSectionMetadata(section, '-up');
   // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
   const list = ['two-up', 'three-up', 'four-up', 'five-up'];
-  const ixd = list.findIndex(i => i.includes(upClass));
-  if (ixd > -1) {
-    upClass = `${ixd+2}-up`;
-    section.classList.remove(list[ixd]);
+  const idx = list.findIndex((i) => i.includes(upClass));
+  if (idx > -1) {
+    upClass = `${idx + 2}-up`;
+    section.classList.remove(list[idx]);
+  }
+  // support section metadata grid-width-10 (6, 8, 10)
+  const maxWidthClass = getClassFromSectionMetadata(section, 'grid-width');
+  let caasWidthClass = 'consonant-Wrapper--1200MaxWidth';
+  if (maxWidthClass) {
+    const unit = maxWidthClass.split('-')[2];
+    caasWidthClass = `consonant-Wrapper--${unit}00MaxWidth`;
   }
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
   const grid = createTag('div', { class: gridClass });
   const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
   const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
-  const wrapper = createTag('div', { class: 'milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth' }, inner);
+  const wrapper = createTag('div', { class: `milo-card-wrapper consonant-Wrapper ${caasWidthClass}` }, inner);
   const cards = section.querySelectorAll('.card');
   const prevSib = cards[0].previousElementSibling;
 
