@@ -485,6 +485,8 @@ const props = {
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid URL: ${url}`);
   },
+  offerURL: 0,
+  strikeThroughURL: 0,
 };
 
 // Map the flat props into the structure needed by CaaS
