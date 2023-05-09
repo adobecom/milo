@@ -90,6 +90,21 @@ function decorateText(el, size) {
   size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
 }
 
+function decorateMultipleIconArea(iconArea) {
+  iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
+    const src = picture.querySelector('img')?.getAttribute('src');
+    const a = picture.nextElementSibling;
+    if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
+    
+    if (!a.querySelector('img')) {
+      a.innerHTML = '';
+      a.className = '';
+      a.appendChild(picture);
+    }
+  });
+  if (iconArea.childElementCount > 1) iconArea.classList.add('icon-area-multiple');
+}
+
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
@@ -145,6 +160,8 @@ export default function init(el) {
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);
+  const iconArea = text.querySelector('.icon-area');
+  if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
   if (el.classList.contains('split')) {
     if (foreground && media) {
