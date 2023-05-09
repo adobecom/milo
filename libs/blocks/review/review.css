@@ -116,7 +116,7 @@
 .hlx-Review-commentFields input[type='submit'] {
   position: absolute;
   right: 17px;
-  top: calc(var(--ratingCommentsHeight) + 1px);
+  bottom: 0;
   width: auto;
   background: var(--commentBgColor);
   border: none;
