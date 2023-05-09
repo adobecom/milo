@@ -227,10 +227,10 @@ const isChatOpen = () => {
 const openChat = (event) => {
   if (!chatInitialized) redirectToSupport();
   const open = window.AdobeMessagingExperienceClient?.openMessagingWindow;
-  if (typeof open !== "function" || isChatOpen()) return
+  if (typeof open !== 'function' || isChatOpen()) return;
   if (event) {
-    const sourceType = event?.target?.tagName?.toLowerCase();
-    const sourceText = (sourceType === 'img') ? event?.target?.alt?.trim() : event?.target?.innerText?.trim();
+    const sourceType = event.target.tagName?.toLowerCase();
+    const sourceText = (sourceType === 'img') ? event.target.alt?.trim() : event.target.innerText?.trim();
     open({
       sourceType,
       sourceText,
