@@ -22,7 +22,7 @@ const getImsToken = async () => {
 export function createLinkMarkup(
   offerSelectorId,
   type,
-  { offer_id: offerId, name: offerName, commitment },
+  { offer_id: offerId, name: offerName, commitment, planType },
   placeholderOptions,
   location = window.location,
 ) {
@@ -30,7 +30,7 @@ export function createLinkMarkup(
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
-    : `{{PRICE - ${offerId} - ${offerName}}}`);
+    : `{{PRICE - ${planType} - ${offerName}}}`);
 
   const createHref = () => {
     const url = new URL(location.protocol + location.host);
