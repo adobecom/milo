@@ -421,7 +421,9 @@ class Gnav {
     const searchResults = createTag('div', { class: 'gnav-search-results' });
     const searchResultsUl = createTag('ul');
     searchResults.append(searchResultsUl);
-    const locale = getLocale();
+    const { locale } = getConfig();
+
+    locale.geo = getCountry();
 
     searchInput.addEventListener('input', (e) => {
       this.onSearchInput({
@@ -439,9 +441,9 @@ class Gnav {
         if (searchURL) {
           window.open(`${searchURL}?q=${encodeURIComponent(e.target.value)}&start_index=0&country=${getCountry()}`, openSearchURLMode);
         } else {
-          window.open(this.getHelpxLink(e.target.value, getCountry()), openSearchURLMode);
+          window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo), openSearchURLMode);
         }
-      }
+     }
     });
 
     searchField.append(searchInput);
