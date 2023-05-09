@@ -52,8 +52,8 @@ const decorateBlockBg = (block, node, metaNode) => {
       if (child.querySelector('img') && metaChildren[index]) {
         const image = child.querySelector('img');
         const text = metaChildren[index].textContent;
-        const directions = text.slice(text.indexOf(':') + 1).split(',');
-        const [x,y = ''] = directions
+        const points = text.slice(text.indexOf(':') + 1).split(',');
+        const [x,y = ''] = points
         image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
       }
     }
