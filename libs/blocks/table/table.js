@@ -2,7 +2,7 @@ const positionStickyRows = (table) => {
   const tableRec = table.getBoundingClientRect();
   const tableBottom = tableRec.top + tableRec.height;
   const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? document.querySelector('header').getBoundingClientRect().height : 0;
+  const gnavHeight = gnav ? gnav.getBoundingClientRect().height : 0;
   const highlightRow = table.querySelector('.row-highlight');
   const highlightHeight = highlightRow ? highlightRow.getBoundingClientRect().height : 0;
   const highlightCells = highlightRow ? highlightRow.querySelectorAll(':scope > div') : null;
