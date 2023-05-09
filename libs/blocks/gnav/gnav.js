@@ -56,9 +56,6 @@ class Gnav {
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
 
-    const mobileToggle = this.decorateToggle(nav);
-    nav.append(mobileToggle);
-
     const brand = this.decorateBrand();
     if (brand) {
       nav.append(brand);
@@ -67,7 +64,9 @@ class Gnav {
     const scrollWrapper = createTag('div', { class: 'mainnav-wrapper' });
 
     const mainNav = this.decorateMainNav();
-    if (mainNav) {
+    if (mainNav && mainNav.childElementCount) {
+      const mobileToggle = this.decorateToggle();
+      nav.prepend(mobileToggle);
       scrollWrapper.append(mainNav);
     }
 
