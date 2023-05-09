@@ -336,8 +336,7 @@ async function fetchFooter(url) {
 }
 
 export default async function init(block) {
-  const { prefix } = locale;
-  const url = getMetadata('footer-source') || `${prefix}/footer`;
+  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
   if (url) {
     const { html, error } = await fetchFooter(url);
     if (error) {
