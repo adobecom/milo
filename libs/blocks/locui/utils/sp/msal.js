@@ -23,7 +23,7 @@ export function getMSALConfig() {
   return new Promise(async (resolve) => {
     if (!msalConfig) {
       const { sp } = await getSiteConfig();
-      const { clientId, authority, site, rootFolders } = sp.data[0];
+      const { clientId, authority, site, rootFolders, driveId } = sp.data[0];
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
@@ -34,7 +34,7 @@ export function getMSALConfig() {
         cache,
         telemetry,
         site,
-        baseUri: `${site}/drive/root:${rootFolders}`,
+        baseUri: driveId ? `${site}/drives/${driveId}/root:${rootFolders}` : `${site}/drive/root:${rootFolders}`,
         system: {
           loggerOptions: {
             logLevel: msal.LogLevel.Error,

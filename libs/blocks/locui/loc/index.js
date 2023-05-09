@@ -8,6 +8,7 @@ const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%
 const urlParams = new URLSearchParams(window.location.search);
 
 let resourcePath;
+let previewPath;
 
 export function getUrls(jsonUrls) {
   const { locales } = getConfig();
@@ -38,7 +39,7 @@ async function loadLocales() {
 async function loadDetails() {
   setStatus('details', 'info', 'Loading languages and URLs.');
   try {
-    const resp = await fetch(resourcePath);
+    const resp = await fetch(previewPath);
     const json = await resp.json();
     const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
     const projectUrls = getUrls(jsonUrls);
@@ -62,6 +63,7 @@ async function loadHeading() {
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
+  previewPath = json.preview.url;
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   setStatus('details');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');

@@ -251,6 +251,9 @@ async function getFileMetadata(filePath) {
   validateConnection();
   const { sp } = await getConfig();
   const options = getAuthorizedRequestOption();
+
+  console.log(`${sp.api.file.get.baseURI}`);
+
   const itemFields = await fetch(`${sp.api.file.get.baseURI}${filePath}:/listItem/fields`, options);
   if (itemFields.ok) {
     return itemFields.json();

@@ -124,6 +124,12 @@ function getDocDetails(path) {
  * @returns {Object} json an object describing the copied item
  */
 export default async function copyFile(sourcePath, destPath) {
+  console.log(site);
+  const opts = getReqOptions({ method: 'GET' });
+  const resp = await fetch(`${site}/drives`, opts);
+  const json = await resp.json();
+  console.log(json);
+
   const source = getDocDetails(sourcePath);
   const dest = getDocDetails(destPath);
 

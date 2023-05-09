@@ -130,11 +130,15 @@ export class Footer {
     let regionButton = this.body.querySelector('.region-selector a');
     if (!regionButton) return null;
 
+    const config = getConfig();
+
+    const path = `${config.contentRoot}/fragments/locale-nav`;
+
     const regionTextContent = regionButton.textContent;
     regionButton.textContent = '';
     const regionContainer = createTag('div', { class: 'footer-region' });
     const url = new URL(regionButton.href);
-    if (url.hash !== '') {
+    if (url.hash !== '' || url.hash !== '#_dnt') {
       // if there is a hash, it is a modal-dialog
       decorateAutoBlock(regionButton);
       loadBlock(regionButton);

@@ -72,7 +72,7 @@ function decorateText(el, size) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
 export default function init(el) {
