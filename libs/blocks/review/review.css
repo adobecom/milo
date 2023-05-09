@@ -127,10 +127,12 @@
   font-size: 16px;
   text-align: right;
   padding: 1px 10px;
+  cursor: pointer;
 }
 
 .hlx-Review-commentFields input[type='submit'][disabled] {
   color: var(--sendDisabledColor);
+  cursor: default;
 }
 
 .hlx-Review-commentFields input[type='submit']:not([disabled]):hover {
