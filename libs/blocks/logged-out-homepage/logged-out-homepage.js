@@ -66,7 +66,8 @@ export default function init(el) {
   });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
-  if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
+  if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'xxl-spacing');
+  if (el.classList.contains('full-width') && !el.classList.contains('left') && !el.classList.contains('right')) helperClasses.push('center');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
