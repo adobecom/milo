@@ -1,26 +1,11 @@
-import { getMetadata, handleStyle } from '../section-metadata/section-metadata.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const getIndexedValues = (text) => text.split('\n').map((value) => value.split(/,(.*)/s).map((v) => v.trim()));
-
-function handleHighlight(text, table) {
-  if (!text) return;
-  const highLights = getIndexedValues(text);
-  highLights.forEach((hl) => {
-    const hlCol = hl[0];
-    const hlText = hl[1];
-    if (hlText) {
-      const highLightDiv = document.createElement('div');
-      highLightDiv.textContent = hlText;
-      table.querySelector(`.col-${hlCol}`).classList.add('col-highlight');
-      table.querySelector(`.col-${hlCol}`).prepend(highLightDiv);
-    }
-  });
-}
 
 function handleSectionHead(text, table) {
   if (!text) return;
   const sectionsHeads = text.split('\n');
-  sectionsHeads.forEach(sh => {
+  sectionsHeads.forEach((sh) => {
     const sectionHead = table.querySelector(`.row-${sh.trim()}`);
     sectionHead.classList.add('sectionHead');
   });
@@ -49,7 +34,7 @@ const handleColumnBgColor = (text, table, columnType) => {
 
 function handleCompare(text, table) {
   if (!(text || table)) return;
-  const comparisonGroup  = text.split('\n');
+  const comparisonGroup = text.split('\n');
   comparisonGroup.forEach((comp, i) => {
     const col = comp.trim().split(' ')[1];
     const comparable = table.querySelector(`.col-${col}`);
@@ -62,7 +47,6 @@ export default function init(el) {
   if (!table) return;
 
   const metadata = getMetadata(el);
-  if (metadata.highlight) handleHighlight(metadata.highlight.text, table);
   if (metadata.section) handleSectionHead(metadata.section.text, table);
   if (metadata.compare) handleCompare(metadata.compare.text, table);
   if (metadata['heading color']) handleColumnColor(metadata['heading color'].text, table, 'heading');
