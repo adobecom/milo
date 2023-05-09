@@ -7,6 +7,7 @@ const { stockOffer } = JSON.parse(data);
 
 const osi = 'cea462e983f649bca2293325c9894bdd';
 const offerId = 'aeb0bf53517d46e89a1b039f859cf573';
+const offerType = 'M2M';
 const placeholderOptions = {
   workflow: 'UCv2',
   workflowStep: 'email/checkout',
@@ -17,7 +18,7 @@ const placeholderOptions = {
 };
 describe('test createLinkMarkup', () => {
   const WINDOW_LOCATION = 'https://main--milo--adobecom.hlx.page';
-  const EXPECTED_PRICE_TEXT = `{{PRICE - ${offerId} - Stock}}`;
+  const EXPECTED_PRICE_TEXT = `{{PRICE - ${offerType} - Stock}}`;
   const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&perp=true&term=false&seat=true&tax=true`;
   const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
   const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email_checkout`;
