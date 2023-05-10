@@ -182,19 +182,19 @@ main>.section[class*='-up']>.content {
   }
 }
 
-@media screen and (min-width: 800px) and (max-width: 1199px) {
+@media screen and (min-width: 600px) and (max-width: 1200px) {
+  .section.five-up {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1199px) {
   .section.twelve-up {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .section[class*="-up"] .span-2-tablet-only {
     grid-column: span 2;
-  }
-}
-
-@media screen and (min-width: 600px) and (max-width: 1200px) {
-  .section.five-up {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
