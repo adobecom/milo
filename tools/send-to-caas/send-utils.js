@@ -335,10 +335,11 @@ const getBadges = (p) => {
   return badges;
 };
 
-const getLinkTarget = (l, errorMsg) => {
+const getLinkTarget = (a, errorMsg) => {
+  if (isValidUrl(a)) return a;
   const tmpEl = document.createElement('div');
-  tmpEl.innerHTML = l;
-  const target = tmpEl.firstChild.getAttribute('href');
+  tmpEl.innerHTML = a;
+  const target = tmpEl.firstChild?.getAttribute('href');
   return isValidUrl(target) ? target : { error: errorMsg };
 };
 
