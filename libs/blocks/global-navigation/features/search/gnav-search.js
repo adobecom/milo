@@ -39,7 +39,10 @@ class Search {
     this.parent = this.trigger.closest('.feds-nav-wrapper');
     this.curtain = config.curtain;
     this.isDesktop = window.matchMedia('(min-width: 900px)');
-
+    const observer = new MutationObserver(() => {
+      this.clearSearchForm();
+    });
+    observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
     this.init();
   }
 
@@ -287,7 +290,7 @@ class Search {
   }
 
   static getHelpxLink(query) {
-    return `https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${encodeURIComponent(query.trim())}&start_index=0&country=${country}`;
+    return `https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${encodeURIComponent((query || '').trim())}&start_index=0&country=${country}`;
   }
 }
 
