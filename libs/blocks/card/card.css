@@ -7,6 +7,27 @@
   background-color: #E1E1E1;
   border: none;
   height: 1px;
-  width: 100%;
   margin-bottom: var(--spacing-xs);
+  width: 100%;
 }
+
+/* stylelint-disable selector-class-pattern */
+.consonant-Wrapper--600MaxWidth .consonant-Wrapper-inner,
+.consonant-Wrapper--800MaxWidth .consonant-Wrapper-inner,
+.consonant-Wrapper--1000MaxWidth .consonant-Wrapper-inner {
+  width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.consonant-Wrapper--600MaxWidth .consonant-Wrapper-inner {
+  max-width: 600px;
+}
+
+.consonant-Wrapper--800MaxWidth .consonant-Wrapper-inner {
+  max-width: 800px;
+}
+
+.consonant-Wrapper--1000MaxWidth .consonant-Wrapper-inner {
+  max-width: 1000px;
+}
+/* stylelint-enable */

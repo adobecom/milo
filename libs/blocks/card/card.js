@@ -40,12 +40,15 @@ const addWrapper = (el, section, cardType) => {
     upClass = `${idx + 2}-up`;
     section.classList.remove(list[idx]);
   }
+  // support section metadata grid-width-10 (6, 8, 10)
+  const maxWidthClass = getClassFromSectionMetadata(section, 'grid-width');
+  const wrapperClass = maxWidthClass ? `consonant-Wrapper--${maxWidthClass.split('-')[2]}00MaxWidth` : 'consonant-Wrapper--1200MaxWidth';
   const up = upClass?.replace('-', '') || '3up';
   const gridClass = `${gridCl} ${gridCl}--${up} ${gridCl}--with4xGutter${cardType === DOUBLE_WIDE ? ` ${gridCl}--doubleWideCards` : ''}`;
   const grid = createTag('div', { class: gridClass });
   const collection = createTag('div', { class: 'consonant-Wrapper-collection' }, grid);
   const inner = createTag('div', { class: 'consonant-Wrapper-inner' }, collection);
-  const wrapper = createTag('div', { class: 'consonant-Wrapper--1200MaxWidth' }, inner);
+  const wrapper = createTag('div', { class: wrapperClass }, inner);
   const cards = section.querySelectorAll('.card');
   const prevSib = cards[0].previousElementSibling;
 
