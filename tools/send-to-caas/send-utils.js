@@ -335,6 +335,13 @@ const getBadges = (p) => {
   return badges;
 };
 
+const getLinkTarget = (l, errorMsg) => {
+  const tmpEl = document.createElement('div');
+  tmpEl.innerHTML = l;
+  const target = tmpEl.firstChild.getAttribute('href');
+  return isValidUrl(target) ? target : { error: errorMsg };
+};
+
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
@@ -485,8 +492,8 @@ const props = {
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid URL: ${url}`);
   },
-  offerURL: 0,
-  strikeThroughURL: 0,
+  offerURL: (s) => getLinkTarget(s, `Invalid Link: ${s}`),
+  strikeThroughURL: (s) => getLinkTarget(s, `Invalid Link: ${s}`),
 };
 
 // Map the flat props into the structure needed by CaaS
