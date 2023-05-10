@@ -335,14 +335,6 @@ const getBadges = (p) => {
   return badges;
 };
 
-const getLinkTarget = (a, errorMsg) => {
-  if (isValidUrl(a)) return a;
-  const tmpEl = document.createElement('div');
-  tmpEl.innerHTML = a;
-  const target = tmpEl.firstChild?.getAttribute('href');
-  return isValidUrl(target) ? target : { error: errorMsg };
-};
-
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
@@ -396,7 +388,7 @@ const parseCardMetadata = () => {
   if (mdEl) {
     mdEl.childNodes.forEach((n) => {
       const key = n.children?.[0]?.textContent?.toLowerCase();
-      const val = n.children?.[1]?.textContent;
+      const val = n.children?.[1]?.firstChild?.href || n.children?.[1]?.textContent;
       if (!key) return;
 
       pageMd[key] = val;
@@ -493,8 +485,8 @@ const props = {
     const url = s || options.prodUrl || window.location.origin + window.location.pathname;
     return checkUrl(url, `Invalid URL: ${url}`);
   },
-  offerURL: (s) => getLinkTarget(s, `Invalid Link: ${s}`),
-  strikeThroughURL: (s) => getLinkTarget(s, `Invalid Link: ${s}`),
+  offerurl: (s) => checkUrl(s, `Invalid Offer Link: ${s}`),
+  strikethroughurl: (s) => checkUrl(s, `Invalid Offer Link: ${s}`),
 };
 
 // Map the flat props into the structure needed by CaaS
@@ -564,8 +556,8 @@ const getCaasProps = (p) => {
     },
     origin: p.origin,
     ...(p.arbitrary?.length && { arbitrary: p.arbitrary }),
-    offerURL: p.offerURL,
-    strikeThroughURL: p.strikeThroughURL,
+    offerURL: p.offerurl,
+    strikeThroughURL: p.strikethroughurl,
   };
   return caasProps;
 };

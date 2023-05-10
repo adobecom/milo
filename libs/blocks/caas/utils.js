@@ -531,6 +531,4 @@ export const defaultState = {
   useOverlayLinks: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
-  offerURL: '',
-  strikeThroughURL: '',
 };
