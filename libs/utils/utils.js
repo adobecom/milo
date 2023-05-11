@@ -79,6 +79,7 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
 ];
+const DO_NOT_AUTOBLOCK = '.card-metadata';
 const ENVS = {
   local: {
     name: 'local',
@@ -149,6 +150,7 @@ export const [setConfig, getConfig] = (() => {
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.doNotAutoBlock = conf.doNotAutoBlock ? `${DO_NOT_AUTOBLOCK},${conf.doNotAutoBlock}` : DO_NOT_AUTOBLOCK;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
@@ -421,6 +423,10 @@ export function decorateSVG(a) {
 }
 
 export function decorateAutoBlock(a) {
+  const { doNotAutoBlock = '' } = getConfig();
+  if (a.closest(doNotAutoBlock)) {
+    return false;
+  }
   const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
@@ -594,9 +600,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { 
+  if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header); 
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
