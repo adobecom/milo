@@ -26,27 +26,71 @@ function goToDataHref() {
   window.location.href = this.dataset.href;
 }
 
+function parseMetaData(el) {
+  const rows = el.querySelectorAll(':scope > div');
+  let metaDataFound = false;
+  const results = {
+    rows: [],
+    metaData: {},
+  };
+  rows.forEach((row) => {
+    if (metaDataFound) {
+      const children = row.querySelectorAll(':scope > div');
+      if (children.length === 2) {
+        const key = children[0].innerText.toLowerCase().trim().split(' ').join('-');
+        const image = children[1].querySelector('img');
+        const link = children[1].querySelector('a');
+        if (image) {
+          results.metaData[key] = image.getAttribute('src');
+        } else if (link && link.href.includes('.mp4')) {
+          results.metaData[key] = link.href.getAttribute('src');
+        } else {
+          results.metaData[key] = children[1].innerText.trim();
+        }
+        row.remove();
+      }
+    } else {
+      const innerText = row.innerText.toLowerCase().trim().split(' ').join('');
+      if (innerText === 'blockmetadata') {
+        metaDataFound = true;
+        row.remove();
+      } else {
+        results.rows.push(row);
+      }
+    }
+  });
+  return results;
+}
+
 export default function init(el) {
   decorateButtons(el, 'button-l');
-  let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
+  const parsedBlock = parseMetaData(el);
+  let { rows, metaData } = parsedBlock;
+
+  if (!el.classList.contains('no-bg')) {
+    el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);
     rows = tail;
   }
-  if (rows.length > 2 && (el.classList.contains('highlight') || el.classList.contains('highlight-dark'))) {
-    const [highlightStyle, highlight, ...tail] = rows;
+  if (rows.length > 1 && el.classList.contains('highlight')) {
+    const [highlight, ...tail] = rows;
     highlight.classList.add('highlight-row');
-    const highlightImage = highlightStyle.querySelector('picture img');
-    if (highlightImage) {
-      highlight.style.backgroundImage = `url(${highlightImage.getAttribute('src')})`;
-    } else if (highlightStyle.textContent !== '') {
-      highlight.style.background = highlightStyle.textContent;
-    }
-    if (highlight.innerText.trim() === '') highlight.classList.add('highlight-empty');
-    highlightStyle.remove();
     rows = tail;
+    const firstChild = highlight.querySelector(':scope > div:first-child');
+    if (el.classList.contains('highlight-custom-bg')) {
+      const image = firstChild.querySelector('img');
+      if (image) {
+        highlight.style.backgroundImage = `url(${image.getAttribute('src')})`;
+        firstChild.remove();
+      } else {
+        if (firstChild.innerText.trim() !== '') highlight.style.backgroundColor = firstChild.innerText;
+        firstChild.remove();
+      }
+      if (highlight.innerText.trim() === '') {
+        highlight.classList.add('highlight-empty');
+      }
+    }
   }
   const helperClasses = [];
   let blockType = 'text';
