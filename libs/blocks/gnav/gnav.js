@@ -56,9 +56,6 @@ class Gnav {
     this.curtain = createTag('div', { class: 'gnav-curtain' });
     const nav = createTag('nav', { class: 'gnav', 'aria-label': 'Main' });
 
-    const mobileToggle = this.decorateToggle(nav);
-    nav.append(mobileToggle);
-
     const brand = this.decorateBrand();
     if (brand) {
       nav.append(brand);
@@ -67,7 +64,9 @@ class Gnav {
     const scrollWrapper = createTag('div', { class: 'mainnav-wrapper' });
 
     const mainNav = this.decorateMainNav();
-    if (mainNav) {
+    if (mainNav && mainNav.childElementCount) {
+      const mobileToggle = this.decorateToggle();
+      nav.prepend(mobileToggle);
       scrollWrapper.append(mainNav);
     }
 
@@ -366,6 +365,8 @@ class Gnav {
   };
 
   decorateSearch = () => {
+    let openInNewTab = null;
+    let searchURL = null;
     const searchBlock = this.body.querySelector('.search');
     if (!searchBlock) return null;
 
@@ -382,7 +383,16 @@ class Gnav {
 
     const label = searchBlock.querySelector('p').textContent;
     const searchEl = createTag('div', { class: `gnav-search ${isContextual ? SEARCH_TYPE_CONTEXTUAL : ''}` });
-    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper);
+    const searchDivs = this.body.querySelector('.search').querySelectorAll('div');
+    searchDivs.forEach((div) => {
+      if (div.textContent === 'newTab') {
+        openInNewTab = div.nextElementSibling.textContent;
+      }
+      if (div.textContent === 'searchUrl') {
+        searchURL = div.nextElementSibling.textContent;
+      }
+    });
+    const searchBar = this.decorateSearchBar(label, advancedSearchWrapper, openInNewTab, searchURL);
     const searchButton = createTag(
       'button',
       {
@@ -402,7 +412,7 @@ class Gnav {
     return searchEl;
   };
 
-  decorateSearchBar = (label, advancedSearchEl) => {
+  decorateSearchBar = (label, advancedSearchEl, openInNewTab, searchURL) => {
     const searchBar = createTag('aside', { id: 'gnav-search-bar', class: 'gnav-search-bar' });
     const searchField = createTag('div', { class: 'gnav-search-field' }, SEARCH_ICON);
     const searchInput = createTag('input', {
@@ -413,7 +423,9 @@ class Gnav {
     const searchResults = createTag('div', { class: 'gnav-search-results' });
     const searchResultsUl = createTag('ul');
     searchResults.append(searchResultsUl);
-    const locale = getLocale();
+    const { locale } = getConfig();
+
+    locale.geo = getCountry();
 
     searchInput.addEventListener('input', (e) => {
       this.onSearchInput({
@@ -426,9 +438,14 @@ class Gnav {
     });
 
     searchInput.addEventListener('keydown', (e) => {
+      const openSearchURLMode = openInNewTab?.toLowerCase() === 'no' ? '_self' : '';
       if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, getCountry()));
-      }
+        if (searchURL) {
+          window.open(`${searchURL}?q=${encodeURIComponent(e.target.value)}&start_index=0&country=${getCountry()}`, openSearchURLMode);
+        } else {
+          window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo), openSearchURLMode);
+        }
+     }
     });
 
     searchField.append(searchInput);
