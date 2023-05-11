@@ -385,10 +385,10 @@ class Gnav {
     const searchEl = createTag('div', { class: `gnav-search ${isContextual ? SEARCH_TYPE_CONTEXTUAL : ''}` });
     const searchDivs = this.body.querySelector('.search').querySelectorAll('div');
     searchDivs.forEach((div) => {
-      if (div.textContent === 'Open In New tab') {
+      if (div.textContent === 'newTab') {
         openInNewTab = div.nextElementSibling.textContent;
       }
-      if (div.textContent === 'Search url') {
+      if (div.textContent === 'searchUrl') {
         searchURL = div.nextElementSibling.textContent;
       }
     });
