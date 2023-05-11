@@ -3,6 +3,7 @@ import { getConfig, loadStyle } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData } from './utils.js';
+import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas.css`);
@@ -18,6 +19,9 @@ const App = () => {
   const [userFlow, setUserFlow] = useState([]);
   const [selectedCards, setSelectedCards] = useState({});
   const [countSelectedCards, setCountOfSelectedCards] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(3);
+  const [prevStepIndicator, setPrevStepIndicator] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -76,8 +80,11 @@ const App = () => {
   const handleOnNextClick = (selCards) => {
     const { nextQuizViews } = handleNext(questionData, selectedQuestion, selCards, userFlow);
     const nextQuizViewsLen = nextQuizViews.length;
+    setCurrentStep(currentStep + 1);
     updateUserSelection((userSelection) => {
-      return [ ...userSelection, ...[{ selectedQuestion, selectedCards }]]
+      const updatedUserSelection = [...userSelection, { selectedQuestion, selectedCards }];
+      setPrevStepIndicator(updatedUserSelection.map((_, index) => index));
+      return updatedUserSelection;
     });
 
     setSelectedCards({});
@@ -87,6 +94,11 @@ const App = () => {
       handleResultFlow(transformToFlowData(userSelection));
     } else {
       setUserFlow(nextQuizViews);
+      if (nextQuizViews[0] === 'q-rather' || nextQuizViews[0] === 'q-customer') {
+        setTotalSteps(totalSteps);
+      } else {
+        setTotalSteps(totalSteps + 1);
+      }
     }
   };
 
@@ -126,6 +138,11 @@ const App = () => {
   const maxSelections = +selectedQuestion['max-selections'];
 
   return html`<div class="quiz-container">
+                  <${StepIndicator} 
+                    currentStep=${currentStep} 
+                    totalSteps=${totalSteps} 
+                    prevStepIndicator=${prevStepIndicator}
+                  />  
                   <div class="background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>
@@ -145,8 +162,13 @@ const App = () => {
                       onOptionClick=${onOptionClick}
                       getOptionsIcons=${getOptionsIcons}
                       handleOnNextClick=${handleOnNextClick} />
+                      <${StepIndicator} 
+                      currentStep=${currentStep} 
+                      totalSteps=${totalSteps} 
+                      prevStepIndicator=${prevStepIndicator}
+                    />  
               </div>`;
-}
+};
 
 export default async function init(el) {
   initConfigPathGlob(el);
