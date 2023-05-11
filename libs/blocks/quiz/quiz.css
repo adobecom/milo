@@ -735,6 +735,11 @@ TODO: Need to check if we can skip this somehow.
   display: none;
 }
 
+.dot-indicators:last-of-type {
+  display: flex;
+  visibility: visible;
+}
+
 @media screen and (min-width: 1200px) {
   .dot-indicators:first-of-type {
     display: flex;
@@ -742,6 +747,7 @@ TODO: Need to check if we can skip this somehow.
   }
   .dot-indicators:last-of-type {
     display: none;
+    visibility: hidden;
   }
   .dot-indicators--wide {
     width: 360px;
