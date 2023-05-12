@@ -2,31 +2,17 @@ import { decorateButtons, decorateBlockBg, decorateBlockText, getBlockSize } fro
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
-  standard: {
-    small: ['s', 's', 's'],
-    medium: ['m', 'm', 'm'],
-    large: ['l', 'l', 'l'],
-    xlarge: ['xl', 'xl', 'xl'],
-  },
-  inset: {
-    small: ['s', 'm'],
-    medium: ['m', 'l'],
-    large: ['l', 'xl'],
-    xlarge: ['xl', 'xxl'],
-  },
-  text: {
-    small: ['m', 's', 's'],
-    medium: ['l', 'm', 'm'],
-    large: ['xl', 'm', 'l'],
-    xlarge: ['xxl', 'l', 'xl'],
-  },
+  small: ['m', 's', 's'],
+  medium: ['l', 'm', 'm'],
+  large: ['xl', 'm', 'l'],
+  xlarge: ['xxl', 'l', 'xl'],
 };
 
 function goToDataHref() {
   window.location.href = this.dataset.href;
 }
 
-function parseMetaData(el) {
+function parseBlockMetaData(el) {
   const rows = el.querySelectorAll(':scope > div');
   let metaDataFound = false;
   const results = {
@@ -64,7 +50,7 @@ function parseMetaData(el) {
 
 export default function init(el) {
   decorateButtons(el, 'button-l');
-  const parsedBlock = parseMetaData(el);
+  const parsedBlock = parseBlockMetaData(el);
   let { rows, metaData } = parsedBlock;
 
   if (!el.classList.contains('no-bg')) {
@@ -73,7 +59,7 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
-  if (rows.length > 1 && el.classList.contains('highlight')) {
+  if (el.classList.contains('highlight')) {
     const [highlight, ...tail] = rows;
     highlight.classList.add('highlight-row');
     rows = tail;
@@ -82,27 +68,17 @@ export default function init(el) {
       const image = firstChild.querySelector('img');
       if (image) {
         highlight.style.backgroundImage = `url(${image.getAttribute('src')})`;
-        firstChild.remove();
-      } else {
-        if (firstChild.innerText.trim() !== '') highlight.style.backgroundColor = firstChild.innerText;
-        firstChild.remove();
+      } else if (firstChild.innerText.trim() !== '') {
+        highlight.style.backgroundColor = firstChild.innerText;
       }
+      firstChild.remove();
       if (highlight.innerText.trim() === '') {
         highlight.classList.add('highlight-empty');
       }
     }
   }
-  const helperClasses = [];
-  let blockType = 'text';
-  const size = getBlockSize(el);
-  const longFormVariants = ['inset', 'long-form', 'bio'];
-  longFormVariants.forEach((variant, index) => {
-    if (el.classList.contains(variant)) {
-      helperClasses.push('max-width-8-desktop');
-      blockType = (index > 0) ? 'standard' : variant;
-    }
-  });
-  const config = blockTypeSizes[blockType][size];
+
+  const config = blockTypeSizes[getBlockSize(el)];
   const overrides = ['-heading', '-body', '-detail'];
   overrides.forEach((override, index) => {
     const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
@@ -110,19 +86,10 @@ export default function init(el) {
   });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
-  if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'xxl-spacing');
-  if (el.classList.contains('full-width') && !el.classList.contains('left') && !el.classList.contains('right')) helperClasses.push('center');
-  if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
-  if (el.classList.contains('vertical')) {
-    const elAction = el.querySelector('.action-area');
-    if (elAction) elAction.classList.add('body-s');
-  }
-  el.classList.add(...helperClasses);
-  if (el.classList.contains('link-pod') || el.classList.contains('click-pod')) {
+
+  if (el.classList.contains('link-pod') || el.classList.contains('click-pod') || el.classList.contains('news-pod')) {
     const links = el.querySelectorAll('a');
-    links.forEach((link) => {
-      link.classList.add('pod-link');
-    });
+    links.forEach((link) => { link.classList.add('pod-link'); });
     if (el.classList.contains('click-pod') && links.length) {
       const link = links[0];
       el.dataset.href = link.href;
