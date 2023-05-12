@@ -1,7 +1,7 @@
 import { getConfig } from '../../../utils/utils.js';
 
 const curtainSelector = '.feds-curtain';
-const navLinkClassName = 'feds-nav-link';
+const navLink = '.feds-navLink';
 const globalNavSelector = '.global-navigation';
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
@@ -73,7 +73,7 @@ export function closeAllDropdowns({ e } = {}) {
   if (e) e.preventDefault();
   [...openElements].forEach((el) => {
     el.setAttribute('aria-expanded', 'false');
-    if (el.classList.contains(navLinkClassName)) {
+    if (el.closest(navLink)) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
@@ -90,6 +90,9 @@ export function trigger({ element } = {}) {
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;
+  if (element.closest(navLink)) {
+    element.setAttribute('daa-lh', 'header|Close');
+  }
   element.setAttribute('aria-expanded', 'true');
   return true;
 }
@@ -97,7 +100,7 @@ export function trigger({ element } = {}) {
 export function expandTrigger({ element } = {}) {
   if (!element) return;
   closeAllDropdowns();
-  if (element.classList.contains(navLinkClassName)) {
+  if (element.closest(navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
