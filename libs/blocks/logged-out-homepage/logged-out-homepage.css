@@ -19,11 +19,11 @@
   margin: 4px 0;
 }
 
-.logged-out-homepage.link-pod hr {
+/* .logged-out-homepage.link-pod hr {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
   margin: var(--spacing-s) 0;
-}
+} */
 
 .logged-out-homepage [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
 
@@ -78,15 +78,10 @@
   color: #FFF;
 }
 
-.logged-out-homepage.inherit-color-links:not(.con-button) a,
+.logged-out-homepage a,
 .logged-out-homepage.click-pod a:not(.con-button),
 .logged-out-homepage.link-pod a:not(.con-button) {
   color: inherit;
-}
-
-.logged-out-homepage.click-pod a:not(.con-button),
-.logged-out-homepage.link-pod a:not(.con-button) {
-  font-size: var(--type-body-xs-size);
   font-weight: 700;
 }
 
