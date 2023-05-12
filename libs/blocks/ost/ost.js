@@ -2,7 +2,8 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
+// const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
+const OST_SCRIPT_URL = 'http://local.adobe.com:9007/index.js';
 const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.css';
 
 const getImsToken = async () => {
@@ -47,13 +48,19 @@ export function createLinkMarkup(
       : '');
 
     if (isCheckoutPlaceholder) {
+      const DEFAULT_WORKFLOW = 'UCv3';
+      const DEFAULT_WORKFLOW_STEP = 'email';
       const { workflow, workflowStep } = placeholderOptions;
       url.searchParams.set('text', ctaText);
-      url.searchParams.set('checkoutType', workflow);
-      url.searchParams.set(
-        'workflowStep',
-        toggleWorkflowStepFormat(workflowStep),
-      );
+      if (workflow !== DEFAULT_WORKFLOW) {
+        url.searchParams.set('checkoutType', workflow);
+      }
+      if (workflowStep !== DEFAULT_WORKFLOW_STEP) {
+        url.searchParams.set(
+          'workflowStep',
+          toggleWorkflowStepFormat(workflowStep),
+        );
+      }
     } else {
       const { displayRecurrence, displayPerUnit, displayTax } = placeholderOptions;
       url.searchParams.set('term', displayRecurrence);
