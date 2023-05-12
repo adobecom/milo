@@ -423,15 +423,14 @@ export function decorateSVG(a) {
 }
 
 export function decorateAutoBlock(a) {
-  const { doNotAutoBlock = '' } = getConfig();
+  const { autoBlocks, doNotAutoBlock = null } = getConfig();
   if (a.closest(doNotAutoBlock)) {
     return false;
   }
-  const config = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return config.autoBlocks.find((candidate) => {
+  return autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {

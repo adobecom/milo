@@ -66,6 +66,12 @@ describe('Utils', () => {
         const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
+
+      it('DO_NOT_AUTOBLOCK blocks are left unchanged ', () => {
+        const autoBlockLink = document.getElementById('do-not-autoblock')?.firstElementChild;
+        expect(autoBlockLink?.nodeName).to.equal('A');
+        expect(autoBlockLink?.href).to.equal('https://video.tv.adobe.com/v/31986');
+      });
     });
 
     describe('Fragments', () => {
