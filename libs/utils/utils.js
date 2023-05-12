@@ -423,10 +423,7 @@ export function decorateSVG(a) {
 }
 
 export function decorateAutoBlock(a) {
-  const { autoBlocks, doNotAutoBlock = null } = getConfig();
-  if (a.closest(doNotAutoBlock)) {
-    return false;
-  }
+  const { autoBlocks } = getConfig();
   const { hostname } = window.location;
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
@@ -468,8 +465,17 @@ export function decorateAutoBlock(a) {
   });
 }
 
+function getLinks(el) {
+  let anchors = [...el.getElementsByTagName('a')];
+  const { doNotAutoBlock } = getConfig();
+  el.querySelectorAll(doNotAutoBlock || null).forEach((dnab) => {
+    anchors = anchors.filter((anchor) => !dnab.contains(anchor));
+  });
+  return anchors;
+}
+
 export function decorateLinks(el) {
-  const anchors = el.getElementsByTagName('a');
+  const anchors = getLinks(el);
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
     decorateSVG(a);
