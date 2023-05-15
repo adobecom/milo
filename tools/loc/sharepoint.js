@@ -526,4 +526,6 @@ export {
   createFolder,
   enableRetry,
   fetchWithRetry,
+  getFileNameFromPath,
+  getFolderFromPath,
 };

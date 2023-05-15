@@ -1,14 +1,47 @@
-main > .section > .content.reading-time > span {
-  margin: 0;
-}
+@import '../../styles/inline.css';
 
 .reading-time > span {
-  color: var(--color-gray-600);
+  color: #adadad;
+  font-style: italic;
+  font-weight: 700;
   font-size: var(--type-body-s-size);
   display: block;
   padding: 1rem 0;
+  margin: 0;
 }
 
 .center .reading-time > span {
   text-align: center;
+}
+
+.inline.reading-time > span {
+  text-align: center;
+}
+
+main > .section > .reading-time.inline > span {
+  padding: 16px 0;
+  margin: 0;
+  width: fit-content;
+}
+
+main > .section.center > .reading-time.inline > span {
+  margin: 0 auto;
+}
+
+main > .section > .inline-wrapper > .inline + .inline.reading-time,
+main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
+  padding-left: 20px;
+  border-left: 1px solid #adadad;
+}
+
+@media screen and (max-width: 600px) {
+  main > .section > .inline-wrapper > .inline + .inline.reading-time,
+  main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
+    border-left: none;
+    padding-left: 0;
+  }
+  
+  main > .section > .inline-wrapper > .inline + .inline.reading-time {
+    border-top: 1px solid #adadad;
+  }
 }
