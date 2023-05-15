@@ -59,8 +59,8 @@ const setSophiaLayer = (data) => {
 
   if (sophiaDataCaptured(sophiaData.campaignId)) return;
 
-  window.digitalData.sophiaResponse = window.digitalData.sophiaResponse || {};
-  window.digitalData.sophiaResponse.fromPage = window.digitalData.sophiaResponse.fromPage || [];
+  window.digitalData.sophiaResponse ||= {};
+  window.digitalData.sophiaResponse.fromPage ||= [];
 
   if (Array.isArray(window.digitalData.sophiaResponse.fromPage)) {
     window.digitalData.sophiaResponse.fromPage.push(sophiaData);
@@ -87,18 +87,17 @@ const sendEvent = (data) => {
   });
 };
 
+const getDataProperties = (data, properties = []) => properties.reduce((str, prop) => {
+  let output = str;
+  output += `${output && ':'}${data[prop] || ''}`;
+  return output;
+}, '');
+
 const sendChatIconRenderEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['event.subcategory'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.type'] || ''}`,
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.type'] || ''}`,
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'event.subcategory', 'event.subtype', 'content.name', 'event.type'])}`,
+      eventAction: getDataProperties(data, ['event.subcategory', 'content.name', 'event.type']),
     },
   };
 
@@ -112,16 +111,8 @@ const sendChatIconRenderEvent = (data) => {
 const sendChatIconClickEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['event.subcategory'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.type'] || ''}`,
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.type'] || ''}`,
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'event.subcategory', 'event.subtype', 'content.name', 'event.type'])}`,
+      eventAction: getDataProperties(data, ['event.subcategory', 'event.subtype', 'content.name', 'event.type']),
     },
   };
 
@@ -135,15 +126,8 @@ const sendChatIconClickEvent = (data) => {
 const sendProductEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}`,
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}`,
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'content.name', 'event.subtype', 'event.type'])}`,
+      eventAction: getDataProperties(data, ['event.subcategory', 'content.name', 'event.subtype', 'event.type']),
     },
   };
 
@@ -155,16 +139,8 @@ const sendProductEvent = (data) => {
 const sendSurveyFeedbackEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}:`
-        + `${data['content.id'] || ''}`,
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}`,
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'content.name', 'event.subtype', 'event.type', 'content.id'])}`,
+      eventAction: getDataProperties(data, ['event.subcategory', 'content.name', 'event.subtype', 'event.type']),
     },
   };
 
@@ -174,15 +150,8 @@ const sendSurveyFeedbackEvent = (data) => {
 const sendChatErrorEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}:`
-        + 'error',
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}:`
-        + 'error',
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'event.subtype', 'event.type'])}:error`,
+      eventAction: `${getDataProperties(data, ['event.subcategory', 'event.subtype', 'event.type'])}:error`,
     },
   };
 
@@ -198,15 +167,8 @@ const sendChatErrorEvent = (data) => {
 const sendPrimaryEvent = (data) => {
   window.digitalData.primaryEvent = {
     eventInfo: {
-      eventName: 'chat:'
-        + `${data['event.workflow'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}`,
-      eventAction: `${data['event.subcategory'] || ''}:`
-        + `${data['content.name'] || ''}:`
-        + `${data['event.subtype'] || ''}:`
-        + `${data['event.type'] || ''}`,
+      eventName: `chat:${getDataProperties(data, ['event.workflow', 'content.name', 'event.subtype', 'event.type'])}`,
+      eventAction: getDataProperties(data, ['event.subcategory', 'content.name', 'event.subtype', 'event.type']),
     },
   };
 
