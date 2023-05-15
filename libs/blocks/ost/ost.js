@@ -2,8 +2,12 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
-const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.css';
+// const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
+// const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.css';
+const OST_SCRIPT_URL = 'http://local.adobe.com:9007/index.js';
+const OST_STYLE_URL = 'http://local.adobe.com:9007/index.css';
+
+document.body.classList.add('tool', 'tool-ost');
 
 const getImsToken = async () => {
   window.adobeid = {
@@ -75,7 +79,9 @@ export function createLinkMarkup(
   return link;
 }
 
-export default async function init() {
+export default async function init(el) {
+  el.innerHTML = '<div />';
+  const rootElement = el.firstElementChild;
   const aosAccessToken = await getImsToken();
   const country = 'US';
   const language = 'en';
@@ -83,22 +89,34 @@ export default async function init() {
   const wcsApiKey = 'wcms-commerce-ims-ro-user-cc';
   const aosApiKey = 'wcms-commerce-ims-user-prod';
   const checkoutClientId = 'creative';
-  const rootContainer = document.querySelector('.ost');
   const searchParameters = new URLSearchParams(window.location.search);
-  rootContainer.removeChild(rootContainer.firstElementChild);
+
   if (!window.ost) {
     loadStyle(OST_STYLE_URL);
     await loadScript(OST_SCRIPT_URL);
+    await loadStyle('https://use.typekit.net/pps7abe.css');
   }
-  window.ost.openOfferSelectorTool({
-    country,
-    language,
-    environment,
-    wcsApiKey,
-    aosApiKey,
-    aosAccessToken,
-    checkoutClientId,
-    searchParameters,
-    createLinkMarkup,
-  });
+
+  const options = {
+    rootMargin: '0px',
+    threshold: 1.0,
+  };
+
+  const main = document.querySelector('main');
+  const observer = new IntersectionObserver(() => {
+    observer.unobserve(main);
+    window.ost.openOfferSelectorTool({
+      country,
+      language,
+      environment,
+      wcsApiKey,
+      aosApiKey,
+      aosAccessToken,
+      checkoutClientId,
+      searchParameters,
+      createLinkMarkup,
+      rootElement,
+    });
+  }, options);
+  observer.observe(main);
 }
