@@ -56,7 +56,7 @@ export function getAnalyticsValue(str, index) {
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
 
-  return experiencePath?.split('/').at(-1) || '';
+  return experiencePath?.split('/').pop() || '';
 }
 
 export function loadStyles(path) {
@@ -100,7 +100,7 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 
   return toFragment`
     <div class="feds-cta-wrapper">
-      <a 
+      <a
         href="${elem.href}"
         class="feds-cta feds-cta--${modifier}"
         daa-ll="${getAnalyticsValue(elem.textContent, index)}">

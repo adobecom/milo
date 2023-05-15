@@ -88,18 +88,6 @@
     padding: 12px 0;
   }
 
-  /* Uncomment if border between simple dropdown columns are needed */
-  /*
-  .feds-navItem:not(.feds-navItem--megaMenu) .feds-menu-column:not(:first-child) {
-    border-left: 1px solid var(--feds-borderColor-menu--light);
-  }
-
-  [dir = "rtl"] .feds-navItem:not(.feds-navItem--megaMenu) .feds-menu-column:not(:first-child) {
-    border-left: none;
-    border-right: 1px solid var(--feds-borderColor-menu--light);
-  }
-  */
-
   .feds-menu-headline {
     position: static;
     margin: 0 32px;

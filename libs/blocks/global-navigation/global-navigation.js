@@ -96,14 +96,14 @@ const decorateProfileTrigger = async ({ avatar }) => {
   );
 
   const buttonElem = toFragment`
-    <button 
-      class="feds-profile-button" 
-      aria-expanded="false" 
+    <button
+      class="feds-profile-button"
+      aria-expanded="false"
       aria-controls="feds-profile-menu"
       aria-label="${label}"
       daa-ll="Account"
       aria-haspopup="true"
-    > 
+    >
       <img class="feds-profile-img" src="${avatar}"></img>
     </button>
   `;
@@ -479,9 +479,8 @@ class Gnav {
         clearTimeout(decorationTimeout);
 
         const menuLogic = await loadDecorateMenu();
-        this.decorateMenu = menuLogic.decorateMenu;
 
-        this.decorateMenu({
+        menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
