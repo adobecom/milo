@@ -525,7 +525,7 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  const headerQuery = new URLSearchParams(window.location.search).get('headerQA');
+  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
   header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
@@ -558,7 +558,7 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  const footerQuery = new URLSearchParams(window.location.search).get('footerQA');
+  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
   footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
