@@ -19,8 +19,8 @@ const setDeep = (obj, path, value) => {
 };
 
 const handleAlloyResponse = (response) => {
-  const items = ((response.propositions.length && response.propositions)
-    || (response.decisions.length && response.decisions)
+  const items = ((response.propositions?.length && response.propositions)
+    || (response.decisions?.length && response.decisions)
     || []).map((i) => i.items).flat();
 
   if (!items?.length) return [];
@@ -66,30 +66,38 @@ const getExperiments = async () => {
   });
 
   let response = false;
-  try {
+
+  /*  try {
     response = await Promise.race([window.alloy_load.sent, timeout]);
   } catch (e) {
     console.log('Promise error', e);
   }
-
-  if (!response || response === 'TIMEOUT') return {};
-
-  let experiments = handleAlloyResponse(response);
-
-  if (!experiments?.length) {
-    experiments = [{ experimentPath: utils.getMetadata('experiment')?.toLowerCase() }];
+*/
+  let experiments = [];
+  if (response && response === 'TIMEOUT') {
+    experiments = handleAlloyResponse(response);
   }
 
-  const instantExperiment = utils.getMetadata('instant-experiment')?.toLowerCase();
+  // TODO: if there is personalization metadata AND target, how do we merge?
 
-  return {
-    experiments,
-    instantExperiment,
-  };
+  if (!experiments?.length) {
+    const manifestStr = (utils.getMetadata('experiment') || utils.getMetadata('personalization') || '').toLowerCase();
+    const manifests = manifestStr.split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim());
+    experiments = manifests.map((manifestPath) => (
+      {
+        manifestPath: manifestPath.endsWith('.json')
+          ? manifestPath
+          : `${manifestPath}.json`,
+      }
+    ));
+  }
+
+  return { experiments };
 };
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
-  Object.entries(item[prop])
+  Object.entries(item[prop] || {})
     .forEach(([key, val]) => {
       propMap[key] = val;
     });
@@ -97,17 +105,25 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
 }, {});
 
 const checkForExperiments = async () => {
-  const { experiments, instantExperiment } = await getExperiments();
+  const { experiments } = await getExperiments();
   if (!experiments) return null;
 
   const { runExperiment } = await import('../scripts/experiments.js');
 
-  const experimentPromises = experiments.map(async (experimentInfo) => runExperiment(
-    experimentInfo,
-    utils.createTag,
-  )).filter(Boolean);
+  let results = [];
 
-  let results = await Promise.all(experimentPromises);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const experimentInfo of experiments) {
+    // eslint-disable-next-line no-await-in-loop
+    results.push(await runExperiment(experimentInfo, utils.createTag));
+  }
+
+  // const experimentPromises = experiments.map(async (experimentInfo) => runExperiment(
+  //   experimentInfo,
+  //   utils.createTag,
+  // )).filter(Boolean);
+
+  // let results = await Promise.all(experimentPromises);
   results = results.filter(Boolean);
   return {
     experiments: results.map((r) => r.experiment),

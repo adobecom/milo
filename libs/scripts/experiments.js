@@ -1,5 +1,7 @@
 const ALL = 'all';
 
+const SPLIT_RE = /,|(\s+)|(\\n)/g;
+
 const MANIFEST_KEYS = [
   'action',
   'selector',
@@ -8,10 +10,10 @@ const MANIFEST_KEYS = [
 ];
 
 const COMMANDS = {
-  before: (el, fragment) => el.insertAdjacentElement('beforebegin', fragment),
-  after: (el, fragment) => el.insertAdjacentElement('afterend', fragment),
-  replace: (el, fragment) => el.replaceWith(fragment),
-  remove: (el) => el.remove(),
+  insertcontentafter: (el, fragment) => el.insertAdjacentElement('afterend', fragment),
+  insertcontentbefore: (el, fragment) => el.insertAdjacentElement('beforebegin', fragment),
+  removecontent: (el) => el.remove(),
+  replacecontent: (el, fragment) => el.replaceWith(fragment),
 };
 
 const COMMANDSHTML = {
@@ -21,14 +23,36 @@ const COMMANDSHTML = {
   remove: (el) => el.remove(),
 };
 
+const TAGS = {
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
+  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => window.adobeIMS?.isSignedInUser(),
+};
+
+function normalizePath(p) {
+  let path = p;
+
+  if (!path.includes('/')) {
+    return path;
+  }
+
+  if (path.startsWith('http')) {
+    path = new URL(path)?.pathname;
+  } else if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+  return path;
+}
+
 const handleCommands = (
-  cmdList,
-  control,
   selectedVariant,
   createTag,
   content,
 ) => {
-  const createFragment = (url) => {
+  const createFragmentLink = (url) => {
     const a = createTag('a', { href: url }, url);
     const p = createTag('p', undefined, a);
     return p;
@@ -37,32 +61,27 @@ const handleCommands = (
   const validCommands = Object.keys(COMMANDS);
   const mainEl = document.querySelector('main');
 
-  // Used to track when the same command is used multiple times
-  const nameIndex = {};
-
-  cmdList.forEach((name) => {
-    let cmd = name;
-
-    const i = nameIndex[name] === undefined ? 0 : nameIndex[name] + 1;
-    nameIndex[name] = i;
-
-    if (validCommands.includes(cmd) && control[name][i] && selectedVariant[name][i]) {
-      const query = control[name][i].startsWith('.') ? control[name][i] : `.${control[name][i]}`;
-      let targetEl = mainEl.querySelector(query);
+  selectedVariant.commands.forEach((cmd) => {
+    if (validCommands.includes(cmd.action)) {
+      let targetEl = mainEl.querySelector(cmd.selector);
 
       if (!targetEl) return;
 
+      // TODO: why?
       if (targetEl.classList[0] === 'section-metadata') {
         targetEl = targetEl.parentElement || targetEl;
       }
 
-      if (cmd !== 'remove' && content[selectedVariant[name][i]]) {
-        const parser = new DOMParser();
-        const dom = parser.parseFromString(content[selectedVariant[name][i]], 'text/html');
-        COMMANDS[cmd](targetEl, dom);
-      } else {
-        COMMANDS[cmd](targetEl, cmd !== 'remove' && createFragment(selectedVariant[name][i]));
-      }
+      // TODO: commented out content code for now - only frags supported
+      // if (cmd !== 'remove' && content[selectedVariant[name][i]]) {
+      //   const parser = new DOMParser();
+      //   const dom = parser.parseFromString(content[selectedVariant[name][i]], 'text/html');
+      //   COMMANDS[cmd](targetEl, dom);
+      // } else {
+      COMMANDS[cmd.action](targetEl, cmd !== 'remove' && createFragmentLink(cmd.target));
+      // }
+    } else {
+      console.log('Invalid command found: ', cmd);
     }
   });
 };
@@ -85,8 +104,15 @@ export const toCamelCase = (...names) => {
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
-  const $meta = document.head.querySelector(`meta[${attr}="${name}"]`);
-  return ($meta && $meta.content) || '';
+  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  return (meta && meta.content) || '';
+}
+
+function convertKeysToCamelCase(obj) {
+  return Object.keys(obj).reduce((newObj, key) => {
+    newObj[toCamelCase(key)] = obj[key];
+    return newObj;
+  }, {});
 }
 
 /**
@@ -110,55 +136,50 @@ export function getMetadata(name) {
  *        }
  *      };
  */
-export function parseExperimentConfig(experiences) {
-  const config = { replacepage: {} };
-  const ACTIONS = [
-    'useblockcode',
-    'insertscript',
-    'replacecontent',
-    'replacefragment',
-    'replacepage',
-    'insertcontentbefore',
-    'insertcontentafter',
-    'removecontent',
-  ];
+export function parseExperimentConfig(data) {
+  const config = {};
+
+  const validCommands = Object.keys(COMMANDS);
+  // update keys
+  const experiences = data.map((d) => convertKeysToCamelCase(d));
   try {
-    // if (json.settings) {
-    //   json.settings.data.forEach((line) => {
-    //     const key = toCamelCase(line.Name);
-    //     config[key] = line.Value;
-    //   });
-    // }
-    // const experiences = json.experiences || json;
     const variants = {};
     const variantNames = Object.keys(experiences[0])
-      .map((vn) => toCamelCase(vn))
+      // .map((vn) => toCamelCase(vn))
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
     variantNames.forEach((variantName) => {
-      variants[variantName] = [];
+      variants[variantName] = { commands: [] };
     });
 
+    const globalCommands = ['insertscript', 'replacefragment', 'replacepage', 'useblockcode'];
+
     experiences.forEach((line) => {
-      const action = toCamelCase(line.action);
+      const action = line.action?.toLowerCase();
       const { selector } = line;
       const pageFilter = line.pageFilter || line.pageFilterOptional;
 
       variantNames.forEach((vn) => {
         if (!line[vn]) return;
 
-        if (ACTIONS.includes(action)) {
-          const variantInfo = {
-            action,
-            selector,
-            pageFilter,
-            target: line[vn],
-          };
-          if (action === 'replacepage') {
-            config.replacepage[vn] = variantInfo;
-          } else {
-            variants[vn].push(variantInfo);
+        const variantInfo = {
+          action,
+          selector,
+          pageFilter,
+          target: line[vn],
+        };
+
+        if (globalCommands.includes(action)) {
+          if (!variants[vn][action]) {
+            variants[vn][action] = {};
           }
+          if (action === 'replacepage') {
+            variants[vn][action] = normalizePath(line[vn]);
+          } else {
+            variants[vn][action][normalizePath(selector)] = normalizePath(line[vn]);
+          }
+        } else if (validCommands.includes(action)) {
+          variants[vn].commands.push(variantInfo);
         } else {
           console.log('Invalid action found: ', line);
         }
@@ -166,10 +187,6 @@ export function parseExperimentConfig(experiences) {
     });
     config.variants = variants;
     config.variantNames = variantNames;
-    // config.variantLabels = Object.entries(variants).reduce((labelMap, [variantName, variant]) => {
-    //   labelMap[variant.label] = variantName;
-    //   return labelMap;
-    // }, {});
     return config;
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -207,26 +224,6 @@ export function parseExperimentSupport(json) {
   return sheets;
 }
 
-export function isValidConfig(config) {
-  if (
-    !config.variantNames ||
-    !config.variantNames.length ||
-    !config.variants ||
-    !Object.values(config.variants).length ||
-    !Object.values(config.variants).every(
-      (v) =>
-        typeof v === 'object' &&
-        !!v.blocks &&
-        !!v.pages &&
-        (v.percentageSplit === '' || !!v.percentageSplit)
-    )
-  ) {
-    console.warn('Invalid experiment config. Please review your sheet and parser.');
-    return false;
-  }
-  return true;
-}
-
 /**
  * Replaces element with content from path
  * @param {string} path
@@ -240,11 +237,9 @@ export async function replaceInner(path, element) {
   try {
     const resp = await fetch(plainPath);
     if (!resp.ok) {
-      console.log('error loading experiment content:', resp);
-      return false;
+      throw new Error('Invalid response', resp);
     }
     const html = await resp.text();
-    // eslint-disable-next-line no-param-reassign
     element.innerHTML = html;
     return true;
   } catch (e) {
@@ -270,71 +265,18 @@ export async function replaceInner(path, element) {
  * @param {object} cfg
  * @returns {object} containing the experiment manifest
  */
-export function getConfigForInstantExperiment(experimentId, instantExperiment) {
-  const config = {
-    label: `Instant Experiment: ${experimentId}`,
-    audience: '',
-    status: 'Active',
-    id: experimentId,
-    instant: true,
-    variants: {},
-    variantNames: [],
-  };
+export async function getConfigForFullExperiment(experiment, manifestData, manifestPath) {
+  const exp = experiment || manifestPath || 'unknown';
+  const experimentId = exp.includes('/')
+    ? exp.slice(exp.lastIndexOf('/') + 1)
+    : exp;
 
-  const pages = instantExperiment.split(',').map((p) => new URL(p.trim()).pathname);
-  const evenSplit = 1 / (pages.length + 1);
-
-  config.variantNames.push('control');
-  config.variants.control = {
-    percentageSplit: '',
-    pages: [window.location.pathname],
-    blocks: [],
-    label: 'Control',
-  };
-
-  pages.forEach((page, i) => {
-    const vname = `challenger-${i + 1}`;
-    config.variantNames.push(vname);
-    config.variants[vname] = {
-      percentageSplit: `${evenSplit.toFixed(2)}`,
-      pages: [page],
-      label: `Challenger ${i + 1}`,
-    };
-  });
-
-  return config;
-}
-
-/**
- * Gets experiment config from the manifest and transforms it to more easily
- * consumable structure.
- *
- * the manifest consists of two sheets "settings" and "experiences", by default
- *
- * "settings" is applicable to the entire test and contains information
- * like "Audience", "Status" or "Blocks".
- *
- * "experience" hosts the experiences in rows, consisting of:
- * a "Percentage Split", "Label" and a set of "Links".
- *
- *
- * @param {string} experimentId
- * @param {object} cfg
- * @returns {object} containing the experiment manifest
- */
-export async function getConfigForFullExperiment(experiment, manifestData, manifestLocation) {
-  const experimentId = experiment.includes('/')
-    ? experiment.slice(experiment.lastIndexOf('/') + 1)
-    : experiment;
-
-  let path = manifestLocation
+  let path = manifestPath
     || (experiment.includes('/')
       ? `${experiment}.json`
       : `/experiments/${experimentId}/manifest.json`);
 
-  if (!path.startsWith('/')) {
-    path = `/${path}`;
-  }
+  path = normalizePath(path);
 
   try {
     let data;
@@ -362,25 +304,44 @@ export async function getConfigForFullExperiment(experiment, manifestData, manif
   return null;
 }
 
-export async function getConfig(experimentName, variantLabel, manifestData, manifestLocation) {
+function splitCamelCase (str) {
+  return str.replace(/([a-z](?=[A-Z]))/g, '$1-').toLowerCase().split('-');
+}
+
+function getPersonalizationVariant(config) {
+  const { variantNames = [] } = config;
+  const tagNames = Object.keys(TAGS);
+  const matchingVariant = variantNames.find((variant) => {
+    const names = splitCamelCase(variant);
+    if (names.some((name) => tagNames.includes(name) && TAGS[name]())) {
+      return variant;
+    }
+    return false;
+  });
+  return matchingVariant;
+}
+
+export async function getConfig(experimentName, variantLabel, manifestData, manifestPath) {
+  let selectedVariant = variantLabel;
   console.log('Experiment: ', experimentName);
-  const config = await getConfigForFullExperiment(experimentName, manifestData, manifestLocation);
+  const config = await getConfigForFullExperiment(experimentName, manifestData, manifestPath);
 
   if (!config) {
     console.log('Error loading experiment config: ', experimentName);
     return {};
   }
 
-  if (config.variantNames.includes(variantLabel)) {
+  if (!selectedVariant) {
+    selectedVariant = getPersonalizationVariant(config);
+  }
+
+  if (selectedVariant && config.variantNames.includes(selectedVariant)) {
     config.run = true;
-    config.selectedVariantName = variantLabel;
-    config.selectedVariant = config.variants[variantLabel];
+    config.selectedVariantName = selectedVariant;
+    config.selectedVariant = config.variants[selectedVariant];
   }
 
   config.experimentName = experimentName;
-  // config.controlName = config.variantNames[0];
-  // config.control = config.variants[config.variantNames[0]];
-
   return config;
 }
 
@@ -417,44 +378,33 @@ export async function runExperiment(
   const {
     experimentName,
     manifestData,
-    manifestLocation,
+    manifestPath,
     variantLabel,
   } = experimentInfo;
 
-  const experiment = await getConfig(experimentName, variantLabel, manifestData, manifestLocation);
-  const { control } = experiment;
+  const experiment = await getConfig(experimentName, variantLabel, manifestData, manifestPath);
   // const supportData = parseExperimentSupport(manifestData);
   const supportData = { content: {} };
 
-  if (!experiment.selectedVariant || experiment.selectedVariantName === experiment.controlName) {
+  if (!experiment.selectedVariant) {
     return {};
   }
 
   const { selectedVariant } = experiment;
-  await checkForPageReplacement(
-    control.pages,
-    selectedVariant.pages,
-    experiment.id,
-    supportData.content,
-  );
+  if (selectedVariant.replacepage) {
+    await replaceInner(selectedVariant.replacepage, document.querySelector('main'));
+  }
 
   // Handle block movement/replacement
   handleCommands(
-    experiment.names,
-    control,
     selectedVariant,
     createTag,
     supportData.content,
   );
 
-  convertToMap('blocks', control, selectedVariant);
-  convertToMap('fragments', control, selectedVariant);
-
-  // swapFragments(selectedVariant.fragments);
-
   return {
     experiment,
-    blocks: selectedVariant.blocks,
-    fragments: selectedVariant.fragments,
+    blocks: selectedVariant.useblockcode,
+    fragments: selectedVariant.replacefragment,
   };
 }

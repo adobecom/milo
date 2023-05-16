@@ -84,6 +84,7 @@ const AUTO_BLOCKS = [
 const ENVS = {
   local: {
     name: 'local',
+    adobeIO: 'cc-collab.adobe.io',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
@@ -629,6 +630,7 @@ function decorateFooterPromo(config) {
   const para = createTag('p', {}, createTag('a', { href }, href));
   const section = createTag('div', null, para);
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+}
 
 export function loadIms() {
   if (window.adobeIMS) return;
