@@ -1,8 +1,11 @@
 import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
 
-const curtainSelector = '.feds-curtain';
-const navLink = '.feds-navLink';
-const globalNavSelector = '.global-navigation';
+export const selectors = {
+  globalNav: '.global-navigation',
+  curtain: '.feds-curtain',
+  navLink: '.feds-nav-link',
+};
+
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -110,17 +113,17 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 }
 
 export function closeAllDropdowns({ e } = {}) {
-  const openElements = document.querySelectorAll(`${globalNavSelector} [aria-expanded='true']`);
+  const openElements = document.querySelectorAll(`${selectors.globalNav} [aria-expanded='true']`);
   if (!openElements) return;
   if (e) e.preventDefault();
   [...openElements].forEach((el) => {
     el.setAttribute('aria-expanded', 'false');
-    if (el.closest(navLink)) {
+    if (el.closest(selectors.navLink)) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
   // TODO the curtain will be refactored
-  document.querySelector(curtainSelector)?.classList.remove('is-open');
+  document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }
 
 /**
@@ -142,7 +145,7 @@ export function trigger({ element } = {}) {
 export function expandTrigger({ element } = {}) {
   if (!element) return;
   closeAllDropdowns();
-  if (element.closest(navLink)) {
+  if (element.closest(selectors.navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');

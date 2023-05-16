@@ -19,6 +19,7 @@ import {
   closeAllDropdowns,
   loadBaseStyles,
   yieldToMain,
+  selectors,
 } from './utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -120,6 +121,16 @@ const setupKeyboardNav = async () => {
   });
 };
 
+// TODO - when clicking the navigation the dropdowns currently do not close.
+const closeOnClickOutside = (e) => {
+  if (
+    !e.target.closest(selectors.globalNav)
+    || e.target.closest(selectors.curtain)
+  ) {
+    closeAllDropdowns();
+  }
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -161,6 +172,8 @@ class Gnav {
       await yieldToMain();
       await task();
     }
+
+    document.addEventListener('click', (e) => closeOnClickOutside(e));
   };
 
   decorateTopNav = () => {
