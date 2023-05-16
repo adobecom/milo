@@ -378,6 +378,7 @@ async function getMetadata(srcPath, file) {
 
 async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloodgateLockedFile) {
   validateConnection();
+  await createFolder(destinationFolder, isFloodgate);
   const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
   const { baseURI, fgBaseURI } = sp.api.file.copy;
   const rootFolder = isFloodgate ? fgBaseURI.split('/').pop() : baseURI.split('/').pop();
