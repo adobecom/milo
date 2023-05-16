@@ -47,13 +47,19 @@ export function createLinkMarkup(
       : '');
 
     if (isCheckoutPlaceholder) {
+      const DEFAULT_WORKFLOW = 'UCv3';
+      const DEFAULT_WORKFLOW_STEP = 'email';
       const { workflow, workflowStep } = placeholderOptions;
       url.searchParams.set('text', ctaText);
-      url.searchParams.set('checkoutType', workflow);
-      url.searchParams.set(
-        'workflowStep',
-        toggleWorkflowStepFormat(workflowStep),
-      );
+      if (workflow !== DEFAULT_WORKFLOW) {
+        url.searchParams.set('checkoutType', workflow);
+      }
+      if (workflowStep !== DEFAULT_WORKFLOW_STEP) {
+        url.searchParams.set(
+          'workflowStep',
+          toggleWorkflowStepFormat(workflowStep),
+        );
+      }
     } else {
       const { displayRecurrence, displayPerUnit, displayTax } = placeholderOptions;
       url.searchParams.set('term', displayRecurrence);
