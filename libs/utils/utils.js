@@ -23,6 +23,8 @@ const MILO_BLOCKS = [
   'figure',
   'fragment',
   'featured-article',
+  'global-footer',
+  'global-navigation',
   'footer',
   'gnav',
   'how-to',
@@ -253,7 +255,7 @@ export function appendHtmlPostfix(area = document) {
   const shouldNotConvert = (href) => {
     let url = { pathname: href };
 
-    try { url = new URL(href, pageUrl) } catch (e) {}
+    try { url = new URL(href, pageUrl); } catch (e) {}
 
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || url.pathname?.endsWith('/')
@@ -523,7 +525,8 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
+  header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
     header.classList.add('has-breadcrumbs');
@@ -555,7 +558,8 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
+  footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
 
@@ -572,6 +576,15 @@ function decorateSections(el, isDoc) {
   });
 }
 
+function decorateFooterPromo(config) {
+  const footerPromo = getMetadata('footer-promo-tag');
+  if (!footerPromo) return;
+  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
+  const para = createTag('p', {}, createTag('a', { href }, href));
+  const section = createTag('div', null, para);
+  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
+}
+
 async function loadMartech(config) {
   const query = new URL(window.location.href).searchParams.get('martech');
   if (query !== 'off' && getMetadata('martech') !== 'off') {
@@ -583,9 +596,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { 
+  if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header); 
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
@@ -691,6 +704,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     decorateMeta();
     decorateHeader();
+    decorateFooterPromo(config);
 
     import('./samplerum.js').then(({ addRumListeners }) => {
       addRumListeners();
