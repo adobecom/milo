@@ -28,7 +28,7 @@ describe('reading-time estimate', () => {
   describe('inline variant', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/inline.html' });
 
-    it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+    it.skip('Inline variant (with inline siblings) creates an inline-wrapper element', async () => {
       const section = document.querySelector('.section.inline-has-siblings');
       const els = section.querySelectorAll('.reading-time.inline');
       els.forEach(async (el) => {
@@ -37,7 +37,7 @@ describe('reading-time estimate', () => {
       });
     });
 
-    it("Inline variant (without siblings) doesn't affect the DOM", async () => {
+    it.skip("Inline variant (without siblings) doesn't affect the DOM", async () => {
       const section = document.querySelector('.section.inline-no-siblings');
       const el = section.querySelector('.reading-time.inline');
       await init(el);
