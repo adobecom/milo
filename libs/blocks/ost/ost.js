@@ -2,8 +2,8 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
-const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.css';
+const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.js';
+const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.css';
 
 document.body.classList.add('tool', 'tool-ost');
 
