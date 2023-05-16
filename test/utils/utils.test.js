@@ -10,7 +10,7 @@ const config = {
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
 
-describe.skip('Utils', () => {
+describe('Utils', () => {
   before(async () => {
     const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
