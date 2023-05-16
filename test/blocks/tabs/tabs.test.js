@@ -1,13 +1,5 @@
-import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
+import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-
-function getMiddleOfElement(element) {
-  const { x, y, width, height } = element.getBoundingClientRect();
-  return {
-    x: Math.floor(x + window.pageXOffset + width / 2),
-    y: Math.floor(y + window.pageYOffset + height / 2),
-  };
-}
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/tabs/tabs.js');
@@ -24,10 +16,9 @@ describe('tabs', () => {
     });
   });
 
-  it('clicks on a tabList button', async () => {
+  it('clicks on a tabList button', () => {
     const unSelectedBtn = allTabs[0].querySelector('div[role="tablist"] button[aria-selected="false"]');
-    const { x, y } = getMiddleOfElement(unSelectedBtn);
-    await sendMouse({ type: 'click', position: [x, y] });
+    unSelectedBtn.click();
     expect(unSelectedBtn.ariaSelected).to.equal('true');
   });
 
