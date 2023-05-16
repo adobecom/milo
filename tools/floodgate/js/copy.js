@@ -27,12 +27,9 @@ async function floodgateContent(project, projectDetail) {
       const srcPath = urlInfo.doc.filePath;
       loadingON(`Copying ${srcPath} to pink folder`);
       let copySuccess = false;
-      if (urlInfo.doc.fg?.sp?.status !== 200) {
-        const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
-        copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
-      } else {
-        // Get the source file
+      const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
+      copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
+      if (copySuccess === false) {
         const file = await getFile(urlInfo.doc);
         if (file) {
           const destination = urlInfo.doc.filePath;
@@ -44,8 +41,8 @@ async function floodgateContent(project, projectDetail) {
             }
           }
         }
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
       }
+      updateAndDisplayCopyStatus(copySuccess, srcPath);
       status.success = copySuccess;
       status.srcPath = srcPath;
       status.url = urlInfo.doc.url;
