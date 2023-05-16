@@ -10,30 +10,13 @@ import {
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
+  updateProjectStatusUIFromAIO,
   updateProjectStatusUI,
 } from './ui.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
-}
-
-async function refreshPage(config, projectDetail, project) {
-  // Inject Sharepoint file metadata
-  loadingON('Updating Project with the Sharepoint Docs Data... please wait');
-  await updateProjectWithDocs(projectDetail);
-
-  // Render the data on the page
-  loadingON('Updating table with project details..');
-  await updateProjectDetailsUI(projectDetail, config);
-
-  // Read the project action status
-  loadingON('Updating project status...');
-  const status = await updateProjectStatus(project);
-  updateProjectStatusUI(status);
-
-  loadingON('UI updated..');
-  loadingOFF();
 }
 
 async function postData(url = '', data = {}) {
@@ -52,6 +35,10 @@ function floodgateContentAction(project, config) {
     adminPageUri: window.location.href,
     projectExcelPath: project.excelPath,
     projectRoot: config.sp.rootFolders,
+    shareUrl: config.sp.shareUrl,
+    fgShareUrl: config.sp.fgShareUrl,
+    rootFolder: config.sp.rootFolders,
+    fgRootFolder: config.sp.fgRootFolder,
   };
   return postData(config.sp.aioCopyAction, params);
 }
@@ -62,24 +49,43 @@ function promoteContentAction(project, config) {
     adminPageUri: window.location.href,
     projectExcelPath: project.excelPath,
     projectRoot: config.sp.fgRootFolder,
+    shareUrl: config.sp.shareUrl,
+    fgShareUrl: config.sp.fgShareUrl,
+    rootFolder: config.sp.rootFolders,
+    fgRootFolder: config.sp.fgRootFolder,
   };
   return postData(config.sp.aioPromoteAction, params);
 }
 
-async function floodgateStatus(project, config) {
-  const params = {
+async function updateStatusTable(project, config) {
+  // fetch copy status
+  let params = {
     projectExcelPath: project.excelPath,
     projectRoot: config.sp.rootFolders,
   };
-  return postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUIFromAIO(await postData(config.sp.aioStatusAction, params), true);
+  // fetch promote status
+  params = { projectRoot: config.sp.fgRootFolder };
+  updateProjectStatusUIFromAIO(await postData(config.sp.aioStatusAction, params), false);
 }
 
-async function promoteStatus(project, config) {
-  const params = {
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.fgRootFolder,
-  };
-  return postData(config.sp.aioStatusAction, params);
+async function refreshPage(config, projectDetail, project) {
+  // Inject Sharepoint file metadata
+  loadingON('Updating Project with the Sharepoint Docs Data... please wait');
+  await updateProjectWithDocs(projectDetail);
+
+  // Render the data on the page
+  loadingON('Updating table with project details..');
+  await updateProjectDetailsUI(projectDetail, config);
+
+  // Read the project action status
+  loadingON('Updating project status...');
+  const status = await updateProjectStatus(project);
+  updateProjectStatusUI(status);
+
+  await updateStatusTable(project, config);
+  loadingON('UI updated..');
+  loadingOFF();
 }
 
 function setListeners(project, config) {
@@ -107,12 +113,6 @@ function setListeners(project, config) {
   });
   document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
     modal.style.display = 'none';
-  });
-  document.querySelector('#floodgateStatus button').addEventListener('click', () => {
-    floodgateStatus(project, config);
-  });
-  document.querySelector('#promoteStatus button').addEventListener('click', () => {
-    promoteStatus(project, config);
   });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
