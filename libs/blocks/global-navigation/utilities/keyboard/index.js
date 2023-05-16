@@ -27,7 +27,7 @@ const cycleOnOpenSearch = ({ e, isDesktop }) => {
 
 const closeOnClickOutside = (e) => {
   if (
-    !e.target.closest(`${selectors.globalNav} [aria-expanded = 'true']`)
+    !e.target.closest(selectors.globalNav)
     || e.target.closest(selectors.curtain)
   ) {
     closeAllDropdowns();
