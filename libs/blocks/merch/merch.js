@@ -63,8 +63,7 @@ export const getTacocatEnv = (envName, locale) => {
     : 'https://www.stage.adobe.com';
 
   const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
-  // const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const scriptUrl = 'http://local.adobe.com:9009/tacocat.js';
+  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
   const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
   return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
 };
