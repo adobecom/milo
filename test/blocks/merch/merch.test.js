@@ -9,7 +9,7 @@ const { default: merch, VERSION, getTacocatEnv, imsCountryPromise, runTacocat } 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-describe.skip('Merch Block', () => {
+describe('Merch Block', () => {
   before(async () => {
     Object.assign(window.tacocat, {
       loadPromise: Promise.resolve(),

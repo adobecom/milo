@@ -16,7 +16,7 @@ const config = {
 };
 setConfig(config);
 
-describe.skip('Fragments', () => {
+describe('Fragments', () => {
   beforeEach(() => {
     sinon.spy(console, 'log');
   });
