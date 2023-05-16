@@ -29,3 +29,7 @@ body.tool-ost .ost>div {
   border-color: var(--color-gray-200);
   border-style: solid;
 }
+
+.price-unit-type::before {
+  content: " ";
+}
