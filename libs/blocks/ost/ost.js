@@ -11,6 +11,7 @@ const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 const CHECKOUT_CLIENT_ID = 'creative';
 
 const searchParameters = new URLSearchParams(window.location.search);
+// this is only for testing PRs where test URLs are not supported by IMS.
 const token = searchParameters.get('token');
 if (token) {
   searchParameters.delete('token');
