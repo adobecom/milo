@@ -18,7 +18,7 @@ describe('global navigation', () => {
       const nav = await createFullGlobalNavigation();
 
       expect(nav).to.exist;
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
@@ -30,7 +30,7 @@ describe('global navigation', () => {
     it('should render the navigation on smallDesktop', async () => {
       await createFullGlobalNavigation({ viewport: 'smallDesktop' });
 
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
@@ -42,7 +42,7 @@ describe('global navigation', () => {
     it('should render the navigation on mobile', async () => {
       await createFullGlobalNavigation({ viewport: 'mobile' });
 
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
@@ -144,7 +144,7 @@ describe('global navigation', () => {
       it('should open navigation on click', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
 
-        const header = document.querySelector(selectors.globalNavigation);
+        const header = document.querySelector(selectors.globalNav);
         const toggle = document.querySelector(selectors.gnavToggle);
         const curtain = document.querySelector(selectors.curtain);
 
@@ -763,7 +763,7 @@ describe('global navigation', () => {
       const nav = await createFullGlobalNavigation();
 
       expect(nav).to.exist;
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
@@ -773,7 +773,7 @@ describe('global navigation', () => {
 
       await setViewport(viewports.smallDesktop);
 
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
@@ -783,7 +783,7 @@ describe('global navigation', () => {
 
       await setViewport(viewports.mobile);
 
-      expect(isElementVisible(document.querySelector(selectors.globalNavigation))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);

@@ -13,10 +13,12 @@ import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { isElementVisible } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
+import { selectors as baseSelectors } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 export { isElementVisible };
 
 export const selectors = {
+  ...baseSelectors,
   brandContainer: '.feds-brand-container',
   brandLabel: '.feds-brand-label',
   brandImage: '.feds-brand-image',
@@ -28,8 +30,6 @@ export const selectors = {
   signIn: '.feds-signIn',
   popup: '.feds-popup',
   navItem: '.feds-navItem',
-  navLink: '.feds-navLink',
-  globalNavigation: '.global-navigation',
   search: '.feds-search',
   searchTrigger: '.feds-search-trigger',
   searchDropdown: '.feds-search-dropdown',
@@ -39,11 +39,10 @@ export const selectors = {
   searchClear: '.feds-search-clear',
   logo: '.gnav-logo',
   navWrapper: '.feds-nav-wrapper',
-  curtain: '.feds-curtain',
-  headline: '.feds-popup-headline',
-  popupItems: '.feds-popup-items',
+  headline: '.feds-menu-headline',
+  popupItems: '.feds-menu-items',
   promoImage: '.feds-promo-image',
-  column: '.feds-popup-column',
+  column: '.feds-menu-column',
   topNavWrapper: '.feds-topnav-wrapper',
   breadCrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',

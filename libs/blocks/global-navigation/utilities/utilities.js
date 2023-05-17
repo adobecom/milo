@@ -3,7 +3,7 @@ import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
 export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
-  navLink: '.feds-nav-link',
+  navLink: '.feds-navLink',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -135,7 +135,7 @@ export function trigger({ element } = {}) {
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;
-  if (element.closest(navLink)) {
+  if (element.closest(selectors.navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
