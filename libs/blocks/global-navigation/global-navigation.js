@@ -173,7 +173,7 @@ class Gnav {
       await task();
     }
 
-    document.addEventListener('click', (e) => closeOnClickOutside(e));
+    document.addEventListener('click', closeOnClickOutside);
   };
 
   decorateTopNav = () => {
