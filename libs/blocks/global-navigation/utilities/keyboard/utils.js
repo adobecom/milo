@@ -8,7 +8,7 @@ const selectors = {
   mainNavToggle: '.gnav-toggle',
   searchTrigger: '.feds-search-trigger',
   searchField: '.feds-search-input',
-  signIn: '.feds-signin',
+  signIn: '.feds-signIn',
   profileButton: '.feds-profile-button, .feds-signIn',
   logo: '.gnav-logo',
   breadCrumbItems: '.feds-breadcrumbs li > a',

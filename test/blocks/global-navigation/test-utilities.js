@@ -12,37 +12,30 @@ import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
-import { isElementVisible } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
+import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 import { selectors as baseSelectors } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 export { isElementVisible };
 
 export const selectors = {
   ...baseSelectors,
+  ...keyboardSelectors,
   brandContainer: '.feds-brand-container',
   brandLabel: '.feds-brand-label',
   brandImage: '.feds-brand-image',
-  gnavToggle: '.gnav-toggle',
   largeMenu: '.feds-navItem--megaMenu',
   profile: '.feds-profile',
   profileMenu: '.feds-profile-menu',
   signInDropdown: '.feds-signIn-dropdown',
-  signIn: '.feds-signIn',
-  popup: '.feds-popup',
   navItem: '.feds-navItem',
   search: '.feds-search',
-  searchTrigger: '.feds-search-trigger',
   searchDropdown: '.feds-search-dropdown',
-  searchInput: '.feds-search-input',
   searchResults: '.feds-search-results',
   searchResult: '.feds-search-result',
   searchClear: '.feds-search-clear',
-  logo: '.gnav-logo',
   navWrapper: '.feds-nav-wrapper',
-  headline: '.feds-menu-headline',
   popupItems: '.feds-menu-items',
   promoImage: '.feds-promo-image',
-  column: '.feds-menu-column',
   topNavWrapper: '.feds-topnav-wrapper',
   breadCrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
