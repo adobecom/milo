@@ -15,7 +15,7 @@ import {
 } from '../../loc/utils.js';
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { getFile, handleExtension } from './utils.js';
+import { delay, getFile, handleExtension } from './utils.js';
 
 const BATCH_REQUEST_PROMOTE = 20;
 const DELAY_TIME_PROMOTE = 3000;
@@ -146,16 +146,21 @@ async function promoteFloodgatedFiles(project) {
       batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
     ));
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
+    await delay(DELAY_TIME_PROMOTE);
   }
   const endPromote = new Date();
 
   loadingON('Previewing promoted files... ');
-  const previewStatuses = await Promise.all(
-    promoteStatuses
-      .filter((status) => status.success)
-      .map((status) => simulatePreview(handleExtension(status.srcPath), 1)),
-  );
+  const previewStatuses = [];
+  for (let i = 0; i < promoteStatuses.length; i += 1) {
+    if (promoteStatuses[i].success) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await simulatePreview(handleExtension(promoteStatuses[i].srcPath), 1, true);
+      previewStatuses.push(result);
+    }
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await delay();
+  }
   loadingON('Completed Preview for promoted files... ');
 
   const failedPromotes = promoteStatuses.filter((status) => !status.success)
