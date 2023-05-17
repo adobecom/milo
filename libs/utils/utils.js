@@ -255,7 +255,7 @@ export function appendHtmlPostfix(area = document) {
   const shouldNotConvert = (href) => {
     let url = { pathname: href };
 
-    try { url = new URL(href, pageUrl) } catch (e) {}
+    try { url = new URL(href, pageUrl); } catch (e) {}
 
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || url.pathname?.endsWith('/')
@@ -525,7 +525,8 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
+  header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
     header.classList.add('has-breadcrumbs');
@@ -557,7 +558,8 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
+  footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
 
@@ -594,9 +596,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { 
+  if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header); 
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();

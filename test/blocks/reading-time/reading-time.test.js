@@ -24,4 +24,24 @@ describe('reading-time estimate', () => {
     await init(block);
     expect(document.querySelector('.reading-time > span:not(:empty)')).to.exist;
   });
+
+  describe('inline variant', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/inline.html' });
+
+    it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+      const section = document.querySelector('.section.inline-has-siblings');
+      const els = section.querySelectorAll('.reading-time.inline');
+      els.forEach(async (el) => {
+        await init(el);
+        expect(el.parentElement.classList.contains('inline-wrapper')).to.be.true;
+      });
+    });
+
+    it("Inline variant (without siblings) doesn't affect the DOM", async () => {
+      const section = document.querySelector('.section.inline-no-siblings');
+      const el = section.querySelector('.reading-time.inline');
+      await init(el);
+      expect(el.parentElement.classList.contains('inline-wrapper')).to.be.false;
+    });
+  });
 });
