@@ -6,20 +6,24 @@
  * @param {string} [markerSymbol='#'] The marker symbol to look for in the pattern string.
  * Defaults to '#'.
  */
-function updateModel(parser, pattern, score, markerSymbol = '#') {
-  if (pattern.length <= 3) {
-    console.warn('The length of line break pattern should be greater than 3');
-    return;
-  }
-
+function updateParserModel(parser, pattern, score, markerSymbol = '#') {
   const markerPos = pattern.indexOf(markerSymbol);
   if (markerPos === -1) {
-    console.warn('No marker symbol found in line break pattern string')
+    console.warn('No marker symbol found in line break pattern string');
     return;
   }
 
-  const former = pattern.slice(Math.max(markerPos - 3, 0), markerPos)
-  const latter = pattern.slice(markerPos + 1, Math.min(markerPos + 4, pattern.length))
+  if (markerPos !== pattern.lastIndexOf('#')) {
+    console.warn('Two or more marker symbols cannot be specified. Only the first marker is applied');
+  }
+
+  const former = pattern.slice(Math.max(markerPos - 3, 0), markerPos);
+  const latter = pattern.slice(markerPos + 1, Math.min(markerPos + 4, pattern.length));
+
+  if (former.length < 2 || latter.length < 2) {
+    console.warn('At least two characters must be specified before and after the marker symbol');
+    return;
+  }
 
   if (former.length === 3) {
     parser.model.set(`TW1:${former}`, score);
@@ -28,9 +32,9 @@ function updateModel(parser, pattern, score, markerSymbol = '#') {
   }
 
   if (latter.length === 3) {
-    parser.model.set(`TW4:${former}`, score);
+    parser.model.set(`TW4:${latter}`, score);
   } else if (latter.length === 2) {
-    parser.model.set(`BW3:${former}`, score);
+    parser.model.set(`BW3:${latter}`, score);
   }
 }
 
@@ -57,12 +61,12 @@ export default async function controlLineBreaksJapanese(config, options = {}) {
   const parser = loadDefaultJapaneseParser();
 
   // Update model
-  const SCORE = 5000;
+  const SCORE = Number.MAX_VALUE;
   lineBreakOkPatterns.forEach((p) => {
-    updateModel(parser, p, SCORE);
+    updateParserModel(parser, p, SCORE);
   });
   lineBreakNgPatterns.forEach((p) => {
-    updateModel(parser, p, -SCORE);
+    updateParserModel(parser, p, -SCORE);
   });
 
   // apply budoux to target selector
