@@ -97,13 +97,13 @@ describe('Japanese Word Wrap', () => {
     expect(elem.innerHTML).to.include('<wbr>', 'JP word wrap is not applied');
   });
 
-  // it('Change budouxThres value correctly', async () => {
-  //   await controlLineBreaksJapanese(config, {
-  //     budouxSelector: '#h1-headline',
-  //     budouxThres: 29000,
-  //   });
-  //   const elem = document.querySelector('#h1-headline');
-  //   expect(window.getComputedStyle(elem).wordBreak).to.equal('keep-all', 'JP word wrap is not applied');
-  //   expect(elem.innerHTML).not.include('<wbr>', '<wbr> should not appear');
-  // });
+  it('Change budouxThres value correctly', async () => {
+    await controlLineBreaksJapanese(config, {
+      budouxSelector: '#h1-headline',
+      budouxThres: 100000,
+    });
+    const elem = document.querySelector('#h1-headline');
+    expect(window.getComputedStyle(elem).wordBreak).to.equal('keep-all', 'JP word wrap is not applied');
+    expect(elem.innerHTML).not.include('<wbr>', '<wbr> should not appear');
+  });
 });
