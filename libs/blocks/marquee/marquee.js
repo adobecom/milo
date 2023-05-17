@@ -26,7 +26,7 @@ const decorateVideo = (container) => {
   container.classList.add('has-video');
 };
 
-const decorateBlockBg = (block, node, metaNode) => {
+const decorateBlockBg = (block, node) => {
   const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
   const childCount = node.childElementCount;
   const { children } = node;
@@ -47,15 +47,12 @@ const decorateBlockBg = (block, node, metaNode) => {
       decorateVideo(child);
     }
 
-    if (metaNode.classList.contains('focalPointBlock')) {
-      const metaChildren = metaNode.children;
-      if (child.querySelector('img') && metaChildren[index]) {
-        const image = child.querySelector('img');
-        const text = metaChildren[index].textContent;
-        const points = text.slice(text.indexOf(':') + 1).split(',');
-        const [x,y = ''] = points
-        image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
-      }
+    if (child.querySelector('img') && child.childElementCount == 2) {
+      const image = child.querySelector('img');
+      const text = child.querySelectorAll('p')[1].textContent;
+      const points = text.slice(text.indexOf(':') + 1).split(',');
+      const [x,y = ''] = points
+      image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
     }
   });
 
@@ -121,10 +118,7 @@ export default function init(el) {
   const foreground = children[children.length - 1];
   if (children.length > 1) {
     children[0].classList.add('background');
-    if (children[1] !== foreground) {
-      children[1].classList.add('focalPointBlock');
-    }
-    decorateBlockBg(el, children[0], children[1]);
+    decorateBlockBg(el, children[0]);
   }
   foreground.classList.add('foreground', 'container');
   const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
