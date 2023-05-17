@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getMetadata } = await import('../../../libs/blocks/marquee/marquee.js');
+const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
 const video = await readFile({ path: './mocks/video.html' });
 const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
 describe('marquee', () => {
