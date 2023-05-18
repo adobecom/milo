@@ -419,6 +419,40 @@ export function decorateSVG(a) {
     return a;
   }
 }
+function hasUrlWithPipe(str) {
+  const regex = /^https?:\/\/.*\|.*/;
+  return regex.test(str);
+}
+
+export function decorateImageLinks(e) {
+  const images = e.querySelectorAll('img');
+  if (!images.length) return e;
+  [...images].forEach((img) => {
+    // Check if the element is an image with an alt tag that has a url with pipe
+    if (!(img.tagName === 'IMG' || hasUrlWithPipe(img.alt))) return e;
+    try {
+      // //Mine for URL and alt text
+      const splitText = img.alt.split('|');
+      const textUrl = new URL(splitText.shift().trim());
+      const altText = splitText.join('|').trim();
+      if (altText) img.alt = altText;
+
+      const pic = img.closest('picture');
+      const picParent = pic.parentElement;
+      const aTag = createTag('a', { href: textUrl, class: 'desc-link' }, pic);
+      if (aTag.href.includes('#_blank')) {
+        aTag.setAttribute('target', '_blank');
+        aTag.href = aTag.href.replace('#_blank', '');
+      }
+      picParent.append(aTag);
+      return e;
+    } catch (err) {
+      console.log('Failed to decorate image links', err.message);
+      return e;
+    }
+  });
+  return e;
+}
 
 export function decorateAutoBlock(a) {
   const config = getConfig();
@@ -727,6 +761,9 @@ export async function loadArea(area = document) {
 
     // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
+
+    // eslint-disable-next-line no-await-in-loop
+    await decorateImageLinks(section.el);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
