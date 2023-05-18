@@ -41,6 +41,8 @@ function setAnalytics(hashValue, debug) {
   }
 }
 
+export const loadingErrorText = 'Could not load UAR results:';
+
 export default async function init(el, debug = null, localStoreKey = null) {
   const data = getMetadata(el);
   const metaData = el.querySelectorAll('div');
@@ -57,7 +59,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
 
   let results = localStorage.getItem(localStoreKey);
   if (!results) {
-    redirectPage(quizUrl, debug, 'Could not load UAR results: local storage missing');
+    redirectPage(quizUrl, debug, `${loadingErrorText} local storage missing`);
     return;
   }
   results = JSON.parse(results);
@@ -70,7 +72,7 @@ export default async function init(el, debug = null, localStoreKey = null) {
     const pageloadHash = results[HASH_KEY];
 
     if (!basic) {
-      redirectPage(quizUrl, debug, 'Could not load UAR results: Basic fragments are missing');
+      redirectPage(quizUrl, debug, `${loadingErrorText} Basic fragments are missing`);
       return;
     }
 

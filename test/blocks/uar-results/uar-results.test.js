@@ -7,7 +7,7 @@ window.lana = { log: stub() };
 localStorage.clear();
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/uar-results/uar-results.js');
+const { default: init, loadingErrorText } = await import('../../../libs/blocks/uar-results/uar-results.js');
 const { default: mockData } = await import('./mocks/uar-results.mock-data.js');
 
 describe('UAR Results', () => {
@@ -17,7 +17,7 @@ describe('UAR Results', () => {
 
     await init(el, 'uar', 'uar-test');
 
-    expect(window.lana.log.args[0][0]).to.equal('Could not load UAR results: local storage missing');
+    expect(window.lana.log.args[0][0]).to.equal(`${loadingErrorText} local storage missing`);
   });
   it('Doesnt load data without basicFragments in local storage', async () => {
     const el = document.body.querySelector('.basic-one');
@@ -25,7 +25,7 @@ describe('UAR Results', () => {
 
     await init(el, 'uar', 'uar-test');
 
-    expect(window.lana.log.args[1][0]).to.equal('Could not load UAR results: Basic fragments are missing');
+    expect(window.lana.log.args[1][0]).to.equal(`${loadingErrorText} Basic fragments are missing`);
   });
   it('Loads basic fragments', async () => {
     const el = document.body.querySelector('.basic-one');
