@@ -243,3 +243,9 @@
     padding: 0;
   }
 }
+
+@media (min-width: 1440px) {
+  .article-feature-image .figure-feature img {
+    object-fit: contain;
+  }
+}
