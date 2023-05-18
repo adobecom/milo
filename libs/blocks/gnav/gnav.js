@@ -103,8 +103,7 @@ class Gnav {
   loadSearch = async () => {
     if (this.onSearchInput) return;
 
-    const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
-    this.getHelpxLink = getHelpxLink;
+    const { onSearchInput } = await import('./gnav-search.js');
 
     if (this.searchType === SEARCH_TYPE_CONTEXTUAL) {
       const { default: onContextualSearchInput } = await import('./gnav-contextual-search.js');
@@ -424,12 +423,6 @@ class Gnav {
         searchInputEl: searchInput,
         advancedSearchEl,
       });
-    });
-
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.code === 'Enter') {
-        window.open(this.getHelpxLink(e.target.value, locale.prefix, locale.geo));
-      }
     });
 
     searchField.append(searchInput);
