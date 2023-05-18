@@ -9,7 +9,7 @@
 function updateParserModel(parser, pattern, score, markerSymbol = '#') {
   const markerPos = pattern.indexOf(markerSymbol);
   if (markerPos === -1) {
-    console.warn('No marker symbol found in line break pattern string');
+    console.warn('No marker symbol found in the line break pattern string');
     return;
   }
 

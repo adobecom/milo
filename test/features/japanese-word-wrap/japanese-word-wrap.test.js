@@ -117,7 +117,7 @@ describe('Japanese Word Wrap', () => {
     await controlLineBreaksJapanese(config, {
       budouxSelector: '#h1-headline',
       lineBreakOkPatterns: ['共有機能', '共#有機能'],
-      lineBreakNgPatterns: ['共有'],
+      lineBreakNgPatterns: ['共有', '共有##機能', 'ウェブ#サイト共有#機能'],
     });
     const elem = document.querySelector('#h1-headline');
     expect(window.getComputedStyle(elem).wordBreak).to.equal(
