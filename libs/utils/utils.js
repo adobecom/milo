@@ -660,6 +660,8 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+
+  decorateImageLinks(area);
 }
 
 export function loadPrivacy() {
@@ -761,9 +763,6 @@ export async function loadArea(area = document) {
 
     // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
-
-    // eslint-disable-next-line no-await-in-loop
-    await decorateImageLinks(section.el);
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
