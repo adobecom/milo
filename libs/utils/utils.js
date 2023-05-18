@@ -428,8 +428,8 @@ export function decorateImageLinks(e) {
   const images = e.querySelectorAll('img');
   if (!images.length) return e;
   [...images].forEach((img) => {
-    // Check if the element is an image with an alt tag that has a url with pipe
-    if (!(img.tagName === 'IMG' || hasUrlWithPipe(img.alt))) return e;
+    // Check if the image has an alt tag with a url & pipe - 'https... |'
+    if (!(hasUrlWithPipe(img.alt))) return e;
     try {
       // //Mine for URL and alt text
       const splitText = img.alt.split('|');
