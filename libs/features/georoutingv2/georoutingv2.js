@@ -182,7 +182,11 @@ function buildContent(currentPage, locale, geoData, locales) {
     width: 15,
     height: 15,
   });
-  img.addEventListener('error', () => (img.src = './img/globe-grid.png'), { once: true });
+  img.addEventListener(
+    'error',
+    () => (img.src = `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/globe-grid.png`),
+    { once: true },
+  );
   img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
   const span = createTag('span', { class: 'icon margin-right' }, img);
   const mainAction = createTag('a', {
