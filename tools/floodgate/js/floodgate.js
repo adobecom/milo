@@ -11,7 +11,7 @@ import {
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
-  updateProjectStatusUIFromAIO,
+  updateProjectStatusUIFromAction,
   updateProjectStatusUI,
 } from './ui.js';
 
@@ -24,17 +24,17 @@ async function floodgateContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
   const copyStatus = await postData(config.sp.aioCopyAction, params);
-  updateProjectStatusUIFromAIO({ copyStatus });
+  updateProjectStatusUIFromAction({ copyStatus });
 }
 
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
   const promoteStatus = await postData(config.sp.aioPromoteAction, params);
-  updateProjectStatusUIFromAIO({ promoteStatus });
+  updateProjectStatusUIFromAction({ promoteStatus });
 }
 
-async function fetchStatusFromAIO(project, config) {
+async function fetchStatusAction(project, config) {
   // fetch copy status
   let params = {
     projectExcelPath: project.excelPath,
@@ -44,7 +44,7 @@ async function fetchStatusFromAIO(project, config) {
   // fetch promote status
   params = { projectRoot: config.sp.fgRootFolder };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
-  updateProjectStatusUIFromAIO({ copyStatus, promoteStatus });
+  updateProjectStatusUIFromAction({ copyStatus, promoteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -61,7 +61,7 @@ async function refreshPage(config, projectDetail, project) {
   const status = await updateProjectStatus(project);
   updateProjectStatusUI(status);
 
-  await fetchStatusFromAIO(project, config);
+  await fetchStatusAction(project, config);
   loadingON('UI updated..');
   loadingOFF();
 }
