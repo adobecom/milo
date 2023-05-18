@@ -109,6 +109,7 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,
   prodDomains,

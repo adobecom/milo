@@ -129,8 +129,6 @@ class Search {
     this.isDesktop.addEventListener('change', () => {
       closeAllDropdowns();
     });
-
-    // TODO: search menu should close on scroll, but this should happen from the general Menu logic
   }
 
   getSuggestions(query = this.query) {
