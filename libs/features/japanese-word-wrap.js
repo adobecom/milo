@@ -1,5 +1,5 @@
 /**
- * Update the model to prevent line breaks from occurring for the specified word.
+ * Update the model to control line breaks occurring for the specified word.
  * @param {*} parser The BudouX parser to update.
  * @param {string} pattern The pattern that should be updated in the model.
  * @param {number} score The score that should be added from the pattern in the model.
@@ -39,8 +39,8 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
 }
 
 /**
- * Searches for Japanese text in headings and applies a smart word-breaking algorithm by inserting
- *  <wbr> between semantic blocks. This allows browsers to break japanese sentences correctly.
+ * Apply smart line-breaking algorithm by inserting <wbr> between semantic blocks.
+ * This allows browsers to break japanese sentences correctly.
  * @param {*} config The milo config.
  * @param {*} options The options to control line breaks.
  */
@@ -60,7 +60,7 @@ export default async function controlLineBreaksJapanese(config, options = {}) {
   const { loadDefaultJapaneseParser } = await import(`${base}/deps/budoux-index-ja.min.js`);
   const parser = loadDefaultJapaneseParser();
 
-  // Update model
+  // Update model based on given patterns
   const SCORE = Number.MAX_VALUE;
   lineBreakOkPatterns.forEach((p) => {
     updateParserModel(parser, p, SCORE);
@@ -69,7 +69,7 @@ export default async function controlLineBreaksJapanese(config, options = {}) {
     updateParserModel(parser, p, -SCORE);
   });
 
-  // apply budoux to target selector
+  // Apply budoux to target selector
   scopeArea.querySelectorAll(budouxSelector).forEach((el) => {
     parser.applyElement(el, { threshold: budouxThres });
   });
@@ -77,7 +77,7 @@ export default async function controlLineBreaksJapanese(config, options = {}) {
   if (bwSelector) {
     const BalancedWordWrapper = (await import(`${base}/deps/bw2.min.js`)).default;
     const bw2 = new BalancedWordWrapper();
-    // apply balanced word wrap to headings
+    // Apply balanced word wrap to target selector
     scopeArea.querySelectorAll(bwSelector).forEach((el) => {
       bw2.applyElement(el);
     });
