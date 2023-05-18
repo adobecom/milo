@@ -148,10 +148,10 @@ class Popup {
         }
         case 'ArrowLeft': {
           const { prevHeadline, nextHeadline } = getState();
-          const headline = document.dir === 'ltr' ? prevHeadline : nextHeadline;
+          const headline = document.dir !== 'rtl' ? prevHeadline : nextHeadline;
           if (!headline) {
             closeHeadlines();
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               this.mainNav.items[this.mainNav.curr].focus();
             } else {
               this.mainNav.focusNext();
@@ -168,10 +168,10 @@ class Popup {
         }
         case 'ArrowRight': {
           const { prevHeadline, nextHeadline } = getState();
-          const headline = document.dir === 'ltr' ? nextHeadline : prevHeadline;
+          const headline = document.dir !== 'rtl' ? nextHeadline : prevHeadline;
           if (!headline) {
             closeHeadlines();
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               this.mainNav.focusNext();
               this.mainNav.open();
             } else {
