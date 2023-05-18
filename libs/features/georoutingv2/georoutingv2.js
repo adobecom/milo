@@ -179,11 +179,11 @@ function buildContent(currentPage, locale, geoData, locales) {
   const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag-${locale.geo}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
-    src: `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`,
     width: 15,
     height: 15,
   });
-  img.addEventListener('error', () => (img.source = './img/globe-grid.png'), { once: true });
+  img.addEventListener('error', () => (img.src = './img/globe-grid.png'), { once: true });
+  img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
   const span = createTag('span', { class: 'icon margin-right' }, img);
   const mainAction = createTag('a', {
     class: 'con-button blue button-l', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false, href: '#',
