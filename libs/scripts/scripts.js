@@ -100,6 +100,8 @@ const locales = {
   tw: { ietf: 'zh-TW', tk: 'jay0ecd' },
   jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
+  // DEBUG
+  zz: { ietf: 'zz-ZZ', tk: 'qjs5sfm' },
   // Langstore Support.
   langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
 };
