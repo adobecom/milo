@@ -105,9 +105,11 @@ function updateProjectStatusUI(status) {
 function updateProjectStatusUIFromAction(status) {
   if (status?.copyStatus?.payload?.action?.type === 'copyAction') {
     document.querySelector('#copy-status').innerHTML = status.copyStatus.payload.action.status;
+    document.querySelector('#copy-status-msg').innerHTML = status.copyStatus.payload.action.message;
   }
   if (status?.promoteStatus?.payload?.action?.type === 'promoteAction') {
     document.querySelector('#promote-status').innerHTML = status.promoteStatus.payload.action.status;
+    document.querySelector('#promote-status-msg').innerHTML = status.promoteStatus.payload.action.message;
   }
   document.querySelector('.project-status').hidden = false;
 }
