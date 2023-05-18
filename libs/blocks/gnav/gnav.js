@@ -520,7 +520,7 @@ class Gnav {
 
   setBreadcrumbSEO = () => {
     const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
-    if (!seoEnabled) return;
+    if (!seoEnabled || !this.el) return;
     const breadcrumb = this.el.querySelector('.breadcrumbs');
     if (!breadcrumb) return;
     const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
