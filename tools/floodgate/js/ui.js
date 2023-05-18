@@ -102,13 +102,14 @@ function updateProjectStatusUI(status) {
   document.querySelector('#promote-status-ts').innerHTML = status.promote.lastRun;
 }
 
-function updateProjectStatusUIFromAIO(status, hideTable) {
-  if (status.payload?.action?.type === 'copyAction') {
-    document.querySelector('#copy-status').innerHTML = status.payload.action.status;
-  } else if (status.payload?.action?.type === 'promoteAction') {
-    document.querySelector('#promote-status').innerHTML = status.payload.action.status;
+function updateProjectStatusUIFromAIO(status) {
+  if (status?.copyStatus?.payload?.action?.type === 'copyAction') {
+    document.querySelector('#copy-status').innerHTML = status.copyStatus.payload.action.status;
   }
-  document.querySelector('.project-status').hidden = hideTable;
+  if (status?.promoteStatus?.payload?.action?.type === 'promoteAction') {
+    document.querySelector('#promote-status').innerHTML = status.promoteStatus.payload.action.status;
+  }
+  document.querySelector('.project-status').hidden = false;
 }
 
 export {

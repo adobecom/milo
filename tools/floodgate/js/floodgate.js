@@ -1,5 +1,6 @@
 import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
+import { getParams, postData } from './utils.js';
 import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
 import {
   initProject,
@@ -19,54 +20,31 @@ async function reloadProject() {
   await purgeAndReloadProjectFile();
 }
 
-async function postData(url = '', data = {}) {
-  // Default options are marked with *
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
-  });
-  return response.json(); // parses JSON response into native JavaScript objects
+async function floodgateContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const copyStatus = await postData(config.sp.aioCopyAction, params);
+  updateProjectStatusUIFromAIO({ copyStatus });
 }
 
-function floodgateContentAction(project, config) {
-  const params = {
-    spToken: getAccessToken(),
-    adminPageUri: window.location.href,
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.rootFolders,
-    shareUrl: config.sp.shareUrl,
-    fgShareUrl: config.sp.fgShareUrl,
-    rootFolder: config.sp.rootFolders,
-    fgRootFolder: config.sp.fgRootFolder,
-  };
-  return postData(config.sp.aioCopyAction, params);
+async function promoteContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const promoteStatus = await postData(config.sp.aioPromoteAction, params);
+  updateProjectStatusUIFromAIO({ promoteStatus });
 }
 
-function promoteContentAction(project, config) {
-  const params = {
-    spToken: getAccessToken(),
-    adminPageUri: window.location.href,
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.fgRootFolder,
-    shareUrl: config.sp.shareUrl,
-    fgShareUrl: config.sp.fgShareUrl,
-    rootFolder: config.sp.rootFolders,
-    fgRootFolder: config.sp.fgRootFolder,
-  };
-  return postData(config.sp.aioPromoteAction, params);
-}
-
-async function updateStatusTable(project, config) {
+async function fetchStatusFromAIO(project, config) {
   // fetch copy status
   let params = {
     projectExcelPath: project.excelPath,
     projectRoot: config.sp.rootFolders,
   };
-  updateProjectStatusUIFromAIO(await postData(config.sp.aioStatusAction, params), true);
+  const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
   params = { projectRoot: config.sp.fgRootFolder };
-  updateProjectStatusUIFromAIO(await postData(config.sp.aioStatusAction, params), false);
+  const promoteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUIFromAIO({ copyStatus, promoteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -83,7 +61,7 @@ async function refreshPage(config, projectDetail, project) {
   const status = await updateProjectStatus(project);
   updateProjectStatusUI(status);
 
-  await updateStatusTable(project, config);
+  await fetchStatusFromAIO(project, config);
   loadingON('UI updated..');
   loadingOFF();
 }

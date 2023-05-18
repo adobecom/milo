@@ -14,9 +14,11 @@ import { getDocPathFromUrl, getFloodgateUrl } from './utils.js';
 let project;
 
 const PROJECT_STATUS = {
+  STARTED: 'STARTED',
   NOT_STARTED: 'NOT STARTED',
   COMPLETED: 'COMPLETED',
   COMPLETED_WITH_ERROR: 'COMPLETED WITH ERROR',
+  FAILED: 'FAILED',
 };
 
 /**
@@ -158,4 +160,5 @@ export {
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
   updateProjectStatus,
+  PROJECT_STATUS,
 };
