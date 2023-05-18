@@ -30,6 +30,8 @@ async function floodgateContentAction(project, config) {
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
+  // consider fgRoot as the project path for promote action.
+  params.projectRoot = config.sp.fgRootFolder;
   const promoteStatus = await postData(config.sp.aioPromoteAction, params);
   updateProjectStatusUIFromAction({ promoteStatus });
 }
