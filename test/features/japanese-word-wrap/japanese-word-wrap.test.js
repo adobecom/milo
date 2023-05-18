@@ -21,7 +21,7 @@ describe('Japanese Word Wrap', () => {
         'keep-all',
         'JP word wrap should be applied',
       );
-      expect(elem.innerHTML).to.include('<wbr>', '<wbr> should appear');
+      expect(elem.innerHTML).include('<wbr>', '<wbr> should appear');
     });
   });
 
@@ -33,7 +33,7 @@ describe('Japanese Word Wrap', () => {
         'keep-all',
         'JP word wrap should be applied',
       );
-      expect(elem.innerHTML).to.include('<wbr>', '<wbr> should appear');
+      expect(elem.innerHTML).include('<wbr>', '<wbr> should appear');
     });
     const elem = document.querySelector('#h1-headline');
     expect(window.getComputedStyle(elem).wordBreak).not.equal(
@@ -52,7 +52,7 @@ describe('Japanese Word Wrap', () => {
         'keep-all',
         'JP word wrap should be applied',
       );
-      expect(elem.innerHTML).to.include('<wbr>', '<wbr> should appear');
+      expect(elem.innerHTML).include('<wbr>', '<wbr> should appear');
     });
     document.querySelectorAll('h2').forEach((elem) => {
       expect(window.getComputedStyle(elem).wordBreak).not.equal(
@@ -83,9 +83,7 @@ describe('Japanese Word Wrap', () => {
         'keep-all',
         'JP word wrap should be applied',
       );
-      elem.querySelectorAll('wbr').forEach((wbr) => {
-        expect(wbr.classList.length).to.greaterThan(0, 'Balance word wrap should be applied');
-      });
+      expect(elem.innerHTML).include('jpn-balanced-wbr', 'Balance word wrap should be applied');
     });
     document.querySelectorAll('h2').forEach((elem) => {
       expect(window.getComputedStyle(elem).wordBreak).not.equal(
@@ -126,7 +124,7 @@ describe('Japanese Word Wrap', () => {
       'keep-all',
       'JP word wrap should be applied',
     );
-    expect(elem.innerHTML).to.include('<wbr>', '<wbr> should appear');
+    expect(elem.innerHTML).include('<wbr>', '<wbr> should appear');
   });
 
   it('Change budouxThres value correctly', async () => {
