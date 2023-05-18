@@ -835,6 +835,10 @@ TODO: Need to check if we can skip this somehow.
 }
 
 /* Second stepIndicator style (mobile only) */
+.dot-indicators:last-of-type {
+  margin-bottom: var(--spacing-m);
+}
+
 .dot-indicators:last-of-type.prev:not(.active):not(.completed)::after {
   border-bottom: 2px solid #ffffff;
 }

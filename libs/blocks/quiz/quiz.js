@@ -94,10 +94,10 @@ const App = () => {
       handleResultFlow(transformToFlowData(userSelection));
     } else {
       setUserFlow(nextQuizViews);
-      if (nextQuizViews[0] === 'q-rather' || nextQuizViews[0] === 'q-customer') {
-        setTotalSteps(totalSteps);
-      } else {
+      if (nextQuizViewsLen > 1) {
         setTotalSteps(totalSteps + 1);
+      } else {
+        setTotalSteps(totalSteps);
       }
     }
   };
