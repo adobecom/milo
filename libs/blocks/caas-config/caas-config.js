@@ -238,7 +238,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title, placeholder}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -261,6 +261,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
       title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
+      placeholder=${placeholder}
     />
   `;
 };
@@ -315,8 +316,8 @@ const BasicsPanel = ({ tagsData }) => {
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   return html`
-    <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
-    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
+  <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
+  <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
@@ -863,6 +864,10 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
+  const toogleCollapsed = () => {
+    document.body.classList.toggle('panel-collapsed')
+  }
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -877,6 +882,7 @@ const Configurator = ({ rootEl }) => {
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
+        <div><button class="collapse-panel" onClick=${() => toogleCollapsed() }><span>v</span></botton></div>
         <div class="content-panel">
           <div class="modalContainer"></div>
           <div id="caas" class="caas-preview"></div>
