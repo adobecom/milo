@@ -25,11 +25,21 @@ const blockTypeSizes = {
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
-    const [head, ...tail] = rows;
-    decorateBlockBg(el, head);
-    rows = tail;
+  if(el.classList.contains('link-farm')) {
+    rows.forEach((row, rdx) => {
+      row.className = `row row-${rdx + 1}`;
+      const cols = row.querySelectorAll(':scope > div');
+      cols.forEach((col, cdx) => {
+        col.className = `col col-${cdx + 1}`;
+      });
+    });
+  } else {
+    if (rows.length > 1) {
+      if (rows[0].textContent !== '') el.classList.add('has-bg');
+      const [head, ...tail] = rows;
+      decorateBlockBg(el, head);
+      rows = tail;
+    }
   }
   const helperClasses = [];
   let blockType = 'text';
