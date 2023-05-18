@@ -1,0 +1,163 @@
+/* Nav Link */
+.feds-menu-content .feds-navLink {
+  padding: 6px 32px;
+}
+
+.feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup,
+.feds-menu-headline[aria-expanded = "true"] + .feds-menu-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.feds-navLink--hoverCaret[aria-expanded = "true"]:after,
+.feds-menu-headline[aria-expanded = "true"]:after {
+  transform: rotateZ(-135deg);
+}
+
+@media (min-width: 900px) {
+  .feds-navLink--hoverCaret[aria-expanded = "true"] + .feds-popup {
+    flex-direction: row;
+  }
+}
+
+/* General menu styles */
+.feds-menu-items {
+  display: none;
+  padding: 12px 0;
+}
+
+.feds-menu-headline {
+  position: relative;
+  padding: 12px 44px 12px 32px;
+  border-bottom: solid 1px var(--feds-borderColor-menu--light);
+  color: var(--feds-color-headline--light);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+[dir = "rtl"] .feds-menu-headline {
+  padding-right: 32px;
+  padding-left: 44px;
+}
+
+.feds-menu-headline:after {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  display: flex;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-width: 0 1px 1px 0;
+  border-style: solid;
+  border-color: var(--feds-color-link--light);
+  transform-origin: 75% 75%;
+  transform: rotateZ(45deg);
+  transition: transform 0.1s ease;
+  content: "";
+}
+
+[dir = "rtl"] .feds-menu-headline:after {
+  right: unset;
+  left: 30px;
+}
+
+.feds-menu-items {
+  border-bottom: solid 1px var(--feds-borderColor-menu--light);
+}
+
+.feds-menu-items .feds-cta-wrapper {
+  padding: 6px 32px;
+}
+
+.feds-promo {
+  display: none;
+}
+
+/* Start mobile styles */
+@media (min-width: 900px) {
+  .feds-menu-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: var(--feds-maxWidth-nav);
+  }
+
+  .feds-menu-column {
+    padding: 12px 0;
+  }
+
+  .feds-menu-headline {
+    position: static;
+    margin: 0 32px;
+    cursor: default;
+  }
+
+  .feds-menu-headline,
+  [dir = "rtl"] .feds-menu-headline {
+    padding: 12px 0;
+  }
+
+  .feds-menu-headline:after {
+    content: none;
+  }
+
+  .feds-menu-headline + .feds-menu-items {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .feds-promo-wrapper {
+    width: 260px;
+    padding: 0 32px;
+  }
+
+  .feds-promo {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid var(--feds-borderColor--light);
+    background: var(--feds-background-nav--light);
+    white-space: normal;
+  }
+
+  .feds-promo--dark {
+    background: var(--feds-background-promo--dark);
+  }
+
+  .feds-promo-image,
+  .feds-promo picture,
+  .feds-promo img {
+    width: 100%;
+    display: block;
+  }
+
+  /* Next two sets of rules are a compromise between
+  content auhtored manually and AEM-imported content */
+  .feds-promo > div {
+    padding: 8px 32px;
+  }
+
+  .feds-promo div {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+  }
+
+  .feds-promo .feds-promo-image {
+    padding: 0;
+  }
+
+  .feds-promo--dark,
+  .feds-promo--dark a {
+    color: var(--feds-background-nav--light);
+  }
+
+  .feds-promo--dark a,
+  .feds-promo--dark a:hover {
+    text-decoration: underline;
+  }
+}

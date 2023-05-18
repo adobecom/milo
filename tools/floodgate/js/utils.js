@@ -55,3 +55,8 @@ export function getDocPathFromUrl(url) {
 
   return `${path}.docx`;
 }
+
+export async function delay(milliseconds = 100) {
+  // eslint-disable-next-line no-promise-executor-return
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
