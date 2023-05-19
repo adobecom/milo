@@ -75,17 +75,12 @@ export default function init(el) {
 
   const highlightOn = el.classList.contains('highlight');
   const rows = el.querySelectorAll(':scope > div');
-  let groupIndex = 0;
   rows.forEach((row, rdx) => {
     row.className = `row row-${rdx + 1}`;
     if (highlightOn && rdx === 0) {
       row.classList.add('row-highlight');
     } else if ((highlightOn && rdx === 1) || (!highlightOn && rdx === 0)) {
       row.classList.add('row-header');
-    }
-
-    if (groupIndex) {
-      row.classList.add(`row-group-${groupIndex}`);
     }
     const cols = row.querySelectorAll(':scope > div');
     cols.forEach((col, cdx) => {
@@ -97,16 +92,6 @@ export default function init(el) {
         && col.innerText !== ''
       ) {
         col.classList.add('col-highlight');
-      }
-      const colContents = col.querySelectorAll(':scope > *');
-      if (colContents.length === 1 && (colContents.item(0).nodeName === 'H3' || colContents.item(0).nodeName === 'H4')) {
-        if (!row.classList.contains('group-head')) {
-          row.classList.add('group-head');
-          row.classList.remove(`row-group-${groupIndex}`);
-          groupIndex += 1;
-          row.dataset.groupIndex = groupIndex;
-        }
-        col.classList.add('group-col');
       }
     });
   });
