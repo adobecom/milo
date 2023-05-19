@@ -1,7 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { getNextVisibleItemPosition, getPreviousVisibleItemPosition, selectors } from './utils.js';
 import MainNav from './mainNav.js';
-import { closeAllDropdowns } from '../utilities.js';
 
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
   const withoutBreadcrumbs = [
@@ -25,15 +24,6 @@ const cycleOnOpenSearch = ({ e, isDesktop }) => {
   }
 };
 
-const closeOnClickOutside = (e) => {
-  if (
-    !e.target.closest(selectors.globalNav)
-    || e.target.closest(selectors.curtain)
-  ) {
-    closeAllDropdowns();
-  }
-};
-
 class KeyboardNavigation {
   constructor() {
     this.addEventListeners();
@@ -42,8 +32,6 @@ class KeyboardNavigation {
   }
 
   addEventListeners = () => {
-    document.addEventListener('click', (e) => closeOnClickOutside(e));
-
     document.querySelector(selectors.globalNav).addEventListener('keydown', (e) => {
       switch (e.code) {
         case 'Tab': {

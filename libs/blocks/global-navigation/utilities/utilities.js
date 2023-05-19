@@ -1,8 +1,11 @@
-import { getConfig } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
 
-const curtainSelector = '.feds-curtain';
-const navLinkClassName = 'feds-nav-link';
-const globalNavSelector = '.global-navigation';
+export const selectors = {
+  globalNav: '.global-navigation',
+  curtain: '.feds-curtain',
+  navLink: '.feds-navLink',
+};
+
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -21,19 +24,20 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-// TODO this is just prototyped
 export const getFedsPlaceholderConfig = () => {
-  const { locale, miloLibs, env } = getConfig();
+  const { locale } = getConfig();
   let libOrigin = 'https://milo.adobe.com';
+
   if (window.location.origin.includes('localhost')) {
     libOrigin = `${window.location.origin}`;
   }
 
-  if (window.location.origin.includes('.hlx.')) {
-    const baseMiloUrl = env.name === 'prod'
-      ? 'https://main--milo--adobecom.hlx.live'
-      : 'https://main--milo--adobecom.hlx.page';
-    libOrigin = miloLibs || `${baseMiloUrl}`;
+  if (window.location.origin.includes('.hlx.page')) {
+    libOrigin = 'https://main--milo--adobecom.hlx.page';
+  }
+
+  if (window.location.origin.includes('.hlx.live')) {
+    libOrigin = 'https://main--milo--adobecom.hlx.live';
   }
 
   return {
@@ -53,12 +57,54 @@ export function getAnalyticsValue(str, index) {
   return analyticsValue;
 }
 
+export function getExperienceName() {
+  const experiencePath = getMetadata('gnav-source');
+
+  return experiencePath?.split('/').pop() || '';
+}
+
+export function loadStyles(path) {
+  const { miloLibs, codeRoot } = getConfig();
+  return new Promise((resolve) => {
+    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
+  });
+}
+
+// Base styles are shared between top navigation and footer,
+// since they can be independent of each other.
+// CSS imports were not used due to duplication of file include
+export async function loadBaseStyles() {
+  await loadStyles('base.css');
+}
+
+export function loadBlock(path) {
+  return import(path).then((module) => module.default);
+}
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  // eslint-disable-next-line no-async-promise-executor
+  cachedDecorateMenu = cachedDecorateMenu || new Promise(async (resolve) => {
+    const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+      loadBlock('./menu/menu.js'),
+      loadStyles('utilities/menu/menu.css'),
+    ]);
+
+    resolve({
+      decorateMenu,
+      decorateLinkGroup,
+    });
+  });
+
+  return cachedDecorateMenu;
+}
+
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   return toFragment`
     <div class="feds-cta-wrapper">
-      <a 
+      <a
         href="${elem.href}"
         class="feds-cta feds-cta--${modifier}"
         daa-ll="${getAnalyticsValue(elem.textContent, index)}">
@@ -68,17 +114,17 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 }
 
 export function closeAllDropdowns({ e } = {}) {
-  const openElements = document.querySelectorAll(`${globalNavSelector} [aria-expanded='true']`);
+  const openElements = document.querySelectorAll(`${selectors.globalNav} [aria-expanded='true']`);
   if (!openElements) return;
   if (e) e.preventDefault();
   [...openElements].forEach((el) => {
     el.setAttribute('aria-expanded', 'false');
-    if (el.classList.contains(navLinkClassName)) {
+    if (el.closest(selectors.navLink)) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
   // TODO the curtain will be refactored
-  document.querySelector(curtainSelector)?.classList.remove('is-open');
+  document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }
 
 /**
@@ -90,6 +136,9 @@ export function trigger({ element } = {}) {
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;
+  if (element.closest(selectors.navLink)) {
+    element.setAttribute('daa-lh', 'header|Close');
+  }
   element.setAttribute('aria-expanded', 'true');
   return true;
 }
@@ -97,7 +146,7 @@ export function trigger({ element } = {}) {
 export function expandTrigger({ element } = {}) {
   if (!element) return;
   closeAllDropdowns();
-  if (element.classList.contains(navLinkClassName)) {
+  if (element.closest(selectors.navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
