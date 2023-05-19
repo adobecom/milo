@@ -78,13 +78,13 @@ class Popup {
           break;
         }
         case 'ArrowLeft': {
-          const noPrev = (document.dir === 'ltr' && prevColumn === -1);
+          const noPrev = (document.dir !== 'rtl' && prevColumn === -1);
           const noNext = (document.dir === 'rtl' && nextColumn === -1);
           if (noPrev || noNext) {
             this.mainNav.items[this.mainNav.curr].focus();
             break;
           }
-          if (document.dir === 'ltr') {
+          if (document.dir !== 'rtl') {
             prevColumn.querySelector(selectors.popupItems).focus();
           } else {
             nextColumn.querySelector(selectors.popupItems).focus();
@@ -100,13 +100,13 @@ class Popup {
           break;
         }
         case 'ArrowRight': {
-          const noNext = document.dir === 'ltr' && nextColumn === -1;
+          const noNext = document.dir !== 'rtl' && nextColumn === -1;
           const noPrev = document.dir === 'rtl' && prevColumn === -1;
           if (noNext || noPrev) {
             this.mainNav.items[this.mainNav.curr].focus();
             break;
           }
-          if (document.dir === 'ltr') {
+          if (document.dir !== 'rtl') {
             nextColumn.querySelector(selectors.popupItems).focus();
           } else {
             prevColumn.querySelector(selectors.popupItems).focus();
