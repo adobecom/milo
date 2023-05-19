@@ -21,36 +21,47 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
-  const { default: initPrivacy } = await import('../features/privacy.js');
-  initPrivacy(getConfig(), loadScript);
+  const ids = {
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271-test',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3-test',
+  };
+
+  const otDomainId = ids?.[Object.keys(ids)
+    .find((domainId) => window.location.host.includes(domainId))] ?? getConfig()?.privacyId;
+  window.fedsConfig = {
+    privacy: { otDomainId },
+    documentLanguage: true,
+  };
+  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  // Privacy triggers can exist anywhere on the page and can be added at any time
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('a[href*="#openPrivacy"]')) {
+      event.preventDefault();
+      window.adobePrivacy?.showPreferenceCenter();
+    }
+  });
 };
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
 const loadDelayed = ([
-  getConfigFunc,
-  getMetadataFunc,
-  loadScriptFunc,
-  loadStyleFunc,
-], delay = 3000) => {
-  const getConfig = getConfigFunc;
-  const getMetadata = getMetadataFunc;
-  const loadScript = loadScriptFunc;
-  const loadStyle = loadStyleFunc;
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      loadPrivacy(getConfig, loadScript);
-      loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
-      if (getMetadata('interlinks') === 'on') {
-        const path = `${getConfig().locale.contentRoot}/keywords.json`;
-        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
-      } else {
-        resolve(null);
-      }
-      import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
-    }, delay);
-  });
-};
+  getConfig,
+  getMetadata,
+  loadScript,
+  loadStyle,
+], DELAY = 3000) => new Promise((resolve) => {
+  setTimeout(() => {
+    loadPrivacy(getConfig, loadScript);
+    loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    if (getMetadata('interlinks') === 'on') {
+      const path = `${getConfig().locale.contentRoot}/keywords.json`;
+      import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
+    } else {
+      resolve(null);
+    }
+    import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
+  }, DELAY);
+});
 
 export default loadDelayed;

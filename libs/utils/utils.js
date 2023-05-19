@@ -722,12 +722,13 @@ export async function loadArea(area = document) {
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
     initSidekick();
+
+    const { default: delayed } = await import('../scripts/delayed.js');
+    delayed([getConfig, getMetadata, loadScript, loadStyle]);
   }
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
-  const { default: delayed } = await import('../scripts/delayed.js');
-  delayed([getConfig, getMetadata, loadScript, loadStyle]);
 }
 
 export function loadDelayed() {
