@@ -27,7 +27,7 @@ describe('getUserEntitlements', () => {
   });
   afterEach(() => {
     window.fetch = ogFetch;
-    window.adobeIMS = undefined;
+    delete window.adobeIMS;
   });
 
   it('should return empty entitlements if a user is not signed in', async () => {
