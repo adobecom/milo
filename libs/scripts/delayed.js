@@ -10,14 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import {
-  getConfig,
-  getMetadata,
-  loadScript,
-  loadStyle,
-} from '../utils/utils.js';
-
-export const loadJarvisChat = async () => {
+export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat');
   if (!config.jarvis?.id || !config.jarvis?.version) return;
@@ -27,25 +20,37 @@ export const loadJarvisChat = async () => {
   }
 };
 
-export const loadPrivacy = async () => {
+export const loadPrivacy = async (getConfig, loadScript) => {
   const { default: initPrivacy } = await import('../features/privacy.js');
   initPrivacy(getConfig(), loadScript);
 };
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
-const loadDelayed = (delay = 3000) => new Promise((resolve) => {
-  setTimeout(() => {
-    loadPrivacy();
-    loadJarvisChat();
-    if (getMetadata('interlinks') === 'on') {
-      const path = `${getConfig().locale.contentRoot}/keywords.json`;
-      import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
-    } else {
-      resolve(null);
-    }
-    import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
-  }, delay);
-});
+const loadDelayed = ([
+  getConfigFunc,
+  getMetadataFunc,
+  loadScriptFunc,
+  loadStyleFunc,
+], delay = 3000) => {
+  const getConfig = getConfigFunc;
+  const getMetadata = getMetadataFunc;
+  const loadScript = loadScriptFunc;
+  const loadStyle = loadStyleFunc;
+
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      loadPrivacy(getConfig, loadScript);
+      loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+      if (getMetadata('interlinks') === 'on') {
+        const path = `${getConfig().locale.contentRoot}/keywords.json`;
+        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
+      } else {
+        resolve(null);
+      }
+      import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
+    }, delay);
+  });
+};
 
 export default loadDelayed;

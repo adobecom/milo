@@ -726,6 +726,12 @@ export async function loadArea(area = document) {
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
+  const { default: delayed } = await import('../scripts/delayed.js');
+  delayed([getConfig, getMetadata, loadScript, loadStyle]);
+}
+
+export function loadDelayed() {
+  // TODO: remove after all consumers have stopped calling this method
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));

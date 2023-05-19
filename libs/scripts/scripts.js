@@ -15,7 +15,6 @@ import {
   loadLana,
   setConfig,
 } from '../utils/utils.js';
-import loadDelayed from './delayed.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
@@ -132,5 +131,4 @@ const config = {
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-  loadDelayed();
 }());
