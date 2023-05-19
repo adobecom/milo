@@ -1,3 +1,13 @@
+@media screen and (min-width: 899px) and (max-width: 1221px) {
+  .quiz-page .gnav {
+    padding: 0 20px;
+  }
+}
+
+.quiz { 
+  min-height: 1000px;
+}
+
 .quiz-container {
   display: flex;
   align-items: center;
@@ -408,6 +418,7 @@
 @media screen and (min-width: 1200px) {
   .quiz-container {
     min-height: 560px;
+    padding: var(--spacing-xl) 0;
   }
 
   .quiz-container .foreground,
@@ -567,7 +578,7 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
-  padding: 50px;
+  padding: 50px 50px 24px;
 }
 
 .quiz-button-container .quiz-btn[disabled] {
@@ -575,7 +586,7 @@
 }
 
 span.quiz-Button-label {
-  color: #ffffff;
+  color: #fff;
 }
 
 .quiz-button-container .quiz-btn:not(.quiz-button-container .quiz-btn[disabled]) {
@@ -730,12 +741,13 @@ TODO: Need to check if we can skip this somehow.
 
 .dot-indicators {
   width: 300px;
-  top: 30px;
+  top: 25px;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
 .dot-indicators:first-of-type {
   display: none;
 }
@@ -750,10 +762,12 @@ TODO: Need to check if we can skip this somehow.
     display: flex;
     position: fixed;
   }
+  
   .dot-indicators:last-of-type {
     display: none;
     visibility: hidden;
   }
+
   .dot-indicators--wide {
     width: 360px;
   }  
@@ -774,7 +788,7 @@ TODO: Need to check if we can skip this somehow.
 }
 
 .dot.active::before {
-  background-color: #000000;
+  background-color: #000;
 }
 
 .dot.completed::before {
@@ -782,7 +796,7 @@ TODO: Need to check if we can skip this somehow.
 }
 
 .dot:not(.active):not(.completed)::before {
-  background-color: #ffffff;
+  background-color: #fff;
   border: 2px solid #676767;
 }
 
@@ -800,6 +814,7 @@ TODO: Need to check if we can skip this somehow.
   top: 6px;
   margin-left: 20px;
 }
+
 .dot:not(.active):not(.completed):last-of-type::after {
   display: none;
   visibility: hidden;
@@ -812,26 +827,13 @@ TODO: Need to check if we can skip this somehow.
   border-bottom: 2px solid #676767;
 }
 
-.dot:not(.active):not(.completed).current::before,
+.dot:not(.active):not(.completed).current::before {
+  background-color: #000;
+  border-color: #000;
+}
+
 .dot:not(.active):not(.completed).prev::before {
   background-color: #676767;
-}
-
-.line {
-  height: 2px;
-  border-top: 2px dashed #676767;
-}
-
-.line.solid {
-  border-top-style: solid;
-}
-
-.line.narrow-spacing {
-  width: 70px;
-}
-
-.line:not(.narrow-spacing) {
-  width: 132px;
 }
 
 /* Second stepIndicator style (mobile only) */
@@ -840,29 +842,25 @@ TODO: Need to check if we can skip this somehow.
 }
 
 .dot-indicators:last-of-type.prev:not(.active):not(.completed)::after {
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #fff;
 }
 
 .dot-indicators:last-of-type .dot:not(.active):not(.completed).current::before,
 .dot-indicators:last-of-type .dot:not(.active):not(.completed).prev::before {
-  background-color: #ffffff;
-}
-.dot-indicators:last-of-type .line {
-  height: 2px;
-  border-top: 2px dashed #ffffff;
+  background-color: #fff;
 }
 
 .dot-indicators:last-of-type .dot.active::before {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 
 .dot-indicators:last-of-type .dot.completed::before {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 
 .dot-indicators:last-of-type .dot:not(.active):not(.completed)::before {
   background-color: transparent;
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
 }
 
 .dot-indicators:last-of-type .dot:not(.active):not(.completed)::after {
@@ -870,8 +868,13 @@ TODO: Need to check if we can skip this somehow.
   content: ' ';
   width: calc(100% - 23px);
   height: 2px;
-  border-bottom: 2px dashed #ffffff;
+  border-bottom: 2px dashed #fff;
   position: absolute;
   top: 6px;
   margin-left: 20px;
+}
+@media screen and (min-width: 900px) {
+  .dot-indicators:last-of-type {
+    margin-top: var(--spacing-xl);
+  }
 }

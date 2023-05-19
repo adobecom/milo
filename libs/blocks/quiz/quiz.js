@@ -46,6 +46,9 @@ const App = () => {
 
       // wait for data to load
       setDataLoaded(true);
+
+      // add quiz class to page
+      document.body.classList.add('quiz-page');
     })();
   }, [setQuestionData, setStringData, setStringQuestionList, setQuestionList]);
 
