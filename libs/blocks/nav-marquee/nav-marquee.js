@@ -13,12 +13,8 @@
 /*
  * Navigation Marquee
  */
-
 import { createTag, getConfig } from '../../utils/utils.js';
-import { getMetadata } from '../section-metadata/section-metadata.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-
-const getIndexedValues = (text) => text.split('\n').map((value) => value.split(/,(.*)/s).map((v) => v.trim()));
 
 const DOWN_ARROW_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10.875" height="13.323" viewBox="0 0 10.875 13.323"><title>down arrow</title><g fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"><path d="M5.478 1v10.909"/><g><path d="m9.461 7.885-4.023 4.023m0 0L1.414 7.885"/></g></g></svg>';
 
@@ -29,8 +25,13 @@ function findAnchorTarget(text) {
   linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
   return document.querySelector(`[id^="${linkText}"]`);
 }
-
 function getItem(title, description, target) {
+  console.log(title);
+  if (!title) {
+    console.log('no title');
+    return;
+  }
+
   const item = createTag('li', { class: 'toc-item' });
   const linkText = createTag('div', { class: 'toc-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
@@ -62,44 +63,9 @@ function getItem(title, description, target) {
 
   return item;
 }
-
-function buildMarquee(text, table) {
-  if (!text) return;
-  const marqueeBlock = getIndexedValues(text);
-  const foreground = document.createElement('div');
-  foreground.classList.add('foreground', 'container');
-  const headline = foreground.querySelector('h1, h2, h3, h4, h5, h6');
-  // const something = headline.closest('div');
-  console.log('Building Marquee');
-  console.log(foreground);
-
-  marqueeBlock.forEach((text) => {
-    foreground.append(text);
-  });
-  table.append(foreground);
-}
-
-function buildSections(text, navTable) {
-  if (!text) return;
-  const sectionBlock = getIndexedValues(text);
-  const navContainer = document.createElement('div');
-  navContainer.classList.add('container', 'toc-container');
-  const navList = createTag('li', { class: 'toc-item' });
-  const tocLinkText = createTag('div', { class: 'toc-link-text' });
-  console.log('Section all?');
-  sectionBlock.forEach((text) => {
-    // Heading
-    tocLinkText.append(text);
-    // body
-    // link
-  });
-  if (text) navTable.append(createTag('li', { class: 'toc-item' }, tocLinkText));
-  navTable.append(tocLinkText);
-}
-
-function decorateText(text, size) {
-  const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const heading = headings[headings.leƒngth - 1];
+function decorateText(el, size) {
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const heading = headings[headings.length - 1];
   const decorate = (headingEl, headingSize, bodySize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
@@ -114,44 +80,51 @@ function decorateText(text, size) {
 
 export default function init(el) {
   const { env } = getConfig();
-  const table = el.closest('.section');
-  // if (!table) return;
-
-  // if (!el.previousElementSibling?.classList.contains('marquee')) {
-  //   if (env?.name === 'prod') {
-  //     el.style.display = 'none';
-  //     return;
-  //   }
-  //   // const heading = createTag('h2', null, 'This block should be paired with a marquee in a section.');
-  //   // el.replaceChildren(heading);
-  //   return;
-  // }
-
-  const metadata = getMetadata(el);
-  console.log(metadata);
-  // const text = headline.closest('div');
   const size = getBlockSize(el);
-  console.log(`metadata size: ${size}`);
-
-  // const text = table.closest('div');
-
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const title = children.shift().textContent;
-  const toc = createTag('div', { class: 'table-of-contents' });
-  const tocContainer = createTag('div', { class: 'container toc-container' }, `<p class="toc-title">${title}</p>`);
+  // set marquee style
+  const tone = (el.classList.contains('light')) ? 'light' : 'dark';
+  const marqueeContent = createTag('div', { class: 'container foreground' }, children.shift());
+  //const marqueeContent = children.shift();
+  const marquee = createTag('div', { class: 'marquee'+ tone }, marqueeContent);
+  //const marqueeContent = children.shift();
+  console.log(marquee);
+  decorateText(marquee, size);
+  decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
+  marquee.className = 'marquee '+ tone;
+
+  let header = 'sd';
+  let footer = 'sd';
   const tocNav = createTag('nav', { 'aria-label': 'Table of contents' });
   const navUl = createTag('ul', { class: 'toc-list' });
+  children.forEach((section) => {
+    if (section.firstElementChild.textContent === 'header') {
+      header = section.lastElementChild.textContent;
+      section.remove();
+      return;
+    }
 
-  if (metadata.marquee.text) buildMarquee(metadata.marquee.text, table);
-  if (metadata.section.text) buildSections(metadata.section.text, navUl);
-  toc.append(navUl);
-  tocContainer.append(navUl);
-  table.append(navUl);
-  console.log('Table');
-  console.log(table);
-  // tocNav.append(navUl);
-  // tocContainer.append(tocNav);
-  // el.replaceChildren(tocContainer);
-  // el.replaceChildren(table);
-  el.append(table);
+    if (section.firstElementChild.textContent === 'footer') {
+      footer = section.lastElementChild.textContent;
+      section.remove();
+      return;
+    }
+
+    const sectionTags = Array.from(section.querySelectorAll('p'));
+    const sectionTitle = section.querySelector('strong');
+    const link = section.querySelector('a');
+    const subtitle = sectionTags.find((element) => element.childElementCount === 0);
+    const target = link ? findAnchorTarget(link.textContent) : null;
+    const item = getItem(sectionTitle?.textContent, subtitle?.textContent, target);
+    navUl.append(item);
+    section.remove();
+  }, '');
+  const tocContainer = createTag('div', { class: 'container toc-container' }, `<p class="toc-title">${header}</p>`);
+  tocContainer.append(tocNav);
+  tocContainer.append(footer);
+  const toc = createTag('div', { class: 'table-of-contents' }, tocContainer);
+
+  tocNav.append(navUl);
+  el.append(marquee);
+  el.append(toc);
 }

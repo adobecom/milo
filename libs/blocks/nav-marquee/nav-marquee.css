@@ -1,9 +1,6 @@
 .nav-marquee .toc-container {
   border: 1px solid #E8E8E8;
   background-color: #FAFAFA;
-}
-
-.nav-marquee .toc-container {
   flex: 1 1 auto;
   padding: 24px;
 }
@@ -13,6 +10,9 @@
   border-bottom: 1px solid #D0D0D0;
   margin: 0;
   padding-bottom: 16px;
+}
+.nav-marquee.light {
+  color: var(--text-color);
 }
 
 .nav-marquee .toc-list {
