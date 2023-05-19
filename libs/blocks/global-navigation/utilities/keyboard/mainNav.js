@@ -41,7 +41,7 @@ class MainNavItem {
           }
           // TODO popup navigation logic.
           case 'ArrowLeft': {
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               if (this.prev === -1) break;
               this.focusPrev({ focus: null });
             } else {
@@ -58,7 +58,7 @@ class MainNavItem {
           }
           case 'ArrowRight': {
             const open = document.querySelector(selectors.expandedPopupTrigger);
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               if (this.next === -1) break;
               this.focusNext();
             } else {
