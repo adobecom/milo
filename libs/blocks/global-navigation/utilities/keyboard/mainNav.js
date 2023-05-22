@@ -39,7 +39,6 @@ class MainNavItem {
             closeAllDropdowns();
             break;
           }
-          // TODO popup navigation logic.
           case 'ArrowLeft': {
             if (document.dir !== 'rtl') {
               if (this.prev === -1) break;

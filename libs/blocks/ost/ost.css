@@ -1,0 +1,30 @@
+body.tool-ost .ost {
+  position: fixed;
+  display: flex;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-gray-75);
+}
+
+body.tool-ost .ost>div {
+  padding: 0 20px 0 20px;
+  min-height: 900px;
+  max-height: 1400px;
+  min-width: 1200px;
+  max-width: 1800px;
+  height: 80%;
+  width: 80%;
+  border-radius: 4px;
+  border-width: 2px;
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+  border-style: solid;
+}
+
+.price-unit-type::before {
+  content: " ";
+}
