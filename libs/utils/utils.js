@@ -649,11 +649,23 @@ export function loadPrivacy() {
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
-  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
-  privacyTrigger?.addEventListener('click', (event) => {
-    event.preventDefault();
-    window.adobePrivacy?.showPreferenceCenter();
+  // Privacy triggers can exist anywhere on the page and can be added at any time
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('a[href*="#openPrivacy"]')) {
+      event.preventDefault();
+      window.adobePrivacy?.showPreferenceCenter();
+    }
   });
+}
+
+async function loadJarvisChat() {
+  const config = getConfig();
+  const jarvis = getMetadata('jarvis-chat');
+  if (!config.jarvis?.id || !config.jarvis?.version) return;
+  if (jarvis === 'on') {
+    const { initJarvisChat } = await import('../features/jarvis-chat.js');
+    initJarvisChat(config, loadScript, loadStyle);
+  }
 }
 
 function initSidekick() {
@@ -761,6 +773,7 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
+      loadJarvisChat();
       if (getMetadata('interlinks') === 'on') {
         const path = `${getConfig().locale.contentRoot}/keywords.json`;
         import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
