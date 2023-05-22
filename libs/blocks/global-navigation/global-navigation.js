@@ -380,6 +380,7 @@ class Gnav {
 
     toggle.addEventListener('click', async () => {
       if (this.el.classList.contains(CONFIG.selectors.isOpen)) {
+        closeAllDropdowns();
         this.el.classList.remove(CONFIG.selectors.isOpen);
         this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
         if (this.blocks?.search?.instance) {

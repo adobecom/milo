@@ -4,6 +4,8 @@ export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  navItem: '.feds-navItem',
+  activeDropdown: 'feds-dropdown--active',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -122,6 +124,10 @@ export function closeAllDropdowns({ e } = {}) {
     if (el.closest(selectors.navLink)) {
       el.setAttribute('daa-lh', 'header|Open');
     }
+    const parent = el.closest(selectors.navItem);
+    if (parent) {
+      parent.classList.remove(selectors.activeDropdown);
+    }
   });
 
   document.querySelector(selectors.curtain)?.classList.remove('is-open');
@@ -140,6 +146,10 @@ export function trigger({ element } = {}) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
+  const parent = element.closest(selectors.navItem);
+  if (parent) {
+    parent.classList.add(selectors.activeDropdown);
+  }
   return true;
 }
 

@@ -143,6 +143,18 @@ header.global-navigation {
   border-bottom: 1px solid var(--feds-borderColor-link--light);
 }
 
+/* Item with active dropdown */
+.feds-dropdown--active::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--feds-color-link--light);
+  content: "";
+  z-index: 1;
+}
+
 .feds-popup .feds-navLink:hover,
 .feds-popup .feds-navLink:focus {
   background-color: var(--feds-background-link--hover--light);
@@ -364,6 +376,11 @@ header.global-navigation {
   /* Brand block */
   .feds-brand-image + .feds-brand-label {
     display: flex;
+  }
+
+  /* Item with active dropdown */
+  .feds-dropdown--active::before {
+    content: none;
   }
 
   /* Popup */
