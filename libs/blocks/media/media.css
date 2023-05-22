@@ -103,16 +103,16 @@ div[class*="-up"] .media .foreground > .media-row {
   padding: 0 0 var(--spacing-m);
 }
 
-.media[class*="-up"] .foreground > .media-row .image,
-div[class*="-up"] .media .foreground > .media-row .image {
-  margin-bottom: var(--spacing-s);
-}
-
 @media screen and (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
     max-width: 1000px;
+  }
+  
+  .media[class*="-up"] .foreground > .media-row .image,
+  div[class*="-up"] .media .foreground > .media-row .image {
+      margin-bottom: var(--spacing-s);
   }
 
   .media.small > .foreground .media-row {
