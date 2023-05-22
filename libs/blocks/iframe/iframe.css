@@ -1,1 +1,6 @@
 @import url('../../styles/iframe.css');
+
+.calendar {
+  height: 1500px;
+  padding-bottom: 0;
+}
