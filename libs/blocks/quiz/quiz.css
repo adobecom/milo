@@ -1,3 +1,13 @@
+@media screen and (min-width: 899px) and (max-width: 1221px) {
+  .quiz-page .gnav {
+    padding: 0 20px;
+  }
+}
+
+.quiz { 
+  min-height: 1000px;
+}
+
 .quiz-container {
   display: flex;
   align-items: center;
@@ -14,6 +24,11 @@
   gap: var(--spacing-m);
   justify-content: center;
   text-align: center;
+}
+
+.quiz-container ~ div { 
+  display: none; 
+  visibility: hidden; 
 }
 
 .quiz-option {
@@ -403,6 +418,7 @@
 @media screen and (min-width: 1200px) {
   .quiz-container {
     min-height: 560px;
+    padding: var(--spacing-xl) 0;
   }
 
   .quiz-container .foreground,
@@ -562,7 +578,7 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
-  padding: 50px;
+  padding: 50px 50px 24px;
 }
 
 .quiz-button-container .quiz-btn[disabled] {
@@ -570,7 +586,7 @@
 }
 
 span.quiz-Button-label {
-  color: #ffffff;
+  color: #fff;
 }
 
 .quiz-button-container .quiz-btn:not(.quiz-button-container .quiz-btn[disabled]) {
@@ -710,7 +726,7 @@ TODO: Need to check if we can skip this somehow.
 }
 
 .show {
- display: block; 
+  display: block; 
 }
 
 .hide {
@@ -719,4 +735,146 @@ TODO: Need to check if we can skip this somehow.
 
 .footer-info {
   margin-top: 12px !important;
+}
+
+/* Step Indicator CSS */
+
+.dot-indicators {
+  width: 300px;
+  top: 25px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dot-indicators:first-of-type {
+  display: none;
+}
+
+.dot-indicators:last-of-type {
+  display: flex;
+  visibility: visible;
+}
+
+@media screen and (min-width: 1200px) {
+  .dot-indicators:first-of-type {
+    display: flex;
+    position: fixed;
+  }
+  
+  .dot-indicators:last-of-type {
+    display: none;
+    visibility: hidden;
+  }
+
+  .dot-indicators--wide {
+    width: 360px;
+  }  
+}
+
+.dot {
+  width: 100%;
+  position: relative;
+}
+
+.dot::before {
+  display: block;
+  content: "";
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  position: relative;  
+}
+
+.dot.current::before {
+  background-color: #000;
+}
+
+.dot.prev::before {
+  background-color: #868686;
+}
+
+.dot:not(.prev)::before {
+  background-color: #fff;
+  border: 2px solid #676767;
+}
+
+.dot:last-of-type {
+  width:12px;
+}
+
+.dot::after {
+  display: block;
+  content: ' ';
+  width: calc(100% - 23px);
+  height: 2px;
+  border-bottom: 2px dashed #676767;
+  position: absolute;
+  top: 6px;
+  margin-left: 20px;
+}
+
+/* Visited lines */
+.dot.prev:not(.current)::after {
+  border-bottom: 2px solid #676767;
+}
+
+.dot:not(.prev).current::before {
+  background-color: #000;
+  border-color: #000;
+}
+
+.dot:not(.current).prev::before {
+  background-color: #676767;
+  border: 2px solid #676767;
+}
+
+/* Second stepIndicator style (mobile only) */
+.dot-indicators:last-of-type {
+  margin-bottom: var(--spacing-m);
+}
+
+.dot-indicators:last-of-type.prev:not(.current):not(.prev)::after {
+  border-bottom: 2px solid #fff;
+}
+
+.dot-indicators:last-of-type .dot:not(.current).prev::before {
+  border: 2px solid white;
+  
+}
+  
+.dot-indicators:last-of-type .dot:not(.current).prev::after {
+  border-bottom: 2px solid #fff;
+}
+
+.dot-indicators:last-of-type .dot.current::before {
+  background-color: #fff;
+  border: 2px solid #fff;
+}
+
+
+.dot-indicators:last-of-type .dot.prev::before {
+  background-color: #fff;
+}
+
+.dot-indicators:last-of-type .dot:not(.current):not(.prev)::before {
+  background-color: transparent;
+  border: 2px solid #fff;
+}
+
+.dot-indicators:last-of-type .dot::after {
+  display: block;
+  content: ' ';
+  width: calc(100% - 23px);
+  height: 2px;
+  border-bottom: 2px dashed #fff;
+  position: absolute;
+  top: 6px;
+  margin-left: 20px;
+}
+@media screen and (min-width: 900px) {
+  .dot-indicators:last-of-type {
+    margin-top: var(--spacing-xl);
+  }
 }
