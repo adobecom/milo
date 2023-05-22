@@ -39,12 +39,11 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
 }
 
 /**
- * Apply smart line-breaking algorithm by inserting <wbr> between semantic blocks.
- * This allows browsers to break japanese sentences correctly.
+ * Apply smart line-breaking algorithm depending on the given options.
  * @param {*} config The milo config.
  * @param {*} options The options to control line breaks.
  */
-export default async function controlLineBreaksJapanese(config, options = {}) {
+export async function applyJapaneseLineBreaks(config, options = {}) {
   const { miloLibs, codeRoot } = config;
   const {
     scopeArea = document,
@@ -82,4 +81,37 @@ export default async function controlLineBreaksJapanese(config, options = {}) {
       bw2.applyElement(el);
     });
   }
+}
+
+/**
+ * get metadata
+ * @param {*} name The name of metadata.
+ * @returns metadata content
+ */
+function getMetadata(name) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
+
+/**
+ * Apply smart line-breaking algorithm by inserting <wbr> between semantic blocks.
+ * This allows browsers to break japanese sentences correctly.
+ * @param {*} config The milo config.
+ * @param {*} doc The Document or HTMLElement to which you want you apply word wrap.
+ */
+export default async function controlJapaneseLineBreaks(config, scopeArea = document) {
+  const budouxSelector = getMetadata('jpwordwrap:budoux-selector') || 'h1, h2, h3, h4, h5, h6, p';
+  const budouxThres = Number(getMetadata('jpwordwrap:budoux-thres')) || 2000;
+  const bwSelector = getMetadata('jpwordwrap:bw-selector');
+  const lineBreakOkPatterns = (getMetadata('jpwordwrap:line-break-ok') || '').split(',');
+  const lineBreakNgPatterns = (getMetadata('jpwordwrap:line-break-ng') || '').split(',');
+  await applyJapaneseLineBreaks(config, {
+    scopeArea,
+    budouxSelector,
+    budouxThres,
+    bwSelector,
+    lineBreakOkPatterns,
+    lineBreakNgPatterns,
+  });
 }

@@ -603,20 +603,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ default: controlLineBreaksJapanese }) => {
-      const budouxSelector = getMetadata('jpwordwrap:budoux-selector') || 'h1, h2, h3, h4, h5, h6';
-      const budouxThres = Number(getMetadata('jpwordwrap:budoux-thres')) || 2000;
-      const bwSelector = getMetadata('jpwordwrap:bw-selector');
-      const lineBreakOkPatterns = (getMetadata('jpwordwrap:line-break-ok') || '').split(',');
-      const lineBreakNgPatterns = (getMetadata('jpwordwrap:line-break-ng') || '').split(',');
-      controlLineBreaksJapanese(config, {
-        scopeArea: area,
-        budouxSelector,
-        budouxThres,
-        bwSelector,
-        lineBreakOkPatterns,
-        lineBreakNgPatterns,
-      });
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
