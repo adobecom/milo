@@ -123,7 +123,7 @@ export function closeAllDropdowns({ e } = {}) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
-  // TODO the curtain will be refactored
+
   document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }
 

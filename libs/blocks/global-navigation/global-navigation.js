@@ -256,14 +256,11 @@ class Gnav {
   };
 
   loadIMS = () => {
-    const { locale, imsClientId, env } = getConfig();
+    const { locale, imsClientId, imsScope, env } = getConfig();
     if (!imsClientId) return null;
-    // TODO-1 scopes should be defineable by the consumers
-    // We didn't have a use-case for that so far
-    // TODO-2 we should emit an event after the onReady callback
     window.adobeid = {
       client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
+      scope: imsScope,
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
@@ -337,7 +334,6 @@ class Gnav {
   };
 
   decorateAppLauncher = () => {
-    // TODO: review App Launcher component
     // const appLauncherBlock = this.body.querySelector('.app-launcher');
     // if (appLauncherBlock) {
     //   await this.loadDelayed();
@@ -633,7 +629,7 @@ class Gnav {
 
 export default async function init(header) {
   const { locale } = getConfig();
-  // TODO locale.contentRoot is not the fallback we want
+  // TODO locale.contentRoot is not the fallback we want if we implement centralized content
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
