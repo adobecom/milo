@@ -242,7 +242,7 @@ class Gnav {
         this.Search = Search;
         resolve();
       } catch (e) {
-        lanaLog({ message: 'Error within loadDelayed', e });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e });
         resolve();
       }
     });
@@ -271,7 +271,7 @@ class Gnav {
             await task();
           }
         } catch (e) {
-          lanaLog({ message: 'Global Navigation, issues within onReady', e });
+          lanaLog({ message: 'GNAV: issues within onReady', e });
         }
       },
     };

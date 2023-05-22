@@ -88,7 +88,7 @@ export async function loadDecorateMenu() {
   if (cachedDecorateMenu) return cachedDecorateMenu;
 
   let resolve;
-  cachedDecorateMenu = cachedDecorateMenu || new Promise((_resolve) => {
+  cachedDecorateMenu = new Promise((_resolve) => {
     resolve = _resolve;
   });
 
