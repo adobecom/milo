@@ -78,8 +78,6 @@ class ProfileDropdown {
         this.placeholders.manageEnterprise,
         this.placeholders.profileAvatar,
       ],
-      // TODO: sanity checks if the user is logged in and mandatory properties are set.
-      // If not, add logs providing guidance for developers
       { displayName: this.profileData.displayName, email: this.profileData.email },
     ] = await Promise.all([
       replaceKeyArray(
