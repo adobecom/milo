@@ -7,7 +7,6 @@
 /libs/utils/ @adobecom/admins
 
 # Milo Tools (alphabetical order)
-/libs/blocks/commerce/ @npeltier @axelcureno @yesil @honstar
 
 # Milo Blocks (alphabetical order)
 /libs/blocks/accordion/ @fullcolorcoder @ryanmparrish
