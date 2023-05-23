@@ -1,6 +1,7 @@
 import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
-import { connect as connectToSP } from '../../loc/sharepoint.js';
+import { getParams, postData } from './utils.js';
+import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
@@ -10,19 +11,47 @@ import {
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
+  updateProjectStatusUIFromAction,
   updateProjectStatusUI,
 } from './ui.js';
-import promoteFloodgatedFiles from './promote.js';
-import floodgateContent from './copy.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
 }
 
+async function floodgateContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const copyStatus = await postData(config.sp.aioCopyAction, params);
+  updateProjectStatusUIFromAction({ copyStatus });
+}
+
+async function promoteContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  // consider fgRoot as the project path for promote action.
+  params.projectRoot = config.sp.fgRootFolder;
+  const promoteStatus = await postData(config.sp.aioPromoteAction, params);
+  updateProjectStatusUIFromAction({ promoteStatus });
+}
+
+async function fetchStatusAction(project, config) {
+  // fetch copy status
+  let params = {
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.rootFolders,
+  };
+  const copyStatus = await postData(config.sp.aioStatusAction, params);
+  // fetch promote status
+  params = { projectRoot: config.sp.fgRootFolder };
+  const promoteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUIFromAction({ copyStatus, promoteStatus });
+}
+
 async function refreshPage(config, projectDetail, project) {
   // Inject Sharepoint file metadata
-  loadingON('Updating Project with the Sharepoint Docs Data...');
+  loadingON('Updating Project with the Sharepoint Docs Data... please wait');
   await updateProjectWithDocs(projectDetail);
 
   // Render the data on the page
@@ -34,20 +63,21 @@ async function refreshPage(config, projectDetail, project) {
   const status = await updateProjectStatus(project);
   updateProjectStatusUI(status);
 
+  await fetchStatusAction(project, config);
   loadingON('UI updated..');
   loadingOFF();
 }
 
-function setListeners(project, projectDetail) {
+function setListeners(project, config) {
   const modal = document.getElementById('fg-modal');
   const handleFloodgateConfirm = ({ target }) => {
     modal.style.display = 'none';
-    floodgateContent(project, projectDetail);
+    floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
-    promoteFloodgatedFiles(project);
+    promoteContentAction(project, config);
     target.removeEventListener('click', handlePromoteConfirm);
   };
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
@@ -61,7 +91,9 @@ function setListeners(project, projectDetail) {
     modal.style.display = 'block';
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
-  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => { modal.style.display = 'none'; });
+  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -69,6 +101,7 @@ async function init() {
   try {
     // Read the Floodgate Sharepoint Config
     loadingON('Fetching Floodgate Config...');
+    enableRetry(); // Adding this for checking rate limit code for floodgate
     const config = await getConfig();
     if (!config) {
       return;
@@ -89,7 +122,7 @@ async function init() {
     loadingON('Project Details loaded...');
 
     // Set the listeners on the floodgate action buttons
-    setListeners(project, projectDetail);
+    setListeners(project, config);
 
     loadingON('Connecting now to Sharepoint...');
     const connectedToSp = await connectToSP();
@@ -99,6 +132,7 @@ async function init() {
     }
     loadingON('Connected to Sharepoint!');
     await refreshPage(config, projectDetail, project);
+
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);

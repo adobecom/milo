@@ -23,6 +23,8 @@ const MILO_BLOCKS = [
   'figure',
   'fragment',
   'featured-article',
+  'global-footer',
+  'global-navigation',
   'footer',
   'gnav',
   'how-to',
@@ -253,7 +255,7 @@ export function appendHtmlPostfix(area = document) {
   const shouldNotConvert = (href) => {
     let url = { pathname: href };
 
-    try { url = new URL(href, pageUrl) } catch (e) {}
+    try { url = new URL(href, pageUrl); } catch (e) {}
 
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || url.pathname?.endsWith('/')
@@ -523,7 +525,8 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
+  header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
     header.classList.add('has-breadcrumbs');
@@ -555,7 +558,8 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
+  footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
 
@@ -570,6 +574,15 @@ function decorateSections(el, isDoc) {
     section.dataset.idx = idx;
     return { el: section, blocks: [...links, ...blocks] };
   });
+}
+
+function decorateFooterPromo(config) {
+  const footerPromo = getMetadata('footer-promo-tag');
+  if (!footerPromo) return;
+  const href = `${config.locale.contentRoot}/fragments/footer-promos/${footerPromo}`;
+  const para = createTag('p', {}, createTag('a', { href }, href));
+  const section = createTag('div', null, para);
+  document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
 async function loadMartech(config) {
@@ -636,11 +649,23 @@ export function loadPrivacy() {
   };
   loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
 
-  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
-  privacyTrigger?.addEventListener('click', (event) => {
-    event.preventDefault();
-    window.adobePrivacy?.showPreferenceCenter();
+  // Privacy triggers can exist anywhere on the page and can be added at any time
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('a[href*="#openPrivacy"]')) {
+      event.preventDefault();
+      window.adobePrivacy?.showPreferenceCenter();
+    }
   });
+}
+
+async function loadJarvisChat() {
+  const config = getConfig();
+  const jarvis = getMetadata('jarvis-chat');
+  if (!config.jarvis?.id || !config.jarvis?.version) return;
+  if (jarvis === 'on') {
+    const { initJarvisChat } = await import('../features/jarvis-chat.js');
+    initJarvisChat(config, loadScript, loadStyle);
+  }
 }
 
 function initSidekick() {
@@ -691,6 +716,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     decorateMeta();
     decorateHeader();
+    decorateFooterPromo(config);
 
     import('./samplerum.js').then(({ addRumListeners }) => {
       addRumListeners();
@@ -747,6 +773,7 @@ export function loadDelayed(delay = 3000) {
   return new Promise((resolve) => {
     setTimeout(() => {
       loadPrivacy();
+      loadJarvisChat();
       if (getMetadata('interlinks') === 'on') {
         const path = `${getConfig().locale.contentRoot}/keywords.json`;
         import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });

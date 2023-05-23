@@ -30,7 +30,7 @@ const getHashConfig = () => {
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  let hashConfig = parseEncodedConfig(encodedConfig);
+  const hashConfig = parseEncodedConfig(encodedConfig);
   hashConfig.pjs36 ||= hashConfig.p.js[36] || '';
   hashConfig.pjs39 ||= hashConfig.p.js[39] || '';
   hashConfig.pjs92 ||= hashConfig.p.js[92] || '';
@@ -38,13 +38,13 @@ const getHashConfig = () => {
   hashConfig.pjs94 ||= hashConfig.p.js[94] || '';
   hashConfig[149] ||= hashConfig.p.js[149] || '';
   hashConfig[172] ||= hashConfig.p.js[172] || '';
-  hashConfig.q103 ||= hashConfig.q[103]?.c || {};
+  hashConfig.q103 ||= hashConfig.q[103]?.c || [];
   hashConfig.pc1 ||= hashConfig.pc[1] || false;
   hashConfig.pc2 ||= hashConfig.pc[2] || false;
   hashConfig.pc3 ||= hashConfig.pc[3] || false;
   hashConfig.pc4 ||= hashConfig.pc[4] || false;
   hashConfig.pc5 ||= hashConfig.pc[5] || false;
-  if(hashConfig.complete) {
+  if (hashConfig.complete) {
     Object.keys(hashConfig.js).forEach((key) => {
       hashConfig[key] = hashConfig.js[key];
     });
@@ -52,7 +52,7 @@ const getHashConfig = () => {
     hashConfig.complete = false;
   }
   return hashConfig;
-}
+};
 
 const getInitialState = () => {
   const hashConfig = getHashConfig();
@@ -113,7 +113,7 @@ const CopyBtn = () => {
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if(input.id === '149') {
+      if (input.id === '149') {
         return;
       }
       if (!input.value) {
@@ -131,11 +131,10 @@ const CopyBtn = () => {
         input.focus();
         return;
       }
-      if(input.name == "v" && !/^[A-Za-z0-9]*$/.test(input.value)) {
+      if (input.name == 'v' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
         setErrorMessage('Campagin ID allows only letters and numbers');
         input.focus();
-        return;
       }
     });
     return inputValidation;
@@ -404,7 +403,9 @@ const StylePanel = () => html`
   <${Select}
     label="Title Size"
     prop="title_size"
-    options="${{ h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P' }}" />
+    options="${{
+    h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P',
+  }}" />
   <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
