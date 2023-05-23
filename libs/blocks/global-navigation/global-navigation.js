@@ -5,17 +5,23 @@ import {
   getMetadata,
   loadScript,
   localizeLink,
-  loadStyle,
 } from '../../utils/utils.js';
 import {
   toFragment,
   getFedsPlaceholderConfig,
   getAnalyticsValue,
   decorateCta,
+  getExperienceName,
+  loadDecorateMenu,
+  loadBlock,
+  loadStyles,
   trigger,
   closeAllDropdowns,
+  loadBaseStyles,
   yieldToMain,
+  selectors,
 } from './utilities/utilities.js';
+
 import { replaceKey } from '../../features/placeholders.js';
 
 const CONFIG = {
@@ -23,14 +29,13 @@ const CONFIG = {
     company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
     search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
   },
+  selectors: { isOpen: 'is-open' },
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 2000,
     keyboardNav: 8000,
   },
 };
-
-export const IS_OPEN = 'is-open';
 
 function getBlockClasses(className) {
   const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
@@ -39,16 +44,6 @@ function getBlockClasses(className) {
   const variants = blockWithVariants.map((v) => trimDashes(v));
   return { name, variants };
 }
-
-const loadStyles = (path) => {
-  const { miloLibs, codeRoot } = getConfig();
-  return new Promise((resolve) => {
-    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
-  });
-};
-
-const loadBlock = (path) => import(path)
-  .then((module) => module.default);
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
@@ -102,14 +97,14 @@ const decorateProfileTrigger = async ({ avatar }) => {
   );
 
   const buttonElem = toFragment`
-    <button 
-      class="feds-profile-button" 
-      aria-expanded="false" 
+    <button
+      class="feds-profile-button"
+      aria-expanded="false"
       aria-controls="feds-profile-menu"
       aria-label="${label}"
       daa-ll="Account"
       aria-haspopup="true"
-    > 
+    >
       <img class="feds-profile-img" src="${avatar}"></img>
     </button>
   `;
@@ -120,10 +115,20 @@ const decorateProfileTrigger = async ({ avatar }) => {
 let keyboardNav;
 const setupKeyboardNav = async () => {
   keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const KeyboardNavigation = await loadBlock('./utilities/keyboard/index.js');
+    const KeyboardNavigation = await loadBlock('./keyboard/index.js');
     const instance = new KeyboardNavigation();
     resolve(instance);
   });
+};
+
+// TODO - when clicking the navigation the dropdowns currently do not close.
+const closeOnClickOutside = (e) => {
+  if (
+    !e.target.closest(selectors.globalNav)
+    || e.target.closest(selectors.curtain)
+  ) {
+    closeAllDropdowns();
+  }
 };
 
 class Gnav {
@@ -148,9 +153,11 @@ class Gnav {
 
   init = async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
+
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
+      loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
@@ -165,13 +172,16 @@ class Gnav {
       await yieldToMain();
       await task();
     }
+
+    document.addEventListener('click', closeOnClickOutside);
   };
 
   decorateTopNav = () => {
+    this.elements.mobileToggle = this.mobileToggle();
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
         <div class="feds-brand-container">
-          ${this.mobileToggle()}
+          ${this.elements.mobileToggle}
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
@@ -183,9 +193,10 @@ class Gnav {
 
   decorateTopnavWrapper = () => {
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
-      ${this.elements.topnav}
-      ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
-    </div>`;
+        ${this.elements.topnav}
+        ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+      </div>`;
+
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
@@ -229,30 +240,28 @@ class Gnav {
         ProfileDropdown,
         Search,
       ] = await Promise.all([
-        loadBlock('./blocks/appLauncher/appLauncher.js'),
-        loadBlock('./blocks/profile/dropdown.js'),
-        loadBlock('./blocks/search/gnav-search.js'),
-        loadStyles('./blocks/profile/dropdown.css'),
-        loadStyles('./blocks/search/gnav-search.css'),
+        loadBlock('../features/appLauncher/appLauncher.js'),
+        loadBlock('../features/profile/dropdown.js'),
+        loadBlock('../features/search/gnav-search.js'),
+        loadStyles('features/profile/dropdown.css'),
+        loadStyles('features/search/gnav-search.css'),
       ]);
       this.ProfileDropdown = ProfileDropdown;
       this.appLauncher = appLauncher;
       this.Search = Search;
       resolve();
     });
+
     return this.ready;
   };
 
   loadIMS = () => {
-    const { locale, imsClientId, env } = getConfig();
+    const { locale, imsClientId, imsScope, env } = getConfig();
     if (!imsClientId) return null;
-    // TODO-1 scopes should be defineable by the consumers
-    // We didn't have a use-case for that so far
-    // TODO-2 we should emit an event after the onReady callback
     window.adobeid = {
       client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
-      locale: locale || 'en-US',
+      scope: imsScope,
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -325,7 +334,6 @@ class Gnav {
   };
 
   decorateAppLauncher = () => {
-    // TODO: review App Launcher component
     // const appLauncherBlock = this.body.querySelector('.app-launcher');
     // if (appLauncherBlock) {
     //   await this.loadDelayed();
@@ -348,8 +356,8 @@ class Gnav {
     const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`;
     const onMediaChange = (e) => {
       if (e.matches) {
-        this.el.classList.remove(IS_OPEN);
-        this.elements.curtain.classList.remove(IS_OPEN);
+        this.el.classList.remove(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
 
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
@@ -371,9 +379,9 @@ class Gnav {
     });
 
     toggle.addEventListener('click', async () => {
-      if (this.el.classList.contains(IS_OPEN)) {
-        this.el.classList.remove(IS_OPEN);
-        this.elements.curtain.classList.remove(IS_OPEN);
+      if (this.el.classList.contains(CONFIG.selectors.isOpen)) {
+        this.el.classList.remove(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
         }
@@ -381,8 +389,8 @@ class Gnav {
 
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
-        this.el.classList.add(IS_OPEN);
-        this.elements.curtain.classList.add(IS_OPEN);
+        this.el.classList.add(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.add(CONFIG.selectors.isOpen);
         this.isDesktop.addEventListener('change', onMediaChange);
         this.loadSearch();
 
@@ -441,10 +449,12 @@ class Gnav {
     `;
 
     const items = this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a');
+
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
       this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
     }
+
     return this.elements.mainNav;
   };
 
@@ -466,18 +476,6 @@ class Gnav {
     return 'link';
   };
 
-  loadDecorateDropdown = async () => {
-    this.decorateDropdownLoaded = this.decorateDropdownLoaded || new Promise(async (resolve) => {
-      const [decorateDropdown] = await Promise.all([
-        loadBlock('./blocks/navDropdown/dropdown.js'),
-        loadStyles('./blocks/navDropdown/dropdown.css'),
-      ]);
-      this.decorateDropdown = decorateDropdown;
-      resolve();
-    });
-    return this.decorateDropdownLoaded;
-  };
-
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -488,8 +486,10 @@ class Gnav {
       const decorateDropdown = async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-        await this.loadDecorateDropdown();
-        this.decorateDropdown({
+
+        const menuLogic = await loadDecorateMenu();
+
+        menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
@@ -628,8 +628,8 @@ class Gnav {
 }
 
 export default async function init(header) {
-  const { locale, imsClientId } = getConfig();
-  // TODO locale.contentRoot is not the fallback we want
+  const { locale } = getConfig();
+  // TODO locale.contentRoot is not the fallback we want if we implement centralized content
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
@@ -638,7 +638,7 @@ export default async function init(header) {
     const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav${imsClientId ? `|${imsClientId}` : ''}`);
+    header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);
     return gnav;
   } catch (e) {
     // eslint-disable-next-line no-console

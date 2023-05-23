@@ -1,13 +1,20 @@
 /* eslint-disable no-restricted-syntax */
-import { getAnalyticsValue, toFragment, decorateCta, yieldToMain } from '../../utilities/utilities.js';
+import {
+  getAnalyticsValue,
+  toFragment,
+  decorateCta,
+  yieldToMain,
+  getFedsPlaceholderConfig,
+} from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
+import { replaceText } from '../../../../features/placeholders.js';
 
 const decorateHeadline = (elem) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   // TODO: proper handling of aria-expanded across devices
   const headline = toFragment`<div
-    class="feds-popup-headline"
+    class="feds-menu-headline"
     role="heading"
     aria-level="2"
     aria-haspopup="true"
@@ -20,10 +27,10 @@ const decorateHeadline = (elem) => {
   headline.addEventListener('click', (e) => {
     e.preventDefault();
 
-    const openPopup = document.querySelector('.feds-popup-headline[aria-expanded = "true"]');
+    const openMenu = document.querySelector('.feds-menu-headline[aria-expanded = "true"]');
 
-    if (openPopup && openPopup !== headline) {
-      openPopup.setAttribute('aria-expanded', 'false');
+    if (openMenu && openMenu !== headline) {
+      openMenu.setAttribute('aria-expanded', 'false');
     }
 
     const currentState = headline.getAttribute('aria-expanded');
@@ -127,8 +134,8 @@ const decoratePromo = (elem) => {
     </div>`;
 };
 
-// Decorate special elements from a popup
-const decoratePopupElement = (elem, index) => {
+// Decorate special elements from a menu
+const decorateMenuElement = (elem, index) => {
   let decoratedElem;
 
   // Decorate link group
@@ -155,21 +162,21 @@ const decoratePopupElement = (elem, index) => {
   return decoratedElem;
 };
 
-const decorateColumns = async (content) => {
+const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
   // The resulting template structure should follow these rules:
-  // * a popup can have multiple columns;
+  // * a menu can have multiple columns;
   // * a column can have multiple sections;
   // * a section can have a headline and a collection of item(s)
   for await (const column of [...content.children]) {
     await yieldToMain();
-    const wrapperClass = hasMultipleColumns ? 'feds-popup-column' : 'feds-popup-content';
-    const itemDestinationClass = hasMultipleColumns ? 'feds-popup-section' : 'feds-popup-column';
+    const wrapperClass = hasMultipleColumns ? 'feds-menu-column' : 'feds-menu-content';
+    const itemDestinationClass = hasMultipleColumns ? 'feds-menu-section' : 'feds-menu-column';
     const wrapper = toFragment`<div class="${wrapperClass}"></div>`;
     let itemDestination = toFragment`<div class="${itemDestinationClass}"></div>`;
-    let popupItems;
+    let menuItems;
     let currIndex = 0;
 
     const resetDestination = () => {
@@ -189,15 +196,16 @@ const decorateColumns = async (content) => {
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
-      if (columnElem.tagName === 'H5') {
-        // When encountering an h5, add the previous section to the column
+      if (columnElem.tagName === separatorTagName) {
+        // When encountering a separator (h5 for header, h2 for footer),
+        // add the previous section to the column
         resetDestination();
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
         const sectionHeadline = decorateHeadline(columnElem);
-        popupItems = toFragment`<div class="feds-popup-items"></div>`;
-        itemDestination.append(sectionHeadline, popupItems);
+        menuItems = toFragment`<div class="feds-menu-items" daa-lh="${sectionHeadline.textContent.trim()}"></div>`;
+        itemDestination.append(sectionHeadline, menuItems);
       } else if (columnElem.classList.contains('gnav-promo')) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
@@ -208,7 +216,7 @@ const decorateColumns = async (content) => {
       } else {
         currIndex += 1;
         // Check whether the current element needs special decoration
-        const decoratedElem = decoratePopupElement(columnElem, currIndex);
+        const decoratedElem = decorateMenuElement(columnElem, currIndex);
 
         // If element has been decorated, remove it
         // from the initial list of column elements
@@ -224,7 +232,7 @@ const decorateColumns = async (content) => {
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
-        const elemDestination = popupItems || itemDestination;
+        const elemDestination = menuItems || itemDestination;
         elemDestination.append(decoratedElem || columnElem);
       }
     }
@@ -236,10 +244,11 @@ const decorateColumns = async (content) => {
   }
 };
 
-// Current limitation: after an h5 is found in a dropdown column,
-// no new sections can be created without a heading
-const decorateDropdown = async (config) => {
-  let popupTemplate;
+// Current limitation: after an h5 (or h2 in the case of the footer)
+// is found in a menu column, no new sections can be created without a heading
+const decorateMenu = async (config) => {
+  let menuTemplate;
+
   if (config.type === 'syncDropdownTrigger') {
     const itemTopParent = config.item.closest('div');
     // The initial heading is already part of the item template,
@@ -247,11 +256,11 @@ const decorateDropdown = async (config) => {
     const initialHeadingElem = itemTopParent.querySelector('h2');
     itemTopParent.removeChild(initialHeadingElem);
 
-    popupTemplate = toFragment`<div class="feds-popup">
+    menuTemplate = toFragment`<div class="feds-popup">
         ${itemTopParent}
       </div>`;
 
-    await decorateColumns(popupTemplate);
+    await decorateColumns({ content: menuTemplate });
   }
 
   if (config.type === 'asyncDropdownTrigger') {
@@ -262,17 +271,22 @@ const decorateDropdown = async (config) => {
     const res = await fetch(`${path}.plain.html`);
     if (res.status !== 200) return;
     const content = await res.text();
-    popupTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-popup-content">
-          ${content}
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    menuTemplate = toFragment`<div class="feds-popup">
+        <div class="feds-menu-content">
+          ${parsedContent}
         </div>
       </div>`;
 
-    await decorateColumns(popupTemplate.firstElementChild);
+    await decorateColumns({ content: menuTemplate.firstElementChild });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 
-  config.template.append(popupTemplate);
+  if (config.type === 'footerMenu') {
+    await decorateColumns({ content: config.item, separatorTagName: 'H2' });
+  }
+
+  config.template?.append(menuTemplate);
 };
 
-export default decorateDropdown;
+export default { decorateMenu, decorateLinkGroup };

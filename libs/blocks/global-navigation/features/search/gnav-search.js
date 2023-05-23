@@ -18,7 +18,7 @@ const CONFIG = {
   },
 };
 
-function debounceCallback(callback, time = 200) {
+function debounceCallback(callback, time = 150) {
   if (typeof callback !== 'function') return undefined;
 
   let timeout = null;
@@ -29,8 +29,8 @@ function debounceCallback(callback, time = 200) {
   };
 }
 
-const getLocale = () => getConfig().locale.ietf;
-const getCountry = () => getLocale()?.split('-').pop() || 'US';
+const { locale } = getConfig();
+const [, country = 'US'] = locale.ietf.split('-');
 
 class Search {
   constructor(config) {
@@ -39,7 +39,10 @@ class Search {
     this.parent = this.trigger.closest('.feds-nav-wrapper');
     this.curtain = config.curtain;
     this.isDesktop = window.matchMedia('(min-width: 900px)');
-
+    const observer = new MutationObserver(() => {
+      this.clearSearchForm();
+    });
+    observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
     this.init();
   }
 
@@ -126,14 +129,12 @@ class Search {
     this.isDesktop.addEventListener('change', () => {
       closeAllDropdowns();
     });
-
-    // TODO: search menu should close on scroll, but this should happen from the general Menu logic
   }
 
   getSuggestions(query = this.query) {
     const { env } = getConfig();
     const subdomain = env === 'prod' ? 'adobesearch' : 'adobesearch-stage';
-    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
+    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${locale.ietf}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
 
     return fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
       .then((data) => data.json())
@@ -287,7 +288,7 @@ class Search {
   }
 
   static getHelpxLink(query) {
-    return `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(query.trim())}&start_index=0&country=${getCountry()}`;
+    return `https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${encodeURIComponent((query || '').trim())}&start_index=0&country=${country}`;
   }
 }
 

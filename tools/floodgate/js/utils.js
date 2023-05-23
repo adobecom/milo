@@ -55,3 +55,29 @@ export function getDocPathFromUrl(url) {
 
   return `${path}.docx`;
 }
+
+export async function delay(milliseconds = 100) {
+  // eslint-disable-next-line no-promise-executor-return
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+export async function postData(url, data) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export function getParams(project, config) {
+  return {
+    adminPageUri: window.location.href,
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.rootFolders,
+    shareUrl: config.sp.shareUrl,
+    fgShareUrl: config.sp.fgShareUrl,
+    rootFolder: config.sp.rootFolders,
+    fgRootFolder: config.sp.fgRootFolder,
+  };
+}

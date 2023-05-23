@@ -2,12 +2,13 @@ import { getConfig, createTag } from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
 
 async function load404() {
-  const { locale } = getConfig();
+  const config = getConfig();
   const main = document.body.querySelector('main');
   main.innerHTML = '';
-  let resp = await fetch(`${locale.contentRoot}/404.plain.html`);
+  let resp = await fetch(`${config.locale.contentRoot}/404.plain.html`);
   if (!resp || !resp.ok) {
-    resp = await fetch('/404.plain.html');
+    const root = config.contentRoot || '';
+    resp = await fetch(`${root}/404.plain.html`);
   }
   const columns = createTag('div', { class: 'columns-404' });
   const html = await resp.text();
