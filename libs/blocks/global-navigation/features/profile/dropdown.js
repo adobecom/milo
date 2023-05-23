@@ -1,5 +1,5 @@
 import { getConfig } from '../../../../utils/utils.js';
-import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns } from '../../utilities/utilities.js';
+import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 
 const getLanguage = (ietfLocale) => {
@@ -54,7 +54,7 @@ class ProfileDropdown {
     this.sections = sections;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
-    this.init();
+    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()');
   }
 
   async init() {
@@ -78,8 +78,6 @@ class ProfileDropdown {
         this.placeholders.manageEnterprise,
         this.placeholders.profileAvatar,
       ],
-      // TODO: sanity checks if the user is logged in and mandatory properties are set.
-      // If not, add logs providing guidance for developers
       { displayName: this.profileData.displayName, email: this.profileData.email },
     ] = await Promise.all([
       replaceKeyArray(
