@@ -629,21 +629,85 @@ TODO: Need to check if we can skip this somehow.
   padding-bottom: 0px !important;
 }
 
-.consonant-OneHalfCard-text,
 .consonant-OneHalfCard-title {
-  text-align: center !important;
-  font-size: 14px !important;
-  font-weight: 800;
-  line-height: 1.375rem;
+  display: none;
+  visibility: hidden;
 }
 
-.consonant-OneHalfCard-text {
-  font-size: .675rem !important;
+.quiz-container .consonant-OneHalfCard-text {
+  font-size: 16px;
+  color: #000;
+}
+
+.card.selected .consonant-OneHalfCard-text {
+  font-weight: bold;
+  color: #3273de;
+}
+
+.quiz-container .card.selected {
+  /* outline: 1px solid #3273de; */
+  
+}
+
+.quiz-container .consonant-OneHalfCard-inner {
+  padding: 20px;
+}
+
+@media screen and (min-width: 900px) {
+  .consonant-OneHalfCard-text,
+  .consonant-OneHalfCard-title {
+    text-align: center !important;
+    font-size: 14px !important;
+    font-weight: 800;
+    line-height: 1.375rem;
+    display: block;
+    visibility: visible;    
+  }
+}
+
+/* .consonant-OneHalfCard-text {
+  font-size: .675rem ;
   color: black !important;
+} */
+
+.quiz-container .quiz-options-container {
+  gap: 0px !important;
+  display: flex; 
+  flex-direction: column;
 }
 
-.quiz-options-container {
-  gap: 0px !important;
+.milo-card-wrapper {
+  padding: 20px;
+}
+
+.quiz-container .consonant-CardsGrid--5up .card { 
+  min-width: 100%;
+  max-width: 100%;
+  margin: 8px auto;
+  border-radius: 10px;
+}
+
+@media screen and (max-width: 900px) {
+  .consonant-OneHalfCard {
+    padding-bottom: 0 !important;
+  }
+}
+
+
+.quiz-container .consonant-CardsGrid--5up .card > div { 
+  width: 100%;
+}
+.quiz-container .consonant-CardsGrid--5up .card div div {
+  text-align: right !important;
+}
+@media screen and (min-width: 900px) {
+  .quiz-container .quiz-options-container {
+    display: grid;
+  }
+
+  .milo-card-wrapper {
+    padding: 0;
+  }
 }
 
 .quiz-options-container .quiz-option.disabled {
@@ -665,49 +729,65 @@ TODO: Need to check if we can skip this somehow.
   opacity: 0.5;
 }
 
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option {
-  background-color: hsla(0, 0%, 98%, .8);
-  min-width: 9.625rem;
-  min-height: 13.75rem;
-  width: 9.625rem;
-  margin: 0.9375rem;
-  box-shadow: 10px 10px 6px 0 rgb(0 0 0 / 16%);
-  border: 1px solid #fff;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  height: 10rem;
+
+.quiz-container .consonant-OneHalfCard-inner {
+  flex-direction: row;
+}  
+
+@media screen and (min-width: 900px) {
+  .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option {
+    background-color: hsla(0, 0%, 98%, .8);
+    min-width: 9.625rem;
+    min-height: 13.75rem;
+    width: 9.625rem;
+    margin: 0.9375rem;
+    box-shadow: 10px 10px 6px 0 rgb(0 0 0 / 16%);
+    border: 1px solid #fff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    height: 10rem;
+  }
+
+  .quiz-container .consonant-OneHalfCard-inner {
+    flex-direction: column;
+  }  
+
 }
 
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected {
-  background-color: #fafafa;
-  outline: none;
-}
 
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected .consonant-OneHalfCard-title {
+/* .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected .consonant-OneHalfCard-title {
   color: #3273de !important;
   font-weight: 900;
 }
 
 .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected .consonant-OneHalfCard-text {
   color: #3273de !important;
-}
+} */
 
 .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option:hover {
   background-color: #fff
 }
 
-.consonant-OneHalfCard-inner {
-  background-color: transparent !important;
+.quiz-container .consonant-OneHalfCard-inner {
+  background-color: transparent;
+  border-radius: 10px;
+
 }
 
 .consonant-OneHalfCard-image {
-  display: flex !important;
-  padding: 0 !important;
-  background: transparent !important;
-  width: auto !important;
-  height: 7.875rem !important;
-  align-items: center;
-  justify-content: center;
+  margin-right: 16px;
+}
+
+@media screen and (min-width: 900px) {
+  .consonant-OneHalfCard-image {
+    display: flex !important;
+    padding: 0 !important;
+    background: transparent !important;
+    width: auto !important;
+    height: 7.875rem !important;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .consonant-OneHalfCard-cover {
