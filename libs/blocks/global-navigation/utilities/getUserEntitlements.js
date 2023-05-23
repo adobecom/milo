@@ -4,19 +4,11 @@ import { getConfig } from '../../../utils/utils.js';
 const API_WAIT_TIMEOUT = 10000;
 const entitlements = {};
 
-const getAcceptLanguage = (locale) => {
-  let languages = [];
-  if (!locale || Object.keys(locale).length === 0) {
-    return languages;
-  }
-
-  languages = [
-    `${locale.language}-${locale.country.toUpperCase()}`,
-    `${locale.language};q=0.9`,
-    'en;q=0.8',
-  ];
-  return languages;
-};
+const getAcceptLanguage = (locale = 'en-US') => [
+  `${locale}`,
+  `${locale.split('-')[0]};q=0.9`,
+  'en;q=0.8',
+].join(',');
 
 const getQueryParameters = (params) => {
   const query = [];
@@ -94,9 +86,10 @@ const mapSubscriptionCodes = (offers) => {
   };
 };
 
-const getSubscriptions = async ({ queryParams, locale }) => {
+const getSubscriptions = async ({ queryParams }) => {
+  const config = getConfig();
   const profile = await window.adobeIMS.getProfile();
-  const apiUrl = getConfig().env.name === 'prod'
+  const apiUrl = config.env.name === 'prod'
     ? `https://www.adobe.com/aos-api/users/${profile.userId}/subscriptions`
     : `https://www.stage.adobe.com/aos-api/users/${profile.userId}/subscriptions`;
   const res = await fetch(`${apiUrl}${queryParams}`, {
@@ -107,7 +100,7 @@ const getSubscriptions = async ({ queryParams, locale }) => {
     headers: {
       Authorization: `Bearer ${window.adobeIMS.getAccessToken().token}`,
       'X-Api-Key': window.adobeIMS.adobeIdData.client_id,
-      'Accept-Language': getAcceptLanguage(locale).join(','),
+      'Accept-Language': getAcceptLanguage(config.locale.ietf),
     },
   })
     .then((response) => (response.status === 200 ? response.json() : emptyEntitlements));
@@ -118,12 +111,10 @@ const getSubscriptions = async ({ queryParams, locale }) => {
  * @description Return the JIL User Entitlements
  * @param {object} object required params
  * @param {array} object.params array of name value query parameters [{name: 'Q', value: 'PARAM'}]
- * @param {object} object.locale {country: 'CH', language: 'de'}
  * @param {string} object.format format function, raw or default
  * @returns {object} JIL Entitlements
  */
-// TODO the locale could use the milo format, currently that's an AEM relic.
-const getUserEntitlements = async ({ params, locale, format } = {}) => {
+const getUserEntitlements = async ({ params, format } = {}) => {
   if (!window.adobeIMS?.isSignedInUser()) return Promise.resolve(emptyEntitlements);
 
   const queryParams = getQueryParameters(params);
@@ -137,8 +128,7 @@ const getUserEntitlements = async ({ params, locale, format } = {}) => {
 
   entitlements[queryParams] = entitlements[queryParams]
    || new Promise((resolve) => {
-     // TODO we might need to format data for analytics
-     getSubscriptions({ queryParams, locale })
+     getSubscriptions({ queryParams })
        .then((data) => resolve(data))
        .catch(() => resolve(emptyEntitlements));
    });
