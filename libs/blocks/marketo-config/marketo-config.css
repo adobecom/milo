@@ -1,0 +1,132 @@
+@import url('./components.css');
+
+/* stylelint-disable selector-class-pattern */
+.marketo .mktoForm {
+  opacity: 1!important;
+  visibility: visible!important;
+}
+
+:root {
+  --notch-size: 12px;
+}
+
+.hide {
+  display: none;
+}
+
+.tool-header {
+  display: grid;
+  grid-template-columns: 380px auto 1fr auto;
+  align-items: end;
+  gap: 24px;
+  padding-top: 36px;
+  position: relative;
+}
+
+.tool-header::after {
+  content: '';
+  position: absolute;
+  right: -16px;
+  bottom: -60px;
+  width: 200px;
+  height: 200px;
+  background-image: url(../../../img/ui/copy-bg.svg);
+  z-index: -1;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.tool-title {
+  position: relative;
+  border: 1px solid;
+  z-index: -2;
+  margin-bottom: 16px;
+  grid-column: 2;
+}
+
+.tool-title h1::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  z-index: -1;
+  left: -1px;
+  right: -1px;
+  top: 18px;
+  bottom: 18px;
+}
+
+.tool-title h1::before {
+  content: '';
+  position: absolute;
+  background: #fff;
+  z-index: -1;
+  top: -1px;
+  bottom: -1px;
+  right: 18px;
+  left: 18px;
+}
+
+.tool-header button.copy-config {
+  grid-column: 4;
+  margin: 0 16px 16px;
+  outline: transparent solid 0px;
+  transition:outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: adobe-clean, sans-serif;
+  color: #FFF;
+  background: #FF1593;
+  background-image: url(../../../img/ui/icon-copy.svg);
+  background-repeat: no-repeat;
+  background-size: 18px;
+  background-position: 12px center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px 0 36px;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
+}
+
+.tool-header button.copy-config:hover {
+  background-color: #ff1563;
+}
+
+.tool-header button.copy-config.is-error {
+  transition: background-color .5s;
+  background-color: red;
+}
+
+.tool-header button.copy-config.is-success {
+  transition: background-color .5s;
+  background-color: green;
+}
+
+.tool-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+}
+
+.config-panel {
+  border-top: 8px solid black;
+}
+
+.content-panel {
+  border-top: 2px solid black;
+  padding-top: 12px;
+}
+
+.tool-header h1 {
+  margin: 0;
+  position: relative;
+  font-weight: 700;
+  font-size: 32px;
+  padding: 36px 36px 12px 12px;
+}
