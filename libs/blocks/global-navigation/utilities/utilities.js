@@ -1,4 +1,6 @@
-import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
+
+loadLana();
 
 export const selectors = {
   globalNav: '.global-navigation',
@@ -83,19 +85,22 @@ export function loadBlock(path) {
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
-  // eslint-disable-next-line no-async-promise-executor
-  cachedDecorateMenu = cachedDecorateMenu || new Promise(async (resolve) => {
-    const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
-      loadBlock('./menu/menu.js'),
-      loadStyles('utilities/menu/menu.css'),
-    ]);
+  if (cachedDecorateMenu) return cachedDecorateMenu;
 
-    resolve({
-      decorateMenu,
-      decorateLinkGroup,
-    });
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
   });
 
+  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+    loadBlock('./menu/menu.js'),
+    loadStyles('utilities/menu/menu.css'),
+  ]);
+
+  resolve({
+    decorateMenu,
+    decorateLinkGroup,
+  });
   return cachedDecorateMenu;
 }
 
@@ -153,3 +158,16 @@ export function expandTrigger({ element } = {}) {
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
+  clientId: 'feds-milo',
+  sampleRate: 1,
+});
+
+export const logErrorFor = async (fn, message) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e });
+  }
+};

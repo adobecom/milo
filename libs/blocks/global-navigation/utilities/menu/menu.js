@@ -5,6 +5,7 @@ import {
   decorateCta,
   yieldToMain,
   getFedsPlaceholderConfig,
+  logErrorFor,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
@@ -246,7 +247,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
 // Current limitation: after an h5 (or h2 in the case of the footer)
 // is found in a menu column, no new sections can be created without a heading
-const decorateMenu = async (config) => {
+const decorateMenu = (config) => logErrorFor(async () => {
   let menuTemplate;
 
   if (config.type === 'syncDropdownTrigger') {
@@ -287,6 +288,6 @@ const decorateMenu = async (config) => {
   }
 
   config.template?.append(menuTemplate);
-};
+}, 'Decorate menu failed');
 
 export default { decorateMenu, decorateLinkGroup };
