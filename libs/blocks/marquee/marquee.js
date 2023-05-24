@@ -47,10 +47,15 @@ const decorateBlockBg = (block, node) => {
       decorateVideo(child);
     }
 
-    if (child.querySelector('img') && child.childElementCount == 2) {
+    if (child.querySelector('img')) {
       const image = child.querySelector('img');
-      const text = child.querySelectorAll('p')[1].textContent;
-      const points = text.slice(text.indexOf(':') + 1).split(',');
+      let text = '';
+      if (child.childElementCount == 2) {
+        text = child.querySelectorAll('p')[1].textContent;
+      } else if (child.textContent) {
+        text = child.textContent;
+      }
+      const points = text?.slice(text.indexOf(':') + 1).split(',');
       const [x,y = ''] = points
       image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
     }
