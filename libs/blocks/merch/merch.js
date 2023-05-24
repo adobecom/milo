@@ -91,10 +91,13 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */
-    .then(() => loadScript(scriptUrl))
-    .then(() => {
-      runTacocat(tacocatEnv, country, language);
-      resolve();
+    .then(() => loadScript(scriptUrl).then(() => true))
+    .catch(() => false)
+    .then((success) => {
+      if (success) {
+        runTacocat(tacocatEnv, country, language);
+      }
+      resolve(success);
     });
 });
 
