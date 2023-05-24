@@ -6,7 +6,7 @@ import { lanaLog, logErrorFor } from '../utilities.js';
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
   const withoutBreadcrumbs = [
     ...document.querySelectorAll(`
-      ${selectors.brand}, 
+      ${selectors.brand},
       ${selectors.mainNavToggle},
       ${selectors.mainNavItems},
       ${selectors.searchTrigger},
