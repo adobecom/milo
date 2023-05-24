@@ -283,7 +283,7 @@ class Gnav {
     if (!imsClientId) return null;
     window.adobeid = {
       client_id: imsClientId,
-      scope: imsScope,
+      scope: imsScope || 'AdobeID,openid,gnav',
       locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
