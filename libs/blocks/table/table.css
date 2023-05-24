@@ -27,8 +27,8 @@
   border-bottom: none;
 }
 
-.table.merch .col.highlight,
-.table .col.highlight {
+.table.merch .col-highlight,
+.table .col-highlight {
   font-size: var(--type-body-s-size);
   background-color: #F3D949;
   border: 1px solid #F3D949;
@@ -37,11 +37,6 @@
   border-top-right-radius: 15px;
   border-top-left-radius: 15px;
   text-align: center;
-}
-
-.table .col-1 {
-  border: 1px red solid !important;
-  display: none;
 }
 
 .table > :nth-child(n+3).row .col {
@@ -104,12 +99,29 @@
   border: none;
 }
 
-.table .row-2 .col-heading.left-top-rounded {
+.table:not(.merch) .sectionHead > :not(:first-child) {
+  border-left-color: transparent;
+}
+
+.table:not(.merch) .sectionHead > :not(:last-child) {
+  border-right-color: transparent;
+}
+
+.table .light {
+  color: var(--color-white);
+}
+
+/*to fix this*/
+.table .row-2 .col-heading.left-top-rounded:not(.no-rounded) {
   border-top-left-radius: 15px;
 }
 
-.table .row-2 .col-2.col-heading {
+.table .row-2 .col-1.col-heading {
   border-bottom: 1px solid #D9D9D9;
+}
+
+.table .row-2 .col-1.col-heading:not(.no-rounded) {
+  border-top-left-radius: 15px;
 }
 
 .table .row-2 .col-heading:last-child {
@@ -120,13 +132,13 @@
   border-top-right-radius: 0;
 }
 
-.table .row > :nth-child(n+3).col,
-.table .row-2 .col.col-2 {
+.table .row > :nth-child(n+2).col,
+.table .row-2 .col.col-1 {
   text-align: center;
   font-size: var(--type-body-xxs-lh);
 }
 
-.table .row-2 .col:nth-child(n+2) {
+.table .row-2 .col:nth-child(n+1) {
   background-color: white;
   padding: 40px 30px;
 }
@@ -143,7 +155,8 @@
   margin: var(--spacing-xxs);
 }
 
-.table .row:not(.row-1, .row-2) .col-2 {
+.table .row:not(.row-1, .row-2) .col-1,
+.table.merch .row:not(.row-1, .row-2) .col-merch {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -170,49 +183,57 @@
 /*}*/
 
 /*---hover---*/
-.table .col.hover {
-  border-left-color: #357BEB;
-  border-right-color: #357BEB;
-}
+@media (min-width: 769px) {
+  .table .col.hover {
+    border-left-color: #357BEB;
+    border-right-color: #357BEB;
+  }
 
-.table .row-1 .col:not(.highlight) {
-  border-top-color: transparent;
-  border-left-color: transparent;
-  border-right-color: transparent;
-}
+  .table .row-1 .col:not(.col-highlight) {
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-right-color: transparent;
+  }
 
-.table .row-1 .highlight.hover {
-  border-top-color: #357BEB !important;
-  border-left-color: #357BEB !important;
-  border-right-color: #357BEB !important;
-}
+  .table .row-1 .col-highlight.hover {
+    border-top-color: #357BEB !important;
+    border-left-color: #357BEB !important;
+    border-right-color: #357BEB !important;
+  }
 
-.table .row-2 .col:not(.highlight).hover {
-  border-top-color: #357BEB;
-}
+  .table .row-2 .col:not(.col-highlight).hover {
+    border-top-color: #357BEB;
+  }
 
-.table .row:last-child .col.hover {
-  border-bottom-color: #357BEB;
-}
+  .table .row:last-child .col.hover {
+    border-bottom-color: #357BEB;
+  }
 
-.table .row .col.no-top-border.hover {
-  border-top-color: #D9D9D9;
-}
+  .table .row .col.no-top-border.hover {
+    border-top-color: #D9D9D9;
+  }
 
-.table .row.sectionHead .col.hover {
-  border-right: 1px solid #357BEB;
-  border-left: 1px solid #357BEB;
-}
+  .table .row.sectionHead .col.hover {
+    border-right: 1px solid #357BEB;
+    border-left: 1px solid #357BEB;
+  }
 
-.table .row .col-heading.hover,
-.table .row:not(.sectionHead) .col:not(.highlight).hover {
-  background-color: #F8F8F8;
+  .table .row .col-heading.hover,
+  .table .row:not(.sectionHead) .col:not(.col-highlight).hover {
+    background-color: #F8F8F8;
+  }
+
+  .table.merch .col.hover {
+    border-left-color: #357BEB;
+    border-right-color: #357BEB;
+  }
+
+  .table.merch .col.border-bottom.hover {
+    border-bottom-color: #357BEB;
+  }
 }
 
 /*---scroll---*/
-/*todo: when hover col if last sectionHeader is not expanded bottom-border ov the section header should be blue on hover*/
-/*if everything is scrolled the row-2 ele should have border-bottom blue on hover*/
-
 .table .row-2 {
   position: sticky;
   top: 64px;
@@ -253,99 +274,37 @@
     grid-column: 1 / x;
   }
 
-  .table .row-2 .col:nth-child(n+2) {
+  .table .row-2 .col:nth-child(n+1) {
     padding: 20px;
   }
 }
 
-/*table merch css will fix after fixing merch table*/
-/*.table.merch > .row {*/
-/*  display: grid;*/
-/*  gap: var(--spacing-m);*/
-/*  !* margin-bottom: 0; *!*/
-/*  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));*/
-/*}*/
+/*table merch*/
+.table.merch .row-2 .col-heading:not(.no-rounded) {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
 
-/*.table .light {*/
-/*  color: var(--color-white);*/
-/*}*/
+.table.merch .row .sectionTitle strong {
+  text-align: left;
+}
 
-/*.table div[class*="col-"],*/
-/*.table.merch div[class*="col-"] {*/
-/*  border-right: 1px #d9d9d9 solid;*/
-/*  border-left: 1px #d9d9d9 solid;*/
-/*  border-bottom: 1px #d9d9d9 solid;*/
-/*}*/
+.table.merch .row .col:not(.col-highlight) {
+  text-align: left;
+  font-size: var(--type-body-xxs-lh);
+}
 
-/*.table .row-header .col {*/
-/*  border-top: 1px #d9d9d9 solid;*/
-/*}*/
+.table.merch .row:not(.row-1, .row-2) .col-merch {
+  font-size: var(--type-body-s-size);
+}
 
-/*.table .row-highlight [class*="col-"],*/
-/*.table.merch .row-highlight [class*="col-"] {*/
-/*  border-right: none;*/
-/*  border-left: none ;*/
-/*}*/
+.table.merch .col.no-borders {
+  visibility: hidden;
+}
 
-/*.table.merch .row-1  {*/
-/*  border-left: gray;*/
-/*}*/
-
-/*.table .col-highlight,*/
-/*.table.merch .col-highlight {*/
-/*  background-color: #f3d94a;*/
-/*  text-transform: capitalize;*/
-/*  border-top-right-radius: 15px;*/
-/*  border-top-left-radius: 15px;*/
-/*  text-align: center;*/
-/*  padding: 5px;*/
-/*}*/
-
-/*.empty-header .row.row-1 .col.col-1{*/
-/*  border-bottom: none !important;*/
-/*}*/
-
-/*.empty-header .row.row-2 .col.col-1 {*/
-/*  border-left: none;*/
-/*}*/
-
-/*.table .group-head .group-col {*/
-/*  background-color: #E6E6E6;*/
-/*  padding-top: 24px;*/
-/*  padding-bottom: 24px;*/
-/*}*/
-
-/*.table.merch .group-col {*/
-/*  background-color: #F8F8F8;*/
-/*}*/
-
-/*.table.table-sticky-on .row-highlight,*/
-/*.table.table-sticky-on .row-header {*/
-/*  z-index: 2;*/
-/*  position: fixed;*/
-/*}*/
-
-/*.table.table-sticky-on .row-highlight > div,*/
-/*.table.table-sticky-on .row-header > div {*/
-/*  background-color: var(--color-white);*/
-/*}*/
-
-/*.table .row:not(.row-header) .col-1 {*/
-/*  display: flex;*/
-/*  justify-content: space-between;*/
-/*}*/
-
-/*.table .row:not(.row-header) .col-1 p {*/
-/*  margin: 0;*/
-/*}*/
-
-/*@media (min-width: 769px) {*/
-/*  .table .row-highlight .col-1 {*/
-/*    border-bottom: none;*/
-/*  }*/
-
-/*  .table .row-header .col-1 {*/
-/*    border-top: none;*/
-/*    border-left: none;*/
-/*  }*/
-/*}*/
+.table.merch .row-1 .col-heading {
+  position: sticky;
+  top: 64px;
+  z-index: 5;
+  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
