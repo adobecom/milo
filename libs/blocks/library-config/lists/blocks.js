@@ -17,17 +17,8 @@ function getBlockName(block) {
   return classes.length > 0 ? `${name} (${classes.join(', ')})` : name;
 }
 
-function getTable(block, name, path) {
-  const url = new URL(path);
-  block.querySelectorAll('img').forEach((img) => {
-    const srcSplit = img.src.split('/');
-    const mediaPath = srcSplit.pop();
-    img.src = `${url.origin}/${mediaPath}`;
-    const { width, height } = img;
-    const ratio = width > 200 ? 200 / width : 1;
-    img.width = width * ratio;
-    img.height = height * ratio;
-  });
+function getTable(block) {
+  const name = getBlockName(block);
   const rows = [...block.children];
   const maxCols = rows.reduce((cols, row) => (
     row.children.length > cols ? row.children.length : cols), 0);
@@ -51,21 +42,140 @@ function getTable(block, name, path) {
   return table.outerHTML;
 }
 
-function getBlockTags(block) {
-  if (block.nextElementSibling?.className !== 'library-metadata') {
-    return getBlockName(block);
-  }
-  const libraryMetadata = getMetadata(block.nextElementSibling);
-  return libraryMetadata?.searchtags?.text
-    ? `${libraryMetadata?.searchtags?.text} ${getBlockName(block)}`
-    : getBlockName(block);
+function decorateImages(element, path) {
+  if (!element || !path) return;
+  const url = new URL(path);
+  element.querySelectorAll('img').forEach((img) => {
+    const srcSplit = img.src.split('/');
+    const mediaPath = srcSplit.pop();
+    img.src = `${url.origin}/${mediaPath}`;
+    const { width, height } = img;
+    const ratio = width > 200 ? 200 / width : 1;
+    img.width = width * ratio;
+    img.height = height * ratio;
+  });
 }
 
-function isMatchingBlock(pageBlock, query) {
-  const tagsString = getBlockTags(pageBlock);
+export function getHtml(container, path) {
+  if (!container || !path) return '';
+  return container.elements.reduce((acc, element) => {
+    decorateImages(element, path);
+    const isBlock = element.nodeName === 'DIV' && element.className;
+    const content = isBlock ? getTable(element) : element.outerHTML;
+    return `${acc}${content}`;
+  }, '');
+}
+
+export function getSearchTags(container) {
+  if (!container || !container.elements) return '';
+  const firstBlock = container.elements[0];
+  if (container['library-metadata']) {
+    const libraryMetadata = getMetadata(container['library-metadata']);
+    return libraryMetadata?.searchtags?.text
+      ? `${libraryMetadata?.searchtags?.text} ${getBlockName(firstBlock)}`
+      : getBlockName(firstBlock);
+  }
+  return getBlockName(firstBlock);
+}
+
+export function isMatching(container, query) {
+  const tagsString = getSearchTags(container);
   if (!query || !tagsString) return false;
   const searchTokens = query.split(' ');
   return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
+}
+
+export function getContainers(doc) {
+  /* A page describing blocks is assumed to have the following representation
+  (e.g. the page at /docs/library/blocks/carousel.plain.html):
+  <body>
+    <div>
+      <p>Single block container</p>
+      <h2>...</h2>
+      <div class="block1">
+      <div class="block2">
+      <div class="library-metadata">
+    </div>
+    <div>
+      <h2>...</h2>
+      <p>Multiple block container</p>
+      <div class="library-container-start"></div>
+      <p>...</p>
+      <div class="block3"></div>
+    </div>
+    ...
+    <div>
+      <h2>...</h2>
+      <p>...</p>
+      <div class="block4"></div>
+      <div class="library-container-end"></div>
+      <div class="library-metadata">
+      ...
+    </div>
+    ...
+  </body>
+
+  The page html is parsed into sections (div children of body) and
+  sub-sections (children of section).
+  Parsing the above html results in the following container array:
+  [{
+      elements: [<div class="block1">],
+    }, {
+      elements: [<div class="block2">],
+      library-metadata: <div class="library-metadata">
+    }, {
+      elements: [<p>, <div class="block3">, <p>---</p>, ...,<h2>, <p>, <div class="block4">],
+      library-metadata: <div class="library-metadata">
+    },
+    ...
+  ]
+   */
+  if (!doc || !doc.body) return [];
+  const sections = doc.body.children;
+  if (sections.length === 0) return [];
+  const containers = [];
+  const sectionBreak = doc.createElement('p');
+  sectionBreak.innerHTML = '---';
+  let container = { elements: [] };
+  let withinContainer = false;
+  for (let i = 0; i < sections.length; i += 1) {
+    const section = sections[i];
+    const subSections = section.children;
+    // eslint-disable-next-line no-continue
+    if (subSections.length === 0) continue;
+    for (let j = 0; j < subSections.length; j += 1) {
+      const subSection = subSections[j];
+      if (subSection.className === 'library-container-start') {
+        withinContainer = true;
+      } else if (subSection.className === 'library-container-end') {
+        const nextSubSection = subSections[j + 1];
+        if (nextSubSection && nextSubSection.className === 'library-metadata') {
+          container['library-metadata'] = nextSubSection;
+          j += 1;
+        }
+        containers.push(container);
+        container = { elements: [] };
+        withinContainer = false;
+      } else if (withinContainer) {
+        container.elements.push(subSection);
+      } else if (subSection.nodeName === 'DIV' && subSection.className) {
+        // single block container
+        container.elements.push(subSection);
+        const nextSubSection = subSections[j + 1];
+        if (nextSubSection && nextSubSection.className === 'library-metadata') {
+          container['library-metadata'] = nextSubSection;
+          j += 1;
+        }
+        containers.push(container);
+        container = { elements: [] };
+      }
+    }
+    // when the container has multiple elements: add a section break after each section
+    if (withinContainer) {
+      container.elements.push(sectionBreak);
+    }
+  }
+  return containers;
 }
 
 export default async function loadBlocks(blocks, list, query) {
@@ -98,32 +208,28 @@ export default async function loadBlocks(blocks, list, query) {
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    const pageBlocks = doc.body.querySelectorAll('div[class]');
-    let matchingBlockFound = false;
-    pageBlocks.forEach((pageBlock) => {
-      // don't display the library-metadata block used to set the block search tags
-      if (pageBlock.className === 'library-metadata') {
-        return;
-      }
+
+    const containers = getContainers(doc);
+    let matchingContainerFound = false;
+
+    containers.forEach((container) => {
       const item = document.createElement('li');
       const name = document.createElement('p');
-      name.textContent = getAuthorName(pageBlock) || getBlockName(pageBlock);
+      name.textContent = getAuthorName(container.elements[0])
+        || getBlockName(container.elements[0]);
       const copy = document.createElement('button');
       copy.addEventListener('click', (e) => {
-        let table = getTable(pageBlock, getBlockName(pageBlock), block.path);
-        table = pageBlock.className === 'section-metadata'
-          ? `${table} ---`
-          : table;
+        const containerHtml = getHtml(container, block.path);
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
-        const blob = new Blob([table], { type: 'text/html' });
+        const blob = new Blob([containerHtml], { type: 'text/html' });
         createCopy(blob);
       });
       item.append(name, copy);
 
       if (query) {
-        if (isMatchingBlock(pageBlock, query)) {
-          matchingBlockFound = true;
+        if (isMatching(container, query)) {
+          matchingContainerFound = true;
         } else {
           item.classList.add('is-hidden');
         }
@@ -131,7 +237,7 @@ export default async function loadBlocks(blocks, list, query) {
 
       blockList.append(item);
     });
-    if (query && matchingBlockFound) {
+    if (query && matchingContainerFound) {
       title.classList.remove('is-hidden');
       title.classList.add('is-open');
     }
