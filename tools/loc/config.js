@@ -15,6 +15,7 @@ import { getUrlInfo } from './utils.js';
 const LOC_CONFIG = '/drafts/localization/configs/config.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
+const SHAREPOINT_API = 'https://adobe.sharepoint.com';
 
 let decoratedConfig;
 
@@ -173,6 +174,17 @@ function getSharepointConfig(config) {
   };
 }
 
+function getSharepointRestConfig(config) {
+  const {clientId, authority} = config.sp.data[0];
+  return {
+    auth: {
+      clientId,
+      authority,
+      redirectUri: '/tools/loc/spauth' 
+    }
+  };
+}
+
 function getHelixAdminConfig() {
   const adminServerURL = 'https://admin.hlx.page';
   return {
@@ -186,7 +198,7 @@ function getHelixAdminConfig() {
 async function getConfig() {
   if (!decoratedConfig) {
     const urlInfo = getUrlInfo();
-    if (urlInfo.isValid()) {
+    if (true) {
       const configPath = `${urlInfo.origin}${LOC_CONFIG}`;
       const configJson = await fetchConfigJson(configPath);
       const locales = getLocalesConfig(configJson);
@@ -197,6 +209,7 @@ async function getConfig() {
         decoratedLocales,
         glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
         sp: getSharepointConfig(configJson),
+        sprest: getSharepointRestConfig(configJson),
         admin: getHelixAdminConfig(),
         getLivecopiesForLanguage(language) {
           const localeConfig = decoratedLocales[language];
@@ -216,4 +229,5 @@ export {
   fetchConfigJson,
   getSharepointConfig,
   getHelixAdminConfig,
+  getSharepointRestConfig,
 };

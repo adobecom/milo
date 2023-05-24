@@ -1,0 +1,83 @@
+<html lang="en">
+  <head>
+    <title>Version History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <style>
+      .form-field {
+        margin-bottom: 1em;
+        margin-top: 1em;
+      }
+
+      .form-field label {
+        display: block;
+        margin-bottom: 0.5em;
+        font-weight: bold;
+      }
+
+      .form-field textarea {
+        display: inline-block;
+        width: 500px;
+        height: 5em;
+        padding: 0.5em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        resize: vertical;
+      }
+
+      #publish {
+        margin-bottom: 15px;
+        cursor: pointer;
+      }
+    </style>
+    <link rel="stylesheet" href="../loc/translation.css" />
+    <link rel="stylesheet" href="../floodgate/css/floodgate.css" />
+    <script src="../loc/lib/msal-browser.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <h1 class="container">Version History</h1>
+    </header>
+    <main>
+      <div class="project-overview">
+        <div class="container">
+          <h2 class="project-name">
+            <span class="title">Document Path</span>
+            <span id="project-url"></span>
+          </h2>
+        </div>
+      </div>
+      <div class="container">
+        <div class="subhead">
+          <div id="loading" class="hidden">
+            <div id="status" class="modal level-4 wait">
+              Application is loading...
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="form-field">
+          <label for="comment">Comment:</label>
+          <textarea id="comment" name="comment"></textarea>
+        </div>
+        <button id="publish">Add Version</button>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Modified Date</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody id="addVersionHistory"></tbody>
+        </table>
+      </div>
+    </main>
+    <script type="module">
+      import init from './js/version-history.js';
+      init();
+    </script>
+  </body>
+</html>

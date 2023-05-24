@@ -51,10 +51,46 @@ async function connect() {
   return connected;
 }
 
+async function connectWithSPRest() {
+  const { sprest } = await getConfig();
+  const msalClient = new msal.PublicClientApplication(sprest);
+  const loginRequest = {
+    scopes: ["https://adobe.sharepoint.com/.default"] // SharePoint API scope
+  };
+  const response = await msalClient.loginPopup(loginRequest);
+  accessToken = response.accessToken;
+}
+
 function validateConnection() {
   if (!accessToken) {
     throw new Error('You need to sign-in first');
   }
+}
+
+function getAuthorizedRequestOptionSP({
+  body = null,
+  json = true,
+  method = 'GET',
+} = {}) {
+  validateConnection();
+  const bearer = `Bearer ${accessToken}`;
+  const headers = new Headers();
+  headers.append('Authorization', bearer);
+  if (json) {
+    headers.append('Accept', 'application/json; odata=nometadata');
+    headers.append('Content-Type', 'application/json;odata=verbose');
+  }
+
+  const options = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    options.body = typeof body === 'string' ? body : JSON.stringify(body);
+  }
+
+  return options;
 }
 
 function getAuthorizedRequestOption({
@@ -527,4 +563,6 @@ export {
   fetchWithRetry,
   getFileNameFromPath,
   getFolderFromPath,
+  connectWithSPRest,
+  getAuthorizedRequestOptionSP,
 };

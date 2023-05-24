@@ -1,3 +1,4 @@
+import { getConfig } from '../../tools/loc/config';
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // manifest v3
@@ -22,6 +23,19 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  const addVersion = async (a,b,c) => {
+    console.log('hello');
+    // const { sprest } = await getConfig();
+    // console.log(sprest);
+    // const msalClient = new msal.PublicClientApplication(sprest);
+    // const loginRequest = {
+    //   scopes: ["https://adobe.sharepoint.com/.default"] // SharePoint API scope
+    // };
+    // const response = await msalClient.loginPopup(loginRequest);
+    // accessToken = response.accessToken;
+    // console.log(accessToken);
+  }
+
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
   document.addEventListener('send-to-caas', async (e) => {
     const { host, project, branch, repo, owner } = e.detail;
@@ -35,4 +49,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
+  sk.addEventListener('published', addVersion);
 }
