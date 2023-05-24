@@ -232,8 +232,8 @@ const checkPublishStatus = async (publishingModal) => {
   return true;
 };
 
-const checkIms = async (publishingModal, loadScript) => {
-  const accessToken = await getImsToken(loadScript);
+const checkIms = async (publishingModal, loadScript, imsEnv = 'prod') => {
+  const accessToken = await getImsToken(loadScript, imsEnv);
   if (!accessToken) {
     publishingModal.close();
     const shouldLogIn = await showConfirm(
@@ -248,9 +248,18 @@ const checkIms = async (publishingModal, loadScript) => {
   return accessToken;
 };
 
-const postToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly, publishingModal }) => {
+const postToCaaS = async ({
+  accessToken,
+  caasEnv,
+  caasProps,
+  draftOnly,
+  publishingModal,
+  userImsEnv,
+}) => {
   try {
-    const response = await postDataToCaaS({ accessToken, caasEnv, caasProps, draftOnly });
+    const response = await postDataToCaaS(
+      { accessToken, caasEnv, caasProps, draftOnly, userImsEnv },
+    );
 
     publishingModal.close();
 
@@ -307,12 +316,16 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
     const isPublished = await checkPublishStatus(publishingModal);
     if (!isPublished) return;
 
-    const accessToken = await checkIms(publishingModal, loadScript);
+    const userImsEnv = window.adobeid?.environment === 'stg1' ? 'stage' : 'prod';
+
+    const accessToken = await checkIms(publishingModal, loadScript, userImsEnv);
     if (!accessToken) return;
 
     const caasProps = getCaasProps(caasMetadata);
 
-    postToCaaS({ accessToken, caasEnv, caasProps, draftOnly, publishingModal });
+    postToCaaS({
+      accessToken, caasEnv, caasProps, draftOnly, publishingModal, userImsEnv,
+    });
   } catch (e) {
     setPublishingFalse();
     publishingModal.close();

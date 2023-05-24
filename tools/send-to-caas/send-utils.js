@@ -587,7 +587,7 @@ const getCardMetadata = async (options) => {
   return getCaaSMetadata(pageMd, options);
 };
 
-const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) => {
+const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly, userImsEnv = 'prod' }) => {
   const options = {
     method: 'POST',
     body: JSON.stringify(caasProps),
@@ -595,6 +595,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
       Authorization: `Bearer ${accessToken}`,
       draft: !!draftOnly,
       'caas-env': caasEnv,
+      'user-ims-env': userImsEnv,
     },
   };
 
