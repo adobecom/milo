@@ -229,8 +229,8 @@ describe('Utils', () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
@@ -253,9 +253,9 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
-      it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
+      it('When locale ietf is missing and dir is still ltr.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).null;
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
     });
 

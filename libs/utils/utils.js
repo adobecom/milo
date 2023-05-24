@@ -150,12 +150,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
-      try {
-        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('Invalid or missing locale:', e);
-      }
+      document.documentElement.setAttribute('dir', config.locale.dir || 'ltr');
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
