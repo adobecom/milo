@@ -426,12 +426,16 @@ export function decorateAutoBlock(a) {
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
-    const key = Object.keys(candidate)[0];
+    let key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
       if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
         a.target = '_blank';
         return false;
+      }
+      // slack uploaded mp4s in a fragment url
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        key = 'video';
       }
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
