@@ -234,22 +234,29 @@
 }
 
 /*---scroll---*/
-.table .row-2 {
-  position: sticky;
-  top: 64px;
-  z-index: 5;
-  background-color: white;
-  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
-}
+/*.table .row-2 {*/
+/*  position: sticky;*/
+/*  top: 64px;*/
+/*  z-index: 5;*/
+/*  background-color: white;*/
+/*  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);*/
+/*}*/
 
-.table .row-2.active {
-  transition-duration: 400ms;
-  box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);
-}
+/*.table .row-2.active {*/
+/*  transition-duration: 400ms;*/
+/*  box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);*/
+/*}*/
 
-.table .row.active .col.no-top-border.hover {
-  border-top-color: #357BEB;
-}
+/*.table .row.active .col.no-top-border.hover {*/
+/*  border-top-color: #357BEB;*/
+/*}*/
+
+/*.table.merch .row-1 .col-heading {*/
+/*  position: sticky;*/
+/*  top: 64px;*/
+/*  z-index: 5;*/
+/*  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);*/
+/*}*/
 
 /* Start tablet styles */
 @media (max-width: 859px) {
@@ -302,9 +309,15 @@
   visibility: hidden;
 }
 
-.table.merch .row-1 .col-heading {
-  position: sticky;
-  top: 64px;
-  z-index: 5;
-  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
+
+/*sticky header*/
+.table.table-sticky-on .row-highlight,
+.table.table-sticky-on .row-header {
+  z-index: 2;
+  position: fixed;
+}
+
+.table.table-sticky-on .row-highlight > div,
+.table.table-sticky-on .row-header > div {
+  background-color: var(--color-white);
 }

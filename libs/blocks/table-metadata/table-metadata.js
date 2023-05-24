@@ -5,7 +5,7 @@ const getIndexedValues = (text) => text.split('\n').map((value) => value.split(/
 function handleSectionHead(text, table) {
   if (!text) return;
   const sectionsHeads = text.split('\n');
-  sectionsHeads.forEach(sh => {
+  sectionsHeads.forEach((sh) => {
     const sectionHead = table.querySelector(`.row-${sh.trim()}`);
     sectionHead.classList.add('sectionHead');
   });
@@ -53,7 +53,7 @@ const handleColumnBgColor = (text, table, columnType) => {
 
 function handleCompare(text, table) {
   if (!(text || table)) return;
-  const comparisonGroup  = text.split('\n');
+  const comparisonGroup = text.split('\n');
   comparisonGroup.forEach((comp, i) => {
     const col = comp.trim().split(' ')[1];
     const comparable = table.querySelector(`.col-${col}`);

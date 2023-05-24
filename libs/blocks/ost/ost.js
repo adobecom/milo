@@ -19,6 +19,61 @@ const getImsToken = async () => {
   }
   return window.adobeIMS?.getAccessToken()?.token;
 };
+export function createLinkMarkup(
+  offerSelectorId,
+  type,
+  { offer_id: offerId, name: offerName, commitment, planType },
+  placeholderOptions,
+  location = window.location,
+) {
+  const ctaText = 'buy-now';
+  const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
+  const createText = () => (isCheckoutPlaceholder
+    ? `CTA {{${ctaText}}}`
+    : `{{PRICE - ${planType} - ${offerName}}}`);
+
+  const createHref = () => {
+    const url = new URL(location.protocol + location.host);
+    url.pathname = '/tools/ost';
+    url.searchParams.set('osi', offerSelectorId);
+    url.searchParams.set('offerId', offerId);
+    url.searchParams.set('type', type);
+
+    if (commitment === 'PERPETUAL') {
+      url.searchParams.set('perp', true);
+    }
+    const toggleWorkflowStepFormat = (workflowStep) => (workflowStep
+      ? workflowStep.replace(/[_/]/g, (match) => (match === '_' ? '/' : '_'))
+      : '');
+
+    if (isCheckoutPlaceholder) {
+      const DEFAULT_WORKFLOW = 'UCv3';
+      const DEFAULT_WORKFLOW_STEP = 'email';
+      const { workflow, workflowStep } = placeholderOptions;
+      url.searchParams.set('text', ctaText);
+      if (workflow !== DEFAULT_WORKFLOW) {
+        url.searchParams.set('checkoutType', workflow);
+      }
+      if (workflowStep !== DEFAULT_WORKFLOW_STEP) {
+        url.searchParams.set(
+          'workflowStep',
+          toggleWorkflowStepFormat(workflowStep),
+        );
+      }
+    } else {
+      const { displayRecurrence, displayPerUnit, displayTax } = placeholderOptions;
+      url.searchParams.set('term', displayRecurrence);
+      url.searchParams.set('seat', displayPerUnit);
+      url.searchParams.set('tax', displayTax);
+    }
+    return url.toString();
+  };
+
+  const link = document.createElement('a');
+  link.textContent = createText();
+  link.href = createHref();
+  return link;
+}
 
 export default async function init() {
   const aosAccessToken = await getImsToken();
@@ -44,5 +99,6 @@ export default async function init() {
     aosAccessToken,
     checkoutClientId,
     searchParameters,
+    createLinkMarkup,
   });
 }
