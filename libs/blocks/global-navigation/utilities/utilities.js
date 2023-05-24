@@ -135,9 +135,11 @@ export function closeAllDropdowns({ e } = {}) {
 /**
  * @param {*} param0
  * @param {*} param0.element - the DOM element of the trigger to expand
+ * @param {*} [param0.event] - the original event leading to this method being called
  * @returns true if the element has been expanded, false if it was already expanded
  */
-export function trigger({ element } = {}) {
+export function trigger({ element, event } = {}) {
+  if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;

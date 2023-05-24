@@ -101,7 +101,7 @@ class ProfileDropdown {
     // historically we shrunk the font size and displayed the account name on two lines;
     // the email had some special logic as well;
     // for MVP, we took a simpler approach ("Some very long name, very l...")
-    this.avatarElem = toFragment`<img 
+    this.avatarElem = toFragment`<img
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
@@ -109,7 +109,7 @@ class ProfileDropdown {
       data-url="${decorateProfileLink('account', `profile?lang=${lang}`)}"></img>`;
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
-        <a 
+        <a
           href="${decorateProfileLink('account', `?lang=${lang}`)}"
           class="feds-profile-header"
           daa-ll="${this.placeholders.viewAccount}"
@@ -172,11 +172,11 @@ class ProfileDropdown {
   }
 
   addEventListeners() {
-    this.buttonElem.addEventListener('click', () => trigger({ element: this.buttonElem }));
+    this.buttonElem.addEventListener('click', (e) => trigger({ element: this.buttonElem, event: e }));
     this.buttonElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
     this.dropdown.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
-    this.avatarElem.addEventListener('click', (event) => {
-      event.preventDefault();
+    this.avatarElem.addEventListener('click', (e) => {
+      e.preventDefault();
       window.location.assign(this.avatarElem.dataset?.url);
     });
   }

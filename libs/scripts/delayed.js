@@ -21,13 +21,15 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
+  const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
     'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271-test',
     'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3-test',
   };
 
   const otDomainId = ids?.[Object.keys(ids)
-    .find((domainId) => window.location.host.includes(domainId))] ?? getConfig()?.privacyId;
+    .find((domainId) => window.location.host.includes(domainId))]
+      ?? (getConfig()?.privacyId || acom);
   window.fedsConfig = {
     privacy: { otDomainId },
     documentLanguage: true,
