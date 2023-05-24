@@ -30,7 +30,7 @@ export function createLinkMarkup(
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
-    : `{{PRICE - ${planType} - ${offerName}}}`);
+    : `PRICE - ${planType} - ${offerName}`);
 
   const createHref = () => {
     const url = new URL(location.protocol + location.host);
