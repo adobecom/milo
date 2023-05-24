@@ -28,8 +28,10 @@ jobs:
         run: echo Hello, world!
 
       # Runs a set of commands using the runners shell
+      # PROD URL: api.skms.adobe.com
       - run: |
-          DEFAULT_SKMS_URL='api.skms.adobe.com'
+          DEFAULT_SKMS_URL='stage.dev.skms.adobe.com'
+
           function skms_request() {
               local username=$1
               local passkey=$2
@@ -37,37 +39,49 @@ jobs:
               local method=$4
               local method_params=$5
               local url=$6
+
               if [ -z "$username" ]; then
-                  echo "First parameter missing, must be SKMS username"
-                  return 1
+                echo "First parameter missing, must be SKMS username"
+                return 1
               fi
+
               if [ -z "$passkey" ]; then
-                  echo "Second parameter missing, must be SKMS passkey"
-                  return 1
-                fi
+                echo "Second parameter missing, must be SKMS passkey"
+                return 1
+              fi
+
               if [ -z "$object" ]; then
-                  echo "Third parameter missing, must be an SKMS dao object"
-                  return 1
+                echo "Third parameter missing, must be an SKMS dao object"
+                return 1
               fi
+
               if [ -z "$method" ]; then
-                  echo "Fourth parameter missing, must be SKMS dao method"
-                  return 1
+                echo "Fourth parameter missing, must be SKMS dao method"
+                return 1
               fi
+
               if [ -z "$method_params" ]; then
-                  method_params='{}'
+                method_params='{}'
               fi
+
               if [ -z "$url" ]; then
-                  url=$DEFAULT_SKMS_URL
+                url=$DEFAULT_SKMS_URL
               fi
+
               if ! type "jq" >/dev/null; then
-                  echo "jq is required but not installed"
+                echo "jq is required but not installed"
               fi
+
               if ! type "curl" >/dev/null; then
-                  echo "curl is required but not installed"
+                echo "curl is required but not installed"
               fi
+
               local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
               params=$(echo "$params $method_params" | jq -s add)
+
               curl https://${url}/web_api --data-urlencode "_parameters=${params}"
               echo ''
           }
-          skms_request wp-adobecom-chimera_cmr_skms_api_user '${{ secrets.SKMS_DEV }}' CmrDao createCmr '{"change_executor":"jmichnow","change_model":655075,"maintenance_type":"internal_change","maintenance_window_end_time":"2023-04-04 12:00","maintenance_window_start_time":"2023-04-04 10:00","priority":"normal","save_as_draft":false,"summary":"chimera release"}'
+          date=$(date '+%Y-%m-%d %H:%M')
+
+          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"jmichnow","change_model":655075,"maintenance_type":"internal_change","maintenance_window_end_time":"${date}","maintenance_window_start_time":"${date}","priority":"normal","save_as_draft":false,"summary":"Milo Release"}'
