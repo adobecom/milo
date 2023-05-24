@@ -1,4 +1,47 @@
 /**
+ * Checks if an element contains a non-empty text node.
+ *
+ * @param {HTMLElement} element - The HTMLElement to check.
+ * @returns true if the element contains a non-empty text node, false otherwise.
+ */
+function hasTextNode(element) {
+  for (let i = 0; i < element.childNodes.length; i += 1) {
+    const child = element.childNodes[i];
+    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== '') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Recursively finds all elements that contain non-empty text nodes.
+ * The search stops when an element with the 'jpwordwrap-disable' class is encountered.
+ *
+ * @param {HTMLElement} [element=document.body] - The root HTMLElement to start the search from.
+ * @returns An array of DHTMLElements that contain non-empty text nodes.
+ */
+function findTextElements(element = document.body) {
+  let result = [];
+
+  if (element.classList.contains('jpwordwrap-disable')) {
+    return [];
+  }
+
+  for (let i = 0; i < element.children.length; i += 1) {
+    const child = element.children[i];
+    if (hasTextNode(child)) {
+      result.push(child);
+    } else {
+      result = result.concat(findTextElements(child));
+    }
+  }
+
+  return result;
+}
+
+/**
  * Update the model to control line breaks occurring for the specified word.
  * @param {*} parser The BudouX parser to update.
  * @param {string} pattern The pattern that should be updated in the model.
@@ -47,9 +90,10 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
   const { miloLibs, codeRoot } = config;
   const {
     scopeArea = document,
-    budouxSelector = 'h1, h2, h3, h4, h5, h6',
     budouxThres = 2000,
-    bwSelector = null,
+    bwEnable = false,
+    budouxDisabledSelector = null,
+    bwDisabledSelector = null,
     lineBreakOkPatterns = [],
     lineBreakNgPatterns = [],
   } = options;
@@ -58,6 +102,28 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
   // The thresould value to control word break granularity for long semantic blocks.
   const { loadDefaultJapaneseParser } = await import(`${base}/deps/budoux-index-ja.min.js`);
   const parser = loadDefaultJapaneseParser();
+
+  const main = scopeArea.querySelector('main');
+  if (!main) return;
+
+  const budouxDisabledElements = new Set();
+  const bwDisabledElements = new Set();
+  // Find elements that contains a text node directly under its child node.
+  const textElements = findTextElements(main);
+
+  // Find BudouX disabled elements
+  if (budouxDisabledSelector) {
+    scopeArea.querySelectorAll(budouxDisabledSelector).forEach((el) => {
+      budouxDisabledElements.add(el);
+    });
+  }
+
+  // Find Blanced Word Wrap disabled elements
+  if (bwEnable && bwDisabledSelector) {
+    scopeArea.querySelectorAll(budouxDisabledSelector).forEach((el) => {
+      bwDisabledElements.add(el);
+    });
+  }
 
   // Update model based on given patterns
   const SCORE = Number.MAX_VALUE;
@@ -69,15 +135,17 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
   });
 
   // Apply budoux to target selector
-  scopeArea.querySelectorAll(budouxSelector).forEach((el) => {
+  textElements.forEach((el) => {
+    if (budouxDisabledElements.has(el)) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
 
-  if (bwSelector) {
+  if (bwEnable) {
     const BalancedWordWrapper = (await import(`${base}/deps/bw2.min.js`)).default;
     const bw2 = new BalancedWordWrapper();
     // Apply balanced word wrap to target selector
-    scopeArea.querySelectorAll(bwSelector).forEach((el) => {
+    textElements.forEach((el) => {
+      if (bwDisabledElements.has(el)) return;
       bw2.applyElement(el);
     });
   }
@@ -101,16 +169,22 @@ function getMetadata(name) {
  * @param {*} doc The Document or HTMLElement to which you want you apply word wrap.
  */
 export default async function controlJapaneseLineBreaks(config, scopeArea = document) {
-  const budouxSelector = getMetadata('jpwordwrap:budoux-selector') || 'h1, h2, h3, h4, h5, h6, p';
+  const disabled = getMetadata('jpwordwrap:disabled') || false;
   const budouxThres = Number(getMetadata('jpwordwrap:budoux-thres')) || 2000;
-  const bwSelector = getMetadata('jpwordwrap:bw-selector');
+  const budouxDisabledSelector = getMetadata('jpwordwrap:budoux-disable-selector');
+  const bwEnabled = getMetadata('jpwordwrap:bw-enabled') || false;
+  const bwDisabledSelector = getMetadata('jpwordwrap:bw-disable-selector');
   const lineBreakOkPatterns = (getMetadata('jpwordwrap:line-break-ok') || '').split(',');
   const lineBreakNgPatterns = (getMetadata('jpwordwrap:line-break-ng') || '').split(',');
+
+  if (disabled) return;
+
   await applyJapaneseLineBreaks(config, {
     scopeArea,
-    budouxSelector,
     budouxThres,
-    bwSelector,
+    budouxDisabledSelector,
+    bwEnabled,
+    bwDisabledSelector,
     lineBreakOkPatterns,
     lineBreakNgPatterns,
   });
