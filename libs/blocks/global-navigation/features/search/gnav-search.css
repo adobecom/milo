@@ -131,7 +131,8 @@
     top: 100%;
     left: 0;
     right: 0;
-    border-top: 1px solid var(--feds-borderColor--light);
+    /* Relative to nav, not trigger, ensure top border is visible */
+    margin-top: 1px;
     display: none;
     z-index: 1;
   }
