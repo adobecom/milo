@@ -22,7 +22,7 @@ function decorateLink(link, config, path) {
   const prefix = linkParts[1] || 'us';
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
-  link.href = `${href}${config.contentRoot || ''}${path}`;
+  link.href = `${href}${path}`;
   link.addEventListener('click', (e) => {
     /* c8 ignore next 2 */
     e.preventDefault();
@@ -36,7 +36,7 @@ export default function init(block) {
   if (divs.length < 2) return;
   const links = divs[1].querySelectorAll('a');
   if (!links.length) return;
-  const { contentRoot } = config.locale;
-  const path = window.location.href.replace(`${contentRoot}`, '').replace('#langnav', '');
+  const { prefix } = config.locale;
+  const path = window.location.href.replace(`${window.location.origin}${prefix}`, '').replace('#langnav', '');
   links.forEach((l) => decorateLink(l, config, path));
 }
