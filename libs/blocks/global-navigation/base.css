@@ -68,6 +68,7 @@
   transform: rotateZ(45deg);
   transition: transform 0.1s ease;
   content: "";
+  box-sizing: content-box;
 }
 
 [dir = "rtl"] .feds-navLink--hoverCaret {
@@ -96,7 +97,7 @@
   .feds-navLink--hoverCaret {
     position: static;
   }
-  
+
   .feds-navLink--hoverCaret:after {
     position: static;
     margin-top: 0;

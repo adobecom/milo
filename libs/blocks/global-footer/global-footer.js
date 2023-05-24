@@ -77,6 +77,7 @@ class Footer {
       loadBaseStyles,
       this.decorateGrid,
       this.decorateProducts,
+      this.loadIcons,
       this.decorateRegionPicker,
       this.decorateSocial,
       this.decoratePrivacy,
@@ -143,6 +144,13 @@ class Footer {
     return this.elements.footerMenu;
   };
 
+  loadIcons = async () => {
+    const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
+    const content = await file.text();
+    const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
+    this.footerEl.append(elem);
+  };
+
   decorateProducts = async () => {
     this.elements.featuredProducts = '';
 
@@ -195,7 +203,7 @@ class Footer {
         aria-haspopup="true"
         role="button">
         <svg xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
-          <use href="${base}/blocks/global-footer/icons.svg#globe" />
+          <use href="#footer-icon-globe" />
         </svg>
         ${regionPickerTextElem}
       </a>`;
@@ -255,7 +263,7 @@ class Footer {
       const iconElem = toFragment`<li class="feds-social-item">
           <a href="${link.href}#_dnb" class="feds-social-link" aria-label="${platform}">
             <svg xmlns="http://www.w3.org/2000/svg" class="feds-social-icon" alt="${platform} logo">
-              <use href="${base}/blocks/global-footer/icons.svg#${platform}" />
+              <use href="#footer-icon-${platform}" />
             </svg>
           </a>
         </li>`;
@@ -285,7 +293,7 @@ class Footer {
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
     adChoicesElem?.prepend(toFragment`<svg xmlns="http://www.w3.org/2000/svg" class="feds-adChoices-icon" focusable="false">
-        <use href="${base}/blocks/global-footer/icons.svg#adchoices" />
+        <use href="#footer-icon-adchoices" />
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper"></div>`;
