@@ -27,7 +27,7 @@ button {
   background-color: #ff3636;
 }
 
-.configurator dd.content.is-expanded {
+.marketo-config dd.content.is-expanded {
   clip-path: none;
   overflow: visible;
 }
@@ -41,7 +41,7 @@ button {
 .tooltip-text {
   visibility: hidden;
   width: max-content;
-  max-width: 400px;
+  max-width: 300px;
   font-size: 14px;
   line-height: 1.4;
   background-color: #000;

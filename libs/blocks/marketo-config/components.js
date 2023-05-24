@@ -6,12 +6,16 @@ export const Select = ({ label, options, prop, onChange, sort, description, valu
       onChange(prop, e.target.value);
     }
   };
+
   const optionsArray = sort ? sortObjects(options) : Object.entries(options);
   return html`
       <div class="field">
-      <label for=${prop}>${label}<i class="tooltip"><span class="tooltip-text">${description}</span></i></label>
+        <label for=${prop}>
+          ${label}
+          ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+        </label>
         <select id=${prop} value=${value} onChange=${onSelectChange}>
-          ${optionsArray.map(([v, l]) => html`<option value="${v}">${l} (${v})</option>`)}
+          ${optionsArray.map(([value, label]) => html`<option value="${value}">${label}</option>`)}
         </select>
       </div>
     `;
@@ -27,7 +31,10 @@ export const Input = ({ label = '', type = 'text', prop, onChange, placeholder, 
   const defaultValue = type === 'checkbox' ? false : '';
   const valueProp = { [type === 'checkbox' ? 'checked' : 'value']: value || defaultValue };
   return html` <div class="field">
-      <label for=${prop}>${label}<i class="tooltip"><span class="tooltip-text">${description}</span></i></label>
+      <label for=${prop}>
+        ${label}
+        ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+      </label>
       <input type=${type} id=${prop} name=${prop}...${valueProp} placeholder=${placeholder} onChange=${onInputChange} />
     </div>`;
 };

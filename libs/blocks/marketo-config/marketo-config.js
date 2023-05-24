@@ -1,9 +1,12 @@
-import { html, render, useContext, useState, useEffect, useRef } from '../../deps/htm-preact.js';
+import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { loadStyle, loadBlock, createTag } from '../../utils/utils.js';
-import { Input, Select, CopyBtn } from './components.js'
+import { setPreferences } from '../marketo/marketo.js';
+// import { Input, Select, CopyBtn } from './components.js';
+import { CopyBtn } from './components.js';
 import { ConfiguratorContext, ConfiguratorProvider, stateReform, saveStateToLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import { utf8ToB64 } from '../../utils/utils.js';
+import { Input as Input, Select as Select } from '../../ui/controls/formControls.js';
 
 export async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
@@ -24,28 +27,60 @@ const getDefaults = (panelsData) => {
       defaultState[prop] = field.default || '';
     });
   });
-  console.log('defaultState', defaultState);
   return defaultState;
 };
 
-const getFields = (fieldsData, state, onChange) => {
+const getConfigOptions = (link) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchData(link)
+      .then((json) => {
+        setData({
+          defaults: getDefaults(json),
+          panelsData: json,
+        });
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error);
+        setLoading(false);
+      });
+  }, [link]);
+
+  return { data, loading, error };
+};
+
+const Fields = ({ fieldsData }) => {
+  const { state, dispatch } = useContext(ConfiguratorContext);
+
+  const onChange = (prop, value) => {
+    dispatch({
+      type: 'SET_VALUE',
+      prop,
+      value,
+    });
+  };
+
   return fieldsData.map((field) => {
     const prop = field.prop.toLowerCase();
     const value = state?.[prop];
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} prop=${prop} description=${field.description} type="text" value=${value} onChange=${(value) => onChange('INPUT_CHANGE', prop, value)} />
+        <${Input} label=${field.label} name=${prop} description=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} />
       `;
     }
+
     let options = {};
     try {
       options = JSON.parse(field.options);
     } catch {
-
       const keyValuePairs = field.options.split(',').map((item) => {
-        const [key, value] = item.trim().split(':');
-        return [key.trim(), (value || key).trim()];
+        const [key, val] = item.trim().split(':');
+        return key.trim() ? [key.trim(), `${(val || key).trim()} (${key.trim()})`] : ['', 'Choose an option...'];
       });
       options = Object.fromEntries(keyValuePairs);
     }
@@ -55,54 +90,27 @@ const getFields = (fieldsData, state, onChange) => {
     }
 
     return html`
-    <${Select} label=${field.label} prop=${prop} options=${options} description=${field.description} value=${value} onChange=${(value) => onChange('SELECT_CHANGE', prop, value)} />
+      <${Select} label=${field.label} name=${prop} options=${options} description=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} />
     `;
   });
 };
 
-const getPanels = (panelsData, state, onChange) => {
+
+const getPanels = (panelsData) => {
   return panelsData[':names']?.sort().map(panelName => {
     const panelData = panelsData[panelName];
     return {
       title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
-      content: html`${getFields(panelData.data, state, onChange)}`,
+      content: html`<${Fields} fieldsData=${panelData.data} />`,
     };
   });
 };
 
-const TabsComponent = ({ items }) => {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (ref.current) {
-      initTabs(ref.current, items);
-    }
-  }, [items]);
-
-  return html`<div class='tabs' ref=${ref} />`;
-};
-
 const Configurator = ({ title, panelsData, lsKey, block }) => {
   const context = useContext(ConfiguratorContext);
-  const [panels, setPanels] = useState([]);
   const { state } = context;
 
-  const onChange = (type, prop, value) => {
-    context.dispatch({
-      type,
-      prop,
-      value,
-    });
-  };
-
-  useEffect(() => {
-    const linkBlock = createTag('a', { class: block, href: getUrl() }, getUrl());
-    const blockEl = document.getElementsByClassName(block)[0];
-    blockEl.replaceWith(linkBlock);
-    loadBlock(linkBlock);
-    setPanels(getPanels(panelsData, state, onChange));
-    saveStateToLocalStorage(state, lsKey);
-  }, [panelsData, state]);
+  const panels = getPanels(panelsData);
 
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
@@ -125,6 +133,11 @@ const Configurator = ({ title, panelsData, lsKey, block }) => {
     return inputValuesFilled;
   };
 
+  useEffect(() => {
+    setPreferences(stateReform(state));
+    saveStateToLocalStorage(state, lsKey);
+  }, [state]);
+
   return html`
       <div class="tool-header">
         <div class="tool-title">
@@ -140,22 +153,20 @@ const Configurator = ({ title, panelsData, lsKey, block }) => {
 };
 
 const ConfiguratorWrapper = ({ block, link }) => {
-  const [defaults, setDefaults] = useState([]);
-  const [panelsData, setPanelsData] = useState({});
+  const { data, loading, error } = getConfigOptions(link);
   const blockName = block.toLowerCase()
   const title = `${block} Configurator`;
-  const lsKey = `${block.toLowerCase()}ConfiguratorState`;
+  const lsKey = `${blockName}ConfiguratorState`;
 
-  useEffect(() => {
-    fetchData(link)
-      .then((json) => {
-        setPanelsData(json);
-        setDefaults(getDefaults(json));
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
+  if (loading) {
+    return html`<div>Loading Configurator...</div>`;
+  }
+
+  if (error) {
+    return html`<div>Error: ${error.message}</div>`;
+  }
+
+  const { defaults, panelsData } = data;
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
@@ -164,11 +175,64 @@ const ConfiguratorWrapper = ({ block, link }) => {
   `;
 };
 
+const Preview = ({ section }) => {
+  const [twoUp, setTwoUp] = useState(true);
+  const [headerText, setHeaderText] = useState('Download the report.');
+  const [bodyText, setBodyText] = useState('Please share some contact information to download the report.');
+
+  const handleTwoUpChange = (value) => {
+    setTwoUp(value);
+  };
+
+  const handleHeaderChange = (value) => {
+    setHeaderText(value);
+  };
+
+  const handleBodyChange = (value) => {
+    setBodyText(value);
+  };
+
+  useEffect(() => {
+    if (twoUp) {
+      section.classList.add('two-up');
+    } else {
+      section.classList.remove('two-up');
+    }
+
+    const header = section.querySelector('div.marketo section > h3');
+    header.textContent = headerText;
+
+    const body = section.querySelector('div.marketo section > p');
+    body.textContent = bodyText;
+  }, [twoUp, headerText, bodyText]);
+
+  return html`
+    <div class="preview">
+      <div class="preview-container">
+      <section class="preview-options">
+        <div class="preview-title"><h2>Configurator Preview</h2></div>
+        <${Input} name="twoUp" class="preview-option" label="Two-Up" type="checkbox" value=${twoUp} onChange=${handleTwoUpChange} />
+        <${Input} name="header" class="preview-option" label="Header" value=${headerText} onChange=${handleHeaderChange} />
+        <${Input} name="body" class="preview-option" label="Body" value=${bodyText} onChange=${handleBodyChange} />
+        </section>
+      </div>
+    </div>
+  `;
+};
+
 export default async function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const block = children[0].textContent.trim();
-  const link = children[1].querySelector('a[href$="json"]').href;
+  const linkElement = children[1].querySelector('a[href$="json"]');
+  const link = linkElement.href;
+  linkElement.style.display = 'none';
 
-  const app = html`<${ConfiguratorWrapper} block=${block} link=${link} />`;
+  const parentSection = el.closest('div.section');
+  const previewSection = parentSection?.nextElementSibling;
+
+  const app = html`
+    <${ConfiguratorWrapper} block=${block} link=${link} />
+    <${Preview} section=${previewSection} />
+  `;
   render(app, el);
 }

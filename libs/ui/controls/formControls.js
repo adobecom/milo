@@ -2,7 +2,7 @@ import { html, useEffect, useState } from '../../deps/htm-preact.js';
 
 let checkboxIdx = 0;
 
-const Select = ({ label, name, onChange, options, value, sort = false }) => {
+const Select = ({ label, name, onChange, options, value, sort = false, description }) => {
   const onSelectChange = (e) => {
     onChange(e.target.value, e);
   };
@@ -13,7 +13,10 @@ const Select = ({ label, name, onChange, options, value, sort = false }) => {
 
   return html`
     <div class="field">
-      <label for=${name}>${label}</label>
+      <label for=${name}>
+        ${label}
+        ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+      </label>
       <select id=${name} value=${value} onChange=${onSelectChange}>
         ${entries.map(
           ([val, optionLabel]) => html`<option value="${val}">${optionLabel}</option>`
@@ -23,7 +26,7 @@ const Select = ({ label, name, onChange, options, value, sort = false }) => {
   `;
 };
 
-const Input = ({ label, name, onChange, onValidate, type = 'text', value, title }) => {
+const Input = ({ label, name, onChange, onValidate, type = 'text', value, title, description }) => {
   const [isValid, setIsValid] = useState(true);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ const Input = ({ label, name, onChange, onValidate, type = 'text', value, title 
   };
 
   const onInputChange = (e) => {
-    const inputVal = e.target.value;
+    const inputVal = type === 'checkbox' ? e.target.checked : e.target.value
     validateInput(inputVal);
     onChange(inputVal, e);
   };
@@ -54,7 +57,10 @@ const Input = ({ label, name, onChange, onValidate, type = 'text', value, title 
 
   return html`
     <div class="field ${isCheckbox ? 'checkbox' : ''}">
-      <label for=${id}>${label}</label>
+      <label for=${id}>
+        ${label}
+        ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+      </label>
       <input
         class=${!isValid && 'input-invalid'}
         type=${type}

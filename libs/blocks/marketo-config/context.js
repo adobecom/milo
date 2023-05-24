@@ -35,7 +35,7 @@ const getHashConfig = () => {
 }
 
 const getInitialState = (defaultState, lsKey) => {
-  const hashConfig = getHashConfig();
+  const hashConfig = getHashConfig() ?? null;
   if (hashConfig) return hashConfig;
 
   const lsState = localStorage.getItem(lsKey);
@@ -51,9 +51,7 @@ const getInitialState = (defaultState, lsKey) => {
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SELECT_CHANGE':
-    case 'INPUT_CHANGE':
-    case 'MULTI_SELECT_CHANGE':
+    case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
     default:
       console.log('DEFAULT');
