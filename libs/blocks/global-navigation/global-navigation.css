@@ -505,6 +505,7 @@ header button.gnav-toggle {
 }
 
 header button.gnav-toggle::after {
+  color: var(--feds-color-link--light);
   content: "\2630";
   font-weight: 700;
 }
