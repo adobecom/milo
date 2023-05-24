@@ -426,17 +426,14 @@ export function decorateAutoBlock(a) {
   const url = new URL(a.href);
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
-    let key = Object.keys(candidate)[0];
+    const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (match) {
       if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
         a.target = '_blank';
         return false;
       }
-      // slack uploaded mp4s in a fragment url
-      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
-        key = 'video';
-      }
+
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -446,6 +443,13 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+
+      // slack uploaded mp4s in a fragment url
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video fragment link-block';
+        return true;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
