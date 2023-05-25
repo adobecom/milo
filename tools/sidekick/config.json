@@ -82,7 +82,7 @@
       "id": "ost",
       "title": "Use offer",
       "environments": [ "edit", "dev", "preview" ],
-      "url": "/tools/ost",
+      "url": "https://milo.adobe.com/tools/ost",
       "includePaths": [ "**.docx**" ]
     }
   ]
