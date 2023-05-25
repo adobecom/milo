@@ -73,6 +73,9 @@ export const setPreferences = (formData) => {
   for(const [key, value] of Object.entries(formData)) {
     setPreference(key, value);
   }
+  console.group('setPreferences');
+  console.info(JSON.stringify(mcz_marketoForm_pref, undefined, 4));
+  console.groupEnd('setPreferences');
 }
 
 const init = (el) => {

@@ -135,6 +135,7 @@
 
 .marketo .mktoForm select {
   appearance: none;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-appearance:none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-58 29 32 34' style='enable-background:new -58 29 32 34' xml:space='preserve'%3E%3Cpath d='m-56 43 6-12 6 12h-12zm12 6-6 12-6-12h12z' fill='%23535353'/%3E%3C/svg%3E") no-repeat 97% 50%;
   background-size: 1em 1em;
