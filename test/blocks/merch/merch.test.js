@@ -12,7 +12,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('Merch Block', () => {
   before(async () => {
     Object.assign(window.tacocat, {
-      loadPromise: Promise.resolve(),
+      loadPromise: Promise.resolve(false),
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
@@ -346,7 +346,7 @@ describe('Merch Block', () => {
     });
 
     it('does not initialize the block when tacocat fails to load', async () => {
-      window.tacocat.loadPromise = Promise.reject(new Error('404'));
+      window.tacocat.loadPromise = Promise.resolve(true);
       let el = document.querySelector('.merch.cta.notacocat');
       el = await merch(el);
       expect(el).to.be.undefined;
