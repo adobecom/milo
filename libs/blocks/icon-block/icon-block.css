@@ -1,4 +1,3 @@
-/* stylelint-disable selector-class-pattern */
 .icon-block {
   display: block;
   width: 100%;
@@ -225,8 +224,8 @@
     height: 80px;
   }
 
-  .five-up .icon-block .foreground .text-content,
-  .five-up .icon-block .foreground .text-content .icon-area {
+  .five-up .icon-block.center .foreground .text-content,
+  .five-up .icon-block.center .foreground .text-content .icon-area {
     text-align: center;
   }
 
@@ -268,19 +267,6 @@
     max-width: 1000px;
   }
 
-  .five-up .icon-block .foreground .text-content {
-    font-size: var(--type-body-s-size);
-    text-align: center;
-  }
-
-  .five-up .icon-block .foreground .text-content .icon-area {
-    text-align: center;
-  }
-
-  .three-up .icon-block.vertical .foreground .text-content:last-child {
-    padding-right: 0;
-  }
-
   .two-up .icon-block.vertical .foreground .icon-area {
     max-width: 400px;
   }
@@ -291,5 +277,18 @@
 
   .four-up .icon-block.vertical .foreground .icon-area {
     max-width: 276px;
+  }
+
+  .five-up .icon-block.center .foreground .text-content {
+    font-size: var(--type-body-s-size);
+    text-align: center;
+  }
+
+  .five-up .icon-block.center .foreground .text-content .icon-area {
+    text-align: center;
+  }
+
+  .three-up .icon-block.vertical .foreground .text-content:last-child {
+    padding-right: 0;
   }
 }

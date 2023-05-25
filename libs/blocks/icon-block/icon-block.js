@@ -14,37 +14,36 @@
 * Icon Block - v5.1
 */
 
-import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockText, decorateBlockBg, getBlockSize } from '../../utils/decorate.js';
 
 const variants = ['fullwidth', 'vertical', 'bio'];
+const [full, left, bio] = variants;
 const iconBlocks = {
   small: {
-    [variants[0]]: ['m', 'm'],
-    [variants[1]]: ['s', 'm'],
-    [variants[2]]: ['s', 's'],
+    [full]: ['m', 'm'],
+    [left]: ['s', 'm'],
+    [bio]: ['s', 's'],
   },
   medium: {
-    [variants[0]]: ['l', 'm'],
-    [variants[1]]: ['m', 'm'],
-    [variants[2]]: ['s', 's'],
+    [full]: ['l', 'm'],
+    [left]: ['m', 'm'],
+    [bio]: ['s', 's'],
   },
   large: {
-    [variants[0]]: ['xl', 'm'],
-    [variants[1]]: ['m', 'm'],
-    [variants[2]]: ['s', 's'],
+    [full]: ['xl', 'm'],
+    [left]: ['m', 'm'],
+    [bio]: ['s', 's'],
   },
 };
 
-function decorateContent(el) {
-  const block = el.querySelector(':scope > div:not([class])');
-  block.classList.add('foreground');
+function decorateForeground(block) {
   if (!block) return;
+  block.classList.add('foreground');
   const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
-    if (image) image.closest('p').classList.add('icon-area');
-    // place standalone links inside an action-area
+    if (image) image.parentElement.classList.add('icon-area');
     const lastElem = text.lastElementChild;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
@@ -60,5 +59,7 @@ function decorateContent(el) {
 export default function init(el) {
   el.classList.add('con-block');
   if (el.classList.contains('intro')) el.classList.add('xxxl-spacing-top', 'xl-spacing-static-bottom');
-  decorateContent(el);
+  const elems = el.querySelectorAll(':scope > div');
+  if (elems.length > 1) decorateBlockBg(el, elems[0]);
+  decorateForeground(elems[elems.length - 1]);
 }
