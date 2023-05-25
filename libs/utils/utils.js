@@ -151,7 +151,8 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        const contentDir = getMetadata('content-direction')?.toLowerCase();
+        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
