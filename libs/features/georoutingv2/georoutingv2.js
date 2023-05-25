@@ -71,15 +71,20 @@ const getAkamaiCode = () => new Promise((resolve) => {
 async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
-  const { contentRoot } = config.locale;
-  const path = window.location.href.replace(contentRoot, '');
+ /* const { contentRoot } = config.locale;
+  const path = window.location.href.replace(contentRoot, '');*/
+
+  const { prefix } = config.locale;
+  const path = window.location.href.replace(`${window.location.origin}${prefix}`, '')
+  console.log("path: "+path);
 
   const availableLocales = [];
   const pagesExist = [];
   locales.forEach((locale, index) => {
     const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
-    const localePath = `${localeRoot}${path}`;
+    //const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
+    const localePath = `${prefix}${path}`;
+    console.log("localePath: "+localePath);
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
