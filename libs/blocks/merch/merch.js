@@ -94,7 +94,11 @@ window.tacocat.loadPromise = new Promise((resolve) => {
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
-      resolve();
+      resolve(false);
+    })
+    .catch((error) => {
+      console.error('Failed to load tacocat', error);
+      resolve(true);
     });
 });
 
@@ -161,10 +165,8 @@ function getCheckoutContext(searchParams, config) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  try {
-    await window.tacocat.loadPromise;
-  } catch (e) {
-    console.error('Tacocat not loaded', e);
+  const fail = await window.tacocat.loadPromise;
+  if (fail) {
     return undefined;
   }
   const { searchParams } = new URL(el.href);
