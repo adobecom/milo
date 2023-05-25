@@ -109,12 +109,18 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,
   prodDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
+  jarvis: {
+    id: 'milo',
+    version: '1.0',
+    onDemand: false,
+  },
 };
 
 (async function loadLCPImage() {

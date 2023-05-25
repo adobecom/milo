@@ -1,9 +1,11 @@
 import {
-  createFolder,
+  getFileNameFromPath,
+  getFolderFromPath,
   getAuthorizedRequestOption,
   saveFile,
   updateExcelTable,
   validateConnection,
+  fetchWithRetry,
 } from '../../loc/sharepoint.js';
 import {
   hideButtons,
@@ -13,7 +15,7 @@ import {
 } from '../../loc/utils.js';
 import { getConfig as getFloodgateConfig } from './config.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { getFile, handleExtension } from './utils.js';
+import { delay, getFile, handleExtension } from './utils.js';
 
 const BATCH_REQUEST_PROMOTE = 20;
 const DELAY_TIME_PROMOTE = 3000;
@@ -23,26 +25,26 @@ const MAX_CHILDREN = 1000;
  * Copies the Floodgated files back to the main content tree.
  * Creates intermediate folders if needed.
  */
-async function promoteCopy(srcPath, destinationFolder) {
+async function promoteCopy(srcPath, destinationFolder, newName) {
   validateConnection();
-  await createFolder(destinationFolder);
   const { sp } = await getFloodgateConfig();
-  const destRootFolder = `${sp.api.file.copy.baseURI}`.split('/').pop();
-
-  const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${destRootFolder}${destinationFolder}` } };
+  const { baseURI, fgBaseURI } = sp.api.file.copy;
+  const rootFolder = baseURI.split('/').pop();
+  const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${rootFolder}${destinationFolder}` } };
+  if (newName) {
+    payload.name = newName;
+  }
   const options = getAuthorizedRequestOption({
     method: sp.api.file.copy.method,
     body: JSON.stringify(payload),
   });
-
-  // copy source is the pink directory for promote
-  const copyStatusInfo = await fetch(`${sp.api.file.copy.fgBaseURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetchWithRetry(`${fgBaseURI}${srcPath}:/copy?@microsoft.graph.conflictBehavior=replace`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
     // eslint-disable-next-line no-await-in-loop
-    const status = await fetch(statusUrl);
+    const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
       // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
@@ -59,7 +61,7 @@ async function findAllFloodgatedFiles(baseURI, options, rootFolder, fgFiles, fgF
   while (fgFolders.length !== 0) {
     const uri = `${baseURI}${fgFolders.shift()}:/children?$top=${MAX_CHILDREN}`;
     // eslint-disable-next-line no-await-in-loop
-    const res = await fetch(uri, options);
+    const res = await fetchWithRetry(uri, options);
     if (res.ok) {
       // eslint-disable-next-line no-await-in-loop
       const json = await res.json();
@@ -102,25 +104,17 @@ async function promoteFloodgatedFiles(project) {
     try {
       let promoteSuccess = false;
       loadingON(`Promoting ${filePath} ...`);
-      const { sp } = await getFloodgateConfig();
-      const options = getAuthorizedRequestOption();
-      const res = await fetch(`${sp.api.file.get.baseURI}${filePath}`, options);
-      if (res.ok) {
-        // File exists at the destination (main content tree)
-        // Get the file in the pink directory using downloadUrl
-        const file = await getFile(downloadUrl);
-        if (file) {
-          // Save the file in the main content tree
-          const saveStatus = await saveFile(file, filePath);
-          if (saveStatus.success) {
-            promoteSuccess = true;
-          }
-        }
+      const folder = getFolderFromPath(filePath);
+      const filename = getFileNameFromPath(filePath);
+      const copyFileStatus = await promoteCopy(filePath, folder, filename);
+      if (copyFileStatus) {
+        promoteSuccess = true;
       } else {
-        // File does not exist at the destination (main content tree)
-        // File can be copied directly
-        const destinationFolder = `${filePath.substring(0, filePath.lastIndexOf('/'))}`;
-        promoteSuccess = await promoteCopy(filePath, destinationFolder);
+        const file = await getFile(downloadUrl);
+        const saveStatus = await saveFile(file, filePath);
+        if (saveStatus.success) {
+          promoteSuccess = true;
+        }
       }
       updateAndDisplayPromoteStatus(promoteSuccess, filePath);
       status.success = promoteSuccess;
@@ -152,16 +146,21 @@ async function promoteFloodgatedFiles(project) {
       batchArray[i].map((file) => promoteFile(file.fileDownloadUrl, file.filePath)),
     ));
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_PROMOTE));
+    await delay(DELAY_TIME_PROMOTE);
   }
   const endPromote = new Date();
 
   loadingON('Previewing promoted files... ');
-  const previewStatuses = await Promise.all(
-    promoteStatuses
-      .filter((status) => status.success)
-      .map((status) => simulatePreview(handleExtension(status.srcPath), 1)),
-  );
+  const previewStatuses = [];
+  for (let i = 0; i < promoteStatuses.length; i += 1) {
+    if (promoteStatuses[i].success) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await simulatePreview(handleExtension(promoteStatuses[i].srcPath), 1);
+      previewStatuses.push(result);
+    }
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await delay();
+  }
   loadingON('Completed Preview for promoted files... ');
 
   const failedPromotes = promoteStatuses.filter((status) => !status.success)
