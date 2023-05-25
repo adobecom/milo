@@ -13,9 +13,11 @@
 /*
  * Marquee - v6.0
  */
+import { handleFocalpoint } from '../section-metadata/section-metadata.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
+
 
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
@@ -45,6 +47,11 @@ const decorateBlockBg = (block, node) => {
 
     if (child.querySelector('a[href$=".mp4"]')) {
       decorateVideo(child);
+    }
+
+    if (child.querySelector('picture')) {
+      const pic = child.querySelector('picture');
+      handleFocalpoint(pic, child)
     }
   });
 

@@ -3,9 +3,7 @@ function handleBackground(div, section) {
   if (pic) {
     section.classList.add('has-background');
     pic.classList.add('section-background');
-    if (div.focalpoint) {
-      handleFocalpoint(pic, div.focalpoint.text);
-    }
+    handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
     const color = div.background.content.textContent;
@@ -15,8 +13,14 @@ function handleBackground(div, section) {
   }
 }
 
-function handleFocalpoint(pic, text) {
-  if (!(text)) return;
+export function handleFocalpoint(pic, child) {
+  if (!(child)) return;
+  let text = '';
+  if (child.childElementCount == 2) {
+    text = child.querySelectorAll('p')[1].textContent;
+  } else if (child.textContent) {
+    text = child.textContent;
+  }
   const image = pic.querySelector('img');
   const directions = text.slice(text.indexOf(':') + 1).split(',');
   const [x,y = ''] = directions

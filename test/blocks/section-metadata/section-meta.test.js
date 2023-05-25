@@ -22,8 +22,10 @@ describe('Section Metdata', () => {
 
   it('Handles background image focal point', () => {
     it('gets section metadata', () => {
-      const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
-      expect(metadata.focalpoint.text).to.equal('left');
+      const sec = document.querySelector('.section.image');
+      const sm = sec.querySelector('.section-metadata');
+      init(sm);
+      expect(sec.style.objectPosition).to.equal('center bottom');
     });
   });
 
