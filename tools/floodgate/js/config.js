@@ -2,6 +2,7 @@ import { getUrlInfo } from '../../loc/utils.js';
 import {
   fetchConfigJson,
   getSharepointConfig,
+  getSharepointRestConfig,
   getHelixAdminConfig,
 } from '../../loc/config.js';
 
@@ -16,7 +17,7 @@ async function getConfig() {
       const configPath = `${urlInfo.origin}${FLOODGATE_CONFIG}`;
       const configJson = await fetchConfigJson(configPath);
       decoratedConfig = {
-        sp: getSharepointConfig(configJson),
+        sprest: getSharepointRestConfig(configJson),
         admin: getHelixAdminConfig(),
       };
     }

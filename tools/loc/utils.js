@@ -85,6 +85,7 @@ export function getUrlInfo() {
       return sp && owner && repo && ref;
     },
   };
+  urlInfo.origin = `https://main--milo--Deva309.hlx.page`;
   return urlInfo;
 }
 
