@@ -51,7 +51,6 @@ const decorateBlockBg = (block, node) => {
 
     const pic = child.querySelector('picture');
     if (pic) {
-      console.log('child', child);
       handleFocalpoint(pic, child)
     }
   });
