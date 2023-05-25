@@ -77,15 +77,15 @@ async function getAvailableLocales(locales) {
   const availableLocales = [];
   const pagesExist = [];
   locales.forEach((locale, index) => {
-    const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localePath = `${prefix}${path}`;
+    const locPrefix = locale.prefix ? `/${locale.prefix}` : '';
+    const localePath = `${locPrefix}${path}`;
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
         locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${prefix}/`;
+        locale.url = `${locPrefix}/`;
         availableLocales[index] = locale;
       }
     });
