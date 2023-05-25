@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 
 /* c8 ignore next 11 */
-function handleEvent(prefix, link, config) {
+function handleEvent(prefix, link) {
   document.cookie = `international=${prefix};path=/`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
@@ -9,7 +9,7 @@ function handleEvent(prefix, link, config) {
     window.location.assign(link.href);
   }).catch(() => {
     const prefixUrl = prefix ? `/${prefix}` : '';
-    window.location.assign(`${prefixUrl}${config.contentRoot || ''}/`);
+    window.location.assign(`${prefixUrl}/`);
   });
 }
 
