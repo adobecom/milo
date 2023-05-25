@@ -59,7 +59,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
       return options;
     }
     console.log(event.detail.data);
-    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www/drafts/devashish/VH.docx')`;
+    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
 
     const callOptions = getAuthorizedRequestOptionSP({
       method: 'POST'
