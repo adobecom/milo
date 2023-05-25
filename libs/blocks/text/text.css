@@ -108,7 +108,7 @@
   padding-left: var(--spacing-xs);;
 }
 
-/*Legal*/
+/* Legal */
 .legal.text-block .foreground {
   padding: var(--spacing-xl) 0;
 }
@@ -119,14 +119,14 @@
   line-height: var(--type-body-xxs-lh);
 }
 
-/*link-farm*/
+/* link-farm */
 .link-farm.text-block {
   padding: var(--spacing-xl) 0;
 }
 
 .link-farm.text-block .foreground {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: auto;
   gap: var(--spacing-xl) var(--spacing-m);
 }
 
@@ -137,7 +137,7 @@
 }
 
 .link-farm.text-block h2 {
-  margin: 0 0 var(--spacing-xl-static) 0;
+  margin: 0 0 var(--spacing-m) 0;
 }
 
 .link-farm.text-block p {
@@ -159,10 +159,24 @@
   text-decoration: double underline;
 }
 
+/* Desktop */
+@media screen and (min-width: 1200px) {
+  .link-farm.text-block h2 {
+    margin: 0 0 var(--spacing-xl-static) 0;
+  }
+
+  .link-farm.text-block .foreground {
+    grid-template-columns: repeat(4, auto);
+  }
+}
+
 /* Tablet */
 @media screen and (min-width:600px) and (max-width: 1200px) {
+  .link-farm.text-block h2 {
+    margin: 0 0 var(--spacing-xl-static) 0;
+  }
+
   .link-farm.text-block .foreground {
-    display: grid;
     grid-template-columns: repeat(2, auto);
   }
 }
@@ -178,16 +192,5 @@
 
   .inset.text-block .foreground > div {
     padding-left: var(--spacing-l);
-  }
-}
-
-/*mobile*/
-@media screen and (max-width: 600px) {
-  .link-farm.text-block h2 {
-    margin: 0 0 var(--spacing-m) 0;
-  }
-  .link-farm.text-block .foreground {
-    display: grid;
-    grid-template-columns: auto;
   }
 }
