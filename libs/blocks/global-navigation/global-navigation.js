@@ -520,7 +520,11 @@ class Gnav {
           <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
-        dropdownTrigger.addEventListener('click', () => trigger({ element: dropdownTrigger }));
+        dropdownTrigger.addEventListener('click', () => {
+          trigger({ element: dropdownTrigger });
+          const isOpen = dropdownTrigger.getAttribute('aria-expanded') === 'true';
+          if (isOpen) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
+        });
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
       }

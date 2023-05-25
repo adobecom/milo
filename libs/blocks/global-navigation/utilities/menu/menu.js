@@ -6,6 +6,7 @@ import {
   yieldToMain,
   getFedsPlaceholderConfig,
   logErrorFor,
+  selectors,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
@@ -36,6 +37,16 @@ const decorateHeadline = (elem) => {
 
     const currentState = headline.getAttribute('aria-expanded');
     headline.setAttribute('aria-expanded', currentState === 'false');
+
+    const activeClass = selectors.activeDropdown.replace('.', '');
+    if (currentState === 'true') {
+      headline.closest(selectors.navItem)?.classList.add(activeClass);
+    } else {
+      document.querySelectorAll(selectors.activeDropdown)
+        .forEach((section) => section.classList.remove(activeClass));
+      headline.closest(`${selectors.menuSection}, ${selectors.menuColumn}`)?.classList
+        .toggle(activeClass, currentState === 'false');
+    }
   });
 
   // Since heading is turned into a div, it can be safely removed
