@@ -33,6 +33,7 @@ function getItem(title, description, target) {
   }
 
   const item = createTag('li', { class: 'toc-item' });
+  const linkArrow = createTag('div', { class: 'icon-down-arrow' },DOWN_ARROW_ICON);
   const linkText = createTag('div', { class: 'toc-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
 
@@ -60,7 +61,6 @@ function getItem(title, description, target) {
   if (description) linkText.append(createTag('p', { class: 'section-description' }, description));
   item.append(linkText);
   if (target) item.append(createTag('div', { class: 'toc-arrow' }, DOWN_ARROW_ICON));
-
   return item;
 }
 function decorateText(el, size) {
@@ -84,10 +84,10 @@ export default function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   // set marquee style
   const tone = (el.classList.contains('light')) ? 'light' : 'dark';
-  const marqueeContent = createTag('div', { class: 'container foreground' }, children.shift());
-  //const marqueeContent = children.shift();
+  const marqueeContent = createTag('div', { class: 'foreground' }, children.shift());
   const marquee = createTag('div', { class: 'marquee'+ tone }, marqueeContent);
-  //const marqueeContent = children.shift();
+  marqueeContent.firstElementChild.classList.add('text');
+
   console.log(marquee);
   decorateText(marquee, size);
   decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
@@ -105,7 +105,7 @@ export default function init(el) {
     }
 
     if (section.firstElementChild.textContent === 'footer') {
-      footer = section.lastElementChild.textContent;
+      footer = createTag('p', { class: 'toc-footer' }, section.lastElementChild.textContent);
       section.remove();
       return;
     }
@@ -119,10 +119,10 @@ export default function init(el) {
     navUl.append(item);
     section.remove();
   }, '');
-  const tocContainer = createTag('div', { class: 'container toc-container' }, `<p class="toc-title">${header}</p>`);
+  const tocContainer = createTag('div', { class: 'toc-container' }, `<p class="toc-title">${header}</p>`);
   tocContainer.append(tocNav);
   tocContainer.append(footer);
-  const toc = createTag('div', { class: 'table-of-contents' }, tocContainer);
+  const toc = createTag('div', { class: 'table-o' }, tocContainer);
 
   tocNav.append(navUl);
   el.append(marquee);
