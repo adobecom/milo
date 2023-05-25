@@ -563,9 +563,8 @@ class Gnav {
             ${dropdownTrigger}
           </div>`;
         dropdownTrigger.addEventListener('click', (e) => {
-          trigger({ element: dropdownTrigger, event: e });
-          const isOpen = dropdownTrigger.getAttribute('aria-expanded') === 'true';
-          if (isOpen) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
+          const opened = trigger({ element: dropdownTrigger, event: e });
+          if (opened) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
         });
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
