@@ -151,7 +151,7 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        const contentDir = getMetadata('content-direction')?.toLowerCase();
+        const contentDir = getMetadata('content-direction');
         document.documentElement.setAttribute('dir', contentDir || config.locale.dir || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
