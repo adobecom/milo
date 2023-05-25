@@ -25,48 +25,53 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   };
 
   const addVersion = async (event) => {
-    let accessToken = '';
-    const { sprest } = await getConfig();
-    const msalClient = new msal.PublicClientApplication(sprest);
-    const loginRequest = {
-      scopes: ["https://adobe.sharepoint.com/.default"] // SharePoint API scope
-    };
-    const response = await msalClient.loginPopup(loginRequest);
-    accessToken = response.accessToken;
+    try {
 
-    function getAuthorizedRequestOptionSP({
-      body = null,
-      json = true,
-      method = 'GET',
-    } = {}) {
-      const bearer = `Bearer ${accessToken}`;
-      const headers = new Headers();
-      headers.append('Authorization', bearer);
-      if (json) {
-        headers.append('Accept', 'application/json; odata=nometadata');
-        headers.append('Content-Type', 'application/json;odata=verbose');
-      }
-    
-      const options = {
-        method,
-        headers,
+      let accessToken = '';
+      const { sprest } = await getConfig();
+      const msalClient = new msal.PublicClientApplication(sprest);
+      const loginRequest = {
+        scopes: ["https://adobe.sharepoint.com/.default"] // SharePoint API scope
       };
-    
-      if (body) {
-        options.body = typeof body === 'string' ? body : JSON.stringify(body);
+      const response = await msalClient.loginPopup(loginRequest);
+      accessToken = response.accessToken;
+  
+      function getAuthorizedRequestOptionSP({
+        body = null,
+        json = true,
+        method = 'GET',
+      } = {}) {
+        const bearer = `Bearer ${accessToken}`;
+        const headers = new Headers();
+        headers.append('Authorization', bearer);
+        if (json) {
+          headers.append('Accept', 'application/json; odata=nometadata');
+          headers.append('Content-Type', 'application/json;odata=verbose');
+        }
+      
+        const options = {
+          method,
+          headers,
+        };
+      
+        if (body) {
+          options.body = typeof body === 'string' ? body : JSON.stringify(body);
+        }
+      
+        return options;
       }
-    
-      return options;
+      console.log(event.detail.data);
+      const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
+  
+      const callOptions = getAuthorizedRequestOptionSP({
+        method: 'POST'
+      });
+      let publishResponse = await fetch(`${url}/Publish('Last Published version')`, callOptions);
+      const data = await publishResponse.json();
+      console.log(data);
+    } catch (error) {
+      console.log(error);
     }
-    console.log(event.detail.data);
-    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
-
-    const callOptions = getAuthorizedRequestOptionSP({
-      method: 'POST'
-    });
-    let publishResponse = await fetch(`${url}/Publish('Last Published version')`, callOptions);
-    const data = await publishResponse.json();
-    console.log(data);
   }
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
