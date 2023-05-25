@@ -59,6 +59,7 @@
 .marketo-config dd.content .field {
   max-width: 100%;
   position: relative;
+  display: block;
 }
 
 .marketo-config dd.content .field select, 
@@ -67,8 +68,22 @@
   width: 100%;
 }
 
+.marketo-config dd.content .field label {
+  width: fit-content;
+  display: inline-block;
+}
+
+.marketo-config dd.content .field.required label::after {
+  content: '*';
+}
+
 .marketo-config dd.content .field input {
   box-sizing: border-box;
+}
+
+.marketo-config dd.content .field select.input-invalid, 
+.marketo-config dd.content .field input.input-invalid {
+  border: 1px solid #d7373f;
 }
 
 .tool-content {
@@ -154,7 +169,7 @@ dd.content::after {
 }
 
 .tooltip-text:hover,
-.tooltip:hover + .tooltip-text {
+.tooltip:hover ~ .tooltip-text {
   opacity: 1;
   visibility: visible;
 }

@@ -19,13 +19,15 @@ export async function fetchData(url) {
 const getDefaults = (panelsData) => {
   let defaultState = {};
 
-  panelsData[':names'].forEach(panelName => {
-    const panelData = panelsData[panelName];
-    panelData.data.forEach(field => {
-      const prop = field.prop.toLowerCase();
-      defaultState[prop] = field.default || '';
+  panelsData.forEach(panelData => {
+    panelData.forEach(field => {
+      if (field?.prop) {
+        const { prop, default: defaultValue = '' } = field;
+        defaultState[prop.toLowerCase()] = defaultValue;
+      }
     });
   });
+
   return defaultState;
 };
 
@@ -37,9 +39,24 @@ const getConfigOptions = (link) => {
   useEffect(() => {
     fetchData(link)
       .then((json) => {
+        const sheets = new Map();
+
+        if (json[':names'].includes('metadata')) {
+          json['metadata'].data.map((column) => {
+            const sheetName = column['sheet'] ?? column['Sheet'];
+            const sheetTitle = column['title'] ?? column['Title'];
+
+            sheets.set(sheetTitle, json[sheetName.replace('helix-', '')].data);
+          });
+        } else {
+          json[':names'].sort().forEach(sheetName => {
+            sheets.set(sheetName, json[sheetName].data);
+          });
+        }
+
         setData({
-          defaults: getDefaults(json),
-          panelsData: json,
+          defaults: getDefaults(sheets),
+          panelsData: sheets,
         });
         setLoading(false);
       })
@@ -66,10 +83,11 @@ const Fields = ({ fieldsData }) => {
   return fieldsData.map((field) => {
     const prop = field.prop.toLowerCase();
     const value = state?.[prop];
+    const required = field.required?.toLowerCase() == 'yes';
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} name=${prop} description=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} />
+        <${Input} label=${field.label} name=${prop} description=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
       `;
     }
 
@@ -89,23 +107,25 @@ const Fields = ({ fieldsData }) => {
     }
 
     return html`
-      <${Select} label=${field.label} name=${prop} options=${options} description=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} />
+      <${Select} label=${field.label} name=${prop} options=${options} description=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
     `;
   });
 };
 
-
 const getPanels = (panelsData) => {
-  return panelsData[':names']?.sort().map(panelName => {
-    const panelData = panelsData[panelName];
-    return {
+  const panels = [];
+
+  panelsData.forEach((panelData, panelName) => {
+    panels.push({
       title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
-      content: html`<${Fields} fieldsData=${panelData.data} />`,
-    };
+      content: html`<${Fields} fieldsData=${panelData} />`,
+    });
   });
+
+  return panels;
 };
 
-const Configurator = ({ title, panelsData, lsKey, block }) => {
+const Configurator = ({ title, panelsData, lsKey }) => {
   const context = useContext(ConfiguratorContext);
   const { state } = context;
 
@@ -118,16 +138,15 @@ const Configurator = ({ title, panelsData, lsKey, block }) => {
 
   const configFormValidation = () => {
     let inputValuesFilled = true;
-    const testInputs = document.querySelectorAll('#form_id, #base_url, #munchkin_id, #destination_url');
-    const requiredPanelExpandButton = document.querySelector('#ai_Marketo_Form_Config_Fileds button[aria-label=Expand]');
+    const testInputs = document.querySelectorAll('.input-invalid');
     testInputs.forEach((input) => {
-      if (!input.value) {
-        inputValuesFilled = false;
-        if (requiredPanelExpandButton) {
-          requiredPanelExpandButton.click();
-        }
-        input.focus();
+      inputValuesFilled = false;
+      const requiredPanel = input.closest('.accordion-item');
+      const requiredPanelExpandButton = requiredPanel.querySelector('button[aria-label=Expand]');
+      if (requiredPanelExpandButton) {
+        requiredPanelExpandButton.click();
       }
+      input.focus();
     });
     return inputValuesFilled;
   };
@@ -169,7 +188,7 @@ const ConfiguratorWrapper = ({ block, link }) => {
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} panelsData=${panelsData} lsKey=${lsKey} block=${blockName} />
+    <${Configurator} title=${title} panelsData=${panelsData} lsKey=${lsKey} />
   </${ConfiguratorProvider}>
   `;
 };
@@ -179,7 +198,6 @@ export default async function init(el) {
   const block = children[0].textContent.trim();
   const linkElement = children[1].querySelector('a[href$="json"]');
   const link = linkElement.href;
-  linkElement.style.display = 'none';
 
   const parentSection = el.closest('div.section');
   const previewSection = parentSection?.nextElementSibling;
@@ -188,5 +206,7 @@ export default async function init(el) {
     <${ConfiguratorWrapper} block=${block} link=${link} />
     <${Preview} section=${previewSection} />
   `;
+
+  linkElement.style.display = 'none';
   render(app, el);
 }
