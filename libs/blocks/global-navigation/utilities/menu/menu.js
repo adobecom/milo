@@ -42,7 +42,7 @@ const decorateHeadline = (elem) => {
     if (currentState === 'true') {
       headline.closest(selectors.navItem)?.classList.add(activeClass);
     } else {
-      document.querySelectorAll(selectors.activeDropdown)
+      [...document.querySelectorAll(selectors.activeDropdown)]
         .forEach((section) => section.classList.remove(activeClass));
       headline.closest(`${selectors.menuSection}, ${selectors.menuColumn}`)?.classList
         .toggle(activeClass, currentState === 'false');
@@ -69,7 +69,7 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  const linkGroup = toFragment`<a 
+  const linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
@@ -80,29 +80,56 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-// Decorate a list of simple links
-const decorateLinkList = ({ list, className = 'feds-navLink', includeCta = true } = {}) => {
-  list.querySelectorAll('a').forEach((link, index) => {
+const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, index = { position: 0 } } = {}) => {
+  const decorateLink = (link) => {
+    // Increase analytics index every time a link is decorated
+    index.position += 1;
+
+    // Decorate link group
+    if (link.matches('.link-group')) {
+      return decorateLinkGroup(link, index.position);
+    }
+
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (includeCta
+    if (parseCtas
       && (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM')) {
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
-      decorateCta({ elem: link, type, index: index + 1 });
-    // Otherwise add analytics attributes and proper class
-    } else {
-      link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
-      link.classList.add(className);
+      // Remove its 'em' or 'strong' wrapper
+      link.parentElement.replaceWith(link);
+
+      return decorateCta({ elem: link, type, index: index.position });
     }
+
+    // Simple links get analytics attributes and appropriate class name
+    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index.position));
+    link.classList.add(className);
+
+    return link;
+  };
+
+  const linkSelector = 'a, .link-group';
+
+  // If the element is a link, decorate it and return it directly
+  if (elem.matches(linkSelector)) {
+    return decorateLink(elem);
+  }
+
+  // Otherwise, this might be a collection of elements;
+  // decorate all links in the collection and return it
+  elem.querySelectorAll(linkSelector).forEach((link) => {
+    link.replaceWith(decorateLink(link));
   });
+
+  return elem;
 };
 
 // Current limitation: we can only add one link
-const decoratePromo = (elem) => {
+const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.classList.contains('dark');
   const isImageOnly = elem.classList.contains('image-only');
   const imageElem = elem.querySelector('picture');
 
-  decorateLinkList({ list: elem, className: 'feds-promo-link', includeCta: false });
+  decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
@@ -146,34 +173,6 @@ const decoratePromo = (elem) => {
     </div>`;
 };
 
-// Decorate special elements from a menu
-const decorateMenuElement = (elem, index) => {
-  let decoratedElem;
-
-  // Decorate link group
-  if (elem.classList.contains('link-group')) {
-    decoratedElem = decorateLinkGroup(elem, index);
-  }
-
-  if (!elem.classList.contains('gnav-promo')) {
-    // Decorate Primary CTA
-    const primaryCta = elem.querySelector('strong > a');
-
-    if (primaryCta) {
-      decoratedElem = decorateCta({ elem: primaryCta, index });
-    }
-
-    // Decorate Secondary CTA
-    const secondaryCta = elem.querySelector('em > a');
-
-    if (secondaryCta) {
-      decoratedElem = decorateCta({ elem: secondaryCta, type: 'secondaryCta', index });
-    }
-  }
-
-  return decoratedElem;
-};
-
 const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
@@ -189,14 +188,13 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
     const wrapper = toFragment`<div class="${wrapperClass}"></div>`;
     let itemDestination = toFragment`<div class="${itemDestinationClass}"></div>`;
     let menuItems;
-    let currIndex = 0;
+    const index = { position: 0 };
 
     const resetDestination = () => {
       // First, if the previous destination has children,
       // append it to the wrapper
       if (itemDestination.childElementCount) {
         wrapper.append(itemDestination);
-        currIndex = 0;
       }
 
       // Create a new destination
@@ -212,6 +210,8 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         // When encountering a separator (h5 for header, h2 for footer),
         // add the previous section to the column
         resetDestination();
+        // If the separator splits content into columns, reset the analytics index
+        if (!hasMultipleColumns) index.position = 0;
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
@@ -221,31 +221,21 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
       } else if (columnElem.classList.contains('gnav-promo')) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
+        // Since the promo is alone on a column, reset the analytics index
+        index.position = 0;
 
-        const promoElem = decoratePromo(columnElem);
+        const promoElem = decoratePromo(columnElem, index);
 
         itemDestination.append(promoElem);
       } else {
-        currIndex += 1;
-        // Check whether the current element needs special decoration
-        const decoratedElem = decorateMenuElement(columnElem, currIndex);
-
-        // If element has been decorated, remove it
-        // from the initial list of column elements
-        if (decoratedElem) {
-          columnElem.remove();
-        }
-
-        // Leave lists and paragraphs intact, just add attributes to their links
-        if (columnElem && (columnElem.tagName === 'UL' || columnElem.tagName === 'P')) {
-          decorateLinkList({ list: columnElem });
-        }
+        const decoratedElem = decorateElements({ elem: columnElem, index });
+        columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
-        elemDestination.append(decoratedElem || columnElem);
+        elemDestination.append(decoratedElem);
       }
     }
 
