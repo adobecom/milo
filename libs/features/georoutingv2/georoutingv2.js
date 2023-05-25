@@ -82,7 +82,7 @@ async function getAvailableLocales(locales) {
   const pagesExist = [];
   locales.forEach((locale, index) => {
     const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    //const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
+    //const  = `${prefix}${config.contentRoot ?? ''}`;
     const localePath = `${prefix}${path}`;
     console.log("localePath: "+localePath);
 
@@ -91,7 +91,7 @@ async function getAvailableLocales(locales) {
         locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${localeRoot}/`;
+        locale.url = `${prefix}/`;
         availableLocales[index] = locale;
       }
     });
