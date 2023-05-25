@@ -6,7 +6,7 @@ import {
   getOpenPopup,
   selectors,
 } from './utils.js';
-import { closeAllDropdowns } from '../utilities.js';
+import { closeAllDropdowns, logErrorFor } from '../utilities.js';
 
 const closeHeadlines = () => {
   const open = [...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`)];
@@ -122,7 +122,7 @@ class Popup {
   };
 
   addEventListeners = () => {
-    document.querySelector(selectors.globalNav).addEventListener('keydown', (e) => {
+    document.querySelector(selectors.globalNav).addEventListener('keydown', (e) => logErrorFor(() => {
       const popupEl = getOpenPopup();
       if (!e.target.closest(selectors.popup) || !popupEl || this.desktop.matches) return;
       e.preventDefault();
@@ -148,10 +148,10 @@ class Popup {
         }
         case 'ArrowLeft': {
           const { prevHeadline, nextHeadline } = getState();
-          const headline = document.dir === 'ltr' ? prevHeadline : nextHeadline;
+          const headline = document.dir !== 'rtl' ? prevHeadline : nextHeadline;
           if (!headline) {
             closeHeadlines();
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               this.mainNav.items[this.mainNav.curr].focus();
             } else {
               this.mainNav.focusNext();
@@ -168,10 +168,10 @@ class Popup {
         }
         case 'ArrowRight': {
           const { prevHeadline, nextHeadline } = getState();
-          const headline = document.dir === 'ltr' ? nextHeadline : prevHeadline;
+          const headline = document.dir !== 'rtl' ? nextHeadline : prevHeadline;
           if (!headline) {
             closeHeadlines();
-            if (document.dir === 'ltr') {
+            if (document.dir !== 'rtl') {
               this.mainNav.focusNext();
               this.mainNav.open();
             } else {
@@ -189,7 +189,7 @@ class Popup {
         default:
           break;
       }
-    });
+    }, `mobile popup key failed ${e.code}`));
   };
 }
 
