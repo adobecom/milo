@@ -15,6 +15,7 @@
 */
 
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 const variants = ['fullwidth', 'vertical', 'bio'];
 const iconBlocks = {
@@ -41,6 +42,7 @@ function decorateContent(el) {
   if (!block) return;
   const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
+    const iconInline = el.classList.contains('icon-inline');
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     if (image) image.closest('p').classList.add('icon-area');
@@ -54,6 +56,15 @@ function decorateContent(el) {
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
     decorateBlockText(el, iconBlocks[size][variant]);
+
+    if (iconInline) {
+     const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
+      const secondColumn = createTag('div', {class:'second-column'});
+      textContent.forEach((el) => {
+        secondColumn.append(el);
+      });
+      el.querySelector('.foreground .text-content').append(secondColumn);
+    }
   }
 }
 

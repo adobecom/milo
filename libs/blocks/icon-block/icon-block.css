@@ -92,9 +92,16 @@
   border-radius: 50%;
   margin: var(--spacing-s) 0 var(--spacing-xs) 0;
 }
+.icon-block.bio .foreground .second-column {
+  margin-top: var(--spacing-s);
+}
 
 .icon-block.bio.center .foreground .icon-area {
   margin: var(--spacing-s) auto var(--spacing-xs) auto;
+}
+
+.icon-block.bio.center .foreground .second-column {
+  margin-top: var(--spacing-s);
 }
 
 .icon-block.vertical.small .foreground .icon-area {
@@ -292,4 +299,34 @@
   .four-up .icon-block.vertical .foreground .icon-area {
     max-width: 276px;
   }
+}
+.icon-block.icon-inline .foreground .text-content {
+  flex-wrap: nowrap;
+  flex-direction: row;
+  text-align: left;
+  gap: 16px;
+}
+.icon-block.icon-inline .foreground .text-content .icon-area {
+  width: fit-content;
+}
+.icon-block.icon-inline .icon-area picture img {
+  width: 100%;
+}
+.icon-block.icon-inline.icon-height-32 .icon-area,
+.icon-block.icon-inline.icon-height-32 .icon-area picture img {
+  height: 32px;
+}
+.icon-block.icon-inline.icon-height-64 .icon-area,
+.icon-block.icon-inline.icon-height-64 .icon-area picture img {
+  height: 64px;
+}
+.icon-block.icon-inline.icon-height-32.bio .icon-area,
+.icon-block.icon-inline.icon-height-32.bio .icon-area picture img {
+  height: 32px;
+  width: 32px;
+}
+.icon-block.icon-inline.icon-height-64.bio .icon-area,
+.icon-block.icon-inline.icon-height-64.bio .icon-area picture img {
+  height: 64px;
+  width: 64px;
 }
