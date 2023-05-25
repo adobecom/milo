@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://vimeo.com/636596252">https://vimeo.com/636596252</a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import init from '../../../libs/blocks/vimeo/vimeo.js';
+    
+    runTests(() => {
+      describe('vimeo', () => {
+        it('renders embed video for vimeo link', () => {
+          const vimeo = document.querySelector('a');
+
+          init(vimeo);
+          const iframe = document.querySelector("iframe")
+          const wrapper = document.querySelector('.embed-vimeo');
+          expect(wrapper).to.not.be.null;
+          expect(iframe).to.exist
+        });
+      });
+    });
+  </script>
+</html>
