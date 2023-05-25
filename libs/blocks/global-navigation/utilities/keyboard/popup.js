@@ -5,7 +5,7 @@ import {
   getOpenPopup,
   selectors,
 } from './utils.js';
-import { closeAllDropdowns } from '../utilities.js';
+import { closeAllDropdowns, logErrorFor } from '../utilities.js';
 
 const getState = ({ e } = {}) => {
   const popupEl = getOpenPopup();
@@ -46,7 +46,7 @@ class Popup {
   }
 
   addEventListeners = () => {
-    document.querySelector(selectors.globalNav).addEventListener('keydown', (e) => {
+    document.querySelector(selectors.globalNav).addEventListener('keydown', (e) => logErrorFor(() => {
       const popupEl = getOpenPopup();
       if (!e.target.closest(selectors.popup) || !popupEl || !this.desktop.matches) return;
       e.preventDefault();
@@ -125,7 +125,7 @@ class Popup {
         default:
           break;
       }
-    });
+    }, `popup key failed ${e.code}`));
   };
 }
 

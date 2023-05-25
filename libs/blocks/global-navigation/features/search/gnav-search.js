@@ -3,6 +3,7 @@ import {
   getFedsPlaceholderConfig,
   trigger,
   closeAllDropdowns,
+  logErrorFor,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -43,7 +44,7 @@ class Search {
       this.clearSearchForm();
     });
     observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
-    this.init();
+    logErrorFor(this.init.bind(this), 'Search has failed loading');
   }
 
   async init() {
@@ -129,8 +130,6 @@ class Search {
     this.isDesktop.addEventListener('change', () => {
       closeAllDropdowns();
     });
-
-    // TODO: search menu should close on scroll, but this should happen from the general Menu logic
   }
 
   getSuggestions(query = this.query) {

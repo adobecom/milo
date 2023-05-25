@@ -2,23 +2,23 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.js';
-const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/index.css';
+const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.js';
+const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.css';
 
-const getImsToken = async () => {
-  window.adobeid = {
-    client_id: IMS_COMMERCE_CLIENT_ID,
-    environment: 'prod',
-    scope: 'AdobeID,openid',
-  };
-  if (!window.adobeIMS) {
-    await loadScript(IMS_PROD_URL);
-  }
-  if (!window.adobeIMS.isSignedInUser()) {
-    window.adobeIMS.signIn();
-  }
-  return window.adobeIMS?.getAccessToken()?.token;
-};
+const ENVIRONMENT = 'PROD';
+const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
+const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
+const CHECKOUT_CLIENT_ID = 'creative';
+
+const searchParameters = new URLSearchParams(window.location.search);
+// this is only for testing PRs where test URLs are not supported by IMS.
+const token = searchParameters.get('token');
+if (token) {
+  searchParameters.delete('token');
+}
+
+document.body.classList.add('tool', 'tool-ost');
+
 export function createLinkMarkup(
   offerSelectorId,
   type,
@@ -30,7 +30,7 @@ export function createLinkMarkup(
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
-    : `{{PRICE - ${planType} - ${offerName}}}`);
+    : `PRICE - ${planType} - ${offerName}`);
 
   const createHref = () => {
     const url = new URL(location.protocol + location.host);
@@ -75,30 +75,60 @@ export function createLinkMarkup(
   return link;
 }
 
-export default async function init() {
-  const aosAccessToken = await getImsToken();
+let rootElement;
+
+function initOST({ token: aosAccessToken }) {
   const country = 'US';
   const language = 'en';
-  const environment = 'PROD';
-  const wcsApiKey = 'wcms-commerce-ims-ro-user-cc';
-  const aosApiKey = 'wcms-commerce-ims-user-prod';
-  const checkoutClientId = 'creative';
-  const rootContainer = document.querySelector('.ost');
-  const searchParameters = new URLSearchParams(window.location.search);
-  rootContainer.removeChild(rootContainer.firstElementChild);
-  if (!window.ost) {
-    loadStyle(OST_STYLE_URL);
-    await loadScript(OST_SCRIPT_URL);
+
+  const options = {
+    rootMargin: '0px',
+    threshold: 1.0,
+  };
+
+  const main = document.querySelector('main');
+  const observer = new IntersectionObserver(() => {
+    observer.unobserve(main);
+    window.ost.openOfferSelectorTool({
+      country,
+      language,
+      environment: ENVIRONMENT,
+      wcsApiKey: WCS_API_KEY,
+      aosApiKey: AOS_API_KEY,
+      aosAccessToken,
+      checkoutClientId: CHECKOUT_CLIENT_ID,
+      searchParameters,
+      createLinkMarkup,
+      rootElement,
+    });
+  }, options);
+  observer.observe(main);
+}
+
+export default async function init(el) {
+  if (rootElement) return; // only one OST is supported per page
+  el.innerHTML = '<div />';
+  rootElement = el.firstElementChild;
+
+  loadStyle(OST_STYLE_URL);
+  await loadScript(OST_SCRIPT_URL);
+  await loadStyle('https://use.typekit.net/pps7abe.css');
+  if (token) {
+    initOST({ token });
+  } else {
+    window.adobeid = {
+      client_id: IMS_COMMERCE_CLIENT_ID,
+      environment: 'prod',
+      optimizations: { fastEvents: true },
+      autoValidateToken: true,
+      scope: 'AdobeID,openid',
+      onAccessToken: initOST,
+      onReady: () => {
+        if (!window.adobeIMS.isSignedInUser()) {
+          window.adobeIMS.signIn();
+        }
+      },
+    };
+    await loadScript(IMS_PROD_URL);
   }
-  window.ost.openOfferSelectorTool({
-    country,
-    language,
-    environment,
-    wcsApiKey,
-    aosApiKey,
-    aosAccessToken,
-    checkoutClientId,
-    searchParameters,
-    createLinkMarkup,
-  });
 }

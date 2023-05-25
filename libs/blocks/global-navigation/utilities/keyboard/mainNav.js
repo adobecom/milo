@@ -2,7 +2,7 @@
 import { selectors, getNextVisibleItemPosition, getPreviousVisibleItemPosition } from './utils.js';
 import Popup from './popup.js';
 import MobilePopup from './mobilePopup.js';
-import { closeAllDropdowns, trigger } from '../utilities.js';
+import { closeAllDropdowns, trigger, logErrorFor } from '../utilities.js';
 
 class MainNavItem {
   constructor() {
@@ -14,7 +14,7 @@ class MainNavItem {
 
   addEventListeners() {
     document.querySelector(selectors.globalNav)
-      .addEventListener('keydown', (e) => {
+      .addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
           return;
         }
@@ -39,7 +39,6 @@ class MainNavItem {
             closeAllDropdowns();
             break;
           }
-          // TODO popup navigation logic.
           case 'ArrowLeft': {
             if (document.dir !== 'rtl') {
               if (this.prev === -1) break;
@@ -83,7 +82,7 @@ class MainNavItem {
           default:
             break;
         }
-      });
+      }, `mainNav key failed ${e.code}`));
   }
 
   setActive = (target) => {

@@ -12,7 +12,6 @@
 
 import {
   loadArea,
-  loadDelayed,
   loadLana,
   setConfig,
 } from '../utils/utils.js';
@@ -109,6 +108,7 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,
   prodDomains,
@@ -120,6 +120,7 @@ const config = {
     version: '1.0',
     onDemand: false,
   },
+  privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
 };
 
 (async function loadLCPImage() {
@@ -131,5 +132,4 @@ const config = {
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-  loadDelayed();
 }());
