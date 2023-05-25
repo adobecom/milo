@@ -85,7 +85,7 @@ async function getAvailableLocales(locales) {
         locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${locPrefix}/`;
+        locale.url = `${locPrefix}${config.contentRoot ?? ''}`;
         availableLocales[index] = locale;
       }
     });
