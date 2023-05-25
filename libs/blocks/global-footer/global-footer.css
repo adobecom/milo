@@ -34,6 +34,10 @@
   padding: 0;
 }
 
+.feds-footer-icons {
+  display: none;
+}
+
 /* Menu */
 .feds-footer-wrapper .feds-menu-headline {
   font-size: 14px;
