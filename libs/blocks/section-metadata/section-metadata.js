@@ -17,14 +17,16 @@ export function handleFocalpoint(pic, child) {
   if (!(child)) return;
   let text = '';
   if (child.childElementCount == 2) {
-    text = child.querySelectorAll('p')[1].textContent;
+    text = child.querySelectorAll('p')[1]?.textContent;
   } else if (child.textContent) {
     text = child.textContent;
   }
   const image = pic.querySelector('img');
   const directions = text.slice(text.indexOf(':') + 1).split(',');
   const [x,y = ''] = directions
-  image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+  if (image) {
+    image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+  }
 }
 
 function debounce(func, timeout = 300) {

@@ -49,8 +49,9 @@ const decorateBlockBg = (block, node) => {
       decorateVideo(child);
     }
 
-    if (child.querySelector('picture')) {
-      const pic = child.querySelector('picture');
+    const pic = child.querySelector('picture');
+    if (pic) {
+      console.log('child', child);
       handleFocalpoint(pic, child)
     }
   });
