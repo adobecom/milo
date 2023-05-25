@@ -255,7 +255,7 @@ describe('Utils', () => {
 
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+        expect(document.documentElement.getAttribute('dir')).null;
       });
     });
 
