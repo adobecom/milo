@@ -25,7 +25,11 @@ function hasTextNode(element) {
 function findTextElements(element = document.body) {
   let result = [];
 
-  if (element.classList.contains('jpwordwrap-disable')) {
+  if (
+    element.classList.contains('jpwordwrap-disabled')
+    || element.tagName.toLowerCase() === 'header'
+    || element.tagName.toLowerCase() === 'footer'
+  ) {
     return [];
   }
 
@@ -82,6 +86,37 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
 }
 
 /**
+ * Get metadata
+ * @param {*} name The name of metadata.
+ * @returns metadata content
+ */
+function getMetadata(name) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta?.content;
+}
+
+/**
+ * Check if a word wrap has been applied to an element.
+ *
+ * @param {HTMLElement} element - The HTML element to be checked.
+ * @returns true if a word wrap has been applied, otherwise false.
+ */
+export function isWordWrapApplied(element) {
+  return !!element.querySelector('wbr');
+}
+
+/**
+ * Check if a balanced word wrap has been applied to an element.
+ *
+ * @param {HTMLElement} element - The HTML element to be checked.
+ * @returns true if a balanced word wrap has been applied, otherwise false.
+ */
+export function isBalancedWordWrapApplied(element) {
+  return !!element.querySelector('wbr[class^=jpn-balanced-wbr]');
+}
+
+/**
  * Apply smart line-breaking algorithm depending on the given options.
  * @param {*} config The milo config.
  * @param {*} options The options to control line breaks.
@@ -91,9 +126,9 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
   const {
     scopeArea = document,
     budouxThres = 2000,
-    bwEnable = false,
-    budouxDisabledSelector = null,
-    bwDisabledSelector = null,
+    bwEnabled = false,
+    budouxExcludeSelector = null,
+    bwExcludeSelector = 'p',
     lineBreakOkPatterns = [],
     lineBreakNgPatterns = [],
   } = options;
@@ -103,25 +138,24 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
   const { loadDefaultJapaneseParser } = await import(`${base}/deps/budoux-index-ja.min.js`);
   const parser = loadDefaultJapaneseParser();
 
-  const main = scopeArea.querySelector('main');
-  if (!main) return;
-
-  const budouxDisabledElements = new Set();
-  const bwDisabledElements = new Set();
   // Find elements that contains a text node directly under its child node.
-  const textElements = findTextElements(main);
+  const textElements = findTextElements(
+    scopeArea instanceof Document ? scopeArea.body : scopeArea,
+  );
+  const budouxExcludeElements = new Set();
+  const bwExcludeElements = new Set();
 
   // Find BudouX disabled elements
-  if (budouxDisabledSelector) {
-    scopeArea.querySelectorAll(budouxDisabledSelector).forEach((el) => {
-      budouxDisabledElements.add(el);
+  if (budouxExcludeSelector) {
+    scopeArea.querySelectorAll(budouxExcludeSelector).forEach((el) => {
+      budouxExcludeElements.add(el);
     });
   }
 
   // Find Blanced Word Wrap disabled elements
-  if (bwEnable && bwDisabledSelector) {
-    scopeArea.querySelectorAll(budouxDisabledSelector).forEach((el) => {
-      bwDisabledElements.add(el);
+  if (bwEnabled && bwExcludeSelector) {
+    scopeArea.querySelectorAll(bwExcludeSelector).forEach((el) => {
+      bwExcludeElements.add(el);
     });
   }
 
@@ -136,30 +170,19 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
-    if (budouxDisabledElements.has(el)) return;
+    if (budouxExcludeElements.has(el) || isWordWrapApplied(el)) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
 
-  if (bwEnable) {
+  if (bwEnabled) {
     const BalancedWordWrapper = (await import(`${base}/deps/bw2.min.js`)).default;
     const bw2 = new BalancedWordWrapper();
     // Apply balanced word wrap to target selector
     textElements.forEach((el) => {
-      if (bwDisabledElements.has(el)) return;
+      if (bwExcludeElements.has(el) || isBalancedWordWrapApplied(el)) return;
       bw2.applyElement(el);
     });
   }
-}
-
-/**
- * get metadata
- * @param {*} name The name of metadata.
- * @returns metadata content
- */
-function getMetadata(name) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
 }
 
 /**
@@ -169,11 +192,11 @@ function getMetadata(name) {
  * @param {*} doc The Document or HTMLElement to which you want you apply word wrap.
  */
 export default async function controlJapaneseLineBreaks(config, scopeArea = document) {
-  const disabled = getMetadata('jpwordwrap:disabled') || false;
+  const disabled = getMetadata('jpwordwrap:disabled') === 'true' || false;
   const budouxThres = Number(getMetadata('jpwordwrap:budoux-thres')) || 2000;
-  const budouxDisabledSelector = getMetadata('jpwordwrap:budoux-disable-selector');
-  const bwEnabled = getMetadata('jpwordwrap:bw-enabled') || false;
-  const bwDisabledSelector = getMetadata('jpwordwrap:bw-disable-selector');
+  const budouxExcludeSelector = getMetadata('jpwordwrap:budoux-exclude-selector');
+  const bwEnabled = getMetadata('jpwordwrap:bw-enabled') === 'true' || false;
+  const bwExcludeSelector = getMetadata('jpwordwrap:bw-exclude-selector') || 'p';
   const lineBreakOkPatterns = (getMetadata('jpwordwrap:line-break-ok') || '').split(',');
   const lineBreakNgPatterns = (getMetadata('jpwordwrap:line-break-ng') || '').split(',');
 
@@ -182,9 +205,9 @@ export default async function controlJapaneseLineBreaks(config, scopeArea = docu
   await applyJapaneseLineBreaks(config, {
     scopeArea,
     budouxThres,
-    budouxDisabledSelector,
+    budouxExcludeSelector,
     bwEnabled,
-    bwDisabledSelector,
+    bwExcludeSelector,
     lineBreakOkPatterns,
     lineBreakNgPatterns,
   });
