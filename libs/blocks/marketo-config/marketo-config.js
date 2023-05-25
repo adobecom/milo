@@ -1,12 +1,11 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
-import { loadStyle, loadBlock, createTag } from '../../utils/utils.js';
+import { loadStyle, loadBlock, createTag, utf8ToB64 } from '../../utils/utils.js';
 import { setPreferences } from '../marketo/marketo.js';
-// import { Input, Select, CopyBtn } from './components.js';
-import { CopyBtn } from './components.js';
+import Preview from './MarketoPreview.js'
 import { ConfiguratorContext, ConfiguratorProvider, stateReform, saveStateToLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { utf8ToB64 } from '../../utils/utils.js';
-import { Input as Input, Select as Select } from '../../ui/controls/formControls.js';
+import CopyBtn from '../../ui/controls/CopyBtn.js';
+import { Input, Select } from '../../ui/controls/formControls.js';
 
 export async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
@@ -172,51 +171,6 @@ const ConfiguratorWrapper = ({ block, link }) => {
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
     <${Configurator} title=${title} panelsData=${panelsData} lsKey=${lsKey} block=${blockName} />
   </${ConfiguratorProvider}>
-  `;
-};
-
-const Preview = ({ section }) => {
-  const [twoUp, setTwoUp] = useState(true);
-  const [headerText, setHeaderText] = useState('Download the report.');
-  const [bodyText, setBodyText] = useState('Please share some contact information to download the report.');
-
-  const handleTwoUpChange = (value) => {
-    setTwoUp(value);
-  };
-
-  const handleHeaderChange = (value) => {
-    setHeaderText(value);
-  };
-
-  const handleBodyChange = (value) => {
-    setBodyText(value);
-  };
-
-  useEffect(() => {
-    if (twoUp) {
-      section.classList.add('two-up');
-    } else {
-      section.classList.remove('two-up');
-    }
-
-    const header = section.querySelector('div.marketo section > h3');
-    header.textContent = headerText;
-
-    const body = section.querySelector('div.marketo section > p');
-    body.textContent = bodyText;
-  }, [twoUp, headerText, bodyText]);
-
-  return html`
-    <div class="preview">
-      <div class="preview-container">
-      <section class="preview-options">
-        <div class="preview-title"><h2>Configurator Preview</h2></div>
-        <${Input} name="twoUp" class="preview-option" label="Two-Up" type="checkbox" value=${twoUp} onChange=${handleTwoUpChange} />
-        <${Input} name="header" class="preview-option" label="Header" value=${headerText} onChange=${handleHeaderChange} />
-        <${Input} name="body" class="preview-option" label="Body" value=${bodyText} onChange=${handleBodyChange} />
-        </section>
-      </div>
-    </div>
   `;
 };
 

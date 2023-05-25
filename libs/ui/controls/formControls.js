@@ -15,7 +15,7 @@ const Select = ({ label, name, onChange, options, value, sort = false, descripti
     <div class="field">
       <label for=${name}>
         ${label}
-        ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+        ${description && html`<i class="tooltip"></i><span class="tooltip-text">${description}</span>`}
       </label>
       <select id=${name} value=${value} onChange=${onSelectChange}>
         ${entries.map(
@@ -59,7 +59,7 @@ const Input = ({ label, name, onChange, onValidate, type = 'text', value, title,
     <div class="field ${isCheckbox ? 'checkbox' : ''}">
       <label for=${id}>
         ${label}
-        ${description && html`<i class="tooltip"><span class="tooltip-text">${description}</span></i>`}
+        ${description && html`<i class="tooltip"></i><span class="tooltip-text">${description}</span>`}
       </label>
       <input
         class=${!isValid && 'input-invalid'}

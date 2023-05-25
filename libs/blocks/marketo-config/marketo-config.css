@@ -1,17 +1,10 @@
-@import url('./components.css');
-
-:root {
-  --notch-size: 12px;
-}
-
-.hide {
-  display: none;
-}
+@import url('./marketoPreview.css');
 
 .tool-header {
   display: grid;
-  grid-template-columns: 6px auto 1fr auto;
+  grid-template-columns: 6px auto 1fr;
   align-items: end;
+  justify-items: end;
   padding-top: 36px;
   position: relative;
 }
@@ -59,54 +52,13 @@
   left: 18px;
 }
 
-.tool-header button.copy-config {
-  grid-column: 4;
-  margin: 0 16px 16px;
-  outline: transparent solid 0;
-  transition:outline 300ms;
-  border: none;
-  height: 36px;
-  font-family: adobe-clean, sans-serif;
-  color: #FFF;
-  background: #FF1593;
-  background-image: url("../../../img/ui/icon-copy.svg");
-  background-repeat: no-repeat;
-  background-size: 18px;
-  background-position: 12px center;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 0 18px 0 36px;
-  clip-path:
-    polygon(0% 0%,
-    var(--notch-size) 0%,
-    calc(100% - var(--notch-size)) 0%,
-    100% var(--notch-size),
-    100% calc(100% - var(--notch-size)),
-    100% 100%,
-    0% 100%,
-    0% 100%);
-}
-
-.tool-header button.copy-config:hover {
-  background-color: #ff1563;
-}
-
-.tool-header button.copy-config.is-error {
-  transition: background-color .5s;
-  background-color: red;
-}
-
-.tool-header button.copy-config.is-success {
-  transition: background-color .5s;
-  background-color: green;
-}
-
 .marketo-config dt.title {
   cursor: pointer;
 }
 
 .marketo-config dd.content .field {
   max-width: 100%;
+  position: relative;
 }
 
 .marketo-config dd.content .field select, 
@@ -142,30 +94,74 @@
   padding: 36px 36px 12px 12px;
 }
 
-.preview {
-  max-width: 1880px;
-  margin: 0 auto;
-  border-bottom: 1px solid #282828;
+.marketo-config dd.content.is-expanded {
+  clip-path: polygon(0% -100%, 100% -100%, 100% calc(100% - var(--notch-size)), calc(100% - var(--notch-size)) 100%, 0% 100%);
+  z-index: 10;
+  overflow: visible;
+  position: relative;
 }
 
-.preview-title {
-  margin-left: 18px;
+dd.content::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  background-color: inherit;
+  border-top: 6px solid transparent;
+  border-left: 6px solid transparent;
+  border-right: 6px solid white;
+  border-bottom: 6px solid white;
 }
 
-.preview-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 10px;
-  align-items: center;
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 5px;
 }
 
-.preview-options label {
-  padding-right: 8px;
+.tooltip::before {
+  content: "?";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #555;
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+}
+
+.tooltip-text {
+  display: block;
+  font-size: 14px;
+  line-height: 1.4;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 8px;
+  margin: 6px 6px 0;
+  position: absolute;
+  bottom: 100%;
+  white-space: normal;
+  z-index: 10;
+  transition: opacity 0.3s, visibility 0.3s;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tooltip-text:hover,
+.tooltip:hover + .tooltip-text {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (min-width: 900px) {
   .tool-header {
-    grid-template-columns: 380px auto 1fr auto;
+    grid-template-columns: 380px auto 1fr;
     gap: 24px;
   }
 
