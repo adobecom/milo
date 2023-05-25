@@ -424,12 +424,12 @@ function hasUrlWithPipe(str) {
   return regex.test(str);
 }
 
-export function decorateImageLinks(e) {
-  const images = e.querySelectorAll('img');
-  if (!images.length) return e;
+export function decorateImageLinks(a) {
+  const images = a.querySelectorAll('img');
+  if (!images.length) return a;
   [...images].forEach((img) => {
     // Check if the image has an alt tag with a url & pipe - 'https... |'
-    if (!(hasUrlWithPipe(img.alt))) return e;
+    if (!(hasUrlWithPipe(img.alt))) return a;
     try {
       // //Mine for URL and alt text
       const splitText = img.alt.split('|');
@@ -445,13 +445,13 @@ export function decorateImageLinks(e) {
         aTag.href = aTag.href.replace('#_blank', '');
       }
       picParent.append(aTag);
-      return e;
-    } catch (err) {
-      console.log('Failed to decorate image links', err.message);
-      return e;
+      return a;
+    } catch (e) {
+      /* c8 ignore next 3 */
+      console.log('Failed to decorate image links', e.message);
+      return a;
     }
   });
-  return e;
 }
 
 export function decorateAutoBlock(a) {
