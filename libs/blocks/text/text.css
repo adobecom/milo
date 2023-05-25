@@ -108,12 +108,12 @@
   padding-left: var(--spacing-xs);;
 }
 
-/*Legal Copy*/
-.legal-copy.text-block .foreground {
+/*Legal*/
+.legal.text-block .foreground {
   padding: var(--spacing-xl) 0;
 }
 
-.legal-copy.text-block p {
+.legal.text-block p {
   font-style: italic;
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
