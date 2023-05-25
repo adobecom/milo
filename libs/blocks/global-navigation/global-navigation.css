@@ -27,9 +27,10 @@
 header.global-navigation {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
   background-color: var(--feds-background-nav--light);
   visibility: visible;
+  box-sizing: content-box;
 }
 
 .feds-topnav-wrapper {
@@ -94,7 +95,9 @@ header.global-navigation {
   flex-shrink: 0;
 }
 
-.feds-brand-image > * {
+.feds-brand-image picture,
+.feds-brand-image img,
+.feds-brand-image svg {
   width: 100%;
   display: block;
 }
@@ -298,11 +301,9 @@ header.global-navigation {
   display: none;
   right: 0;
   top: 100%;
-  border: 1px solid #e1e1e1;
-  border-radius: 0 0 4px 4px;
-  background: #fafafa;
+  background-color: var(--feds-background-popup--light);
   overflow: hidden;
-  box-shadow: 0 2px 6px -1px rgb(0 0 0 / 10%);
+  box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
   line-height: 1.4;
   white-space: nowrap;
   z-index: 1;
@@ -342,6 +343,7 @@ header.global-navigation {
 
   .feds-topnav-wrapper {
     border-bottom: 1px solid var(--feds-borderColor--light);
+    box-sizing: border-box;
   }
 
   .feds-nav-wrapper {
@@ -351,6 +353,7 @@ header.global-navigation {
     flex-grow: 1;
     height: unset;
     border-bottom: unset;
+    border-top: unset;
     justify-content: space-between;
     background-color: transparent;
   }
@@ -394,6 +397,8 @@ header.global-navigation {
     right: 0;
     justify-content: center;
     padding: 20px 0;
+    /* Relative to nav, not trigger, ensure top border is visible */
+    margin-top: 1px;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
@@ -500,6 +505,7 @@ header button.gnav-toggle {
 }
 
 header button.gnav-toggle::after {
+  color: var(--feds-color-link--light);
   content: "\2630";
   font-weight: 700;
 }
@@ -533,7 +539,7 @@ header .app-launcher button svg {
 
 header .app-launcher button:hover svg {
   opacity: 1;
-} 
+}
 
 header .app-launcher {
   display: none;

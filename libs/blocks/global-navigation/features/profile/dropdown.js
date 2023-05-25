@@ -1,5 +1,5 @@
 import { getConfig } from '../../../../utils/utils.js';
-import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns } from '../../utilities/utilities.js';
+import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 
 const getLanguage = (ietfLocale) => {
@@ -54,7 +54,7 @@ class ProfileDropdown {
     this.sections = sections;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
-    this.init();
+    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()');
   }
 
   async init() {
@@ -78,8 +78,6 @@ class ProfileDropdown {
         this.placeholders.manageEnterprise,
         this.placeholders.profileAvatar,
       ],
-      // TODO: sanity checks if the user is logged in and mandatory properties are set.
-      // If not, add logs providing guidance for developers
       { displayName: this.profileData.displayName, email: this.profileData.email },
     ] = await Promise.all([
       replaceKeyArray(
@@ -103,7 +101,7 @@ class ProfileDropdown {
     // historically we shrunk the font size and displayed the account name on two lines;
     // the email had some special logic as well;
     // for MVP, we took a simpler approach ("Some very long name, very l...")
-    this.avatarElem = toFragment`<img 
+    this.avatarElem = toFragment`<img
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
@@ -111,7 +109,7 @@ class ProfileDropdown {
       data-url="${decorateProfileLink('account', `profile?lang=${lang}`)}"></img>`;
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
-        <a 
+        <a
           href="${decorateProfileLink('account', `?lang=${lang}`)}"
           class="feds-profile-header"
           daa-ll="${this.placeholders.viewAccount}"
@@ -174,11 +172,11 @@ class ProfileDropdown {
   }
 
   addEventListeners() {
-    this.buttonElem.addEventListener('click', () => trigger({ element: this.buttonElem }));
+    this.buttonElem.addEventListener('click', (e) => trigger({ element: this.buttonElem, event: e }));
     this.buttonElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
     this.dropdown.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
-    this.avatarElem.addEventListener('click', (event) => {
-      event.preventDefault();
+    this.avatarElem.addEventListener('click', (e) => {
+      e.preventDefault();
       window.location.assign(this.avatarElem.dataset?.url);
     });
   }
