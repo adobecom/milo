@@ -122,6 +122,38 @@
   background: linear-gradient(90deg, rgba(33,99,212,1) 0%, rgba(93,227,116,1) 100%);
 }
 
+.logged-out-homepage .positioned-background {
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.logged-out-homepage .positioned-background picture {
+  display: none;
+}
+
+.logged-out-homepage .mobileOnly,
+.logged-out-homepage .tabletOnly,
+.logged-out-homepage .desktopOnly {
+  display: none;
+}
+
+@media screen and (max-width: 599px) {
+  .logged-out-homepage div.mobileOnly {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 600px) and (max-width: 1199px) {
+  .logged-out-homepage .tabletOnly {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .logged-out-homepage .desktopOnly {
+    display: block;
+  }
+}
 /* Alignment */
 .logged-out-homepage.center {
   text-align: center;

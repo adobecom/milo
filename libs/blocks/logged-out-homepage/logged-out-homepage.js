@@ -71,19 +71,64 @@ function decorateLinks(el, size) {
   });
 }
 
+function checkForBackgroundRows(el, rows) {
+  el.classList.add('has-bg');
+  const [head, ...tail] = rows;
+  decorateBlockBg(el, head);
+  return tail;
+}
+
+function camelize(str) {
+  const str2 = str.split('-').join(' ');
+  return str2.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => (index === 0 ? word.toLowerCase() : word.toUpperCase())).replace(/\s+/g, '');
+}
+
+function positionBackgrounds(row, index, metaData) {
+  const prefixes = ['background', 'background2'];
+  const selectors = {
+    mobile: ':scope > div',
+    tablet: ':scope > div.tabletOnly, :scope div.desktopOnly',
+    desktop: ':scope div.desktopOnly',
+  };
+  Object.entries(selectors).forEach(([selectorKey, selector]) => {
+    Object.entries(metaData).forEach(([key, value]) => {
+      if (key.includes(`${prefixes[index]}-`) && (key.includes(`${selectorKey}-`) || selectorKey === 'mobile')) {
+        const bgs = row.querySelectorAll(selector);
+        bgs.forEach((bg) => {
+          if (!bg.classList.contains('positioned-background')) {
+            bg.classList.add('positioned-background');
+            const img = bg.querySelector('img');
+            if (img) {
+              bg.style.backgroundImage = `url('${img.getAttribute('src')}')`;
+            }
+          }
+          bg.style[camelize(key.replace(prefixes[index], 'background'))] = value.toLowerCase();
+        });
+      }
+    });
+  });
+}
+
 export default function init(el) {
   const blockSize = getBlockSize(el);
   decorateButtons(el, `button-${blockTypeSizes[blockSize][3]}`);
   decorateLinks(el, blockTypeSizes[blockSize][4]);
   const parsedBlock = parseBlockMetaData(el);
   let { rows, metaData } = parsedBlock;
+  // metaData.forEach(setting)
 
   if (rows.length > 1) {
-    el.classList.add('has-bg');
-    const [head, ...tail] = rows;
-    decorateBlockBg(el, head);
-    rows = tail;
+    rows = checkForBackgroundRows(el, rows);
+    if (rows.length > 1 && el.classList.contains('two-backgrounds')) {
+      rows = checkForBackgroundRows(el, rows);
+    }
   }
+
+  const backgrounds = el.querySelectorAll(':scope > div.background');
+  backgrounds.forEach((row, index) => {
+    positionBackgrounds(row, index, metaData);
+  });
+
   if (el.classList.contains('highlight')) {
     const [highlight, ...tail] = rows;
     highlight.classList.add('highlight-row');
