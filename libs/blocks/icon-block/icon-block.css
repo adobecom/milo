@@ -47,7 +47,6 @@
   font-size: var(--type-body-m-size);
 }
 
-
 .icon-block .foreground .text-content p:not([class]) a {
   font-size: var(--type-body-m-size);
 }
@@ -68,7 +67,7 @@
   margin-bottom: var(--spacing-m);
 }
 
-.icon-block .foreground .icon-area img {
+.icon-block:not(.logo) .foreground .icon-area img {
   height: 80px;
   width: auto;
 }
@@ -114,11 +113,6 @@
   max-height: 48px;
   max-width: 147px;
   margin-bottom: var(--spacing-xs);
-}
-
-.five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
-  max-height: 48px;
-  max-width: 147px;
 }
 
 .icon-block .foreground .text-content > * {

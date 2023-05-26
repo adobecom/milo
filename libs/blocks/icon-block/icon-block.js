@@ -39,11 +39,11 @@ const iconBlocks = {
 function decorateForeground(block) {
   if (!block) return;
   block.classList.add('foreground');
+  const image = block.querySelector(':scope img');
+  if (image) image.parentElement.classList.add('icon-area');
   const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
     text.classList.add('text-content');
-    const image = block.querySelector(':scope img');
-    if (image) image.parentElement.classList.add('icon-area');
     const lastElem = text.lastElementChild;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
