@@ -24,8 +24,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
-  const test = async () => {
-    let accessToken = '';
+  const addVersion = async (event) => {
+      let accessToken = '';
       const { sprest } = await getConfig();
       const msalClient = new msal.PublicClientApplication(sprest);
       const loginRequest = {
@@ -67,10 +67,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
       let publishResponse = await fetch(`${url}/Publish('Last Published version')`, callOptions);
       const data = await publishResponse.json();
       console.log(data);
-  };
-
-  const addVersion = (event) => {
-    test(event);
   }
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
@@ -87,4 +83,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
   sk.addEventListener('published', addVersion);
+
+  window.skevent = {
+    addVersion
+  }
 }
