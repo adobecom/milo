@@ -1,8 +1,13 @@
-import { getConfig } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
 
-const curtainSelector = '.feds-curtain';
-const navLink = '.feds-navLink';
-const globalNavSelector = '.global-navigation';
+loadLana();
+
+export const selectors = {
+  globalNav: '.global-navigation',
+  curtain: '.feds-curtain',
+  navLink: '.feds-navLink',
+};
+
 export function toFragment(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
@@ -21,19 +26,20 @@ export function toFragment(htmlStrings, ...values) {
   return fragment;
 }
 
-// TODO this is just prototyped
 export const getFedsPlaceholderConfig = () => {
-  const { locale, miloLibs, env } = getConfig();
+  const { locale } = getConfig();
   let libOrigin = 'https://milo.adobe.com';
+
   if (window.location.origin.includes('localhost')) {
     libOrigin = `${window.location.origin}`;
   }
 
-  if (window.location.origin.includes('.hlx.')) {
-    const baseMiloUrl = env.name === 'prod'
-      ? 'https://main--milo--adobecom.hlx.live'
-      : 'https://main--milo--adobecom.hlx.page';
-    libOrigin = miloLibs || `${baseMiloUrl}`;
+  if (window.location.origin.includes('.hlx.page')) {
+    libOrigin = 'https://main--milo--adobecom.hlx.page';
+  }
+
+  if (window.location.origin.includes('.hlx.live')) {
+    libOrigin = 'https://main--milo--adobecom.hlx.live';
   }
 
   return {
@@ -53,12 +59,57 @@ export function getAnalyticsValue(str, index) {
   return analyticsValue;
 }
 
+export function getExperienceName() {
+  const experiencePath = getMetadata('gnav-source');
+
+  return experiencePath?.split('/').pop() || '';
+}
+
+export function loadStyles(path) {
+  const { miloLibs, codeRoot } = getConfig();
+  return new Promise((resolve) => {
+    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
+  });
+}
+
+// Base styles are shared between top navigation and footer,
+// since they can be independent of each other.
+// CSS imports were not used due to duplication of file include
+export async function loadBaseStyles() {
+  await loadStyles('base.css');
+}
+
+export function loadBlock(path) {
+  return import(path).then((module) => module.default);
+}
+
+let cachedDecorateMenu;
+export async function loadDecorateMenu() {
+  if (cachedDecorateMenu) return cachedDecorateMenu;
+
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
+  });
+
+  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+    loadBlock('./menu/menu.js'),
+    loadStyles('utilities/menu/menu.css'),
+  ]);
+
+  resolve({
+    decorateMenu,
+    decorateLinkGroup,
+  });
+  return cachedDecorateMenu;
+}
+
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   return toFragment`
     <div class="feds-cta-wrapper">
-      <a 
+      <a
         href="${elem.href}"
         class="feds-cta feds-cta--${modifier}"
         daa-ll="${getAnalyticsValue(elem.textContent, index)}">
@@ -68,29 +119,31 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
 }
 
 export function closeAllDropdowns({ e } = {}) {
-  const openElements = document.querySelectorAll(`${globalNavSelector} [aria-expanded='true']`);
+  const openElements = document.querySelectorAll(`${selectors.globalNav} [aria-expanded='true']`);
   if (!openElements) return;
   if (e) e.preventDefault();
   [...openElements].forEach((el) => {
     el.setAttribute('aria-expanded', 'false');
-    if (el.closest(navLink)) {
+    if (el.closest(selectors.navLink)) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
-  // TODO the curtain will be refactored
-  document.querySelector(curtainSelector)?.classList.remove('is-open');
+
+  document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }
 
 /**
  * @param {*} param0
  * @param {*} param0.element - the DOM element of the trigger to expand
+ * @param {*} [param0.event] - the original event leading to this method being called
  * @returns true if the element has been expanded, false if it was already expanded
  */
-export function trigger({ element } = {}) {
+export function trigger({ element, event } = {}) {
+  if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;
-  if (element.closest(navLink)) {
+  if (element.closest(selectors.navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
@@ -100,10 +153,23 @@ export function trigger({ element } = {}) {
 export function expandTrigger({ element } = {}) {
   if (!element) return;
   closeAllDropdowns();
-  if (element.closest(navLink)) {
+  if (element.closest(selectors.navLink)) {
     element.setAttribute('daa-lh', 'header|Close');
   }
   element.setAttribute('aria-expanded', 'true');
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
+  clientId: 'feds-milo',
+  sampleRate: 1,
+});
+
+export const logErrorFor = async (fn, message) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e });
+  }
+};

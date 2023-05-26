@@ -46,21 +46,25 @@
             <th>Action</th>
             <th>Status</th>
             <th>Last Run</th>
+            <th>Description</th>
           </tr>
           <tr>
             <td>Copy</td>
             <td id="copy-status">NOT STARTED</td>
             <td id="copy-status-ts">-</td>
+            <td id="copy-status-msg">-</td>
           </tr>
           <tr>
             <td>Promote</td>
             <td id="promote-status">NOT STARTED</td>
             <td id="promote-status-ts">-</td>
+            <td id="promote-status-msg">-</td>
           </tr>
           <tr>
             <td>Delete</td>
             <td id="delete-status">NOT STARTED</td>
             <td id="delete-status-ts">-</td>
+            <td id="delete-status-msg">-</td>
           </tr>
         </table>
       </div>
@@ -74,6 +78,10 @@
         <div class="fg-modal-buttons">
           <button id="yes-btn">Yes</button>
           <button id="no-btn">No</button>
+        </div>
+        <div id="promote-publish-options" class="promote-publish-options">
+          <input class="promote-publish-radio" type="radio" name="promotePublishRadio" value="promoteOnly" checked>Promote Only?</input>
+          <input class="promote-publish-radio" type="radio" name="promotePublishRadio" value="promotePublish">Promote and Publish Promoted Pages?</input>
         </div>
       </div>
     </div>

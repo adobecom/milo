@@ -1,13 +1,21 @@
 /* eslint-disable no-restricted-syntax */
-import { getAnalyticsValue, toFragment, decorateCta, yieldToMain } from '../../utilities/utilities.js';
+import {
+  getAnalyticsValue,
+  toFragment,
+  decorateCta,
+  yieldToMain,
+  getFedsPlaceholderConfig,
+  logErrorFor,
+} from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
+import { replaceText } from '../../../../features/placeholders.js';
 
 const decorateHeadline = (elem) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   // TODO: proper handling of aria-expanded across devices
   const headline = toFragment`<div
-    class="feds-popup-headline"
+    class="feds-menu-headline"
     role="heading"
     aria-level="2"
     aria-haspopup="true"
@@ -20,10 +28,10 @@ const decorateHeadline = (elem) => {
   headline.addEventListener('click', (e) => {
     e.preventDefault();
 
-    const openPopup = document.querySelector('.feds-popup-headline[aria-expanded = "true"]');
+    const openMenu = document.querySelector('.feds-menu-headline[aria-expanded = "true"]');
 
-    if (openPopup && openPopup !== headline) {
-      openPopup.setAttribute('aria-expanded', 'false');
+    if (openMenu && openMenu !== headline) {
+      openMenu.setAttribute('aria-expanded', 'false');
     }
 
     const currentState = headline.getAttribute('aria-expanded');
@@ -50,7 +58,7 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  const linkGroup = toFragment`<a 
+  const linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
@@ -61,29 +69,56 @@ const decorateLinkGroup = (elem, index) => {
   return linkGroup;
 };
 
-// Decorate a list of simple links
-const decorateLinkList = ({ list, className = 'feds-navLink', includeCta = true } = {}) => {
-  list.querySelectorAll('a').forEach((link, index) => {
+const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, index = { position: 0 } } = {}) => {
+  const decorateLink = (link) => {
+    // Increase analytics index every time a link is decorated
+    index.position += 1;
+
+    // Decorate link group
+    if (link.matches('.link-group')) {
+      return decorateLinkGroup(link, index.position);
+    }
+
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
-    if (includeCta
+    if (parseCtas
       && (link.parentElement.tagName === 'STRONG' || link.parentElement.tagName === 'EM')) {
       const type = link.parentElement.tagName === 'EM' ? 'secondaryCta' : 'primaryCta';
-      decorateCta({ elem: link, type, index: index + 1 });
-    // Otherwise add analytics attributes and proper class
-    } else {
-      link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
-      link.classList.add(className);
+      // Remove its 'em' or 'strong' wrapper
+      link.parentElement.replaceWith(link);
+
+      return decorateCta({ elem: link, type, index: index.position });
     }
+
+    // Simple links get analytics attributes and appropriate class name
+    link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index.position));
+    link.classList.add(className);
+
+    return link;
+  };
+
+  const linkSelector = 'a, .link-group';
+
+  // If the element is a link, decorate it and return it directly
+  if (elem.matches(linkSelector)) {
+    return decorateLink(elem);
+  }
+
+  // Otherwise, this might be a collection of elements;
+  // decorate all links in the collection and return it
+  elem.querySelectorAll(linkSelector).forEach((link) => {
+    link.replaceWith(decorateLink(link));
   });
+
+  return elem;
 };
 
 // Current limitation: we can only add one link
-const decoratePromo = (elem) => {
+const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.classList.contains('dark');
   const isImageOnly = elem.classList.contains('image-only');
   const imageElem = elem.querySelector('picture');
 
-  decorateLinkList({ list: elem, className: 'feds-promo-link', includeCta: false });
+  decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
 
   const decorateImage = () => {
     const linkElem = elem.querySelector('a');
@@ -127,57 +162,28 @@ const decoratePromo = (elem) => {
     </div>`;
 };
 
-// Decorate special elements from a popup
-const decoratePopupElement = (elem, index) => {
-  let decoratedElem;
-
-  // Decorate link group
-  if (elem.classList.contains('link-group')) {
-    decoratedElem = decorateLinkGroup(elem, index);
-  }
-
-  if (!elem.classList.contains('gnav-promo')) {
-    // Decorate Primary CTA
-    const primaryCta = elem.querySelector('strong > a');
-
-    if (primaryCta) {
-      decoratedElem = decorateCta({ elem: primaryCta, index });
-    }
-
-    // Decorate Secondary CTA
-    const secondaryCta = elem.querySelector('em > a');
-
-    if (secondaryCta) {
-      decoratedElem = decorateCta({ elem: secondaryCta, type: 'secondaryCta', index });
-    }
-  }
-
-  return decoratedElem;
-};
-
-const decorateColumns = async (content) => {
+const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
   decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
   // The resulting template structure should follow these rules:
-  // * a popup can have multiple columns;
+  // * a menu can have multiple columns;
   // * a column can have multiple sections;
   // * a section can have a headline and a collection of item(s)
   for await (const column of [...content.children]) {
     await yieldToMain();
-    const wrapperClass = hasMultipleColumns ? 'feds-popup-column' : 'feds-popup-content';
-    const itemDestinationClass = hasMultipleColumns ? 'feds-popup-section' : 'feds-popup-column';
+    const wrapperClass = hasMultipleColumns ? 'feds-menu-column' : 'feds-menu-content';
+    const itemDestinationClass = hasMultipleColumns ? 'feds-menu-section' : 'feds-menu-column';
     const wrapper = toFragment`<div class="${wrapperClass}"></div>`;
     let itemDestination = toFragment`<div class="${itemDestinationClass}"></div>`;
-    let popupItems;
-    let currIndex = 0;
+    let menuItems;
+    const index = { position: 0 };
 
     const resetDestination = () => {
       // First, if the previous destination has children,
       // append it to the wrapper
       if (itemDestination.childElementCount) {
         wrapper.append(itemDestination);
-        currIndex = 0;
       }
 
       // Create a new destination
@@ -189,43 +195,36 @@ const decorateColumns = async (content) => {
       await yieldToMain();
       const columnElem = column.firstElementChild;
 
-      if (columnElem.tagName === 'H5') {
-        // When encountering an h5, add the previous section to the column
+      if (columnElem.tagName === separatorTagName) {
+        // When encountering a separator (h5 for header, h2 for footer),
+        // add the previous section to the column
         resetDestination();
+        // If the separator splits content into columns, reset the analytics index
+        if (!hasMultipleColumns) index.position = 0;
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
         const sectionHeadline = decorateHeadline(columnElem);
-        popupItems = toFragment`<div class="feds-popup-items"></div>`;
-        itemDestination.append(sectionHeadline, popupItems);
+        menuItems = toFragment`<div class="feds-menu-items" daa-lh="${sectionHeadline.textContent.trim()}"></div>`;
+        itemDestination.append(sectionHeadline, menuItems);
       } else if (columnElem.classList.contains('gnav-promo')) {
         // When encountering a promo, add the previous section to the column
         resetDestination();
+        // Since the promo is alone on a column, reset the analytics index
+        index.position = 0;
 
-        const promoElem = decoratePromo(columnElem);
+        const promoElem = decoratePromo(columnElem, index);
 
         itemDestination.append(promoElem);
       } else {
-        currIndex += 1;
-        // Check whether the current element needs special decoration
-        const decoratedElem = decoratePopupElement(columnElem, currIndex);
-
-        // If element has been decorated, remove it
-        // from the initial list of column elements
-        if (decoratedElem) {
-          columnElem.remove();
-        }
-
-        // Leave lists and paragraphs intact, just add attributes to their links
-        if (columnElem && (columnElem.tagName === 'UL' || columnElem.tagName === 'P')) {
-          decorateLinkList({ list: columnElem });
-        }
+        const decoratedElem = decorateElements({ elem: columnElem, index });
+        columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
-        const elemDestination = popupItems || itemDestination;
-        elemDestination.append(decoratedElem || columnElem);
+        const elemDestination = menuItems || itemDestination;
+        elemDestination.append(decoratedElem);
       }
     }
 
@@ -236,10 +235,11 @@ const decorateColumns = async (content) => {
   }
 };
 
-// Current limitation: after an h5 is found in a dropdown column,
-// no new sections can be created without a heading
-const decorateDropdown = async (config) => {
-  let popupTemplate;
+// Current limitation: after an h5 (or h2 in the case of the footer)
+// is found in a menu column, no new sections can be created without a heading
+const decorateMenu = (config) => logErrorFor(async () => {
+  let menuTemplate;
+
   if (config.type === 'syncDropdownTrigger') {
     const itemTopParent = config.item.closest('div');
     // The initial heading is already part of the item template,
@@ -247,11 +247,11 @@ const decorateDropdown = async (config) => {
     const initialHeadingElem = itemTopParent.querySelector('h2');
     itemTopParent.removeChild(initialHeadingElem);
 
-    popupTemplate = toFragment`<div class="feds-popup">
+    menuTemplate = toFragment`<div class="feds-popup">
         ${itemTopParent}
       </div>`;
 
-    await decorateColumns(popupTemplate);
+    await decorateColumns({ content: menuTemplate });
   }
 
   if (config.type === 'asyncDropdownTrigger') {
@@ -262,17 +262,22 @@ const decorateDropdown = async (config) => {
     const res = await fetch(`${path}.plain.html`);
     if (res.status !== 200) return;
     const content = await res.text();
-    popupTemplate = toFragment`<div class="feds-popup">
-        <div class="feds-popup-content">
-          ${content}
+    const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+    menuTemplate = toFragment`<div class="feds-popup">
+        <div class="feds-menu-content">
+          ${parsedContent}
         </div>
       </div>`;
 
-    await decorateColumns(popupTemplate.firstElementChild);
+    await decorateColumns({ content: menuTemplate.firstElementChild });
     config.template.classList.add('feds-navItem--megaMenu');
   }
 
-  config.template.append(popupTemplate);
-};
+  if (config.type === 'footerMenu') {
+    await decorateColumns({ content: config.item, separatorTagName: 'H2' });
+  }
 
-export default decorateDropdown;
+  config.template?.append(menuTemplate);
+}, 'Decorate menu failed');
+
+export default { decorateMenu, decorateLinkGroup };
