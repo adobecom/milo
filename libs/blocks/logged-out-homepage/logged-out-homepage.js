@@ -111,7 +111,9 @@ function positionBackgrounds(row, index, metaData) {
 
 export default function init(el) {
   const blockSize = getBlockSize(el);
+  // TODO: check for auto buttons and auto secondary buttons to wrap links
   decorateButtons(el, `button-${blockTypeSizes[blockSize][3]}`);
+  // TODO: check buttons for an <img> inside and alt text on image
   decorateLinks(el, blockTypeSizes[blockSize][4]);
   const parsedBlock = parseBlockMetaData(el);
   let { rows, metaData } = parsedBlock;
