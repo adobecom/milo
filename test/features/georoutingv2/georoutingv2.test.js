@@ -163,7 +163,8 @@ const ogFetch = window.fetch;
 window.fetch = stub();
 
 function stubHeadRequestToReturnVal(prefix, val) {
-  window.fetch.withArgs(`${prefix}`, { method: 'HEAD' }).returns(
+  const path = window.location.href.replace(`${window.location.origin}`, '');
+  window.fetch.withArgs(`${prefix}${path}`, { method: 'HEAD' }).returns(
     new Promise((resolve) => {
       resolve({ ok: val });
     }),
@@ -294,7 +295,7 @@ describe('GeoRouting', () => {
 
   it('If aiming for CH page, IP in US, and session storage is DE shows DE links and CH continue', async () => {
     // prepare
-    mockConfig.locale.prefix = 'ch_fr';
+    mockConfig.locale.prefix = '/ch_fr';
     setUserCountryFromIP('US');
     sessionStorage.setItem('international', 'de');
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);

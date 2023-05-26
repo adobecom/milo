@@ -72,7 +72,8 @@ async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
   const { prefix } = config.locale;
-  const path = window.location.href.replace(`${window.location.origin}${prefix}`, '');
+  const path = window.location.href.replace(`${window.location.origin}`, '');
+  if (path.startsWith(prefix)) path.replace(prefix, '');
 
   const availableLocales = [];
   const pagesExist = [];
