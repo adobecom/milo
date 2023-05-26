@@ -415,6 +415,7 @@ class Gnav {
 
     const toggleClick = async () => {
       if (this.el.classList.contains(CONFIG.selectors.isOpen)) {
+        closeAllDropdowns();
         this.el.classList.remove(CONFIG.selectors.isOpen);
         this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
         if (this.blocks?.search?.instance) {
@@ -561,7 +562,10 @@ class Gnav {
           <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
-        dropdownTrigger.addEventListener('click', (e) => trigger({ element: dropdownTrigger, event: e }));
+        dropdownTrigger.addEventListener('click', (e) => {
+          const opened = trigger({ element: dropdownTrigger, event: e });
+          if (opened) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
+        });
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
       }
