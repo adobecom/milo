@@ -117,7 +117,6 @@ function decorateForOnLinkClick(link, prefix) {
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
-    sessionStorage.setItem('international', modPrefix);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
   });
 }
@@ -277,7 +276,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const storedInter = sessionStorage.getItem('international') || getCookie('international');
+  const storedInter = getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);

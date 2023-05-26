@@ -208,7 +208,6 @@ describe('GeoRouting', () => {
   });
   afterEach(() => {
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
-    sessionStorage.removeItem('international');
     closeModal();
   });
 
@@ -242,7 +241,7 @@ describe('GeoRouting', () => {
   it('Does not create a modal if the user IP matches session storage.', async () => {
     // prepare
     setUserCountryFromIP('US');
-    sessionStorage.setItem('international', 'us');
+    document.cookie = 'international=us;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
@@ -297,7 +296,7 @@ describe('GeoRouting', () => {
     // prepare
     mockConfig.locale.prefix = '/ch_fr';
     setUserCountryFromIP('US');
-    sessionStorage.setItem('international', 'de');
+    document.cookie = 'international=de;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const wrapper = document.querySelector('.georouting-wrapper');
     // assert
@@ -356,7 +355,7 @@ describe('GeoRouting', () => {
   it('If aiming for ch_de page and storage is ch_fr no modal is shown', async () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
-    sessionStorage.setItem('international', 'ch_fr');
+    document.cookie = 'international=ch_fr;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     // assert
@@ -437,11 +436,9 @@ describe('GeoRouting', () => {
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
-    const storage = sessionStorage.getItem('international');
     // assert
     expect(modal).to.not.be.null;
     expect(cookie).to.be.undefined;
-    expect(storage).to.be.null;
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker');
@@ -460,17 +457,14 @@ describe('GeoRouting', () => {
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
-    const storage = sessionStorage.getItem('international');
     // assert
     expect(modal).to.not.be.null;
     expect(cookie).to.be.undefined;
-    expect(storage).to.be.null;
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links[0].text).to.be.equal(mockGeoroutingJson.georouting.data.find((d) => d.prefix === 'ch_de').button);
     links[1].click();
     expect(getCookie('international')).to.be.equal('us');
-    expect(sessionStorage.getItem('international')).to.be.equal('us');
   });
 
   it('Does not open georouting modal if georouting hide is active', async () => {
