@@ -104,8 +104,8 @@ function setListeners(project, config) {
 function togglePromotePublishRadioVisibility(visibility) {
   const promotePublishOptions = document.getElementById('promote-publish-options');
   promotePublishOptions.style.display = visibility;
-  const promotePublishRadio = document.getElementById('promotePublishRadio');
-  promotePublishRadio.checked = true;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
 }
 
 async function init() {
