@@ -2,7 +2,7 @@ import { html, useEffect, useState } from '../../deps/htm-preact.js';
 
 let checkboxIdx = 0;
 
-const Select = ({ label, name, onChange, options, isRequired, value, sort = false, description }) => {
+const Select = ({ label, name, onChange, options, isRequired, value, sort = false, tooltip }) => {
   const [isValid, setIsValid] = useState(true);
 
   useEffect(() => {
@@ -29,18 +29,18 @@ const Select = ({ label, name, onChange, options, isRequired, value, sort = fals
   return html`
     <div class="field ${isRequired ? 'required' : ''}">
       <label for=${name}>${label}</label>
-      ${description && html`<i class="tooltip"></i>`}
+      ${tooltip && html`<i class="tooltip"></i>`}
       <select id=${name} class=${!isValid && 'input-invalid'} value=${value} onChange=${onSelectChange}>
         ${entries.map(
           ([val, optionLabel]) => html`<option value="${val}">${optionLabel}</option>`
         )}
       </select>
-      ${description && html`<span class="tooltip-text">${description}</span>`}
+      ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
     </div>
   `;
 };
 
-const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', value, title, description }) => {
+const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', value, title, tooltip }) => {
   const [isValid, setIsValid] = useState(true);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', v
   return html`
     <div class="field ${isCheckbox ? 'checkbox' : ''} ${isRequired ? 'required' : ''}">
       <label for=${id}>${label}</label>
-      ${description && html`<i class="tooltip"></i>`}
+      ${tooltip && html`<i class="tooltip"></i>`}
       <input
         class=${!isValid && 'input-invalid'}
         type=${type}
@@ -84,7 +84,7 @@ const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', v
         ...${computedValue}
         onChange=${onInputChange}
       />
-      ${description && html`<span class="tooltip-text">${description}</span>`}
+      ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
     </div>
   `;
 };

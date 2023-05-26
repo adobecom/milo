@@ -1,5 +1,5 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
-import { loadStyle, loadBlock, createTag, utf8ToB64 } from '../../utils/utils.js';
+import { utf8ToB64 } from '../../utils/utils.js';
 import { setPreferences } from '../marketo/marketo.js';
 import Preview from './MarketoPreview.js'
 import { ConfiguratorContext, ConfiguratorProvider, stateReform, saveStateToLocalStorage } from './context.js';
@@ -10,17 +10,17 @@ import { Input, Select } from '../../ui/controls/formControls.js';
 export async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
 
-  if (!resp.ok) return {};
+  if (!resp.ok) throw new Error("Network error");
 
   const json = await resp.json();
   return json;
 }
 
-const getDefaults = (panelsData) => {
+const getDefaultStates = (panelsData) => {
   let defaultState = {};
 
-  panelsData.forEach(panelData => {
-    panelData.forEach(field => {
+  panelsData.forEach(panelConfig => {
+    panelConfig.forEach(field => {
       if (field?.prop) {
         const { prop, default: defaultValue = '' } = field;
         defaultState[prop.toLowerCase()] = defaultValue;
@@ -31,43 +31,27 @@ const getDefaults = (panelsData) => {
   return defaultState;
 };
 
-const getConfigOptions = (link) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const getConfigOptions = (json) => {
+  const sheets = new Map();
 
-  useEffect(() => {
-    fetchData(link)
-      .then((json) => {
-        const sheets = new Map();
+  if (json[':names'].includes('metadata')) {
+    json['metadata'].data.map((column) => {
+      const sheetName = column['sheet'] ?? column['Sheet'];
+      const sheetTitle = column['title'] ?? column['Title'];
 
-        if (json[':names'].includes('metadata')) {
-          json['metadata'].data.map((column) => {
-            const sheetName = column['sheet'] ?? column['Sheet'];
-            const sheetTitle = column['title'] ?? column['Title'];
+      sheets.set(sheetTitle, json[sheetName.replace('helix-', '')].data);
+    });
+  } else {
+    json[':names'].sort().forEach(sheetName => {
+      sheets.set(sheetName, json[sheetName].data);
+    });
+  }
 
-            sheets.set(sheetTitle, json[sheetName.replace('helix-', '')].data);
-          });
-        } else {
-          json[':names'].sort().forEach(sheetName => {
-            sheets.set(sheetName, json[sheetName].data);
-          });
-        }
-
-        setData({
-          defaults: getDefaults(sheets),
-          panelsData: sheets,
-        });
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error);
-        setLoading(false);
-      });
-  }, [link]);
-
-  return { data, loading, error };
-};
+  return {
+    defaults: getDefaultStates(sheets),
+    panelsData: sheets,
+  };
+}
 
 const Fields = ({ fieldsData }) => {
   const { state, dispatch } = useContext(ConfiguratorContext);
@@ -87,7 +71,7 @@ const Fields = ({ fieldsData }) => {
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} name=${prop} description=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
+        <${Input} label=${field.label} name=${prop} tooltip=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
       `;
     }
 
@@ -107,7 +91,7 @@ const Fields = ({ fieldsData }) => {
     }
 
     return html`
-      <${Select} label=${field.label} name=${prop} options=${options} description=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
+      <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
     `;
   });
 };
@@ -115,10 +99,10 @@ const Fields = ({ fieldsData }) => {
 const getPanels = (panelsData) => {
   const panels = [];
 
-  panelsData.forEach((panelData, panelName) => {
+  panelsData.forEach((panelConfig, panelName) => {
     panels.push({
       title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
-      content: html`<${Fields} fieldsData=${panelData} />`,
+      content: html`<${Fields} fieldsData=${panelConfig} />`,
     });
   });
 
@@ -157,31 +141,66 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   }, [state]);
 
   return html`
+    <div class="tool-header">
+      <div class="tool-title">
+        <h1>${title}</h1>
+      </div>
+      <${CopyBtn} getUrl=${getUrl} configFormValidation=${configFormValidation} />
+    </div>
+    <div class="tool-content">
+      <div class="config-panel">
+        <${Accordion} lskey=${lsKey} items=${panels} alwaysOpen=${false} />
+      </div>
+    </div>
+  `;
+};
+
+const ConfiguratorWrapper = ({ block, link }) => {
+  const blockName = block.toLowerCase()
+  const title = `${block} Configurator`;
+  const lsKey = `${blockName}ConfiguratorState`;
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchData(link)
+      .then((json) => {
+        const config = getConfigOptions(json);
+        setData(config);
+      })
+      .catch((error) => {
+        setError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [link]);
+
+  if (loading) {
+    return html`
       <div class="tool-header">
         <div class="tool-title">
           <h1>${title}</h1>
         </div>
-        <${CopyBtn} getUrl=${getUrl} configFormValidation=${configFormValidation} />
       </div>
       <div class="tool-content">
-        <div class="config-panel">
-          <${Accordion} lskey=faasconfig items=${panels} alwaysOpen=${false} />
-        </div>
-      </div>`;
-};
-
-const ConfiguratorWrapper = ({ block, link }) => {
-  const { data, loading, error } = getConfigOptions(link);
-  const blockName = block.toLowerCase()
-  const title = `${block} Configurator`;
-  const lsKey = `${blockName}ConfiguratorState`;
-
-  if (loading) {
-    return html`<div>Loading Configurator...</div>`;
+        <div>Loading Configurator...</div>
+      </div>
+    `;
   }
 
   if (error) {
-    return html`<div>Error: ${error.message}</div>`;
+    return html`
+      <div class="tool-header">
+        <div class="tool-title">
+          <h1>${title}</h1>
+        </div>
+      </div>
+      <div class="tool-content">
+        <div>Error: ${error.message}</div>
+      </div>
+    `;
   }
 
   const { defaults, panelsData } = data;

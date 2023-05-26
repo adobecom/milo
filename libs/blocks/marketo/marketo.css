@@ -404,3 +404,41 @@
 #mktoStyleLoaded {
   background-color: #123456
 }
+
+/* Resource Form Section Metadata */
+.resource-form .faas,
+.resource-form .marketo {
+  margin-left: calc(var(--grid-margins-width) * -1 / 2);
+  margin-right: calc(var(--grid-margins-width) * -1 / 2);
+}
+
+.resource-form .columns {
+  max-width: unset;
+}
+
+.resource-form .columns.contained {
+  max-width: initial;
+}
+
+.resource-form.section.two-up,
+.resource-form .columns > .row {
+  grid-template-columns: 1fr;
+}
+
+@media screen and (min-width: 600px) {
+  .resource-form .faas,
+  .resource-form .marketo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .resource-form.section.two-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resource-form .columns > .row {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
