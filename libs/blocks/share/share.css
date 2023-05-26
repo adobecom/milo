@@ -1,3 +1,5 @@
+@import '../../styles/inline.css';
+
 .share {
   margin-left: auto;
   margin-right: auto;
@@ -21,9 +23,9 @@
 .share p.icon-container,
 .share p.icon-container a {
   display: flex;
-  justify-content: center;
   align-items: center;
   padding-bottom: 0;
+  justify-content: center;
 }
 
 .share p {
@@ -118,4 +120,29 @@
 
 .share .copy-to-clipboard.copy-to-clipboard-copied::before {
   content: attr(data-copied);
+}
+
+.share.inline {
+  margin: 0 auto;
+  text-align: center;
+  padding: 8px 0 16px;
+}
+
+.share.inline p.icon-container {
+  justify-content: flex-start;
+  margin: 0;
+}
+
+main > .section > .share.inline {
+  margin: 0 auto;
+}
+
+main > .section > .inline-wrapper > .share.inline {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+main > .section.center .share.inline p.icon-container {
+  margin: 0 auto;
+  justify-content: center;
 }

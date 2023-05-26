@@ -20,6 +20,7 @@ module.exports = {
       ImportDeclaration: { multiline: true, minProperties: 6 },
       ExportDeclaration: { multiline: true, minProperties: 6 },
     }],
+    'no-return-assign': ['error', 'except-parens'],
     'no-unused-expressions': 0,
     'chai-friendly/no-unused-expressions': 2,
 

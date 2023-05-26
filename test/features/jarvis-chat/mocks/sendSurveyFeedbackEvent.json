@@ -1,0 +1,15 @@
+{
+  "events": [
+    {
+      "data": {
+        "event.workflow": "survey",
+        "event.subtype": "test",
+        "event.type": "type",
+        "content.name": "5-star-survey",
+        "content.id": "id",
+        "exp.variation_id": "variation_1",
+        "exp.campaign_id": "test"
+      }
+    }
+  ]
+}

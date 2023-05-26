@@ -8,7 +8,7 @@ import {
   getHelixAdminApiUrl,
   readProjectFile,
 } from '../../loc/project.js';
-import { getFilesData } from '../../loc/sharepoint.js';
+import { getSpFiles } from '../../loc/sharepoint.js';
 import { getDocPathFromUrl, getFloodgateUrl } from './utils.js';
 
 let project;
@@ -22,27 +22,25 @@ const PROJECT_STATUS = {
 /**
  * Makes the sharepoint file data part of `projectDetail` per URL.
  */
-function injectSharepointData(projectUrls, filePaths, docPaths, spFiles, isFloodgate) {
-  for (let i = 0; i < spFiles.length; i += 1) {
-    let fileBody = {};
-    let status = 404;
-    if (!spFiles[i].error) {
-      fileBody = spFiles[i];
-      status = 200;
-    }
-    const filePath = docPaths[i];
-    const urls = filePaths.get(filePath);
-    urls.forEach((key) => {
-      const urlObjVal = projectUrls.get(key);
-      if (isFloodgate) {
-        urlObjVal.doc.fg.sp = fileBody;
-        urlObjVal.doc.fg.sp.status = status;
-      } else {
-        urlObjVal.doc.sp = fileBody;
-        urlObjVal.doc.sp.status = status;
-      }
+function injectSharepointData(projectUrls, filePaths, docPaths, spBatchFiles, isFloodgate) {
+  spBatchFiles.forEach((spFiles) => {
+    if (!spFiles?.responses) return;
+    spFiles.responses.forEach(({ id, status, body }) => {
+      const filePath = docPaths[id];
+      const fileBody = status === 200 ? body : {};
+      const urls = filePaths.get(filePath);
+      urls.forEach((key) => {
+        const urlObjVal = projectUrls.get(key);
+        if (isFloodgate) {
+          urlObjVal.doc.fg.sp = fileBody;
+          urlObjVal.doc.fg.sp.status = status;
+        } else {
+          urlObjVal.doc.sp = fileBody;
+          urlObjVal.doc.sp.status = status;
+        }
+      });
     });
-  }
+  });
 }
 
 async function updateProjectWithDocs(projectDetail) {
@@ -51,10 +49,10 @@ async function updateProjectWithDocs(projectDetail) {
   }
   const { filePaths } = projectDetail;
   const docPaths = [...filePaths.keys()];
-  const spFiles = await getFilesData(docPaths);
-  injectSharepointData(projectDetail.urls, filePaths, docPaths, spFiles);
-  const fgSpFiles = await getFilesData(docPaths, true);
-  injectSharepointData(projectDetail.urls, filePaths, docPaths, fgSpFiles, true);
+  const spBatchFiles = await getSpFiles(docPaths);
+  injectSharepointData(projectDetail.urls, filePaths, docPaths, spBatchFiles);
+  const fgSpBatchFiles = await getSpFiles(docPaths, true);
+  injectSharepointData(projectDetail.urls, filePaths, docPaths, fgSpBatchFiles, true);
 }
 
 async function initProject() {
