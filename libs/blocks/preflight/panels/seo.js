@@ -7,13 +7,13 @@ const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
-const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC, best:DEF_BEST });
-const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC, best:DEF_BEST });
-const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC,best:DEF_BEST });
-const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC,best:DEF_BEST });
-const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC,best:DEF_BEST });
-const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, best:DEF_BEST });
-const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC, best:DEF_BEST });
+const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC, best: DEF_BEST });
+const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC, best: DEF_BEST });
+const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC, best: DEF_BEST });
+const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC, best: DEF_BEST });
+const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC, best: DEF_BEST });
+const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, best: DEF_BEST });
+const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC, best: DEF_BEST });
 
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
@@ -188,7 +188,7 @@ export async function sendResults() {
   );
 }
 
-function SeoItem({ icon, title, description,best }) {
+function SeoItem({ icon, title, description, best }) {
   return html`
     <div class=seo-item>
       <div class="result-icon ${icon}"></div>
