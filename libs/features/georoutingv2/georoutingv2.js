@@ -105,7 +105,7 @@ function getGeoroutingOverride() {
     const d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `overrideGeorouting=${hideGeorouting};${expires};path=/;`;
+    document.cookie = `hideGeorouting=${hideGeorouting};${expires};path=/;`;
   } else if (param === 'off') document.cookie = 'hideGeorouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
   return hideGeorouting === 'on';
 }
@@ -114,7 +114,8 @@ function decorateForOnLinkClick(link, prefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
-    document.cookie = `international=${modPrefix};path=/`;
+    const domain = window.location.origin.includes('adobe.com') ? 'domain=adobe.com' : '';
+    document.cookie = `international=${modPrefix};path=/;${domain}`;
     sessionStorage.setItem('international', modPrefix);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
   });
