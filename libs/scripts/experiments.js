@@ -23,7 +23,7 @@ const COMMANDSHTML = {
   remove: (el) => el.remove(),
 };
 
-const TAGS = {
+export const PERSONALIZATION_TAGS = {
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
   firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
   android: () => navigator.userAgent.includes('Android'),
@@ -310,10 +310,10 @@ function splitCamelCase (str) {
 
 function getPersonalizationVariant(config) {
   const { variantNames = [] } = config;
-  const tagNames = Object.keys(TAGS);
+  const tagNames = Object.keys(PERSONALIZATION_TAGS);
   const matchingVariant = variantNames.find((variant) => {
     const names = splitCamelCase(variant);
-    if (names.some((name) => tagNames.includes(name) && TAGS[name]())) {
+    if (names.some((name) => tagNames.includes(name) && PERSONALIZATION_TAGS[name]())) {
       return variant;
     }
     return false;
