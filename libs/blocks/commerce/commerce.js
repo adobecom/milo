@@ -1,5 +1,4 @@
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
-import { debounce } from '../section-metadata/section-metadata.js';
+import { createTag, getConfig, loadScript, debounce } from '../../utils/utils.js';
 import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
 
 window.tacocat.loadPromise = new Promise((resolve) => {

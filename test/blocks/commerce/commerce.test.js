@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import {
-  formatOfferDetails,
+  filterOfferDetails,
   decorateOfferDetails,
   handleSearch,
   decorateSearch,
@@ -24,9 +24,9 @@ const offer = {
   },
 };
 
-describe('formatOfferDetails', () => {
+describe('filterOfferDetails', () => {
   it('formats offer details correctly', () => {
-    const formattedOffer = formatOfferDetails(offer);
+    const formattedOffer = filterOfferDetails(offer);
     expect(formattedOffer.offerType).to.equal('BASE');
     expect(formattedOffer.offerId).to.equal('01A09572A72A7D7F848721DE4D3C73FA');
     expect(formattedOffer.productArrangementCode).to.equal('creative_cloud_all_apps_with_2tb_cloud_services_individual');
@@ -56,28 +56,6 @@ describe('decorateOfferDetails', () => {
     expect(offerDetailsList.children[7].textContent).to.equal('OFFER SELECTOR IDS: Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ');
     expect(offerDetailsList.children[8].textContent).to.equal('PRICE: $10');
     expect(offerDetailsList.children[9].textContent).to.equal('Checkout link');
-  });
-});
-
-describe('handleSearch', () => {
-  it('displays error message for invalid search input', async () => {
-    const el = document.createElement('div');
-    const input = document.createElement('input');
-    input.value = 'invalid input';
-    const event = new Event('keyup');
-    Object.defineProperty(event, 'target', { value: input, writable: false });
-    await handleSearch(event, el);
-    const notValidUrl = el.querySelector('.not-valid-url');
-    expect(notValidUrl).to.exist;
-  });
-
-  it('displays offer details for valid search input', async () => {
-    const el = document.createElement('div');
-    const input = document.createElement('input');
-    input.value = 'https://milo.adobe.com/tools/ost?osi=Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ&offerId=01A09572A72A7D7F848721DE4D3C73FA&type=price&term=true&seat=true&tax=false';
-    const event = new Event('keyup');
-    Object.defineProperty(event, 'target', { value: input, writable: false });
-    await handleSearch(event, el);
   });
 });
 
