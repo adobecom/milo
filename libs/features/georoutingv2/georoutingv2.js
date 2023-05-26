@@ -114,7 +114,7 @@ function decorateForOnLinkClick(link, prefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
-    const domain = window.location.origin.includes('adobe.com') ? 'domain=adobe.com' : '';
+    const domain = window.location.origin.endsWith('adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     sessionStorage.setItem('international', modPrefix);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
