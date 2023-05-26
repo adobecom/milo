@@ -181,6 +181,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     class: 'icon-milo',
     width: 15,
     height: 15,
+    alt: locale.button,
   });
   img.addEventListener(
     'error',
