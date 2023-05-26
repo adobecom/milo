@@ -160,7 +160,6 @@ function openPicker(button, locales, country, event) {
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
-    debugger;
     decorateForOnLinkClick(a, l.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
