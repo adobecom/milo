@@ -152,7 +152,7 @@ export const [setConfig, getConfig] = (() => {
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         const contentDir = getMetadata('content-direction');
-        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || new Intl.Locale(config.locale.ietf)?.textInfo?.direction || 'ltr');
+        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || (config.locale.ietf ? (new Intl.Locale(config.locale.ietf)?.textInfo?.direction) : null) || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
