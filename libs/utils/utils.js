@@ -139,6 +139,12 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getMetadata(name, doc = document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -152,7 +158,9 @@ export const [setConfig, getConfig] = (() => {
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
         const contentDir = getMetadata('content-direction');
-        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || (config.locale.ietf ? (new Intl.Locale(config.locale.ietf)?.textInfo?.direction) : null) || 'ltr');
+        const locietf = config.locale.ietf;
+        const ietfDir = locietf ? (new Intl.Locale(locietf)?.textInfo?.direction) : null;
+        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || ietfDir || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
@@ -166,12 +174,6 @@ export const [setConfig, getConfig] = (() => {
 
 export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
-}
-
-export function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
 }
 
 export function createTag(tag, attributes, html) {
