@@ -136,7 +136,7 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   };
 
   useEffect(() => {
-    setPreferences(stateReform(state));
+    setPreferences(state);
     saveStateToLocalStorage(state, lsKey);
   }, [state]);
 
@@ -149,7 +149,7 @@ const Configurator = ({ title, panelsData, lsKey }) => {
     </div>
     <div class="tool-content">
       <div class="config-panel">
-        <${Accordion} lskey=${lsKey} items=${panels} alwaysOpen=${false} />
+        <${Accordion} lskey=${lsKey} items=${panels} alwaysOpen=${true} />
       </div>
     </div>
   `;
