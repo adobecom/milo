@@ -72,8 +72,8 @@ async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
   const { prefix } = config.locale;
-  const path = window.location.href.replace(`${window.location.origin}`, '');
-  if (path.startsWith(prefix)) path.replace(prefix, '');
+  let path = window.location.href.replace(`${window.location.origin}`, '');
+  if (path.startsWith(prefix)) path = path.replace(prefix, '');
 
   const availableLocales = [];
   const pagesExist = [];
@@ -160,6 +160,7 @@ function openPicker(button, locales, country, event) {
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
+    debugger;
     decorateForOnLinkClick(a, l.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
