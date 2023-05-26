@@ -2,21 +2,23 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
+const DEF_BEST = 'Loading'
 const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
-const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
-const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
-const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
-const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC });
-const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
-const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
-const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
+const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC, best:DEF_BEST });
+const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC, best:DEF_BEST });
+const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC,best:DEF_BEST });
+const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC,best:DEF_BEST });
+const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC,best:DEF_BEST });
+const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, best:DEF_BEST });
+const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC, best:DEF_BEST });
 
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
   const result = { ...h1Result.value };
+  result.best = 'Maintaining a single H1 header on a page is optimal as it helps prevent confusion.'
   if (h1s.length === 1) {
     result.icon = pass;
     result.description = 'Only one H1 on the page.';
@@ -35,6 +37,7 @@ function checkH1s() {
 async function checkTitle() {
   const titleSize = document.title.replace(/\s/g, '').length;
   const result = { ...titleResult.value };
+  result.best = 'Keep the title between 50~70 characters.'
   if (titleSize < 15) {
     result.icon = fail;
     result.description = 'Reason: Title size is too short.';
@@ -53,7 +56,7 @@ async function checkCanon() {
   const canon = document.querySelector("link[rel='canonical']");
   const result = { ...canonResult.value };
   const { href } = canon;
-
+  result.best = 'Self-reference canonical is preferred as this informs search engines what version of the page you want to show up in SERP.'
   try {
     const resp = await fetch(href, { method: 'HEAD' });
     if (!resp.ok) {
@@ -80,6 +83,7 @@ async function checkCanon() {
 async function checkDescription() {
   const metaDesc = document.querySelector('meta[name="description"]');
   const result = { ...descResult.value };
+  result.best = 'Keep description under 175 characters'
   if (!metaDesc) {
     result.icon = fail;
     result.description = 'Reason: No meta description found.';
@@ -103,6 +107,7 @@ async function checkDescription() {
 async function checkBody() {
   const result = { ...bodyResult.value };
   const { length } = document.documentElement.innerText;
+  result.best = 'A minimum of 200 words on the page is preferred.'
 
   if (length > 100) {
     result.icon = pass;
@@ -118,6 +123,7 @@ async function checkBody() {
 async function checkLorem() {
   const result = { ...loremResult.value };
   const { innerHTML } = document.documentElement;
+  result.best = 'Remove Lorem Ipsum on the page.'
   if (innerHTML.includes('Lorem ipsum')) {
     result.icon = fail;
     result.description = 'Reason: Lorem ipsum is used on the page.';
@@ -132,7 +138,7 @@ async function checkLorem() {
 async function checkLinks() {
   const result = { ...linksResult.value };
   const links = document.querySelectorAll('a[href^="/"]');
-
+  result.best = 'Avoid any broken links or redirect loops.'
   let badLink;
   // eslint-disable-next-line no-restricted-syntax
   for (const link of links) {
@@ -182,13 +188,16 @@ export async function sendResults() {
   );
 }
 
-function SeoItem({ icon, title, description }) {
+function SeoItem({ icon, title, description,best }) {
   return html`
     <div class=seo-item>
       <div class="result-icon ${icon}"></div>
       <div class=seo-item-text>
         <p class=seo-item-title>${title}</p>
         <p class=seo-item-description>${description}</p>
+        <div class="info-icon">
+        <div class="tooltip">${best}</div>
+        </div>
       </div>
     </div>`;
 }
@@ -222,15 +231,15 @@ export default function Panel() {
   return html`
       <div class=seo-columns>
       <div class=seo-column>
-        <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
-        <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
-        <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} best=${titleResult.value.best}/>
+        <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} best=${h1Result.value.best} />
+        <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} best=${canonResult.value.best} />
+        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} best=${descResult.value.best}/>
       </div>
       <div class=seo-column>
-        <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
-        <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} best=${bodyResult.value.best} />
+        <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} best=${loremResult.value.best} />
+        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description}  best=${linksResult.value.best}/>
       </div>
     </div>`;
 }
