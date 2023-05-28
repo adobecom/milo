@@ -65,9 +65,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const callOptions = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
-    let publishResponse = await fetch(`${url}/Publish('Last Published version')`, {...callOptions, keepalive: true});
-    const data = await publishResponse.json();
-    console.log(data);
+    await fetch(`${url}/Publish('Last Published version')`, {...callOptions, keepalive: true});
   }
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
