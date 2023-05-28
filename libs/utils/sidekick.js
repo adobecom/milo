@@ -65,7 +65,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const callOptions = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
-    await fetch(`${url}/Publish('Last Published version')`, {...callOptions, keepalive: true});
+    let publishResponse = await fetch(`${url}/Publish('Last Published version')`, callOptions);
   }
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
@@ -82,6 +82,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
   fetchAccessToken();
-  getAuthorizedRequestOptionSP();
   sk.addEventListener('published', addVersion);
 }
