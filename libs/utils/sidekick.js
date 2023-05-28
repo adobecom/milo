@@ -33,7 +33,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
       };
       const response = await msalClient.loginPopup(loginRequest);
       accessToken = response.accessToken;
-  }
+  };
 
   const getAuthorizedRequestOptionSP = ({
     body = null,
@@ -58,15 +58,17 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     }
   
     return options;
-  }
+  };
 
   const addVersion = async (event) => {
-    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
-    const callOptions = getAuthorizedRequestOptionSP({
-      method: 'POST'
+    window.addEventListener('unload', async () => {
+      const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
+      const callOptions = getAuthorizedRequestOptionSP({
+        method: 'POST'
+      });
+      await fetch(`${url}/Publish('Last Published version')`, callOptions);
     });
-    let publishResponse = await fetch(`${url}/Publish('Last Published version')`, callOptions);
-  }
+  };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
   document.addEventListener('send-to-caas', async (e) => {
