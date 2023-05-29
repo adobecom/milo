@@ -62,15 +62,15 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
 
   const addVersion = async (event) => {
     const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
-    const headers = getAuthorizedRequestOptionSP({
+    const options = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
     // await fetch(`${url}/Publish('Last Published version')`, {...headers});
     const data = '';
-    console.log(headers);
+    const { headers } = options;
 
     const blob = new Blob([data], { type: 'text/plain' });
-    await navigator.sendBeacon(`${url}/Publish('Last Published version')`, blob, )
+    await navigator.sendBeacon(`${url}/Publish('Last Published version')`, blob, headers);
   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
