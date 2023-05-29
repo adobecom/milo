@@ -30,8 +30,6 @@ async function floodgateContentAction(project, config) {
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
-  // consider fgRoot as the project path for promote action.
-  params.projectRoot = config.sp.fgRootFolder;
   // Based on User selection on the Promote Dialog,
   // passing the param if user also wants to Publish the Promoted pages.
   params.doPublish = 'promotePublish' ===
@@ -106,8 +104,8 @@ function setListeners(project, config) {
 function togglePromotePublishRadioVisibility(visibility) {
   const promotePublishOptions = document.getElementById('promote-publish-options');
   promotePublishOptions.style.display = visibility;
-  const promotePublishRadio = document.getElementById('promotePublishRadio');
-  promotePublishRadio.checked = true;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
 }
 
 async function init() {
