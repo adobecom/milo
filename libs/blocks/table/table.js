@@ -1,5 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 
+let originTable;
+
 const positionStickyRows = (table) => {
   const tableRec = table.getBoundingClientRect();
   const tableBottom = tableRec.top + tableRec.height;
@@ -172,29 +174,16 @@ function applyStylesBasedOnScreenSize(table) {
     return;
   }
 
-  const desktopSize = 900;
-  const mobileSize = 768;
-
-  const screenWidth = window.innerWidth;
-  const subSectionRows = Array.from(table.getElementsByClassName('subSection'));
-  if (subSectionRows.length > 0) {
-    const colsForTablet = subSectionRows[0].children.length - 1;
-    const percentage = 100 / colsForTablet;
-    const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-
-    subSectionRows.forEach((row) => {
-      if (screenWidth >= desktopSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
-      } else if (screenWidth <= mobileSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
-      } else {
-        row.style.gridTemplateColumns = templateColumnsValue;
-      }
-    });
+  if (!originTable) {
+    originTable = table.cloneNode(true);
+    console.log(originTable);
   }
 
+  const desktopSize = 900;
+  const mobileSize = 768;
+  const screenWidth = window.innerWidth;
+
   const mobileRenderer = () => {
-    const originTable = table.cloneNode(true);
     const isMerch = table.classList.contains('merch');
     if (isMerch) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
@@ -204,6 +193,9 @@ function applyStylesBasedOnScreenSize(table) {
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
+      table.querySelectorAll('.subSection').forEach((subSection) => {
+        subSection.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
+      });
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
@@ -218,7 +210,7 @@ function applyStylesBasedOnScreenSize(table) {
     };
 
     // filter
-    if (!table.querySelector('.row-filters')) {
+    if (!table.parentElement.querySelector('.row-filters')) {
       const filters = createTag('div', { class: 'row row-filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
@@ -248,8 +240,27 @@ function applyStylesBasedOnScreenSize(table) {
   };
 
   // For Mobile
-  if (screenWidth <= mobileSize && table.querySelector('.row').querySelectorAll('.col').length > 2) {
+  if (screenWidth <= mobileSize) {
     mobileRenderer();
+  } else if (originTable) {
+    table.innerHTML = originTable.innerHTML;
+  }
+
+  const subSectionRows = Array.from(table.getElementsByClassName('subSection'));
+  if (subSectionRows.length > 0) {
+    const colsForTablet = subSectionRows[0].children.length - 1;
+    const percentage = 100 / colsForTablet;
+    const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
+
+    subSectionRows.forEach((row) => {
+      if (screenWidth >= desktopSize) {
+        row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
+      } else if (screenWidth <= mobileSize) {
+        row.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
+      } else {
+        row.style.gridTemplateColumns = templateColumnsValue;
+      }
+    });
   }
 }
 
@@ -380,5 +391,3 @@ export function decorateButtons(el, size) {
     actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
   }
 }
-
-window.addEventListener('resize', applyStylesBasedOnScreenSize);

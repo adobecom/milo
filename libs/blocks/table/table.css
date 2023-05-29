@@ -298,23 +298,24 @@
 }
 
 .filter {
-  width: 100%;
   border: none;
   font-size: 1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 160px;
   appearance: none;
   position: relative;
-  padding-right: 14px;
+  padding-right: 30px;
   background: url("http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png") white no-repeat 96% !important;
 }
 
-/* 
-@media (max-width: 769px) {
-  
-} */
+
+@media (min-width: 769px) {
+  .row-filters {
+    display: none;
+  }  
+}
 
 /*table merch*/
 .table.merch .row-2 .col-heading:not(.no-rounded) {

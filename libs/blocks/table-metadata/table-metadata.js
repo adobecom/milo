@@ -51,16 +51,6 @@ const handleColumnBgColor = (text, table, columnType) => {
   }
 };
 
-function handleCompare(text, table) {
-  if (!(text || table)) return;
-  const comparisonGroup = text.split('\n');
-  comparisonGroup.forEach((comp, i) => {
-    const col = comp.trim().split(' ')[1];
-    const comparable = table.querySelector(`.col-${col}`);
-    comparable.classList.add(`comp_${i + 1}`);
-  });
-}
-
 function handleCollapse(collapsRows, expandDefault, table) {
   if (!collapsRows) return;
 
@@ -119,7 +109,6 @@ export default function init(el) {
   if (!table) return;
   const metadata = getMetadata(el);
   if (metadata.section) handleSectionHead(metadata.section.text, table);
-  if (metadata.compare) handleCompare(metadata.compare.text, table);
   if (metadata['heading color']) handleColumnColor(metadata['heading color'].text, table, 'heading');
   if (metadata['heading background color']) handleColumnBgColor(metadata['heading background color'].text, table, 'heading');
   if (metadata['highlight color']) handleColumnColor(metadata['highlight color'].text, table, 'highlight');
