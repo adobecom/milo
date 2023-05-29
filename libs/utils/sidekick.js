@@ -65,12 +65,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const options = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
-    // await fetch(`${url}/Publish('Last Published version')`, {...headers});
-    const data = '';
-    const { headers } = options;
+    await fetch(`${url}/Publish('Last Published version')`, {...options, keepalive: true});
+    // const data = '';
+    // const { headers } = options;
 
-    const blob = new Blob([data], { type: 'text/plain' });
-    await navigator.sendBeacon(`${url}/Publish('Last Published version')`, blob, headers);
+    // const blob = new Blob([data], { type: 'text/plain' });
+    // await navigator.sendBeacon(`${url}/Publish('Last Published version')`, blob, headers);
   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
