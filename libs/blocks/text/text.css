@@ -160,17 +160,17 @@
 }
 
 /* Tablet */
-@media screen and (min-width:600px) {
-  .link-farm.text-block h2 {
-    margin: 0 0 var(--spacing-xl-static);
-  }
-
+@media screen and (min-width:600px) and (max-width: 1200px) {
   .link-farm.text-block .foreground {
     grid-template-columns: repeat(2, auto);
   }
 }
 
 @media screen and (min-width: 600px) {
+  .link-farm.text-block h2 {
+    margin: 0 0 var(--spacing-xl-static);
+  }
+
   .inset.text-block .foreground::before {
     display: none;
   }
@@ -186,10 +186,6 @@
 
 /* Desktop */
 @media screen and (min-width: 1200px) {
-  .link-farm.text-block h2 {
-    margin: 0 0 var(--spacing-xl-static);
-  }
-
   .link-farm.text-block .foreground {
     grid-template-columns: repeat(4, auto);
   }
