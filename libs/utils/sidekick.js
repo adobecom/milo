@@ -67,7 +67,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     });
     // await fetch(`${url}/Publish('Last Published version')`, headers);
 
-    navigator.sendBeacon(url, new Blob([JSON.stringify('')],headers));
+    navigator.sendBeacon(`${url}/Publish('Last Published version')`, new Blob([JSON.stringify('')],headers));
   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
