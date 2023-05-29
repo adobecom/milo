@@ -65,7 +65,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const headers = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
-    await fetch(`${url}/Publish('Last Published version')`, {...headers, keepalive: true});
+    await fetch(`${url}/Publish('Last Published version')`, {...headers});
+    event.detail.resolveMethod();
     // navigator.sendBeacon(`${url}/Publish('Last Published version')`);
   };
 
