@@ -157,10 +157,11 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        const contentDir = getMetadata('content-direction');
-        const locietf = config.locale.ietf;
-        const ietfDir = locietf ? (new Intl.Locale(locietf)?.textInfo?.direction) : null;
-        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || ietfDir || 'ltr');
+        let dir = getMetadata('dir') || config.locale.dir;
+        if (!dir && config.locale.ietf) {
+          dir = dir || new Intl.Locale(config.locale.ietf)?.textInfo?.direction;
+        }
+        document.documentElement.setAttribute('dir', dir || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
