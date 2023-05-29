@@ -15,13 +15,15 @@
 */
 
 import { decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
-const variants = ['fullwidth', 'vertical', 'bio'];
+const variants = ['fullwidth', 'vertical', 'bio', 'icon-inline'];
 const iconBlocks = {
   small: {
     [variants[0]]: ['m', 'm'],
     [variants[1]]: ['s', 'm'],
     [variants[2]]: ['s', 's'],
+    [variants[3]]: ['s', 's'],
   },
   medium: {
     [variants[0]]: ['l', 'm'],
@@ -54,6 +56,15 @@ function decorateContent(el) {
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
     decorateBlockText(el, iconBlocks[size][variant]);
+
+    if (el.classList.contains('icon-inline')) {
+     const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
+      const secondColumn = createTag('div', {class:'second-column'});
+      textContent.forEach((el) => {
+        secondColumn.append(el);
+      });
+      el.querySelector('.foreground .text-content').append(secondColumn);
+    }
   }
 }
 
