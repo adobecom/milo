@@ -55,4 +55,6 @@ export default async function loadIcons(domIcons, config) {
     }
     i.insertAdjacentHTML('afterbegin', icons[iconName].outerHTML);
   });
+  const iconsLoadedEvent = new Event('milo:icons:loaded');
+  window.dispatchEvent(iconsLoadedEvent);
 }

@@ -18,7 +18,7 @@ const handleColumnColor = (text, table, columnType) => {
   if (colors.length === 1 && colors[0].length === 1) {
     const color = colors[0][0]?.replace('white', 'light');
     const allClassCols = Array.from(table.getElementsByClassName(`col-${columnType}`));
-    allClassCols.forEach(element => {
+    allClassCols.forEach((element) => {
       element.classList.add(color);
     });
   } else {
@@ -37,7 +37,7 @@ const handleColumnBgColor = (text, table, columnType) => {
   if (bgColors.length === 1 && bgColors[0].length === 1) {
     const color = bgColors[0][0];
     const allClassCols = Array.from(table.getElementsByClassName(`col-${columnType}`));
-    allClassCols.forEach(element => {
+    allClassCols.forEach((element) => {
       element.style.backgroundColor = color;
     });
   } else {
@@ -125,4 +125,6 @@ export default function init(el) {
   if (metadata['highlight color']) handleColumnColor(metadata['highlight color'].text, table, 'highlight');
   if (metadata['highlight background color']) handleColumnBgColor(metadata['highlight background color'].text, table, 'highlight');
   if (metadata['collapse rows'] && metadata['expand default']) handleCollapse(metadata['collapse rows'].text, metadata['expand default'].text, table);
+  const tableMetadataLoadedEvent = new Event('milo:table_metadata:loaded');
+  window.dispatchEvent(tableMetadataLoadedEvent);
 }

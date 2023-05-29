@@ -259,7 +259,7 @@
 }
 
 /* Start tablet styles */
-@media (max-width: 859px) {
+@media (max-width: 899px) {
   .table {
     margin: 0 30px;
   }
@@ -285,6 +285,36 @@
     padding: 20px;
   }
 }
+
+/* Start mobile styles */
+.row-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  margin: 20px 30px 0;
+}
+
+.filter-wrapper {
+  text-align: center;
+}
+
+.filter {
+  width: 100%;
+  border: none;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+  appearance: none;
+  position: relative;
+  padding-right: 14px;
+  background: url("http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png") white no-repeat 96% !important;
+}
+
+/* 
+@media (max-width: 769px) {
+  
+} */
 
 /*table merch*/
 .table.merch .row-2 .col-heading:not(.no-rounded) {
