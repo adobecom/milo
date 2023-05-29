@@ -172,6 +172,11 @@ header.global-navigation {
   background-color: var(--feds-background-link--hover--light);
 }
 
+.feds-navItem > .feds-navLink--hoverCaret:hover,
+.feds-navItem > .feds-navLink--hoverCaret:focus {
+  color: var(--feds-color-link--light);
+}
+
 .feds-cta-wrapper {
   display: flex;
 }
@@ -447,6 +452,11 @@ header.global-navigation {
 
   .feds-navItem:not(:last-child) > .feds-navLink {
     border-bottom: none;
+  }
+
+  .feds-navItem > .feds-navLink--hoverCaret:hover,
+  .feds-navItem > .feds-navLink--hoverCaret:focus {
+    background-color: var(--feds-background-popup--light);
   }
 
   /* Search */
