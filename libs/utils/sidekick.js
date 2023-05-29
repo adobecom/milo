@@ -65,9 +65,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const headers = getAuthorizedRequestOptionSP({
       method: 'POST'
     });
-    // await fetch(`${url}/Publish('Last Published version')`, headers);
-
-    navigator.sendBeacon(`${url}/Publish('Last Published version')`);
+    await fetch(`${url}/Publish('Last Published version')`, {...headers, keepalive: true});
+    // navigator.sendBeacon(`${url}/Publish('Last Published version')`);
   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
