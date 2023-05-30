@@ -38,7 +38,7 @@
   justify-content: space-between;
   background-color: #FFF;
   border: 1px solid #4B4B4B;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 16px;
   cursor: pointer;
   line-height: 1.5;
@@ -172,9 +172,9 @@
     display: flex;
     position: relative;
     justify-content: space-between;
-    background-color: #FFFFFF;
+    background-color: #FFF;
     border: 1px solid #4B4B4B;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 16px;
     cursor: pointer;
     line-height: 1.5;

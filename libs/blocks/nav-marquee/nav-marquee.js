@@ -13,29 +13,33 @@
 /*
  * Navigation Marquee
  */
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 
 const DOWN_ARROW_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10.875" height="13.323" viewBox="0 0 10.875 13.323"><title>down arrow</title><g fill="none" stroke="#1473e6" stroke-linecap="round" stroke-width="2"><path d="M5.478 1v10.909"/><g><path d="m9.461 7.885-4.023 4.023m0 0L1.414 7.885"/></g></g></svg>';
 
 function findAnchorTarget(text) {
   let linkText = text.toLowerCase();
-  linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
-  linkText = linkText.replaceAll('_', '-');
-  linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
-  return document.querySelector(`[id^="${linkText}"]`);
+  if (linkText.charAt(0) === '_') {
+    linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
+    linkText = linkText.replaceAll('_', '-');
+    linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
+    linkText = `#${linkText}`;
+    //return document.querySelector(`[id^="${linkText}"]`);
+  }
+  return linkText;
 }
 
 function getItem(title, description, target) {
   if (!title) {
-    return;
+    return null;
   }
   const item = createTag('li', { class: 'toc-item' });
   const linkText = createTag('div', { class: 'toc-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
 
   if (title) {
-    const link = createTag('a', { class: 'section-title', href: `#${target?.id}`, target: '_self' }, title);
+    const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
     linkText.append(link);
     item.addEventListener('click', () => {
       const isTextSelected = window.getSelection().toString();
@@ -77,7 +81,6 @@ function decorateText(el, size) {
 }
 
 export default function init(el) {
-  const { env } = getConfig();
   const size = getBlockSize(el);
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const tone = (el.classList.contains('light')) ? 'light' : 'dark';
@@ -89,8 +92,8 @@ export default function init(el) {
   decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
   marquee.className = `marquee ${tone}`;
 
-  let header = createTag('p', { class: 'toc-title' });
-  let footer = createTag('p', { class: 'toc-footer' });
+  const header = createTag('p', { class: 'toc-title' });
+  const footer = createTag('p', { class: 'toc-footer' });
   const tocNav = createTag('nav', { 'aria-label': 'Table of contents' });
   const navUl = createTag('ul', { class: 'toc-list' });
   children.forEach((section) => {
