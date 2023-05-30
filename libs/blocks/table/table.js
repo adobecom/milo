@@ -176,7 +176,6 @@ function applyStylesBasedOnScreenSize(table) {
 
   if (!originTable) {
     originTable = table.cloneNode(true);
-    console.log(originTable);
   }
 
   const desktopSize = 900;
