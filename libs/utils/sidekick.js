@@ -78,8 +78,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // fetch sharepoint access token
   fetchAccessToken();
 
-  const 
-
   const sk = document.querySelector('helix-sidekick');
 
   // Add plugin listeners here
