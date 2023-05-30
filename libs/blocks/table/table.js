@@ -1,3 +1,7 @@
+
+import { createTag } from '../../utils/utils.js';
+let originTable;
+
 export default function init(el) {
   // remove top row if empty
   const firstRow = el.querySelector(':scope > div:first-child');
@@ -22,9 +26,13 @@ export default function init(el) {
   handleHovering(el);
   handleScrollEffect(el, gnavHeight);
 
-  window.addEventListener('resize', () => handleScrollEffect(el, gnavHeight));
-  if (!isMerchTable) applyStylesBasedOnScreenSize(el);
-  if (!isMerchTable) window.addEventListener('resize', () => applyStylesBasedOnScreenSize(el));
+  window.addEventListener('milo:icons:loaded', () => {
+    applyStylesBasedOnScreenSize(el);
+    window.addEventListener('resize', () => {
+      handleScrollEffect(el, gnavHeight);
+      applyStylesBasedOnScreenSize(el);
+    });
+  });
 }
 
 function handleHighlight(table) {
@@ -267,17 +275,93 @@ function applyStylesBasedOnScreenSize(table) {
     return;
   }
 
+  if (!originTable) {
+    originTable = table.cloneNode(true);
+  }
+
+  const desktopSize = 900;
+  const mobileSize = 768;
   const screenWidth = window.innerWidth;
-  const sectionRows = Array.from(table.getElementsByClassName('sectionRow'));
-  if (sectionRows.length > 0 ) {
-    const colsForTablet = sectionRows[0].children.length - 1;
+
+  const mobileRenderer = () => {
+    const isMerch = table.classList.contains('merch');
+    if (isMerch) {
+      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
+    } else {
+      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
+    }
+
+    const filterChangeEvent = () => {
+      table.innerHTML = originTable.innerHTML;
+      table.querySelectorAll('.subSection').forEach((subSection) => {
+        subSection.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
+      });
+      const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
+      if (isMerch) {
+        table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
+      } else {
+        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
+      }
+      if (filters[0] > filters[1]) {
+        table.querySelectorAll('.row').forEach((row) => {
+          row.querySelector('.col:not(.subSectionTitle)').style.order = 1;
+        });
+      } else if (filters[0] === filters[1]) {
+        table.querySelectorAll('.row').forEach((row) => {
+          row.append(row.querySelector('.col:last-child').cloneNode(true));
+        });
+      }
+    };
+
+    // filter
+    if (!table.parentElement.querySelector('.filters')) {
+      const filters = createTag('div', { class: 'filters' });
+      const filter1 = createTag('div', { class: 'filter-wrapper' });
+      const filter2 = createTag('div', { class: 'filter-wrapper' });
+      const colSelect0 = createTag('select', { class: 'filter' });
+      const headings = originTable.querySelectorAll('.col-heading');
+      headings.forEach((heading, index) => {
+        const title = heading.querySelector('.heading-title');
+        if (!title) return;
+        const option = createTag('option');
+        option.value = index;
+        option.innerHTML = title.innerText;
+        colSelect0.append(option);
+      });
+      const colSelect1 = colSelect0.cloneNode(true);
+      colSelect0.dataset.filterIndex = 0;
+      colSelect1.dataset.filterIndex = 1;
+      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"])');
+      colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
+      colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
+      filter1.append(colSelect0);
+      filter2.append(colSelect1);
+      filters.append(filter1, filter2);
+      filter1.addEventListener('change', filterChangeEvent);
+      filter2.addEventListener('change', filterChangeEvent);
+      table.parentElement.prepend(filters);
+    }
+  };
+
+  // For Mobile
+  if (screenWidth <= mobileSize) {
+    mobileRenderer();
+  } else if (originTable) {
+    table.innerHTML = originTable.innerHTML;
+  }
+
+  const sectionRow = Array.from(table.getElementsByClassName('sectionRow'));
+  if (sectionRow.length > 0) {
+    const colsForTablet = sectionRow[0].children.length - 1;
     const percentage = 100 / colsForTablet;
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
 
-    sectionRows.forEach(row => {
-      if (screenWidth > 859) {
-        row.style.gridTemplateColumns = `repeat(auto-fit, minmax(100px, 1fr))`;
-      } else if (screenWidth < 860) {
+    sectionRow.forEach((row) => {
+      if (screenWidth >= desktopSize) {
+        row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
+      } else if (screenWidth <= mobileSize) {
+        row.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
+      } else {
         row.style.gridTemplateColumns = templateColumnsValue;
       }
     });
@@ -301,4 +385,3 @@ function decorateButtons(el, size) {
     actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
   }
 }
-

@@ -272,6 +272,36 @@ header.global-navigation {
   }
 }
 
+/* Start mobile styles */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  margin: 20px 30px 0;
+}
+
+.filter-wrapper {
+  text-align: center;
+}
+
+.filter {
+  border: none;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  appearance: none;
+  position: relative;
+  padding-right: 30px;
+  background: url("http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png") white no-repeat 96% !important;
+}
+
+@media (min-width: 769px) {
+  .row-filters {
+    display: none;
+  }  
+}
+
 /*table merch*/
 .table.merch .row-heading .col-heading:not(.no-rounded) {
   border-top-left-radius: 16px;
