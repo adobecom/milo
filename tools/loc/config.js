@@ -180,7 +180,7 @@ function getSharepointRestConfig(config) {
     auth: {
       clientId,
       authority,
-      redirectUri: '/tools/loc/spauth' 
+      redirectUri: 'https://main--milo--deva309.hlx.page/tools/loc/spauth'
     }
   };
 }
