@@ -67,6 +67,24 @@
     },
     {
       "containerId": "tools",
+      "id": "offerpreview",
+      "title": "Offer preview",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
+      "url": "/tools/commerce",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "ost",
+      "title": "Use offer",
+      "environments": [ "edit" ],
+      "url": "/tools/ost",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "locales",
       "title": "Locales",
       "environments": [ "edit", "dev", "preview", "live" ],
@@ -82,7 +100,7 @@
       "id": "ost",
       "title": "Use offer",
       "environments": [ "edit", "dev", "preview" ],
-      "url": "/tools/ost",
+      "url": "https://milo.adobe.com/tools/ost",
       "includePaths": [ "**.docx**" ]
     }
   ]

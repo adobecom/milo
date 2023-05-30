@@ -12,7 +12,6 @@
 
 import {
   loadArea,
-  loadDelayed,
   loadLana,
   setConfig,
 } from '../utils/utils.js';
@@ -76,10 +75,10 @@ const locales = {
   bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
   ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
   ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
-  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
   // Asia Pacific
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
@@ -121,6 +120,7 @@ const config = {
     version: '1.0',
     onDemand: false,
   },
+  privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
 };
 
 (async function loadLCPImage() {
@@ -132,5 +132,4 @@ const config = {
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-  loadDelayed();
 }());

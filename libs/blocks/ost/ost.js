@@ -2,8 +2,10 @@ import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.js';
-const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.css';
+const OST_VERSION = '1.10.4';
+const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
+const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
+const OST_STYLE_URL = `${OST_BASE}/index.css`;
 
 const ENVIRONMENT = 'PROD';
 const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
@@ -30,7 +32,7 @@ export function createLinkMarkup(
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
-    : `{{PRICE - ${planType} - ${offerName}}}`);
+    : `PRICE - ${planType} - ${offerName}`);
 
   const createHref = () => {
     const url = new URL(location.protocol + location.host);

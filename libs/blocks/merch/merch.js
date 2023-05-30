@@ -18,7 +18,7 @@ const GEO_MAPPINGS = {
   no: 'nb-NO',
 };
 
-const omitNullValues = (target) => {
+export const omitNullValues = (target) => {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
       if (value == null) delete target[key];
@@ -94,16 +94,22 @@ window.tacocat.loadPromise = new Promise((resolve) => {
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
-      resolve();
+      resolve(false);
+    })
+    .catch((error) => {
+      console.error('Failed to load tacocat', error);
+      resolve(true);
     });
 });
 
-function buildCheckoutButton(link, dataAttrs = {}) {
+export function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
   const classes = ['con-button'];
-  if (link.closest('.marquee')) {
-    classes.push('button-l');
+  if (document.querySelector('.marquee')) {
+    if (link.closest('.marquee')) {
+      classes.push('button-l');
+    }
   }
   if (link.firstElementChild?.tagName === 'STRONG' || link.parentElement?.tagName === 'STRONG') {
     classes.push('blue');
@@ -142,7 +148,7 @@ function isCTA(type) {
  * @param {*} searchParams link level overrides for checkout parameters
  * @returns checkout context object required to build a checkout url
  */
-function getCheckoutContext(searchParams, config) {
+export function getCheckoutContext(searchParams, config) {
   const { commerce } = config;
   const checkoutClientId = commerce?.checkoutClientId;
   const checkoutWorkflow = searchParams.get('checkoutType') ?? getMetadata('checkout-type');
@@ -161,10 +167,8 @@ function getCheckoutContext(searchParams, config) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  try {
-    await window.tacocat.loadPromise;
-  } catch (e) {
-    console.error('Tacocat not loaded', e);
+  const fail = await window.tacocat.loadPromise;
+  if (fail) {
     return undefined;
   }
   const { searchParams } = new URL(el.href);

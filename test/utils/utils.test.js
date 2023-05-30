@@ -133,17 +133,6 @@ describe('Utils', () => {
       expect(gaLink).to.exist;
     });
 
-    it('loadDelayed() test - expect moduled', async () => {
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.exist;
-    });
-
-    it('loadDelayed() test - expect nothing', async () => {
-      document.head.querySelector('meta[name="interlinks"]').remove();
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.be.null;
-    });
-
     it('Converts UTF-8 to Base 64', () => {
       const b64 = utils.utf8ToB64('hello world');
       expect(b64).to.equal('aGVsbG8gd29ybGQ=');
@@ -240,8 +229,8 @@ describe('Utils', () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
@@ -266,7 +255,7 @@ describe('Utils', () => {
 
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).null;
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
     });
 
@@ -370,12 +359,4 @@ describe('Utils', () => {
     });
   });
 
-  it('adds privacy trigger to cookie preferences link in footer', () => {
-    window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
-    document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
-    utils.loadPrivacy();
-    const privacyLink = document.querySelector('#privacy-link');
-    privacyLink.click();
-    expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
-  });
 });
