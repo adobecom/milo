@@ -1,9 +1,15 @@
-import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
+
+loadLana();
 
 export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  navItem: '.feds-navItem',
+  activeDropdown: '.feds-dropdown--active',
+  menuSection: '.feds-menu-section',
+  menuColumn: '.feds-menu-column',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -83,19 +89,22 @@ export function loadBlock(path) {
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
-  // eslint-disable-next-line no-async-promise-executor
-  cachedDecorateMenu = cachedDecorateMenu || new Promise(async (resolve) => {
-    const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
-      loadBlock('./menu/menu.js'),
-      loadStyles('utilities/menu/menu.css'),
-    ]);
+  if (cachedDecorateMenu) return cachedDecorateMenu;
 
-    resolve({
-      decorateMenu,
-      decorateLinkGroup,
-    });
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
   });
 
+  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+    loadBlock('./menu/menu.js'),
+    loadStyles('utilities/menu/menu.css'),
+  ]);
+
+  resolve({
+    decorateMenu,
+    decorateLinkGroup,
+  });
   return cachedDecorateMenu;
 }
 
@@ -123,16 +132,21 @@ export function closeAllDropdowns({ e } = {}) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
-  // TODO the curtain will be refactored
+
+  [...document.querySelectorAll(selectors.activeDropdown)]
+    .forEach((el) => el.classList.remove(selectors.activeDropdown.replace('.', '')));
+
   document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }
 
 /**
  * @param {*} param0
  * @param {*} param0.element - the DOM element of the trigger to expand
+ * @param {*} [param0.event] - the original event leading to this method being called
  * @returns true if the element has been expanded, false if it was already expanded
  */
-export function trigger({ element } = {}) {
+export function trigger({ element, event } = {}) {
+  if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns();
   if (isOpen) return false;
@@ -153,3 +167,16 @@ export function expandTrigger({ element } = {}) {
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
+  clientId: 'feds-milo',
+  sampleRate: 1,
+});
+
+export const logErrorFor = async (fn, message) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e });
+  }
+};
