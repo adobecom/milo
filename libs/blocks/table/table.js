@@ -206,12 +206,16 @@ function applyStylesBasedOnScreenSize(table) {
         table.querySelectorAll('.row').forEach((row) => {
           row.querySelector('.col:not(.subSectionTitle)').style.order = 1;
         });
+      } else if (filters[0] === filters[1]) {
+        table.querySelectorAll('.row').forEach((row) => {
+          row.append(row.querySelector('.col:last-child').cloneNode(true));
+        });
       }
     };
 
     // filter
-    if (!table.parentElement.querySelector('.row-filters')) {
-      const filters = createTag('div', { class: 'row row-filters' });
+    if (!table.parentElement.querySelector('.filters')) {
+      const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
       const colSelect0 = createTag('select', { class: 'filter' });

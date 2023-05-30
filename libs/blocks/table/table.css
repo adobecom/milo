@@ -287,7 +287,7 @@
 }
 
 /* Start mobile styles */
-.row-filters {
+.filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   margin: 20px 30px 0;
