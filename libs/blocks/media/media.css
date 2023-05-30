@@ -94,6 +94,10 @@
   margin-bottom: var(--spacing-s);
 }
 
+div[class*="-up"] .media {
+  width: 100%;
+}
+
 div[class*="-up"] .media .foreground {
   width: auto;
 }
