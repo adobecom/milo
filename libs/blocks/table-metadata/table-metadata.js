@@ -2,15 +2,6 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const getIndexedValues = (text) => text.split('\n').map((value) => value.split(/,(.*)/s).map((v) => v.trim()));
 
-function handleSectionHead(text, table) {
-  if (!text) return;
-  const sectionsHeads = text.split('\n');
-  sectionsHeads.forEach((sh) => {
-    const sectionHead = table.querySelector(`.row-${sh.trim()}`);
-    sectionHead.classList.add('sectionHead');
-  });
-}
-
 const handleColumnColor = (text, table, columnType) => {
   if (!text) return;
   const colors = getIndexedValues(text);
@@ -37,15 +28,17 @@ const handleColumnBgColor = (text, table, columnType) => {
   if (bgColors.length === 1 && bgColors[0].length === 1) {
     const color = bgColors[0][0];
     const allClassCols = Array.from(table.getElementsByClassName(`col-${columnType}`));
-    allClassCols.forEach((element) => {
+    allClassCols.forEach(element => {
       element.style.backgroundColor = color;
+      columnType === 'highlight' ? element.style.borderColor = color : null;
     });
   } else {
     bgColors.forEach((color) => {
       const [bgColorIndex, bgColorValue] = color;
       const col = table.querySelector(`.col-${bgColorIndex}.col-${columnType}`);
-      if (col) {
+      if (col && col.innerText) {
         col.style.background = bgColorValue;
+        if (columnType === 'highlight') col.style.borderColor = bgColorValue;
       }
     });
   }
