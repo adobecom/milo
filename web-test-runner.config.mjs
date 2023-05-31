@@ -47,7 +47,7 @@ export default {
           window.fetch = async (resource, options) => {
             if (!resource.startsWith("/") && !resource.startsWith('http://localhost')) {
               console.error(
-                '** External resource fetch is disallowed in unit tests, please find a way to mock!',
+                '** fetch request for an external resource is disallowed in unit tests, please find a way to mock!',
                 resource
               );
             }
@@ -58,7 +58,7 @@ export default {
             let [method, url, asyn] = args;
             if (!resource.startsWith("/") && url.startsWith('http://localhost')) {
               console.error(
-                '** XMLHttpRequest request is disallowed in unit tests, please find a way to mock!',
+                '** XMLHttpRequest request for an external resource is disallowed in unit tests, please find a way to mock!',
                 url
               );
             }
