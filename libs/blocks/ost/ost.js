@@ -28,7 +28,7 @@ export function createLinkMarkup(
   placeholderOptions,
   location = window.location,
 ) {
-  const ctaText = 'buy-now';
+  const { ctaText } = placeholderOptions || 'buy-now';
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
