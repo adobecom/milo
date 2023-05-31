@@ -365,14 +365,14 @@ export default function init(el) {
   handleHighlight(el);
   handleSection(el);
   if (isMerchTable) formatMerchTable(el);
-  handleHovering(el);
 
   window.addEventListener('milo:icons:loaded', () => {
-    handleScrollEffect(el, gnavHeight);
     applyStylesBasedOnScreenSize(el);
+    handleScrollEffect(el, gnavHeight);
     window.addEventListener('resize', () => {
       handleScrollEffect(el, gnavHeight);
       applyStylesBasedOnScreenSize(el);
+      handleScrollEffect(el, gnavHeight);
     });
   });
 }
