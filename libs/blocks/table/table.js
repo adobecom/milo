@@ -2,8 +2,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
-let originTable;
-
 function handleHeading(headingCols, isHighlightTable, table) {
   let highlightRow; let
     highlightRowCols;
@@ -241,13 +239,9 @@ function handleScrollEffect(table, gnavHeight) {
   observer.observe(intercept);
 }
 
-function applyStylesBasedOnScreenSize(table) {
+function applyStylesBasedOnScreenSize(table, originTable) {
   if (!(table instanceof Element)) {
     return;
-  }
-
-  if (!originTable) {
-    originTable = table.cloneNode(true);
   }
 
   const desktopSize = 900;
@@ -263,9 +257,9 @@ function applyStylesBasedOnScreenSize(table) {
 
   const mobileRenderer = () => {
     const isMerch = table.classList.contains('merch');
-    if (isMerch) {
+    if (isMerch && table.querySelectorAll('.row-heading .col').length > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
-    } else {
+    } else if (table.querySelectorAll('.row-heading .col').length > 3) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
     }
 
@@ -322,9 +316,13 @@ function applyStylesBasedOnScreenSize(table) {
   // For Mobile
   if (screenWidth <= mobileSize) {
     mobileRenderer();
-  } else if (originTable) {
+  } else {
     table.innerHTML = originTable.innerHTML;
     reAssignEvents(table);
+    // table.parentElement.querySelectorAll('filters select').forEach((select, index) => {
+    //   console.log(select, index);
+    //   select.querySelectorAll('option').item(index).selected = true;
+    // });
   }
 
   const sectionRow = Array.from(table.getElementsByClassName('section-row'));
@@ -367,11 +365,17 @@ export default function init(el) {
   if (isMerchTable) formatMerchTable(el);
 
   window.addEventListener('milo:icons:loaded', () => {
-    applyStylesBasedOnScreenSize(el);
+    let originTable;
+    if (el.querySelectorAll('.col-heading:not(.hidden)').length > 2) {
+      originTable = el.cloneNode(true);
+    } else {
+      originTable = el;
+    }
+    applyStylesBasedOnScreenSize(el, originTable);
     handleScrollEffect(el, gnavHeight);
     window.addEventListener('resize', () => {
       handleScrollEffect(el, gnavHeight);
-      applyStylesBasedOnScreenSize(el);
+      applyStylesBasedOnScreenSize(el, originTable);
       handleScrollEffect(el, gnavHeight);
     });
   });
