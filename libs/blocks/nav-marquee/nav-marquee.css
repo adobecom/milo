@@ -60,6 +60,12 @@
   margin: 0 0 var(--spacing-s);
 }
 
+.nav-marquee .marquee .foreground .icon-area img{
+  height: 20px;
+  float: left;
+  padding-right: 16px;
+ }
+
 .nav-marquee .toc-link-text {
   flex: 1 1 auto;
 }
@@ -233,10 +239,6 @@
     float: right;
     width: calc(100% - 40px);
    }
-
-  .nav-marquee .marquee .foreground .icon-area picture{
-   height: 20px;
-  }
 
   .nav-marquee .marquee .foreground .media {
     max-width: 100%;
