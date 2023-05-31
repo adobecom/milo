@@ -66,6 +66,9 @@
   --type-heading-xxs-size: 14px;
   --type-heading-xxs-lh: 18px;
 
+  /* Headings (General) */
+  --type-heading-base-lh: 1.2;
+
   /* Body (Consonant) */
   --type-body-xxl-size: 28px;
   --type-body-xxl-lh: 42px;
@@ -104,11 +107,23 @@
 }
 
 :root:lang(ko-KR) {
-  --body-font-family: adobe-han-k, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 :root:lang(ja-JP) {
   --body-font-family: adobe-clean-han-japanese, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(zh-TW) {
+  --body-font-family: adobe-clean-han-traditional, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(zh-CN) {
+  --body-font-family: adobe-clean-han-simplified-c, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+:root:lang(zh-HK) {
+  --body-font-family: adobe-clean-han-traditional, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 @media (min-width: 1200px) {

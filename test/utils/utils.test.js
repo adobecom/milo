@@ -52,24 +52,21 @@ describe('Utils', () => {
         expect(link.target).to.equal('_blank');
       });
     });
-    
+
     describe('Configure Auto Block', () => {
-      it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+      it('Disable auto block when #_dnb in url', async () => {
+        await waitForElement('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
-        expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
-        );
+        expect(disableAutoBlockLink.href).to.equal('https://www.instagram.com/');
       });
 
-      it('Auto block works as expected when #_dnb is not added to url', () => {
-        const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
-        );
+      it('Auto block works as expected when #_dnb is not added to url', async () => {
+        await waitForElement('[href="https://twitter.com/Adobe"]');
+        const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
-    }); 
+    });
 
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
@@ -134,17 +131,6 @@ describe('Utils', () => {
       await utils.loadDeferred(document, [], { contentRoot: '' });
       const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
       expect(gaLink).to.exist;
-    });
-
-    it('loadDelayed() test - expect moduled', async () => {
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.exist;
-    });
-
-    it('loadDelayed() test - expect nothing', async () => {
-      document.head.querySelector('meta[name="interlinks"]').remove();
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.be.null;
     });
 
     it('Converts UTF-8 to Base 64', () => {
@@ -243,8 +229,8 @@ describe('Utils', () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
@@ -269,7 +255,7 @@ describe('Utils', () => {
 
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).null;
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
     });
 
@@ -351,6 +337,11 @@ describe('Utils', () => {
       });
     });
 
+    it('decorates footer promo fragment', () => {
+      const a = document.querySelector('main > div:last-of-type .fragment');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
     it('creates an IntersectionObserver', (done) => {
       const block = document.createElement('div');
       block.id = 'myblock';
@@ -368,12 +359,4 @@ describe('Utils', () => {
     });
   });
 
-  it('adds privacy trigger to cookie preferences link in footer', () => {
-    window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
-    document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
-    utils.loadPrivacy();
-    const privacyLink = document.querySelector('#privacy-link');
-    privacyLink.click();
-    expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
-  });
 });

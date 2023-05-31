@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
 
@@ -63,5 +64,7 @@ export default function init(el) {
   const maxWidthClass = Array.from(el.classList).find((style) => style.startsWith('max-width-'));
   el.classList.add('con-block', maxWidthClass || 'max-width-10-desktop');
   accordion.classList.add('foreground');
+  decorateBlockAnalytics(el);
+  decorateLinkAnalytics(accordion, headings);
   el.append(accordion);
 }

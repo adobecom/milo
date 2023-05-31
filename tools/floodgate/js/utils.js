@@ -1,3 +1,5 @@
+import { fetchWithRetry } from '../../loc/sharepoint.js';
+
 export function getFloodgateUrl(url) {
   if (!url) {
     return undefined;
@@ -24,7 +26,7 @@ export function handleExtension(path) {
 }
 
 export async function getFile(downloadUrl) {
-  const response = await fetch(downloadUrl);
+  const response = await fetchWithRetry(downloadUrl);
   if (response) {
     return response.blob();
   }
@@ -52,4 +54,29 @@ export function getDocPathFromUrl(url) {
   }
 
   return `${path}.docx`;
+}
+
+export async function delay(milliseconds = 100) {
+  // eslint-disable-next-line no-promise-executor-return
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+export async function postData(url, data) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export function getParams(project, config) {
+  return {
+    adminPageUri: window.location.href,
+    projectExcelPath: project.excelPath,
+    shareUrl: config.sp.shareUrl,
+    fgShareUrl: config.sp.fgShareUrl,
+    rootFolder: config.sp.rootFolders,
+    fgRootFolder: config.sp.fgRootFolder,
+  };
 }

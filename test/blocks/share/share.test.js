@@ -53,4 +53,26 @@ describe('Share', () => {
     expect(pi).to.exist;
     expect(tw).to.not.exist;
   });
+  it('Only reddit exists', async () => {
+    const shareEl = document.querySelector('.share.reddit');
+    await init(shareEl);
+    const re = shareEl.querySelector('a[title*="Reddit"');
+    const tw = shareEl.querySelector('a[title*="Twitter"');
+    expect(re).to.exist;
+    expect(tw).to.not.exist;
+  });
+  it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+    const section = document.querySelector('.section.inline-has-siblings');
+    const shareEls = section.querySelectorAll('.share.inline');
+    shareEls.forEach(async (shareEl) => {
+      await init(shareEl);
+      expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.true;
+    });
+  });
+  it("Inline variant (without siblings) doesn't affect the DOM", async () => {
+    const section = document.querySelector('.section.inline-no-siblings');
+    const shareEl = section.querySelector('.share.inline');
+    await init(shareEl);
+    expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.false;
+  });
 });

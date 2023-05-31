@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://www.tiktok.com/@adobe/video/7171880842296347946">https://www.tiktok.com/@adobe/video/7171880842296347946</a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { loadScript } from '../../../libs/utils/utils.js';
+    import init from '../../../libs/blocks/tiktok/tiktok.js';
+    
+    runTests(() => {
+      describe('tiktok', () => {
+        it('renders embed video for tiktok link', () => {
+          const tiktok = document.querySelector('a');
+          init(tiktok);
+          const blockquote = document.querySelector('.tiktok-embed');
+          const script = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
+          expect(blockquote).to.not.be.null;
+          expect(loadScript.callCount).to.equal(1);
+        });
+      });
+    });
+  </script>
+</html>
