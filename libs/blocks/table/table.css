@@ -310,7 +310,7 @@ header.global-navigation {
 }
 
 @media (min-width: 769px) {
-  .row-filters {
+  .filters {
     display: none;
   }
 

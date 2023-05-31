@@ -258,6 +258,7 @@ function applyStylesBasedOnScreenSize(table) {
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => icon.addEventListener('click', (e) => {
       handleExpand(e.target);
     }));
+    handleHovering(tableEl);
   };
 
   const mobileRenderer = () => {
