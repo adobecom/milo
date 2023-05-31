@@ -30,8 +30,10 @@ async function floodgateContentAction(project, config) {
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
-  // consider fgRoot as the project path for promote action.
-  params.projectRoot = config.sp.fgRootFolder;
+  // Based on User selection on the Promote Dialog,
+  // passing the param if user also wants to Publish the Promoted pages.
+  params.doPublish = 'promotePublish' ===
+    document.querySelector('input[name="promotePublishRadio"]:checked')?.value;
   const promoteStatus = await postData(config.sp.aioPromoteAction, params);
   updateProjectStatusUIFromAction({ promoteStatus });
 }
@@ -89,12 +91,21 @@ function setListeners(project, config) {
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
+    togglePromotePublishRadioVisibility('block');
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
   document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
     modal.style.display = 'none';
+    togglePromotePublishRadioVisibility('none');
   });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
+}
+
+function togglePromotePublishRadioVisibility(visibility) {
+  const promotePublishOptions = document.getElementById('promote-publish-options');
+  promotePublishOptions.style.display = visibility;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
 }
 
 async function init() {
