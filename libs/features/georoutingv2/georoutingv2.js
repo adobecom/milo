@@ -71,22 +71,22 @@ const getAkamaiCode = () => new Promise((resolve) => {
 async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
-  const { contentRoot } = config.locale;
-  const path = window.location.href.replace(contentRoot, '');
+  const { prefix } = config.locale;
+  let path = window.location.href.replace(`${window.location.origin}`, '');
+  if (path.startsWith(prefix)) path = path.replace(prefix, '');
 
   const availableLocales = [];
   const pagesExist = [];
   locales.forEach((locale, index) => {
-    const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
-    const localePath = `${localeRoot}${path}`;
+    const locPrefix = locale.prefix ? `/${locale.prefix}` : '';
+    const localePath = `${locPrefix}${path}`;
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
         locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${localeRoot}/`;
+        locale.url = `${locPrefix}`;
         availableLocales[index] = locale;
       }
     });
@@ -105,7 +105,7 @@ function getGeoroutingOverride() {
     const d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `overrideGeorouting=${hideGeorouting};${expires};path=/;`;
+    document.cookie = `hideGeorouting=${hideGeorouting};${expires};path=/;`;
   } else if (param === 'off') document.cookie = 'hideGeorouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
   return hideGeorouting === 'on';
 }
@@ -114,8 +114,9 @@ function decorateForOnLinkClick(link, prefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
-    document.cookie = `international=${modPrefix};path=/`;
-    sessionStorage.setItem('international', modPrefix);
+    const domain = window.location.host === 'adobe.com'
+      || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+    document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
   });
 }
@@ -276,7 +277,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const storedInter = sessionStorage.getItem('international') || getCookie('international');
+  const storedInter = getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
