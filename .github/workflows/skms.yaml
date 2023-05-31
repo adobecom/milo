@@ -4,9 +4,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the "main" branch
-  push:
-    branches: [ "skms-release-test" ]
+  # Triggers the workflow on pull requests that are merged but only for the "main" branch
+  pull_request:
+    types: [closed]
+    branches:
+      - skms-release-test
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -25,63 +27,68 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
-        run: echo Hello, world!
+        run: echo Starting CMR Action!
 
       # Runs a set of commands using the runners shell
       # PROD URL: api.skms.adobe.com
       - run: |
-          DEFAULT_SKMS_URL='stage.dev.skms.adobe.com'
+          if [[ ${{ github.event.pull_request.merged == true }} ]]; then
+            start_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
+            DEFAULT_SKMS_URL='stage.dev.skms.adobe.com'
 
-          function skms_request() {
-              local username=$1
-              local passkey=$2
-              local object=$3
-              local method=$4
-              local method_params=$5
-              local url=$6
+            function skms_request() {
+                local username=$1
+                local passkey=$2
+                local object=$3
+                local method=$4
+                local method_params=$5
+                local url=$6
 
-              if [ -z "$username" ]; then
-                echo "First parameter missing, must be SKMS username"
-                return 1
-              fi
+                if [ -z "$username" ]; then
+                  echo "First parameter missing, must be SKMS username"
+                  return 1
+                fi
 
-              if [ -z "$passkey" ]; then
-                echo "Second parameter missing, must be SKMS passkey"
-                return 1
-              fi
+                if [ -z "$passkey" ]; then
+                  echo "Second parameter missing, must be SKMS passkey"
+                  return 1
+                fi
 
-              if [ -z "$object" ]; then
-                echo "Third parameter missing, must be an SKMS dao object"
-                return 1
-              fi
+                if [ -z "$object" ]; then
+                  echo "Third parameter missing, must be an SKMS dao object"
+                  return 1
+                fi
 
-              if [ -z "$method" ]; then
-                echo "Fourth parameter missing, must be SKMS dao method"
-                return 1
-              fi
+                if [ -z "$method" ]; then
+                  echo "Fourth parameter missing, must be SKMS dao method"
+                  return 1
+                fi
 
-              if [ -z "$method_params" ]; then
-                method_params='{}'
-              fi
+                if [ -z "$method_params" ]; then
+                  method_params='{}'
+                fi
 
-              if [ -z "$url" ]; then
-                url=$DEFAULT_SKMS_URL
-              fi
+                if [ -z "$url" ]; then
+                  url=$DEFAULT_SKMS_URL
+                fi
 
-              if ! type "jq" >/dev/null; then
-                echo "jq is required but not installed"
-              fi
+                if ! type "jq" >/dev/null; then
+                  echo "jq is required but not installed"
+                fi
 
-              if ! type "curl" >/dev/null; then
-                echo "curl is required but not installed"
-              fi
+                if ! type "curl" >/dev/null; then
+                  echo "curl is required but not installed"
+                fi
 
-              local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
-              params=$(echo "$params $method_params" | jq -s add)
+                local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
+                params=$(echo "$params $method_params" | jq -s add)
 
-              curl https://${url}/web_api --data-urlencode "_parameters=${params}"
-              echo ''
-          }
-          date=$(date '+%Y-%m-%d %H:%M')
+                curl https://${url}/web_api --data-urlencode "_parameters=${params}"
+                echo ''
+            }
+            end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
 
-          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_STAGE_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${date}","maintenance_window_start_time":"${date}","preapproved_change_model_id":655075,"summary":"Milo Release"}'
+            skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_STAGE_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${end_date}","maintenance_window_start_time":"${start_date}","preapproved_change_model_id":847787,"summary":"Milo Release:\n\n- ${{ github.event.pull_request.title }} -\n\n${{ github.event.pull_request.body }}\n\nPull Request #: ${{ github.event.pull_request.number }}\nPull Request Created at:${{ github.event.pull_request.created_at }}\nPull Request Merged at:${{ github.event.pull_request.merged_at }}"'
+          else
+            echo "SKMS CMR Skipped - pull request was closed without merging."
+          fi
