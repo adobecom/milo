@@ -119,6 +119,7 @@
 
   .nav-marquee .marquee .foreground .text h2 {
     font-size: var(--type-heading-xxl-size);
+    clear: both;
   }
 
   .nav-marquee .marquee .foreground .text h3 {
@@ -225,16 +226,16 @@
 
   .nav-marquee .marquee .foreground .text {
     max-width: 800px;
-    padding-bottom: 0;
+    padding: 0;
   }
 
   .nav-marquee .marquee .foreground h3.icon-area {
     float: right;
     width: calc(100% - 40px);
    }
-  .nav-marquee .marquee .foreground p.icon-area {
-   background-color: red;
-   width: 25px;
+
+  .nav-marquee .marquee .foreground .icon-area picture{
+   height: 20px;
   }
 
   .nav-marquee .marquee .foreground .media {
@@ -248,7 +249,7 @@
   }
 
   .nav-marquee .content-table .toc-container {
-    max-width: 400px;
+    width: 448px;
     background-color: #FFF;
     margin-top: var(--spacing-xl);
   }
@@ -267,5 +268,6 @@
 
   .nav-marquee .marquee .foreground .text h2 {
     font-size: var(--type-heading-xxl-size);
+    clear: both;
   }
 }
