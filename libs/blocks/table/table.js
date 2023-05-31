@@ -235,8 +235,8 @@ function handleScrollEffect(table, gnavHeight) {
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-    highlightRow.style.top = `${gnavHeight}px`;
-    headingRow.style.top = `${gnavHeight + highlightRow.offsetHeight}px`;
+    if (highlightRow) highlightRow.style.top = `${gnavHeight}px`;
+    headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
   });
   observer.observe(intercept);
 }
@@ -254,6 +254,12 @@ function applyStylesBasedOnScreenSize(table) {
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
 
+  const reAssignEvents = (tableEl) => {
+    tableEl.querySelectorAll('.icon.expand').forEach((icon) => icon.addEventListener('click', (e) => {
+      handleExpand(e.target);
+    }));
+  };
+
   const mobileRenderer = () => {
     const isMerch = table.classList.contains('merch');
     if (isMerch) {
@@ -264,9 +270,7 @@ function applyStylesBasedOnScreenSize(table) {
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
-      table.querySelectorAll('.subSection').forEach((subSection) => {
-        subSection.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
-      });
+      reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
@@ -275,7 +279,7 @@ function applyStylesBasedOnScreenSize(table) {
       }
       if (filters[0] > filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
-          row.querySelector('.col:not(.subSectionTitle)').style.order = 1;
+          row.querySelector('.col:not(.section-row-title, .hidden)').style.order = 1;
         });
       } else if (filters[0] === filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
@@ -302,7 +306,7 @@ function applyStylesBasedOnScreenSize(table) {
       const colSelect1 = colSelect0.cloneNode(true);
       colSelect0.dataset.filterIndex = 0;
       colSelect1.dataset.filterIndex = 1;
-      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"])');
+      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"], .hidden)');
       colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       filter1.append(colSelect0);
@@ -319,6 +323,7 @@ function applyStylesBasedOnScreenSize(table) {
     mobileRenderer();
   } else if (originTable) {
     table.innerHTML = originTable.innerHTML;
+    reAssignEvents(table);
   }
 
   const sectionRow = Array.from(table.getElementsByClassName('section-row'));
@@ -328,12 +333,10 @@ function applyStylesBasedOnScreenSize(table) {
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
 
     sectionRow.forEach((row) => {
-      if (screenWidth >= desktopSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
-      } else if (screenWidth <= mobileSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
-      } else {
+      if (screenWidth < desktopSize && screenWidth > mobileSize) {
         row.style.gridTemplateColumns = templateColumnsValue;
+      } else {
+        row.style.gridTemplateColumns = '';
       }
     });
   }
@@ -349,6 +352,7 @@ export default function init(el) {
     row.classList.add('row', `row-${rdx + 1}`);
     const cols = Array.from(row.children);
     cols.forEach((col, cdx) => {
+      col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
     });
   });
@@ -361,9 +365,9 @@ export default function init(el) {
   handleSection(el);
   if (isMerchTable) formatMerchTable(el);
   handleHovering(el);
-  handleScrollEffect(el, gnavHeight);
 
   window.addEventListener('milo:icons:loaded', () => {
+    handleScrollEffect(el, gnavHeight);
     applyStylesBasedOnScreenSize(el);
     window.addEventListener('resize', () => {
       handleScrollEffect(el, gnavHeight);

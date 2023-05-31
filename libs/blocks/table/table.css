@@ -8,12 +8,19 @@
 
 .table > .row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, 50%);
 }
 
 .table.merch > .row {
   gap: var(--spacing-m);
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.table .col {
+  min-height: 27px;
+}
+
+.table .col p {
+  margin: 0;
 }
 
 .table div[class*="col-"],
@@ -257,6 +264,10 @@ header.global-navigation {
     margin: 0 30px;
   }
 
+  .table .section-head {
+    display: block;
+  }
+
   .table .section-head .col:not(.section-head-title),
   .table:not(.merch) .col-heading.col-1,
   .table:not(.merch) .row-highlight .col-highlight.col-1 {
@@ -266,6 +277,7 @@ header.global-navigation {
   .table:not(.merch) .section-row-title {
     grid-row: 1;
     grid-column: 1 / x;
+    background-color: #f8f8f8;
   }
 
   .table .row-heading .col:nth-child(n+1) {
@@ -300,7 +312,15 @@ header.global-navigation {
 @media (min-width: 769px) {
   .row-filters {
     display: none;
-  }  
+  }
+
+  .table > .row {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .table.merch > .row {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 /* table merch */
