@@ -70,6 +70,13 @@ async function refreshPage(config, projectDetail, project) {
   loadingOFF();
 }
 
+function togglePromotePublishRadioVisibility(visibility) {
+  const promotePublishOptions = document.getElementById('promote-publish-options');
+  promotePublishOptions.style.display = visibility;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
+}
+
 function setListeners(project, config) {
   const modal = document.getElementById('fg-modal');
   const handleFloodgateConfirm = ({ target }) => {
@@ -99,13 +106,6 @@ function setListeners(project, config) {
     togglePromotePublishRadioVisibility('none');
   });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
-}
-
-function togglePromotePublishRadioVisibility(visibility) {
-  const promotePublishOptions = document.getElementById('promote-publish-options');
-  promotePublishOptions.style.display = visibility;
-  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
-  promoteOnlyOption.checked = true;
 }
 
 async function init() {
