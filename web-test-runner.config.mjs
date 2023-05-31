@@ -42,10 +42,10 @@ export default {
   testRunnerHtml: (testFramework) => `
     <html>
       <head>
-        <script type="module">
+        <script type='module'>
           const oldFetch = window.fetch;
           window.fetch = async (resource, options) => {
-            if (!resource.startsWith("/") && !resource.startsWith('http://localhost')) {
+            if (!resource.startsWith('/') && !resource.startsWith('http://localhost')) {
               console.error(
                 '** fetch request for an external resource is disallowed in unit tests, please find a way to mock!',
                 resource
@@ -56,7 +56,7 @@ export default {
           const oldXHROpen = XMLHttpRequest.prototype.open;
           XMLHttpRequest.prototype.open = async function (...args) {
             let [method, url, asyn] = args;
-            if (!resource.startsWith("/") && url.startsWith('http://localhost')) {
+            if (!resource.startsWith('/') && url.startsWith('http://localhost')) {
               console.error(
                 '** XMLHttpRequest request for an external resource is disallowed in unit tests, please find a way to mock!',
                 url
@@ -67,7 +67,7 @@ export default {
         </script>
       </head>
       <body>
-        <script type="module" src="${testFramework}"></script>
+        <script type='module' src='${testFramework}'></script>
       </body>
     </html>`,
 };
