@@ -157,10 +157,9 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        let dir = getMetadata('content-direction') || config.locale.dir;
-        if (!dir && config.locale.ietf) {
-          dir = dir || new Intl.Locale(config.locale.ietf)?.textInfo?.direction;
-        }
+        const dir = getMetadata('content-direction')
+          || config.locale.dir
+          || (config.locale.ietf && (new Intl.Locale(config.locale.ietf)?.textInfo?.direction));
         document.documentElement.setAttribute('dir', dir || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
