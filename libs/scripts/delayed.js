@@ -12,12 +12,15 @@
 
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
-  const jarvis = getMetadata('jarvis-chat');
-  if (!config.jarvis?.id || !config.jarvis?.version) return;
-  if (jarvis === 'on') {
-    const { initJarvisChat } = await import('../features/jarvis-chat.js');
-    initJarvisChat(config, loadScript, loadStyle);
-  }
+  const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
+  if (!jarvis || !config.jarvis?.id || !config.jarvis?.version) return;
+
+  const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
+  if (jarvis === 'mobile' && desktopViewport) return;
+  if (jarvis === 'desktop' && !desktopViewport) return;
+
+  const { initJarvisChat } = await import('../features/jarvis-chat.js');
+  initJarvisChat(config, loadScript, loadStyle);
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
