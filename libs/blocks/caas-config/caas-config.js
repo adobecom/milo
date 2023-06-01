@@ -21,6 +21,7 @@ import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
 
+const DEBUG = window.location.search.includes('debug=true');
 const LS_KEY = 'caasConfiguratorState';
 
 const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
@@ -503,23 +504,62 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
+  `;
+  
+  const FilterBuildPanel = html`
+    <${FilterOptions}>
     <${MultiField}
       onChange=${onChange('filters')}
       className="filters"
       values=${context.state.filters}
-      title="Filter Tags"
+      title="Automatic Filters"
       subTitle=""
     >
-    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
     <//>
   `;
 
+  const FilterCustomBuildPanel = html`
+    <${FilterOptions}>
+    <${MultiField}
+      onChange=${onChange('filtersCustom')}
+      className="filtersCustom"
+      values=${context.state.filtersCustom}
+      title="Custom Filters"
+      addBtnTitle="New Group"
+      subTitle=""
+    >
+      <${FormInput} label="Group Name" name="group" />
+
+      <!-- nested multifield  -->
+      <${MultiField}
+        className="filtersCustomItems"
+        parentValues=${context.state.filtersCustom}
+        title="Filters"
+        subTitle=""
+        addBtnLabel="+"
+        addBtnTitle="New Filter"
+        name="filtersCustomItems"
+      >
+        <${FormInput} label="Filter label" name="filtersCustomLabel"/>
+        <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
+      <//>
+      <!-- End nested multifield -->
+      
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+    <//>
+  `;
+
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-    ${state.showFilters && FilterOptions}
+    ${state.showFilters
+      && (state.filterBuildPanel === 'custom'
+        ? FilterCustomBuildPanel
+        : FilterBuildPanel)}
   `;
 };
 
@@ -576,6 +616,7 @@ const AdvancedPanel = () => {
   const context = useContext(ConfiguratorContext);
   const onClick = () => {
     dispatch({ type: 'RESET_STATE' });
+    // window.location.reload();
   };
 
   const onChange = (prop) => (values) => {
@@ -639,7 +680,7 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    if (lsState) {
+    if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
@@ -648,6 +689,7 @@ const getInitialState = () => {
   }
 
   if (!state) state = {};
+  if (DEBUG) window.state = state;
 
   return updateObj(state, defaultState);
 };

@@ -36,3 +36,71 @@ dd.content .sort-options > .field {
   top: 12px;
 }
 
+.config-panel dd.content.is-expanded {
+  max-height: 6000px;
+}
+
+.multifield .multifield {
+  padding: 0 0 15px;
+  margin: 0 -15px 9px 0;
+  border-bottom: solid 1px #999;
+  border-bottom: none;
+}
+
+.multifield .multifield > .multifield-set {
+  border: solid 1px #999;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.multifield.filtersCustom > .multifield-set:nth-child(2) {
+  margin-top: -30px;
+}
+
+.multifield .multifield > .multifield-set:not(:nth-child(2)) {
+  border-top: none;
+}
+
+.config-panel dd.content .multifield .multifield .field {
+   margin-bottom: 0;
+}
+
+.multifield .multifield h3 {
+  font-size: 16px;
+  font-weight: 300;
+  margin: 0;
+}
+
+.multifield .multifield > .multifield-set > .multifield-fields {
+  width: 190px;
+}
+
+.multifield .multifield > .multifield-header > .multifield-add {
+  font-size: 16px;
+}
+
+.config-panel button {
+  cursor: pointer;
+}
+
+.accordion-item:hover dt.title span,
+.accordion-item:hover  dt.title button {
+  color: #fff;
+  cursor: pointer;
+}
+
+/* sticky panel */
+.config-panel {
+  position: sticky;
+  top: 60px;
+  align-self: start;
+  overflow: scroll;
+  max-height: 95vh;
+  background: #ddd;
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.config-panel::-webkit-scrollbar { 
+  display: none;  /* Safari and Chrome */
+}
