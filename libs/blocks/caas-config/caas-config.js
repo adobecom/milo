@@ -616,7 +616,6 @@ const AdvancedPanel = () => {
   const context = useContext(ConfiguratorContext);
   const onClick = () => {
     dispatch({ type: 'RESET_STATE' });
-    // window.location.reload();
   };
 
   const onChange = (prop) => (values) => {
