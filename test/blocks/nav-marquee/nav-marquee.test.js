@@ -20,7 +20,7 @@ describe('nav-marquee', () => {
       const tableOfContents = document.querySelectorAll('.nav-marquee');
       tableOfContents.forEach((navMarqueeInit));
 
-      expect(document.querySelector('.content-table .toc-container')).to.exist;
+      expect(document.querySelector('.content-table .offer-container')).to.exist;
     });
   });
 });

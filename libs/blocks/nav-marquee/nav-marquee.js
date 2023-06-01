@@ -25,7 +25,6 @@ function findAnchorTarget(text) {
     linkText = linkText.replaceAll('_', '-');
     linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
     linkText = `#${linkText}`;
-    //return document.querySelector(`[id^="${linkText}"]`);
   }
   return linkText;
 }
@@ -34,34 +33,31 @@ function getItem(title, description, target) {
   if (!title) {
     return null;
   }
-  const item = createTag('li', { class: 'toc-item' });
-  const linkText = createTag('div', { class: 'toc-link-text' });
-  const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
+  const item = createTag('li', { class: 'offer-item' });
+  const linkText = createTag('div', { class: 'offer-link-text' });
+  const pageTop = document.querySelector('header')?.offsetHeight ?? 0
+  const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
+  linkText.append(link);
+  item.addEventListener('click', () => {
+    const isTextSelected = window.getSelection().toString();
 
-  if (title) {
-    const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
-    linkText.append(link);
-    item.addEventListener('click', () => {
-      const isTextSelected = window.getSelection().toString();
+    if (!isTextSelected) {
+      link.click();
+    }
+  });
+  link.addEventListener('click', (e) => {
+    const targetPosition = target?.getBoundingClientRect().top ?? 0;
+    const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
-      if (!isTextSelected) {
-        link.click();
-      }
-    });
-    link.addEventListener('click', (e) => {
-      const targetPosition = target?.getBoundingClientRect().top ?? 0;
-      const offsetPosition = targetPosition + window.pageYOffset - pageTop;
-
-      e.preventDefault();
-      window.scrollTo(0, offsetPosition);
-      target?.setAttribute('tabindex', -1);
-      target?.focus();
-    });
-  }
+    e.preventDefault();
+    window.scrollTo(0, offsetPosition);
+    target?.setAttribute('tabindex', -1);
+    target?.focus();
+  });
 
   if (description) linkText.append(createTag('p', { class: 'section-description' }, description));
   item.append(linkText);
-  item.append(createTag('div', { class: 'toc-arrow' }, DOWN_ARROW_ICON));
+  item.append(createTag('div', { class: 'offer-arrow' }, DOWN_ARROW_ICON));
   return item;
 }
 
@@ -83,7 +79,7 @@ function decorateText(el, size) {
 export default function init(el) {
   const size = getBlockSize(el);
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const tone = (el.classList.contains('light')) ? 'light' : 'dark';
+  const tone = (el.classList.contains('dark')) ? 'dark' : 'light';
   const marqueeContent = createTag('div', { class: 'foreground' }, children.shift());
   const marquee = createTag('div', { class: `marquee ${tone}` }, marqueeContent);
   marqueeContent.firstElementChild.classList.add('text');
@@ -92,10 +88,10 @@ export default function init(el) {
   decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
   marquee.className = `marquee ${tone}`;
 
-  const header = createTag('p', { class: 'toc-title' });
-  const footer = createTag('p', { class: 'toc-footer' });
-  const tocNav = createTag('nav', { 'aria-label': 'Table of contents' });
-  const navUl = createTag('ul', { class: 'toc-list' });
+  const header = createTag('p', { class: 'offer-title' });
+  const footer = createTag('p', { class: 'offer-footer' });
+  const offerNav = createTag('nav', { 'aria-label': 'Table of contents' });
+  const navUl = createTag('ul', { class: 'offer-list' });
   children.forEach((section) => {
     if (section.firstElementChild.textContent === 'header') {
       header.append(section.lastElementChild.textContent);
@@ -118,12 +114,12 @@ export default function init(el) {
     navUl.append(item);
     section.remove();
   }, '');
-  const tocContainer = createTag('div', { class: 'toc-container' }, header);
-  tocContainer.append(tocNav);
-  tocContainer.append(footer);
-  const toc = createTag('div', { class: 'content-table' }, tocContainer);
+  const offerContainer = createTag('div', { class: 'offer-container' }, header);
+  offerContainer.append(offerNav);
+  offerContainer.append(footer);
+  const offer = createTag('div', { class: 'content-table' }, offerContainer);
 
-  tocNav.append(navUl);
+  offerNav.append(navUl);
   el.append(marquee);
-  el.append(toc);
+  el.append(offer);
 }
