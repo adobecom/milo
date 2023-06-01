@@ -290,7 +290,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       if (isMerch) {
-        table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
       } else {
         table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
       }
@@ -335,7 +335,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
-  // For Mobile
+  // For Mobile (else: tablet / desktop)
   if (screenWidth <= mobileSize) {
     mobileRenderer();
   } else {
