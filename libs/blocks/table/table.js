@@ -42,9 +42,9 @@ function handleHeading(headingCols, isHighlightTable, table) {
         const buttons = col.querySelectorAll('.con-button');
 
         buttons.forEach((btn) => {
-          let btnWrapper = btn.closest('P');
+          const btnWrapper = btn.closest('P');
           buttonsWrapper.append(btnWrapper);
-        })
+        });
       }
 
       if (nextCol && !nextCol.innerText) {
@@ -189,22 +189,22 @@ function formatMerchTable(table) {
   }
 }
 
-function handleMouseOut(elements) {
-  elements.forEach((e) => {
+function handleMouseOut(cols) {
+  cols.forEach((e) => {
     e.classList.remove('hover');
     e.classList.remove('no-top-border');
     e.classList.remove('hover-border-bottom');
   });
 }
 
-function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
-  handleMouseOut(elements);
+function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
+  handleMouseOut(cols);
 
   const headingRow = table.querySelector('.row-heading');
   const colClass = `col-${colNum}`;
   const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
 
-  elements.forEach((e) => {
+  cols.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
       const matchingCols = Array.from(e.classList).filter(
         (className) => className.startsWith(colClass),
@@ -216,7 +216,7 @@ function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHe
     }
 
     if (isCollapseTable && isLastRowCollapsed) {
-      let lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
+      const lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
       lastSectionHeadCol.classList.add('hover-border-bottom');
     }
 
@@ -230,15 +230,15 @@ function handleHovering(table) {
   const isMerchTable = table.classList.contains('merch');
   const startValue = isMerchTable ? 1 : 2;
   const isCollapseTable = table.classList.contains('collapse');
-  const sectionHeads =  table.querySelectorAll('.section-head');
+  const sectionHeads = table.querySelectorAll('.section-head');
   const lastSectionHead = sectionHeads[sectionHeads.length - 1];
   const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
 
   for (let i = startValue; i <= colsInRowNum; i++) {
-    const elements = table.querySelectorAll(`.col-${i}`);
-    elements.forEach((e) => {
-      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i, isCollapseTable, lastSectionHead, lastExpandIcon ));
-      e.addEventListener('mouseout', () => handleMouseOut(elements));
+    const cols = table.querySelectorAll(`.col-${i}`);
+    cols.forEach((e) => {
+      e.addEventListener('mouseover', () => handleMouseOver(cols, table, i, isCollapseTable, lastSectionHead, lastExpandIcon));
+      e.addEventListener('mouseout', () => handleMouseOut(cols));
     });
   }
 }
@@ -247,8 +247,10 @@ function handleScrollEffect(table, gnavHeight) {
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
-  const intercept = document.createElement('div');
+  const intercept = table.querySelector('.intercept') || document.createElement('div');
+  intercept.className = 'intercept';
   intercept.setAttribute('data-observer-intercept', '');
+  table.append(intercept);
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
@@ -339,10 +341,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   } else {
     table.innerHTML = originTable.innerHTML;
     reAssignEvents(table);
-    // table.parentElement.querySelectorAll('filters select').forEach((select, index) => {
-    //   console.log(select, index);
-    //   select.querySelectorAll('option').item(index).selected = true;
-    // });
+    table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
+      select.querySelectorAll('option').item(index).selected = true;
+    });
   }
 
   const sectionRow = Array.from(table.getElementsByClassName('section-row'));
@@ -393,9 +394,14 @@ export default function init(el) {
     }
     applyStylesBasedOnScreenSize(el, originTable);
     handleScrollEffect(el, gnavHeight);
+
+    let timeout;
     window.addEventListener('resize', () => {
-      applyStylesBasedOnScreenSize(el, originTable);
-      handleScrollEffect(el, gnavHeight);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        applyStylesBasedOnScreenSize(el, originTable);
+        handleScrollEffect(el, gnavHeight);
+      }, 100);
     });
   });
 }

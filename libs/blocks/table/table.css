@@ -11,10 +11,6 @@
   grid-template-columns: repeat(auto-fit, 50%);
 }
 
-.table.merch > .row {
-  gap: var(--spacing-m);
-}
-
 .table .col {
   min-height: 27px;
 }
@@ -268,11 +264,12 @@ header.global-navigation {
 
 /* Start tablet styles */
 @media (max-width: 859px) {
-  .table {
+  .table,
+  .table.merch {
     margin: 0 30px;
   }
 
-  .table .section-head {
+  .table:not(.merch) .section-head {
     display: block;
   }
 
@@ -328,10 +325,16 @@ header.global-navigation {
 
   .table.merch > .row {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-m);
   }
 }
 
 /* table merch */
+.table.merch > .row {
+  grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
+  gap: var(--spacing-xs);
+}
+
 .table.merch .row-heading .col-heading:not(.no-rounded) {
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
