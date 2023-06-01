@@ -1,74 +1,10 @@
-
+/* eslint-disable no-plusplus */
 import { createTag } from '../../utils/utils.js';
-let originTable;
-
-export default function init(el) {
-  // remove top row if empty
-  const firstRow = el.querySelector(':scope > div:first-child');
-  if (firstRow.innerText.trim() === '') firstRow.remove();
-
-  const rows = Array.from(el.children);
-  rows.forEach((row, rdx) => {
-    row.classList.add(`row`, `row-${rdx + 1}`);
-    const cols = Array.from(row.children);
-    cols.forEach((col, cdx) => {
-      col.classList.add(`col`, `col-${cdx + 1}`);
-    });
-  });
-
-  const isMerchTable = el.classList.contains('merch');
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav.offsetHeight + 1;
-
-  handleHighlight(el);
-  handleSection(el);
-  if (isMerchTable) formatMerchTable(el);
-  handleHovering(el);
-  handleScrollEffect(el, gnavHeight);
-
-  window.addEventListener('milo:icons:loaded', () => {
-    applyStylesBasedOnScreenSize(el);
-    window.addEventListener('resize', () => {
-      handleScrollEffect(el, gnavHeight);
-      applyStylesBasedOnScreenSize(el);
-    });
-  });
-}
-
-function handleHighlight(table) {
-  const isHighlightTable = table.classList.contains('highlight');
-  const firstRow = table.querySelector('.row-1');
-  const firstRowCols = firstRow.querySelectorAll('.col');
-  const secondRow = table.querySelector('.row-2')
-  const secondRowCols = secondRow.querySelectorAll('.col');
-  let headingCols = null;
-
-  if (isHighlightTable) {
-    firstRow.classList.add('row-highlight');
-    firstRowCols.forEach(e => e.classList.add('col-highlight'));
-    secondRow.classList.add('row-heading');
-    secondRowCols.forEach(e => e.classList.add('col-heading'));
-    headingCols = secondRowCols;
-
-    firstRowCols.forEach((col, i) => {
-      const hasText = secondRowCols[i].innerText && col.innerText;
-      if (hasText) {
-        headingCols[i].classList.add('no-rounded');
-      } else {
-        col.classList.add('hidden');
-      }
-    });
-  } else {
-    firstRow.classList.add('row-heading');
-    firstRowCols.forEach(e => e.classList.add('col-heading'));
-    headingCols = firstRowCols;
-  }
-
-  handleHeading(headingCols, isHighlightTable, table);
-}
+import { decorateButtons } from '../../utils/decorate.js';
 
 function handleHeading(headingCols, isHighlightTable, table) {
-  let highlightRow, highlightRowCols;
+  let highlightRow; let
+    highlightRowCols;
 
   if (isHighlightTable) {
     highlightRow = table.querySelector('.row-1');
@@ -76,7 +12,7 @@ function handleHeading(headingCols, isHighlightTable, table) {
   }
 
   headingCols.forEach((col, i) => {
-    const isEmpty = col.innerHTML === "";
+    const isEmpty = col.innerHTML === '';
     const nextCol = headingCols[i + 1];
 
     if (isEmpty) {
@@ -99,6 +35,15 @@ function handleHeading(headingCols, isHighlightTable, table) {
         }
 
         decorateButtons(col, 'button-l');
+
+        const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
+        col.append(buttonsWrapper);
+        const buttons = col.querySelectorAll('.con-button');
+
+        buttons.forEach((btn) => {
+          let btnWrapper = btn.closest('P');
+          buttonsWrapper.append(btnWrapper);
+        })
       }
 
       if (nextCol && !nextCol.innerText) {
@@ -106,6 +51,55 @@ function handleHeading(headingCols, isHighlightTable, table) {
       }
     }
   });
+}
+
+function handleHighlight(table) {
+  const isHighlightTable = table.classList.contains('highlight');
+  const firstRow = table.querySelector('.row-1');
+  const firstRowCols = firstRow.querySelectorAll('.col');
+  const secondRow = table.querySelector('.row-2');
+  const secondRowCols = secondRow.querySelectorAll('.col');
+  let headingCols = null;
+
+  if (isHighlightTable) {
+    firstRow.classList.add('row-highlight');
+    firstRowCols.forEach((e) => e.classList.add('col-highlight'));
+    secondRow.classList.add('row-heading');
+    secondRowCols.forEach((e) => e.classList.add('col-heading'));
+    headingCols = secondRowCols;
+
+    firstRowCols.forEach((col, i) => {
+      const hasText = secondRowCols[i].innerText && col.innerText;
+      if (hasText) {
+        headingCols[i].classList.add('no-rounded');
+      } else {
+        col.classList.add('hidden');
+      }
+    });
+  } else {
+    firstRow.classList.add('row-heading');
+    firstRowCols.forEach((e) => e.classList.add('col-heading'));
+    headingCols = firstRowCols;
+  }
+
+  handleHeading(headingCols, isHighlightTable, table);
+  const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
+  window.dispatchEvent(tableHighlightLoadedEvent);
+}
+
+function handleExpand(e) {
+  const sectionHead = e.closest('.row');
+  let nextElement = sectionHead.nextElementSibling;
+  const expanded = e.getAttribute('aria-expanded') === 'false';
+  e.setAttribute('aria-expanded', expanded.toString());
+  while (nextElement && !nextElement.classList.contains('devider')) {
+    if (expanded) {
+      nextElement.classList.remove('hidden');
+    } else {
+      nextElement.classList.add('hidden');
+    }
+    nextElement = nextElement.nextElementSibling;
+  }
 }
 
 function handleSection(table) {
@@ -124,13 +118,13 @@ function handleSection(table) {
 
     if (row.querySelector('hr') && nextRow) {
       row.classList.add('devider');
-      nextRow.classList.add('sectionHead');
+      nextRow.classList.add('section-head');
       const sectionHeadTitle = nextRow.querySelector('.col-1');
 
       if (isMerchTable && nextRowCols) {
-        nextRowCols.forEach(merchCol => merchCol.classList.add('sectionHeadTitle'));
+        nextRowCols.forEach((merchCol) => merchCol.classList.add('section-head-title'));
       } else {
-        sectionHeadTitle.classList.add('sectionHeadTitle');
+        sectionHeadTitle.classList.add('section-head-title');
       }
 
       if (isCollapseTable) {
@@ -140,7 +134,7 @@ function handleSection(table) {
 
         if (defaultExpandRow) {
           iconTag.setAttribute('aria-expanded', 'true');
-          defaultExpandRow =  false;
+          defaultExpandRow = false;
         } else {
           iconTag.setAttribute('aria-expanded', 'false');
           let nextElement = row.nextElementSibling;
@@ -155,38 +149,21 @@ function handleSection(table) {
         });
       }
     } else if (previousRow && previousRow.querySelector('hr') && nextRow) {
-      nextRow.classList.add('sectionRow');
+      nextRow.classList.add('section-row');
       if (!isMerchTable) {
         const sectionRowTitle = nextRow.querySelector('.col-1');
-        sectionRowTitle.classList.add('sectionRowTitle');
+        sectionRowTitle.classList.add('section-row-title');
       }
-    } else {
-      if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
-        row.classList.add('sectionRow');
-        if (isMerchTable && !row.classList.contains('devider')) {
-          rowCols.forEach(merchCol => merchCol.classList.add('col-merch'));
-        } else {
-          const sectionRowTitle = row.querySelector('.col-1');
-          sectionRowTitle.classList.add('sectionRowTitle');
-        }
+    } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
+      row.classList.add('section-row');
+      if (isMerchTable && !row.classList.contains('devider')) {
+        rowCols.forEach((merchCol) => merchCol.classList.add('col-merch'));
+      } else {
+        const sectionRowTitle = row.querySelector('.col-1');
+        sectionRowTitle.classList.add('section-row-title');
       }
     }
-  })
-}
-
-function handleExpand(e) {
-  const sectionHead = e.closest('.row');
-  let nextElement = sectionHead.nextElementSibling;
-  const expanded = e.getAttribute('aria-expanded') === 'false';
-  e.setAttribute('aria-expanded', expanded.toString());
-  while (nextElement && !nextElement.classList.contains('devider')) {
-    if (expanded) {
-      nextElement.classList.remove('hidden');
-    } else {
-      nextElement.classList.add('hidden');
-    }
-    nextElement = nextElement.nextElementSibling;
-  }
+  });
 }
 
 function formatMerchTable(table) {
@@ -200,7 +177,7 @@ function formatMerchTable(table) {
   for (let i = colsInRowNum; i > 0; i--) {
     const cols = table.querySelectorAll(`.col-${i}`);
     for (let j = rowsNum - 1; j >= 0; j--) {
-      let currentCol = cols[j];
+      const currentCol = cols[j];
       if (!currentCol.innerText && currentCol.children.length === 0) {
         currentCol.classList.add('no-borders');
       } else {
@@ -211,47 +188,58 @@ function formatMerchTable(table) {
   }
 }
 
-function handleHovering(table) {
-  const row1 = table.querySelector('.row-1');
-  const colsInRowNum = row1.childElementCount;
-
-  const isMerchTable = table.classList.contains('merch');
-  const startValue = isMerchTable ? 1 : 2;
-
-  for (let i = startValue; i <= colsInRowNum; i++) {
-    const elements = table.querySelectorAll(`.col-${i}`);
-    elements.forEach(e => {
-      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i));
-      e.addEventListener('mouseout', () => handleMouseOut(elements));
-    })
-  }
+function handleMouseOut(elements) {
+  elements.forEach((e) => {
+    e.classList.remove('hover');
+    e.classList.remove('no-top-border');
+    e.classList.remove('hover-border-bottom');
+  });
 }
 
-function handleMouseOver(elements, table, colNum) {
+function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
   handleMouseOut(elements);
 
-  const secondRow = table.querySelector('.row-2');
-  const colClass = 'col-' + colNum;
+  const headingRow = table.querySelector('.row-heading');
+  const colClass = `col-${colNum}`;
+  const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
 
-  elements.forEach(e => {
+  elements.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
-      const matchingCols = Array.from(e.classList).filter(className => className.startsWith(colClass));
-
-      matchingCols.forEach(className => {
-        const noTopBorderCol = secondRow.querySelector('.' + className);
+      const matchingCols = Array.from(e.classList).filter(
+        (className) => className.startsWith(colClass),
+      );
+      matchingCols.forEach((className) => {
+        const noTopBorderCol = headingRow.querySelector(`.${className}`);
         noTopBorderCol.classList.add('no-top-border');
       });
+    }
+
+    if (isCollapseTable && isLastRowCollapsed) {
+      let lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
+      lastSectionHeadCol.classList.add('hover-border-bottom');
     }
 
     e.classList.add('hover');
   });
 }
 
-function handleMouseOut(elements) {
-  elements.forEach(e => {
-    e.classList.remove('hover');
-    e.classList.remove('no-top-border');
-  })
+function handleHovering(table) {
+  const row1 = table.querySelector('.row-1');
+  const colsInRowNum = row1.childElementCount;
+  const isMerchTable = table.classList.contains('merch');
+  const startValue = isMerchTable ? 1 : 2;
+  const isCollapseTable = table.classList.contains('collapse');
+  const sectionHeads =  table.querySelectorAll('.section-head');
+  const lastSectionHead = sectionHeads[sectionHeads.length - 1];
+  const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
+
+  for (let i = startValue; i <= colsInRowNum; i++) {
+    const elements = table.querySelectorAll(`.col-${i}`);
+    elements.forEach((e) => {
+      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i, isCollapseTable, lastSectionHead, lastExpandIcon ));
+      e.addEventListener('mouseout', () => handleMouseOut(elements));
+    });
+  }
 }
 
 function handleScrollEffect(table, gnavHeight) {
@@ -264,38 +252,39 @@ function handleScrollEffect(table, gnavHeight) {
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-    highlightRow.style.top = gnavHeight + 'px';
-    headingRow.style.top = (gnavHeight + highlightRow.offsetHeight) + 'px';
+    if (highlightRow) highlightRow.style.top = `${gnavHeight}px`;
+    headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
   });
   observer.observe(intercept);
 }
 
-function applyStylesBasedOnScreenSize(table) {
+function applyStylesBasedOnScreenSize(table, originTable) {
   if (!(table instanceof Element)) {
     return;
-  }
-
-  if (!originTable) {
-    originTable = table.cloneNode(true);
   }
 
   const desktopSize = 900;
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
 
+  const reAssignEvents = (tableEl) => {
+    tableEl.querySelectorAll('.icon.expand').forEach((icon) => icon.addEventListener('click', (e) => {
+      handleExpand(e.target);
+    }));
+    handleHovering(tableEl);
+  };
+
   const mobileRenderer = () => {
     const isMerch = table.classList.contains('merch');
-    if (isMerch) {
+    if (isMerch && table.querySelectorAll('.row-heading .col').length > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
-    } else {
+    } else if (table.querySelectorAll('.row-heading .col').length > 3) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
     }
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
-      table.querySelectorAll('.subSection').forEach((subSection) => {
-        subSection.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
-      });
+      reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
@@ -304,7 +293,7 @@ function applyStylesBasedOnScreenSize(table) {
       }
       if (filters[0] > filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
-          row.querySelector('.col:not(.subSectionTitle)').style.order = 1;
+          row.querySelector('.col:not(.section-row-title, .hidden)').style.order = 1;
         });
       } else if (filters[0] === filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
@@ -331,7 +320,7 @@ function applyStylesBasedOnScreenSize(table) {
       const colSelect1 = colSelect0.cloneNode(true);
       colSelect0.dataset.filterIndex = 0;
       colSelect1.dataset.filterIndex = 1;
-      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"])');
+      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"], .hidden)');
       colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       filter1.append(colSelect0);
@@ -346,42 +335,67 @@ function applyStylesBasedOnScreenSize(table) {
   // For Mobile
   if (screenWidth <= mobileSize) {
     mobileRenderer();
-  } else if (originTable) {
+  } else {
     table.innerHTML = originTable.innerHTML;
+    reAssignEvents(table);
+    // table.parentElement.querySelectorAll('filters select').forEach((select, index) => {
+    //   console.log(select, index);
+    //   select.querySelectorAll('option').item(index).selected = true;
+    // });
   }
 
-  const sectionRow = Array.from(table.getElementsByClassName('sectionRow'));
+  const sectionRow = Array.from(table.getElementsByClassName('section-row'));
   if (sectionRow.length > 0) {
     const colsForTablet = sectionRow[0].children.length - 1;
     const percentage = 100 / colsForTablet;
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
 
     sectionRow.forEach((row) => {
-      if (screenWidth >= desktopSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, minmax(100px, 1fr))';
-      } else if (screenWidth <= mobileSize) {
-        row.style.gridTemplateColumns = 'repeat(auto-fit, 50%)';
-      } else {
+      if (screenWidth < desktopSize && screenWidth > mobileSize) {
         row.style.gridTemplateColumns = templateColumnsValue;
+      } else {
+        row.style.gridTemplateColumns = '';
       }
     });
   }
 }
 
-function decorateButtons(el, size) {
-  const buttons = el.querySelectorAll('em a, strong a');
-  if (buttons.length === 0) return;
-  buttons.forEach((button) => {
-    const parent = button.parentElement;
-    const buttonType = parent.nodeName === 'STRONG' ? 'blue' : 'outline';
-    button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-l, button-xl */
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
+export default function init(el) {
+  // remove top row if empty
+  const firstRow = el.querySelector(':scope > div:first-child');
+  if (firstRow.innerText.trim() === '') firstRow.remove();
+
+  const rows = Array.from(el.children);
+  rows.forEach((row, rdx) => {
+    row.classList.add('row', `row-${rdx + 1}`);
+    const cols = Array.from(row.children);
+    cols.forEach((col, cdx) => {
+      col.dataset.colIndex = cdx + 1;
+      col.classList.add('col', `col-${cdx + 1}`);
+    });
   });
-  const actionArea = buttons[0].closest('p, div');
-  if (actionArea) {
-    actionArea.classList.add('action-area');
-    actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
-  }
+
+  const isMerchTable = el.classList.contains('merch');
+  const gnav = document.querySelector('header');
+  const gnavHeight = gnav ? gnav.offsetHeight + 1 : 0;
+
+  handleHighlight(el);
+  handleSection(el);
+  if (isMerchTable) formatMerchTable(el);
+
+  window.addEventListener('milo:icons:loaded', () => {
+    let originTable;
+    if (el.querySelectorAll('.col-heading:not(.hidden)').length > 2) {
+      originTable = el.cloneNode(true);
+    } else {
+      originTable = el;
+    }
+    applyStylesBasedOnScreenSize(el, originTable);
+    handleScrollEffect(el, gnavHeight);
+    window.addEventListener('resize', () => {
+      handleScrollEffect(el, gnavHeight);
+      applyStylesBasedOnScreenSize(el, originTable);
+      handleScrollEffect(el, gnavHeight);
+    });
+  });
 }
