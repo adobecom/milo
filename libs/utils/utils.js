@@ -606,9 +606,6 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-  if(window.collection){
-    window.collection.style.display = "block";
-  }
 }
 
 export async function loadDeferred(area, blocks, config) {
