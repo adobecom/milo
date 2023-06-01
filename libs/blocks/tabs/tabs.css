@@ -169,7 +169,7 @@
   background: transparent;
   padding-right: 0;
   padding-left: 0;
-  margin-left: 16px;
+  margin-inline-start: 16px;
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type {

@@ -88,7 +88,7 @@
 }
 
 .dialog-modal.locale-modal-v2 .tabs.quiet div[role="tablist"] button:not(:first-of-type) {
-  margin-left: 24px;
+  margin-inline-start: 24px;
 }
 
 .dialog-modal.locale-modal-v2 .tabs .tab-content {
