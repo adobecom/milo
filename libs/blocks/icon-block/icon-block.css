@@ -323,6 +323,10 @@
     max-width: 400px;
   }
 
+  .three-up .icon-block.bio .foreground {
+    max-width: 300px;
+  }
+
   .three-up .icon-block.vertical .foreground .icon-area {
     max-width: 300px;
   }
