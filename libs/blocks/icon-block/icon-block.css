@@ -97,6 +97,22 @@
   margin-top: var(--spacing-s);
 }
 
+.icon-block.bio .foreground .icon-area img {
+  object-fit: cover;
+  height: 60px;
+  width: 60px;
+}
+
+.icon-block.inline.icon-height-32 .icon-area,
+.icon-block.inline.icon-height-32 .icon-area picture img {
+  height: 32px;
+}
+
+.icon-block.inline.icon-height-64 .icon-area,
+.icon-block.inline.icon-height-64 .icon-area picture img {
+  height: 64px;
+}
+
 .icon-block.bio.center .foreground .icon-area {
   margin: var(--spacing-s) auto var(--spacing-xs) auto;
 }
@@ -113,16 +129,14 @@
   margin-bottom: var(--spacing-m);
 }
 
-.icon-block.bio .foreground .icon-area img {
-  object-fit: cover;
-  height: 60px;
-  width: 60px;
-}
-
 .five-up .icon-block:not(.fullwidth) .foreground .icon-area {
   max-height: 48px;
   max-width: 147px;
   margin-bottom: var(--spacing-xs);
+}
+
+.icon-block.inline .foreground .text-content .icon-area {
+  width: fit-content;
 }
 
 .five-up .icon-block:not(.fullwidth) .foreground .icon-area img {
@@ -183,6 +197,18 @@
   text-align: center;
 }
 
+.icon-block.inline.icon-height-32.bio .icon-area,
+.icon-block.inline.icon-height-32.bio .icon-area picture img {
+  height: 32px;
+  width: 32px;
+}
+
+.icon-block.inline.icon-height-64.bio .icon-area,
+.icon-block.inline.icon-height-64.bio .icon-area picture img {
+  height: 64px;
+  width: 64px;
+}
+
 .icon-block.vertical.center .foreground .text-content .icon-area {
   margin-left: auto;
   margin-right: auto;
@@ -225,6 +251,10 @@
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
+  }
+
+  .icon-block.inline .icon-area picture img {
+    width: 100%;
   }
 
   .icon-block.bio .foreground .icon-area,
@@ -303,42 +333,11 @@
 }
 
 .icon-block.inline .foreground .text-content {
-  flex-wrap: nowrap;
-  flex-direction: row;
+  flex-flow: row nowrap;
   text-align: left;
   gap: 16px;
 }
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
-}
-
-.icon-block.inline .foreground .text-content .icon-area {
-  width: fit-content;
-}
-
-.icon-block.inline .icon-area picture img {
-  width: 100%;
-}
-
-.icon-block.inline.icon-height-32 .icon-area,
-.icon-block.inline.icon-height-32 .icon-area picture img {
-  height: 32px;
-}
-
-.icon-block.inline.icon-height-64 .icon-area,
-.icon-block.inline.icon-height-64 .icon-area picture img {
-  height: 64px;
-}
-
-.icon-block.inline.icon-height-32.bio .icon-area,
-.icon-block.inline.icon-height-32.bio .icon-area picture img {
-  height: 32px;
-  width: 32px;
-}
-
-.icon-block.inline.icon-height-64.bio .icon-area,
-.icon-block.inline.icon-height-64.bio .icon-area picture img {
-  height: 64px;
-  width: 64px;
 }
