@@ -36,6 +36,15 @@ function handleHeading(headingCols, isHighlightTable, table) {
         }
 
         decorateButtons(col, 'button-l');
+
+        const buttonsWrapper = createTag('div', { class: 'buttons-wrapper' });
+        col.append(buttonsWrapper);
+        const buttons = col.querySelectorAll('.con-button');
+
+        buttons.forEach((btn) => {
+          let btnWrapper = btn.closest('P');
+          buttonsWrapper.append(btnWrapper);
+        })
       }
 
       if (nextCol && !nextCol.innerText) {
@@ -184,14 +193,16 @@ function handleMouseOut(elements) {
   elements.forEach((e) => {
     e.classList.remove('hover');
     e.classList.remove('no-top-border');
+    e.classList.remove('hover-border-bottom');
   });
 }
 
-function handleMouseOver(elements, table, colNum) {
+function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
   handleMouseOut(elements);
 
-  const secondRow = table.querySelector('.row-2');
+  const headingRow = table.querySelector('.row-heading');
   const colClass = `col-${colNum}`;
+  const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
 
   elements.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
@@ -199,9 +210,14 @@ function handleMouseOver(elements, table, colNum) {
         (className) => className.startsWith(colClass),
       );
       matchingCols.forEach((className) => {
-        const noTopBorderCol = secondRow.querySelector(`.${className}`);
+        const noTopBorderCol = headingRow.querySelector(`.${className}`);
         noTopBorderCol.classList.add('no-top-border');
       });
+    }
+
+    if (isCollapseTable && isLastRowCollapsed) {
+      let lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
+      lastSectionHeadCol.classList.add('hover-border-bottom');
     }
 
     e.classList.add('hover');
@@ -211,14 +227,17 @@ function handleMouseOver(elements, table, colNum) {
 function handleHovering(table) {
   const row1 = table.querySelector('.row-1');
   const colsInRowNum = row1.childElementCount;
-
   const isMerchTable = table.classList.contains('merch');
   const startValue = isMerchTable ? 1 : 2;
+  const isCollapseTable = table.classList.contains('collapse');
+  const sectionHeads =  table.querySelectorAll('.section-head');
+  const lastSectionHead = sectionHeads[sectionHeads.length - 1];
+  const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
 
   for (let i = startValue; i <= colsInRowNum; i++) {
     const elements = table.querySelectorAll(`.col-${i}`);
     elements.forEach((e) => {
-      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i));
+      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i, isCollapseTable, lastSectionHead, lastExpandIcon ));
       e.addEventListener('mouseout', () => handleMouseOut(elements));
     });
   }
