@@ -419,6 +419,7 @@ export function decorateSVG(a) {
     return a;
   }
 }
+
 function hasUrlWithPipe(str) {
   const regex = /^https?:\/\/.*\|.*/;
   return regex.test(str);
@@ -428,30 +429,16 @@ export function decorateImageLinks(a) {
   const images = a.querySelectorAll('img');
   if (!images.length) return a;
   [...images].forEach((img) => {
-    // Check if the image has an alt tag with a url & pipe - 'https... |'
-    if (!(hasUrlWithPipe(img.alt))) return a;
-    try {
-      // //Mine for URL and alt text
-      const splitText = img.alt.split('|');
-      const textUrl = new URL(splitText.shift().trim());
-      const altText = splitText.join('|').trim();
-      if (altText) img.alt = altText;
-
-      const pic = img.closest('picture');
-      const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: textUrl, class: 'desc-link' }, pic);
-      if (aTag.href.includes('#_blank')) {
-        aTag.setAttribute('target', '_blank');
-        aTag.href = aTag.href.replace('#_blank', '');
-      }
-      picParent.append(aTag);
-      return a;
-    } catch (e) {
-      /* c8 ignore next 3 */
-      console.log('Failed to decorate image links', e.message);
-      return a;
-    }
+    if (!img.alt || !(hasUrlWithPipe(img.alt))) return;
+    const [source, alt] = img.alt.split('|');
+    const textUrl = new URL(source);
+    if (alt) img.alt = alt;
+    const pic = img.closest('picture');
+    const picParent = pic.parentElement;
+    const aTag = createTag('a', { href: textUrl, class: 'image-link' }, pic);
+    picParent.append(aTag);
   });
+  return a;
 }
 
 export function decorateAutoBlock(a) {
@@ -498,6 +485,7 @@ export function decorateAutoBlock(a) {
 }
 
 export function decorateLinks(el) {
+  decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -660,8 +648,6 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
-
-  decorateImageLinks(area);
 }
 
 function initSidekick() {
