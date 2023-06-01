@@ -22,16 +22,17 @@ function handleHeading(headingCols, isHighlightTable, table) {
       col.classList.add('hidden');
     } else {
       const elements = col.children;
-      const hasElements = elements.length > 0;
-
-      if (!hasElements) {
-        const innerText = col.innerHTML;
-        col.innerHTML = `<p class="heading-title">${innerText}</p>`;
+      if (!elements.length) {
+        col.innerHTML = `<p class="heading-title">${col.innerHTML}</p>`;
       } else {
-        elements[0].classList.add('heading-title');
+        let textStartIndex = 0;
+        if (elements[0]?.querySelector('img')) {
+          textStartIndex += 1;
+        }
+        elements[textStartIndex]?.classList.add('heading-title');
 
-        if (elements[1]) {
-          elements[1].classList.add('pricing');
+        if (elements[textStartIndex + 1]) {
+          elements[textStartIndex + 1].classList.add('pricing');
         }
 
         decorateButtons(col, 'button-l');
@@ -374,7 +375,6 @@ export default function init(el) {
     applyStylesBasedOnScreenSize(el, originTable);
     handleScrollEffect(el, gnavHeight);
     window.addEventListener('resize', () => {
-      handleScrollEffect(el, gnavHeight);
       applyStylesBasedOnScreenSize(el, originTable);
       handleScrollEffect(el, gnavHeight);
     });
