@@ -73,6 +73,13 @@
 .table .row-heading .col.col-heading {
   background-color: white;
   padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.table .row-heading .col.col-heading .buttons-wrapper > * {
+  margin: 12px 0;
 }
 
 .table .row-heading .col-heading.left-top-rounded {
@@ -212,7 +219,8 @@
     border-top-color: #357BEB;
   }
 
-  .table .row:last-child .col.hover {
+  .table .row:last-child .col.hover,
+  .table .col.hover.hover-border-bottom {
     border-bottom-color: #357BEB;
   }
 
