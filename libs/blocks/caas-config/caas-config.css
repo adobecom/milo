@@ -50,7 +50,8 @@ dd.content .sort-options > .field {
 .multifield .multifield > .multifield-set {
   border: solid 1px #999;
   padding: 3px 6px;
-  border-radius: 6px;
+  border-radius: 4px;
+  background: #757575;
 }
 
 .multifield.filtersCustom > .multifield-set:nth-child(2) {
