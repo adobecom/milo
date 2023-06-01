@@ -5,7 +5,7 @@ export default async function init(){
       let div = document.getElementsByClassName("caas-light")[0];
       div.appendChild(collection);
       clearInterval(pid);
-      collection.style.display = "block";
+      window.collection = collection;
     }
   }, 1);
 }

@@ -606,6 +606,9 @@ async function loadPostLCP(config) {
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
+  if(window.collection){
+    window.collection.style.display = "block";
+  }
 }
 
 export async function loadDeferred(area, blocks, config) {
@@ -701,7 +704,9 @@ export async function loadArea(area = document) {
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
