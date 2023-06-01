@@ -13,6 +13,87 @@ function verifyContainer(container, elementsLength, hasLibraryMetadata) {
   }
 }
 
+describe('Library Config: text', () => {
+  let bodyHtml;
+  let expectedDocxHtml;
+
+  before(async () => {
+    bodyHtml = await readFile({ path: './mocks/blocks/text/body.html' });
+    expectedDocxHtml = await readFile({ path: './mocks/blocks/text/docx.html' });
+  });
+
+  it('text', async () => {
+    document.body.innerHTML = bodyHtml;
+    // verify getContainers()
+    const containers = getContainers(document);
+    expect(containers).to.exist;
+    verifyContainer(containers[0], 1, true);
+    // verify getHtml()
+    const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
+    expect(docxHtml).to.equal(expectedDocxHtml);
+    // verify getSearchTags()
+    const searchTags = getSearchTags(containers[0]);
+    expect(searchTags).to.equal('tb-2up-gr10 tb-3up-gr12 text');
+    // verify isMatching()
+    expect(isMatching(containers[0], 'tb-2up-gr10')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+  });
+});
+
+describe('Library Config: chart', () => {
+  let bodyHtml;
+  let expectedDocxHtml;
+
+  before(async () => {
+    bodyHtml = await readFile({ path: './mocks/blocks/chart/body.html' });
+    expectedDocxHtml = await readFile({ path: './mocks/blocks/chart/docx.html' });
+  });
+
+  it('chart', async () => {
+    document.body.innerHTML = bodyHtml;
+    // verify getContainers()
+    const containers = getContainers(document);
+    expect(containers).to.exist;
+    verifyContainer(containers[0], 1, true);
+    // verify getHtml()
+    const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
+    expect(docxHtml).to.equal(expectedDocxHtml);
+    // verify getSearchTags()
+    const searchTags = getSearchTags(containers[0]);
+    expect(searchTags).to.equal('chart-0 chart (area, green, border)');
+    // verify isMatching()
+    expect(isMatching(containers[0], 'chart-0')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+  });
+});
+
+describe('Library Config: marquee', () => {
+  let bodyHtml;
+  let expectedDocxHtml;
+
+  before(async () => {
+    bodyHtml = await readFile({ path: './mocks/blocks/marquee/body.html' });
+    expectedDocxHtml = await readFile({ path: './mocks/blocks/marquee/docx.html' });
+  });
+
+  it('marquee', async () => {
+    document.body.innerHTML = bodyHtml;
+    // verify getContainers()
+    const containers = getContainers(document);
+    expect(containers).to.exist;
+    verifyContainer(containers[0], 1, true);
+    // verify getHtml()
+    const docxHtml = getHtml(containers[0], BLOCK_PAGE_URL);
+    expect(docxHtml).to.equal(expectedDocxHtml);
+    // verify getSearchTags()
+    const searchTags = getSearchTags(containers[0]);
+    expect(searchTags).to.equal('mq-std-md-lt mq-std-md-rt mq-std-md-lt-vid marquee-dark marquee');
+    // verify isMatching()
+    expect(isMatching(containers[0], 'mq-std-md-lt')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+  });
+});
+
 describe('Library Config: containers', () => {
   let noBlocksNoContainersHtml;
   let singleBlocksHtml;
