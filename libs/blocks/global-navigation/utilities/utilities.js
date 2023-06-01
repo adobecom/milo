@@ -122,48 +122,66 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-export function closeAllDropdowns({ e } = {}) {
-  const openElements = document.querySelectorAll(`${selectors.globalNav} [aria-expanded='true']`);
-  if (!openElements) return;
-  if (e) e.preventDefault();
-  [...openElements].forEach((el) => {
-    el.setAttribute('aria-expanded', 'false');
-    if (el.closest(selectors.navLink)) {
-      el.setAttribute('daa-lh', 'header|Open');
+let curtainElem;
+export function setCurtainState(state) {
+  if (typeof state !== 'boolean') return;
+
+  curtainElem = curtainElem || document.querySelector(selectors.curtain);
+  if (curtainElem) curtainElem.classList.toggle('feds-curtain--open', state);
+}
+
+export const isDesktop = window.matchMedia('(min-width: 900px)');
+
+export function setActiveDropdown(elem) {
+  const activeClass = selectors.activeDropdown.replace('.', '');
+
+  // We always need to reset all active dropdowns at first
+  const resetActiveDropdown = () => {
+    [...document.querySelectorAll(selectors.activeDropdown)]
+      .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
+  };
+  resetActiveDropdown();
+
+  // If no elem is provided, de-activating all dropdowns is enough
+  if (!(elem instanceof HTMLElement)) return;
+
+  // Compose an array of parents that could be active dropdowns
+  const selectorArr = [selectors.menuSection, selectors.menuColumn, selectors.navItem];
+
+  // Look for the first parent that fits the active dropdown criteria
+  while (selectorArr.length) {
+    const closestSection = elem.closest(selectorArr.shift());
+
+    if (closestSection && closestSection.querySelector('[aria-expanded = "true"]')) {
+      closestSection.classList.add(activeClass);
+      break;
     }
+  }
+}
+
+export function closeAllDropdowns({ type } = {}) {
+  const selector = type === 'headline'
+    ? '.feds-menu-headline[aria-expanded="true"]'
+    : `${selectors.globalNav} [aria-expanded='true']`;
+  const openElements = document.querySelectorAll(selector);
+  if (!openElements) return;
+  [...openElements].forEach((el) => {
+    if ('fedsPreventautoclose' in el.dataset) return;
+    el.setAttribute('aria-expanded', 'false');
   });
 
-  [...document.querySelectorAll(selectors.activeDropdown)]
-    .forEach((el) => el.classList.remove(selectors.activeDropdown.replace('.', '')));
+  setActiveDropdown();
 
-  document.querySelector(selectors.curtain)?.classList.remove('is-open');
+  if (isDesktop.matches) setCurtainState(false);
 }
 
-/**
- * @param {*} param0
- * @param {*} param0.element - the DOM element of the trigger to expand
- * @param {*} [param0.event] - the original event leading to this method being called
- * @returns true if the element has been expanded, false if it was already expanded
- */
-export function trigger({ element, event } = {}) {
+export function trigger({ element, event, type } = {}) {
   if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
-  closeAllDropdowns();
+  closeAllDropdowns({ type });
   if (isOpen) return false;
-  if (element.closest(selectors.navLink)) {
-    element.setAttribute('daa-lh', 'header|Close');
-  }
   element.setAttribute('aria-expanded', 'true');
   return true;
-}
-
-export function expandTrigger({ element } = {}) {
-  if (!element) return;
-  closeAllDropdowns();
-  if (element.closest(selectors.navLink)) {
-    element.setAttribute('daa-lh', 'header|Close');
-  }
-  element.setAttribute('aria-expanded', 'true');
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });

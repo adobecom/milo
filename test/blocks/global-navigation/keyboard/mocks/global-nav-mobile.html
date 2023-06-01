@@ -1,16 +1,17 @@
 <header
-  class="global-navigation has-breadcrumbs is-open"
+  class="global-navigation has-breadcrumbs"
   daa-im="true"
   daa-lh="gnav|feds-milo-local"
 >
-  <div class="feds-curtain is-open"></div>
+  <div class="feds-curtain feds-curtain--open"></div>
   <div class="feds-topnav-wrapper">
     <nav class="feds-topnav" aria-label="Main">
       <div class="feds-brand-container">
         <button
-          class="gnav-toggle"
+          class="feds-toggle"
           aria-label="Navigation menu"
           aria-expanded="false"
+          data-feds-preventautoclose
         ></button>
         <a href="https://www.adobe.com/" class="feds-brand" daa-ll="Brand">
           <span class="feds-brand-image"
@@ -20,7 +21,7 @@
           <span class="feds-brand-label">Adobe</span>
         </a>
       </div>
-      <div class="feds-nav-wrapper">
+      <div class="feds-nav-wrapper feds-nav-wrapper--expanded">
         <div class="feds-breadcrumbs-wrapper">
           <nav class="feds-breadcrumbs" aria-label="Breadcrumb">
             <ul>
@@ -561,7 +562,7 @@
       </div>
       <a
         href="https://www.adobe.com/"
-        class="gnav-logo"
+        class="feds-logo"
         aria-label="Adobe"
         daa-ll="Logo"
       >

@@ -17,9 +17,12 @@ import {
   loadBlock,
   loadStyles,
   trigger,
+  setActiveDropdown,
   closeAllDropdowns,
   loadBaseStyles,
   yieldToMain,
+  isDesktop,
+  setCurtainState,
   selectors,
   logErrorFor,
   lanaLog,
@@ -32,7 +35,6 @@ const CONFIG = {
     company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11" alt="Adobe, Inc."><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
     search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
   },
-  selectors: { isOpen: 'is-open' },
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 2000,
@@ -153,6 +155,16 @@ const getBrandImage = (image) => {
   return CONFIG.icons.company;
 };
 
+const closeOnClickOutside = (e) => {
+  if (!isDesktop.matches) return;
+  const isClickedElemOpen = [...document.querySelectorAll(`${selectors.globalNav} [aria-expanded = "true"]`)]
+    .find((openItem) => openItem.parentElement.contains(e.target));
+
+  if (!isClickedElemOpen) {
+    closeAllDropdowns();
+  }
+};
+
 class Gnav {
   constructor(body, el) {
     this.blocks = {
@@ -165,7 +177,6 @@ class Gnav {
 
     this.el = el;
     this.body = body;
-    this.isDesktop = window.matchMedia('(min-width: 900px)');
     this.elements = {};
   }
 
@@ -191,11 +202,12 @@ class Gnav {
       await task();
     }
 
-    document.addEventListener('click', this.closeOnClickOutside);
+    document.addEventListener('click', closeOnClickOutside);
+    isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init');
 
   decorateTopNav = () => {
-    this.elements.mobileToggle = this.mobileToggle();
+    this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
         <div class="feds-brand-container">
@@ -212,7 +224,7 @@ class Gnav {
   decorateTopnavWrapper = () => {
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
         ${this.elements.topnav}
-        ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+        ${isDesktop.matches ? this.decorateBreadcrumbs() : ''}
       </div>`;
 
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
@@ -220,8 +232,8 @@ class Gnav {
 
   addChangeEventListener = () => {
     // Ensure correct DOM order for elements between mobile and desktop
-    this.isDesktop.addEventListener('change', () => {
-      if (this.isDesktop.matches) {
+    isDesktop.addEventListener('change', () => {
+      if (isDesktop.matches) {
         // On desktop, search is after nav
         if (this.elements.mainNav instanceof HTMLElement
           && this.elements.search instanceof HTMLElement) {
@@ -310,16 +322,6 @@ class Gnav {
     return null;
   };
 
-  closeOnClickOutside = (e) => {
-    if (!this.isDesktop.matches) return;
-    const isClickedElemOpen = [...document.querySelectorAll(`${selectors.globalNav} [aria-expanded = "true"]`)]
-      .find((openItem) => openItem.parentElement.contains(e.target));
-
-    if (!isClickedElemOpen) {
-      closeAllDropdowns();
-    }
-  };
-
   decorateProfile = async () => {
     const { rawElem, decoratedElem } = this.blocks.profile;
     if (!rawElem) return;
@@ -389,21 +391,18 @@ class Gnav {
     });
   };
 
-  mobileToggle = () => {
-    const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`;
-    const onMediaChange = (e) => {
-      if (e.matches) {
-        this.el.classList.remove(CONFIG.selectors.isOpen);
-        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
-
-        if (this.blocks?.search?.instance) {
-          this.blocks.search.instance.clearSearchForm();
-        }
-      }
-    };
+  decorateToggle = () => {
+    const toggle = toFragment`<button
+      class="feds-toggle"
+      aria-expanded="false"
+      aria-haspopup="true"
+      aria-label="Navigation menu"
+      aria-controls="feds-nav-wrapper"
+      data-feds-preventAutoClose>
+      </button>`;
 
     const setHamburgerPadding = () => {
-      if (this.isDesktop.matches) {
+      if (isDesktop.matches) {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
@@ -411,80 +410,92 @@ class Gnav {
       }
     };
 
-    this.isDesktop.addEventListener('change', () => logErrorFor(setHamburgerPadding, 'Set hamburger padding failed'));
+    const onToggleClick = async () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', !isExpanded);
+      this.elements.navWrapper.classList.toggle('feds-nav-wrapper--expanded', !isExpanded);
+      closeAllDropdowns();
+      setCurtainState(!isExpanded);
 
-    const toggleClick = async () => {
-      if (this.el.classList.contains(CONFIG.selectors.isOpen)) {
-        closeAllDropdowns();
-        this.el.classList.remove(CONFIG.selectors.isOpen);
-        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
-        if (this.blocks?.search?.instance) {
-          this.blocks.search.instance.clearSearchForm();
-        }
-        this.isDesktop.removeEventListener('change', onMediaChange);
-
-        this.elements.mainNav.style.removeProperty('padding-bottom');
+      if (this.blocks?.search?.instance) {
+        this.blocks.search.instance.clearSearchForm();
       } else {
-        this.el.classList.add(CONFIG.selectors.isOpen);
-        this.elements.curtain.classList.add(CONFIG.selectors.isOpen);
-        this.isDesktop.addEventListener('change', onMediaChange);
-        this.loadSearch();
+        await this.loadSearch();
+      }
 
-        setHamburgerPadding();
+      if (isExpanded) setHamburgerPadding();
+    };
+
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed'));
+
+    const onDeviceChange = () => {
+      if (isDesktop.matches) {
+        toggle.setAttribute('aria-expanded', false);
+        this.elements.navWrapper.classList.remove('feds-nav-wrapper--expanded');
+        setCurtainState(false);
+        closeAllDropdowns();
+        this.blocks?.search?.instance?.clearSearchForm();
       }
     };
 
-    toggle.addEventListener('click', () => logErrorFor(toggleClick, 'Toggle click failed'));
+    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change'));
+
     return toggle;
   };
 
-  decorateBrand = () => {
-    const brandBlock = this.body.querySelector('.gnav-brand');
-    if (!brandBlock) return '';
+  decorateGenericLogo = ({ selector, classPrefix, includeLabel = true, analyticsValue } = {}) => {
+    const rawBlock = this.body.querySelector(selector);
+    if (!rawBlock) return '';
 
     const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)/;
-    const brandLinks = [...brandBlock.querySelectorAll('a')];
-    const image = brandLinks.find((brandLink) => imgRegex.test(brandLink.href)
-      || imgRegex.test(brandLink.textContent));
-    const link = brandLinks.find((brandLink) => !imgRegex.test(brandLink.href)
-      && !imgRegex.test(brandLink.textContent));
+    const blockLinks = [...rawBlock.querySelectorAll('a')];
+    const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
+      || imgRegex.test(blockLink.textContent));
+    const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
+      && !imgRegex.test(blockLink.textContent));
 
     if (!link) return '';
 
-    const imageEl = toFragment`<span class="feds-brand-image">${getBrandImage(image)}</span>`;
-    const renderLabel = !brandBlock.matches('.image-only');
-    const labelEl = renderLabel ? toFragment`<span class="feds-brand-label">${link.textContent}</span>` : '';
+    const imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    const renderLabel = includeLabel && !rawBlock.matches('.image-only');
+    const labelEl = renderLabel ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>` : '';
 
-    return toFragment`
-      <a href="${link.getAttribute('href')}" class="feds-brand" daa-ll="Brand">
+    const decoratedElem = toFragment`
+      <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
+
+    if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
+
+    return decoratedElem;
   };
 
-  decorateLogo = () => {
-    const logo = this.body.querySelector('.adobe-logo a');
-    if (!logo) return null;
-    return toFragment`
-      <a
-        href="https://www.adobe.com/"
-        class="gnav-logo"
-        aria-label="${logo.textContent}"
-        daa-ll="Logo"
-      >
-        ${CONFIG.icons.company}
-      </a>
-    `;
-  };
+  decorateBrand = () => this.decorateGenericLogo(
+    {
+      selector: '.gnav-brand',
+      classPrefix: 'feds-brand',
+      analyticsValue: 'Brand',
+    },
+  );
+
+  decorateLogo = () => this.decorateGenericLogo(
+    {
+      selector: '.adobe-logo',
+      classPrefix: 'feds-logo',
+      includeLabel: false,
+      analyticsValue: 'Logo',
+    },
+  );
 
   decorateMainNav = async () => {
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper">
-        ${this.isDesktop.matches ? '' : this.decorateBreadcrumbs()}
-        ${this.isDesktop.matches ? '' : this.decorateSearch()}
+      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
+        ${isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+        ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
-        ${this.isDesktop.matches ? this.decorateSearch() : ''}
+        ${isDesktop.matches ? this.decorateSearch() : ''}
       </div>
     `;
 
@@ -562,10 +573,21 @@ class Gnav {
           <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
+
+        // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
-          const opened = trigger({ element: dropdownTrigger, event: e });
-          if (opened) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
+          trigger({ element: dropdownTrigger, event: e });
+          setActiveDropdown(dropdownTrigger);
         });
+
+        // Update analytics value when dropdown is expanded/collapsed
+        const observer = new MutationObserver(() => {
+          const isExpanded = dropdownTrigger.getAttribute('aria-expanded') === 'true';
+          const analyticsValue = `header|${isExpanded ? 'Close' : 'Open'}`;
+          dropdownTrigger.setAttribute('daa-lh', analyticsValue);
+        });
+        observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
+
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
       }
@@ -607,8 +629,6 @@ class Gnav {
     const searchBlock = this.body.querySelector('.search');
 
     if (!searchBlock) return null;
-
-    this.blocks.search.config.curtain = this.elements.curtain;
 
     this.blocks.search.config.trigger = toFragment`
       <button class="feds-search-trigger" aria-label="Search" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
