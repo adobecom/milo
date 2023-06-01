@@ -254,6 +254,7 @@ export const getConfig = async (state, strs = {}) => {
   const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
+  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : "";
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
@@ -315,6 +316,7 @@ export const getConfig = async (state, strs = {}) => {
       ctaAction: state.ctaAction,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
+    hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
@@ -485,6 +487,7 @@ export const defaultState = {
   filters: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  hideCtaIds: [],
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
