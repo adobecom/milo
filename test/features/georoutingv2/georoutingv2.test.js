@@ -341,8 +341,12 @@ describe('GeoRouting', () => {
     const tabs = modal.querySelectorAll('.tabpanel');
     expect(tabs.length).to.be.equal(2);
     const arabicTab = tabs[0];
+    const downArrow = arabicTab.querySelectorAll('img')[1];
     expect(arabicTab.querySelector('h3').getAttribute('dir')).to.be.equal('rtl');
     expect(arabicTab.querySelector('p').getAttribute('dir')).to.be.equal('rtl');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(arabicTab.querySelector('ul').getAttribute('dir')).to.be.equal('rtl');
     // Cleanup
     setUserCountryFromIP('CH');
   });
@@ -357,8 +361,12 @@ describe('GeoRouting', () => {
     const tabs = modal.querySelectorAll('.tabpanel');
     expect(tabs.length).to.be.equal(2);
     const englishTab = tabs[1];
+    const downArrow = englishTab.querySelectorAll('img')[1];
     expect(englishTab.querySelector('h3').getAttribute('dir')).to.be.equal('ltr');
     expect(englishTab.querySelector('p').getAttribute('dir')).to.be.equal('ltr');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(englishTab.querySelector('ul').getAttribute('dir')).to.be.equal('ltr');
     // Cleanup
     setUserCountryFromIP('CH');
   });
