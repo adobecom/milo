@@ -335,8 +335,8 @@ function BulkPublish({ user, storedOperation }) {
 function initUrlLimit() {
   if (urlLimit) return;
   const { searchParams } = new URL(window.location.href);
-  const limit = Number(searchParams.get('limit'));
-  urlLimit = !Number.isNaN(limit) ? limit : URLS_ENTRY_LIMIT;
+  const limit = searchParams.get('limit');
+  urlLimit = limit ? Number(limit) || URLS_ENTRY_LIMIT : URLS_ENTRY_LIMIT;
 }
 
 export default async function init(el) {
