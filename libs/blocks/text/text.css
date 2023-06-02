@@ -2,8 +2,8 @@
   position: relative;
 }
 
-.dark .text,
-.text.dark {
+.dark .text-block,
+.text-block.dark {
   color: #fff;
 }
 

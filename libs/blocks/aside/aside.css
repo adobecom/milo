@@ -53,6 +53,10 @@
   height: 100%;
 }
 
+.aside.notification .background img {
+  min-height: unset;
+}
+
 .aside .foreground.container {
   display: flex;
   position: relative;

@@ -78,6 +78,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
   local: {
@@ -151,7 +152,8 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        const contentDir = getMetadata('content-direction');
+        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || (config.locale.ietf ? (new Intl.Locale(config.locale.ietf)?.textInfo?.direction) : null) || 'ltr');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
@@ -255,7 +257,7 @@ export function appendHtmlPostfix(area = document) {
   const shouldNotConvert = (href) => {
     let url = { pathname: href };
 
-    try { url = new URL(href, pageUrl) } catch (e) {}
+    try { url = new URL(href, pageUrl); } catch (e) {}
 
     if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
       || url.pathname?.endsWith('/')
@@ -525,7 +527,8 @@ function decorateHeader() {
     header.remove();
     return;
   }
-  header.className = headerMeta || 'gnav';
+  const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
+  header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
   if (breadcrumbs) {
     header.classList.add('has-breadcrumbs');
@@ -557,7 +560,8 @@ async function loadFooter() {
     footer.remove();
     return;
   }
-  footer.className = footerMeta || 'footer';
+  const footerQuery = new URLSearchParams(window.location.search).get('footerqa');
+  footer.className = footerQuery || footerMeta || 'footer';
   await loadBlock(footer);
 }
 
@@ -594,9 +598,9 @@ async function loadMartech(config) {
 async function loadPostLCP(config) {
   loadMartech(config);
   const header = document.querySelector('header');
-  if (header) { 
+  if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header); 
+    await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
@@ -623,34 +627,6 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM('lazy');
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
-  });
-}
-
-export function loadPrivacy() {
-  const domains = {
-    'adobe.com': '7a5eb705-95ed-4cc4-a11d-0cc5760e93db',
-    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3',
-    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271',
-  };
-  const currentDomain = Object.keys(domains)
-    .find((domain) => window.location.host.includes(domain)) || domains[0];
-  let domainId = domains[currentDomain];
-  // Load Privacy in test mode to allow setting cookies on hlx.live and hlx.page
-  if (getConfig().env.name === 'stage') {
-    domainId += '-test';
-  }
-  window.fedsConfig = {
-    privacy: {
-      otDomainId: domainId,
-      documentLanguage: true,
-    },
-  };
-  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
-
-  const privacyTrigger = document.querySelector('footer a[href*="#openPrivacy"]');
-  privacyTrigger?.addEventListener('click', (event) => {
-    event.preventDefault();
-    window.adobePrivacy?.showPreferenceCenter();
   });
 }
 
@@ -748,26 +724,17 @@ export async function loadArea(area = document) {
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
     initSidekick();
+
+    const { default: delayed } = await import('../scripts/delayed.js');
+    delayed([getConfig, getMetadata, loadScript, loadStyle]);
   }
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
 }
 
-// Load everything that impacts performance later.
-export function loadDelayed(delay = 3000) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      loadPrivacy();
-      if (getMetadata('interlinks') === 'on') {
-        const path = `${getConfig().locale.contentRoot}/keywords.json`;
-        import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
-      } else {
-        resolve(null);
-      }
-      import('./samplerum.js').then(({ sampleRUM }) => sampleRUM('cwv'));
-    }, delay);
-  });
+export function loadDelayed() {
+  // TODO: remove after all consumers have stopped calling this method
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
@@ -815,4 +782,12 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
+}
+
+export function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
 }
