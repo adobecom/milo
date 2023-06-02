@@ -1,3 +1,4 @@
+import ctaTextObject from './ctaTexts.js';
 import { loadScript, loadStyle } from '../../utils/utils.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
@@ -101,6 +102,7 @@ function initOST({ token: aosAccessToken }) {
       checkoutClientId: CHECKOUT_CLIENT_ID,
       searchParameters,
       createLinkMarkup,
+      ctaTextObject,
       rootElement,
     });
   }, options);
