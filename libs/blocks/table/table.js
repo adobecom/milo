@@ -262,10 +262,6 @@ function handleScrollEffect(table, gnavHeight) {
 }
 
 function applyStylesBasedOnScreenSize(table, originTable) {
-  if (!(table instanceof Element)) {
-    return;
-  }
-
   const desktopSize = 900;
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
