@@ -1,8 +1,7 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
-import { utf8ToB64 } from '../../utils/utils.js';
+import { utf8ToB64, loadBlock, createTag } from '../../utils/utils.js';
 import { setPreferences } from '../marketo/marketo.js';
-import Preview from './MarketoPreview.js'
-import { ConfiguratorContext, ConfiguratorProvider, stateReform, saveStateToLocalStorage } from './context.js';
+import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
@@ -124,7 +123,7 @@ const getPanels = (panelsData) => {
   }));
 };
 
-const Configurator = ({ title, panelsData, lsKey }) => {
+const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   const context = useContext(ConfiguratorContext);
   const { state } = context;
 
@@ -132,7 +131,7 @@ const Configurator = ({ title, panelsData, lsKey }) => {
 
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(stateReform(state)))}`;
+    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
   };
 
   const configFormValidation = () => {
@@ -157,6 +156,17 @@ const Configurator = ({ title, panelsData, lsKey }) => {
     saveStateToLocalStorage(validatedState, lsKey);
   }, [state]);
 
+  useEffect(() => {
+    const url = getUrl();
+    const blockLink = createTag('a', { href: url }, url);
+    const blockContent = createTag('div', {}, blockLink);
+    const newBlockEl = createTag('div', { class: blockClass }, blockContent);
+    const contentEl = document.querySelector(".content-panel");
+    console.log('initBlock', newBlockEl);
+    contentEl.append(newBlockEl);
+    loadBlock(newBlockEl);
+  }, []);
+
   return html`
     <div class="tool-header">
       <div class="tool-title">
@@ -166,15 +176,17 @@ const Configurator = ({ title, panelsData, lsKey }) => {
     </div>
     <div class="tool-content">
       <div class="config-panel">
-        <${Accordion} lskey=${lsKey} items=${panels} alwaysOpen=${true} />
+        <${Accordion} lskey=${lsKey} items=${panels} alwaysOpen=${false} />
+      </div>
+      <div class="content-panel">
       </div>
     </div>
   `;
 };
 
 const ConfiguratorWrapper = ({ block, link }) => {
-  const blockName = block.toLowerCase()
   const title = `${block} Configurator`;
+  const blockName = block.toLowerCase();
   const lsKey = `${blockName}ConfiguratorState`;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -227,7 +239,7 @@ const ConfiguratorWrapper = ({ block, link }) => {
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} panelsData=${data} lsKey=${lsKey} />
+    <${Configurator} title=${title} blockClass=${blockName} panelsData=${data} lsKey=${lsKey} />
   </${ConfiguratorProvider}>
   `;
 };
@@ -238,12 +250,8 @@ export default async function init(el) {
   const linkElement = children[1].querySelector('a[href$="json"]');
   const link = linkElement.href;
 
-  const parentSection = el.closest('div.section');
-  const previewSection = parentSection?.nextElementSibling;
-
   const app = html`
     <${ConfiguratorWrapper} block=${block} link=${link} />
-    <${Preview} section=${previewSection} />
   `;
 
   linkElement.style.display = 'none';

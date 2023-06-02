@@ -1,8 +1,7 @@
-@import url('./marketoPreview.css');
-
 .tool-header {
   display: grid;
-  grid-template-columns: 6px auto 1fr;
+  grid-template-columns: 380px auto 1fr;
+  gap: 24px;
   align-items: end;
   justify-items: end;
   padding-top: 36px;
@@ -57,14 +56,12 @@
 }
 
 .marketo-config dd.content .field {
-  max-width: 100%;
   position: relative;
   display: block;
 }
 
 .marketo-config dd.content .field select, 
 .marketo-config dd.content .field input {
-  max-width: 100%;
   width: 100%;
 }
 
@@ -87,13 +84,13 @@
 }
 
 .tool-content {
-  max-width: 1880px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
 }
 
 .config-panel {
   border-top: 8px solid black;
-  border-bottom: 1px solid #282828;
 }
 
 .content-panel {
@@ -170,20 +167,4 @@ dd.content::after {
 .tooltip:hover ~ .tooltip-text {
   opacity: 1;
   visibility: visible;
-}
-
-@media (min-width: 900px) {
-  .tool-header {
-    grid-template-columns: 380px auto 1fr;
-    gap: 24px;
-  }
-
-  .marketo-config .accordion {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--field-max-size), 1fr));
-  }
-
-  .marketo-config .accordion-item {
-    margin: 6px;
-  }
 }

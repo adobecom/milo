@@ -9,20 +9,8 @@ const renameKeys = (obj, newKeys) => {
   return Object.assign({}, ...keyValues);
 };
 
-export const stateReform = (state) => {
-  const newKeys = {};
-  Object.keys(state).forEach(((k) => { newKeys[k] = k.replace('_', ' '); }));
-  return renameKeys(state, newKeys);
-};
-
-const stateReformUndo = (state) => {
-  const newKeys = {};
-  Object.keys(state).forEach(((k) => { newKeys[k] = k.replace(' ', '_'); }));
-  return renameKeys(state, newKeys);
-};
-
 export const saveStateToLocalStorage = (state, lsKey) => {
-  localStorage.setItem(lsKey, JSON.stringify(stateReformUndo(state)));
+  localStorage.setItem(lsKey, JSON.stringify(state));
 };
 
 const getHashConfig = () => {
@@ -36,17 +24,23 @@ const getHashConfig = () => {
 
 const getInitialState = (defaultState, lsKey) => {
   const hashConfig = getHashConfig() ?? null;
-  if (hashConfig) return hashConfig;
+  const mergedState = { ...defaultState };
+
+  if (hashConfig) {
+    Object.assign(mergedState, hashConfig);
+    return mergedState;
+  }
 
   const lsState = localStorage.getItem(lsKey);
   if (lsState) {
     try {
-      return JSON.parse(lsState);
+      Object.assign(mergedState, JSON.parse(lsState));
     } catch (e) {
       // ignore
     }
   }
-  return defaultState;
+
+  return mergedState;
 };
 
 const reducer = (state, action) => {
