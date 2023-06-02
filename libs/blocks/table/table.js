@@ -22,16 +22,17 @@ function handleHeading(headingCols, isHighlightTable, table) {
       col.classList.add('hidden');
     } else {
       const elements = col.children;
-      const hasElements = elements.length > 0;
-
-      if (!hasElements) {
-        const innerText = col.innerHTML;
-        col.innerHTML = `<p class="heading-title">${innerText}</p>`;
+      if (!elements.length) {
+        col.innerHTML = `<p class="heading-title">${col.innerHTML}</p>`;
       } else {
-        elements[0].classList.add('heading-title');
+        let textStartIndex = 0;
+        if (elements[0]?.querySelector('img')) {
+          textStartIndex += 1;
+        }
+        elements[textStartIndex]?.classList.add('heading-title');
 
-        if (elements[1]) {
-          elements[1].classList.add('pricing');
+        if (elements[textStartIndex + 1]) {
+          elements[textStartIndex + 1].classList.add('pricing');
         }
 
         decorateButtons(col, 'button-l');
@@ -41,9 +42,9 @@ function handleHeading(headingCols, isHighlightTable, table) {
         const buttons = col.querySelectorAll('.con-button');
 
         buttons.forEach((btn) => {
-          let btnWrapper = btn.closest('P');
+          const btnWrapper = btn.closest('P');
           buttonsWrapper.append(btnWrapper);
-        })
+        });
       }
 
       if (nextCol && !nextCol.innerText) {
@@ -188,22 +189,22 @@ function formatMerchTable(table) {
   }
 }
 
-function handleMouseOut(elements) {
-  elements.forEach((e) => {
+function handleMouseOut(cols) {
+  cols.forEach((e) => {
     e.classList.remove('hover');
     e.classList.remove('no-top-border');
     e.classList.remove('hover-border-bottom');
   });
 }
 
-function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
-  handleMouseOut(elements);
+function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
+  handleMouseOut(cols);
 
   const headingRow = table.querySelector('.row-heading');
   const colClass = `col-${colNum}`;
   const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
 
-  elements.forEach((e) => {
+  cols.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
       const matchingCols = Array.from(e.classList).filter(
         (className) => className.startsWith(colClass),
@@ -215,7 +216,7 @@ function handleMouseOver(elements, table, colNum, isCollapseTable, lastSectionHe
     }
 
     if (isCollapseTable && isLastRowCollapsed) {
-      let lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
+      const lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
       lastSectionHeadCol.classList.add('hover-border-bottom');
     }
 
@@ -229,15 +230,15 @@ function handleHovering(table) {
   const isMerchTable = table.classList.contains('merch');
   const startValue = isMerchTable ? 1 : 2;
   const isCollapseTable = table.classList.contains('collapse');
-  const sectionHeads =  table.querySelectorAll('.section-head');
+  const sectionHeads = table.querySelectorAll('.section-head');
   const lastSectionHead = sectionHeads[sectionHeads.length - 1];
   const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
 
   for (let i = startValue; i <= colsInRowNum; i++) {
-    const elements = table.querySelectorAll(`.col-${i}`);
-    elements.forEach((e) => {
-      e.addEventListener('mouseover', () => handleMouseOver(elements, table, i, isCollapseTable, lastSectionHead, lastExpandIcon ));
-      e.addEventListener('mouseout', () => handleMouseOut(elements));
+    const cols = table.querySelectorAll(`.col-${i}`);
+    cols.forEach((e) => {
+      e.addEventListener('mouseover', () => handleMouseOver(cols, table, i, isCollapseTable, lastSectionHead, lastExpandIcon));
+      e.addEventListener('mouseout', () => handleMouseOut(cols));
     });
   }
 }
@@ -246,8 +247,10 @@ function handleScrollEffect(table, gnavHeight) {
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
-  const intercept = document.createElement('div');
+  const intercept = table.querySelector('.intercept') || document.createElement('div');
+  intercept.className = 'intercept';
   intercept.setAttribute('data-observer-intercept', '');
+  table.append(intercept);
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
@@ -287,7 +290,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       if (isMerch) {
-        table.querySelectorAll(`.col:not(.col-${filters[0]}, .col-${filters[1]})`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
       } else {
         table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
       }
@@ -332,16 +335,15 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
-  // For Mobile
+  // For Mobile (else: tablet / desktop)
   if (screenWidth <= mobileSize) {
     mobileRenderer();
   } else {
     table.innerHTML = originTable.innerHTML;
     reAssignEvents(table);
-    // table.parentElement.querySelectorAll('filters select').forEach((select, index) => {
-    //   console.log(select, index);
-    //   select.querySelectorAll('option').item(index).selected = true;
-    // });
+    table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
+      select.querySelectorAll('option').item(index).selected = true;
+    });
   }
 
   const sectionRow = Array.from(table.getElementsByClassName('section-row'));
@@ -392,10 +394,14 @@ export default function init(el) {
     }
     applyStylesBasedOnScreenSize(el, originTable);
     handleScrollEffect(el, gnavHeight);
+
+    let timeout;
     window.addEventListener('resize', () => {
-      handleScrollEffect(el, gnavHeight);
-      applyStylesBasedOnScreenSize(el, originTable);
-      handleScrollEffect(el, gnavHeight);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        applyStylesBasedOnScreenSize(el, originTable);
+        handleScrollEffect(el, gnavHeight);
+      }, 100);
     });
   });
 }
