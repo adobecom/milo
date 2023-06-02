@@ -431,8 +431,8 @@ export function decorateImageLinks(a) {
   [...images].forEach((img) => {
     if (!img.alt || !(hasUrlWithPipe(img.alt))) return;
     const [source, alt] = img.alt.split('|');
-    const textUrl = new URL(source);
-    if (alt) img.alt = alt;
+    const textUrl = new URL(source.trim());
+    if (alt && alt.trim().length > 0) img.alt = alt.trim();
     const pic = img.closest('picture');
     const picParent = pic.parentElement;
     const aTag = createTag('a', { href: textUrl, class: 'image-link' }, pic);
