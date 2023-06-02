@@ -7,7 +7,7 @@ const { createTag, loadStyle, loadBlock, setConfig } = await import('../../../li
 
 const mockConfig = {
   locales: {
-    '': { ietf: 'us' }, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {}, africa: {},
+    '': { ietf: 'us' }, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {}, africa: {}, eg_ar: { dir: 'rtl' }, eg_en: { },
   },
   locale: { contentRoot: window.location.href, prefix: '' },
   env: 'test',
@@ -88,6 +88,26 @@ const mockGeoroutingJson = {
         languageOrder: '',
         geo: 'africa',
       },
+      {
+        prefix: 'eg_ar',
+        title: 'موقع Adobe هذا لا يتطابق مع موقعك.',
+        text: 'بناءً على موقعك ، نعتقد أنك قد تفضل موقع مصر ، حيث ستحصل على المحتوى الجغرافي والعروض والأسعار',
+        button: 'مصر - اللغة العربية',
+        akamaiCodes: 'EG',
+        language: 'عربي',
+        languageOrder: '1',
+        geo: 'eg',
+      },
+      {
+        prefix: 'eg_en',
+        title: "You're visiting Adobe.com for {{geo}}",
+        text: "Based on your location, we think you may prefer the Egypt website, where you'll get geoal content, offerings, and pricing",
+        button: 'Egypt',
+        akamaiCodes: 'EG',
+        language: 'English',
+        languageOrder: '2',
+        geo: 'eg',
+      },
     ],
   },
   geos: {
@@ -147,6 +167,25 @@ const mockGeoroutingJson = {
         mena: 'the Middle East & North Africa',
         africa: 'Africa',
       },
+      {
+        prefix: 'eg_ar',
+        us: 'الولايات المتحدة الأمريكية',
+        de: 'ألمانيا',
+        ch: 'سويسرا',
+        mena: 'الشرق الأوسط وشمال أفريقيا',
+        africa: 'أفريقيا',
+        eg: 'مصر',
+      },
+      {
+        prefix: 'eg_en',
+        us: 'the United States',
+        de: 'Germany',
+        ch: 'Switzerland',
+        mena: 'the Middle East & North Africa',
+        africa: 'Africa',
+        eg: 'Egypt',
+      },
+
     ],
   },
 };
@@ -290,6 +329,62 @@ describe('GeoRouting', () => {
     expect(italianTab.querySelector('p').textContent).to.be.equal(italianData.text);
     expect(italianTab.querySelector('.con-button').textContent).to.be.equal(italianData.button);
     expect(italianTab.querySelectorAll('a')[1].textContent).to.be.equal(usData.button);
+  });
+
+  it('If aiming for US page but IP in Egypt arabic content in geo routing modal is in rtl', async () => {
+    // prepare
+    setUserCountryFromIP('EG');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const tabs = modal.querySelectorAll('.tabpanel');
+    expect(tabs.length).to.be.equal(2);
+    const arabicTab = tabs[0];
+    const downArrow = arabicTab.querySelectorAll('img')[1];
+    expect(arabicTab.querySelector('h3').getAttribute('dir')).to.be.equal('rtl');
+    expect(arabicTab.querySelector('p').getAttribute('dir')).to.be.equal('rtl');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(arabicTab.querySelector('ul').getAttribute('dir')).to.be.equal('rtl');
+    // Cleanup
+    setUserCountryFromIP('CH');
+  });
+
+  it('If aiming for US page but IP in Egypt english content in geo routing modal is in ltr', async () => {
+    // prepare
+    setUserCountryFromIP('EG');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    expect(modal).to.not.be.null;
+    const tabs = modal.querySelectorAll('.tabpanel');
+    expect(tabs.length).to.be.equal(2);
+    const englishTab = tabs[1];
+    const downArrow = englishTab.querySelectorAll('img')[1];
+    expect(englishTab.querySelector('h3').getAttribute('dir')).to.be.equal('ltr');
+    expect(englishTab.querySelector('p').getAttribute('dir')).to.be.equal('ltr');
+    expect(downArrow).to.not.be.null;
+    downArrow.click();
+    expect(englishTab.querySelector('ul').getAttribute('dir')).to.be.equal('ltr');
+    // Cleanup
+    setUserCountryFromIP('CH');
+  });
+
+  it('If aiming for Arabic page but IP in US english content in geo routing modal is in ltr', async () => {
+    // prepare
+    mockConfig.locale.prefix = 'eg_ar';
+    setUserCountryFromIP('US');
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const wrapper = document.querySelector('.georouting-wrapper');
+    // assert
+    expect(modal).to.not.be.null;
+    expect(wrapper.querySelector('h3').getAttribute('dir')).to.be.equal('ltr');
+    expect(wrapper.querySelector('p').getAttribute('dir')).to.be.equal('ltr');
+    // Cleanup
+    setUserCountryFromIP('CH');
+    mockConfig.locale.prefix = '';
   });
 
   it('If aiming for CH page, IP in US, and session storage is DE shows DE links and CH continue', async () => {
