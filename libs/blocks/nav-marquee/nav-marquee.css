@@ -1,4 +1,4 @@
-.nav-marquee{
+.nav-marquee {
   flex: 1 1 auto;
 }
 
@@ -11,32 +11,32 @@
  background-color: #000;
 }
 
-.nav-marquee .content-table{
+.nav-marquee .content-table {
   border: 1px solid #E8E8E8;
   background-color: #FAFAFA;
 }
 
-.nav-marquee .content-table .offer-container {
+.content-table .offer-container {
   flex: 1 1 auto; 
-  padding: 24px;
+  padding: var(--spacing-s);
 }
 
-.nav-marquee .content-table .offer-title {
+.content-table .offer-title {
   font-size: var(--type-heading-xs-size);
   margin: 0;
   font-weight: bold;
 }
 
-.nav-marquee .offer-list {
+.content-table .offer-list {
   display: flex;
   flex-direction: column; 
-  gap: 24px;
-  margin-top: 24px;
+  gap: var(--spacing-s);
+  margin-top: var(--spacing-s);
   margin-bottom: 0;
   padding: 0;
 }
 
-.nav-marquee .offer-item {
+.content-table .offer-item {
   min-width: 200px;
   display: flex;
   position: relative; 
@@ -44,17 +44,17 @@
   background-color: #FFF;
   border: 1px solid #4B4B4B;
   border-radius: 4px;
-  padding: 24px;
+  padding: var(--spacing-s);
   cursor: pointer;
   line-height: 1.5;
 }
 
-.nav-marquee .offer-item:hover {
+.content-table .offer-item:hover {
   box-shadow: 2px 4px 5px #0000001A;
   border: 1px solid #1473E6;
 }
 
-.nav-marquee .offer-item:focus-within {
+.content-table .offer-item:focus-within {
   border: 1px solid #1473E6;
   background-color: #F5F9FD;
 }
@@ -63,7 +63,7 @@
   margin: 0 0 var(--spacing-s);
 }
 
-.nav-marquee .marquee .foreground .icon-area img{
+.nav-marquee .marquee .foreground .icon-area img {
   height: 20px;
   float: left;
   padding-right: 16px;
@@ -117,11 +117,11 @@
 }
 
 @media screen and (min-width: 600px) {
-  .nav-marquee .content-table .offer-list {
+  .content-table .offer-list {
      flex-flow: row wrap;
   }
 
-  .nav-marquee .offer-item {
+  .content-table .offer-item {
     flex: 1 1 45%; 
     padding: 16px;
   }
@@ -141,11 +141,11 @@
   }
 }
 @media screen and (max-width: 600px) {
-  .nav-marquee .offer-list {
+  .content-table .offer-list {
     gap: 16px;
   }
 
-  .nav-marquee .offer-item {
+  .content-table .offer-item {
     padding: 16px;
   }
 
@@ -209,8 +209,8 @@
   .nav-marquee .offer-container .offer-list {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-top: 24px;
+    gap: var(--spacing-s);
+    margin-top: var(--spacing-s);
     margin-bottom: 0;
     padding: 0;
   }
@@ -223,7 +223,7 @@
     background-color: #FFF;
     border: 1px solid #4B4B4B;
     border-radius: 4px;
-    padding: 24px;
+    padding: var(--spacing-s);
     cursor: pointer;
     line-height: 1.5;
     flex: 1 1 100%;

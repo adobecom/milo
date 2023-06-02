@@ -30,9 +30,7 @@ function findAnchorTarget(text) {
 }
 
 function getItem(title, description, target) {
-  if (!title) {
-    return null;
-  }
+  if (!title) return null;
   const item = createTag('li', { class: 'offer-item' });
   const linkText = createTag('div', { class: 'offer-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0
@@ -46,7 +44,7 @@ function getItem(title, description, target) {
     }
   });
   link.addEventListener('click', (e) => {
-    const targetPosition = target?.getBoundingClientRect().top ?? 0;
+    const targetPosition = target?.getBoundingClientRect()?.top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
     e.preventDefault();
@@ -69,7 +67,7 @@ function decorateText(el, size) {
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
     const sib = headingEl.previousElementSibling;
     if (sib) {
-      sib.querySelector('img, .icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      sib.classList.add(sib.querySelector('img, .icon') ? 'icon-area' : `detail-${detailSize}`);
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
@@ -90,7 +88,7 @@ export default function init(el) {
 
   const header = createTag('p', { class: 'offer-title' });
   const footer = createTag('p', { class: 'offer-footer' });
-  const offerNav = createTag('nav', { 'aria-label': 'Table of contents' });
+  const offerNav = createTag('nav');
   const navUl = createTag('ul', { class: 'offer-list' });
   children.forEach((section) => {
     if (section.firstElementChild.textContent === 'header') {
@@ -104,11 +102,10 @@ export default function init(el) {
       section.remove();
       return;
     }
-
-    const sectionTags = Array.from(section.querySelectorAll('p'));
+ 
     const sectionTitle = section.querySelector('strong');
     const link = section.querySelector('a');
-    const subtitle = sectionTags.find((element) => element.childElementCount === 0);
+    const subtitle = [...section.querySelectorAll('p')].find((element) => element.childElementCount === 0);
     const target = link ? findAnchorTarget(link.textContent) : null;
     const item = getItem(sectionTitle?.textContent, subtitle?.textContent, target);
     navUl.append(item);
