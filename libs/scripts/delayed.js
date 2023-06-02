@@ -13,7 +13,8 @@
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
-  if (!jarvis || !config.jarvis?.id || !config.jarvis?.version) return;
+  if (!jarvis || !['mobile', 'desktop', 'on'].includes(jarvis)
+    || !config.jarvis?.id || !config.jarvis?.version) return;
 
   const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
   if (jarvis === 'mobile' && desktopViewport) return;
