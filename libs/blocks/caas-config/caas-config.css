@@ -97,8 +97,6 @@ dd.content .sort-options > .field {
   overflow: scroll;
   max-height: 95vh;
   background: #ddd;
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;     /* Firefox */
 }
 
 .config-panel::-webkit-scrollbar { 
