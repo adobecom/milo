@@ -68,17 +68,23 @@
 
 .table .row-heading .col.col-heading {
   background-color: white;
-  padding: 40px 30px;
+  padding: 30px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.table .row-heading .col.col-heading .buttons-wrapper > * {
-  margin: 12px 0;
+.table .row-heading .col.col-heading .buttons-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.table .row-heading .col-heading.left-top-rounded {
+.table .row-heading .col.col-heading .buttons-wrapper > * {
+  margin: 12px 6px;
+}
+
+.table .row-heading .col-heading.top-left-rounded {
   border-top-left-radius: 15px;
 }
 
@@ -230,7 +236,7 @@
   }
 
   .table .row:not(.section-head) .col:not(.col-highlight):not(.hidden).hover {
-    background-color: #F8F8F8;
+    background-color: var(--color-gray-100);
   }
 
   .table.merch .col.hover {
@@ -282,7 +288,7 @@ header.global-navigation {
   .table:not(.merch) .section-row-title {
     grid-row: 1;
     grid-column: 1 / x;
-    background-color: #f8f8f8;
+    background-color: var(--color-gray-100);
   }
 
   .table .row-heading .col:nth-child(n+1) {

@@ -2,25 +2,9 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
-function handleHeading(headingCols, isHighlightTable, table) {
-  let highlightRow; let
-    highlightRowCols;
-
-  if (isHighlightTable) {
-    highlightRow = table.querySelector('.row-1');
-    highlightRowCols = highlightRow.querySelectorAll('.col');
-  }
-
+function handleHeading(headingCols) {
   headingCols.forEach((col, i) => {
-    const isEmpty = col.innerHTML === '';
-    const nextCol = headingCols[i + 1];
-
-    if (isEmpty) {
-      if (isHighlightTable && !highlightRowCols[i + 1].innerText && nextCol) {
-        nextCol.classList.add('left-top-rounded');
-      }
-      col.classList.add('hidden');
-    } else {
+    if (col.innerHTML) {
       const elements = col.children;
       if (!elements.length) {
         col.innerHTML = `<p class="heading-title">${col.innerHTML}</p>`;
@@ -46,10 +30,6 @@ function handleHeading(headingCols, isHighlightTable, table) {
           buttonsWrapper.append(btnWrapper);
         });
       }
-
-      if (nextCol && !nextCol.innerText) {
-        col.classList.add('top-right-rounded');
-      }
     }
   });
 }
@@ -70,20 +50,45 @@ function handleHighlight(table) {
     headingCols = secondRowCols;
 
     firstRowCols.forEach((col, i) => {
-      const hasText = secondRowCols[i].innerText && col.innerText;
+      const hasText = headingCols[i].innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
       } else {
-        col.classList.add('hidden');
+        if (!headingCols[i].innerText) {
+          col.classList.add('hidden');
+          headingCols[i].classList.add('hidden');
+        } else {
+          col.classList.add('hidden');
+          if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+            headingCols[i].classList.add('top-left-rounded');
+          }
+          if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
+            headingCols[i].classList.add('top-right-rounded');
+          }
+        }
       }
     });
   } else {
-    firstRow.classList.add('row-heading');
-    firstRowCols.forEach((e) => e.classList.add('col-heading'));
     headingCols = firstRowCols;
+    firstRow.classList.add('row-heading');
+
+    headingCols.forEach((e, i) => {
+      e.classList.add('col-heading');
+
+      if (e.innerText) {
+        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+          e.classList.add('top-left-rounded');
+        }
+        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
+          e.classList.add('top-right-rounded');
+        }
+      } else {
+        e.classList.add('hidden');
+      }
+    });
   }
 
-  handleHeading(headingCols, isHighlightTable, table);
+  handleHeading(headingCols);
   const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
   window.dispatchEvent(tableHighlightLoadedEvent);
 }
