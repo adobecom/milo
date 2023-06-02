@@ -3,7 +3,7 @@ import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 function handleHeading(headingCols) {
-  headingCols.forEach((col, i) => {
+  headingCols.forEach((col) => {
     if (col.innerHTML) {
       const elements = col.children;
       if (!elements.length) {
@@ -53,18 +53,16 @@ function handleHighlight(table) {
       const hasText = headingCols[i].innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
+      } else if (!headingCols[i].innerText) {
+        col.classList.add('hidden');
+        headingCols[i].classList.add('hidden');
       } else {
-        if (!headingCols[i].innerText) {
-          col.classList.add('hidden');
-          headingCols[i].classList.add('hidden');
-        } else {
-          col.classList.add('hidden');
-          if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
-            headingCols[i].classList.add('top-left-rounded');
-          }
-          if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-            headingCols[i].classList.add('top-right-rounded');
-          }
+        col.classList.add('hidden');
+        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+          headingCols[i].classList.add('top-left-rounded');
+        }
+        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
+          headingCols[i].classList.add('top-right-rounded');
         }
       }
     });
