@@ -3,14 +3,19 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
+  const buttonTypeMap = {'STRONG': 'blue', 'EM': 'outline', 'A': 'blue'};
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    const buttonTypeMap = {'STRONG': 'blue', 'EM': 'outline', 'A': 'blue'};
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
-    button.classList.add('con-button', buttonType);
-    if (size) button.classList.add(size); /* button-l, button-xl */
-    parent.insertAdjacentElement('afterend', button);
-    parent.remove();
+    if (button.nodeName === 'STRONG') {
+      parent.classList.add('con-button', buttonType);
+      if (size) parent.classList.add(size); /* button-l, button-xl */
+    } else {
+      button.classList.add('con-button', buttonType);
+      if (size) button.classList.add(size); /* button-l, button-xl */
+      parent.insertAdjacentElement('afterend', button);
+      parent.remove();
+    }
   });
   const actionArea = buttons[0].closest('p, div');
   if (actionArea) {
