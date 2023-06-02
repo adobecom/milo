@@ -43,7 +43,6 @@ dd.content .sort-options > .field {
 .multifield .multifield {
   padding: 0 0 15px;
   margin: 0 -15px 9px 0;
-  border-bottom: solid 1px #999;
   border-bottom: none;
 }
 
@@ -85,7 +84,7 @@ dd.content .sort-options > .field {
 }
 
 .accordion-item:hover dt.title span,
-.accordion-item:hover  dt.title button {
+.accordion-item:hover dt.title button {
   color: #fff;
   cursor: pointer;
 }

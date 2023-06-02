@@ -241,7 +241,7 @@ const getFilterArray = async (state) => {
       .filter((filter) => filter !== null);
   } else {
     filters = state.filtersCustom.length > 0
-      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, state))
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter))
       : [];
   }
 

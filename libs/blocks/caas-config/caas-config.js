@@ -21,7 +21,6 @@ import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
 
-const DEBUG = window.location.search.includes('debug=true');
 const LS_KEY = 'caasConfiguratorState';
 
 const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
@@ -688,7 +687,6 @@ const getInitialState = () => {
   }
 
   if (!state) state = {};
-  if (DEBUG) window.state = state;
 
   return updateObj(state, defaultState);
 };
