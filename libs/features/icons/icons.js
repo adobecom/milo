@@ -36,6 +36,7 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 
 function decorateToolTip(icon) {
   const wrapper = icon.closest('em');
+  wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
   const conf = wrapper.textContent.split('|');
   // Text is the last part of a tooltip
