@@ -207,7 +207,7 @@ function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, 
 
   const headingRow = table.querySelector('.row-heading');
   const colClass = `col-${colNum}`;
-  const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
+  const isLastRowCollapsed = lastExpandIcon?.getAttribute('aria-expanded') === 'false';
 
   cols.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
