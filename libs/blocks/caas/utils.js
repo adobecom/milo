@@ -277,7 +277,18 @@ export function arrayToObj(input = []) {
   return obj;
 }
 
-export const getConfig = async (state, strs = {}) => {
+const addMissingStateProps = (state) => {
+  // eslint-disable-next-line no-use-before-define
+  Object.entries(defaultState).forEach(([key, val]) => {
+    if (state[key] === undefined) {
+      state[key] = val;
+    }
+  });
+  return state;
+};
+
+export const getConfig = async (originalState, strs = {}) => {
+  const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
