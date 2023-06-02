@@ -227,7 +227,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }) => {
 };
 
 const getFilterArray = async (state) => {
-  if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom.length === 0) {
+  if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
 
