@@ -173,7 +173,7 @@
 }
 
 .tabs.quiet div[role="tablist"] button:first-of-type {
-  margin-left: 0;
+  margin-inline-start: 0;
 }
 
 .tabs.quiet div[role="tablist"] button:hover {
