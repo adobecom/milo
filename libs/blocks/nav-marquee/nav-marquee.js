@@ -21,9 +21,7 @@ const DOWN_ARROW_ICON = '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/s
 function findAnchorTarget(text) {
   let linkText = text.toLowerCase();
   if (linkText.charAt(0) === '_') {
-    linkText = linkText.charAt(0) === '_' ? linkText.substring(1) : linkText;
-    linkText = linkText.replaceAll('_', '-');
-    linkText = linkText.replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
+    linkText = linkText.slice(1).replaceAll('_', '-').replaceAll(/[ /|&;$%@"<>()+,.]/g, '');
     linkText = `#${linkText}`;
   }
   return linkText;
@@ -72,14 +70,20 @@ function decorateText(el, size) {
   const heading = headings[headings.length - 1];
   const decorate = (headingEl, headingSize, bodySize, detailSize) => {
     headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
-    const sib = headingEl.previousElementSibling;
-    if (sib) {
-      sib.classList.add(sib.querySelector('img, .icon') ? 'icon-area' : `detail-${detailSize}`);
-      sib.previousElementSibling?.classList.add('icon-area');
+    const { nextElementSibling } = headingEl;
+    nextElementSibling?.classList.add(`body-${bodySize}`);
+    const { previousElementSibling } = headingEl;
+    if (previousElementSibling) {
+      previousElementSibling.classList.add(
+        previousElementSibling.querySelector('img, .icon') ? 'icon-area' : `detail-${detailSize}`
+      );
+      previousElementSibling.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
+  const headingSize = size === 'large' ? 'xxl' : 'xl';
+  const bodySize = size === 'large' ? 'xl' : 'm';
+  const detailSize = size === 'large' ? 'l' : 'm';
+  decorate(heading, headingSize, bodySize, detailSize);
 }
 
 export default function init(el) {

@@ -1,19 +1,25 @@
 .nav-marquee {
   flex: 1 1 auto;
-}
-
-.nav-marquee.light {
   color: var(--text-color);
-  background-color: #FFF;
+  background-color: var(--background-color);
 }
 
 .nav-marquee.dark {
- background-color: #000;
+ background-color: var(--color-black);
+}
+
+.dark .nav-marquee .marquee{
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.nav-marquee.dark .marquee {
+  color: var(--color-white);
 }
 
 .nav-marquee .content-table {
-  border: 1px solid #E8E8E8;
-  background-color: #FAFAFA;
+  border: 1px solid var(--color-gray-200);
+  background-color: var(--color-gray-100);
 }
 
 .content-table .offer-container {
@@ -41,8 +47,8 @@
   display: flex;
   position: relative; 
   justify-content: space-between;
-  background-color: #FFF;
-  border: 1px solid #4B4B4B;
+  background-color: var(--background-color);
+  border: 1px solid var(--color-gray-700);
   border-radius: 4px;
   padding: var(--spacing-s);
   cursor: pointer;
@@ -54,11 +60,6 @@
   border: 1px solid #1473E6;
 }
 
-.content-table .offer-item:focus-within {
-  border: 1px solid #1473E6;
-  background-color: #F5F9FD;
-}
-
 .nav-marquee .marquee p {
   margin: 0 0 var(--spacing-s);
 }
@@ -66,7 +67,7 @@
 .nav-marquee .marquee .foreground .icon-area img {
   height: 20px;
   float: left;
-  padding-right: 16px;
+  padding-right: var( --spacing-xs);
  }
 
 .nav-marquee .offer-link-text {
@@ -89,7 +90,6 @@
 .nav-marquee .section-title {
   font-weight: bold;
   font-size: var(--type-body-s-size);
-  line-height: 20px;
 }
 
 .nav-marquee .section-description {
@@ -170,7 +170,7 @@
   }
 
   .nav-marquee .content-table {
-    background-color: #FFF;
+    background-color: var(--background-color);
     border: none;
   }
 
@@ -194,11 +194,11 @@
   }
 
   .nav-marquee .offer-container {
-    padding: 32px;
+    padding: var(--spacing-m);
     box-sizing: border-box;
     margin-left: 0;
     padding-right: 0;
-    background-color: #FFF;
+    background-color: var(--background-color);
     margin-top: var(--spacing-xl);
   }
 
@@ -220,8 +220,8 @@
     display: flex;
     position: relative;
     justify-content: space-between;
-    background-color: #FFF;
-    border: 1px solid #4B4B4B;
+    background-color: var(--background-color);
+    border: 1px solid var(--color-gray-700);
     border-radius: 4px;
     padding: var(--spacing-s);
     cursor: pointer;
@@ -255,7 +255,7 @@
 
   .nav-marquee .content-table .offer-container {
     width: 448px;
-    background-color: #FFF;
+    background-color: var(--background-color);
     margin-top: var(--spacing-xl);
   }
 
