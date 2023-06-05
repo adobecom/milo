@@ -50,9 +50,9 @@ function decorateForeground(block) {
       && lastElem.lastElementChild.innerText === lastElem.innerText) {
       text.lastElementChild.classList.add('action-area');
     }
-    const size = getBlockSize(el, 2);
-    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
-    decorateBlockText(el, iconBlocks[size][variant]);
+    const size = getBlockSize(block, 2);
+    const variant = [...variants].filter((v) => block.classList.contains(v))?.[0] ?? 'fullwidth';
+    decorateBlockText(block, iconBlocks[size][variant]);
   }
 }
 
