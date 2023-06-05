@@ -40,9 +40,11 @@ function decorateToolTip(icon) {
   if (!wrapper) return;
   const conf = wrapper.textContent.split('|');
   // Text is the last part of a tooltip
-  icon.dataset.tooltip = conf.pop().trim();
+  const content = conf.pop().trim();
+  if (!content) return;
+  icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
-  const place = conf.pop().trim().toLowerCase() || 'right';
+  const place = conf.pop()?.trim().toLowerCase() || 'right';
   icon.className = `icon icon-info milo-tooltip ${place}`;
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
