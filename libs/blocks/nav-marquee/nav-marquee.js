@@ -29,11 +29,18 @@ function findAnchorTarget(text) {
   return linkText;
 }
 
+let tabNumber = 0;
+function incrementTab() {
+  tabNumber += 1;
+  return tabNumber;
+}
+
 function getItem(title, description, target) {
   if (!title) return null;
   const item = createTag('li', { class: 'offer-item' });
+  item.setAttribute('tabNumber', incrementTab(tabNumber));
   const linkText = createTag('div', { class: 'offer-link-text' });
-  const pageTop = document.querySelector('header')?.offsetHeight ?? 0
+  const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
   const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
   linkText.append(link);
   item.addEventListener('click', () => {
@@ -44,6 +51,7 @@ function getItem(title, description, target) {
     }
   });
   link.addEventListener('click', (e) => {
+    console.log('addEventListener');
     const targetPosition = target?.getBoundingClientRect()?.top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
@@ -102,7 +110,6 @@ export default function init(el) {
       section.remove();
       return;
     }
- 
     const sectionTitle = section.querySelector('strong');
     const link = section.querySelector('a');
     const subtitle = [...section.querySelectorAll('p')].find((element) => element.childElementCount === 0);
