@@ -454,7 +454,7 @@ const props = {
   cta2url: (s) => checkUrl(s, `Invalid Cta2Url: ${s}`),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
-  entityid: (_, options) => getUuid(options.prodUrl?.replace('.html', '')),
+  entityid: (_, options) => getUuid(options.prodUrl),
   env: (s) => s || '',
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
