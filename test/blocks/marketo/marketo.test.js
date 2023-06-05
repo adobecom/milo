@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { waitForElement } from '../../helpers/waitfor.js';
 import { stub } from 'sinon';
+import { waitForElement } from '../../helpers/waitfor.js';
 import init, { formValidate, formSuccess, setPreferences } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
@@ -14,12 +14,12 @@ describe('marketo', () => {
     onValidate: stub(),
     onSuccess: stub(),
     loadForm: stub(),
-    whenReady: stub().callsFake((fn) => fn(forms2Mock))
+    whenReady: stub().callsFake((fn) => fn(forms2Mock)),
   };
 
   beforeEach(() => {
     document.body.innerHTML = innerHTML;
-    loadScriptStub = stub().returns(new Promise(resolve => {
+    loadScriptStub = stub().returns(new Promise((resolve) => {
       window.MktoForms2 = forms2Mock;
       resolve();
     }));
@@ -59,10 +59,10 @@ describe('marketo', () => {
     expect(window.MktoForms2).to.exist;
   });
 
-  it('set preferences on the data layer', async () => {
+  it('sets preferences on the data layer', async () => {
     const formData = {
       'first.key': 'value1',
-      'second.key': 'value2'
+      'second.key': 'value2',
     };
 
     setPreferences(formData);
@@ -74,7 +74,6 @@ describe('marketo', () => {
     expect(window.mcz_marketoForm_pref.second).to.have.property('key');
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
   });
-
 
   it('formValidate adds class', async () => {
     const marketoElement = document.querySelector('.marketo');

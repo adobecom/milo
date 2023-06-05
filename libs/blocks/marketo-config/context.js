@@ -1,18 +1,11 @@
 import { createContext, html, useReducer } from '../../deps/htm-preact.js';
 import { parseEncodedConfig } from '../../utils/utils.js';
 
-const renameKeys = (obj, newKeys) => {
-  const keyValues = Object.keys(obj).map((key) => {
-    const newKey = newKeys[key] || key;
-    return { [newKey]: obj[key] };
-  });
-  return Object.assign({}, ...keyValues);
-};
-
 export const saveStateToLocalStorage = (state, lsKey) => {
   localStorage.setItem(lsKey, JSON.stringify(state));
 };
 
+/* c8 ignore next 7 */
 const getHashConfig = () => {
   const { hash } = window.location;
   if (!hash) return null;
@@ -20,12 +13,13 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
-}
+};
 
 const getInitialState = (defaultState, lsKey) => {
   const hashConfig = getHashConfig() ?? null;
   const mergedState = { ...defaultState };
 
+  /* c8 ignore next 4 */
   if (hashConfig) {
     Object.assign(mergedState, hashConfig);
     return mergedState;
@@ -35,9 +29,9 @@ const getInitialState = (defaultState, lsKey) => {
   if (lsState) {
     try {
       Object.assign(mergedState, JSON.parse(lsState));
-    } catch (e) {
-      // ignore
-    }
+      /* c8 ignore next 2 */
+      // eslint-disable-next-line no-empty
+    } catch (e) { }
   }
 
   return mergedState;
@@ -47,8 +41,8 @@ const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
+    /* c8 ignore next 2 */
     default:
-      console.log('DEFAULT');
       return state;
   }
 };
@@ -61,5 +55,5 @@ export const ConfiguratorProvider = ({ children, defaultState = {}, lsKey = 'con
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
       ${children}
-    </ConfiguratorContext.Provider>`;
+    </${ConfiguratorContext.Provider}>`;
 };

@@ -43,7 +43,7 @@ export const formSuccess = (form) => {
   return true;
 };
 
-const readyForm = (form, formData) => {
+const readyForm = (form) => {
   const formEl = form.getFormElem().get(0);
 
   formEl.addEventListener('focus', (e) => {
@@ -51,7 +51,7 @@ const readyForm = (form, formData) => {
     if (e.target.type === 'submit' || e.target.type === 'button') return;
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
     const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
-    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight /2 ;
+    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
     window.scrollTo(0, offsetPosition);
   }, true);
   form.onValidate(() => formValidate(form));
@@ -59,29 +59,30 @@ const readyForm = (form, formData) => {
 };
 
 const setPreference = (key, value) => {
-  if (key?.includes('.')) {
-    const keys = key.split('.');
-    const lastKey = keys.pop();
-    const targetObject = keys.reduce((object, key) => {
-      return object[key] = object[key] || {};
+  if (key && key.includes('.')) {
+    const keyParts = key.split('.');
+    const lastKey = keyParts.pop();
+    const formDataObject = keyParts.reduce((obj, part) => {
+      obj[part] = obj[part] || {};
+      return obj[part];
     }, window.mcz_marketoForm_pref);
-    targetObject[lastKey] = value;
+    formDataObject[lastKey] = value;
   }
-}
+};
 
 export const setPreferences = (formData) => {
   window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
-  for(const [key, value] of Object.entries(formData)) {
+  Object.entries(formData).forEach(([key, value]) => {
     setPreference(key, value);
-  }
-}
+  });
+};
 
 const init = (el, loadScriptFunc = loadScript) => {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const link = children[0].querySelector('a');
   let formData = {};
 
-  if (link && link.href) {
+  if (link?.href) {
     const encodedConfig = link.href.split('#')[1];
 
     formData = parseEncodedConfig(encodedConfig);
@@ -111,6 +112,7 @@ const init = (el, loadScriptFunc = loadScript) => {
     const title = createTag('h3', { class: 'marketo-title' }, formData.title);
     formWrapper.append(title);
   }
+
   if (formData.description) {
     const description = createTag('p', { class: 'marketo-description' }, formData.description);
     formWrapper.append(description);

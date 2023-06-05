@@ -2,20 +2,18 @@ import { html, useEffect, useState } from '../../deps/htm-preact.js';
 
 let checkboxIdx = 0;
 
-const Select = ({ label, name, onChange, options, isRequired, value, sort = false, tooltip }) => {
+const Select = ({
+  label, name, onChange, options, isRequired, value, sort = false, tooltip,
+}) => {
   const [isValid, setIsValid] = useState(true);
+
+  const validateInput = (val) => {
+    setIsValid(!(isRequired && val === ''));
+  };
 
   useEffect(() => {
     validateInput(value);
   }, []);
-
-  const validateInput = (val) => {
-    if (isRequired && val === '') {
-      setIsValid(false);
-    } else {
-      setIsValid(true);
-    }
-  };
 
   const onSelectChange = (e) => {
     validateInput(e.target.value);
@@ -32,20 +30,18 @@ const Select = ({ label, name, onChange, options, isRequired, value, sort = fals
       ${tooltip && html`<i class="tooltip"></i>`}
       <select id=${name} class=${!isValid && 'input-invalid'} value=${value} onChange=${onSelectChange}>
         ${entries.map(
-          ([val, optionLabel]) => html`<option value="${val}">${optionLabel}</option>`
-        )}
+    ([val, optionLabel]) => html`<option value="${val}">${optionLabel}</option>`,
+  )}
       </select>
       ${tooltip && html`<span class="tooltip-text">${tooltip}</span>`}
     </div>
   `;
 };
 
-const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', value, title, tooltip }) => {
+const Input = ({
+  label, name, onChange, onValidate, isRequired, type = 'text', value, title, tooltip,
+}) => {
   const [isValid, setIsValid] = useState(true);
-
-  useEffect(() => {
-    validateInput(value);
-  }, []);
 
   const validateInput = (val) => {
     if (typeof onValidate === 'function' && val !== '' && !onValidate(val)) {
@@ -57,8 +53,12 @@ const Input = ({ label, name, onChange, onValidate, isRequired, type = 'text', v
     }
   };
 
+  useEffect(() => {
+    validateInput(value);
+  }, []);
+
   const onInputChange = (e) => {
-    const inputVal = type === 'checkbox' ? e.target.checked : e.target.value
+    const inputVal = type === 'checkbox' ? e.target.checked : e.target.value;
     validateInput(inputVal);
     onChange(inputVal, e);
   };

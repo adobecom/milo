@@ -6,30 +6,26 @@ import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
 
-export async function fetchData(url) {
+async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
 
-  if (!resp.ok) throw new Error("Network error");
+  if (!resp.ok) throw new Error('Network error');
 
   const json = await resp.json();
   return json;
 }
 
-const getDefaultStates = (panelsData) => {
-  return Object.values(panelsData).reduce((defaultState, panelConfig) => {
-    panelConfig.forEach(field => {
-      if (field?.prop) {
-        const { prop, default: defaultValue = '' } = field;
-        defaultState[prop] = defaultValue;
-      }
+export const getDefaultStates = (panelsData) =>
+  Object.values(panelsData).reduce((defaultState, panelConfig) => {
+    panelConfig.forEach(({ prop, default: defaultValue = '' }) => {
+      if (prop) defaultState[prop] = defaultValue;
     });
     return defaultState;
   }, {});
-};
 
-const cleanPanelData = (data) => {
-  data.forEach(field => {
-    if (field?.prop) {
+export const cleanPanelData = (data) => {
+  data.forEach((field) => {
+    if (field.prop) {
       field.prop = field.prop.toLowerCase();
     }
     if (field.required) {
@@ -37,24 +33,24 @@ const cleanPanelData = (data) => {
     }
   });
   return data;
-}
+};
 
-const getConfigOptions = (json) => {
+export const getConfigOptions = (json) => {
   if (json[':names'].includes('metadata')) {
-    return json['metadata'].data.reduce((sheets, column) => {
-      const sheetName = column['sheet'] ?? column['Sheet'];
-      const sheetTitle = column['title'] ?? column['Title'];
+    return json.metadata.data.reduce((sheets, column) => {
+      const sheetName = column.sheet ?? column.Sheet;
+      const sheetTitle = column.title ?? column.Title;
 
       sheets[sheetTitle] = json[sheetName.replace('helix-', '')].data;
       return sheets;
     }, {});
-  } else {
-    return json[':names'].sort().reduce((sheets, sheetName) => {
-      sheets[sheetName] = json[sheetName].data;
-      return sheets;
-    }, {});
   }
-}
+  /* c8 ignore next 4 */
+  return json[':names'].sort().reduce((sheets, sheetName) => {
+    sheets[sheetName] = json[sheetName].data;
+    return sheets;
+  }, {});
+};
 
 const Fields = ({ fieldsData }) => {
   const { state, dispatch } = useContext(ConfiguratorContext);
@@ -68,7 +64,7 @@ const Fields = ({ fieldsData }) => {
   };
 
   return fieldsData.map((field) => {
-    const prop = field.prop;
+    const { prop } = field;
     const value = state?.[prop];
     const required = field.required === 'yes';
 
@@ -89,10 +85,6 @@ const Fields = ({ fieldsData }) => {
       options = Object.fromEntries(keyValuePairs);
     }
 
-    if (typeof options !== 'object') {
-      options = { [field.options]: field.options };
-    }
-
     return html`
       <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
     `;
@@ -100,10 +92,10 @@ const Fields = ({ fieldsData }) => {
 };
 
 const validateState = (state, panelsData) => {
-  let validatedState = {};
+  const validatedState = {};
 
-  Object.values(panelsData).forEach(panelConfig => {
-    panelConfig.forEach(field => {
+  Object.values(panelsData).forEach((panelConfig) => {
+    panelConfig.forEach((field) => {
       if (field?.prop) {
         const key = field.prop;
         if (key in state) {
@@ -116,12 +108,10 @@ const validateState = (state, panelsData) => {
   return validatedState;
 };
 
-const getPanels = (panelsData) => {
-  return Object.entries(panelsData).map(([panelName, panelConfig]) => ({
-    title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
-    content: html`<${Fields} fieldsData=${panelConfig} />`,
-  }));
-};
+const getPanels = (panelsData) => Object.entries(panelsData).map(([panelName, panelConfig]) => ({
+  title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
+  content: html`<${Fields} fieldsData=${panelConfig} />`,
+}));
 
 const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   const context = useContext(ConfiguratorContext);
@@ -134,6 +124,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     return `${url}#${utf8ToB64(JSON.stringify(state))}`;
   };
 
+  /* c8 ignore next 14 */
   const configFormValidation = () => {
     const invalidInputs = document.querySelectorAll('.input-invalid');
     const hasInputsValid = invalidInputs.length === 0;
@@ -161,8 +152,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     const blockLink = createTag('a', { href: url }, url);
     const blockContent = createTag('div', {}, blockLink);
     const newBlockEl = createTag('div', { class: blockClass }, blockContent);
-    const contentEl = document.querySelector(".content-panel");
-    console.log('initBlock', newBlockEl);
+    const contentEl = document.querySelector('.content-panel');
     contentEl.append(newBlockEl);
     loadBlock(newBlockEl);
   }, []);
@@ -184,25 +174,24 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   `;
 };
 
-const ConfiguratorWrapper = ({ block, link }) => {
-  const title = `${block} Configurator`;
-  const blockName = block.toLowerCase();
-  const lsKey = `${blockName}ConfiguratorState`;
+const ConfiguratorWrapper = ({ title, link }) => {
+  const blockClass = 'marketo';
+  const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     fetchData(link)
       .then((json) => {
         const config = getConfigOptions(json);
-        Object.values(config).forEach(panelData => {
+        Object.values(config).forEach((panelData) => {
           cleanPanelData(panelData);
         });
         setData(config);
       })
       .catch((error) => {
-        setError(error);
+        setErrorMessage(error);
       })
       .finally(() => {
         setLoading(false);
@@ -213,16 +202,16 @@ const ConfiguratorWrapper = ({ block, link }) => {
     return html`
       <div class="tool-header">
         <div class="tool-title">
-          <h1>${title}</h1>
+          <h1>${title} Configurator</h1>
         </div>
       </div>
       <div class="tool-content">
-        <div>Loading Configurator...</div>
+        <div class="loading">Loading Configurator...</div>
       </div>
     `;
   }
 
-  if (error) {
+  if (errorMessage) {
     return html`
       <div class="tool-header">
         <div class="tool-title">
@@ -230,7 +219,7 @@ const ConfiguratorWrapper = ({ block, link }) => {
         </div>
       </div>
       <div class="tool-content">
-        <div>Error: ${error.message}</div>
+        <div class="error">Error: ${errorMessage.message}</div>
       </div>
     `;
   }
@@ -239,21 +228,20 @@ const ConfiguratorWrapper = ({ block, link }) => {
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} blockClass=${blockName} panelsData=${data} lsKey=${lsKey} />
+    <${Configurator} title=${title} blockClass=${blockClass} panelsData=${data} lsKey=${lsKey} />
   </${ConfiguratorProvider}>
   `;
 };
 
 export default async function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const block = children[0].textContent.trim();
+  const title = children[0].textContent.trim();
   const linkElement = children[1].querySelector('a[href$="json"]');
-  const link = linkElement.href;
+  const link = linkElement?.href;
 
   const app = html`
-    <${ConfiguratorWrapper} block=${block} link=${link} />
+    <${ConfiguratorWrapper} title=${title} link=${link} />
   `;
 
-  linkElement.style.display = 'none';
   render(app, el);
 }

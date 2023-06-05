@@ -1,10 +1,8 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
-const { miloLibs, codeRoot } = getConfig();
-
-loadStyle(`${miloLibs || codeRoot}/ui/controls/copyBtn.css`);
 
 const CopyBtn = ({ getUrl, configFormValidation }) => {
+  const { miloLibs, codeRoot } = getConfig();
   const [status, setStatus] = useState({ type: 'hide', message: '', showConfigUrl: false });
   const [configUrl, setConfigUrl] = useState('');
 
@@ -46,6 +44,8 @@ const CopyBtn = ({ getUrl, configFormValidation }) => {
       setStatus({ type: 'error', message: 'Failed to copy.', showConfigUrl: true });
     }
   };
+
+  loadStyle(`${miloLibs || codeRoot}/ui/controls/copyBtn.css`);
 
   return html`
   <div class="copy-button">
