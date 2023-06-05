@@ -22,7 +22,7 @@
 }
 
 .dialog-modal.locale-modal-v2 a:first-child {
-  margin-right: 24px;
+  margin-inline-end: 24px;
 }
 
 .dialog-modal.locale-modal-v2 a:last-child {
@@ -30,13 +30,13 @@
 }
 
 .dialog-modal.locale-modal-v2 .picker li {
-  list-style-type: none
+  list-style-type: none;
 }
 
 .dialog-modal.locale-modal-v2 .picker li a {
   width: calc(100% - 12px);
   display: block;
-  padding-left: 12px;
+  padding-inline-start: 12px;
   color: #222;
   font-size: 14px;
 }

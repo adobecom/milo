@@ -71,22 +71,22 @@ const getAkamaiCode = () => new Promise((resolve) => {
 async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
-  const { contentRoot } = config.locale;
-  const path = window.location.href.replace(contentRoot, '');
+  const { prefix } = config.locale;
+  let path = window.location.href.replace(`${window.location.origin}`, '');
+  if (path.startsWith(prefix)) path = path.replace(prefix, '');
 
   const availableLocales = [];
   const pagesExist = [];
   locales.forEach((locale, index) => {
-    const prefix = locale.prefix ? `/${locale.prefix}` : '';
-    const localeRoot = `${prefix}${config.contentRoot ?? ''}`;
-    const localePath = `${localeRoot}${path}`;
+    const locPrefix = locale.prefix ? `/${locale.prefix}` : '';
+    const localePath = `${locPrefix}${path}`;
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
         locale.url = localePath;
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${localeRoot}/`;
+        locale.url = `${locPrefix}`;
         availableLocales[index] = locale;
       }
     });
@@ -105,7 +105,7 @@ function getGeoroutingOverride() {
     const d = new Date();
     d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `overrideGeorouting=${hideGeorouting};${expires};path=/;`;
+    document.cookie = `hideGeorouting=${hideGeorouting};${expires};path=/;`;
   } else if (param === 'off') document.cookie = 'hideGeorouting=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
   return hideGeorouting === 'on';
 }
@@ -114,8 +114,9 @@ function decorateForOnLinkClick(link, prefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
-    document.cookie = `international=${modPrefix};path=/`;
-    sessionStorage.setItem('international', modPrefix);
+    const domain = window.location.host === 'adobe.com'
+      || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+    document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
   });
 }
@@ -152,11 +153,11 @@ function removeOnClickOutsideElement(element, event, button) {
   document.addEventListener('click', func);
 }
 
-function openPicker(button, locales, country, event) {
+function openPicker(button, locales, country, event, dir) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
-  const list = createTag('ul', { class: 'picker' });
+  const list = createTag('ul', { class: 'picker', dir });
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
@@ -172,15 +173,17 @@ function openPicker(button, locales, country, event) {
 function buildContent(currentPage, locale, geoData, locales) {
   const fragment = new DocumentFragment();
   const lang = config.locales[currentPage.prefix]?.ietf ?? '';
+  const dir = config.locales[locale.prefix]?.dir ?? 'ltr';
   const geo = geoData.filter((c) => c.prefix === locale.prefix);
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
-  const title = createTag('h3', { lang }, locale.title.replace('{{geo}}', titleText));
-  const text = createTag('p', { class: 'locale-text', lang }, locale.text);
+  const title = createTag('h3', { lang, dir }, locale.title.replace('{{geo}}', titleText));
+  const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
   const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag-${locale.geo}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     width: 15,
     height: 15,
+    alt: locale.button,
   });
   img.addEventListener(
     'error',
@@ -203,7 +206,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     span.appendChild(downArrow);
     mainAction.addEventListener('click', (e) => {
       e.preventDefault();
-      openPicker(mainAction, locales, locale.button, e);
+      openPicker(mainAction, locales, locale.button, e, dir);
     });
   } else {
     mainAction.href = locale.url;
@@ -275,7 +278,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
-  const storedInter = sessionStorage.getItem('international') || getCookie('international');
+  const storedInter = getCookie('international');
   const storedLocale = storedInter === 'us' ? '' : storedInter;
 
   const urlGeoData = json.georouting.data.find((d) => d.prefix === urlLocale);
