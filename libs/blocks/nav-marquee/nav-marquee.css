@@ -8,12 +8,12 @@
  background-color: var(--color-black);
 }
 
-.dark .nav-marquee .marquee{
-  background-color: var(--color-black);
+.nav-marquee.dark .marquee {
   color: var(--color-white);
 }
 
-.nav-marquee.dark .marquee {
+.section.dark .nav-marquee .marquee{
+  background-color: var(--color-black);
   color: var(--color-white);
 }
 
@@ -60,6 +60,10 @@
   border: 1px solid #1473E6;
 }
 
+.nav-marquee .marquee {
+  min-height: unset;
+}
+
 .nav-marquee .marquee p {
   margin: 0 0 var(--spacing-s);
 }
@@ -99,10 +103,6 @@
 .nav-marquee .offer-arrow {
   align-self: center;
   padding-left: 8px;
-}
-
-.nav-marquee .marquee {
-  min-height: unset;
 }
 
 .nav-marquee .marquee .foreground {
