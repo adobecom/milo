@@ -89,13 +89,14 @@ export default function init(el) {
   const size = getBlockSize(el);
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const tone = (el.classList.contains('dark')) ? 'dark' : 'light';
+  el.classList.add(tone);
   const marqueeContent = createTag('div', { class: 'foreground' }, children.shift());
-  const marquee = createTag('div', { class: `marquee ${tone}` }, marqueeContent);
+  const marquee = createTag('div', { class: `marquee` }, marqueeContent);
   marqueeContent.firstElementChild.classList.add('text');
 
   decorateText(marquee, size);
   decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
-  marquee.className = `marquee ${tone}`;
+  marquee.className = `marquee`;
 
   const header = createTag('p', { class: 'offer-title' });
   const footer = createTag('p', { class: 'offer-footer' });

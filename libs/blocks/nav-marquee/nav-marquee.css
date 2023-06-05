@@ -1,25 +1,21 @@
 .nav-marquee {
   flex: 1 1 auto;
-  color: var(--text-color);
   background-color: var(--background-color);
 }
 
-.nav-marquee.dark {
+.dark .nav-marquee, .nav-marquee.dark {
  background-color: var(--color-black);
+ color: var(--color-white);
 }
 
-.nav-marquee.dark .marquee {
-  color: var(--color-white);
-}
-
-.section.dark .nav-marquee .marquee{
-  background-color: var(--color-black);
-  color: var(--color-white);
+.nav-marquee .marquee{
+  color: var(--color-black);
 }
 
 .nav-marquee .content-table {
   border: 1px solid var(--color-gray-200);
   background-color: var(--color-gray-100);
+  color: var(--color-black);
 }
 
 .content-table .offer-container {
@@ -197,7 +193,6 @@
     padding: var(--spacing-m);
     box-sizing: border-box;
     margin-left: 0;
-    padding-right: 0;
     background-color: var(--background-color);
     margin-top: var(--spacing-xl);
   }
