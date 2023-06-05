@@ -49,7 +49,6 @@ function getItem(title, description, target) {
     }
   });
   link.addEventListener('click', (e) => {
-    console.log('addEventListener');
     const targetPosition = target?.getBoundingClientRect()?.top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop;
 
