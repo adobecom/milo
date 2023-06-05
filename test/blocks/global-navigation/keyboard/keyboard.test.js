@@ -17,7 +17,7 @@ let keyboardNavigation;
 let allNavItems;
 
 const loadStyles = (path) => new Promise((resolve) => {
-  loadStyle(`../../../../libs/blocks/global-navigation/${path}`, resolve);
+  loadStyle(`../../../../libs/${path}`, resolve);
 });
 
 // TODO properly instantiate the whole global nav to get all the event listeners
@@ -25,11 +25,15 @@ const loadStyles = (path) => new Promise((resolve) => {
 describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
-      loadStyles('base.css'),
-      loadStyles('global-navigation.css'),
-      loadStyles('features/search/gnav-search.css'),
-      loadStyles('features/profile/dropdown.css'),
-      loadStyles('utilities/menu/menu.css'),
+      loadStyles('styles/styles.css'),
+      loadStyles('styles/variables.css'),
+      loadStyles('styles/typography.css'),
+      loadStyles('blocks/global-footer/global-footer.css'),
+      loadStyles('blocks/global-navigation/base.css'),
+      loadStyles('blocks/global-navigation/global-navigation.css'),
+      loadStyles('blocks/global-navigation/features/search/gnav-search.css'),
+      loadStyles('blocks/global-navigation/features/profile/dropdown.css'),
+      loadStyles('blocks/global-navigation/utilities/menu/menu.css'),
     ]);
   });
 
@@ -439,7 +443,6 @@ describe('keyboard navigation', () => {
 
     describe('ArrowDown', () => {
       it('nothing', async () => {
-        // TODO - it opens search and profile
         for await (const element of otherNavItems) {
           if (!isElementVisible(element)) continue;
           element.focus();
@@ -485,7 +488,7 @@ describe('keyboard navigation', () => {
       keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
-      firstPopupItem = navLinks[0];
+      [firstPopupItem] = navLinks;
       firstPopupItem.focus();
     });
 
@@ -711,7 +714,7 @@ describe('keyboard navigation', () => {
       keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
-      firstPopupItem = navLinks[0];
+      [firstPopupItem] = navLinks;
       firstPopupItem.focus();
     });
 
@@ -954,6 +957,121 @@ describe('keyboard navigation', () => {
         await sendKeys({ press: 'Escape' });
         expect(isClosed(trigger)).to.equal(true);
       });
+    });
+  });
+
+  describe('footer', () => {
+    it('Shifts focus using Tab', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+      expect(footerElements.length).to.equal(48);
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'Tab' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ down: 'Shift' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ up: 'Shift' });
+      }
+    });
+
+    it('Shifts focus using arrow keys', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowDown' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowUp' });
+      }
+    });
+
+    it('Shifts focus out of the footer', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+
+      footerElements[0].focus();
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      expect(document.activeElement.closest(selectors.globalFooter)).to.equal(null);
+
+      footerElements[footerElements.length - 1].focus();
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement.closest(selectors.globalFooter)).to.equal(null);
+    });
+
+    it('Shifts focus through footer sections', async () => {
+      const firstSectionItems = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.column} ${selectors.section}:first-of-type li:first-of-type > a`)];
+      firstSectionItems[0].focus();
+      for await (const element of firstSectionItems) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowRight' });
+      }
+
+      firstSectionItems[firstSectionItems.length - 1].focus();
+      for await (const element of firstSectionItems.reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowLeft' });
+      }
+    });
+
+    // we have a lot of individual tests for the popup
+    // so this is just a sanity check to make sure the footer keyboard nav is working
+    it('Opens headlines on mobile', async () => {
+      // setup mobile and close navigation
+      setViewport({ width: 600, height: 600 });
+      document.body.innerHTML = await readFile({ path: './mocks/global-nav-mobile.html' });
+      keyboardNavigation = new KeyboardNavigation();
+      [...document.querySelectorAll('.is-open')].forEach((el) => {
+        el.classList.remove('is-open');
+      });
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)]
+        .filter((el) => isElementVisible(el));
+
+      document
+        .querySelector(`${selectors.globalFooter} ${selectors.headline}`)
+        .setAttribute('aria-expanded', true);
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'Tab' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ down: 'Shift' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ up: 'Shift' });
+      }
+
+      const firstSectionItems = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.column} ${selectors.section} li:first-of-type > a`)];
+      firstSectionItems[0].focus();
+      for await (const element of firstSectionItems) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowRight' });
+      }
+
+      firstSectionItems[firstSectionItems.length - 1].focus();
+      for await (const element of firstSectionItems.reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowLeft' });
+      }
     });
   });
 });
