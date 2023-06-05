@@ -1,62 +1,67 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
 
-const CopyBtn = ({ getUrl, configFormValidation }) => {
+const CopyBtn = ({ getContent, configFormValidation }) => {
   const { miloLibs, codeRoot } = getConfig();
-  const [status, setStatus] = useState({ type: 'hide', message: '', showConfigUrl: false });
-  const [configUrl, setConfigUrl] = useState('');
+  const [statusType, setStatusType] = useState('hide');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [showCopyContent, setShowCopyContent] = useState(false);
+  const [copyContent, setCopyContent] = useState('');
 
   useEffect(() => {
     const hideMessage = setTimeout(() => {
-      setStatus(prevStatus => ({ ...prevStatus, type: 'hide', message: '' }));
+      setStatusType('hide');
     }, 2000);
 
     return () => {
       clearTimeout(hideMessage);
     };
-  }, [status.type]);
+  }, [statusMessage]);
 
   const copyConfig = async () => {
-    const configUrl = getUrl();
-    setConfigUrl(configUrl);
+    const { content, contentHtml } = getContent();
+    setCopyContent(content);
 
     if (!navigator?.clipboard) {
-      setStatus({ type: 'error', message: 'Clipboard not available.', showConfigUrl: true });
+      setStatusType('error');
+      setStatusMessage('Clipboard not available.');
+      setShowCopyContent(true);
       return;
     }
 
     if (!configFormValidation()) {
-      setStatus({ type: 'error', message: 'Required fields must be filled.', showConfigUrl: false });
+      setStatusType('error');
+      setStatusMessage('Required fields must be filled.');
+      setShowCopyContent(false);
       return;
     }
 
-    const link = document.createElement('a');
-    link.href = configUrl;
-    link.textContent = document.querySelector('.tool-title').textContent;
-
-    const blob = new Blob([link.outerHTML], { type: 'text/html' });
+    const blob = new Blob([contentHtml], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
 
     try {
       await navigator.clipboard.write(data);
-      setStatus({ type: 'success', message: 'Copied to clipboard!', showConfigUrl: true });
+      setStatusType('success');
+      setStatusMessage('Copied to clipboard!');
+      setShowCopyContent(true);
     } catch {
-      setStatus({ type: 'error', message: 'Failed to copy.', showConfigUrl: true });
+      setStatusType('error');
+      setStatusMessage('Failed to copy.');
+      setShowCopyContent(true);
     }
   };
 
   loadStyle(`${miloLibs || codeRoot}/ui/controls/copyBtn.css`);
 
   return html`
-  <div class="copy-button">
-    <textarea class=${`config-url ${status.showConfigUrl ? '' : 'hide'}`}>${configUrl}</textarea>
-    <button
-      class="copy-config"
-      onClick=${copyConfig}>Copy</button>
-    <div class="copy-message ${status.type}">
-      <div class="message ${status.type}-message">${status.message}</div>
+    <div class="copy-button">
+      <textarea class=${`copy-content ${showCopyContent ? '' : 'hide'}`}>${copyContent}</textarea>
+      <button class="copy-config" onClick=${copyConfig}>Copy</button>
+      <div class=${`copy-message ${statusType !== 'hide' ? statusType : ''}`}>
+        <div class=${`message ${statusType}-message`}>${statusMessage}</div>
+      </div>
     </div>
-  </div>`;
+  `;
 };
 
 export default CopyBtn;

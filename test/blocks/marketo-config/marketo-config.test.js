@@ -80,7 +80,7 @@ describe('marketo-config', () => {
     expect(marketo).to.exist;
   });
 
-  it('updates state', async () => {
+  it('updates state and local storage', async () => {
     let lsState = {};
     const el = document.querySelector('.marketo-config');
     await init(el);
@@ -90,10 +90,9 @@ describe('marketo-config', () => {
 
     select.value = 'option2';
     select.dispatchEvent(new window.Event('change'));
-
     await delay(50);
-    lsState = JSON.parse(localStorage.getItem('marketo-test-ConfiguratorState'));
 
+    lsState = JSON.parse(localStorage.getItem('marketo-test-ConfiguratorState'));
     expect(lsState).to.deep.equal({
       prop1: 'option2', prop2: '', prop3: '', prop4: '', prop5: 'option1', prop6: '', prop7: 'option1', prop8: 'option1',
     });
@@ -102,12 +101,44 @@ describe('marketo-config', () => {
 
     input.value = 'input';
     input.dispatchEvent(new window.Event('change'));
-
     await delay(50);
+
     lsState = JSON.parse(localStorage.getItem('marketo-test-ConfiguratorState'));
 
     expect(lsState).to.deep.equal({
       prop1: 'option2', prop2: '', prop3: 'input', prop4: '', prop5: 'option1', prop6: '', prop7: 'option1', prop8: 'option1',
     });
+  });
+
+  it('validate config and copy', async () => {
+    const el = document.querySelector('.marketo-config');
+    await init(el);
+    const accordion = await waitForElement('.accordion');
+    const copyBtn = await waitForElement('.copy-button');
+    const select = accordion.querySelector('select#prop2');
+    const input = accordion.querySelector('input#prop3');
+
+    select.value = 'option2';
+    select.dispatchEvent(new window.Event('change'));
+    await delay(50);
+
+    const copyButton = copyBtn.querySelector('.copy-config');
+    copyButton.click();
+    await delay(50);
+
+    console.log(select);
+
+    const message = copyBtn.querySelector('.message');
+    expect(message.textContent).to.contain('Required fields must be filled');
+
+    input.value = 'input';
+    input.dispatchEvent(new window.Event('change'));
+    await delay(50);
+
+    copyButton.click();
+    await delay(50);
+
+    const copyContent = copyBtn.querySelector('.copy-content');
+    expect(copyContent.textContent).to.contain('http');
   });
 });

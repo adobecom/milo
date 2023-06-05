@@ -15,13 +15,12 @@ async function fetchData(url) {
   return json;
 }
 
-export const getDefaultStates = (panelsData) =>
-  Object.values(panelsData).reduce((defaultState, panelConfig) => {
-    panelConfig.forEach(({ prop, default: defaultValue = '' }) => {
-      if (prop) defaultState[prop] = defaultValue;
-    });
-    return defaultState;
-  }, {});
+export const getDefaultStates = (panelsData) => Object.values(panelsData).reduce((defaultState, panelConfig) => {
+  panelConfig.forEach(({ prop, default: defaultValue = '' }) => {
+    if (prop) defaultState[prop] = defaultValue;
+  });
+  return defaultState;
+}, {});
 
 export const cleanPanelData = (data) => {
   data.forEach((field) => {
@@ -114,9 +113,7 @@ const getPanels = (panelsData) => Object.entries(panelsData).map(([panelName, pa
 }));
 
 const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
-  const context = useContext(ConfiguratorContext);
-  const { state } = context;
-
+  const { state } = useContext(ConfiguratorContext);
   const panels = getPanels(panelsData);
 
   const getUrl = () => {
@@ -124,7 +121,6 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     return `${url}#${utf8ToB64(JSON.stringify(state))}`;
   };
 
-  /* c8 ignore next 14 */
   const configFormValidation = () => {
     const invalidInputs = document.querySelectorAll('.input-invalid');
     const hasInputsValid = invalidInputs.length === 0;
@@ -132,6 +128,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     invalidInputs.forEach((input) => {
       const requiredPanel = input.closest('.accordion-item');
       const requiredPanelExpandButton = requiredPanel.querySelector('button[aria-label=Expand]');
+      /* c8 ignore next 3 */
       if (requiredPanelExpandButton) {
         requiredPanelExpandButton.click();
       }
@@ -139,6 +136,15 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
     });
 
     return hasInputsValid;
+  };
+
+  const getContent = () => {
+    const url = getUrl();
+
+    return {
+      content: url,
+      contentHtml: `<a href=${url}>${title} Configurator</a>`,
+    };
   };
 
   useEffect(() => {
@@ -162,7 +168,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
       <div class="tool-title">
         <h1>${title}</h1>
       </div>
-      <${CopyBtn} getUrl=${getUrl} configFormValidation=${configFormValidation} />
+      <${CopyBtn} getContent=${getContent} configFormValidation=${configFormValidation} />
     </div>
     <div class="tool-content">
       <div class="config-panel">
