@@ -575,7 +575,7 @@
 }
 
 .quiz-button-container {
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 50px 50px 24px;
@@ -625,28 +625,76 @@ span.quiz-Button-label {
 /* Added to prevent click event triggering below the cards 
 TODO: Need to check if we can skip this somehow.
 */
-.consonant-CardsGrid--with4xGutter {
-  padding-bottom: 0px !important;
+.quiz-container .consonant-CardsGrid--with4xGutter {
+  padding-bottom: 0px;
 }
 
-.consonant-OneHalfCard-title {
+.card .consonant-OneHalfCard-title {
   display: none;
   visibility: hidden;
+}
+
+@media screen and (min-width: 900px) {
+  .card .consonant-OneHalfCard-title {
+    display: block;
+    visibility: visible;
+  }
+}
+
+div[data-valign="middle"] {
+  align-self: center;
+}
+
+.quiz-container .consonant-OneHalfCard-image {
+  line-height: 0;
+}
+
+
+@media screen and (max-width: 899px) {
+  .quiz-container .consonant-OneHalfCard-text {
+    margin: 0;
+  }
 }
 
 .quiz-container .consonant-OneHalfCard-text {
   font-size: 16px;
   color: #000;
+  /* margin: 0; */
 }
 
-.card.selected .consonant-OneHalfCard-text {
+.quiz-container .card.selected .consonant-OneHalfCard-text {
+  color: #3273de
+
+}
+
+
+.quiz-container .card.selected .consonant-OneHalfCard-text {
+  color: #3273de;
+  font-weight: bold;
+
+}
+
+@media screen and (min-width: 900px) {
+  .quiz-container .card.selected .consonant-OneHalfCard-text {
+    font-weight: normal;
+  }
+}
+.quiz-container .card.selected {
+  background-color: #fff;
+}
+
+.quiz-container .card.selected .consonant-OneHalfCard-title {
   font-weight: bold;
   color: #3273de;
 }
 
+
+.quiz-container .quiz .consonant-OneHalfCard-inner {
+  background-color: green;
+}
+
 .quiz-container .card.selected {
-  /* outline: 1px solid #3273de; */
-  
+  background-color: #fff;
 }
 
 .quiz-container .consonant-OneHalfCard-inner {
@@ -654,26 +702,25 @@ TODO: Need to check if we can skip this somehow.
 }
 
 @media screen and (min-width: 900px) {
-  .consonant-OneHalfCard-text,
-  .consonant-OneHalfCard-title {
-    text-align: center !important;
-    font-size: 14px !important;
-    font-weight: 800;
+  .quiz-container .consonant-OneHalfCard-text,
+  .quiz-container .consonant-OneHalfCard-title {
+    text-align: center;
+    font-size: 14px;
     line-height: 1.375rem;
     display: block;
     visibility: visible;    
   }
 }
 
-/* .consonant-OneHalfCard-text {
-  font-size: .675rem ;
-  color: black !important;
-} */
-
 .quiz-container .quiz-options-container {
-  gap: 0px !important;
-  display: flex; 
+  gap: 0px;
+  display: flex ; 
   flex-direction: column;
+}
+
+.quiz-container .consonant-OneHalfCard {
+  background-color: #efefef;
+  border: 1px solid #fff;
 }
 
 .milo-card-wrapper {
@@ -688,17 +735,16 @@ TODO: Need to check if we can skip this somehow.
 }
 
 @media screen and (max-width: 900px) {
-  .consonant-OneHalfCard {
-    padding-bottom: 0 !important;
+  .quiz-container .consonant-OneHalfCard {
+    padding-bottom: 0;
   }
 }
-
 
 .quiz-container .consonant-CardsGrid--5up .card > div { 
   width: 100%;
 }
 .quiz-container .consonant-CardsGrid--5up .card div div {
-  text-align: right !important;
+  text-align: right;
 }
 @media screen and (min-width: 900px) {
   .quiz-container .quiz-options-container {
@@ -729,11 +775,6 @@ TODO: Need to check if we can skip this somehow.
   opacity: 0.5;
 }
 
-
-.quiz-container .consonant-OneHalfCard-inner {
-  flex-direction: row;
-}  
-
 @media screen and (min-width: 900px) {
   .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option {
     background-color: hsla(0, 0%, 98%, .8);
@@ -751,21 +792,6 @@ TODO: Need to check if we can skip this somehow.
   .quiz-container .consonant-OneHalfCard-inner {
     flex-direction: column;
   }  
-
-}
-
-
-/* .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected .consonant-OneHalfCard-title {
-  color: #3273de !important;
-  font-weight: 900;
-}
-
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.selected .consonant-OneHalfCard-text {
-  color: #3273de !important;
-} */
-
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option:hover {
-  background-color: #fff
 }
 
 .quiz-container .consonant-OneHalfCard-inner {
@@ -779,30 +805,58 @@ TODO: Need to check if we can skip this somehow.
 }
 
 @media screen and (min-width: 900px) {
-  .consonant-OneHalfCard-image {
-    display: flex !important;
-    padding: 0 !important;
-    background: transparent !important;
-    width: auto !important;
-    height: 7.875rem !important;
+
+  .quiz-container .consonant-OneHalfCard-image {
+    margin-right: 0;
+  }
+   
+  .quiz-container .consonant-OneHalfCard-image {
+    display: flex;
+    padding: 0;
+    background: transparent;
+    width: auto;
+    height: 7.875rem;
     align-items: center;
     justify-content: center;
   }
 }
 
-.consonant-OneHalfCard-cover {
-  display: flex !important;
-  padding: 0 !important;
-  background: transparent !important;
-  width: auto !important;
-  height: 7.875rem !important;
-  align-items: center;
-  justify-content: center;
+.quiz-container .consonant-OneHalfCard-inner {
+  flex-direction: row;
+}  
+
+.quiz-container .consonant-OneHalfCard-cover {
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
 }
 
-.card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option .icon {
-  width: 4rem !important;
-  height: 4rem !important;
+@media screen and (min-width: 900px) {
+
+  .quiz-container .consonant-OneHalfCard-inner {
+    flex-direction: column;
+  }    
+
+  .quiz-container .consonant-OneHalfCard-cover {
+    display: flex;
+    padding: 0;
+    background: transparent;
+    width: auto;
+    height: 7.875rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quiz-container .consonant-OneHalfCard-cover {
+    margin-right: 0;
+  }    
+}
+
+.quiz-container .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option .icon {
+  width: 4rem;
+  height: 4rem;
 }
 
 .show {
@@ -813,8 +867,8 @@ TODO: Need to check if we can skip this somehow.
   display: none;
 }
 
-.footer-info {
-  margin-top: 12px !important;
+.quiz-page .footer-info {
+  margin-top: 12px;
 }
 
 /* Step Indicator CSS */
