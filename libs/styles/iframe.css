@@ -20,3 +20,8 @@
 .dialog-modal .milo-iframe {
   min-width: 80vw;
 }
+
+.iframe-calendar {
+    height: 1500px;
+    padding-bottom: 0;
+}
