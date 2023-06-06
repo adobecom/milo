@@ -55,7 +55,7 @@ export default function Accordion({ lskey = null, items = [], alwaysOpen = false
         onClick=${() => toggle(index)}
         expand=${isToggled[index]}
       />
-    `
+    `,
   );
 
   return html` <dl className="accordion">${accordionItems}</dl> `;

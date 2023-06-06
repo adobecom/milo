@@ -15,11 +15,11 @@ async function fetchData(url) {
   return json;
 }
 
-export const getDefaultStates = (panelsData) => Object.values(panelsData).reduce((defaultState, panelConfig) => {
-  panelConfig.forEach(({ prop, default: defaultValue = '' }) => {
-    if (prop) defaultState[prop] = defaultValue;
+export const getDefaultStates = (panels) => Object.values(panels).reduce((defaults, panel) => {
+  panel.forEach(({ prop, default: defaultValue = '' }) => {
+    if (prop) defaults[prop] = defaultValue;
   });
-  return defaultState;
+  return defaults;
 }, {});
 
 export const cleanPanelData = (data) => {
@@ -69,7 +69,7 @@ const Fields = ({ fieldsData }) => {
 
     if (!field.options) {
       return html`
-        <${Input} label=${field.label} name=${prop} tooltip=${field.description} type="text" value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
+        <${Input} label=${field.label} name=${prop} tooltip=${field.description} type="text" value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
       `;
     }
 
@@ -85,7 +85,7 @@ const Fields = ({ fieldsData }) => {
     }
 
     return html`
-      <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(value) => onChange(prop, value)} isRequired=${required} />
+      <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
     `;
   });
 };
@@ -166,7 +166,7 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   return html`
     <div class="tool-header">
       <div class="tool-title">
-        <h1>${title}</h1>
+        <h1>${title} Configurator</h1>
       </div>
       <${CopyBtn} getContent=${getContent} configFormValidation=${configFormValidation} />
     </div>
