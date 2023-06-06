@@ -37,7 +37,7 @@ function getItem(title, description, target) {
   if (!title) return null;
   const item = createTag('li', { class: 'offer-item' });
   item.setAttribute('tabNumber', incrementTab(tabNumber));
-  item.setAttribute('role','tab');
+  item.setAttribute('role', 'tab');
   const linkText = createTag('div', { class: 'offer-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
   const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
