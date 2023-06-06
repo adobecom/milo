@@ -17,7 +17,6 @@ import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-
 const decorateVideo = (container) => {
   const link = container.querySelector('a[href$=".mp4"]');
 
