@@ -15,8 +15,14 @@ describe('Delayed', () => {
   });
 
   it('should load jarvis feature', async () => {
+    setConfig({ jarvis: { id: 'test', version: '1.0' } });
+    const tag = document.createElement('meta');
+    tag.setAttribute('name', 'jarvis-chat');
+    tag.setAttribute('content', 'on');
+    document.head.appendChild(tag);
     expect(loadJarvisChat).to.exist;
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    document.head.removeChild(tag);
   });
 
   it('should load interlinks logic', async () => {
