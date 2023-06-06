@@ -210,7 +210,7 @@
 }
 
 /* hover */
-@media (min-width: 769px) {
+@media (min-width: 900px) {
   .table .col.hover {
     border-left-color: #357BEB;
     border-right-color: #357BEB;
@@ -280,7 +280,7 @@ header.global-navigation {
 }
 
 /* Start tablet styles */
-@media (max-width: 859px) {
+@media (max-width: 899px) {
   .table,
   .table.merch {
     margin: 0 30px;
