@@ -161,7 +161,26 @@ function handleSection(table) {
     } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
       row.classList.add('section-row');
       if (isMerchTable && !row.classList.contains('devider')) {
-        rowCols.forEach((merchCol) => merchCol.classList.add('col-merch'));
+        rowCols.forEach((merchCol) => {
+          merchCol.classList.add('col-merch');
+          const children = Array.from(merchCol.children);
+          const merchContent = createTag('div', { class: 'col-merch-content' });
+
+          if (children.length) {
+            children.forEach((child) => {
+              if (!child.querySelector('.icon')) {
+                merchContent.append(child);
+              }
+            });
+            merchCol.insertBefore(merchContent, merchCol.firstChild);
+          } else if (merchCol.innerText) {
+            const pTag = createTag('p', { class: 'merch-col-text' });
+            pTag.append(merchCol.innerText);
+            merchCol.innerText = '';
+            merchContent.append(pTag);
+            merchCol.append(merchContent);
+          }
+        });
       } else {
         const sectionRowTitle = row.querySelector('.col-1');
         sectionRowTitle.classList.add('section-row-title');
