@@ -74,7 +74,7 @@ function decorateMultipleIconArea(iconArea) {
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
-    
+
     if (!a.querySelector('img')) {
       a.innerHTML = '';
       a.className = '';
@@ -144,8 +144,16 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
+
+    let mediaCreditInner;
+
     if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
+      mediaCreditInner = createTag('p', { class: 'body-s' }, media?.lastChild.textContent.trim());
+    } else if (media.lastElementChild && media.lastElementChild.tagName !== 'PICTURE') {
+      mediaCreditInner = media.lastElementChild;
+    }
+
+    if (mediaCreditInner) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
