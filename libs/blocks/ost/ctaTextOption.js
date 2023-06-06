@@ -1,4 +1,4 @@
-const ctaTextObject = {
+const ctaTextOption = {
   ctaTexts: [
     { id: 'buy-now', name: 'Buy now' },
     { id: 'free-trial', name: 'Free trial' },
@@ -23,10 +23,10 @@ const ctaTextObject = {
 
   getSelectedText(searchParameters) {
     const ctaLabel = searchParameters.get('text');
-    return !!ctaLabel && ctaLabel.find((label) => label.id === ctaLabel)
+    return !!ctaLabel && this.ctaTexts.find((label) => label.id === ctaLabel)
       ? ctaLabel
       : this.getDefaultText();
   },
 };
 
-export default ctaTextObject;
+export default ctaTextOption;
