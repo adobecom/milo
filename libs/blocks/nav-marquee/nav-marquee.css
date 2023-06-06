@@ -161,7 +161,7 @@
     margin-top: 16px;
   }
 
-  .nav-marquee .offer-footer{
+  .nav-marquee .offer-footer {
     font-size: var(--type-detail-s-lh);
   }
 
@@ -177,7 +177,7 @@
       flex-direction: row;
   }
 
-  .nav-marquee .foreground{
+  .nav-marquee .foreground {
     width: var(--grid-container-width);
     display: flex;
     justify-content: center;
@@ -219,7 +219,7 @@
     flex-flow: row wrap;
   }
 
-  .nav-marquee .content-table .offer-list{
+  .nav-marquee .content-table .offer-list {
     gap: var(--spacing-s);
   }
   
