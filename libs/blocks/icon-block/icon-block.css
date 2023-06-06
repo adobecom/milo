@@ -139,6 +139,10 @@
   margin-bottom: var(--spacing-s);
 }
 
+.icon-block.logo .foreground .text-content p[class*="body-m"]:first-of-type {
+  margin: 0;
+}
+
 .icon-block .foreground .text-content p.body-m.action-area {
   margin-bottom: 0;
 }

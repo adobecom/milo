@@ -92,7 +92,7 @@
   justify-items: center;
 }
 
-main>.section[class*='-up'] > .content {
+main > .section[class*='-up'] > .content {
   max-width: initial;
   margin: 0;
 }
@@ -148,6 +148,14 @@ main>.section[class*='-up'] > .content {
 
 .section.three-up-mobile {
   grid-template-columns: repeat(3, 1fr);
+}
+
+.section.four-up-mobile {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.section.five-up-mobile {
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .section[class*='-up'].grid-align-center {

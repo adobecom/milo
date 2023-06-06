@@ -36,12 +36,12 @@ const iconBlocks = {
   },
 };
 
-function decorateForeground(block) {
-  if (!block) return;
-  block.classList.add('foreground');
-  const image = block.querySelector(':scope img');
+function decorateForeground(el) {
+  if (!el) return;
+  el.classList.add('foreground');
+  const image = el.querySelector(':scope img');
   if (image) image.parentElement.classList.add('icon-area');
-  const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  const text = el.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   if (text) {
     text.classList.add('text-content');
     const lastElem = text.lastElementChild;
@@ -50,9 +50,9 @@ function decorateForeground(block) {
       && lastElem.lastElementChild.innerText === lastElem.innerText) {
       text.lastElementChild.classList.add('action-area');
     }
-    const size = getBlockSize(block, 2);
-    const variant = [...variants].filter((v) => block.classList.contains(v))?.[0] ?? 'fullwidth';
-    decorateBlockText(block, iconBlocks[size][variant]);
+    const size = getBlockSize(el, 2);
+    const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
+    decorateBlockText(el, iconBlocks[size][variant]);
   }
 }
 
