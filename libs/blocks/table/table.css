@@ -384,11 +384,6 @@ header.global-navigation {
   padding: 24px;
 }
 
-.table.merch .section-head .col {
-  padding: 24px;
-}
-
-
 .table.merch .col-merch .col-merch-content {
   display: flex;
   flex-direction: row;
