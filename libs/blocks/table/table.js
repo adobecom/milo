@@ -50,19 +50,19 @@ function handleHighlight(table) {
     headingCols = secondRowCols;
 
     firstRowCols.forEach((col, i) => {
-      const hasText = headingCols[i].innerText && col.innerText;
+      const hasText = headingCols[i]?.innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
-      } else if (!headingCols[i].innerText) {
+      } else if (!headingCols[i]?.innerText) {
         col.classList.add('hidden');
-        headingCols[i].classList.add('hidden');
+        headingCols[i]?.classList.add('hidden');
       } else {
         col.classList.add('hidden');
-        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
-          headingCols[i].classList.add('top-left-rounded');
+        if (headingCols[i - 1] && !headingCols[i - 1]?.innerText) {
+          headingCols[i]?.classList.add('top-left-rounded');
         }
-        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-          headingCols[i].classList.add('top-right-rounded');
+        if (headingCols[i + 1] && !headingCols[i + 1]?.innerText) {
+          headingCols[i]?.classList.add('top-right-rounded');
         }
       }
     });
@@ -182,10 +182,10 @@ function formatMerchTable(table) {
     const cols = table.querySelectorAll(`.col-${i}`);
     for (let j = rowsNum - 1; j >= 0; j--) {
       const currentCol = cols[j];
-      if (!currentCol.innerText && currentCol.children.length === 0) {
+      if (!currentCol?.innerText && currentCol?.children.length === 0) {
         currentCol.classList.add('no-borders');
       } else {
-        currentCol.classList.add('border-bottom');
+        currentCol?.classList.add('border-bottom');
         break;
       }
     }
