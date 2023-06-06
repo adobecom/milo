@@ -48,7 +48,7 @@
       "id": "sendtocaas",
       "environments": ["dev","preview", "live", "prod"],
       "event": "send-to-caas",
-      "excludePaths": ["/tools/caas**", "*.json"]
+      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
     {
       "containerId": "tools",
@@ -67,6 +67,24 @@
     },
     {
       "containerId": "tools",
+      "id": "offerpreview",
+      "title": "Offer preview",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
+      "url": "/tools/commerce",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "ost",
+      "title": "Use offer",
+      "environments": [ "edit" ],
+      "url": "/tools/ost",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "locales",
       "title": "Locales",
       "environments": [ "edit", "dev", "preview", "live" ],
@@ -75,6 +93,14 @@
       "passReferrer": true,
       "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
       "url": "/tools/locale-nav",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "ost",
+      "title": "Use offer",
+      "environments": [ "edit", "dev", "preview" ],
+      "url": "https://milo.adobe.com/tools/ost",
       "includePaths": [ "**.docx**" ]
     }
   ]

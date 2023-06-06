@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -42,11 +42,6 @@ export default function init(el) {
     }
   });
   const config = blockTypeSizes[blockType][size];
-  const overrides = ['-heading', '-body', '-detail'];
-  overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
-  });
   decorateBlockText(el, config);
   rows.forEach((row) => { row.classList.add('foreground'); });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'xxl-spacing');
@@ -57,4 +52,5 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   el.classList.add(...helperClasses);
+  decorateTextOverrides(el);
 }
