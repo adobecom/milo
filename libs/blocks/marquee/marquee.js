@@ -13,7 +13,6 @@
 /*
  * Marquee - v6.0
  */
-import { handleFocalpoint } from '../section-metadata/section-metadata.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
@@ -60,6 +59,22 @@ const decorateBlockBg = (block, node) => {
     node.remove();
   }
 };
+
+function handleFocalpoint(pic, child) {
+  if (!(child)) return;
+  let text = '';
+  if (child.childElementCount == 2) {
+    text = child.querySelectorAll('p')[1]?.textContent;
+  } else if (child.textContent) {
+    text = child.textContent;
+  }
+  const image = pic.querySelector('img');
+  const directions = text.slice(text.indexOf(':') + 1).split(',');
+  const [x,y = ''] = directions
+  if (image) {
+    image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
+  }
+}
 
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
