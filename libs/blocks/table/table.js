@@ -3,7 +3,7 @@ import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 function handleHeading(headingCols) {
-  headingCols.forEach((col, i) => {
+  headingCols.forEach((col) => {
     if (col.innerHTML) {
       const elements = col.children;
       if (!elements.length) {
@@ -53,18 +53,16 @@ function handleHighlight(table) {
       const hasText = headingCols[i].innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
+      } else if (!headingCols[i].innerText) {
+        col.classList.add('hidden');
+        headingCols[i].classList.add('hidden');
       } else {
-        if (!headingCols[i].innerText) {
-          col.classList.add('hidden');
-          headingCols[i].classList.add('hidden');
-        } else {
-          col.classList.add('hidden');
-          if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
-            headingCols[i].classList.add('top-left-rounded');
-          }
-          if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-            headingCols[i].classList.add('top-right-rounded');
-          }
+        col.classList.add('hidden');
+        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+          headingCols[i].classList.add('top-left-rounded');
+        }
+        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
+          headingCols[i].classList.add('top-right-rounded');
         }
       }
     });
@@ -163,7 +161,26 @@ function handleSection(table) {
     } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
       row.classList.add('section-row');
       if (isMerchTable && !row.classList.contains('devider')) {
-        rowCols.forEach((merchCol) => merchCol.classList.add('col-merch'));
+        rowCols.forEach((merchCol) => {
+          merchCol.classList.add('col-merch');
+          const children = Array.from(merchCol.children);
+          const merchContent = createTag('div', { class: 'col-merch-content' });
+
+          if (children.length) {
+            children.forEach((child) => {
+              if (!child.querySelector('.icon')) {
+                merchContent.append(child);
+              }
+            });
+            merchCol.insertBefore(merchContent, merchCol.firstChild);
+          } else if (merchCol.innerText) {
+            const pTag = createTag('p', { class: 'merch-col-text' });
+            pTag.append(merchCol.innerText);
+            merchCol.innerText = '';
+            merchContent.append(pTag);
+            merchCol.append(merchContent);
+          }
+        });
       } else {
         const sectionRowTitle = row.querySelector('.col-1');
         sectionRowTitle.classList.add('section-row-title');
@@ -207,7 +224,7 @@ function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, 
 
   const headingRow = table.querySelector('.row-heading');
   const colClass = `col-${colNum}`;
-  const isLastRowCollapsed = lastExpandIcon.getAttribute('aria-expanded') === 'false';
+  const isLastRowCollapsed = lastExpandIcon?.getAttribute('aria-expanded') === 'false';
 
   cols.forEach((e) => {
     if (e.classList.contains('col-highlight') && e.innerText) {
@@ -267,10 +284,6 @@ function handleScrollEffect(table, gnavHeight) {
 }
 
 function applyStylesBasedOnScreenSize(table, originTable) {
-  if (!(table instanceof Element)) {
-    return;
-  }
-
   const desktopSize = 900;
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
