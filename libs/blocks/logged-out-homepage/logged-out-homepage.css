@@ -3,11 +3,15 @@
 }
 
 .logged-out-homepage p,
-.logged-out-homepage [class^="body-"] { margin: var(--spacing-xs) 0; }
+.logged-out-homepage [class^='body-'] {
+  margin: var(--spacing-xs) 0;
+}
 
-.logged-out-homepage [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+.logged-out-homepage [class^='heading'] {
+  margin: 0 0 var(--spacing-xs) 0;
+}
 
-.logged-out-homepage.heading-xs [class^="heading"] {
+.logged-out-homepage.heading-xs [class^='heading'] {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
   margin-bottom: 0;
@@ -25,15 +29,25 @@
   margin: var(--spacing-s) 0;
 } */
 
-.logged-out-homepage [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+.logged-out-homepage [class^='detail'] {
+  margin: 0 0 var(--spacing-xxs) 0;
+}
 
-.logged-out-homepage p.action-area { margin-top: var(--spacing-s); }
+.logged-out-homepage p.action-area {
+  margin-top: var(--spacing-s);
+}
 
-.logged-out-homepage div > *:last-child { margin-bottom: 0; }
+.logged-out-homepage div > *:last-child {
+  margin-bottom: 0;
+}
 
-.grid .logged-out-homepage div > *:last-child { margin-bottom: var(--spacing-s); }
+.grid .logged-out-homepage div > *:last-child {
+  margin-bottom: var(--spacing-s);
+}
 
-.logged-out-homepage .foreground > div *:first-child { margin-top: 0; }
+.logged-out-homepage .foreground > div *:first-child {
+  margin-top: 0;
+}
 
 .logged-out-homepage .background {
   bottom: 0;
@@ -55,13 +69,12 @@
   height: 100%;
 }
 
-
 .logged-out-homepage .foreground {
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
 
-[class*=-up] .logged-out-homepage .foreground {
+[class*='-up'] .logged-out-homepage .foreground {
   max-width: none;
   margin: 0;
 }
@@ -75,7 +88,7 @@
 }
 
 .logged-out-homepage.dark {
-  color: #FFF;
+  color: #fff;
 }
 
 .logged-out-homepage a,
@@ -95,31 +108,40 @@
 }
 
 .logged-out-homepage.link-pod h4 {
-    font-size: var(--type-body-s-size);
-    margin-bottom: 0;
+  font-size: var(--type-body-s-size);
+  margin-bottom: 0;
 }
 
 .logged-out-homepage,
-.logged-out-homepage[class*="highlight"] > div {
+.logged-out-homepage[class*='highlight'] > div {
   padding: var(--spacing-s);
 }
 
-.logged-out-homepage[class*="highlight"] {
+.logged-out-homepage[class*='highlight'] {
   padding: 0 !important;
 }
 
-.logged-out-homepage[class*="highlight"] div.highlight-empty {
+.logged-out-homepage[class*='highlight'] div.highlight-empty {
   padding: var(--spacing-xs);
 }
 
 .logged-out-homepage.link-pod .highlight-row {
-  color: #FFF;
-  background: linear-gradient(125deg, rgba(237, 5, 41, 1) 0%, rgba(155, 0, 193, 1) 50%, rgba(91, 0, 198, 1) 100%) ;
+  color: #fff;
+  background: linear-gradient(
+    125deg,
+    rgba(237, 5, 41, 1) 0%,
+    rgba(155, 0, 193, 1) 50%,
+    rgba(91, 0, 198, 1) 100%
+  );
 }
 
 .logged-out-homepage.news-pod .highlight-row {
-  color: #FFF;
-  background: linear-gradient(90deg, rgba(33,99,212,1) 0%, rgba(93,227,116,1) 100%);
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    rgba(33, 99, 212, 1) 0%,
+    rgba(93, 227, 116, 1) 100%
+  );
 }
 
 .logged-out-homepage .positioned-background {
@@ -160,14 +182,18 @@
   align-items: center;
 }
 
-.logged-out-homepage.center .action-area { justify-content: center; }
+.logged-out-homepage.center .action-area {
+  justify-content: center;
+}
 
 .logged-out-homepage.right {
   text-align: right;
   align-items: end;
 }
 
-.logged-out-homepage.right .action-area { justify-content: end; }
+.logged-out-homepage.right .action-area {
+  justify-content: end;
+}
 
 /* Vertical */
 .vertical.logged-out-homepage .foreground {
@@ -191,14 +217,14 @@
   background: var(--color-gray-400);
 }
 
-.inset.logged-out-homepage [class^="heading"]:nth-child(n+2) {
+.inset.logged-out-homepage [class^='heading']:nth-child(n + 2) {
   margin-top: var(--spacing-xxl);
 }
 
 .inset.logged-out-homepage .foreground ul,
 .inset.logged-out-homepage .foreground ol {
   list-style: outside;
-  padding-left: var(--spacing-xs);;
+  padding-left: var(--spacing-xs);
 }
 
 /* Tablet */
@@ -213,5 +239,81 @@
 
   .inset.logged-out-homepage .foreground > div {
     padding-left: var(--spacing-l);
+  }
+}
+
+.logged-out-homepage.quick-tools-bar.auto-buttons {
+  padding: calc(var(--spacing-s) - 8px);
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons h3 {
+  margin: 8px;
+  line-height: 24px;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons p {
+  display: flex;
+  margin: 8px 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons a.con-button {
+  display: flex;
+  align-items: center;
+  margin: 8px;
+  width: auto;
+}
+
+.logged-out-homepage.quick-tools-bar.auto-buttons a.con-button.outline {
+  background-color: transparent;
+  border-color: #505050;
+  color: #505050;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons a.con-button.outline:hover {
+  background-color: #505050;
+  border-color: #505050;
+  color: #fff;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons
+  a.con-button.outline:hover
+  svg
+  path {
+  fill: #fff;
+}
+.logged-out-homepage.quick-tools-bar.auto-buttons a.con-button svg {
+  /*display: flex;*/
+  padding-right: 7px;
+}
+@media screen and (max-width: 599px) {
+  .logged-out-homepage.quick-tools-bar.auto-buttons.mobile-full-width-buttons
+    div,
+  .logged-out-homepage.quick-tools-bar.auto-buttons.mobile-full-width-buttons
+    p {
+    width: 100%;
+  }
+  .logged-out-homepage.quick-tools-bar.auto-buttons a.con-button {
+    justify-content: center;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .logged-out-homepage.quick-tools-bar.auto-buttons div,
+  .logged-out-homepage.quick-tools-bar.auto-buttons p {
+    flex-direction: row;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .logged-out-homepage.quick-tools-bar.auto-buttons p {
+    margin: 0;
+  }
+  .logged-out-homepage.quick-tools-bar.auto-buttons a.con-button {
+    margin: 8px;
   }
 }

@@ -1,4 +1,8 @@
-import { decorateButtons, decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import {
+  decorateButtons,
+  decorateBlockBg,
+  decorateBlockText,
+} from '../../utils/decorate.js';
 
 // size: [heading, body, ...detail]
 // blockTypeSizes array order: heading, body, detail, button, link
@@ -32,7 +36,11 @@ function parseBlockMetaData(el) {
     if (metaDataFound) {
       const children = row.querySelectorAll(':scope > div');
       if (children.length === 2) {
-        const key = children[0].innerText.toLowerCase().trim().split(' ').join('-');
+        const key = children[0].innerText
+          .toLowerCase()
+          .trim()
+          .split(' ')
+          .join('-');
         const image = children[1].querySelector('img');
         const link = children[1].querySelector('a');
         if (image) {
@@ -58,14 +66,72 @@ function parseBlockMetaData(el) {
 }
 
 function getBlockSize(el) {
-  const sizes = ['small', 'medium', 'large', 'xlarge', 'link-pod', 'news-pod', 'quick-tools-bar', 'default'];
+  const sizes = [
+    'small',
+    'medium',
+    'large',
+    'xlarge',
+    'link-pod',
+    'news-pod',
+    'quick-tools-bar',
+    'default',
+  ];
   return sizes.find((size) => el.classList.contains(size)) || sizes[7];
+}
+
+function convertToSVG(el, svgImage) {
+  const svgFilePath = svgImage;
+
+  // Select the current image.
+  const image = el.querySelector('picture')
+    ? el.querySelector('picture')
+    : el.querySelector('img');
+
+  // Create a new dom parser to turn the SVG string into an element.
+  const parser = new DOMParser();
+
+  // Fetch the file from the server.
+  fetch(svgFilePath)
+    .then((response) => response.text())
+    .then((text) => {
+      // Turn the raw text into a document with the svg element in it.
+      const parsed = parser.parseFromString(text, 'text/html');
+
+      // Select the <svg> element from that document.
+      const svg = parsed.querySelector('svg');
+
+      // If both the image and svg are found, replace the image with the svg.
+      if (image !== null && svg !== null) {
+        image.replaceWith(svg);
+      }
+    });
 }
 
 function decorateLinks(el, size) {
   const links = el.querySelectorAll('a:not(.con-button)');
   if (links.length === 0) return;
   links.forEach((link) => {
+    if (
+      link.closest('.section') &&
+      link.closest('.section').querySelector('.quick-tools-bar')
+    ) {
+      link.setAttribute('class', 'con-button outline button-s');
+      if (
+        link.querySelector('img') &&
+        link.querySelector('img').getAttribute('alt')
+      ) {
+        link.insertAdjacentHTML(
+          'beforeEnd',
+          `<span class="spectrum-Button-label">${link
+            .querySelector('img')
+            .getAttribute('alt')}</span>`
+        );
+        if (link.querySelector('img').getAttribute('src').includes('.svg')) {
+          convertToSVG(link, link.querySelector('img').getAttribute('src'));
+        }
+      }
+      // link.outerHTML = `<strong>${link.outerHTML}</strong>`;
+    }
     const parent = link.closest('p, div');
     parent.setAttribute('class', `body-${size}`);
   });
@@ -80,7 +146,11 @@ function checkForBackgroundRows(el, rows) {
 
 function camelize(str) {
   const str2 = str.split('-').join(' ');
-  return str2.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => (index === 0 ? word.toLowerCase() : word.toUpperCase())).replace(/\s+/g, '');
+  return str2
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+      index === 0 ? word.toLowerCase() : word.toUpperCase()
+    )
+    .replace(/\s+/g, '');
 }
 
 function positionBackgrounds(row, index, metaData) {
@@ -92,7 +162,10 @@ function positionBackgrounds(row, index, metaData) {
   };
   Object.entries(selectors).forEach(([selectorKey, selector]) => {
     Object.entries(metaData).forEach(([key, value]) => {
-      if (key.includes(`${prefixes[index]}-`) && (key.includes(`${selectorKey}-`) || selectorKey === 'mobile')) {
+      if (
+        key.includes(`${prefixes[index]}-`) &&
+        (key.includes(`${selectorKey}-`) || selectorKey === 'mobile')
+      ) {
         const bgs = row.querySelectorAll(selector);
         bgs.forEach((bg) => {
           if (!bg.classList.contains('positioned-background')) {
@@ -102,7 +175,8 @@ function positionBackgrounds(row, index, metaData) {
               bg.style.backgroundImage = `url('${img.getAttribute('src')}')`;
             }
           }
-          bg.style[camelize(key.replace(prefixes[index], 'background'))] = value.toLowerCase();
+          bg.style[camelize(key.replace(prefixes[index], 'background'))] =
+            value.toLowerCase();
         });
       }
     });
@@ -153,13 +227,23 @@ export default function init(el) {
   const config = blockTypeSizes[blockSize];
   const overrides = ['-heading', '-body', '-detail'];
   overrides.forEach((override, index) => {
-    const hasClass = [...el.classList].filter((listItem) => listItem.includes(override));
-    if (hasClass.length) config[index] = hasClass[0].split('-').shift().toLowerCase();
+    const hasClass = [...el.classList].filter((listItem) =>
+      listItem.includes(override)
+    );
+    if (hasClass.length) {
+      config[index] = hasClass[0].split('-').shift().toLowerCase();
+    }
   });
   decorateBlockText(el, config);
-  rows.forEach((row) => { row.classList.add('foreground'); });
+  rows.forEach((row) => {
+    row.classList.add('foreground');
+  });
 
-  if (el.classList.contains('link-pod') || el.classList.contains('click-pod') || el.classList.contains('news-pod')) {
+  if (
+    el.classList.contains('link-pod') ||
+    el.classList.contains('click-pod') ||
+    el.classList.contains('news-pod')
+  ) {
     const links = el.querySelectorAll('a');
     if (el.classList.contains('click-pod') && links.length) {
       const link = links[0];
