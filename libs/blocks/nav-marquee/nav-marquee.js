@@ -37,6 +37,7 @@ function getItem(title, description, target) {
   if (!title) return null;
   const item = createTag('li', { class: 'offer-item' });
   item.setAttribute('tabNumber', incrementTab(tabNumber));
+  item.setAttribute('role','tab');
   const linkText = createTag('div', { class: 'offer-link-text' });
   const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
   const link = createTag('a', { class: 'section-title', href: target, target: '_self' }, title);
@@ -88,8 +89,6 @@ function decorateText(el, size) {
 export default function init(el) {
   const size = getBlockSize(el);
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  // const tone = (el.classList.contains('dark')) ? 'dark' : 'light';
-  // el.classList.add(tone);
   const marquee = createTag('div', { class: 'marquee' }, children.shift());
   marquee.firstElementChild.classList.add('text');
 

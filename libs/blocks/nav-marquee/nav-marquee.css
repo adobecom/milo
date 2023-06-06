@@ -52,7 +52,7 @@
   padding: 0;
 }
 
-.content-table .offer-item {
+.nav-marquee .content-table .offer-item {
   min-width: 200px;
   display: flex;
   position: relative; 
@@ -60,14 +60,18 @@
   background-color: var(--background-color);
   border: 1px solid var(--color-gray-700);
   border-radius: 4px;
-  padding: var(--spacing-s);
+  padding: var(--spacing-xs);
   cursor: pointer;
   line-height: 1.5;
 }
 
-.content-table .offer-item:hover {
+.content-table .offer-item:hover, .content-table .offer-item:focus-within {
   box-shadow: 2px 4px 5px #0000001A;
   border: 1px solid #1473E6;
+}
+
+.nav-marquee .offer-footer {
+  font-size: var(--type-body-xxs-size);
 }
 
 .nav-marquee .marquee p {
@@ -130,7 +134,11 @@
 
   .nav-marquee .content-table .offer-item {
     flex: 1 1 42%; 
-    padding: 16px;
+    padding: var(--spacing-xs);
+  }
+
+  .nav-marquee .offer-footer {
+    font-size: var(--type-body-xs-size);
   }
 
   .nav-marquee .marquee .text h2 {
@@ -146,29 +154,6 @@
   .nav-marquee .marquee .media {
     margin: 0;
   }
-}
-@media screen and (max-width: 600px) {
-  .nav-marquee .content-table .offer-list {
-    gap: 16px;
-  }
-
-  .nav-marquee .content-table .offer-item {
-    padding: 16px;
-  }
-
-  .nav-marquee .section-description {
-    font-size: var(--type-detail-s-lh);
-    margin-top: 16px;
-  }
-
-  .nav-marquee .offer-footer {
-    font-size: var(--type-detail-s-lh);
-  }
-
-  .nav-marquee .foreground {
-    padding-top: 48px;
-  }
-
 }
 
 @media screen and (min-width: 1200px) {
@@ -190,7 +175,7 @@
   }
 
   .nav-marquee .section-title {
-    line-height: 22.5px;
+    line-height: 1.5;
     margin-bottom: 16px;
     font-size: var(--type-body-m-size);
   }
@@ -232,7 +217,7 @@
     padding: 0;
   }
   
-  .nav-marquee .offer-container .offer-item {
+  .nav-marquee .content-table .offer-item {
     min-width: 200px;
     display: flex;
     position: relative;
@@ -240,14 +225,9 @@
     background-color: var(--background-color);
     border: 1px solid var(--color-gray-700);
     border-radius: 4px;
-    padding: var(--spacing-s);
     cursor: pointer;
     line-height: 1.5;
     flex: 1 1 100%;
-  }
-  
-  .nav-marquee .offer-footer {
-   font-size: var(--type-body-xs-size);
   }
 
   .nav-marquee .marquee .text {
@@ -272,16 +252,13 @@
     margin-top: var(--spacing-xl);
   }
 
-  .nav-marquee .content-table .offer-contanier .offer-footer {
-    font-size: var(--type-body-s-size);
-  }
-
   .nav-marquee .foreground {
    width: var(--grid-container-width); 
    display: flex; 
     margin: 0 auto;
     justify-content:center;
   }
+
   .nav-marquee .marquee .text {
     width: 100%;
 
