@@ -2,7 +2,7 @@ import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { copyToClipboard } from '../../utils/tools.js';
 import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { fetchIcons } from '../../features/icons.js';
+import { fetchIcons } from '../../features/icons/icons.js';
 import { buildFigure } from '../figure/figure.js';
 
 async function validateAuthorUrl(url) {

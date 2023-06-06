@@ -39,11 +39,11 @@ const decorateHeadline = (elem) => {
     headline.setAttribute('aria-expanded', currentState === 'false');
 
     const activeClass = selectors.activeDropdown.replace('.', '');
+    [...document.querySelectorAll(selectors.activeDropdown)]
+      .forEach((section) => section.classList.remove(activeClass));
     if (currentState === 'true') {
       headline.closest(selectors.navItem)?.classList.add(activeClass);
     } else {
-      [...document.querySelectorAll(selectors.activeDropdown)]
-        .forEach((section) => section.classList.remove(activeClass));
       headline.closest(`${selectors.menuSection}, ${selectors.menuColumn}`)?.classList
         .toggle(activeClass, currentState === 'false');
     }

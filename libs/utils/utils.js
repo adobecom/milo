@@ -78,6 +78,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
   local: {
@@ -539,10 +540,13 @@ function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const domIcons = area.querySelectorAll('span.icon');
-  if (domIcons.length === 0) return;
-  const { default: loadIcons } = await import('../features/icons.js');
-  loadIcons(domIcons, config);
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { miloLibs, codeRoot } = config;
+  const base = miloLibs || codeRoot;
+  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -784,4 +788,12 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
+}
+
+export function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
 }

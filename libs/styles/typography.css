@@ -230,7 +230,6 @@
 
 svg.icon-milo, img.icon-milo {
   height: 1em;
-  overflow: visible;
   position: relative;
   top: .1em;
   width: auto;
@@ -276,6 +275,8 @@ svg.icon-milo, img.icon-milo {
 span.icon.margin-right { margin-right: 8px; }
 
 span.icon.margin-left { margin-left: 8px; }
+
+span.icon.margin-inline-end { margin-inline-end: 8px; }
 
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
 
