@@ -88,15 +88,14 @@ function decorateText(el, size) {
 export default function init(el) {
   const size = getBlockSize(el);
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const tone = (el.classList.contains('dark')) ? 'dark' : 'light';
-  el.classList.add(tone);
-  const marqueeContent = createTag('div', { class: 'foreground' }, children.shift());
-  const marquee = createTag('div', { class: `marquee` }, marqueeContent);
-  marqueeContent.firstElementChild.classList.add('text');
+  // const tone = (el.classList.contains('dark')) ? 'dark' : 'light';
+  // el.classList.add(tone);
+  const marquee = createTag('div', { class: 'marquee' }, children.shift());
+  marquee.firstElementChild.classList.add('text');
 
   decorateText(marquee, size);
   decorateButtons(marquee, size === 'large' ? 'button-xl' : 'button-l');
-  marquee.className = `marquee`;
+  marquee.className = 'marquee';
 
   const header = createTag('p', { class: 'offer-title' });
   const footer = createTag('p', { class: 'offer-footer' });
@@ -126,8 +125,10 @@ export default function init(el) {
   offerContainer.append(offerNav);
   offerContainer.append(footer);
   const offer = createTag('div', { class: 'content-table' }, offerContainer);
+  const containerAll = createTag('div', { class: 'foreground' }, marquee);
+  containerAll.append(offer);
 
   offerNav.append(navUl);
-  el.append(marquee);
-  el.append(offer);
+  el.append(containerAll);
+  // el.append(offer);
 }
