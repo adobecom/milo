@@ -2,13 +2,13 @@ import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import { copyToClipboard } from '../../utils/tools.js';
 import { loadTaxonomy, getLinkForTopic, getTaxonomyModule } from '../article-feed/article-helpers.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { fetchIcons } from '../../features/icons.js';
+import { fetchIcons } from '../../features/icons/icons.js';
 import { buildFigure } from '../figure/figure.js';
 
 async function validateAuthorUrl(url) {
   if (!url) return null;
 
-  const resp = await fetch(`${url}.plain.html`);
+  const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
     console.log(`Could not retrieve metadata for ${url}`);
     return null;

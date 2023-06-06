@@ -1,3 +1,5 @@
+import { debounce } from '../../utils/utils.js';
+
 function handleBackground(div, section) {
   const pic = div.querySelector('picture');
   if (pic) {
@@ -10,14 +12,6 @@ function handleBackground(div, section) {
       section.style.background = color;
     }
   }
-}
-
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
 }
 
 function handleTopHeight(section) {
