@@ -22,8 +22,8 @@ export function handleFocalpoint(pic, child) {
     text = child.textContent;
   }
   const image = pic.querySelector('img');
-  const directions = text.slice(text.indexOf(':') + 1).split(',');
-  const [x,y = ''] = directions
+  const directions = text.split(',');
+  const [x,y = ''] = directions;
   if (image) {
     image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
   }
