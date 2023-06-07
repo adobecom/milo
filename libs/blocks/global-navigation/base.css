@@ -53,6 +53,11 @@
   padding-right: 32px;
 }
 
+.feds-navLink--hoverCaret:hover,
+.feds-navLink--hoverCaret:focus {
+  color: var(--feds-color-link--light);
+}
+
 .feds-navLink--hoverCaret:after {
   position: absolute;
   right: 18px;
@@ -96,6 +101,11 @@
 
   .feds-navLink--hoverCaret {
     position: static;
+  }
+
+  .feds-navLink--hoverCaret:hover,
+  .feds-navLink--hoverCaret:focus {
+    background-color: var(--feds-background-popup--light);
   }
 
   .feds-navLink--hoverCaret:after {

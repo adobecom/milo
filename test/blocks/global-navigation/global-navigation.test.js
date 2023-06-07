@@ -185,6 +185,7 @@ describe('global navigation', () => {
         navLink.click();
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('true');
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(true);
         expect(isElementVisible(popup)).to.equal(true);
         expect(navLink.getAttribute('daa-lh')).to.equal('header|Close');
       });
@@ -200,11 +201,13 @@ describe('global navigation', () => {
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('true');
         expect(isElementVisible(popup)).to.equal(true);
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(true);
 
         navLink.click();
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('false');
         expect(isElementVisible(popup)).to.equal(false);
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(false);
       });
 
       it(

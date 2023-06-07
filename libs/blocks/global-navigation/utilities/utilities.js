@@ -6,6 +6,10 @@ export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  navItem: '.feds-navItem',
+  activeDropdown: '.feds-dropdown--active',
+  menuSection: '.feds-menu-section',
+  menuColumn: '.feds-menu-column',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -128,6 +132,9 @@ export function closeAllDropdowns({ e } = {}) {
       el.setAttribute('daa-lh', 'header|Open');
     }
   });
+
+  [...document.querySelectorAll(selectors.activeDropdown)]
+    .forEach((el) => el.classList.remove(selectors.activeDropdown.replace('.', '')));
 
   document.querySelector(selectors.curtain)?.classList.remove('is-open');
 }

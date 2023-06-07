@@ -1,3 +1,5 @@
+import { debounce } from '../../utils/utils.js';
+
 function handleBackground(div, section) {
   const pic = div.background.content.querySelector('picture');
   if (pic) {
@@ -27,14 +29,6 @@ export function handleFocalpoint(pic, child) {
   if (image) {
     image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
   }
-}
-
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
 }
 
 function handleTopHeight(section) {

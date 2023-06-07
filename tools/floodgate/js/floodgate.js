@@ -6,12 +6,10 @@ import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
-  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
-  updateProjectStatusUIFromAction,
   updateProjectStatusUI,
 } from './ui.js';
 
@@ -24,16 +22,18 @@ async function floodgateContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
   const copyStatus = await postData(config.sp.aioCopyAction, params);
-  updateProjectStatusUIFromAction({ copyStatus });
+  updateProjectStatusUI({ copyStatus });
 }
 
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
-  // consider fgRoot as the project path for promote action.
-  params.projectRoot = config.sp.fgRootFolder;
+  // Based on User selection on the Promote Dialog,
+  // passing the param if user also wants to Publish the Promoted pages.
+  params.doPublish = document.querySelector('input[name="promotePublishRadio"]:checked')?.value
+    === 'promotePublish';
   const promoteStatus = await postData(config.sp.aioPromoteAction, params);
-  updateProjectStatusUIFromAction({ promoteStatus });
+  updateProjectStatusUI({ promoteStatus });
 }
 
 async function fetchStatusAction(project, config) {
@@ -46,7 +46,7 @@ async function fetchStatusAction(project, config) {
   // fetch promote status
   params = { projectRoot: config.sp.fgRootFolder };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
-  updateProjectStatusUIFromAction({ copyStatus, promoteStatus });
+  updateProjectStatusUI({ copyStatus, promoteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -60,12 +60,17 @@ async function refreshPage(config, projectDetail, project) {
 
   // Read the project action status
   loadingON('Updating project status...');
-  const status = await updateProjectStatus(project);
-  updateProjectStatusUI(status);
 
   await fetchStatusAction(project, config);
   loadingON('UI updated..');
   loadingOFF();
+}
+
+function togglePromotePublishRadioVisibility(visibility) {
+  const promotePublishOptions = document.getElementById('promote-publish-options');
+  promotePublishOptions.style.display = visibility;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
 }
 
 function setListeners(project, config) {
@@ -89,10 +94,12 @@ function setListeners(project, config) {
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
+    togglePromotePublishRadioVisibility('block');
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
   document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
     modal.style.display = 'none';
+    togglePromotePublishRadioVisibility('none');
   });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
