@@ -630,7 +630,7 @@ TODO: Need to check if we can skip this somehow.
 }
 
 @media screen and (min-width: 900px) {
-  .card .consonant-OneHalfCard-title {
+  .quiz-container .card .consonant-OneHalfCard-title {
     display: block;
     visibility: visible;
   }
