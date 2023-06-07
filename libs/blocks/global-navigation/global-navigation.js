@@ -157,7 +157,9 @@ const getBrandImage = (image) => {
 
 const closeOnClickOutside = (e) => {
   if (!isDesktop.matches) return;
-  const isClickedElemOpen = [...document.querySelectorAll(`${selectors.globalNav} [aria-expanded = "true"]`)]
+
+  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]`;
+  const isClickedElemOpen = [...document.querySelectorAll(openElemSelector)]
     .find((openItem) => openItem.parentElement.contains(e.target));
 
   if (!isClickedElemOpen) {

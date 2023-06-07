@@ -149,14 +149,16 @@ export function setActiveDropdown(elem) {
   const selectorArr = [selectors.menuSection, selectors.menuColumn, selectors.navItem];
 
   // Look for the first parent that fits the active dropdown criteria
-  while (selectorArr.length) {
-    const closestSection = elem.closest(selectorArr.shift());
+  selectorArr.some((selector) => {
+    const closestSection = elem.closest(selector);
 
     if (closestSection && closestSection.querySelector('[aria-expanded = "true"]')) {
       closestSection.classList.add(activeClass);
-      break;
+      return true;
     }
-  }
+
+    return false;
+  });
 }
 
 export function closeAllDropdowns({ type } = {}) {
