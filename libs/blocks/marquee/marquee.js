@@ -38,7 +38,7 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach((child, index) => {
+  Array.from(children).forEach(async(child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
@@ -48,8 +48,9 @@ const decorateBlockBg = (block, node) => {
     }
 
     const pic = child.querySelector('picture');
-    if (pic) {
-      handleFocalpoint(pic, child)
+    if (pic && (child.childElementCount == 2 || child.textContent)) {
+      const { handleFocalpoint } = await import ('../section-metadata/section-metadata.js');
+      handleFocalpoint(pic, child);
     }
   });
 
@@ -58,22 +59,6 @@ const decorateBlockBg = (block, node) => {
     node.remove();
   }
 };
-
-function handleFocalpoint(pic, child) {
-  if (!(child)) return;
-  let text = '';
-  if (child.childElementCount == 2) {
-    text = child.querySelectorAll('p')[1]?.textContent;
-  } else if (child.textContent) {
-    text = child.textContent;
-  }
-  const image = pic.querySelector('img');
-  const directions = text.slice(text.indexOf(':') + 1).split(',');
-  const [x,y = ''] = directions
-  if (image) {
-    image.style.objectPosition = `${x.trim().toLowerCase()} ${y.trim().toLowerCase()}`;
-  }
-}
 
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
