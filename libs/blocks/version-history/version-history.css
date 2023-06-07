@@ -1,0 +1,99 @@
+
+body {
+  background-color: var(--hlx-sk-bg);
+  color: var(--hlx-sk-color);
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th,
+table td {
+  padding: 12px;
+}
+
+table th {
+  text-align: left;
+}
+
+button,
+a.button {
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-size: 16px;
+  padding: 0 18px;
+  clip-path:
+    polygon(0% 0%,
+      var(--notch-size) 0%,
+      calc(100% - var(--notch-size)) 0%,
+      100% var(--notch-size),
+      100% calc(100% - var(--notch-size)),
+      100% 100%,
+      0% 100%,
+      0% 100%);
+}
+
+tr > th:first-child, tr > td:first-child {
+  padding-left: 24px;
+}
+
+#status {
+  color: #EFEFEF;
+}
+
+.comment-container label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+  color: #EFEFEF;
+}
+
+.comment-container textarea {
+  display: inline-block;
+  width: 96%;
+  height: 5em;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+#create {
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+table tr {
+  background-color: #EFEFEF;
+  color: #242424;
+}
+
+.container {
+  padding: 20px;
+  width: calc(100% - 40px);
+}
+
+.date {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 14px;
+  margin-right: 4px;
+}
+
+.time {
+  font-style: italic;
+}
+

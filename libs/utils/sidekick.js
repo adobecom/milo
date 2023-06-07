@@ -1,3 +1,7 @@
+import '../../tools/loc/lib/msal-browser.js';
+import loginToSharePoint from './deps/login.js';
+import { getReqOptions } from './deps/msal.js';
+
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // manifest v3
@@ -22,6 +26,16 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  const addVersion = async (event) => {
+    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
+    const options = getReqOptions({
+      method: 'POST',
+      accept: 'application/json; odata=nometadata',
+      contentType: 'application/json;odata=verbose'
+    });
+    await fetch(`${url}/Publish('Last Published version')`, {...options, keepalive: true});
+  };
+
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
   document.addEventListener('send-to-caas', async (e) => {
     const { host, project, branch, repo, owner } = e.detail;
@@ -29,10 +43,14 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   });
 
+  // fetch sharepoint access token
+  loginToSharePoint(["https://adobe.sharepoint.com/.default"]);
+
   const sk = document.querySelector('helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
+  sk.addEventListener('published', addVersion);
 }
