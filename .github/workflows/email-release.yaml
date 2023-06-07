@@ -22,3 +22,4 @@ jobs:
           FROM_NAME: 'Milo Bot'
           SG_KEY: ${{ secrets.SG_KEY }}
           SG_TEMPLATE: 'd-44d50e7138c341959fa1ecf5374fb8e1'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
