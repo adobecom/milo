@@ -61,9 +61,6 @@ function handleHighlight(table) {
         if (headingCols[i - 1] && !headingCols[i - 1]?.innerText) {
           headingCols[i]?.classList.add('top-left-rounded');
         }
-        if (headingCols[i + 1] && !headingCols[i + 1]?.innerText) {
-          headingCols[i]?.classList.add('top-right-rounded');
-        }
       }
     });
   } else {
@@ -76,9 +73,6 @@ function handleHighlight(table) {
       if (e.innerText) {
         if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
           e.classList.add('top-left-rounded');
-        }
-        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-          e.classList.add('top-right-rounded');
         }
       } else {
         e.classList.add('hidden');
@@ -147,10 +141,6 @@ function handleSection(table) {
             nextElement = nextElement.nextElementSibling;
           }
         }
-
-        iconTag.addEventListener('click', (e) => {
-          handleExpand(e.target);
-        });
       }
     } else if (previousRow && previousRow.querySelector('hr') && nextRow) {
       nextRow.classList.add('section-row');
@@ -307,6 +297,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.innerHTML = originTable.innerHTML;
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
+
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
       } else {
