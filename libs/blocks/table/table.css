@@ -102,10 +102,6 @@
   border-top-left-radius: 15px;
 }
 
-.table .row-heading .col-heading.top-right-rounded {
-  border-top-right-radius: 15px;
-}
-
 .table .row-heading .col-1.col-heading:not(.no-rounded) {
   border-top-left-radius: 15px;
 }
@@ -332,8 +328,12 @@ header.global-navigation {
 }
 
 @media (min-width: 769px) {
-  .filters {
+  .table-section .filters {
     display: none;
+  }
+
+  .table.merch .filters {
+    display: grid;
   }
 
   .table > .row {
@@ -347,6 +347,12 @@ header.global-navigation {
 }
 
 /* table merch */
+@media (min-width: 900px) {
+  .table-merch-section .filters {
+    display: none;
+  }
+}
+
 .table.merch > .row {
   grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
   gap: var(--spacing-xs);

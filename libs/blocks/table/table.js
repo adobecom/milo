@@ -101,7 +101,7 @@ function handleExpand(e) {
 }
 
 function handleSection(table) {
-  const isCollapseTable = table.classList.contains('collapse');
+  const isCollapseTable = table.classList.contains('collapse') && !table.classList.contains('merch');
   const isHighlightTable = table.classList.contains('highlight');
   const isMerchTable = table.classList.contains('merch');
   const allRows = Array.from(table.getElementsByClassName('row'));
@@ -274,6 +274,7 @@ function handleScrollEffect(table, gnavHeight) {
 }
 
 function applyStylesBasedOnScreenSize(table, originTable) {
+  const isMerch = table.classList.contains('merch');
   const desktopSize = 900;
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
@@ -286,7 +287,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   const mobileRenderer = () => {
-    const isMerch = table.classList.contains('merch');
     if (isMerch && table.querySelectorAll('.row-heading .col').length > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
     } else if (table.querySelectorAll('.row-heading .col').length > 3) {
@@ -345,7 +345,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   // For Mobile (else: tablet / desktop)
-  if (screenWidth <= mobileSize) {
+  if (screenWidth <= mobileSize || (isMerch && screenWidth < desktopSize)) {
     mobileRenderer();
   } else {
     table.innerHTML = originTable.innerHTML;
@@ -362,7 +362,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
 
     sectionRow.forEach((row) => {
-      if (screenWidth < desktopSize && screenWidth > mobileSize) {
+      if (isMerch) {
+        row.style.gridTemplateColumns = '';
+      } else if (screenWidth < desktopSize && screenWidth > mobileSize) {
         row.style.gridTemplateColumns = templateColumnsValue;
       } else {
         row.style.gridTemplateColumns = '';
