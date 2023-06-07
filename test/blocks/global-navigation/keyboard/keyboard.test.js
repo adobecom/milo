@@ -25,10 +25,11 @@ const loadStyles = (path) => new Promise((resolve) => {
 describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
+      loadStyles('base.css'),
       loadStyles('global-navigation.css'),
-      loadStyles('blocks/search/gnav-search.css'),
-      loadStyles('blocks/profile/dropdown.css'),
-      loadStyles('blocks/navDropdown/dropdown.css'),
+      loadStyles('features/search/gnav-search.css'),
+      loadStyles('features/profile/dropdown.css'),
+      loadStyles('utilities/menu/menu.css'),
     ]);
   });
 

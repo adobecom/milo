@@ -1,23 +1,52 @@
 import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
-import { enableRetry, connect as connectToSP } from '../../loc/sharepoint.js';
+import { getParams, postData } from './utils.js';
+import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
 import {
   initProject,
   updateProjectWithDocs,
   purgeAndReloadProjectFile,
-  updateProjectStatus,
 } from './project.js';
 import {
   updateProjectInfo,
   updateProjectDetailsUI,
   updateProjectStatusUI,
 } from './ui.js';
-import promoteFloodgatedFiles from './promote.js';
-import floodgateContent from './copy.js';
 
 async function reloadProject() {
   loadingON('Purging project file cache and reloading... please wait');
   await purgeAndReloadProjectFile();
+}
+
+async function floodgateContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const copyStatus = await postData(config.sp.aioCopyAction, params);
+  updateProjectStatusUI({ copyStatus });
+}
+
+async function promoteContentAction(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  // Based on User selection on the Promote Dialog,
+  // passing the param if user also wants to Publish the Promoted pages.
+  params.doPublish = document.querySelector('input[name="promotePublishRadio"]:checked')?.value
+    === 'promotePublish';
+  const promoteStatus = await postData(config.sp.aioPromoteAction, params);
+  updateProjectStatusUI({ promoteStatus });
+}
+
+async function fetchStatusAction(project, config) {
+  // fetch copy status
+  let params = {
+    projectExcelPath: project.excelPath,
+    projectRoot: config.sp.rootFolders,
+  };
+  const copyStatus = await postData(config.sp.aioStatusAction, params);
+  // fetch promote status
+  params = { projectRoot: config.sp.fgRootFolder };
+  const promoteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUI({ copyStatus, promoteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -31,23 +60,29 @@ async function refreshPage(config, projectDetail, project) {
 
   // Read the project action status
   loadingON('Updating project status...');
-  const status = await updateProjectStatus(project);
-  updateProjectStatusUI(status);
 
+  await fetchStatusAction(project, config);
   loadingON('UI updated..');
   loadingOFF();
 }
 
-function setListeners(project, projectDetail) {
+function togglePromotePublishRadioVisibility(visibility) {
+  const promotePublishOptions = document.getElementById('promote-publish-options');
+  promotePublishOptions.style.display = visibility;
+  const promoteOnlyOption = document.getElementById('promoteOnlyOption');
+  promoteOnlyOption.checked = true;
+}
+
+function setListeners(project, config) {
   const modal = document.getElementById('fg-modal');
   const handleFloodgateConfirm = ({ target }) => {
     modal.style.display = 'none';
-    floodgateContent(project, projectDetail);
+    floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
-    promoteFloodgatedFiles(project);
+    promoteContentAction(project, config);
     target.removeEventListener('click', handlePromoteConfirm);
   };
   document.querySelector('#reloadProject button').addEventListener('click', reloadProject);
@@ -59,9 +94,13 @@ function setListeners(project, projectDetail) {
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
+    togglePromotePublishRadioVisibility('block');
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handlePromoteConfirm);
   });
-  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => { modal.style.display = 'none'; });
+  document.querySelector('#fg-modal #no-btn').addEventListener('click', () => {
+    modal.style.display = 'none';
+    togglePromotePublishRadioVisibility('none');
+  });
   document.querySelector('#loading').addEventListener('click', loadingOFF);
 }
 
@@ -90,7 +129,7 @@ async function init() {
     loadingON('Project Details loaded...');
 
     // Set the listeners on the floodgate action buttons
-    setListeners(project, projectDetail);
+    setListeners(project, config);
 
     loadingON('Connecting now to Sharepoint...');
     const connectedToSp = await connectToSP();
@@ -100,6 +139,7 @@ async function init() {
     }
     loadingON('Connected to Sharepoint!');
     await refreshPage(config, projectDetail, project);
+
     loadingOFF();
   } catch (error) {
     loadingON(`Error occurred when initializing the Floodgate project ${error.message}`);

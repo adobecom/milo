@@ -66,6 +66,9 @@
   --type-heading-xxs-size: 14px;
   --type-heading-xxs-lh: 18px;
 
+  /* Headings (General) */
+  --type-heading-base-lh: 1.2;
+
   /* Body (Consonant) */
   --type-body-xxl-size: 28px;
   --type-body-xxl-lh: 42px;
