@@ -108,7 +108,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
       daa-ll="Account"
       aria-haspopup="true"
     >
-      <img class="feds-profile-img" src="${avatar}" aria-label="${profileAvatar}"></img>
+      <img class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
     </button>
   `;
 
