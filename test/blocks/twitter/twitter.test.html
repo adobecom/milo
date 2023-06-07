@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://twitter.com/AdobePrint/status/1555212165346254848?s=20&t=5y2vpznI_ZwECs0l_hc1mw">https://twitter.com/AdobePrint/status/1555212165346254848?s=20&amp;t=5y2vpznI_ZwECs0l_hc1mw</a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { loadScript } from '../../../libs/utils/utils.js';
+    import init from '../../../libs/blocks/twitter/twitter.js';
+
+    runTests(() => {
+      describe('twitter', () => {
+        it('renders embed tweet for twitter link', () => {
+          const twitter = document.querySelector('a');
+          init(twitter);
+          const blockquote = document.querySelector('.twitter-tweet');
+          const wrapper = document.querySelector('.embed-twitter');
+          expect(blockquote).to.not.be.null;
+          expect(wrapper).to.not.be.null;
+          expect(loadScript.callCount).to.equal(1);
+        });
+      });
+    });
+  </script>
+</html>

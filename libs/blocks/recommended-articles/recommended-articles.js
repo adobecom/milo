@@ -40,7 +40,7 @@ function getDecoratedCards(articles, taxonomy) {
     const wrapper = createTag('a', { class: 'article-card', href: path });
     const cardImage = createTag('div', { class: 'article-card-image' }, imageEl);
     const cardBody = createTag('div', { class: 'article-card-body' });
-    const categoryTaxonomy = taxonomy.get(category || 'News');
+    const categoryTaxonomy = taxonomy.get(category) || 'News';
     const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
     const categoryEl = createTag('p', { class: 'article-card-category' }, categoryLink);
     const titleEl = createTag('h3', null, title);

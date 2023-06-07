@@ -57,6 +57,11 @@ function Review({
   const [timeoutId, setTimeoutId] = useState(null);
 
   const beforeUnloadCallback = useRef(null);
+  const titleComponent = useRef(
+    html`
+      <h3 className="hlx-reviewTitle">${strings.reviewTitle}</h3>
+    `
+  );
 
   useEffect(() => {
     if (staticRating) {
@@ -214,12 +219,8 @@ function Review({
     />
   `;
 
-  const titleComponent = html`
-    <h3 className="hlx-reviewTitle">${strings.reviewTitle}</h3>
-  `;
-
   const ratings = html`
-    ${displayTitle && titleComponent}
+    ${displayTitle && titleComponent.current}
 
     <form className="hlx-Review" onSubmit=${handleSubmit}>
       ${ratingComponent} ${displayComments && commentsComponent}

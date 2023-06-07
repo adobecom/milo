@@ -5,50 +5,48 @@ import {
   getMetadata,
   loadScript,
   localizeLink,
-  loadStyle,
+  decorateSVG,
 } from '../../utils/utils.js';
 import {
   toFragment,
   getFedsPlaceholderConfig,
   getAnalyticsValue,
   decorateCta,
+  getExperienceName,
+  loadDecorateMenu,
+  loadBlock,
+  loadStyles,
   trigger,
   closeAllDropdowns,
+  loadBaseStyles,
   yieldToMain,
+  selectors,
+  logErrorFor,
+  lanaLog,
 } from './utilities/utilities.js';
+
 import { replaceKey } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
-    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11"><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
+    company: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.46 118.11" alt="Adobe, Inc."><defs><style>.cls-1{fill:#fa0f00;}</style></defs><polygon class="cls-1" points="84.13 0 133.46 0 133.46 118.11 84.13 0"/><polygon class="cls-1" points="49.37 0 0 0 0 118.11 49.37 0"/><polygon class="cls-1" points="66.75 43.53 98.18 118.11 77.58 118.11 68.18 94.36 45.18 94.36 66.75 43.53"/></svg>',
     search: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path></svg>',
   },
+  selectors: { isOpen: 'is-open' },
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 2000,
     keyboardNav: 8000,
   },
+  features: [
+    'gnav-brand',
+    'gnav-promo',
+    'search',
+    'profile',
+    'app-launcher',
+    'adobe-logo',
+  ],
 };
-
-export const IS_OPEN = 'is-open';
-
-function getBlockClasses(className) {
-  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
-  const blockWithVariants = className.split('--');
-  const name = trimDashes(blockWithVariants.shift());
-  const variants = blockWithVariants.map((v) => trimDashes(v));
-  return { name, variants };
-}
-
-const loadStyles = (path) => {
-  const { miloLibs, codeRoot } = getConfig();
-  return new Promise((resolve) => {
-    loadStyle(`${miloLibs || codeRoot}/blocks/global-navigation/${path}`, resolve);
-  });
-};
-
-const loadBlock = (path) => import(path)
-  .then((module) => module.default);
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = () => {
@@ -72,7 +70,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   } else {
     signInElem = toFragment`<a href="#" daa-ll="${signInLabel}" class="feds-signIn" role="button" aria-expanded="false" aria-haspopup="true">${signInLabel}</a>`;
 
-    signInElem.addEventListener('click', () => trigger({ element: signInElem }));
+    signInElem.addEventListener('click', (e) => trigger({ element: signInElem, event: e }));
     signInElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
     dropdownElem.addEventListener('keydown', (e) => e.code === 'Escape' && closeAllDropdowns());
 
@@ -102,14 +100,14 @@ const decorateProfileTrigger = async ({ avatar }) => {
   );
 
   const buttonElem = toFragment`
-    <button 
-      class="feds-profile-button" 
-      aria-expanded="false" 
+    <button
+      class="feds-profile-button"
+      aria-expanded="false"
       aria-controls="feds-profile-menu"
       aria-label="${label}"
       daa-ll="Account"
       aria-haspopup="true"
-    > 
+    >
       <img class="feds-profile-img" src="${avatar}"></img>
     </button>
   `;
@@ -120,10 +118,39 @@ const decorateProfileTrigger = async ({ avatar }) => {
 let keyboardNav;
 const setupKeyboardNav = async () => {
   keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const KeyboardNavigation = await loadBlock('./utilities/keyboard/index.js');
+    const KeyboardNavigation = await loadBlock('./keyboard/index.js');
     const instance = new KeyboardNavigation();
     resolve(instance);
   });
+};
+
+const getBrandImage = (image) => {
+  // Return the default Adobe logo if an image is not available
+  if (!image) return CONFIG.icons.company;
+
+  try {
+    // Try to decorate image as SVG
+    const decoratedSvg = decorateSVG(image);
+    // 'decorateSVG' might return the original element if decoration fails
+    // or the picture wrapped in an anchor element in certain cases
+    const svg = decoratedSvg instanceof HTMLPictureElement
+      ? decoratedSvg : decoratedSvg.querySelector('picture');
+    if (svg) return svg;
+  } catch (e) {
+    // continue execution
+  }
+
+  // Try to decorate image as PNG, JPG or JPEG
+  const imgText = image?.textContent || '';
+  const [source, alt] = imgText.split('|');
+  if (source.trim().length) {
+    const img = toFragment`<img src="${source.trim()}" />`;
+    if (alt) img.alt = alt.trim();
+    return img;
+  }
+
+  // Return the default Adobe logo if the image could not be decorated
+  return CONFIG.icons.company;
 };
 
 class Gnav {
@@ -140,17 +167,15 @@ class Gnav {
     this.body = body;
     this.isDesktop = window.matchMedia('(min-width: 900px)');
     this.elements = {};
-    body.querySelectorAll('[class$="-"]').forEach((block) => {
-      const { name, variants } = getBlockClasses(block.className);
-      block.classList.add(name, ...variants);
-    });
   }
 
-  init = async () => {
+  init = () => logErrorFor(async () => {
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
+
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
+      loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
@@ -165,13 +190,16 @@ class Gnav {
       await yieldToMain();
       await task();
     }
-  };
+
+    document.addEventListener('click', this.closeOnClickOutside);
+  }, 'Error in global navigation init');
 
   decorateTopNav = () => {
+    this.elements.mobileToggle = this.mobileToggle();
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
         <div class="feds-brand-container">
-          ${this.mobileToggle()}
+          ${this.elements.mobileToggle}
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
@@ -183,9 +211,10 @@ class Gnav {
 
   decorateTopnavWrapper = () => {
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
-      ${this.elements.topnav}
-      ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
-    </div>`;
+        ${this.elements.topnav}
+        ${this.isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+      </div>`;
+
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
@@ -222,37 +251,40 @@ class Gnav {
 
   loadDelayed = async () => {
     this.ready = this.ready || new Promise(async (resolve) => {
-      this.el.removeEventListener('click', this.loadDelayed);
-      this.el.removeEventListener('keydown', this.loadDelayed);
-      const [
-        { appLauncher },
-        ProfileDropdown,
-        Search,
-      ] = await Promise.all([
-        loadBlock('./blocks/appLauncher/appLauncher.js'),
-        loadBlock('./blocks/profile/dropdown.js'),
-        loadBlock('./blocks/search/gnav-search.js'),
-        loadStyles('./blocks/profile/dropdown.css'),
-        loadStyles('./blocks/search/gnav-search.css'),
-      ]);
-      this.ProfileDropdown = ProfileDropdown;
-      this.appLauncher = appLauncher;
-      this.Search = Search;
-      resolve();
+      try {
+        this.el.removeEventListener('click', this.loadDelayed);
+        this.el.removeEventListener('keydown', this.loadDelayed);
+        const [
+          { appLauncher },
+          ProfileDropdown,
+          Search,
+        ] = await Promise.all([
+          loadBlock('../features/appLauncher/appLauncher.js'),
+          loadBlock('../features/profile/dropdown.js'),
+          loadBlock('../features/search/gnav-search.js'),
+          loadStyles('features/profile/dropdown.css'),
+          loadStyles('features/search/gnav-search.css'),
+        ]);
+        this.ProfileDropdown = ProfileDropdown;
+        this.appLauncher = appLauncher;
+        this.Search = Search;
+        resolve();
+      } catch (e) {
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e });
+        resolve();
+      }
     });
+
     return this.ready;
   };
 
   loadIMS = () => {
-    const { locale, imsClientId, env } = getConfig();
+    const { locale, imsClientId, imsScope, env } = getConfig();
     if (!imsClientId) return null;
-    // TODO-1 scopes should be defineable by the consumers
-    // We didn't have a use-case for that so far
-    // TODO-2 we should emit an event after the onReady callback
     window.adobeid = {
       client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
-      locale: locale || 'en-US',
+      scope: imsScope || 'AdobeID,openid,gnav',
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
       autoValidateToken: true,
       environment: env.ims,
       useLocalStorage: false,
@@ -261,9 +293,13 @@ class Gnav {
           this.decorateProfile,
           this.decorateAppLauncher,
         ];
-        for await (const task of tasks) {
-          await yieldToMain();
-          await task();
+        try {
+          for await (const task of tasks) {
+            await yieldToMain();
+            await task();
+          }
+        } catch (e) {
+          lanaLog({ message: 'GNAV: issues within onReady', e });
         }
       },
     };
@@ -274,6 +310,16 @@ class Gnav {
     return null;
   };
 
+  closeOnClickOutside = (e) => {
+    if (!this.isDesktop.matches) return;
+    const isClickedElemOpen = [...document.querySelectorAll(`${selectors.globalNav} [aria-expanded = "true"]`)]
+      .find((openItem) => openItem.parentElement.contains(e.target));
+
+    if (!isClickedElemOpen) {
+      closeAllDropdowns();
+    }
+  };
+
   decorateProfile = async () => {
     const { rawElem, decoratedElem } = this.blocks.profile;
     if (!rawElem) return;
@@ -282,7 +328,7 @@ class Gnav {
 
     // If user is not signed in, decorate the 'Sign In' element
     if (!isSignedInUser) {
-      decorateSignIn({ rawElem, decoratedElem });
+      await decorateSignIn({ rawElem, decoratedElem });
       return;
     }
 
@@ -325,7 +371,6 @@ class Gnav {
   };
 
   decorateAppLauncher = () => {
-    // TODO: review App Launcher component
     // const appLauncherBlock = this.body.querySelector('.app-launcher');
     // if (appLauncherBlock) {
     //   await this.loadDelayed();
@@ -348,8 +393,8 @@ class Gnav {
     const toggle = toFragment`<button class="gnav-toggle" aria-label="Navigation menu" aria-expanded="false"></button>`;
     const onMediaChange = (e) => {
       if (e.matches) {
-        this.el.classList.remove(IS_OPEN);
-        this.elements.curtain.classList.remove(IS_OPEN);
+        this.el.classList.remove(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
 
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
@@ -366,14 +411,13 @@ class Gnav {
       }
     };
 
-    this.isDesktop.addEventListener('change', () => {
-      setHamburgerPadding();
-    });
+    this.isDesktop.addEventListener('change', () => logErrorFor(setHamburgerPadding, 'Set hamburger padding failed'));
 
-    toggle.addEventListener('click', async () => {
-      if (this.el.classList.contains(IS_OPEN)) {
-        this.el.classList.remove(IS_OPEN);
-        this.elements.curtain.classList.remove(IS_OPEN);
+    const toggleClick = async () => {
+      if (this.el.classList.contains(CONFIG.selectors.isOpen)) {
+        closeAllDropdowns();
+        this.el.classList.remove(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.remove(CONFIG.selectors.isOpen);
         if (this.blocks?.search?.instance) {
           this.blocks.search.instance.clearSearchForm();
         }
@@ -381,31 +425,35 @@ class Gnav {
 
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
-        this.el.classList.add(IS_OPEN);
-        this.elements.curtain.classList.add(IS_OPEN);
+        this.el.classList.add(CONFIG.selectors.isOpen);
+        this.elements.curtain.classList.add(CONFIG.selectors.isOpen);
         this.isDesktop.addEventListener('change', onMediaChange);
         this.loadSearch();
 
         setHamburgerPadding();
       }
-    });
+    };
+
+    toggle.addEventListener('click', () => logErrorFor(toggleClick, 'Toggle click failed'));
     return toggle;
   };
 
   decorateBrand = () => {
-    const brandBlock = this.body.querySelector('[class^="gnav-brand"]');
-    if (!brandBlock) return null;
-    const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)$/;
+    const brandBlock = this.body.querySelector('.gnav-brand');
+    if (!brandBlock) return '';
+
+    const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)/;
     const brandLinks = [...brandBlock.querySelectorAll('a')];
-    const image = brandLinks.find((brandLink) => imgRegex.test(brandLink.href));
-    const link = brandLinks.find((brandLink) => !imgRegex.test(brandLink.href));
+    const image = brandLinks.find((brandLink) => imgRegex.test(brandLink.href)
+      || imgRegex.test(brandLink.textContent));
+    const link = brandLinks.find((brandLink) => !imgRegex.test(brandLink.href)
+      && !imgRegex.test(brandLink.textContent));
 
-    // TODO: add alt text if authored
-    const imageEl = image ? toFragment`
-      <span class="feds-brand-image"><img src="${image.textContent}"/></span>` : '';
-    const labelEl = link ? toFragment`<span class="feds-brand-label">${link.textContent}</span>` : '';
+    if (!link) return '';
 
-    if (!imageEl && !labelEl) return '';
+    const imageEl = toFragment`<span class="feds-brand-image">${getBrandImage(image)}</span>`;
+    const renderLabel = !brandBlock.matches('.image-only');
+    const labelEl = renderLabel ? toFragment`<span class="feds-brand-label">${link.textContent}</span>` : '';
 
     return toFragment`
       <a href="${link.getAttribute('href')}" class="feds-brand" daa-ll="Brand">
@@ -440,11 +488,15 @@ class Gnav {
       </div>
     `;
 
-    const items = this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a');
+    // Get all main menu items, but exclude any that are nested inside other features
+    const items = [...this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+      .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
+
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
       this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
     }
+
     return this.elements.mainNav;
   };
 
@@ -466,18 +518,6 @@ class Gnav {
     return 'link';
   };
 
-  loadDecorateDropdown = async () => {
-    this.decorateDropdownLoaded = this.decorateDropdownLoaded || new Promise(async (resolve) => {
-      const [decorateDropdown] = await Promise.all([
-        loadBlock('./blocks/navDropdown/dropdown.js'),
-        loadStyles('./blocks/navDropdown/dropdown.css'),
-      ]);
-      this.decorateDropdown = decorateDropdown;
-      resolve();
-    });
-    return this.decorateDropdownLoaded;
-  };
-
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -485,16 +525,18 @@ class Gnav {
     const delayDropdownDecoration = (template) => {
       let decorationTimeout;
 
-      const decorateDropdown = async () => {
+      const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
-        await this.loadDecorateDropdown();
-        this.decorateDropdown({
+
+        const menuLogic = await loadDecorateMenu();
+
+        menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
         });
-      };
+      }, 'Decorate dropdown failed');
 
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
@@ -520,12 +562,18 @@ class Gnav {
           <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
           </div>`;
-        dropdownTrigger.addEventListener('click', () => trigger({ element: dropdownTrigger }));
+        dropdownTrigger.addEventListener('click', (e) => {
+          const opened = trigger({ element: dropdownTrigger, event: e });
+          if (opened) triggerTemplate.classList.add(selectors.activeDropdown.replace('.', ''));
+        });
         delayDropdownDecoration(triggerTemplate);
         return triggerTemplate;
       }
       case 'primaryCta':
       case 'secondaryCta':
+        // Remove its 'em' or 'strong' wrapper
+        item.parentElement.replaceWith(item);
+
         return toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`;
@@ -628,8 +676,8 @@ class Gnav {
 }
 
 export default async function init(header) {
-  const { locale, imsClientId } = getConfig();
-  // TODO locale.contentRoot is not the fallback we want
+  const { locale } = getConfig();
+  // TODO locale.contentRoot is not the fallback we want if we implement centralized content
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
@@ -638,11 +686,10 @@ export default async function init(header) {
     const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
-    header.setAttribute('daa-lh', `gnav${imsClientId ? `|${imsClientId}` : ''}`);
+    header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);
     return gnav;
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log('Could not create global navigation:', e);
+    lanaLog({ message: 'Could not create global navigation.', e });
     return null;
   }
 }

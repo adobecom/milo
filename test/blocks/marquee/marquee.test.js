@@ -4,6 +4,7 @@ import { expect } from '@esm-bundle/chai';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/marquee/marquee.js');
 const video = await readFile({ path: './mocks/video.html' });
+const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {
@@ -64,6 +65,24 @@ describe('marquee', () => {
       const marquee = document.getElementById('foreground');
       init(marquee);
       expect(marquee.querySelector('.foreground video')).to.exist;
+    });
+  });
+
+  describe('supports multiple icons', () => {
+    before(() => {
+      document.body.innerHTML = multipleIcons;
+    });
+
+    it('using img', () => {
+      const marquee = document.getElementById('using-images');
+      init(marquee);
+      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+    });
+    
+    it('using svg', () => {
+      const marquee = document.getElementById('using-svgs');
+      init(marquee);
+      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
     });
   });
 });

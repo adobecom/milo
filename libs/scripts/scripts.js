@@ -12,7 +12,6 @@
 
 import {
   loadArea,
-  loadDelayed,
   loadLana,
   setConfig,
 } from '../utils/utils.js';
@@ -76,10 +75,10 @@ const locales = {
   bg: { ietf: 'bg-BG', tk: 'aaz7dvd.css' },
   ru: { ietf: 'ru-RU', tk: 'aaz7dvd.css' },
   ua: { ietf: 'uk-UA', tk: 'aaz7dvd.css' },
-  il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
-  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
-  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css' },
+  il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+  ae_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
+  sa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
   // Asia Pacific
   au: { ietf: 'en-AU', tk: 'pps7abe.css' },
   hk_en: { ietf: 'en-HK', tk: 'pps7abe.css' },
@@ -102,6 +101,23 @@ const locales = {
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
   // Langstore Support.
   langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  // geo expansion
+  za: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  ng: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  cr: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  ec: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  pr: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  gt: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  eg_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  kw_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  qa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  eg_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  kw_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  qa_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  gr_el: { ietf: 'el', tk: 'fnx0rsr.css' },
+  el: { ietf: 'el', tk: 'aaz7dvd.css' },
+  vn_vi: { ietf: 'vi', tk: 'jii8bki.css' },
+  vn_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
 };
 
 const config = {
@@ -109,12 +125,19 @@ const config = {
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
+  imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
   locales,
   prodDomains,
   marketoBaseURL: '//app-aba.marketo.com',
   marketoFormID: '1761',
   marketoMunchkinID: '345-TTI-184',
+  jarvis: {
+    id: 'milo',
+    version: '1.0',
+    onDemand: false,
+  },
+  privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
 };
 
 (async function loadLCPImage() {
@@ -126,5 +149,4 @@ const config = {
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-  loadDelayed();
 }());

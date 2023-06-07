@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { inlineBlock } from '../../utils/inline.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export async function getSVGsfromFile(path, selectors) {
@@ -43,11 +44,11 @@ function getPlatforms(el) {
   });
 }
 
-export default async function decorate(el) {
+export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
-  const platforms = getPlatforms(el) || ['facebook', 'twitter', 'linkedin', 'pinterest'];
-  el.innerHTML = '';
+  const platforms = getPlatforms(block) || ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
+  block.innerHTML = '';
   const clipboardSupport = !!(navigator.clipboard)
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
@@ -56,6 +57,7 @@ export default async function decorate(el) {
   const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
   const shareToText = toSentenceCase(await replaceKey('share-to', config));
   const url = encodeURIComponent(window.location.href);
+  const title = document.title ?? url;
   const getDetails = (name, url) => {
     switch (name) {
       case 'facebook':
@@ -65,13 +67,16 @@ export default async function decorate(el) {
       case 'linkedin':
         return { title: 'LinkedIn', href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}` };
       case 'pinterest':
-        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}` };
+        return { title: 'Pinterest', href: `https://pinterest.com/pin/create/button/?url=${url}&description=${title}` };
+      case 'reddit':
+        return { title: 'Reddit', href: `https://reddit.com/submit?url=${url}&title=${title}` };
       default: return null;
     }
   };
-  
-  const heading = toSentenceCase(await replaceKey('share-this-page', config));
-  el.append(createTag('p', null, ((heading))));
+  if (!block.classList.contains('inline')) {
+    const heading = toSentenceCase(await replaceKey('share-this-page', config));
+    block.append(createTag('p', null, ((heading))));
+  }
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
@@ -91,7 +96,6 @@ export default async function decorate(el) {
       window.open(shareLink.href, 'newwindow', 'width=600, height=400');
     });
   });
-
   const clipboardSvg = svgs.find((svg) => svg.name === 'clipboard');
   if (clipboardSvg && clipboardSupport) {
     const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
@@ -114,5 +118,6 @@ export default async function decorate(el) {
       });
     });
   }
-  el.append(container);
+  block.append(container);
+  inlineBlock(block);
 }
