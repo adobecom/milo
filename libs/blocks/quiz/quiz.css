@@ -537,18 +537,13 @@
   }
 }
 
-
-
-
 @media screen and (min-width: 1440px) {
   .quiz-container.large .foreground.container {
     max-width: var(--grid-container-width);
   }
 }
 
-
 /* Quiz button */
-
 .quiz-button-container .quiz-btn {
   padding: 0.5938rem 5.3438rem;
   border-color: #fff;
@@ -629,7 +624,7 @@ TODO: Need to check if we can skip this somehow.
   padding-bottom: 0px;
 }
 
-.card .consonant-OneHalfCard-title {
+.quiz-container .card .consonant-OneHalfCard-title {
   display: none;
   visibility: hidden;
 }
@@ -800,8 +795,12 @@ div[data-valign="middle"] {
 
 }
 
-.consonant-OneHalfCard-image {
+.quiz-container .consonant-OneHalfCard-image {
   margin-right: 16px;
+}
+
+.quiz-container .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option:hover {
+  background-color: #fff;
 }
 
 @media screen and (min-width: 900px) {
