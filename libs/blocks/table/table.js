@@ -304,9 +304,15 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
       }
       if (filters[0] > filters[1]) {
-        table.querySelectorAll('.row').forEach((row) => {
-          row.querySelector('.col:not(.section-row-title, .hidden)').style.order = 1;
-        });
+        if (isMerch) {
+          table.querySelectorAll('.row').forEach((row) => {
+            row.querySelector('.col:not(.section-row-title)').style.order = 1;
+          });
+        } else {
+          table.querySelectorAll('.row').forEach((row) => {
+            row.querySelector('.col:not(.section-row-title, .col-1)').style.order = 1;
+          });
+        }
       } else if (filters[0] === filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
           row.append(row.querySelector('.col:last-child').cloneNode(true));
