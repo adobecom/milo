@@ -25,7 +25,7 @@ import {
   lanaLog,
 } from './utilities/utilities.js';
 
-import { replaceKey } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -93,8 +93,8 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 };
 
 const decorateProfileTrigger = async ({ avatar }) => {
-  const label = await replaceKey(
-    'profile-button',
+  const [label, profileAvatar] = await replaceKeyArray(
+    ['profile-button', 'profile-avatar'],
     getFedsPlaceholderConfig(),
     'feds',
   );
@@ -108,7 +108,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
       daa-ll="Account"
       aria-haspopup="true"
     >
-      <img class="feds-profile-img" src="${avatar}"></img>
+      <img class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
     </button>
   `;
 
