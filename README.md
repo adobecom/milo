@@ -66,5 +66,9 @@ or:
 ```sh
 npm run test:watch
 ```
+or:
+```sh
+npm run test:file relative/path/to/test/file.js
+```
 ### Coverage
 `npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
