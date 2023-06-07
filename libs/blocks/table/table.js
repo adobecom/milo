@@ -297,6 +297,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.innerHTML = originTable.innerHTML;
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
+      const headings = table.querySelectorAll('.row-heading .col');
+      const highlights = table.querySelectorAll('.row-highlight .col');
 
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
@@ -318,6 +320,14 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           row.append(row.querySelector('.col:last-child').cloneNode(true));
         });
       }
+
+      highlights.forEach((highlight, index) => {
+        if (!highlight.innerHTML && !headings[index + 1]?.classList.contains('hidden')) {
+          table.querySelector('.row-heading').querySelectorAll(`.col-${index + 1}`).forEach((heading) => {
+            heading.classList.add('top-left-rounded', 'top-right-rounded');
+          });
+        }
+      });
     };
 
     // filter

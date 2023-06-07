@@ -102,6 +102,10 @@
   border-top-left-radius: 15px;
 }
 
+.table .row-heading .col-heading.top-right-rounded {
+  border-top-right-radius: 15px;
+}
+
 .table .row-heading .col-1.col-heading:not(.no-rounded) {
   border-top-left-radius: 15px;
 }
