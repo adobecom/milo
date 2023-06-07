@@ -49,7 +49,7 @@ const decorateBlockBg = (block, node) => {
 
     const pic = child.querySelector('picture');
     if (pic && (child.childElementCount == 2 || child.textContent)) {
-      const { handleFocalpoint } = await import ('../section-metadata/section-metadata.js');
+      const { handleFocalpoint } = await import ('../section-metadata/section-metadata.js' );
       handleFocalpoint(pic,child);
     }
   });
