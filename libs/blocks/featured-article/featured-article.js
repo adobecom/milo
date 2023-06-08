@@ -22,7 +22,7 @@ export default async function init(el) {
 
   // load taxonomy to get link of article "category"
   const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
-  const categoryTaxonomy = taxonomy.get(category);
+  const categoryTaxonomy = taxonomy.get(category) || 'News';
 
   const pic = doc.body.querySelector('picture');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);

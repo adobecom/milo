@@ -46,7 +46,9 @@ const handleColumnBgColor = (text, table, columnType) => {
 };
 
 export default function init(el) {
-  const table = el.closest('.section').querySelector('.table');
+  const section = el.closest('.section');
+  const table = section.querySelector('.table');
+  section.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
   if (!table) return;
   const metadata = getMetadata(el);
   window.addEventListener('milo:table:highlight:loaded', () => {

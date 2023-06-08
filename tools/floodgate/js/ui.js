@@ -98,10 +98,16 @@ async function updateProjectDetailsUI(projectDetail, config) {
 }
 
 function updateProjectStatusUI(status) {
-  document.querySelector('#copy-status').innerHTML = status.copy.status;
-  document.querySelector('#copy-status-ts').innerHTML = status.copy.lastRun;
-  document.querySelector('#promote-status').innerHTML = status.promote.status;
-  document.querySelector('#promote-status-ts').innerHTML = status.promote.lastRun;
+  if (status?.copyStatus?.payload?.action?.type === 'copyAction') {
+    document.querySelector('#copy-status').innerHTML = status.copyStatus.payload.action.status;
+    document.querySelector('#copy-status-msg').innerHTML = status.copyStatus.payload.action.message;
+    document.querySelector('#copy-status-ts').innerHTML = status.copyStatus.payload.action.startTime;
+  }
+  if (status?.promoteStatus?.payload?.action?.type === 'promoteAction') {
+    document.querySelector('#promote-status').innerHTML = status.promoteStatus.payload.action.status;
+    document.querySelector('#promote-status-msg').innerHTML = status.promoteStatus.payload.action.message;
+    document.querySelector('#promote-status-ts').innerHTML = status.promoteStatus.payload.action.startTime;
+  }
   document.querySelector('.project-status').hidden = false;
 }
 

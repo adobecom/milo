@@ -50,19 +50,16 @@ function handleHighlight(table) {
     headingCols = secondRowCols;
 
     firstRowCols.forEach((col, i) => {
-      const hasText = headingCols[i].innerText && col.innerText;
+      const hasText = headingCols[i]?.innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
-      } else if (!headingCols[i].innerText) {
+      } else if (!headingCols[i]?.innerText) {
         col.classList.add('hidden');
-        headingCols[i].classList.add('hidden');
+        headingCols[i]?.classList.add('hidden');
       } else {
         col.classList.add('hidden');
-        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
-          headingCols[i].classList.add('top-left-rounded');
-        }
-        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-          headingCols[i].classList.add('top-right-rounded');
+        if (headingCols[i - 1] && !headingCols[i - 1]?.innerText) {
+          headingCols[i]?.classList.add('top-left-rounded');
         }
       }
     });
@@ -76,9 +73,6 @@ function handleHighlight(table) {
       if (e.innerText) {
         if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
           e.classList.add('top-left-rounded');
-        }
-        if (headingCols[i + 1] && !headingCols[i + 1].innerText) {
-          e.classList.add('top-right-rounded');
         }
       } else {
         e.classList.add('hidden');
@@ -107,7 +101,7 @@ function handleExpand(e) {
 }
 
 function handleSection(table) {
-  const isCollapseTable = table.classList.contains('collapse');
+  const isCollapseTable = table.classList.contains('collapse') && !table.classList.contains('merch');
   const isHighlightTable = table.classList.contains('highlight');
   const isMerchTable = table.classList.contains('merch');
   const allRows = Array.from(table.getElementsByClassName('row'));
@@ -147,10 +141,6 @@ function handleSection(table) {
             nextElement = nextElement.nextElementSibling;
           }
         }
-
-        iconTag.addEventListener('click', (e) => {
-          handleExpand(e.target);
-        });
       }
     } else if (previousRow && previousRow.querySelector('hr') && nextRow) {
       nextRow.classList.add('section-row');
@@ -201,10 +191,10 @@ function formatMerchTable(table) {
     const cols = table.querySelectorAll(`.col-${i}`);
     for (let j = rowsNum - 1; j >= 0; j--) {
       const currentCol = cols[j];
-      if (!currentCol.innerText && currentCol.children.length === 0) {
+      if (!currentCol?.innerText && currentCol?.children.length === 0) {
         currentCol.classList.add('no-borders');
       } else {
-        currentCol.classList.add('border-bottom');
+        currentCol?.classList.add('border-bottom');
         break;
       }
     }
@@ -284,6 +274,7 @@ function handleScrollEffect(table, gnavHeight) {
 }
 
 function applyStylesBasedOnScreenSize(table, originTable) {
+  const isMerch = table.classList.contains('merch');
   const desktopSize = 900;
   const mobileSize = 768;
   const screenWidth = window.innerWidth;
@@ -296,7 +287,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   const mobileRenderer = () => {
-    const isMerch = table.classList.contains('merch');
     if (isMerch && table.querySelectorAll('.row-heading .col').length > 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
     } else if (table.querySelectorAll('.row-heading .col').length > 3) {
@@ -307,20 +297,37 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.innerHTML = originTable.innerHTML;
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
+      const headings = table.querySelectorAll('.row-heading .col');
+      const highlights = table.querySelectorAll('.row-highlight .col');
+
       if (isMerch) {
         table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
       } else {
         table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
       }
       if (filters[0] > filters[1]) {
-        table.querySelectorAll('.row').forEach((row) => {
-          row.querySelector('.col:not(.section-row-title, .hidden)').style.order = 1;
-        });
+        if (isMerch) {
+          table.querySelectorAll('.row').forEach((row) => {
+            row.querySelector('.col:not(.section-row-title)').style.order = 1;
+          });
+        } else {
+          table.querySelectorAll('.row').forEach((row) => {
+            row.querySelector('.col:not(.section-row-title, .col-1)').style.order = 1;
+          });
+        }
       } else if (filters[0] === filters[1]) {
         table.querySelectorAll('.row').forEach((row) => {
           row.append(row.querySelector('.col:last-child').cloneNode(true));
         });
       }
+
+      highlights.forEach((highlight, index) => {
+        if (!highlight.innerHTML && !headings[index + 1]?.classList.contains('hidden')) {
+          table.querySelector('.row-heading').querySelectorAll(`.col-${index + 1}`).forEach((heading) => {
+            heading.classList.add('top-left-rounded', 'top-right-rounded');
+          });
+        }
+      });
     };
 
     // filter
@@ -354,7 +361,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   // For Mobile (else: tablet / desktop)
-  if (screenWidth <= mobileSize) {
+  if (screenWidth <= mobileSize || (isMerch && screenWidth < desktopSize)) {
     mobileRenderer();
   } else {
     table.innerHTML = originTable.innerHTML;
@@ -371,7 +378,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
 
     sectionRow.forEach((row) => {
-      if (screenWidth < desktopSize && screenWidth > mobileSize) {
+      if (isMerch) {
+        row.style.gridTemplateColumns = '';
+      } else if (screenWidth < desktopSize && screenWidth > mobileSize) {
         row.style.gridTemplateColumns = templateColumnsValue;
       } else {
         row.style.gridTemplateColumns = '';
@@ -381,10 +390,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 }
 
 export default function init(el) {
-  // remove top row if empty
-  const firstRow = el.querySelector(':scope > div:first-child');
-  if (firstRow.innerText.trim() === '') firstRow.remove();
-
   const rows = Array.from(el.children);
   rows.forEach((row, rdx) => {
     row.classList.add('row', `row-${rdx + 1}`);
@@ -397,7 +402,7 @@ export default function init(el) {
 
   const isMerchTable = el.classList.contains('merch');
   const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight + 1 : 0;
+  const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
   handleHighlight(el);
   handleSection(el);

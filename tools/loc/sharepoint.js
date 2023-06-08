@@ -86,7 +86,7 @@ function getAuthorizedRequestOption({
 let nextCallAfter = 0;
 const reqThresh = 5;
 let retryFlag = false;
-const TOO_MANY_REQUESTS = "429";
+const TOO_MANY_REQUESTS = '429';
 
 function enableRetry() {
   retryFlag = true;
@@ -380,8 +380,7 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   validateConnection();
   await createFolder(destinationFolder, isFloodgate);
   const { sp } = isFloodgate ? await getFloodgateConfig() : await getConfig();
-  const baseURI = sp.api.file.copy.baseURI;
-  const fgBaseURI = sp.api.file.copy.fgBaseURI;
+  const { baseURI, fgBaseURI } = sp.api.file.copy;
   const rootFolder = isFloodgate ? fgBaseURI.split('/').pop() : baseURI.split('/').pop();
 
   const payload = { ...sp.api.file.copy.payload, parentReference: { path: `${rootFolder}${destinationFolder}` } };
@@ -396,7 +395,7 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   // locked file copy happens in the floodgate content location
   // So baseURI is updated to reflect the destination accordingly
   const contentURI = isFloodgate && isFloodgateLockedFile ? fgBaseURI : baseURI;
-  const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy`, options);
+  const copyStatusInfo = await fetchWithRetry(`${contentURI}${srcPath}:/copy?@microsoft.graph.conflictBehavior=replace`, options);
   const statusUrl = copyStatusInfo.headers.get('Location');
   let copySuccess = false;
   let copyStatusJson = {};

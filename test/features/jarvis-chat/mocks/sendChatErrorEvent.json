@@ -1,0 +1,10 @@
+{
+  "events": [
+    {
+      "data": {
+        "event.error_code": "x",
+        "event.error_type": "init"
+      }
+    }
+  ]
+}

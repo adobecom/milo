@@ -6,7 +6,7 @@ import {
 } from '../../loc/sharepoint.js';
 import { hideButtons, loadingON, showButtons, simulatePreview } from '../../loc/utils.js';
 import { ACTION_BUTTON_IDS } from './ui.js';
-import { handleExtension } from './utils.js';
+import { delay, handleExtension } from './utils.js';
 
 const BATCH_REQUEST_COPY = 20;
 const DELAY_TIME_COPY = 3000;
@@ -27,12 +27,9 @@ async function floodgateContent(project, projectDetail) {
       const srcPath = urlInfo.doc.filePath;
       loadingON(`Copying ${srcPath} to pink folder`);
       let copySuccess = false;
-      if (urlInfo.doc.fg?.sp?.status !== 200) {
-        const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
-        copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
-      } else {
-        // Get the source file
+      const destinationFolder = `${srcPath.substring(0, srcPath.lastIndexOf('/'))}`;
+      copySuccess = await copyFile(srcPath, destinationFolder, undefined, true);
+      if (copySuccess === false) {
         const file = await getFile(urlInfo.doc);
         if (file) {
           const destination = urlInfo.doc.filePath;
@@ -44,8 +41,8 @@ async function floodgateContent(project, projectDetail) {
             }
           }
         }
-        updateAndDisplayCopyStatus(copySuccess, srcPath);
       }
+      updateAndDisplayCopyStatus(copySuccess, srcPath);
       status.success = copySuccess;
       status.srcPath = srcPath;
       status.url = urlInfo.doc.url;
@@ -74,16 +71,21 @@ async function floodgateContent(project, projectDetail) {
       batchArray[i].map((files) => copyFilesToFloodgateTree(files[1])),
     ));
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-    await new Promise((resolve) => setTimeout(resolve, DELAY_TIME_COPY));
+    await delay(DELAY_TIME_COPY);
   }
   const endCopy = new Date();
 
   loadingON('Previewing for copied files... ');
-  const previewStatuses = await Promise.all(
-    copyStatuses
-      .filter((status) => status.success)
-      .map((status) => simulatePreview(handleExtension(status.srcPath), 1, true)),
-  );
+  const previewStatuses = [];
+  for (let i = 0; i < copyStatuses.length; i += 1) {
+    if (copyStatuses[i].success) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await simulatePreview(handleExtension(copyStatuses[i].srcPath), 1, true);
+      previewStatuses.push(result);
+    }
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await delay();
+  }
   loadingON('Completed Preview for copied files... ');
 
   const failedCopies = copyStatuses.filter((status) => !status.success)
