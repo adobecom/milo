@@ -19,7 +19,8 @@ async function downloadFile(id) {
 // }
 
 async function getItem(path) {
-  const fullpath = `${baseUri}${path}`;
+  const newBase = baseUri.replace('milo', 'bacom');
+  const fullpath = `${newBase}${path}`;
   const options = getReqOptions();
   const resp = await fetch(fullpath, options);
   const json = await resp.json();
@@ -123,7 +124,7 @@ function getDocDetails(path) {
  * @param {String} destPath the destination document path
  * @returns {Object} json an object describing the copied item
  */
-export default async function copyFile(sourcePath, destPath) {
+export async function copyFile(sourcePath, destPath) {
   console.log(site);
   const opts = getReqOptions({ method: 'GET' });
   const resp = await fetch(`${site}/drives`, opts);
@@ -141,4 +142,46 @@ export default async function copyFile(sourcePath, destPath) {
   const { uploadUrl } = session.error ? await breakLock(dest, destItem, blob.size) : session;
   if (uploadUrl) return uploadAttempt(dest, destItem, uploadUrl, blob);
   return { error: { msg: 'Couldn\'t copy file. Contact Milo Community.' } };
+}
+
+async function listChildren(startUrl, options) {
+  let path = startUrl;
+  const items = [];
+  const folders = [];
+  while (path) {
+    const resp = await fetch(path, options);
+    const json = await resp.json();
+    json.value.forEach((child) => {
+      if (child.name.endsWith('.docx')) {
+        const parent = child.parentReference.path.split('bacom').pop();
+        console.log(`${parent}/${child.name.replace('.docx', '')}`);
+        items.push(`${parent}/${child.name.replace('.docx', '')}`);
+      } else {
+        folders.push(child.id);
+      }
+    });
+    path = json['@odata.nextLink'];
+  }
+  return { items, folders };
+}
+
+export async function listChildrenDocs(folder) {
+  const sourceItem = await getItem(folder);
+  const { id } = sourceItem;
+  const options = getReqOptions({ method: 'GET' });
+  const path = `${site}/drive/items/${id}/children`;
+  const items = [];
+  const folders = [];
+  const children = await listChildren(path, options);
+  items.push(...children.items);
+  folders.push(...children.folders);
+  while (folders.length > 0) {
+    console.log(folders.length);
+    const first = folders.shift();
+    const { items: subItems, folders: subFolders } = await listChildren(`${site}/drive/items/${first}/children`, options);
+    items.push(...subItems);
+    folders.push(...subFolders);
+  }
+  console.log(items);
+  console.log(folders);
 }

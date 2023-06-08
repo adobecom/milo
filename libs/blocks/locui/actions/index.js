@@ -5,7 +5,7 @@ import { heading, setStatus, urls } from '../utils/state.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
-import copyFile from '../utils/sp/file.js';
+import { copyFile, listChildrenDocs } from '../utils/sp/file.js';
 import makeGroups from '../utils/group.js';
 
 const MISSING_SOURCE = 'There are missing source docs in the project. Remove the missing docs or create them.';
@@ -123,12 +123,8 @@ export async function syncToLangstore() {
 //   });
 // }
 
-// (async function loadPage() {
-//   setTimeout(async () => {
-//     const iters = [...Array(200).keys()];
-//     for (const num of iters) {
-//       const json = await makeOne(num);
-//       console.log(json);
-//     }
-//   }, 1500);
-// }());
+(async function loadPage() {
+  setTimeout(async () => {
+    listChildrenDocs('/resources');
+  }, 1500);
+}());
