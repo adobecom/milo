@@ -390,10 +390,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 }
 
 export default function init(el) {
-  // remove top row if empty
-  const firstRow = el.querySelector(':scope > div:first-child');
-  if (firstRow.innerText.trim() === '') firstRow.remove();
-
   const rows = Array.from(el.children);
   rows.forEach((row, rdx) => {
     row.classList.add('row', `row-${rdx + 1}`);
