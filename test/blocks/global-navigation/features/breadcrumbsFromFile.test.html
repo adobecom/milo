@@ -1,0 +1,19 @@
+<html>
+  <head></head>
+  <body></body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import breadcrumbs from '../../../../libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js';
+
+    runTests(() => {
+      describe('breadcrumbs', () => {
+        it('should create a breadcrumb from the url', async () => {
+          const breadcrumb = await breadcrumbs();
+          expect(breadcrumb.querySelectorAll('li').length).to.equal(6);
+        });
+      });
+    });
+  </script>
+</html>

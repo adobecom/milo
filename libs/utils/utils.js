@@ -564,10 +564,11 @@ function decorateHeader() {
   const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
   header.className = headerQuery || headerMeta || 'gnav';
   const breadcrumbs = document.querySelector('.breadcrumbs');
-  if (breadcrumbs) {
-    header.classList.add('has-breadcrumbs');
-    header.append(breadcrumbs);
-  }
+  const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
+    || getConfig().breadcrumbs;
+  if (metadataConfig === 'off') return;
+  header.classList.add('has-breadcrumbs');
+  if (breadcrumbs) header.append(breadcrumbs);
 }
 
 async function decorateIcons(area, config) {
