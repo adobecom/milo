@@ -13,14 +13,18 @@
 }
 
 /* Curtain */
-.global-navigation.is-open .feds-curtain,
-.feds-curtain.is-open {
+.feds-curtain {
   position: fixed;
+  display: none;
   inset: 0;
   background: rgb(0 0 0 / .5);
   -webkit-backdrop-filter: blur(1em);
   backdrop-filter: blur(1em);
   z-index: 1;
+}
+
+.feds-curtain--open {
+  display: flex;
 }
 
 /* General */
@@ -67,7 +71,7 @@ header.global-navigation {
   right: 0;
 }
 
-.global-navigation.is-open .feds-nav-wrapper {
+.feds-nav-wrapper--expanded {
   display: flex;
 }
 
@@ -77,32 +81,63 @@ header.global-navigation {
   overflow-y: auto;
 }
 
-/* Brand block */
+/* Hamburger toggle */
+.feds-toggle {
+  width: 60px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: #2d2d2d;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.feds-toggle:before {
+  content: "\2630";
+}
+
+.feds-toggle[aria-expanded = "true"]:before {
+  content: "\2715";
+}
+
+/* Brand and Logo blocks */
 .feds-brand-container {
   display: flex;
 }
 
-.feds-brand {
-  display: flex;
+.feds-brand,
+.feds-logo {
   align-items: center;
   outline-offset: 2px;
   padding: 0 var(--feds-gutter);
   column-gap: 10px;
 }
 
-.feds-brand-image {
+.feds-brand {
+  display: flex;
+}
+
+.feds-logo {
+  display: none;
+}
+
+.feds-brand-image,
+.feds-logo-image {
   width: 25px;
   flex-shrink: 0;
 }
 
-.feds-brand-image picture,
-.feds-brand-image img,
-.feds-brand-image svg {
+.feds-brand-image picture, .feds-brand-image img, .feds-brand-image svg,
+.feds-logo-image picture, .feds-logo-image img, .feds-logo-image svg {
   width: 100%;
   display: block;
 }
 
-.feds-brand-label {
+.feds-brand-label,
+.feds-logo-label {
   flex-shrink: 0;
   font-weight: 700;
   font-size: 18px;
@@ -364,7 +399,11 @@ header.global-navigation {
 
   .feds-topnav-wrapper {
     border-bottom: 1px solid var(--feds-borderColor--light);
-    box-sizing: border-box;
+    box-sizing: content-box;
+  }
+
+  .feds-toggle {
+    display: none;
   }
 
   .feds-nav-wrapper {
@@ -423,8 +462,6 @@ header.global-navigation {
     right: 0;
     justify-content: center;
     padding: 20px 0;
-    /* Relative to nav, not trigger, ensure top border is visible */
-    margin-top: 1px;
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
@@ -516,118 +553,14 @@ header.global-navigation {
   }
 }
 
+/* Desktop styles */
+@media (min-width: 1200px) {
+  .feds-logo {
+    display: flex;
+  }
+}
+
 /* TODO: Old styles, to be refactored */
-.gnav-logo {
-  display: none;
-}
-
-header button.gnav-toggle {
-  width: 56px;
-  justify-self: start;
-  font-size: 20px;
-  padding: 0;
-  border: none;
-  background: none;
-}
-
-header button.gnav-toggle::after {
-  color: var(--feds-color-link--light);
-  content: "\2630";
-  font-weight: 700;
-}
-
-header.is-open button.gnav-toggle::after {
-  content: "\2715";
-}
-
-/* BEGIN MAINNAV */
 .last-link-blue ul li:last-of-type a {
   color: #1473E6;
-}
-/* END MAINNAV */
-
-/* APP LAUNCHER */
-
-header .app-launcher button.gnav-applications-button {
-  overflow: hidden;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0 6px 0 2px;
-  align-items: center;
-}
-
-header .app-launcher button svg {
-  width: 18px;
-  height: 18px;
-  opacity: 0.5;
-}
-
-header .app-launcher button:hover svg {
-  opacity: 1;
-}
-
-header .app-launcher {
-  display: none;
-}
-
-/* END APP LAUNCHER */
-
-@media (min-width: 900px) {
-  /* APP LAUNCHER */
-  header .app-launcher {
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    position: relative;
-    padding: 0 12px 0 0;
-  }
-
-  header .app-launcher .apps {
-    display: flex;
-    flex-flow: row wrap;
-    max-height: 80vh;
-    overflow-y: scroll;
-  }
-
-  header .app-launcher .apps > li {
-    width: 33.3333%;
-    max-width: 33.3333%;
-    flex: 1 1 auto;
-    min-height: auto;
-  }
-
-  header .app-launcher .apps li > a {
-    display: flex;
-    flex-flow: column;
-    white-space: unset;
-    text-align: center;
-    padding: 16px 0 13px;
-    min-height: 85px;
-    justify-content: space-evenly;
-  }
-
-  header .app-launcher .apps li > a:hover {
-    background-color: #f4f4f4;
-    color: var(--color-black);
-  }
-
-  header .app-launcher .apps li > a img {
-    width: 48px;
-  }
-
-  /* END APP LAUNCHER */
-  header button.gnav-toggle {
-    display: none;
-  }
-
-  .gnav-logo {
-    display: flex;
-    width: 25px;
-  }
-
-  .gnav-logo::before {
-    content: "";
-    margin-left: var(--feds-gutter);
-  }
 }
