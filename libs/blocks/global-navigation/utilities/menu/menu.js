@@ -6,7 +6,9 @@ import {
   yieldToMain,
   getFedsPlaceholderConfig,
   logErrorFor,
-  selectors,
+  setActiveDropdown,
+  trigger,
+  isDesktop,
 } from '../utilities.js';
 import { decorateLinks } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
@@ -14,39 +16,34 @@ import { replaceText } from '../../../../features/placeholders.js';
 const decorateHeadline = (elem) => {
   if (!(elem instanceof HTMLElement)) return null;
 
-  // TODO: proper handling of aria-expanded across devices
-  const headline = toFragment`<div
-    class="feds-menu-headline"
-    role="heading"
-    aria-level="2"
-    aria-haspopup="true"
-    aria-expanded="false">
-    ${elem.textContent.trim()}
-  </div>`;
+  const headline = toFragment`<div class="feds-menu-headline">
+      ${elem.textContent.trim()}
+    </div>`;
 
-  // TODO: move proper logic to accessibility,
-  // this is just for demo functionality purposes
-  headline.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    const openMenu = document.querySelector('.feds-menu-headline[aria-expanded = "true"]');
-
-    if (openMenu && openMenu !== headline) {
-      openMenu.setAttribute('aria-expanded', 'false');
-    }
-
-    const currentState = headline.getAttribute('aria-expanded');
-    headline.setAttribute('aria-expanded', currentState === 'false');
-
-    const activeClass = selectors.activeDropdown.replace('.', '');
-    [...document.querySelectorAll(selectors.activeDropdown)]
-      .forEach((section) => section.classList.remove(activeClass));
-    if (currentState === 'true') {
-      headline.closest(selectors.navItem)?.classList.add(activeClass);
+  const setHeadlineAttributes = () => {
+    if (isDesktop.matches) {
+      headline.setAttribute('role', 'heading');
+      headline.removeAttribute('tabindex');
+      headline.setAttribute('aria-level', 2);
+      headline.removeAttribute('aria-haspopup', true);
+      headline.removeAttribute('aria-expanded', false);
     } else {
-      headline.closest(`${selectors.menuSection}, ${selectors.menuColumn}`)?.classList
-        .toggle(activeClass, currentState === 'false');
+      headline.setAttribute('role', 'button');
+      headline.setAttribute('tabindex', 0);
+      headline.removeAttribute('aria-level');
+      headline.setAttribute('aria-haspopup', true);
+      headline.setAttribute('aria-expanded', false);
     }
+  };
+
+  setHeadlineAttributes();
+  isDesktop.addEventListener('change', setHeadlineAttributes);
+
+  headline.addEventListener('click', (e) => {
+    if (isDesktop.matches) return;
+
+    trigger({ element: headline, event: e, type: 'headline' });
+    setActiveDropdown(headline);
   });
 
   // Since heading is turned into a div, it can be safely removed
