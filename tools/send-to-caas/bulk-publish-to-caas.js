@@ -19,7 +19,7 @@ import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly', 'usepreview'];
+const FIELDS_CB = ['draftOnly', 'usepreview', 'usehtml'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
   excelFile: '',
@@ -31,6 +31,7 @@ const DEFAULT_VALUES = {
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
   usepreview: false,
+  usehtml: true,
 };
 
 const fetchExcelJson = async (url) => {
@@ -94,7 +95,15 @@ const processData = async (data, accessToken) => {
   let keepGoing = true;
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
-  const { caasEnv, draftOnly, host, owner, repo, usepreview } = getConfig();
+  const {
+    caasEnv,
+    draftOnly,
+    host,
+    owner,
+    repo,
+    usehtml,
+    usepreview,
+  } = getConfig();
 
   const domain = usepreview
     ? `https://main--${repo}--${owner}.hlx.page`
@@ -108,8 +117,9 @@ const processData = async (data, accessToken) => {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
 
       const { pathname } = new URL(rawUrl);
-      const pageUrl = usepreview ? `${domain}${pathname.replace('.html', '')}` : `${domain}${pathname}`;
-      const prodUrl = `${host}${pathname}`;
+      const pathnameNoHtml = pathname.replace('.html', '');
+      const pageUrl = usepreview ? `${domain}${pathnameNoHtml}` : `${domain}${pathname}`;
+      const prodUrl = `${host}${pathnameNoHtml}${usehtml ? '.html' : ''}`;
 
       index += 1;
       statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
@@ -223,6 +233,7 @@ const init = async () => {
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
+      usehtml: document.getElementById('usehtml').checked,
       usepreview: document.getElementById('usepreview').checked,
     });
     bulkPublish();

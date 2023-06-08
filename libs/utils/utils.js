@@ -9,6 +9,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'bulk-publish',
   'caas',
   'caas-config',
   'card',
@@ -140,6 +141,12 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getMetadata(name, doc = document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -152,8 +159,11 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        const contentDir = getMetadata('content-direction');
-        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || (config.locale.ietf ? (new Intl.Locale(config.locale.ietf)?.textInfo?.direction) : null) || 'ltr');
+        const dir = getMetadata('content-direction')
+          || config.locale.dir
+          || (config.locale.ietf && (new Intl.Locale(config.locale.ietf)?.textInfo?.direction))
+          || 'ltr';
+        document.documentElement.setAttribute('dir', dir);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
@@ -167,12 +177,6 @@ export const [setConfig, getConfig] = (() => {
 
 export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
-}
-
-export function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
 }
 
 export function createTag(tag, attributes, html) {
@@ -537,10 +541,13 @@ function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const domIcons = area.querySelectorAll('span.icon');
-  if (domIcons.length === 0) return;
-  const { default: loadIcons } = await import('../features/icons.js');
-  loadIcons(domIcons, config);
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { miloLibs, codeRoot } = config;
+  const base = miloLibs || codeRoot;
+  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {

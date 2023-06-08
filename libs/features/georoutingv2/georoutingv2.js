@@ -191,7 +191,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     { once: true },
   );
   img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
-  const span = createTag('span', { class: 'icon margin-right' }, img);
+  const span = createTag('span', { class: 'icon margin-inline-end' }, img);
   const mainAction = createTag('a', {
     class: 'con-button blue button-l', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false, href: '#',
   }, span);
