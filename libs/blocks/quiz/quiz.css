@@ -421,6 +421,13 @@ div[data-valign="middle"] {
   width: 100%;
 }
 
+.quiz-container .consonant-CardsGrid--5up .card { 
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  margin: 0 0 16px;
+}
+
 .quiz-container .consonant-CardsGrid--5up .card div div {
   text-align: right;
 }
@@ -707,7 +714,11 @@ div[data-valign="middle"] {
   }
 }
 
-@media screen and (min-width: 900px) {    
+@media screen and (min-width: 900px) {   
+  .quiz-container .card .consonant-OneHalfCard-title {
+    display: block;
+  }
+
   .quiz-container .consonant-OneHalfCard-text,
   .quiz-container .consonant-OneHalfCard-title {
     text-align: center;
