@@ -27,9 +27,9 @@ const cycleOnOpenSearch = ({ e, isDesktop }) => {
 
 const openProfile = ({ e, el }) => {
   const button = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
-  if (button && button.getAttribute('aria-expanded') === 'false') {
+  if (button?.getAttribute('aria-expanded') === 'false') {
     e.target.click();
-    el.querySelector(selectors.profileDropdown).focus();
+    el.querySelector(selectors.profileDropdown)?.focus();
     return true;
   }
   return false;
@@ -40,15 +40,11 @@ const getProfileItems = ({ e }) => {
   if (!focusableElements.length) return { next: -1, prev: -1, items: [] };
   const items = [...focusableElements];
   const curr = items.findIndex((element) => element === e.target);
-  const next = curr + 1;
-  const prev = curr - 1;
-  return { next, prev, items };
+  return { next: curr + 1, prev: curr - 1, items };
 };
 const focusNextProfileItem = ({ e }) => {
   const { items, next } = getProfileItems({ e });
-  if (items[next]) {
-    items[next].focus();
-  }
+  if (items[next]) items[next].focus();
 };
 
 const closeProfile = () => {

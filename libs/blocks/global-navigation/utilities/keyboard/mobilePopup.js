@@ -6,17 +6,20 @@ import {
   getOpenPopup,
   selectors,
 } from './utils.js';
-import { closeAllDropdowns, logErrorFor } from '../utilities.js';
+import { closeAllDropdowns, logErrorFor, setActiveDropdown } from '../utilities.js';
 
 const closeHeadlines = () => {
   const open = [...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`)];
   open.forEach((el) => el.setAttribute('aria-expanded', 'false'));
+  // Shift active class back to the parent of the first closed headline
+  setActiveDropdown(open[0]);
 };
 
 const openHeadline = ({ headline, focus } = {}) => {
   closeHeadlines();
   if (headline.getAttribute('aria-haspopup') === 'true') {
     headline.setAttribute('aria-expanded', 'true');
+    setActiveDropdown(headline);
     const section = headline.closest(selectors.section)
       || headline.closest(selectors.column);
     const items = [...section.querySelectorAll(selectors.popupItems)]
@@ -77,6 +80,7 @@ class Popup {
     const last = getPreviousVisibleItemPosition(popupItems.length, popupItems);
     if (focus === 'first') popupItems[first].focus();
     if (focus === 'last') popupItems[last].focus();
+    setActiveDropdown(focus === 'first' ? popupItems[first] : popupItems[last]);
   }
 
   mobileArrowUp = ({ prev, curr, element, isFooter }) => {
@@ -127,7 +131,7 @@ class Popup {
   focusMainNavNext = (isFooter) => {
     if (isFooter) return;
     this.mainNav.focusNext();
-    this.mainNav.open({});
+    this.mainNav.open();
   };
 
   handleKeyDown = ({ e, element, isFooter }) => {

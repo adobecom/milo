@@ -52,7 +52,7 @@ class Popup {
   focusMainNavNext = (isFooter) => {
     if (isFooter) return;
     this.mainNav.focusNext();
-    this.mainNav.open({});
+    this.mainNav.open();
   };
 
   handleKeyDown = ({ e, element, isFooter }) => {
