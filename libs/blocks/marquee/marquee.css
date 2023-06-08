@@ -293,6 +293,10 @@
   .marquee .background .tablet-only {
     display: block;
   }
+  
+  .marquee.quiet .foreground .text{
+    max-width: 600px;
+  }
 
   /* Split */
   .marquee.split {
