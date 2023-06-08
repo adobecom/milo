@@ -26,9 +26,11 @@ describe('reading-time estimate', () => {
   });
 
   describe('inline variant', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/inline.html' });
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/inline.html' });
+    });
 
-    it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+    it('Inline variant (with inline siblings) creates an inline-wrapper element', async () => {
       const section = document.querySelector('.section.inline-has-siblings');
       const els = section.querySelectorAll('.reading-time.inline');
       els.forEach(async (el) => {

@@ -31,6 +31,9 @@ function closeModal(modal) {
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
   });
 
+  [...document.querySelectorAll('header, main, footer')]
+    .forEach((element) => element.removeAttribute('aria-disabled'));
+
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
 }
@@ -131,6 +134,8 @@ export async function getModal(details, custom) {
       if (e.target === curtain) closeModal(dialog);
     });
     dialog.insertAdjacentElement('afterend', curtain);
+    [...document.querySelectorAll('header, main, footer')]
+      .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
 
   return dialog;
