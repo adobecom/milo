@@ -402,6 +402,7 @@ export default function init(el) {
   });
 
   const isMerchTable = el.classList.contains('merch');
+  const isStickyHeader = el.classList.contains('sticky');
   const gnav = document.querySelector('header');
   const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
@@ -417,14 +418,14 @@ export default function init(el) {
       originTable = el;
     }
     applyStylesBasedOnScreenSize(el, originTable);
-    handleScrollEffect(el, gnavHeight);
+    if (isStickyHeader) handleScrollEffect(el, gnavHeight);
 
     let timeout;
     window.addEventListener('resize', () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         applyStylesBasedOnScreenSize(el, originTable);
-        handleScrollEffect(el, gnavHeight);
+        if (isStickyHeader) handleScrollEffect(el, gnavHeight);
       }, 100);
     });
   });
