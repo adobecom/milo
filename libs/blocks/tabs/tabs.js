@@ -21,8 +21,7 @@ const scrollTabIntoView = (e) => {
   if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 };
 
-function changeTabs(e) {
-  const { target } = e;
+function changeTabs(target, rootElem, sectionToJump) {
   const parent = target.parentNode;
   const grandparent = parent.parentNode.nextElementSibling;
   parent
@@ -36,6 +35,25 @@ function changeTabs(e) {
   grandparent.parentNode
     .querySelector(`#${target.getAttribute('aria-controls')}`)
     .removeAttribute('hidden');
+  if (sectionToJump) {
+    const jumpToSectionDecoratedDataStatus = sectionToJump.getAttribute('data-status') === 'decorated';
+    if (jumpToSectionDecoratedDataStatus) {
+      let intervalCounter = 0;
+      const intervalID = setInterval(() => {
+        intervalCounter++;
+        sectionToJump = rootElem.querySelector(`[data-jump-to-tab="${target.getAttribute('id')}"]:not([data-status="decorated"])`);
+        if (sectionToJump) {
+          sectionToJump.scrollIntoView();
+          clearInterval(intervalID);
+        }
+        if (intervalCounter > 2) {
+          clearInterval(intervalID);
+        }
+      }, 500);
+    } else {
+      sectionToJump.scrollIntoView();
+    }
+  }
 }
 
 function getStringKeyName(str) {
@@ -56,7 +74,7 @@ function configTabs(config, rootElem) {
   if (config['active-tab']) {
     const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
     const sel = rootElem.querySelector(id);
-    if (sel) sel.click();
+    changeTabs(sel, rootElem, false);
   }
 }
 
@@ -82,7 +100,8 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', changeTabs);
+    const sectionToJump = rootElem.querySelector(`[data-jump-to-tab="${tab.getAttribute('id')}"]`);
+    tab.addEventListener('click', (e) => changeTabs(e.target, rootElem, sectionToJump));
   });
   if (config) configTabs(config, rootElem);
 }
@@ -169,24 +188,39 @@ const init = (block) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
     const rows = sectionMetadata.querySelectorAll(':scope > div');
+    let assocTabItem;
+    let jumpToEl;
+    let tabValue;
     rows.forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
-      if (key !== 'tab') return;
       let val = getStringKeyName(row.children[1].textContent);
       if (!val) return;
-      let id = tabId;
-      let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
-      if (config.id) {
-        const values = row.children[1].textContent.split(',');
-        id = values[0];
-        val = getStringKeyName(String(values[1]));
-        assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
-      }
-      if (assocTabItem) {
-        const section = sectionMetadata.closest('.section');
-        assocTabItem.append(section);
+      switch(key) {
+        case 'tab':
+          let id = tabId;
+          tabValue = `tab-${val}`;
+          assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
+          if (config.id) {
+            const values = row.children[1].textContent.split(',');
+            id = values[0];
+            val = getStringKeyName(String(values[1]));
+            assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
+          }
+          break;
+        case 'tab-jump':
+          jumpToEl = val;
+          break;
+        default: return;
       }
     });
+    if (assocTabItem && !jumpToEl) {
+      const section = sectionMetadata.closest('.section');
+      assocTabItem.append(section);
+    }
+    if (assocTabItem && jumpToEl) {
+      const section = sectionMetadata.closest('.section');
+      section.setAttribute('data-jump-to-tab', tabValue);
+    }
   });
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
