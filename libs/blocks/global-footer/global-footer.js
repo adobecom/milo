@@ -31,7 +31,6 @@ class Footer {
   constructor(footerEl, contentUrl) {
     this.footerEl = footerEl;
     this.contentUrl = contentUrl;
-    this.isDesktop = window.matchMedia('(min-width: 900px)');
     this.elements = {};
 
     this.init();
@@ -89,8 +88,6 @@ class Footer {
       await task();
     }
 
-    this.setHeadlineAttributes();
-    this.addEventListeners();
     this.footerEl.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer`);
 
     this.footerEl.append(this.elements.footer);
@@ -324,32 +321,6 @@ class Footer {
     decorateLinks(this.elements.footer);
 
     return this.elements.footer;
-  };
-
-  setHeadlineAttributes = () => {
-    if (!this.elements?.headlines) return;
-
-    if (this.isDesktop.matches) {
-      this.elements.headlines.forEach((headline) => {
-        headline.setAttribute('role', 'heading');
-        headline.removeAttribute('tabindex');
-        headline.setAttribute('aria-level', 2);
-        headline.removeAttribute('aria-haspopup', true);
-        headline.removeAttribute('aria-expanded', false);
-      });
-    } else {
-      this.elements.headlines.forEach((headline) => {
-        headline.setAttribute('role', 'button');
-        headline.setAttribute('tabindex', 0);
-        headline.removeAttribute('aria-level');
-        headline.setAttribute('aria-haspopup', true);
-        headline.setAttribute('aria-expanded', false);
-      });
-    }
-  };
-
-  addEventListeners = () => {
-    this.isDesktop.addEventListener('change', this.setHeadlineAttributes);
   };
 }
 
