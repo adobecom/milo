@@ -402,7 +402,7 @@ export default function init(el) {
 
   const isMerchTable = el.classList.contains('merch');
   const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight + 1 : 0;
+  const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
   handleHighlight(el);
   handleSection(el);
