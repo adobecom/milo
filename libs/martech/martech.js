@@ -1,5 +1,7 @@
 /* global _satellite */
 
+const EXPERIMENT_TIMEOUT_MS = 3000;
+
 let utils;
 
 const setDeep = (obj, path, value) => {
@@ -27,29 +29,39 @@ const handleAlloyResponse = (response) => {
 
   return items
     .map((item) => {
-      if (item?.data?.content) {
-        return {
-          manifestLocation: item.data.content.manifestLocation,
-          manifestData: item.data.content.manifestContent?.data,
-          experimentName: item.meta['activity.name'],
-          variantLabel: item.meta['experience.name'],
-          meta: item.meta,
-        };
-      }
-      return null;
+      const content = item?.data?.content;
+      if (!content) return null;
+
+      return {
+        manifestPath: content.manifestLocation || content.manifestPath,
+        manifestData: content.manifestContent?.data,
+        experimentName: item.meta['activity.name'],
+        variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+        meta: item.meta,
+      };
     })
     .filter((item) => item !== null);
 };
+
+const waitForEventOrTimeout = (eventName, timeout) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => {
+    reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+  }, timeout);
+
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event.detail);
+  }, { once: true });
+});
+
 
 const getExperiments = async () => {
   if (navigator.userAgent.match(/bot|crawl|spider/i)) {
     return {};
   }
+  const params = new URL(window.location.href).searchParams;
 
-  const timeoutParam = parseInt(new URL(window.location.href).searchParams.get('timeout'), 10);
-  const EXPERIMENT_TIMEOUT_MS = timeoutParam || 3000;
-
-  const experimentParam = new URL(window.location.href).searchParams.get('experiment');
+  const experimentParam = params.get('experiment');
 
   if (experimentParam) {
     const lastSlash = experimentParam.lastIndexOf('/');
@@ -61,37 +73,38 @@ const getExperiments = async () => {
     };
   }
 
-  const timeout = new Promise((resolve) => {
-    setTimeout(() => resolve('TIMEOUT'), EXPERIMENT_TIMEOUT_MS, false);
-  });
+  const timeout = parseInt(params.get('timeout'), 10) || EXPERIMENT_TIMEOUT_MS;
 
-  let response = false;
-
-  /*  try {
-    response = await Promise.race([window.alloy_load.sent, timeout]);
+  let response;
+  try {
+    response = await waitForEventOrTimeout(
+      'alloy_sendEvent',
+      timeout,
+    );
   } catch (e) {
-    console.log('Promise error', e);
+    // eslint-disable-next-line no-console
+    console.log(e);
   }
-*/
+
   let experiments = [];
-  if (response && response === 'TIMEOUT') {
-    experiments = handleAlloyResponse(response);
+  if (response) {
+    experiments = handleAlloyResponse(response.result);
   }
 
   // TODO: if there is personalization metadata AND target, how do we merge?
 
-  if (!experiments?.length) {
-    const manifestStr = (utils.getMetadata('experiment') || utils.getMetadata('personalization') || '').toLowerCase();
-    const manifests = manifestStr.split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
-    experiments = manifests.map((manifestPath) => (
+  const manifestStr = (utils.getMetadata('experiment') || utils.getMetadata('personalization') || '').toLowerCase();
+  const manifests = manifestStr.split(/,|(\s+)|(\\n)/g)
+    .filter((path) => path?.trim());
+  experiments = experiments.concat(
+    manifests.map((manifestPath) => (
       {
         manifestPath: manifestPath.endsWith('.json')
           ? manifestPath
           : `${manifestPath}.json`,
       }
-    ));
-  }
+    )),
+  );
 
   return { experiments };
 };
@@ -117,11 +130,6 @@ const checkForExperiments = async () => {
     // eslint-disable-next-line no-await-in-loop
     results.push(await runExperiment(experimentInfo, utils.createTag));
   }
-
-  // const experimentPromises = experiments.map(async (experimentInfo) => runExperiment(
-  //   experimentInfo,
-  //   utils.createTag,
-  // )).filter(Boolean);
 
   // let results = await Promise.all(experimentPromises);
   results = results.filter(Boolean);

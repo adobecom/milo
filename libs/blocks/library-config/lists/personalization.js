@@ -20,7 +20,6 @@ const categorize = (tagData) => tagData
     return tags;
   }, {});
 
-
 export default async function loadPersonalization(content, list) {
   const tagData = await fetchTags(content[0].path);
   const tagsObj = categorize(tagData);
