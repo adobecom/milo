@@ -20,5 +20,15 @@ describe('icon blocks', () => {
         });
       }
     });
+    describe('icon block inline has 2 columns', () => {
+      it('has 2 columns', () => {
+        const inlineBlock = document.querySelector('.icon-block.inline');
+        expect(inlineBlock).to.exist;
+        const firstColumn = inlineBlock.querySelector('.text-content .icon-area');
+        const secondColumn = inlineBlock.querySelector('.text-content .second-column');
+        expect(firstColumn).to.exist;
+        expect(secondColumn).to.exist;
+      });
+    });
   });
 });

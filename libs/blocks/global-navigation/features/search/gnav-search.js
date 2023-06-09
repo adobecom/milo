@@ -1,8 +1,11 @@
 import {
   toFragment,
   getFedsPlaceholderConfig,
+  isDesktop,
+  setCurtainState,
   trigger,
   closeAllDropdowns,
+  logErrorFor,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
@@ -18,7 +21,7 @@ const CONFIG = {
   },
 };
 
-function debounceCallback(callback, time = 200) {
+function debounceCallback(callback, time = 150) {
   if (typeof callback !== 'function') return undefined;
 
   let timeout = null;
@@ -29,18 +32,19 @@ function debounceCallback(callback, time = 200) {
   };
 }
 
-const getLocale = () => getConfig().locale.ietf;
-const getCountry = () => getLocale()?.split('-').pop() || 'US';
+const { locale } = getConfig();
+const [, country = 'US'] = locale.ietf.split('-');
 
 class Search {
   constructor(config) {
     this.icon = config.icon;
     this.trigger = config.trigger;
     this.parent = this.trigger.closest('.feds-nav-wrapper');
-    this.curtain = config.curtain;
-    this.isDesktop = window.matchMedia('(min-width: 900px)');
-
-    this.init();
+    const observer = new MutationObserver(() => {
+      this.clearSearchForm();
+    });
+    observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
+    logErrorFor(this.init.bind(this), 'Search has failed loading');
   }
 
   async init() {
@@ -96,7 +100,7 @@ class Search {
         // Pressing ESC when input has value resets the results
         if (this.input.value.length) {
           this.clearSearchForm();
-        } else if (this.isDesktop.matches) {
+        } else if (isDesktop.matches) {
           closeAllDropdowns();
           this.trigger.focus();
         }
@@ -123,17 +127,15 @@ class Search {
 
     // Switching between a mobile and a desktop view
     // should close the search dropdown
-    this.isDesktop.addEventListener('change', () => {
+    isDesktop.addEventListener('change', () => {
       closeAllDropdowns();
     });
-
-    // TODO: search menu should close on scroll, but this should happen from the general Menu logic
   }
 
   getSuggestions(query = this.query) {
     const { env } = getConfig();
     const subdomain = env === 'prod' ? 'adobesearch' : 'adobesearch-stage';
-    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${getLocale()}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
+    const api = `https://${subdomain}.adobe.io/autocomplete/completions?q[locale]=${locale.ietf}&scope=${CONFIG.suggestions.scope}&q[text]=${encodeURIComponent(query)}`;
 
     return fetch(api, { headers: { 'x-api-key': CONFIG.suggestions.apiKey } })
       .then((data) => data.json())
@@ -271,15 +273,17 @@ class Search {
   }
 
   focusInput() {
-    if (this.isDesktop.matches) {
+    if (isDesktop.matches) {
       this.input.focus();
     }
   }
 
   toggleDropdown() {
+    if (!isDesktop.matches) return;
+
     const hasBeenOpened = trigger({ element: this.trigger });
     if (hasBeenOpened) {
-      this.curtain.classList.add('is-open');
+      setCurtainState(true);
       this.focusInput();
     } else {
       this.clearSearchForm();
@@ -287,7 +291,7 @@ class Search {
   }
 
   static getHelpxLink(query) {
-    return `https://helpx.adobe.com/globalsearch.html?q=${encodeURIComponent(query.trim())}&start_index=0&country=${getCountry()}`;
+    return `https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${encodeURIComponent((query || '').trim())}&start_index=0&country=${country}`;
   }
 }
 

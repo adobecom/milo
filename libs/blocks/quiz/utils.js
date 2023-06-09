@@ -1,10 +1,12 @@
 import { getMetadata } from '../section-metadata/section-metadata.js';
+import { getConfig } from '../../utils/utils.js';
 
 const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 
 let getConfigPath; let getQuizKey; let getAnalyticsType; let getAnalyticsQuiz; let metaData;
+const { locale } = getConfig();
 
 const initConfigPath = (roolElm) => {
   const link = roolElm.querySelector('.quiz > div > div > a');
@@ -14,7 +16,7 @@ const initConfigPath = (roolElm) => {
 
 const initQuizKey = () => {
   getQuizKey = metaData.storagepath?.text;
-  return getQuizKey;
+  return locale.ietf ? `${getQuizKey}-${locale.ietf}` : getQuizKey;
 };
 
 const initAnalyticsType = () => metaData['analytics-type']?.text;
@@ -75,7 +77,7 @@ const storeResultInLocalStorage = (resultData, resultResources, primaryProducts,
   const structureFrags = resultData.matchedResults[0]['basic-fragments'];
 
   const structureFragsArray = structureFrags?.split(',');
-  const nestedFragsArray = nestedFrags?.split(',')
+  const nestedFragsArray = nestedFrags?.split(',');
 
   const resultToDelegate = {
     primaryProducts,

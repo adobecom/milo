@@ -25,10 +25,11 @@ const loadStyles = (path) => new Promise((resolve) => {
 describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
+      loadStyles('base.css'),
       loadStyles('global-navigation.css'),
-      loadStyles('blocks/search/gnav-search.css'),
-      loadStyles('blocks/profile/dropdown.css'),
-      loadStyles('blocks/navDropdown/dropdown.css'),
+      loadStyles('features/search/gnav-search.css'),
+      loadStyles('features/profile/dropdown.css'),
+      loadStyles('utilities/menu/menu.css'),
     ]);
   });
 
@@ -39,8 +40,8 @@ describe('keyboard navigation', () => {
     keyboardNavigation = new KeyboardNavigation();
     allNavItems = [
       ...document.querySelectorAll(`
-     ${selectors.brand}, 
      ${selectors.mainNavToggle},
+     ${selectors.brand},
      ${selectors.searchTrigger},
      ${selectors.mainNavItems},
      ${selectors.searchField},
@@ -53,8 +54,8 @@ describe('keyboard navigation', () => {
     mainNavItems = [...document.querySelectorAll(selectors.mainNavItems)];
     otherNavItems = [
       ...document.querySelectorAll(`
-     ${selectors.brand}, 
      ${selectors.mainNavToggle},
+     ${selectors.brand},
      ${selectors.searchTrigger},
      ${selectors.searchField},
      ${selectors.signIn},
@@ -69,9 +70,13 @@ describe('keyboard navigation', () => {
   describe('mainNav', () => {
     describe('Tab', () => {
       it('shifts focus', async () => {
-        allNavItems[5].focus(); // last main nav item
         await sendKeys({ press: 'Tab' });
-        expect(document.activeElement).to.equal(allNavItems[6]); // outside of main nav
+        expect(document.activeElement).to.equal(allNavItems[1]);
+        await sendKeys({ press: 'Tab' });
+        expect(document.activeElement).to.equal(allNavItems[2]);
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        expect(document.activeElement).to.equal(allNavItems[4]);
       });
 
       it('does not open a popup', async () => {
@@ -252,7 +257,7 @@ describe('keyboard navigation', () => {
         // focus shifted to last item of the popup
         const navLinks = [
           ...triggerOne.parentElement.querySelectorAll(`
-        ${selectors.navLink}, 
+        ${selectors.navLink},
         ${selectors.promoLink},
         ${selectors.imagePromo}
       `),
@@ -353,8 +358,8 @@ describe('keyboard navigation', () => {
         search.setAttribute('aria-expanded', 'true');
         const withoutBreadcrumbs = [
           ...document.querySelectorAll(`
-        ${selectors.brand}, 
         ${selectors.mainNavToggle},
+        ${selectors.brand},
         ${selectors.mainNavItems},
         ${selectors.searchTrigger},
         ${selectors.searchField},
@@ -378,8 +383,8 @@ describe('keyboard navigation', () => {
         search.setAttribute('aria-expanded', 'true');
         const withoutBreadcrumbs = [
           ...document.querySelectorAll(`
-        ${selectors.brand}, 
         ${selectors.mainNavToggle},
+        ${selectors.brand},
         ${selectors.mainNavItems},
         ${selectors.searchTrigger},
         ${selectors.searchField},
@@ -676,8 +681,8 @@ describe('keyboard navigation', () => {
       keyboardNavigation = new KeyboardNavigation();
       allNavItems = [
         ...document.querySelectorAll(`
-       ${selectors.brand}, 
        ${selectors.mainNavToggle},
+       ${selectors.brand},
        ${selectors.searchTrigger},
        ${selectors.mainNavItems},
        ${selectors.searchField},
@@ -690,8 +695,8 @@ describe('keyboard navigation', () => {
       mainNavItems = [...document.querySelectorAll(selectors.mainNavItems)];
       otherNavItems = [
         ...document.querySelectorAll(`
-       ${selectors.brand}, 
        ${selectors.mainNavToggle},
+       ${selectors.brand},
        ${selectors.searchTrigger},
        ${selectors.searchField},
        ${selectors.signIn},

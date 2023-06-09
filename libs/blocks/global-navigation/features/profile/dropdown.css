@@ -45,6 +45,7 @@
 
 .feds-profile-details {
   overflow: hidden;
+  line-height: 1.25;
 }
 
 .feds-profile-name,
@@ -54,14 +55,14 @@
 }
 
 .feds-profile-name {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 18px;
   font-weight: 700;
   color: var(--feds-color-profile--emphasis);
 }
 
 .feds-profile-email {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   font-size: 14px;
   color: var(--feds-color-profile-heading);
 }

@@ -58,7 +58,7 @@ describe('test createLinkMarkup', () => {
   });
 
   it('create a "price" link', async () => {
-    const EXPECTED_PRICE_TEXT = `{{PRICE - ${offerType} - Stock}}`;
+    const EXPECTED_PRICE_TEXT = `PRICE - ${offerType} - Stock`;
     const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&perp=true&term=false&seat=true&tax=true`;
 
     const type = 'price';
