@@ -1,9 +1,6 @@
 import { getConfig, loadStyle } from '../../utils/utils.js';
 import { html, useState } from '../../deps/htm-preact.js';
 
-const { miloLibs, codeRoot } = getConfig();
-loadStyle(`${miloLibs || codeRoot}/ui/controls/accordion.css`);
-
 const AccordionItem = ({ title, content, expand, onClick }) => {
   const isExpanded = expand ? 'is-expanded' : '';
   const buttonText = isExpanded ? 'Colapse' : 'Expand';
@@ -29,7 +26,10 @@ const getInitialState = (lskey, items) => {
 };
 
 export default function Accordion({ lskey = null, items = [], alwaysOpen = false }) {
+  const { miloLibs, codeRoot } = getConfig();
   const [isToggled, setIsToggled] = useState(getInitialState(lskey, items));
+
+  loadStyle(`${miloLibs || codeRoot}/ui/controls/accordion.css`);
 
   const toggle = (index) => {
     let t = [...isToggled];
@@ -55,7 +55,7 @@ export default function Accordion({ lskey = null, items = [], alwaysOpen = false
         onClick=${() => toggle(index)}
         expand=${isToggled[index]}
       />
-    `
+    `,
   );
 
   return html` <dl className="accordion">${accordionItems}</dl> `;

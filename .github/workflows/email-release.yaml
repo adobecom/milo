@@ -1,13 +1,15 @@
 name: Milo Bot Release Email
 
 on:
-  pull_request:
-    types: [closed]
+  pull_request_target:
+    types:
+      - closed
     branches:
       - main
 
 jobs:
   action:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
