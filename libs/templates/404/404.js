@@ -19,6 +19,7 @@ async function getLegacy404() {
   body.classList.remove('404');
   body.classList.add('legacy-404');
   const main = body.querySelector('main');
+  if (!main) return;
   main.innerHTML = '';
   let resp = await fetch(`${locale.contentRoot}/404.plain.html`);
   if (!resp || !resp.ok) {
