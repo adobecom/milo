@@ -58,12 +58,15 @@ async function getLegacy404() {
   main.append(...doc.querySelectorAll('body > *'));
 }
 
-(async function init() {
+export default async function init() {
   const root = contentRoot || '';
   const style = getMetadata('404');
-  if (style === 'feds') get404();
-  if (style === 'local') get404(`${root}/fragments/404`);
-  if (!style) getLegacy404();
+  if (style === 'feds') await get404();
+  if (style === 'local') await get404(`${root}/fragments/404`);
+  if (!style) await getLegacy404();
+}
 
+(async () => {
+  await init();
   sampleRUM('404', { source: document.referrer, target: window.location.href });
-}());
+})();
