@@ -68,4 +68,14 @@ describe('tabs', () => {
     const yPositionAfterScroll =  contentForFirstButton.getBoundingClientRect().y;
     expect(yPositionBeforeScroll).greaterThan(yPositionAfterScroll);
   });
+  it('interval will be cleared if there is no element after 1 sec',  async () => {
+    const firstButton = allTabs[6].querySelector('div[role="tablist"] button[aria-controls="tab-panel-demo-slow-2-1"]');
+    const contentForFirstButton = document.querySelector('[data-jump-to-tab="tab-demo-slow-2-1"]');
+    const yPositionBeforeScroll = contentForFirstButton.getBoundingClientRect().y;
+    contentForFirstButton.setAttribute('data-status', 'decorated');
+    firstButton.click();
+    clock.tick(1100);
+    const yPositionAfterScroll =  contentForFirstButton.getBoundingClientRect().y;
+    expect(yPositionBeforeScroll).equals(yPositionAfterScroll);
+  });
 });

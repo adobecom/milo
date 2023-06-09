@@ -46,7 +46,7 @@ function changeTabs(target, rootElem, sectionToJump) {
           sectionToJump.scrollIntoView();
           clearInterval(intervalID);
         }
-        if (intervalCounter > 2) {
+        if (intervalCounter > 1) {
           clearInterval(intervalID);
         }
       }, 500);
