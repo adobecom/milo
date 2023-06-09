@@ -564,9 +564,7 @@ const getCaaSMetadata = async (pageMd, options) => {
   let tagErrors = [];
   let tags = [];
   // for-of required to await any async computeVal's
-  // eslint-disable-next-line no-restricted-syntax
   for (const [key, computeFn] of Object.entries(props)) {
-    // eslint-disable-next-line no-await-in-loop
     const val = computeFn ? await computeFn(pageMd[key], options) : pageMd[key];
     if (val?.error) {
       errors.push(val.error);
