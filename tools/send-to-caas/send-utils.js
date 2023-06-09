@@ -417,6 +417,7 @@ const props = {
   },
   bookmarkicon: 0,
   carddescription: 0,
+  cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
@@ -498,7 +499,7 @@ const getCaasProps = (p) => {
     url: p.url,
     floodGateColor: p.floodgatecolor,
     universalContentIdentifier: p.uci,
-    title: p.title,
+    title: p.cardtitle || p.title,
     description: p.carddescription || p.description,
     createdDate: p.created,
     modifiedDate: p.modified,
@@ -514,7 +515,7 @@ const getCaasProps = (p) => {
     language: p.lang,
     cardData: {
       style: p.style,
-      headline: p.title,
+      headline: p.cardtitle || p.title,
       ...(p.details && { details: p.details }),
       ...((p.bookmarkenabled || p.bookmarkicon || p.bookmarkaction) && {
         bookmark: {
