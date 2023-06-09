@@ -416,6 +416,7 @@ const props = {
     return undefined;
   },
   bookmarkicon: 0,
+  carddescription: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
@@ -498,7 +499,7 @@ const getCaasProps = (p) => {
     floodGateColor: p.floodgatecolor,
     universalContentIdentifier: p.uci,
     title: p.title,
-    description: p.description,
+    description: p.carddescription || p.description,
     createdDate: p.created,
     modifiedDate: p.modified,
     tags: p.tags,
