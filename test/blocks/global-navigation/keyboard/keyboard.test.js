@@ -103,7 +103,6 @@ describe('keyboard navigation', () => {
       it("On the first item, closes the popup if it's open and shifts focus", async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         await sendKeys({ down: 'Shift' });
         await sendKeys({ press: 'Tab' });
@@ -146,7 +145,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerOne.focus();
-        keyboardNavigation.mainNav.setActive(triggerOne);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerOne)).to.equal(true);
         await sendKeys({ press: 'ArrowRight' });
@@ -158,7 +156,6 @@ describe('keyboard navigation', () => {
         const triggerTwo = mainNavItems[1];
         const triggerPrimaryCTA = mainNavItems[2];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         await sendKeys({ press: 'ArrowRight' });
         expect(isClosed(triggerTwo)).to.equal(true);
@@ -199,7 +196,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerTwo)).to.equal(true);
         await sendKeys({ press: 'ArrowLeft' });
@@ -210,7 +206,6 @@ describe('keyboard navigation', () => {
       it('if first link has an open popup, it opens', async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         expect(isOpen(trigger)).to.equal(true);
         await sendKeys({ press: 'ArrowLeft' });
@@ -239,7 +234,6 @@ describe('keyboard navigation', () => {
       it('if first link has an open popup, it closes', async () => {
         const triggerOne = mainNavItems[0];
         triggerOne.focus();
-        keyboardNavigation.mainNav.setActive(triggerOne);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerOne)).to.equal(true);
         await sendKeys({ press: 'ArrowUp' });
@@ -250,7 +244,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerTwo)).to.equal(true);
         await sendKeys({ press: 'ArrowUp' });
@@ -346,7 +339,6 @@ describe('keyboard navigation', () => {
       it('closes a popup', async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         expect(isOpen(trigger)).to.equal(true);
         await sendKeys({ press: 'Escape' });
@@ -485,7 +477,6 @@ describe('keyboard navigation', () => {
     beforeEach(async () => {
       [trigger, triggerTwo] = mainNavItems;
       trigger.focus();
-      keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
       [firstPopupItem] = navLinks;
@@ -522,7 +513,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -561,7 +551,6 @@ describe('keyboard navigation', () => {
       it('shifts focus from the second popup item back to the trigger on RTL', async () => {
         document.dir = 'rtl';
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -585,7 +574,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus from the second popup item back to the trigger', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -635,7 +623,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -711,7 +698,6 @@ describe('keyboard navigation', () => {
       keyboardNavigation.mainNav.popup.desktop = { matches: false };
       [trigger, triggerTwo] = mainNavItems;
       trigger.focus();
-      keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
       [firstPopupItem] = navLinks;
@@ -757,7 +743,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -813,7 +798,6 @@ describe('keyboard navigation', () => {
       it('shifts focus from the second popup item back to the trigger', async () => {
         document.dir = 'rtl';
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -840,7 +824,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus from the second popup item back to the trigger', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -882,7 +865,6 @@ describe('keyboard navigation', () => {
 
       it('coming from trigger two, it will focus the last popup item of trigger one', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         await sendKeys({ press: 'ArrowUp' });
         expect(document.activeElement.innerText).to.equal('first-column-second-section-last-item');
@@ -906,7 +888,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();

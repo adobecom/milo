@@ -125,7 +125,7 @@ class Popup {
 
   focusMainNav = (isFooter) => {
     if (isFooter) return;
-    this.mainNav.items[this.mainNav.curr].focus();
+    this.mainNav.focusCurr();
   };
 
   focusMainNavNext = (isFooter) => {

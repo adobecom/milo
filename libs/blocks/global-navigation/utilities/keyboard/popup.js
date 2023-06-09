@@ -11,23 +11,20 @@ const getState = ({ e, element } = {}) => {
   if (!element) return {};
   const popupItems = [...element.querySelectorAll(selectors.popupItems)];
   const curr = popupItems.findIndex((el) => el === e.target);
-  const prev = getPreviousVisibleItemPosition(curr, popupItems);
-  const next = getNextVisibleItemPosition(curr, popupItems);
   const column = document.activeElement.closest(selectors.column);
   const visibleColumns = [...element.querySelectorAll(selectors.column)];
   const currentColumn = visibleColumns.findIndex((node) => node.isEqualNode(column));
-  const prevColumn = visibleColumns[currentColumn - 1] || -1;
-  const nextColumn = visibleColumns[currentColumn + 1] || -1;
 
   return {
     popupItems,
     curr,
-    prev,
-    next,
-    prevColumn,
-    nextColumn,
+    prev: getPreviousVisibleItemPosition(curr, popupItems),
+    next: getNextVisibleItemPosition(curr, popupItems),
+    prevColumn: visibleColumns[currentColumn - 1],
+    nextColumn: visibleColumns[currentColumn + 1],
   };
 };
+
 class Popup {
   constructor({ mainNav }) {
     this.mainNav = mainNav;
@@ -46,13 +43,21 @@ class Popup {
 
   focusMainNav = (isFooter) => {
     if (isFooter) return; // There is no main nav for the footer, so we can ignore this
-    this.mainNav.items[this.mainNav.curr].focus();
+    this.mainNav.focusCurr();
   };
 
   focusMainNavNext = (isFooter) => {
     if (isFooter) return;
-    this.mainNav.focusNext();
-    this.mainNav.open();
+    const { next } = this.mainNav.getState();
+    if (next >= 0) {
+      this.mainNav.focusNext();
+      this.mainNav.open();
+      return;
+    }
+
+    // On the last main nav item, close all dropdowns and focus current main nav item
+    closeAllDropdowns();
+    this.mainNav.focusCurr();
   };
 
   handleKeyDown = ({ e, element, isFooter }) => {
@@ -90,8 +95,8 @@ class Popup {
         break;
       }
       case 'ArrowLeft': {
-        const noPrev = (document.dir !== 'rtl' && prevColumn === -1);
-        const noNext = (document.dir === 'rtl' && nextColumn === -1);
+        const noPrev = document.dir !== 'rtl' && !prevColumn?.querySelector(selectors.popupItems);
+        const noNext = document.dir === 'rtl' && !nextColumn?.querySelector(selectors.popupItems);
         if (noPrev || noNext) {
           this.focusMainNav(isFooter);
           break;
@@ -112,8 +117,8 @@ class Popup {
         break;
       }
       case 'ArrowRight': {
-        const noNext = document.dir !== 'rtl' && nextColumn === -1;
-        const noPrev = document.dir === 'rtl' && prevColumn === -1;
+        const noNext = document.dir !== 'rtl' && !nextColumn?.querySelector(selectors.popupItems);
+        const noPrev = document.dir === 'rtl' && !prevColumn?.querySelector(selectors.popupItems);
         if (noNext || noPrev) {
           this.focusMainNav(isFooter);
           break;

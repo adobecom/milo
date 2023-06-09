@@ -36,20 +36,28 @@ const openProfile = ({ e, el }) => {
 };
 
 const getProfileItems = ({ e }) => {
-  const focusableElements = document.querySelectorAll(selectors.profileDropdown);
-  if (!focusableElements.length) return { next: -1, prev: -1, items: [] };
-  const items = [...focusableElements];
+  const profileDropdownLinks = document.querySelectorAll(selectors.profileDropdown);
+  if (!profileDropdownLinks.length) return { next: -1, prev: -1, items: [] };
+  const items = [...profileDropdownLinks];
   const curr = items.findIndex((element) => element === e.target);
-  return { next: curr + 1, prev: curr - 1, items };
-};
-const focusNextProfileItem = ({ e }) => {
-  const { items, next } = getProfileItems({ e });
-  if (items[next]) items[next].focus();
+  return { next: curr + 1, prev: curr - 1, curr, items };
 };
 
 const closeProfile = () => {
   closeAllDropdowns();
   document.querySelector(`${selectors.profileButton}, ${selectors.signIn}`)?.focus();
+};
+
+const focusNextProfileItem = ({ e }) => {
+  const { items, next } = getProfileItems({ e });
+  if (items[next]) {
+    items[next].focus();
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+  closeProfile();
 };
 
 const focusPrevProfileItem = ({ e }) => {
@@ -59,6 +67,8 @@ const focusPrevProfileItem = ({ e }) => {
     return;
   }
 
+  e.preventDefault();
+  e.stopPropagation();
   closeProfile();
 };
 
@@ -80,15 +90,18 @@ class KeyboardNavigation {
           switch (e.code) {
             case 'Tab': {
               cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
+              const { items } = getProfileItems({ e });
+
+              const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
+              if (e.shiftKey && e.target === profileBtn) closeProfile();
+              if (items[items.length - 1] === e.target) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeProfile();
+              }
               break;
             }
-            case 'Enter': {
-              if (e.target.closest(selectors.searchField)) return;
-              e.stopPropagation();
-              e.preventDefault();
-              e.target.click();
-              break;
-            }
+            case 'Enter':
             case 'Space': {
               if (e.target.closest(selectors.searchField)) return;
               e.stopPropagation();
