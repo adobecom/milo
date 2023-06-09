@@ -6,7 +6,7 @@ import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, 
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
-loadStyle(`${codeRoot}/deps/caas.css`);
+loadStyle(`${codeRoot}/deps/caas-uar.css`);
 
 const App = () => {
   const [questionData, setQuestionData] = useState({});
