@@ -67,12 +67,17 @@ export function readBlockConfig(block) {
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
-export async function fetchBlogArticleIndex() {
+export async function fetchBlogArticleIndex(config) {
   const pageSize = 500;
+  const { feed } = config;
+  const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
+  const indexPath = feed
+    ? `${feed}${queryParams}`
+    : `${getConfig().locale.contentRoot}/query-index.json${queryParams}`;
 
   if (blogIndex.complete) return (blogIndex);
 
-  return fetch(`${getConfig().locale.contentRoot}/query-index.json?limit=${pageSize}&offset=${blogIndex.offset}`)
+  return fetch(indexPath)
     .then((response) => response.json())
     .then((json) => {
       const complete = (json.limit + json.offset) === json.total;
@@ -307,7 +312,7 @@ async function buildFilter(type, tax, block, config) {
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
-  // console.log(category);
+
   category.forEach((topic) => {
     const item = tax.get(topic, tax[`${type.toUpperCase()}`]);
     if (item.level === 1) {
@@ -363,7 +368,7 @@ async function filterArticles(config, feed, limit, offset) {
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
     // eslint-disable-next-line no-await-in-loop
-    const index = await fetchBlogArticleIndex();
+    const index = await fetchBlogArticleIndex(config);
     const indexChunk = index.data.slice(feed.cursor);
 
     const beforeFiltering = new Date();
@@ -521,14 +526,12 @@ async function decorateFeedFilter(articleFeedEl, config) {
   parent.parentElement.insertBefore(selectedContainer, parent);
 }
 
-const clearBlock = (block) => { block.innerHTML = ''; };
-
-export default async function init(articleFeed) {
-  const config = readBlockConfig(articleFeed);
-  clearBlock(articleFeed);
+export default async function init(el) {
+  const config = readBlockConfig(el);
+  el.innerHTML = '';
   await loadTaxonomy();
   if (config.filters) {
-    decorateFeedFilter(articleFeed, config);
+    decorateFeedFilter(el, config);
   }
-  decorateArticleFeed(articleFeed, config);
+  decorateArticleFeed(el, config);
 }
