@@ -16,6 +16,7 @@ const blogIndex = {
   byPath: {},
   offset: 0,
   complete: false,
+  config: {},
 };
 
 /**
@@ -67,9 +68,9 @@ export function readBlockConfig(block) {
  * fetches blog article index.
  * @returns {object} index with data and path lookup
  */
-export async function fetchBlogArticleIndex(config) {
+export async function fetchBlogArticleIndex() {
   const pageSize = 500;
-  const { feed } = config;
+  const { feed } = blogIndex.config;
   const queryParams = `?limit=${pageSize}&offset=${blogIndex.offset}`;
   const indexPath = feed
     ? `${feed}${queryParams}`
@@ -367,7 +368,7 @@ async function filterArticles(config, feed, limit, offset) {
 
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
-    const index = await fetchBlogArticleIndex(config);
+    const index = await fetchBlogArticleIndex();
     const indexChunk = index.data.slice(feed.cursor);
 
     const beforeFiltering = new Date();
@@ -527,6 +528,7 @@ async function decorateFeedFilter(articleFeedEl, config) {
 
 export default async function init(el) {
   const config = readBlockConfig(el);
+  blogIndex.config = config;
   el.innerHTML = '';
   await loadTaxonomy();
   if (config.filters) {
