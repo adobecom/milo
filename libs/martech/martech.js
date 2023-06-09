@@ -125,13 +125,10 @@ const checkForExperiments = async () => {
 
   let results = [];
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const experimentInfo of experiments) {
-    // eslint-disable-next-line no-await-in-loop
     results.push(await runExperiment(experimentInfo, utils.createTag));
   }
 
-  // let results = await Promise.all(experimentPromises);
   results = results.filter(Boolean);
   return {
     experiments: results.map((r) => r.experiment),

@@ -9,6 +9,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'bulk-publish',
   'caas',
   'caas-config',
   'card',
