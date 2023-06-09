@@ -66,7 +66,6 @@ async function fetchResults(signal, terms) {
       }
     });
     if (hits.length < LIMIT && !complete) {
-      // eslint-disable-next-line no-await-in-loop
       ({ data, complete } = await fetchBlogArticleIndex());
     }
   }
