@@ -1,10 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
-// import sinon from 'sinon';
-// import { waitForElement } from '../helpers/waitfor.js';
-
-// const utils = {};
 
 const config = {
   codeRoot: '/libs',
