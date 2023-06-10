@@ -1,6 +1,17 @@
 /* eslint-disable no-console */
 import { loadScript } from '../utils/utils.js';
 
+export const PERSONALIZATION_TAGS = {
+  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
+  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
+  android: () => navigator.userAgent.includes('Android'),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  loggedout: () => !window.adobeIMS?.isSignedInUser(),
+  loggedin: () => window.adobeIMS?.isSignedInUser(),
+  darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+  lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
+};
+
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- ,]/g;
 const RE_SPACE_COMMA = /[ ,]/;
@@ -30,15 +41,6 @@ const GLOBAL_CMDS = [
   'useblockcode',
 ];
 
-export const PERSONALIZATION_TAGS = {
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
-  firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
-  android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => window.adobeIMS?.isSignedInUser(),
-};
-
 function normalizePath(p) {
   let path = p;
 
@@ -54,14 +56,14 @@ function normalizePath(p) {
   return path;
 }
 
-function handleCommands(selectedVariant, createTag) {
+function handleCommands(selectedVariant, createTag, rootEl) {
   const createFragmentLink = (url) => {
     const a = createTag('a', { href: url }, url);
     const p = createTag('p', undefined, a);
     return p;
   };
 
-  const mainEl = document.querySelector('main');
+  const mainEl = rootEl || document.querySelector('main');
 
   selectedVariant.commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
@@ -263,6 +265,50 @@ export async function getConfig(experimentName, variantLabel, manifestData, mani
   config.experimentName = experimentName;
   config.manifest = manifestPath;
   return config;
+}
+
+export async function fragmentPersonalization(doc) {
+  const fpTableRows = doc.querySelectorAll('.fragment-personalization > div');
+  doc.querySelector('.fragment-personalization').remove();
+  if (!fpTableRows) return doc;
+
+  const variantNames = [];
+  const info = [...fpTableRows].reduce((obj, row) => {
+    if (row.children[0]?.innerText?.toLowerCase() === 'action') {
+      return obj;
+    }
+    const variantName = row.children[2].innerText?.toLowerCase();
+    if (!variantNames.includes(variantName)) {
+      variantNames.push(variantName);
+      obj[variantName] = [];
+    }
+    console.log(row.children[3]);
+    obj[variantName].push({
+      action: row.children[0].innerText?.toLowerCase(),
+      selector: row.children[1].innerText?.toLowerCase(),
+      htmlFragment: row.children[3].firstElementChild,
+    });
+    return obj;
+  }, {});
+
+  const selectedVariant = getPersonalizationVariant(variantNames);
+  if (selectedVariant) {
+    info[selectedVariant].forEach((cmd) => {
+      const selectedEl = doc.querySelector(cmd.selector);
+      if (!selectedEl) return;
+
+      if (['replace', 'replacecontent'].includes(cmd.action)) {
+        selectedEl.replaceWith(cmd.htmlFragment);
+      } else if (['insertbefore', 'insertcontentbefore'].includes(cmd.action)) {
+        selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
+      } else if (['insertafter', 'insertcontentafter'].includes(cmd.action)) {
+        selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
+      } else if (['remove', 'removecontent'].includes(cmd.action)) {
+        selectedEl.remove();
+      }
+    });
+  }
+  return doc;
 }
 
 export async function runExperiment(experimentInfo, createTag) {

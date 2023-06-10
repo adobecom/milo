@@ -23,6 +23,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
+  'fragment-personalization',
   'featured-article',
   'global-footer',
   'global-navigation',
@@ -68,7 +69,6 @@ const AUTO_BLOCKS = [
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/' },
-  { fragment: '/experiments/' }, // TODO: CPEYER TEST THIS
   { instagram: 'https://www.instagram.com' },
   { slideshare: 'https://www.slideshare.net' },
   { tiktok: 'https://www.tiktok.com' },

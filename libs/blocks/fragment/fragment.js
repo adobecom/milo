@@ -31,7 +31,7 @@ const updateFragMap = (fragment, a, href) => {
 export default async function init(a) {
   const { experimentFragments } = getConfig();
   let relHref = localizeLink(a.href);
-  if (experimentFragments[relHref]) {
+  if (experimentFragments?.[relHref]) {
     a.href = experimentFragments[relHref];
     relHref = experimentFragments[relHref];
   }
@@ -43,7 +43,11 @@ export default async function init(a) {
   if (resp.ok) {
     const html = await resp.text();
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    let doc = parser.parseFromString(html, 'text/html');
+    if (doc.querySelector('.fragment-personalization')) {
+      const { fragmentPersonalization } = await import('../../scripts/experiments.js');
+      doc = await fragmentPersonalization(doc);
+    }
     const sections = doc.querySelectorAll('body > div');
     if (sections.length > 0) {
       const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });
