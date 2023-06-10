@@ -362,7 +362,6 @@ async function filterArticles(config, feed, limit, offset) {
 
   while ((feed.data.length < limit + offset) && (!feed.complete)) {
     const beforeLoading = new Date();
-    // eslint-disable-next-line no-await-in-loop
     const index = await fetchBlogArticleIndex();
     const indexChunk = index.data.slice(feed.cursor);
 
