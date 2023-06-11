@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { loadScript } from '../utils/utils.js';
+let utils;
 
 export const PERSONALIZATION_TAGS = {
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
@@ -56,10 +56,20 @@ function normalizePath(p) {
   return path;
 }
 
-function handleCommands(selectedVariant, createTag, rootEl) {
+const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
+
+const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
+  Object.entries(item[prop] || {})
+    .forEach(([key, val]) => {
+      propMap[key] = val;
+    });
+  return propMap;
+}, {});
+
+function handleCommands(selectedVariant, rootEl) {
   const createFragmentLink = (url) => {
-    const a = createTag('a', { href: url }, url);
-    const p = createTag('p', undefined, a);
+    const a = utils.createTag('a', { href: url }, url);
+    const p = utils.createTag('p', undefined, a);
     return p;
   };
 
@@ -243,7 +253,7 @@ async function fetchManifest(path) {
   return null;
 }
 
-export async function getConfig(experimentName, variantLabel, manifestData, manifestPath) {
+export async function getExpConfig(experimentName, variantLabel, manifestData, manifestPath) {
   console.log('Experiment: ', experimentName || manifestPath);
 
   const data = manifestData || await fetchManifest(normalizePath(manifestPath));
@@ -311,7 +321,7 @@ export async function fragmentPersonalization(doc) {
   return doc;
 }
 
-export async function runExperiment(experimentInfo, createTag) {
+export async function runExperiment(experimentInfo) {
   const {
     experimentName,
     manifestData,
@@ -319,7 +329,7 @@ export async function runExperiment(experimentInfo, createTag) {
     variantLabel,
   } = experimentInfo;
 
-  const experiment = await getConfig(experimentName, variantLabel, manifestData, manifestPath);
+  const experiment = await getExpConfig(experimentName, variantLabel, manifestData, manifestPath);
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
@@ -329,14 +339,46 @@ export async function runExperiment(experimentInfo, createTag) {
     await replaceInner(selectedVariant.replacepage[0], document.querySelector('main'));
   }
 
-  selectedVariant.insertscript?.map((script) => loadScript(script.val));
+  selectedVariant.insertscript?.map((script) => utils.loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  handleCommands(selectedVariant, createTag);
+  handleCommands(selectedVariant);
 
   return {
     experiment,
     blocks: selectedVariant.useblockcode,
     fragments: selectedVariant.replacefragment,
   };
+}
+
+export async function applyPersonalization(
+  { persManifests = [], targetManifests = [] },
+  { createTag, loadScript, getConfig, setConfig },
+) {
+  if (!(persManifests.length || targetManifests.length)) return;
+
+  utils = { createTag, loadScript };
+
+  let manifests = targetManifests;
+
+  manifests = manifests.concat(
+    persManifests.map((manifestPath) => ({ manifestPath: appendJsonExt(manifestPath) })),
+  );
+
+  let results = [];
+  for (const manifest of manifests) {
+    results.push(await runExperiment(manifest));
+  }
+
+  results = results.filter(Boolean);
+  // Currently required for preview.js
+  window.hlx ??= {};
+  window.hlx.experiments = results.map((r) => r.experiment);
+
+  setConfig({
+    ...getConfig(),
+    experiments: results.map((r) => r.experiment),
+    experimentBlocks: consolidateObjects(results, 'blocks'),
+    experimentFragments: consolidateObjects(results, 'fragments'),
+  });
 }

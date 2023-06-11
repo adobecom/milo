@@ -1,29 +1,50 @@
-/* global _satellite */
-
 const EXPERIMENT_TIMEOUT_MS = 3000;
-
-let utils;
 
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
-  pathArr.reduce((a, b, level) => {
-    if (typeof a[b] === 'undefined' && level !== pathArr.length - 1) {
-      a[b] = {};
-      return a[b];
+  let currentObj = obj;
+
+  for (let i = 0; i < pathArr.length - 1; i++) {
+    const key = pathArr[i];
+
+    if (typeof currentObj[key] !== 'object' || currentObj[key] === null) {
+      currentObj[key] = {};
     }
 
-    if (level === pathArr.length - 1) {
-      a[b] = value;
-      return value;
-    }
-    return a[b];
-  }, obj);
+    currentObj = currentObj[key];
+  }
+
+  currentObj[pathArr[pathArr.length - 1]] = value;
+};
+
+const waitForEventOrTimeout = (eventName, timeout) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => {
+    reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
+  }, timeout);
+
+  window.addEventListener(eventName, (event) => {
+    clearTimeout(timer);
+    resolve(event.detail);
+  }, { once: true });
+});
+
+// TODO: multiple experiments && pill integration
+const getExpFromParam = (expParam) => {
+  const lastSlash = expParam.lastIndexOf('/');
+  return {
+    experiments: [{
+      experimentPath: expParam.substring(0, lastSlash),
+      variantLabel: expParam.substring(lastSlash + 1),
+    }],
+  };
 };
 
 const handleAlloyResponse = (response) => {
-  const items = ((response.propositions?.length && response.propositions)
+  const items = (
+    (response.propositions?.length && response.propositions)
     || (response.decisions?.length && response.decisions)
-    || []).map((i) => i.items).flat();
+    || []
+  ).map((i) => i.items).flat();
 
   if (!items?.length) return [];
 
@@ -40,106 +61,39 @@ const handleAlloyResponse = (response) => {
         meta: item.meta,
       };
     })
-    .filter((item) => item !== null);
+    .filter(Boolean);
 };
 
-const waitForEventOrTimeout = (eventName, timeout) => new Promise((resolve, reject) => {
-  const timer = setTimeout(() => {
-    reject(new Error(`Timeout waiting for ${eventName} after ${timeout}ms`));
-  }, timeout);
-
-  window.addEventListener(eventName, (event) => {
-    clearTimeout(timer);
-    resolve(event.detail);
-  }, { once: true });
-});
-
-
-const getExperiments = async () => {
-  if (navigator.userAgent.match(/bot|crawl|spider/i)) {
-    return {};
-  }
+const getTargetPersonalization = async () => {
+  // TODO: do we need this?
+  // if (navigator.userAgent.match(/bot|crawl|spider/i)) {
+  //   return {};
+  // }
   const params = new URL(window.location.href).searchParams;
 
   const experimentParam = params.get('experiment');
+  if (experimentParam) return getExpFromParam(experimentParam);
 
-  if (experimentParam) {
-    const lastSlash = experimentParam.lastIndexOf('/');
-    return {
-      experiments: [{
-        experimentPath: experimentParam.substring(0, lastSlash),
-        variantLabel: experimentParam.substring(lastSlash + 1),
-      }],
-    };
-  }
-
+  // TODO: rename searchparam "timeout"
   const timeout = parseInt(params.get('timeout'), 10) || EXPERIMENT_TIMEOUT_MS;
 
   let response;
   try {
-    response = await waitForEventOrTimeout(
-      'alloy_sendEvent',
-      timeout,
-    );
+    response = await waitForEventOrTimeout('alloy_sendEvent', timeout);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.log(e);
   }
 
-  let experiments = [];
+  let manifests = [];
   if (response) {
-    experiments = handleAlloyResponse(response.result);
+    manifests = handleAlloyResponse(response.result);
   }
 
-  // TODO: if there is personalization metadata AND target, how do we merge?
-
-  const manifestStr = (utils.getMetadata('experiment') || utils.getMetadata('personalization') || '').toLowerCase();
-  const manifests = manifestStr.split(/,|(\s+)|(\\n)/g)
-    .filter((path) => path?.trim());
-  experiments = experiments.concat(
-    manifests.map((manifestPath) => (
-      {
-        manifestPath: manifestPath.endsWith('.json')
-          ? manifestPath
-          : `${manifestPath}.json`,
-      }
-    )),
-  );
-
-  return { experiments };
+  return manifests;
 };
 
-const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
-  Object.entries(item[prop] || {})
-    .forEach(([key, val]) => {
-      propMap[key] = val;
-    });
-  return propMap;
-}, {});
-
-const checkForExperiments = async () => {
-  const { experiments } = await getExperiments();
-  if (!experiments) return null;
-
-  const { runExperiment } = await import('../scripts/experiments.js');
-
-  let results = [];
-
-  for (const experimentInfo of experiments) {
-    results.push(await runExperiment(experimentInfo, utils.createTag));
-  }
-
-  results = results.filter(Boolean);
-  return {
-    experiments: results.map((r) => r.experiment),
-    fragments: consolidateObjects(results, 'fragments'),
-    blocks: consolidateObjects(results, 'blocks'),
-  };
-};
-
-export default async function init({ experimentsEnabled = false, utilMethods }) {
-  utils = utilMethods;
-
+export default async function init({ persEnabled = false, persManifests, utils }) {
   const getDetails = (env) => ({
     edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
     url:
@@ -159,6 +113,7 @@ export default async function init({ experimentsEnabled = false, utilMethods }) 
     'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
     config.locale.ietf,
   );
+  setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
   window.marketingtech = {
     adobe: {
@@ -169,26 +124,19 @@ export default async function init({ experimentsEnabled = false, utilMethods }) 
   };
   window.edgeConfigId = edgeConfigId;
 
-  setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
-
   await utils.loadScript('/libs/deps/martech.main.standard.min.js');
   // eslint-disable-next-line no-underscore-dangle
   window._satellite.track('pageload');
 
-  if (experimentsEnabled) {
-    utils.preload('/libs/scripts/experiments.js', { crossorigin: 'use-credentials' });
-    const experimentData = await checkForExperiments();
-    if (experimentData) {
-      // Currently required for preview.js
-      window.hlx ??= {};
-      window.hlx.experiments = experimentData.experiments;
+  if (persEnabled) {
+    const targetManifests = await getTargetPersonalization(utils);
+    if (targetManifests || persManifests?.length) {
+      const { applyPersonalization } = await import('../scripts/personalization.js');
 
-      utils.setConfig({
-        ...utils.getConfig(),
-        experiments: experimentData.experiments,
-        experimentBlocks: experimentData.blocks,
-        experimentFragments: experimentData.fragments,
-      });
+      await applyPersonalization(
+        { persManifests, targetManifests },
+        utils,
+      );
     }
   }
 }

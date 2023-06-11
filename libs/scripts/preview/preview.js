@@ -17,7 +17,7 @@ import {
   getConfigForFullExperiment,
   getConfigForInstantExperiment,
   // checkTesting,
-} from '../experiments.js';
+} from '../personalization.js';
 
 const checkTesting = () => true;
 const getExperimentConfig = (experiment, instantExperiment) => {

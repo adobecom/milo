@@ -647,7 +647,7 @@ export function loadIms() {
   loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
 }
 
-async function loadMartech(config, { experimentsEnabled = false } = {}) {
+async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   if (window.marketingtech?.adobe?.launch !== undefined) {
     return true;
   }
@@ -662,8 +662,9 @@ async function loadMartech(config, { experimentsEnabled = false } = {}) {
 
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({
-    experimentsEnabled,
-    utilMethods: {
+    persEnabled,
+    persManifests,
+    utils: {
       createTag, getConfig, setConfig, getMetadata, preload, loadScript,
     },
   });
@@ -672,10 +673,25 @@ async function loadMartech(config, { experimentsEnabled = false } = {}) {
 }
 
 async function checkForPageMods() {
-  const personalizationMd = getMetadata('personalization');
+  const persMd = getMetadata('personalization');
+  let persManifests = [];
+  if (persMd && persMd !== 'off') {
+    persManifests = persMd.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim());
+    preload('/libs/scripts/personalization.js', { crossorigin: 'use-credentials' });
+  }
+
   const targetMd = getMetadata('target');
-  if (personalizationMd || targetMd) {
-    await loadMartech(getConfig(), { experimentsEnabled: true, personalizationMd, targetMd });
+  let martechLoaded = false;
+  if (targetMd && targetMd !== 'off') {
+    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  }
+
+  if (persMd && !martechLoaded) {
+    // load the personalization only
+    const { applyPersonalization } = await import('../scripts/personalization.js');
+    await applyPersonalization({ persManifests }, { createTag, loadScript, getConfig, setConfig });
   }
 }
 
