@@ -158,7 +158,7 @@ ________________________________________________________________________________
 ## User Experience
 
 ### Standard Table
-* default colors
+* default colors, without passing Table Metadata
 
 <img width="425" alt="Screenshot 2023-06-12 at 12 50 28" src="https://github.com/draganatrajkovic/milo/assets/65951679/1e293b4c-b71a-4aaa-8c84-1ebd1051e916">
 
@@ -171,7 +171,7 @@ ________________________________________________________________________________
 <img width="284" alt="Screenshot 2023-06-12 at 13 21 45" src="https://github.com/draganatrajkovic/milo/assets/65951679/6d1567cd-1f57-41ea-9717-d542125b8e76">
 
 ### Merch Table
-* default colors
+* default colors, without passing Table Metadata
 
 <img width="425" alt="Screenshot 2023-06-12 at 12 57 24" src="https://github.com/draganatrajkovic/milo/assets/65951679/f43e24bc-6acf-4294-9d3a-cbf04908daca">
 
