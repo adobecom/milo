@@ -19,7 +19,7 @@ export default async function loginToSharePoint(scope = ['files.readwrite', 'sit
   try {
     const res = await pca.acquireTokenSilent(reqDetails);
     spAccessToken.value = res.accessToken;
-  } catch {
-    // couldn't get access token
+  } catch (err) {
+    throw new Error(`Cannot connect to Sharepoint: ${err.message}`);
   }
 }
