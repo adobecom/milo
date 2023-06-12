@@ -416,6 +416,8 @@ const props = {
     return undefined;
   },
   bookmarkicon: 0,
+  carddescription: 0,
+  cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
@@ -497,8 +499,8 @@ const getCaasProps = (p) => {
     url: p.url,
     floodGateColor: p.floodgatecolor,
     universalContentIdentifier: p.uci,
-    title: p.title,
-    description: p.description,
+    title: p.cardtitle || p.title,
+    description: p.carddescription || p.description,
     createdDate: p.created,
     modifiedDate: p.modified,
     tags: p.tags,
@@ -513,7 +515,7 @@ const getCaasProps = (p) => {
     language: p.lang,
     cardData: {
       style: p.style,
-      headline: p.title,
+      headline: p.cardtitle || p.title,
       ...(p.details && { details: p.details }),
       ...((p.bookmarkenabled || p.bookmarkicon || p.bookmarkaction) && {
         bookmark: {
@@ -564,9 +566,7 @@ const getCaaSMetadata = async (pageMd, options) => {
   let tagErrors = [];
   let tags = [];
   // for-of required to await any async computeVal's
-  // eslint-disable-next-line no-restricted-syntax
   for (const [key, computeFn] of Object.entries(props)) {
-    // eslint-disable-next-line no-await-in-loop
     const val = computeFn ? await computeFn(pageMd[key], options) : pageMd[key];
     if (val?.error) {
       errors.push(val.error);

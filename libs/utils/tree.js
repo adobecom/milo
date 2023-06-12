@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable max-classes-per-file */
 class Node {
   constructor(key, value = key, parent = null) {
