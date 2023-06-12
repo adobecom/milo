@@ -125,7 +125,7 @@
 }
 
 /* section */
-.table .devider {
+.table .divider {
   display: none;
 }
 
@@ -180,7 +180,7 @@
 
 .table .icon-milo-info:hover path,
 .table .active .icon-milo-info path {
-  stroke: #357BEB;
+  color: #357BEB;
 }
 
 .table .icon-milo-checkmark {
