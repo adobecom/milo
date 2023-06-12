@@ -52,9 +52,9 @@ __________________________________________________________________________
 |________________________________________________________________________|
 |                  | Highlight-2     |                 | Highlight-4     |
 |__________________|_________________|_________________|_________________|
-|                  | Heading Title-2 | Heading Title-3 | Heading Title-3 |
-|                  | Pricing-2       | Pricing-3       | Pricing-3       |
-|                  | Buttons-2       | Buttons-3       | Buttons-3       |
+|                  | Heading Title-2 | Heading Title-3 | Heading Title-4 |
+|                  | Pricing-2       | Pricing-3       | Pricing-4       |
+|                  | Buttons-2       | Buttons-3       | Buttons-4       |
 |__________________|_________________|_________________|_________________|
 |---               |                 |                 |                 |
 |__________________|_________________|_________________|_________________|
@@ -85,7 +85,7 @@ ___________________________________________________________________
 | Images-1            | Images-2            | Images-3            |
 | Title-1             | Title-2             | Title-3             |
 | Pricing-1           | Pricing-2           | Pricing-3           |
-| Additional Text-1   | Additional Text-3   | Additional Text-3   |
+| Additional Text-1   | Additional Text-2   | Additional Text-3   |
 | Buttons-1           | Buttons-3           | Buttons-3           |
 |_____________________|_____________________|_____________________|
 |---                  |                     |                     |
@@ -118,8 +118,6 @@ ___________________________________________________________________
 * Sections are separated by '---'.
 * The first row in a section is the Section Title.
 * The rest of the rows within the section will be considered as section content.
-
-### Merch Table
 
 
 ## Table metadata
@@ -161,20 +159,26 @@ ________________________________________________________________________________
 
 ### Standard Table
 * default colors
-  <img width="425" alt="Screenshot 2023-06-12 at 12 50 28" src="https://github.com/draganatrajkovic/milo/assets/65951679/1e293b4c-b71a-4aaa-8c84-1ebd1051e916">
+
+<img width="425" alt="Screenshot 2023-06-12 at 12 50 28" src="https://github.com/draganatrajkovic/milo/assets/65951679/1e293b4c-b71a-4aaa-8c84-1ebd1051e916">
 
 * customized colors by Table Matadata
-  <img width="425" alt="Screenshot 2023-06-12 at 13 14 20" src="https://github.com/draganatrajkovic/milo/assets/65951679/6a74cc24-4e20-42cb-9156-c2128a591650">
+
+<img width="425" alt="Screenshot 2023-06-12 at 13 14 20" src="https://github.com/draganatrajkovic/milo/assets/65951679/6a74cc24-4e20-42cb-9156-c2128a591650">
 
 * mobile screen
-  <img width="284" alt="Screenshot 2023-06-12 at 13 21 45" src="https://github.com/draganatrajkovic/milo/assets/65951679/6d1567cd-1f57-41ea-9717-d542125b8e76">
+
+<img width="284" alt="Screenshot 2023-06-12 at 13 21 45" src="https://github.com/draganatrajkovic/milo/assets/65951679/6d1567cd-1f57-41ea-9717-d542125b8e76">
 
 ### Merch Table
 * default colors
-  <img width="425" alt="Screenshot 2023-06-12 at 12 57 24" src="https://github.com/draganatrajkovic/milo/assets/65951679/f43e24bc-6acf-4294-9d3a-cbf04908daca">
+
+<img width="425" alt="Screenshot 2023-06-12 at 12 57 24" src="https://github.com/draganatrajkovic/milo/assets/65951679/f43e24bc-6acf-4294-9d3a-cbf04908daca">
 
 * customized colors by Table Matadata
-  <img width="425" alt="Screenshot 2023-06-12 at 13 12 02" src="https://github.com/draganatrajkovic/milo/assets/65951679/ac820c7f-d2a4-44cb-b71d-482f752de95c">
+
+<img width="425" alt="Screenshot 2023-06-12 at 13 12 02" src="https://github.com/draganatrajkovic/milo/assets/65951679/ac820c7f-d2a4-44cb-b71d-482f752de95c">
 
 * mobile screen
-  <img width="369" alt="Screenshot 2023-06-12 at 13 20 00" src="https://github.com/draganatrajkovic/milo/assets/65951679/fda0baa8-9781-4974-b467-09807e6aefc6">
+
+<img width="369" alt="Screenshot 2023-06-12 at 13 20 00" src="https://github.com/draganatrajkovic/milo/assets/65951679/fda0baa8-9781-4974-b467-09807e6aefc6">
