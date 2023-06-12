@@ -254,7 +254,7 @@ export const getConfig = async (state, strs = {}) => {
   const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
-  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : "";
+  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';

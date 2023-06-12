@@ -183,7 +183,7 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       featuredCards: ['a', 'b'],
-      hideCtaIds: [""],
+      hideCtaIds: [''],
       filterPanel: {
         enabled: true,
         eventFilter: '',
