@@ -11,18 +11,20 @@ body.tool-ost .ost {
 }
 
 body.tool-ost .ost>div {
-  padding: 0 20px 0 20px;
-  min-height: 900px;
-  max-height: 1400px;
-  min-width: 1200px;
-  max-width: 1800px;
-  height: 80%;
-  width: 80%;
+  padding: 20px 20px 0;
+  max-height: 1000px;
+  max-width: 1400px;
+  width: calc(max(100vw, 800px));
+  height: calc(max(100vh, 600px));
   border-radius: 4px;
   border-width: 2px;
   background-color: var(--color-gray-100);
   border-color: var(--color-gray-200);
   border-style: solid;
+}
+
+[data-offer-selector-id] {
+  min-height: 21px;
 }
 
 .price-unit-type::before {

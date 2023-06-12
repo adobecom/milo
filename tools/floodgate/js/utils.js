@@ -74,7 +74,6 @@ export function getParams(project, config) {
   return {
     adminPageUri: window.location.href,
     projectExcelPath: project.excelPath,
-    projectRoot: config.sp.rootFolders,
     shareUrl: config.sp.shareUrl,
     fgShareUrl: config.sp.fgShareUrl,
     rootFolder: config.sp.rootFolders,
