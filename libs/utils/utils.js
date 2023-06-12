@@ -390,12 +390,12 @@ export async function loadTemplate() {
 
 export async function loadBlock(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot, experimentBlocks } = getConfig();
+  const { miloLibs, codeRoot, personalizationBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let blockPath = `${base}/blocks/${name}/${name}`;
-  if (experimentBlocks?.[name]) {
-    blockPath = `${experimentBlocks[name]}/${name}`;
+  if (personalizationBlocks?.[name]) {
+    blockPath = `${personalizationBlocks[name]}/${name}`;
   }
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);

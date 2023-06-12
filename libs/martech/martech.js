@@ -1,16 +1,13 @@
-const EXPERIMENT_TIMEOUT_MS = 3000;
+const TARGET_TIMEOUT_MS = 2000;
 
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
   let currentObj = obj;
 
-  for (let i = 0; i < pathArr.length - 1; i++) {
-    const key = pathArr[i];
-
-    if (typeof currentObj[key] !== 'object' || currentObj[key] === null) {
+  for (const key of pathArr.slice(0, -1)) {
+    if (!currentObj[key] || typeof currentObj[key] !== 'object') {
       currentObj[key] = {};
     }
-
     currentObj = currentObj[key];
   }
 
@@ -28,7 +25,6 @@ const waitForEventOrTimeout = (eventName, timeout) => new Promise((resolve, reje
   }, { once: true });
 });
 
-// TODO: multiple experiments && pill integration
 const getExpFromParam = (expParam) => {
   const lastSlash = expParam.lastIndexOf('/');
   return {
@@ -56,7 +52,7 @@ const handleAlloyResponse = (response) => {
       return {
         manifestPath: content.manifestLocation || content.manifestPath,
         manifestData: content.manifestContent?.data,
-        experimentName: item.meta['activity.name'],
+        name: item.meta['activity.name'],
         variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
         meta: item.meta,
       };
@@ -66,16 +62,15 @@ const handleAlloyResponse = (response) => {
 
 const getTargetPersonalization = async () => {
   // TODO: do we need this?
-  // if (navigator.userAgent.match(/bot|crawl|spider/i)) {
-  //   return {};
-  // }
+  if (navigator.userAgent.match(/bot|crawl|spider/i)) {
+    return {};
+  }
   const params = new URL(window.location.href).searchParams;
 
   const experimentParam = params.get('experiment');
   if (experimentParam) return getExpFromParam(experimentParam);
 
-  // TODO: rename searchparam "timeout"
-  const timeout = parseInt(params.get('timeout'), 10) || EXPERIMENT_TIMEOUT_MS;
+  const timeout = parseInt(params.get('target-timeout'), 10) || TARGET_TIMEOUT_MS;
 
   let response;
   try {
@@ -132,11 +127,7 @@ export default async function init({ persEnabled = false, persManifests, utils }
     const targetManifests = await getTargetPersonalization(utils);
     if (targetManifests || persManifests?.length) {
       const { applyPersonalization } = await import('../scripts/personalization.js');
-
-      await applyPersonalization(
-        { persManifests, targetManifests },
-        utils,
-      );
+      await applyPersonalization({ persManifests, targetManifests }, utils);
     }
   }
 }

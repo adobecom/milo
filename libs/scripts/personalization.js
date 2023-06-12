@@ -123,7 +123,7 @@ function transformKeys(obj) {
   }, {});
 }
 
-export function parseExperimentConfig(data) {
+export function parseConfig(data) {
   if (!data?.length) return null;
 
   const config = {};
@@ -171,38 +171,9 @@ export function parseExperimentConfig(data) {
     config.variantNames = variantNames;
     return config;
   } catch (e) {
-    console.log('error parsing experiment config:', e, experiences);
+    console.log('error parsing personalization config:', e, experiences);
   }
   return null;
-}
-
-export function parseExperimentSupport(json) {
-  if (!json.experiences) return {};
-  const sheets = {};
-  Object.entries(json).forEach(([sheetName, sheet]) => {
-    if (sheetName !== 'experiences' && !sheetName.startsWith(':')) {
-      try {
-        sheet.data.forEach((line) => {
-          const { key } = line;
-          Object.entries(line).forEach(([rowName, value]) => {
-            if (rowName !== 'key') {
-              if (!sheets[sheetName]) sheets[sheetName] = {};
-              if (rowName === 'value') {
-                sheets[sheetName][key] = value;
-              } else {
-                if (!sheets[sheetName][key]) sheets[sheetName][key] = {};
-                sheets[sheetName][key][rowName] = value;
-              }
-            }
-          });
-        });
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('error parsing experiment support:', e, json[sheet]);
-      }
-    }
-  });
-  return sheets;
 }
 
 export async function replaceInner(path, element) {
@@ -242,25 +213,25 @@ async function fetchManifest(path) {
   try {
     const resp = await fetch(path);
     if (!resp.ok) {
-      console.log('error loading experiment config:', resp);
+      console.log('error loading manifest:', resp);
       return null;
     }
     const json = await resp.json();
     return json.data;
   } catch (e) {
-    console.log(`error loading experiment manifest: ${path}`, e);
+    console.log(`error loading manifest: ${path}`, e);
   }
   return null;
 }
 
-export async function getExpConfig(experimentName, variantLabel, manifestData, manifestPath) {
-  console.log('Experiment: ', experimentName || manifestPath);
+export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
+  console.log('Personalization: ', name || manifestPath);
 
   const data = manifestData || await fetchManifest(normalizePath(manifestPath));
-  const config = parseExperimentConfig(data);
+  const config = parseConfig(data);
 
   if (!config) {
-    console.log('Error loading experiment config: ', experimentName || manifestPath);
+    console.log('Error loading personalization config: ', name || manifestPath);
     return {};
   }
 
@@ -272,7 +243,7 @@ export async function getExpConfig(experimentName, variantLabel, manifestData, m
     config.selectedVariant = config.variants[selectedVariant];
   }
 
-  config.experimentName = experimentName;
+  config.name = name;
   config.manifest = manifestPath;
   return config;
 }
@@ -292,7 +263,6 @@ export async function fragmentPersonalization(doc) {
       variantNames.push(variantName);
       obj[variantName] = [];
     }
-    console.log(row.children[3]);
     obj[variantName].push({
       action: row.children[0].innerText?.toLowerCase(),
       selector: row.children[1].innerText?.toLowerCase(),
@@ -321,15 +291,15 @@ export async function fragmentPersonalization(doc) {
   return doc;
 }
 
-export async function runExperiment(experimentInfo) {
+export async function runPersonalization(info) {
   const {
-    experimentName,
+    name,
     manifestData,
     manifestPath,
     variantLabel,
-  } = experimentInfo;
+  } = info;
 
-  const experiment = await getExpConfig(experimentName, variantLabel, manifestData, manifestPath);
+  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
@@ -367,7 +337,7 @@ export async function applyPersonalization(
 
   let results = [];
   for (const manifest of manifests) {
-    results.push(await runExperiment(manifest));
+    results.push(await runPersonalization(manifest));
   }
 
   results = results.filter(Boolean);
@@ -378,7 +348,7 @@ export async function applyPersonalization(
   setConfig({
     ...getConfig(),
     experiments: results.map((r) => r.experiment),
-    experimentBlocks: consolidateObjects(results, 'blocks'),
-    experimentFragments: consolidateObjects(results, 'fragments'),
+    personalizationBlocks: consolidateObjects(results, 'blocks'),
+    personalizationFragments: consolidateObjects(results, 'fragments'),
   });
 }

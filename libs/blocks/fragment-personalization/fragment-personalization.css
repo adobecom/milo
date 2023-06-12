@@ -1,5 +1,5 @@
 .fragment-personalization {
-  border: 2px solid green;
+  border: 2px solid #ff1693;
   padding: 10px;
   margin-top: 16px !important;
 }
@@ -10,6 +10,10 @@
   margin-bottom: var(--spacing-xs);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   border-bottom: 1px solid gray;
+}
+
+.fragment-personalization > .row:not(:first-of-type):hover {
+  background-color: aqua;
 }
 
 .fragment-personalization > .row:first-of-type {
@@ -24,7 +28,7 @@
 .fragment-personalization.contained.middle {
   align-items: center;
 }
-/* Table */
+
 .fragment-personalization.table {
   font-size: 14px;
 }
@@ -37,10 +41,6 @@
   align-items: center;
 }
 
-.fragment-personalization.table > .row:hover {
-  background-color: #0000000f;
-}
-
 .fragment-personalization.table > .row:first-child {
   text-transform: uppercase;
   font-size: 11px;
@@ -48,8 +48,7 @@
   letter-spacing: 1px;
 }
 
-/* For desktop only */
-@media (min-width:600px) {
+@media (min-width: 600px) {
   .fragment-personalization.table > .row {
     padding: var(--spacing-xs);
   }
