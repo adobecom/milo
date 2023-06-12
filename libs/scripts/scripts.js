@@ -101,6 +101,23 @@ const locales = {
   kr: { ietf: 'ko-KR', tk: 'qjs5sfm' },
   // Langstore Support.
   langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+  // geo expansion
+  za: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  ng: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  cr: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  ec: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  pr: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  gt: { ietf: 'es-419', tk: 'oln4yqj.css' },
+  eg_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  kw_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  qa_ar: { ietf: 'ar', tk: 'nwq1mna.css', dir: 'rtl' },
+  eg_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  kw_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  qa_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
+  gr_el: { ietf: 'el', tk: 'fnx0rsr.css' },
+  el: { ietf: 'el', tk: 'aaz7dvd.css' },
+  vn_vi: { ietf: 'vi', tk: 'jii8bki.css' },
+  vn_en: { ietf: 'en-GB', tk: 'pps7abe.css' },
 };
 
 const config = {
