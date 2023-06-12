@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -9,6 +11,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'bulk-publish',
   'caas',
   'caas-config',
   'card',
@@ -140,6 +143,12 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getMetadata(name, doc = document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -153,10 +162,12 @@ export const [setConfig, getConfig] = (() => {
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        const contentDir = getMetadata('content-direction');
-        document.documentElement.setAttribute('dir', contentDir || config.locale.dir || (config.locale.ietf ? (new Intl.Locale(config.locale.ietf)?.textInfo?.direction) : null) || 'ltr');
+        const dir = getMetadata('content-direction')
+          || config.locale.dir
+          || (config.locale.ietf && (new Intl.Locale(config.locale.ietf)?.textInfo?.direction))
+          || 'ltr';
+        document.documentElement.setAttribute('dir', dir);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
@@ -168,12 +179,6 @@ export const [setConfig, getConfig] = (() => {
 
 export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
-}
-
-export function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
 }
 
 export function createTag(tag, attributes, html) {
@@ -298,7 +303,6 @@ export function appendHtmlPostfix(area = document) {
       }
     } catch (err) {
       /* c8 ignore next 3 */
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   });
@@ -352,7 +356,6 @@ export async function loadTemplate() {
       try {
         await import(`${base}/templates/${name}/${name}.js`);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
       resolve();
@@ -375,7 +378,6 @@ export async function loadBlock(block) {
         const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
         await init(block);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
@@ -692,16 +694,13 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
-    // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
 
-    // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
     // Post LCP operations.

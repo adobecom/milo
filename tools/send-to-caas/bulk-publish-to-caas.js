@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 /* eslint-disable no-continue */
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import { getImsToken } from '../utils/utils.js';
@@ -109,7 +108,6 @@ const processData = async (data, accessToken) => {
     ? `https://main--${repo}--${owner}.hlx.page`
     : `https://${host}`;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const page of data) {
     if (!keepGoing) break;
 
