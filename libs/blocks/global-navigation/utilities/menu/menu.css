@@ -21,6 +21,10 @@
 }
 
 /* General menu styles */
+.feds-menu-column .feds-cta-wrapper {
+  padding: 6px 32px;
+}
+
 .feds-menu-items {
   display: none;
   padding: 12px 0;
@@ -56,6 +60,7 @@
   transform: rotateZ(45deg);
   transition: transform 0.1s ease;
   content: "";
+  box-sizing: content-box;
 }
 
 [dir = "rtl"] .feds-menu-headline:after {
@@ -65,10 +70,6 @@
 
 .feds-menu-items {
   border-bottom: solid 1px var(--feds-borderColor-menu--light);
-}
-
-.feds-menu-items .feds-cta-wrapper {
-  padding: 6px 32px;
 }
 
 .feds-promo {
@@ -113,6 +114,7 @@
   .feds-promo-wrapper {
     width: 260px;
     padding: 0 32px;
+    box-sizing: content-box;
   }
 
   .feds-promo {
@@ -122,6 +124,7 @@
     border: 1px solid var(--feds-borderColor--light);
     background: var(--feds-background-nav--light);
     white-space: normal;
+    box-sizing: content-box;
   }
 
   .feds-promo--dark {

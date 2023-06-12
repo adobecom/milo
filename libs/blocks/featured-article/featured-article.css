@@ -53,7 +53,7 @@
 .featured-article-card-body h3 {
   font-size: var(--type-heading-l-size);
   color: var(--text-color);
-  line-height: var(--type-heading-l-lh);
+  line-height: var(--type-heading-base-lh);
   margin: 0;
   margin-bottom: 1rem;
   overflow: hidden;

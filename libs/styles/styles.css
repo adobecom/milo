@@ -152,6 +152,11 @@ img {
   height: auto;
 }
 
+/* Tooltip */
+.tooltip-wrapper {
+  visibility: hidden;
+}
+
 /* Not blocks */
 div:not([class]) > div > div > img[src^="./media_"] {
   width: 100%;
