@@ -29,11 +29,11 @@ const updateFragMap = (fragment, a, href) => {
 };
 
 export default async function init(a) {
-  const { personalizationFragments } = getConfig();
+  const { p13nFragments } = getConfig();
   let relHref = localizeLink(a.href);
-  if (personalizationFragments?.[relHref]) {
-    a.href = personalizationFragments[relHref];
-    relHref = personalizationFragments[relHref];
+  if (p13nFragments?.[relHref]) {
+    a.href = p13nFragments[relHref];
+    relHref = p13nFragments[relHref];
   }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);

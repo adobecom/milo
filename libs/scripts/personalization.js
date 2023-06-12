@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
 let utils;
 
+const CLASS_EL_DELETE = 'p13n-deleted';
+const CLASS_EL_REPLACE = 'p13n-replaced';
+
 export const PERSONALIZATION_TAGS = {
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
   firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
@@ -27,8 +30,12 @@ const MANIFEST_KEYS = [
 const COMMANDS = {
   insertcontentafter: (el, fragment) => el.insertAdjacentElement('afterend', fragment),
   insertcontentbefore: (el, fragment) => el.insertAdjacentElement('beforebegin', fragment),
-  removecontent: (el) => el.remove(),
-  replacecontent: (el, fragment) => el.replaceWith(fragment),
+  removecontent: (el) => el.classList.add(CLASS_EL_DELETE),
+  replacecontent: (el, fragment) => {
+    if (el.classList.contains(CLASS_EL_REPLACE)) return;
+    el.insertAdjacentElement('beforebegin', fragment);
+    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  },
 };
 
 const VALID_COMMANDS = Object.keys(COMMANDS);
@@ -66,16 +73,22 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
-function handleCommands(selectedVariant, rootEl) {
-  const createFragmentLink = (url) => {
-    const a = utils.createTag('a', { href: url }, url);
-    const p = utils.createTag('p', undefined, a);
-    return p;
-  };
+const matchGlob = (searchStr, inputStr) => {
+  const pattern = searchStr.replace(/\*\*/g, '.*');
+  const reg = new RegExp(`^${pattern}$`, 'i');
+  return reg.test(inputStr);
+};
 
+const createFragmentLink = (url) => {
+  const a = utils.createTag('a', { href: url }, url);
+  const p = utils.createTag('p', undefined, a);
+  return p;
+};
+
+function handleCommands(commands, rootEl) {
   const mainEl = rootEl || document.querySelector('main');
 
-  selectedVariant.commands.forEach((cmd) => {
+  commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
       let targetEl = mainEl.querySelector(cmd.selector);
 
@@ -90,7 +103,7 @@ function handleCommands(selectedVariant, rootEl) {
       console.log('Invalid command found: ', cmd);
     }
   });
-};
+}
 
 export function getMetadata(name) {
   const attr = name && name.includes(':') ? 'property' : 'name';
@@ -138,10 +151,14 @@ export function parseConfig(data) {
       variants[variantName] = { commands: [] };
     });
 
+    const currentPath = new URL(window.location).pathname;
+
     experiences.forEach((line) => {
       const action = line.action?.toLowerCase();
       const { selector } = line;
-      const pageFilter = line.pageFilter || line.pageFilterOptional;
+      const pageFilter = line['page filter'] || line['page filter optional'];
+
+      if (pageFilter && !matchGlob(pageFilter, currentPath)) return;
 
       variantNames.forEach((vn) => {
         if (!line[vn]) return;
@@ -312,7 +329,7 @@ export async function runPersonalization(info) {
   selectedVariant.insertscript?.map((script) => utils.loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  handleCommands(selectedVariant);
+  handleCommands(selectedVariant.commands);
 
   return {
     experiment,
@@ -339,8 +356,10 @@ export async function applyPersonalization(
   for (const manifest of manifests) {
     results.push(await runPersonalization(manifest));
   }
-
   results = results.filter(Boolean);
+
+  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)].forEach((el) => el.remove());
+
   // Currently required for preview.js
   window.hlx ??= {};
   window.hlx.experiments = results.map((r) => r.experiment);
@@ -348,7 +367,7 @@ export async function applyPersonalization(
   setConfig({
     ...getConfig(),
     experiments: results.map((r) => r.experiment),
-    personalizationBlocks: consolidateObjects(results, 'blocks'),
-    personalizationFragments: consolidateObjects(results, 'fragments'),
+    p13nBlocks: consolidateObjects(results, 'blocks'),
+    p13nFragments: consolidateObjects(results, 'fragments'),
   });
 }
