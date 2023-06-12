@@ -507,6 +507,7 @@ header .gnav-navitem.has-menu.is-open .gnav-navitem-menu {
 
 header .gnav-navitem-menu ul {
   padding-left: 0;
+  padding-right: 0;
   margin: 0;
   list-style: none;
 }
