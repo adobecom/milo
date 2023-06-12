@@ -1,33 +1,26 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
-import { fetchVersions, createHistoryTag } from './index.js';
-import loginToSharePoint from '../../utils/deps/login.js';
+import { fetchVersions } from './index.js';
 
-const scope = ['https://adobe.sharepoint.com/.default'];
+const baseUrl = 'https://adobe.sharepoint.com'
+const scope = [`${baseUrl}/.default`];
 
-export default function View() {
+export default function View({ loginToSharePoint, createHistoryTag }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [versions, setVersions] = useState([]);
   const [comment, setComment] = useState('');
 
   useEffect(async () => {
-    try {
-      await loginToSharePoint(scope);
-      setIsAuthenticated(true);
-      const versions = await fetchVersions();
-      setVersions(versions);
-    } catch(err) {
-      setError(err.error_description)
-    }
+    await loginToSharePoint(scope);
+    setIsAuthenticated(true);
+    const versions = await fetchVersions();
+    setVersions(versions);
   }, []);
 
   const onClickCreate = async () => {
-    if (comment) {
-      await createHistoryTag(comment);
-      const versions = await fetchVersions();
-      setComment('');
-      setVersions(versions);
-    }
-    return;
+    await createHistoryTag(comment);
+    const versions = await fetchVersions();
+    setComment('');
+    setVersions(versions);
   }
 
   function onChangeComment(e) {
@@ -35,7 +28,7 @@ export default function View() {
   }
 
   function downloadVersionFile(data) {
-    const fileUrl = data.IsCurrentVersion ? `https://adobe.sharepoint.com/${data.Url}` : `https://adobe.sharepoint.com/sites/adobecom/${data.Url}`;
+    const fileUrl = data.IsCurrentVersion ? `${baseUrl}/${data.Url}` : `${baseUrl}/sites/adobecom/${data.Url}`;
     const a = document.createElement('a');
     a.href = fileUrl;
     document.body.appendChild(a);
@@ -57,7 +50,7 @@ export default function View() {
   function getTableData({ details, key }) {
     switch (key) {
       case 'VersionLabel':
-        return html`<td class="link" onclick="${downloadVersionFile.bind(this, details)}">${details[key]}</td>`;
+        return html`<td class="link download" onclick="${downloadVersionFile.bind(this, details)}">${details[key]}</td>`;
       case 'Created':
         return html`${prettyDate(details[key])}`;
       default:
@@ -78,7 +71,7 @@ export default function View() {
     <div id="content" class="container">
       <div class="comment-container">
         <label for="comment">Comment:</label>
-        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment" onChange="${onChangeComment}"></textarea>
+        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment" onchange="${onChangeComment}"></textarea>
       </div>
       <button id="create" onClick="${onClickCreate}">Create Version</button>
       <table>
