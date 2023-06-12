@@ -170,9 +170,7 @@ export const executeActions = async (resume, setResult) => {
       if (isProcessed(url, results)) {
         status[action] = DUPLICATE_STATUS;
       } else {
-        // eslint-disable-next-line no-await-in-loop
         status[action] = await executeAction(action, url);
-        // eslint-disable-next-line no-await-in-loop
         await delay(THROTTLING_DELAY_MS);
       }
     }

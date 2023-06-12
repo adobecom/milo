@@ -109,10 +109,11 @@
 }
 
 /* Legal */
-.legal.text-block .foreground {
+.legal.text-block {
   padding: var(--spacing-xl) 0;
 }
 
+.legal.text-block .foreground,
 .legal.text-block p {
   font-style: italic;
   font-size: var(--type-body-xxs-size);
