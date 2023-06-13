@@ -890,9 +890,9 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
+      .catch((e) => {
         /* c8 ignore next */
-        console.log('Error loading script: ', error);
+        console.log('Error loading script: ', e);
       });
   }, []);
 
@@ -961,7 +961,9 @@ const init = async (el) => {
 };
 
 export {
+  /* eslint-disable no-restricted-exports */
   init as default,
+  /* eslint-enable no-restricted-exports */
   cloneObj,
   getHashConfig,
   isValidUuid,
