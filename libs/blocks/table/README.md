@@ -8,7 +8,7 @@
 
 
 ### `sticky`
-* to enable sticky header
+* To enable sticky header.
 
 ### `highlight`
 * If enabled, the first row below the table header is reserved for highlights, and the second row is reserved for table headings.
@@ -40,7 +40,8 @@ _______________________________________________________
 * Each column will be displayed as a separate table.
 
 ### `collapse`
-* To enable expand/collapse sections (disabled for merch tables), a plus/minus icon will automatically be added next to the Section Title in the Collapse Table, allowing the section to expand/collapse.
+* A plus/minus icon will automatically be added next to the Section Title, allowing the sections to expand/collapse.
+* It is disabled for merch tables.
 
 
 ## Block Configuration
@@ -127,6 +128,20 @@ Colors can be set in two ways:
 * For all columns in a row - by passing just the color without specifying the column number.
 * For each column separately - by passing the specific column number and color.
 
+The following two options are available for text color:
+* light/white
+* dark
+
+For the background color, it is possible to use the following ways of specifing colors:
+* Keywords
+* Hexadecimal colors
+* Hexadecimal colors with transparency
+* RGB colors
+* RGBA colors
+* HSL colors
+* HSLA colors
+* Gradients
+
 ```
 Example:
 _____________________________________________________________________________________________________________
@@ -168,27 +183,27 @@ ________________________________________________________________________________
 ## User Experience
 
 ### Standard Table
-* default colors, without passing Table Metadata
+* Default colors, without passing Table Metadata:
 
 <img width="425" alt="Screenshot 2023-06-12 at 12 50 28" src="https://github.com/draganatrajkovic/milo/assets/65951679/1e293b4c-b71a-4aaa-8c84-1ebd1051e916">
 
-* customized colors by Table Matadata
+* Customized colors by Table Matadata:
 
 <img width="425" alt="Screenshot 2023-06-12 at 13 14 20" src="https://github.com/draganatrajkovic/milo/assets/65951679/6a74cc24-4e20-42cb-9156-c2128a591650">
 
-* mobile screen
+* Mobile screen:
 
 <img width="284" alt="Screenshot 2023-06-12 at 13 21 45" src="https://github.com/draganatrajkovic/milo/assets/65951679/6d1567cd-1f57-41ea-9717-d542125b8e76">
 
 ### Merch Table
-* default colors, without passing Table Metadata
+* Default colors, without passing Table Metadata:
 
 <img width="425" alt="Screenshot 2023-06-12 at 12 57 24" src="https://github.com/draganatrajkovic/milo/assets/65951679/f43e24bc-6acf-4294-9d3a-cbf04908daca">
 
-* customized colors by Table Matadata
+* Customized colors by Table Matadata:
 
 <img width="425" alt="Screenshot 2023-06-12 at 13 12 02" src="https://github.com/draganatrajkovic/milo/assets/65951679/ac820c7f-d2a4-44cb-b71d-482f752de95c">
 
-* mobile screen
+* Mobile screen:
 
 <img width="369" alt="Screenshot 2023-06-12 at 13 20 00" src="https://github.com/draganatrajkovic/milo/assets/65951679/fda0baa8-9781-4974-b467-09807e6aefc6">
