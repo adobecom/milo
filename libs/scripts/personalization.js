@@ -105,12 +105,6 @@ function handleCommands(commands, rootEl) {
   });
 }
 
-export function getMetadata(name) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
-  return (meta && meta.content) || '';
-}
-
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
   if (!selector || !val) return;
@@ -244,7 +238,7 @@ async function fetchManifest(path) {
 export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
   console.log('Personalization: ', name || manifestPath);
 
-  const data = manifestData || await fetchManifest(normalizePath(manifestPath));
+  const data = manifestData || await fetchManifest(manifestPath);
   const config = parseConfig(data);
 
   if (!config) {
@@ -340,7 +334,7 @@ export async function runPersonalization(info) {
 
 export async function applyPersonalization(
   { persManifests = [], targetManifests = [] },
-  { createTag, loadScript, getConfig, setConfig },
+  { createTag, getConfig, loadScript, preload, setConfig },
 ) {
   if (!(persManifests.length || targetManifests.length)) return;
 
@@ -351,6 +345,13 @@ export async function applyPersonalization(
   manifests = manifests.concat(
     persManifests.map((manifestPath) => ({ manifestPath: appendJsonExt(manifestPath) })),
   );
+
+  for (const manifest of manifests) {
+    if (!manifest.manifestData && manifest.manifestPath) {
+      manifest.manifestPath = normalizePath(manifest.manifestPath);
+      preload(manifest.manifestPath, { as: 'fetch', crossorigin: 'anonymous' });
+    }
+  }
 
   let results = [];
   for (const manifest of manifests) {
