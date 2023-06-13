@@ -68,6 +68,11 @@
   padding: 0;
 }
 
+.marketo .mktoFormRow.demo fieldset.mktoFormCol {
+  width: 100%;
+  margin: 24px 0;
+}
+
 .marketo fieldset legend,
 .marketo .mktoPlaceholder,
 .marketo .mktoFormRow .mktoClear,
@@ -99,6 +104,7 @@
   width: auto!important;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
+  opacity: 0;
 }
 
 .marketo .mktoRequiredField label::after {
