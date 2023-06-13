@@ -23,23 +23,23 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
-function fileNotFoundResponse(){
-  return new Promise(function(resolve, reject){
+function fileNotFoundResponse() {
+  return new Promise((resolve) => {
     resolve({
       ok: false,
       statusCode: 404,
-      text: () => {}
+      text: () => {},
     });
-  })
+  });
 }
 
-function htmlResponse(){
-  return new Promise(function(resolve){
+function htmlResponse() {
+  return new Promise((resolve) => {
     resolve({
       ok: true,
       text: () => {
-        let fetchCalledWith = fetch.args[0].toString();
-        let fetchLocale = fetchCalledWith.split('/')[3];
+        const fetchCalledWith = fetch.args[0].toString();
+        const fetchLocale = fetchCalledWith.split('/')[3];
         return `
             <div class="string-mappings">
               <div>
@@ -49,16 +49,17 @@ function htmlResponse(){
                 <div></div>
                 <div></div>
               </div>
-            </div>`
+            </div>`;
       },
     });
-  })
+  });
 }
 
 describe('additionalQueryParams', () => {
-  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
+  expect(arrayToObj([{ key: 'a', value: 1 }, { key: 'b', value: 2 }])).to.be.eql({ a: 1, b: 2 });
   expect(arrayToObj({})).to.be.eql({});
-})
+});
+
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
@@ -73,39 +74,35 @@ describe('loadStrings', () => {
   it('should fetch mappings for en_US', async () => {
     const pathname = '/tools/caas';
     const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
-    let expected = {
-      collectionTitle: ' collection title',
-    };
+    const expected = { collectionTitle: ' collection title' };
     expect(loadedStrings).to.eql(expected);
   });
 
   it('should be able to get correct page locale for en_US', () => {
-    let locale = getPageLocale('/tools/caas', mockLocales);
+    const locale = getPageLocale('/tools/caas', mockLocales);
     expect(locale).to.eql('');
   });
 
-  for(let locale of mockLocales){
+  for (const locale of mockLocales) {
     it('should be able to fetch mappings all other mockLocales ', async () => {
-      let expected = {
-        collectionTitle: `${locale} collection title`
-      };
+      const expected = { collectionTitle: `${locale} collection title` };
       const pathname = `/${locale}/tools/caas`;
-      const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
+      const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
       expect(loadedStrings).to.eql(expected);
     });
   }
 
-  for(let locale of mockLocales) {
+  for (const locale of mockLocales) {
     it('should be able to get correct page locale', () => {
-      let pageLocale = getPageLocale(`/${locale}/tools/caas`, mockLocales);
+      const pageLocale = getPageLocale(`/${locale}/tools/caas`, mockLocales);
       expect(locale).to.eql(pageLocale);
     });
   }
 
   it('should be able to handle multiple 404s', async () => {
-    const pathname = `/fr/tools/caas`;
+    const pathname = '/fr/tools/caas';
     window.fetch = stub().returns(fileNotFoundResponse());
-    const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
+    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
     expect(loadedStrings).to.eql({});
   });
 });
@@ -158,7 +155,7 @@ describe('getConfig', () => {
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
-        ctaAction: "_blank",
+        ctaAction: '_blank',
         showTotalResults: false,
         i18n: {
           cardTitleAccessibilityLevel: 6,
@@ -167,7 +164,7 @@ describe('getConfig', () => {
           title: '',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
-          titleHeadingLevel: 'h3'
+          titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
         useOverlayLinks: false,
@@ -316,14 +313,14 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
-      "customCard": [
-        "card",
-        "return ``"
+      customCard: [
+        'card',
+        'return ``',
       ],
-    analytics: { trackImpressions: '', collectionIdentifier: '' },
+      analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
         enabled: true,
-        lastViewedSession: "",
+        lastViewedSession: '',
       },
     });
   });

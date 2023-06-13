@@ -42,7 +42,7 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
-}
+};
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -64,7 +64,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
-    'custom-card': 'Custom Card'
+    'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -80,8 +80,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    '_blank': 'New Tab',
-    '_self': 'Same Tab',
+    _blank: 'New Tab',
+    _self: 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -193,11 +193,10 @@ const defaultOptions = {
   },
 };
 
-const getTagList = (root) =>
-  Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = tag.title;
-    return options;
-  }, {});
+const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
+  options[tag.tagID] = tag.title;
+  return options;
+}, {});
 
 const getTagTree = (root) => {
   const options = Object.entries(root).reduce((opts, [, tag]) => {
@@ -238,7 +237,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -362,6 +361,7 @@ const TagsPanel = ({ tagsData }) => {
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const allTags = getTagTree(tagsData);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
@@ -569,15 +569,13 @@ const PaginationPanel = () => {
   `;
 };
 
-const TargetPanel = () =>
-  html`
+const TargetPanel = () => html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
     <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
-const AnalyticsPanel = () =>
-  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+const AnalyticsPanel = () => html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
   <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
@@ -652,7 +650,9 @@ const getInitialState = () => {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
-      } catch (e) {}
+      } catch (e) {
+        // empty block statement
+      }
     }
   }
 
@@ -735,8 +735,8 @@ const CopyBtn = () => {
   return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
-        ? 'is-success'
-        : ''}"
+  ? 'is-success'
+  : ''}"
       onClick=${copyConfig}
     >
       ${btnText}
@@ -834,9 +834,9 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
+      .catch((e) => {
         /* c8 ignore next */
-        console.log('Error loading script: ', error);
+        console.log('Error loading script: ', e);
       });
   }, []);
 
@@ -905,6 +905,7 @@ const init = async (el) => {
 };
 
 export {
+  // eslint-disable-next-line no-restricted-exports
   init as default,
   cloneObj,
   getHashConfig,
