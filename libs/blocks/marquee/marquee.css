@@ -152,6 +152,10 @@
   position: relative;
 }
 
+.marquee.large.dark {
+  background-color: black;
+}
+
 .marquee.large .text {
   display: flex;
   flex-direction: column;
