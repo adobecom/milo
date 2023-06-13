@@ -105,7 +105,7 @@ class ProfileDropdown {
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
-      aria-label="${this.placeholders.profileAvatar}"
+      alt="${this.placeholders.profileAvatar}"
       data-url="${decorateProfileLink('account', `profile?lang=${lang}`)}"></img>`;
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
