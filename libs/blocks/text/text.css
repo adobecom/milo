@@ -201,9 +201,4 @@
   .link-farm.text-block .foreground {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-
-  .link-farm.text-block [id^="no-heading"] {
-    height: var(--type-heading-m-size);
-    margin: 0 0 var(--spacing-l);
-  }
 }
