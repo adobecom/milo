@@ -148,10 +148,20 @@ ________________________________________________________________________________
 
 ## Behaviors
 
-### Mobile (0 - 899px)
+### Standard Table
+
+#### Mobile (0 - 768px)
 * Only 2 columns will be visible. By default, the first 2 columns with a filled heading column will be displayed. The user can then select, from the select box, which two columns they want to see.
 
-### Desktop (900px - ∞)
+#### Tablet (769px - 899px) and Desktop (900px - ∞)
+* Each column will be visible.
+
+### Merch Table
+
+#### Mobile (0 - 768px) and Tablet (769px - 899px)
+* Only 2 columns will be visible. By default, the first 2 columns with a filled heading column will be displayed. The user can then select, from the select box, which two columns they want to see.
+
+#### Desktop (900px - ∞)
 * Each column will be visible.
 
 
