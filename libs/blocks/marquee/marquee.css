@@ -347,6 +347,15 @@
     justify-content: flex-end;
   }
 
+  .marquee.split .media img,
+  .marquee.split.small .media img,
+  .marquee.split.large .media img,
+  .marquee.split .media video,
+  .marquee.split.small .media video,
+  .marquee.split.large .media video{
+    max-height: initial;
+  }
+  
   .marquee.split .media.bleed picture,
   .marquee.split .media.bleed video {
     height: 100%;
@@ -355,10 +364,6 @@
 
   .marquee.split.large .icon-area img {
     max-height: 80px;
-  }
-
-  .marquee.split .button-justified-mobile {
-    width: auto;
   }
 
 }
