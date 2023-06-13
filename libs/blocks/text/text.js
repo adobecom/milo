@@ -50,6 +50,11 @@ export default function init(el) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
   }
+  if (el.classList.contains('link-farm')) {
+    el.querySelectorAll('[id^="no-heading"]').forEach(elem => {
+      elem.innerHTML = '';
+    });
+  }
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
 }
