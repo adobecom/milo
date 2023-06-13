@@ -106,7 +106,7 @@ function handleExpand(e) {
 function handleSection(table) {
   const isCollapseTable = table.classList.contains('collapse') && !table.classList.contains('merch');
   const isHighlightTable = table.classList.contains('highlight');
-  const isMerchTable = table.classList.contains('merch');
+  const isMerch = table.classList.contains('merch');
   const allRows = Array.from(table.getElementsByClassName('row'));
 
   let defaultExpandRow = true;
@@ -122,7 +122,7 @@ function handleSection(table) {
       nextRow.classList.add('section-head');
       const sectionHeadTitle = nextRow.querySelector('.col-1');
 
-      if (isMerchTable && nextRowCols) {
+      if (isMerch && nextRowCols) {
         nextRowCols.forEach((merchCol) => merchCol.classList.add('section-head-title'));
       } else {
         sectionHeadTitle.classList.add('section-head-title');
@@ -147,13 +147,13 @@ function handleSection(table) {
       }
     } else if (previousRow && previousRow.querySelector('hr') && nextRow) {
       nextRow.classList.add('section-row');
-      if (!isMerchTable) {
+      if (!isMerch) {
         const sectionRowTitle = nextRow.querySelector('.col-1');
         sectionRowTitle.classList.add('section-row-title');
       }
     } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
       row.classList.add('section-row');
-      if (isMerchTable && !row.classList.contains('divider')) {
+      if (isMerch && !row.classList.contains('divider')) {
         rowCols.forEach((merchCol) => {
           merchCol.classList.add('col-merch');
           const children = Array.from(merchCol.children);
@@ -242,8 +242,8 @@ function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, 
 function handleHovering(table) {
   const row1 = table.querySelector('.row-1');
   const colsInRowNum = row1.childElementCount;
-  const isMerchTable = table.classList.contains('merch');
-  const startValue = isMerchTable ? 1 : 2;
+  const isMerch = table.classList.contains('merch');
+  const startValue = isMerch ? 1 : 2;
   const isCollapseTable = table.classList.contains('collapse');
   const sectionHeads = table.querySelectorAll('.section-head');
   const lastSectionHead = sectionHeads[sectionHeads.length - 1];
@@ -340,7 +340,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const headings = originTable.querySelectorAll('.col-heading');
       headings.forEach((heading, index) => {
         const title = heading.querySelector('.heading-title');
-        if (!title) return;
+        if (!title || (!isMerch && title.closest('.col-1'))) return;
+
         const option = createTag('option');
         option.value = index;
         option.innerHTML = title.innerText;
@@ -349,7 +350,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const colSelect1 = colSelect0.cloneNode(true);
       colSelect0.dataset.filterIndex = 0;
       colSelect1.dataset.filterIndex = 1;
-      const visibleCols = table.querySelectorAll('.col-heading:not([style*="display: none"], .hidden)');
+      const visibleCols = table.querySelectorAll(`.col-heading:not([style*="display: none"], .hidden${isMerch ? '' : ', .col-1'})`);
       colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
       filter1.append(colSelect0);
@@ -377,7 +378,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const colsForTablet = sectionRow[0].children.length - 1;
     const percentage = 100 / colsForTablet;
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-
     sectionRow.forEach((row) => {
       if (isMerch) {
         row.style.gridTemplateColumns = '';
@@ -401,18 +401,18 @@ export default function init(el) {
     });
   });
 
-  const isMerchTable = el.classList.contains('merch');
+  const isMerch = el.classList.contains('merch');
   const isStickyHeader = el.classList.contains('sticky');
   const gnav = document.querySelector('header');
   const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
   handleHighlight(el);
   handleSection(el);
-  if (isMerchTable) formatMerchTable(el);
+  if (isMerch) formatMerchTable(el);
 
   window.addEventListener('milo:icons:loaded', () => {
     let originTable;
-    if (el.querySelectorAll('.col-heading:not(.hidden)').length > 2) {
+    if (el.querySelectorAll(`.col-heading:not(.hidden${isMerch ? '' : ', .col-1'})`).length > 2) {
       originTable = el.cloneNode(true);
     } else {
       originTable = el;

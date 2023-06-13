@@ -79,10 +79,13 @@ async function fetchLibrary(domain) {
   const { searchParams } = new URL(window.location.href);
   const suppliedLibrary = searchParams.get('library');
   const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
-
-  const resp = await fetch(library);
-  if (!resp.ok) return null;
-  return resp.json();
+  try {
+    const resp = await fetch(library);
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    return null;
+  }
 }
 
 async function getSuppliedLibrary() {
