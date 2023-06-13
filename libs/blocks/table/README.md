@@ -85,7 +85,7 @@ ___________________________________________________________________
 |                     | Highlight-2         |                     |
 |_____________________|_____________________|_____________________|
 | Images-1            | Images-2            | Images-3            |
-| Title-1             | Title-2             | Title-3             |
+| Heading Title-1     | Heading Title-2     | Heading Title-3     |
 | Pricing-1           | Pricing-2           | Pricing-3           |
 | Additional Text-1   | Additional Text-2   | Additional Text-3   |
 | Buttons-1           | Buttons-3           | Buttons-3           |
