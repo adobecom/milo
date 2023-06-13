@@ -75,9 +75,27 @@ function decorateLayout(el) {
   return foreground;
 }
 
+function decorateIconStack(el) {
+  if (!(el.classList.contains('split') && el.classList.contains('icon-stack'))) return; 
+  const foreground = el.querySelector('.foreground .text');
+  const iconStackImgs = foreground.querySelectorAll('p.body-s > picture');
+  if (!iconStackImgs) return;
+  const iconStackArea = createTag('div', {'class': 'icon-stack-area'});
+  foreground.insertBefore(iconStackArea, iconStackImgs[0].closest('p'));
+  iconStackImgs.forEach((iconStackImg) => { 
+    const iconItemRaw = iconStackImg.closest('p');
+    const iconItem = createTag('p', null, iconStackImg);
+    const iconItemDesc = iconItemRaw.innerText.trim()? createTag('span', {'class' : 'body-s'}, iconItemRaw.innerText.trim()) : null;
+    iconItemDesc && iconItem.appendChild(iconItemDesc);
+    iconStackArea.appendChild(iconItem);
+    foreground.removeChild(iconItemRaw);
+  });
+}
+
 export default function init(el) {
   const blockData = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
+  decorateIconStack(el);
 }
