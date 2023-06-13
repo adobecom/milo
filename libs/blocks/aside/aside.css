@@ -104,6 +104,16 @@
   margin-bottom: var(--spacing-s);
 }
 
+.aside.medium .foreground.container .text .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0;
+}
+
+.aside.large .foreground.container .text .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0;
+}
+
 .aside .foreground.container .text .action-area {
   margin-bottom: 0;
 }
@@ -368,16 +378,6 @@
 .aside.notification.center.small .foreground.container .text,
 .aside.notification.center.small .foreground.container .text > * {
   justify-content: flex-start;
-}
-
-.aside.medium .supplemental-text {
-  padding-top: var(--spacing-s);
-  margin-bottom: 0 !important;
-}
-
-.aside.large .supplemental-text {
-  padding-top: var(--spacing-s);
-  margin-bottom: 0 !important;
 }
 
 @media screen and (min-width: 600px) {
