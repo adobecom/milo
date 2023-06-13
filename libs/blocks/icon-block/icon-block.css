@@ -168,10 +168,6 @@
   text-align: right;
 }
 
-[dir="rtl"] .icon-block .foreground .icon-area {
-  text-align: center;
-}
-
 .icon-block.fullwidth .foreground,
 .icon-block.bio .foreground {
   width: var(--grid-container-width);
