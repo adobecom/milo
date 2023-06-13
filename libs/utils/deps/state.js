@@ -1,6 +1,6 @@
 import { signal } from '../../deps/htm-preact.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config.json';
+const LOC_CONFIG = '/.milo/config.json';
 
 // Signals
 export const statuses = signal({});
