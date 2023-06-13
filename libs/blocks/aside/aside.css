@@ -370,6 +370,16 @@
   justify-content: flex-start;
 }
 
+.aside.medium .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0 !important;
+}
+
+.aside.large .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0 !important;
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
