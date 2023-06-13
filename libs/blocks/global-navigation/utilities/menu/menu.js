@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 import {
   getAnalyticsValue,
   toFragment,
@@ -199,7 +198,6 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
     };
 
     while (column.children.length) {
-      // eslint-disable-next-line no-await-in-loop
       await yieldToMain();
       const columnElem = column.firstElementChild;
 

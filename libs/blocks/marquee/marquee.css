@@ -17,11 +17,6 @@
   color: var(--text-color);
 }
 
-.marquee.center,
-.marquee.centered {
-  text-align: center;
-}
-
 .marquee .background.has-video {
   bottom: 0;
   left: 0;
@@ -33,6 +28,8 @@
 
 .marquee .background .mobile-only.tablet-only {
   display: block;
+  width: 100%;
+  height: auto;
 }
 
 .marquee .background .tablet-only,
@@ -40,11 +37,15 @@
   display: none;
 }
 
-.marquee .background picture {
+.marquee .icon-area picture,
+.marquee .icon-area a {
+  display: contents;
+}
+
+.marquee .icon-area img {
+  height: 48px;
+  width: auto;
   display: block;
-  position: absolute;
-  inset: 0;
-  line-height: 0;
 }
 
 .marquee .background img {
@@ -75,17 +76,6 @@
   margin-bottom: var(--spacing-s);
 }
 
-.marquee .icon-area picture,
-.marquee .icon-area a {
-  display: contents;
-}
-
-.marquee .icon-area img {
-  height: 48px;
-  width: auto;
-  display: block;
-}
-
 .marquee .action-area {
   display: flex;
   margin: 0;
@@ -112,15 +102,12 @@
   order: 2;
 }
 
-.marquee.center .foreground,
-.marquee.center .action-area,
-.marquee.centered .foreground,
-.marquee.centered .action-area {
-  justify-content: center;
-}
-
 .marquee.large {
   display: block;
+}
+
+.marquee.large .icon-area img {
+  height: 64px;
 }
 
 .marquee.large .foreground {
@@ -146,22 +133,22 @@
   padding: 0;
 }
 
-.marquee .text p {
-  margin: 0 0 var(--spacing-s);
-}
-
-.marquee .text p:last-of-type {
-  margin-bottom: 0;
-}
-
-.marquee .text .detail-m {
-  margin-bottom: var(--spacing-xs);
-}
-
 .marquee .text .detail-l,
 .marquee .text .heading-xl,
 .marquee .text .heading-xxl {
   margin-bottom: var(--spacing-xs);
+}
+
+.marquee.center,
+.marquee.centered {
+  text-align: center;
+}
+
+.marquee.center .foreground,
+.marquee.center .action-area,
+.marquee.centered .foreground,
+.marquee.centered .action-area {
+  justify-content: center;
 }
 
 .marquee.small .text {
@@ -170,10 +157,6 @@
 
 .marquee.small .media {
   order: 2;
-}
-
-.marquee.large .icon-area img {
-  height: 64px;
 }
 
 /* Split */
@@ -280,9 +263,9 @@
 @media screen and (min-width: 600px) {
   .marquee .action-area {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-s);
   }
 
   .marquee .background .mobile-only,
@@ -298,17 +281,15 @@
     max-width: 600px;
   }
 
+  .marquee .media {
+    width: var(--grid-container-width); /* 10 grid / 83% */
+  }
+
   /* Split */
   .marquee.split {
     display: flex;
     justify-content: center;
     min-height: 360px;
-  }
-
-  .marquee.split .action-area {
-    gap: var(--spacing-s);
-    flex-direction: row;
-    align-items: center;
   }
 
   .marquee.split .foreground.container {
@@ -425,7 +406,7 @@
   .marquee.small .foreground {
     padding: var(--spacing-xl) 0;
   }
-
+  
   .marquee.quiet .foreground,
   .marquee.inline .foreground,
   .marquee.split .foreground {
