@@ -41,6 +41,7 @@ _______________________________________________________
 
 ### `collapse`
 * A plus/minus icon will automatically be added next to the Section Title, allowing the sections to expand/collapse.
+* The first section is always expanded by default.
 * It is disabled for merch tables.
 
 
