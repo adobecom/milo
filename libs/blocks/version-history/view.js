@@ -8,6 +8,8 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [versions, setVersions] = useState([]);
   const [comment, setComment] = useState('');
+  const [error, setError] = useState('');
+
 
   useEffect(async () => {
     await loginToSharePoint(scope);
@@ -17,14 +19,19 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
   }, []);
 
   const onClickCreate = async () => {
-    await createHistoryTag(comment);
-    const versions = await fetchVersions();
-    setComment('');
-    setVersions(versions);
+    try {
+      await createHistoryTag(comment);
+      const versions = await fetchVersions();
+      setComment('');
+      setVersions(versions);
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   function onChangeComment(e) {
     setComment(e.currentTarget.value);
+    setError('');
   }
 
   function downloadVersionFile(data) {
@@ -63,17 +70,21 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
     return html`<tr>${keys.map(key => getTableData({ details, key }))}</tr>`;
   }
 
-  if (!isAuthenticated) {
-    return html`<div id="status" class="container"> Authenticating.... </div>`
+  function renderError() {
+    if (error) {
+      return html`<div class="error">${error}</div>`
+    }
+    return null;
   }
 
-  return html`
-    <div id="content" class="container">
-      <div class="comment-container">
-        <label for="comment">Comment:</label>
-        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment" onchange="${onChangeComment}"></textarea>
-      </div>
-      <button id="create" onClick="${onClickCreate}">Create Version</button>
+  function renderList() {
+    if(versions.length < 1) {
+      return html`
+        <div>No version history tags to show!</div>
+      `;
+    }
+
+    return html`
       <table>
         <thead>
           <tr>
@@ -85,7 +96,24 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
         <tbody id="addVersionHistory">
         ${versions.map((version) => renderTableRows(version))}
         </tbody>
-      </table>
+      </table>`
+  }
+
+  if (!isAuthenticated) {
+    return html`<div id="status" class="container sk-version"> Authenticating.... </div>`
+  }
+
+  return html`
+    <div id="content" class="container sk-version">
+      <div class="comment-container">
+        <label for="comment">Comment:</label>
+        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment" onkeyup="${onChangeComment}"></textarea>
+      </div>
+      <button id="create" onClick="${onClickCreate}">Create Version</button>
+      ${renderError()}
+      <div class="table-container">
+        ${renderList()}
+      </div>
     </div>
   `;
 }

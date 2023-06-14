@@ -41,7 +41,12 @@ export const createHistoryTag = async (comment = '') => {
     accept,
     contentType
   });
-  await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
+  const res = await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
+  if (!res.ok) {
+    const error = await res.json();
+    const message = error['odata.error']?.message.value;
+    throw new Error(message);
+  }
 }
 
 
