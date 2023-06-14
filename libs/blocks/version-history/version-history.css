@@ -7,9 +7,21 @@ body {
   margin: 0;
 }
 
+.in-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
+}
+
+.table-container {
+  height: 248px;
+  overflow-y: auto;
 }
 
 table th,
@@ -95,5 +107,19 @@ table tr {
 
 .time {
   font-style: italic;
+}
+
+.sk-version {
+  width: 418px;
+  height: 460px;
+  background: #303030;
+  color: #FFF;
+  overflow: hidden;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  font-size: 14px;
+}
+
+.error {
+  color: #f53f3f
 }
 
