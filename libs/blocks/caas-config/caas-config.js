@@ -687,6 +687,8 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
+    // For backwards compatibilty: Check that localStorage state exists 
+    // and it contains the new filtersCustom attribute before using it
     if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
