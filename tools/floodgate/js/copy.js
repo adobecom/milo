@@ -66,11 +66,10 @@ async function floodgateContent(project, projectDetail) {
   // process data in batches
   const copyStatuses = [];
   for (let i = 0; i < batchArray.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     copyStatuses.push(...await Promise.all(
       batchArray[i].map((files) => copyFilesToFloodgateTree(files[1])),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await delay(DELAY_TIME_COPY);
   }
   const endCopy = new Date();
@@ -79,11 +78,10 @@ async function floodgateContent(project, projectDetail) {
   const previewStatuses = [];
   for (let i = 0; i < copyStatuses.length; i += 1) {
     if (copyStatuses[i].success) {
-      // eslint-disable-next-line no-await-in-loop
       const result = await simulatePreview(handleExtension(copyStatuses[i].srcPath), 1, true);
       previewStatuses.push(result);
     }
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await delay();
   }
   loadingON('Completed Preview for copied files... ');
