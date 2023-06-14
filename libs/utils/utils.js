@@ -54,6 +54,8 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'table',
+  'table-metadata',
   'tags',
   'tiktok',
   'twitter',

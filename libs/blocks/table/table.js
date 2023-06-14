@@ -4,6 +4,18 @@ import { decorateButtons } from '../../utils/decorate.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
+const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
+
+function defineDeviceByScreenSize() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth >= DESKTOP_SIZE) {
+    return 'DESKTOP';
+  }
+  if (screenWidth <= MOBILE_SIZE) {
+    return 'MOBILE';
+  }
+  return 'TABLET';
+}
 
 function handleHeading(headingCols) {
   headingCols.forEach((col) => {
@@ -84,8 +96,7 @@ function handleHighlight(table) {
   }
 
   handleHeading(headingCols);
-  const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
-  window.dispatchEvent(tableHighlightLoadedEvent);
+  table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
 function handleExpand(e) {
@@ -278,9 +289,10 @@ function handleScrollEffect(table, gnavHeight) {
 
 function applyStylesBasedOnScreenSize(table, originTable) {
   const isMerch = table.classList.contains('merch');
-  const screenWidth = window.innerWidth;
+  const deviceBySize = defineDeviceByScreenSize();
 
   const reAssignEvents = (tableEl) => {
+    tableEl.dispatchEvent(tableHighlightLoadedEvent);
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => icon.addEventListener('click', (e) => {
       handleExpand(e.target);
     }));
@@ -363,7 +375,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   // For Mobile (else: tablet / desktop)
-  if (screenWidth <= MOBILE_SIZE || (isMerch && screenWidth < DESKTOP_SIZE)) {
+  if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
     table.innerHTML = originTable.innerHTML;
@@ -381,7 +393,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     sectionRow.forEach((row) => {
       if (isMerch) {
         row.style.gridTemplateColumns = '';
-      } else if (screenWidth < DESKTOP_SIZE && screenWidth > MOBILE_SIZE) {
+      } else if (deviceBySize === 'TABLET') {
         row.style.gridTemplateColumns = templateColumnsValue;
       } else {
         row.style.gridTemplateColumns = '';
@@ -417,16 +429,18 @@ export default function init(el) {
     } else {
       originTable = el;
     }
-    applyStylesBasedOnScreenSize(el, originTable);
-    if (isStickyHeader) handleScrollEffect(el, gnavHeight);
 
-    let timeout;
+    const windowResized = () => {
+      applyStylesBasedOnScreenSize(el, originTable);
+      if (isStickyHeader) handleScrollEffect(el, gnavHeight);
+    };
+    windowResized();
+
+    let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        applyStylesBasedOnScreenSize(el, originTable);
-        if (isStickyHeader) handleScrollEffect(el, gnavHeight);
-      }, 100);
+      if (deviceBySize === defineDeviceByScreenSize()) return;
+      deviceBySize = defineDeviceByScreenSize();
+      windowResized();
     });
   });
 }

@@ -51,10 +51,13 @@ export default function init(el) {
   section.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
   if (!table) return;
   const metadata = getMetadata(el);
-  window.addEventListener('milo:table:highlight:loaded', () => {
-    if (metadata['heading color']) handleColumnColor(metadata['heading color'].text, table, 'heading');
-    if (metadata['heading background color']) handleColumnBgColor(metadata['heading background color'].text, table, 'heading');
-    if (metadata['highlight color']) handleColumnColor(metadata['highlight color'].text, table, 'highlight');
-    if (metadata['highlight background color']) handleColumnBgColor(metadata['highlight background color'].text, table, 'highlight');
-  });
+  if (!el.dataset.metadataHandled) {
+    table.addEventListener('milo:table:highlight:loaded', () => {
+      if (metadata['heading color']) handleColumnColor(metadata['heading color'].text, table, 'heading');
+      if (metadata['heading background color']) handleColumnBgColor(metadata['heading background color'].text, table, 'heading');
+      if (metadata['highlight color']) handleColumnColor(metadata['highlight color'].text, table, 'highlight');
+      if (metadata['highlight background color']) handleColumnBgColor(metadata['highlight background color'].text, table, 'highlight');
+      el.dataset.metadataHandled = true;
+    });
+  }
 }
