@@ -328,7 +328,7 @@ header.global-navigation {
   appearance: none;
   position: relative;
   padding-right: 30px;
-  background: url("http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png") white no-repeat 96% !important;
+  background: url("../../ui/img/chevron-wide-black.svg") no-repeat 100%;
 }
 
 @media (min-width: 769px) {
