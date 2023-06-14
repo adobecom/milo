@@ -424,25 +424,18 @@ export function decorateSVG(a) {
   }
 }
 
-function hasUrlWithPipe(str) {
-  const regex = /^https?:\/\/.*\|.*/;
-  return regex.test(str);
-}
-
-export function decorateImageLinks(a) {
-  const images = a.querySelectorAll('img');
-  if (!images.length) return a;
+export function decorateImageLinks(el) {
+  const images = el.querySelectorAll('img[alt*="|"]');
+  if (!images.length) return;
   [...images].forEach((img) => {
-    if (!img.alt || !(hasUrlWithPipe(img.alt))) return;
     const [source, alt] = img.alt.split('|');
     const textUrl = new URL(source.trim());
-    if (alt && alt.trim().length) img.alt = alt.trim();
+    if (alt?.trim().length) img.alt = alt.trim();
     const pic = img.closest('picture');
     const picParent = pic.parentElement;
     const aTag = createTag('a', { href: textUrl, class: 'image-link' }, pic);
     picParent.append(aTag);
   });
-  return a;
 }
 
 export function decorateAutoBlock(a) {
