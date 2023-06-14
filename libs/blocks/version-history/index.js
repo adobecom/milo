@@ -29,7 +29,7 @@ export const fetchVersions = async () => {
   }
 
   const versions = await fetch(`${url}/Versions`, options);
-  const { value } = await versions.json();
+  const { value = {} } = await versions.json();
   const versionHistory = [...value, currentVersion];
   //Filtering only Major versions
   return versionHistory.reverse().filter((item) => item.VersionLabel.indexOf('.0') !== -1);
@@ -41,7 +41,7 @@ export const createHistoryTag = async (comment = '') => {
     accept,
     contentType
   });
-  await fetch(`${url}/Publish('${comment}')`, callOptions);
+  await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
 }
 
 
