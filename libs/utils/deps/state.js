@@ -1,6 +1,6 @@
 import { signal } from '../../deps/htm-preact.js';
 
-const LOC_CONFIG = '/.milo/config.json';
+const CONFIG = '/.milo/config.json';
 
 // Signals
 export const statuses = signal({});
@@ -31,7 +31,7 @@ export function getSiteConfig() {
       resolve(siteConfig.value);
       return;
     }
-    const resp = await fetch(`${origin}${LOC_CONFIG}`);
+    const resp = await fetch(`${origin}${CONFIG}`);
     if (!resp.ok) {
       setStatus('siteConfig', 'error', 'Error getting site settings.');
       return;

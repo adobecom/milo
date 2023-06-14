@@ -2,7 +2,7 @@
 import { user, spAccessToken } from './state.js';
 import { getMSALConfig } from './msal.js';
 
-export default async function loginToSharePoint(scope = ['files.readwrite', 'sites.readwrite.all']) {
+export default async function loginToSharePoint(scope = []) {
   const msalConfig = await getMSALConfig();
   const pca = new msal.PublicClientApplication(msalConfig);
 
