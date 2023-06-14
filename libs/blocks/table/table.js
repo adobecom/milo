@@ -281,7 +281,12 @@ function handleScrollEffect(table, gnavHeight) {
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-    if (highlightRow) highlightRow.style.top = `${gnavHeight}px`;
+    if (highlightRow) {
+      highlightRow.style.top = `${gnavHeight}px`;
+      highlightRow.style.borderTop = '1px solid transparent';
+    } else {
+      headingRow.style.borderTop = '1px solid transparent';
+    }
     headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
   });
   observer.observe(intercept);
