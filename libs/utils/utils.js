@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -155,6 +157,7 @@ export const [setConfig, getConfig] = (() => {
       const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
@@ -165,7 +168,6 @@ export const [setConfig, getConfig] = (() => {
           || 'ltr';
         document.documentElement.setAttribute('dir', dir);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
@@ -301,7 +303,6 @@ export function appendHtmlPostfix(area = document) {
       }
     } catch (err) {
       /* c8 ignore next 3 */
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   });
@@ -355,7 +356,6 @@ export async function loadTemplate() {
       try {
         await import(`${base}/templates/${name}/${name}.js`);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
       resolve();
@@ -378,7 +378,6 @@ export async function loadBlock(block) {
         const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
         await init(block);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
@@ -695,16 +694,13 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
-    // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
 
-    // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
