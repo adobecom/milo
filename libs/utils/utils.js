@@ -429,12 +429,16 @@ export function decorateImageLinks(el) {
   if (!images.length) return;
   [...images].forEach((img) => {
     const [source, alt] = img.alt.split('|');
-    const textUrl = new URL(source.trim());
-    if (alt?.trim().length) img.alt = alt.trim();
-    const pic = img.closest('picture');
-    const picParent = pic.parentElement;
-    const aTag = createTag('a', { href: textUrl, class: 'image-link' }, pic);
-    picParent.append(aTag);
+    try {
+      const url = new URL(source.trim());
+      if (alt?.trim().length) img.alt = alt.trim();
+      const pic = img.closest('picture');
+      const picParent = pic.parentElement;
+      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
+      picParent.append(aTag);
+    } catch (e) {
+      console.log('Error:', `${e.message} '${source.trim()}'`);
+    }
   });
 }
 
