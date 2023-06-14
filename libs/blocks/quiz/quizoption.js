@@ -38,20 +38,21 @@ export const CreateOptions = ({
             coverImage=${getOptionsIcons(option.options, 'cover')}
             options=${option.options}
             selected=${selectedCards[option.options] ? 'selected' : ''}
-            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) ? 'disabled' : '' }/>
+            disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) ? 'disabled' : ''}/>
         </div>`
   ))}`;
 
 export const GetQuizOption = ({
   btnText, options, minSelections, maxSelections, selectedCards,
   handleOnNextClick, onOptionClick, countSelectedCards, getOptionsIcons,
+  btnAnalyticsData,
 }) => html`
     <div class="milo-card-wrapper consonant-Wrapper consonant-Wrapper--1200MaxWidth">
         <div class="consonant-Wrapper-collection">
             <div class="consonant-CardsGrid consonant-CardsGrid--options consonant-CardsGrid--5up consonant-CardsGrid--with4xGutter quiz-options-container">
               <${CreateOptions} 
                 options=${options} 
-                selectedCards=${selectedCards} 
+                selectedCards=${selectedCards}
                 countSelectedCards=${countSelectedCards} 
                 maxSelections=${maxSelections}
                 getOptionsIcons=${getOptionsIcons}
@@ -64,7 +65,7 @@ export const GetQuizOption = ({
               aria-label="Next" 
               data-quiz-button="" 
               class="spectrum-Button spectrum-Button--outline spectrum-Button--sizeXL quiz-btn" 
-              daa-ll="Filters|cc:app-reco|Q#1/Photo"
+              daa-ll="${btnAnalyticsData}"
               onClick=${() => {
     handleOnNextClick(selectedCards);
   }}>

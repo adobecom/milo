@@ -2,7 +2,7 @@ import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData } from './utils.js';
+import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, createAnalyticsDataForBtn } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
@@ -24,6 +24,7 @@ const App = () => {
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [isNextQuizViewsExist, setIsNextQuizViewsExist] = useState(true);
   const [urlParam, setUrlParam] = useState({});
+  const [btnAnalytics, setBtnAnalytics] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -64,6 +65,15 @@ const App = () => {
       setSelectedQuestion(questionList[currentflow] || []);
     }
   }, [userFlow, questionList]);
+
+  /**
+   * Updates the analytics data for the next button.
+   * Happens with each option click/tap.
+   * @returns {void}
+   */
+  useEffect(() => {
+    setBtnAnalytics(createAnalyticsDataForBtn(selectedQuestion, selectedCards));
+  }, [selectedQuestion, selectedCards]);
 
   /**
    * Handling the result flow when user has selected all the options.
@@ -217,7 +227,8 @@ const App = () => {
                       selectedCards=${selectedCards}
                       onOptionClick=${onOptionClick}
                       getOptionsIcons=${getOptionsIcons}
-                      handleOnNextClick=${handleOnNextClick} />
+                      handleOnNextClick=${handleOnNextClick}
+                      btnAnalyticsData=${btnAnalytics}/>
                       <${StepIndicator} 
                       currentStep=${currentStep} 
                       totalSteps=${totalSteps} 
