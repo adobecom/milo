@@ -410,8 +410,10 @@ const TagsPanel = ({ tagsData }) => {
   `;
 };
 
-const CardsPanel = () => {
+const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
+
+  const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
     context.dispatch({
@@ -449,6 +451,7 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate${isValidUuid} />
     <//>
+    <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
 
@@ -814,7 +817,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'Cards',
-    content: html`<${CardsPanel} />`,
+    content: html`<${CardsPanel} tagsData=${tagsData} />`,
   },
   {
     title: 'Sort',
