@@ -18,11 +18,10 @@ import { parseEncodedConfig, loadScript, createTag } from '../../utils/utils.js'
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
-
 const FORM_MAP = {
-  'destination url': 'form.success.content',
-  'co-partner names': 'program.copartnernames',
-  'sfdc campaign id': 'program.campaignids.sfdc',
+  'destination-url': 'form.success.content',
+  'co-partner-names': 'program.copartnernames',
+  'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
 
 export const formValidate = (form) => {
@@ -32,17 +31,28 @@ export const formValidate = (form) => {
 };
 
 export const decorateURL = (destination, baseURL = window.location) => {
-  let destinationUrl = new URL(destination, baseURL.origin);
+  try {
+    let destinationUrl = new URL(destination, baseURL.origin);
+    const { hostname, pathname, search, hash } = destinationUrl;
 
-  if (destinationUrl.hostname.includes('.hlx.')) {
-    destinationUrl = new URL(`${destinationUrl.pathname}${destinationUrl.search}${destinationUrl.hash}`, baseURL.origin);
+    if (!hostname) {
+      throw new Error('URL does not have a valid host');
+    }
+
+    if (destinationUrl.hostname.includes('.hlx.')) {
+      destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
+    }
+
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html')) {
+      destinationUrl.pathname = `${pathname}.html`;
+    }
+
+    return destinationUrl;
+  } catch (e) {
+    window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`);
   }
 
-  if (baseURL.pathname.endsWith('.html') && !destinationUrl.pathname.endsWith('.html')) {
-    destinationUrl.pathname = `${destinationUrl.pathname}.html`;
-  }
-
-  return destinationUrl;
+  return null;
 };
 
 export const formSuccess = (form) => {
@@ -97,24 +107,27 @@ export const setPreferences = (formData) => {
 
 const init = (el, loadScriptFunc = loadScript) => {
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const link = children[0].querySelector('a');
+  const encodedConfigDiv = children.shift();
+  const link = encodedConfigDiv.querySelector('a');
   let formData = {};
 
-  if (link?.href) {
-    const encodedConfig = link.href.split('#')[1];
-
-    formData = parseEncodedConfig(encodedConfig);
+  if (!link?.href) {
+    el.style.display = 'none';
+    return;
   }
 
+  const encodedConfig = link.href.split('#')[1];
+
+  formData = parseEncodedConfig(encodedConfig);
+
   children.forEach((element) => {
-    const key = element.children[0]?.textContent.toLowerCase();
-    const value = element.children[1]?.textContent;
-    if (key && value) {
-      if (key in FORM_MAP) {
-        formData[FORM_MAP[key]] = value;
-      } else if (key && value) {
-        formData[key] = value;
-      }
+    const key = element.children[0]?.textContent.trim().toLowerCase().replaceAll(' ', '-');
+    const value = element.children[1]?.href ?? element.children[1]?.textContent;
+    if (!key || !value) return;
+    if (key in FORM_MAP) {
+      formData[FORM_MAP[key]] = value;
+    } else {
+      formData[key] = value;
     }
   });
 
@@ -130,8 +143,10 @@ const init = (el, loadScriptFunc = loadScript) => {
   if (formData['form.success.content']) {
     const destinationUrl = decorateURL(formData['form.success.content']);
 
-    formData['form.success.type'] = 'redirect';
-    formData['form.success.content'] = destinationUrl.href;
+    if (destinationUrl) {
+      formData['form.success.type'] = 'redirect';
+      formData['form.success.content'] = destinationUrl.href;
+    }
   }
 
   setPreferences(formData);
