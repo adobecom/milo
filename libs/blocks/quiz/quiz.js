@@ -2,7 +2,7 @@ import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, createAnalyticsDataForBtn } from './utils.js';
+import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
@@ -22,7 +22,7 @@ const App = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [totalSteps, setTotalSteps] = useState(3);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
-  const [isNextQuizViewsExist, setIsNextQuizViewsExist] = useState(true);
+  const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
   const [urlParam, setUrlParam] = useState({});
   const [btnAnalytics, setBtnAnalytics] = useState(null);
 
@@ -72,19 +72,19 @@ const App = () => {
    * @returns {void}
    */
   useEffect(() => {
-    setBtnAnalytics(createAnalyticsDataForBtn(selectedQuestion, selectedCards));
+    setBtnAnalytics(getAnalyticsDataForBtn(selectedQuestion, selectedCards));
   }, [selectedQuestion, selectedCards]);
 
   /**
    * Handling the result flow when user has selected all the options.
-   * isNextQuizViewsExist is set to false when the next button is clicked
+   * nextQuizViewsExist is set to false when the next button is clicked
    * and there are no more views to show.
    */
   useEffect(() => {
-    if (!isNextQuizViewsExist && userSelection.length) {
+    if (!nextQuizViewsExist && userSelection.length) {
       handleResultFlow(transformToFlowData(userSelection));
     }
-  }, [userSelection, isNextQuizViewsExist]);
+  }, [userSelection, nextQuizViewsExist]);
 
   /**
    *  Updates the url param when user selects the options.
@@ -145,7 +145,7 @@ const App = () => {
     const { nextQuizViews } = handleNext(questionData, selectedQuestion, selCards, userFlow);
     const nextQuizViewsLen = nextQuizViews.length;
 
-    setIsNextQuizViewsExist(!!nextQuizViewsLen);
+    setNextQuizViewsExist(!!nextQuizViewsLen);
     setCurrentStep(currentStep + 1);
     updateUserSelection((userSelection) => (
       [...userSelection, { selectedQuestion, selectedCards }]));
