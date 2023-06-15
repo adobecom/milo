@@ -370,7 +370,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filters.append(filter1, filter2);
       filter1.addEventListener('change', filterChangeEvent);
       filter2.addEventListener('change', filterChangeEvent);
-      table.parentElement.prepend(filters);
+      table.parentElement.insertBefore(filters, table);
     }
   };
 
