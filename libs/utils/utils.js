@@ -158,15 +158,8 @@ export const [setConfig, getConfig] = (() => {
       const origin = conf.origin || window.location.origin;
       const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
-
-      if (conf.codeRoot) {
-        if (!config.codeRoot.startsWith(origin)) {
-          config.codeRoot = `${origin}${conf.codeRoot}`;
-        }
-      } else {
-        config.codeRoot = origin;
-      }
-
+      config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);

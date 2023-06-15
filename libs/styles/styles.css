@@ -199,7 +199,8 @@ main > .section,
   position: relative;
 }
 
-main > .section > .content {
+main > .section > .content,
+.fragment > .section > .content {
   display: block;
   max-width: var(--grid-container-width);
   margin: 0 auto;
