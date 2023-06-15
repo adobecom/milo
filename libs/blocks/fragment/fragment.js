@@ -1,4 +1,4 @@
-import { createTag, loadArea, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
@@ -29,7 +29,12 @@ const updateFragMap = (fragment, a, href) => {
 };
 
 export default async function init(a) {
-  const relHref = localizeLink(a.href);
+  const { p13nFragments } = getConfig();
+  let relHref = localizeLink(a.href);
+  if (p13nFragments?.[relHref]) {
+    a.href = p13nFragments[relHref];
+    relHref = p13nFragments[relHref];
+  }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
@@ -38,7 +43,11 @@ export default async function init(a) {
   if (resp.ok) {
     const html = await resp.text();
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    let doc = parser.parseFromString(html, 'text/html');
+    if (doc.querySelector('.fragment-personalization')) {
+      const { fragmentPersonalization } = await import('../../scripts/personalization.js');
+      doc = await fragmentPersonalization(doc);
+    }
     const sections = doc.querySelectorAll('body > div');
     if (sections.length > 0) {
       const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });

@@ -25,6 +25,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
+  'fragment-personalization',
   'featured-article',
   'global-footer',
   'global-navigation',
@@ -86,6 +87,7 @@ const AUTO_BLOCKS = [
 const ENVS = {
   local: {
     name: 'local',
+    adobeIO: 'cc-collab.adobe.io',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
@@ -249,6 +251,21 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+export function preload(href, { rel = 'preload', as = 'script', crossorigin = false } = {}) {
+  let link = document.head.querySelector(`link[href="${href}"]`);
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', rel);
+    link.setAttribute('as', as);
+    if (crossorigin !== false) {
+      link.setAttribute('crossorigin', crossorigin);
+    }
+    link.setAttribute('href', href);
+    document.head.appendChild(link);
+  }
+  return link;
+}
+
 export function appendHtmlPostfix(area = document) {
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
@@ -366,16 +383,21 @@ export async function loadTemplate() {
 
 export async function loadBlock(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot } = getConfig();
+  const { miloLibs, codeRoot, p13nBlocks } = getConfig();
+
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  let blockPath = `${base}/blocks/${name}/${name}`;
+  if (p13nBlocks?.[name]) {
+    blockPath = `${p13nBlocks[name]}/${name}`;
+  }
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
+    loadStyle(`${blockPath}.css`, resolve);
   });
 
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
+        const { default: init } = await import(`${blockPath}.js`);
         await init(block);
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
@@ -438,13 +460,22 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
-      if (key === 'fragment' && url.hash === '') {
-        const { parentElement } = a;
-        const { nodeName, innerHTML } = parentElement;
-        const noText = innerHTML === a.outerHTML;
-        if (noText && nodeName === 'P') {
-          const div = createTag('div', null, a);
-          parentElement.parentElement.replaceChild(div, parentElement);
+      if (key === 'fragment') {
+        if (url.hash === '') {
+          const { parentElement } = a;
+          const { nodeName, innerHTML } = parentElement;
+          const noText = innerHTML === a.outerHTML;
+          if (noText && nodeName === 'P') {
+            const div = createTag('div', null, a);
+            parentElement.parentElement.replaceChild(div, parentElement);
+          }
+        } else {
+          // Modals
+          a.dataset.modalPath = url.pathname;
+          a.dataset.modalHash = url.hash;
+          a.href = url.hash;
+          a.className = 'modal link-block';
+          return true;
         }
       }
       // Modals
@@ -593,11 +624,70 @@ function decorateFooterPromo(config) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
-async function loadMartech(config) {
+export function loadIms() {
+  if (window.adobeIMS) return;
+
+  const { locale, imsClientId, env, onReady } = getConfig();
+  window.adobeid = {
+    client_id: imsClientId,
+    scope: 'AdobeID,openid,gnav',
+    locale: locale?.ietf?.replace('-', '_') || 'en_US',
+    autoValidateToken: true,
+    environment: env.ims,
+    useLocalStorage: false,
+    onReady,
+  };
+  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+}
+
+async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+  if (window.marketingtech?.adobe?.launch !== undefined) {
+    return true;
+  }
+
   const query = new URL(window.location.href).searchParams.get('martech');
-  if (query !== 'off' && getMetadata('martech') !== 'off') {
-    const { default: martech } = await import('../martech/martech.js');
-    martech(config, loadScript, getMetadata);
+  if (query === 'off' || getMetadata('martech') === 'off') {
+    return false;
+  }
+
+  window.targetGlobalSettings = { bodyHidingEnabled: false };
+  loadIms();
+
+  const { default: initMartech } = await import('../martech/martech.js');
+  await initMartech({
+    persEnabled,
+    persManifests,
+    utils: {
+      createTag, getConfig, setConfig, getMetadata, preload, loadScript,
+    },
+  });
+
+  return true;
+}
+
+async function checkForPageMods() {
+  const persMd = getMetadata('personalization');
+  let persManifests = [];
+  if (persMd && persMd !== 'off') {
+    persManifests = persMd.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim());
+    preload('/libs/scripts/personalization.js', { crossorigin: 'use-credentials' });
+  }
+
+  const targetMd = getMetadata('target');
+  let martechLoaded = false;
+  if (targetMd && targetMd !== 'off') {
+    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  }
+
+  if (persMd && !martechLoaded) {
+    // load the personalization only
+    const { applyPersonalization } = await import('../scripts/personalization.js');
+    await applyPersonalization(
+      { persManifests },
+      { createTag, getConfig, loadScript, preload, setConfig },
+    );
   }
 }
 
@@ -675,8 +765,11 @@ function decorateMeta() {
 }
 
 export async function loadArea(area = document) {
-  const config = getConfig();
   const isDoc = area === document;
+
+  const config = getConfig();
+
+  if (isDoc) await checkForPageMods();
 
   appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
@@ -726,6 +819,9 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    if (config.experiment?.selectedVariant?.scripts?.length) {
+      config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
+    }
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
