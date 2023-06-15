@@ -273,6 +273,14 @@ function handleScrollEffect(table, gnavHeight) {
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
+  if (highlightRow) {
+    highlightRow.style.top = `${gnavHeight}px`;
+    highlightRow.style.borderTop = '1px solid transparent';
+  } else {
+    headingRow.style.borderTop = '1px solid transparent';
+  }
+  headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
+
   const intercept = table.querySelector('.intercept') || document.createElement('div');
   intercept.className = 'intercept';
   intercept.setAttribute('data-observer-intercept', '');
@@ -281,8 +289,6 @@ function handleScrollEffect(table, gnavHeight) {
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-    if (highlightRow) highlightRow.style.top = `${gnavHeight}px`;
-    headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
   });
   observer.observe(intercept);
 }
