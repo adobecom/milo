@@ -10,7 +10,7 @@
   box-sizing: border-box;
   max-width: 600px;
   min-height: 200px;
-  margin: var(--spacing-xxl) auto 104px;
+  margin: 0 auto;
   padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
 }
@@ -104,7 +104,6 @@
   width: auto!important;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
-  opacity: 0;
 }
 
 .marketo .mktoRequiredField label::after {
