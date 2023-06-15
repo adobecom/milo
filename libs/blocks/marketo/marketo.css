@@ -152,6 +152,11 @@
   margin: 0 6px 0 0;
 }
 
+.marketo .mktoForm .mktoCheckboxList .mktoField:focus-visible,
+.marketo .mktoForm .mktoRadioList .mktoField:focus-visible {
+  outline: var(--link-color-dark) auto 2px;
+}
+
 .marketo .mktoForm .mktoCheckboxList label,
 .marketo .mktoForm .mktoRadioList label {
   font-weight: 400;
