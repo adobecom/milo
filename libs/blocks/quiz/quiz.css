@@ -1,5 +1,8 @@
 .quiz { 
   min-height: 1000px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .quiz-container {
@@ -7,12 +10,13 @@
   align-items: center;
   justify-content: flex-start;
   flex-direction: column;
-  color: #FFF;
+  color: var(--color-white);
+  width: 100%;
 }
 
 .quiz-container .foreground {
   position: relative;
-  padding: var(--spacing-xxl) 0;
+  margin: var(--spacing-m) 0 var(--spacing-s);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-m);
@@ -282,7 +286,7 @@
 /* Quiz button */
 .quiz-button-container .quiz-btn {
   padding: 0.5938rem 5.3438rem;
-  border-color: #fff;
+  border-color: var(--color-white);
   background: transparent;
   border-radius: 1.875rem;
   border-width: 0.125rem;
@@ -297,7 +301,7 @@
   min-height: 32px;
   min-width: 72px;
   padding: 0.5938rem 5.3438rem;
-  border-color: #fff;
+  border-color: var(--color-white);
   background: transparent;
   border-radius: 1.875rem;
   border-width: 0.125rem;
@@ -317,11 +321,11 @@
 }
 
 span.quiz-Button-label {
-  color: #fff;
+  color: var(--color-white);
 }
 
 .quiz-button-container .quiz-btn:not(.quiz-button-container .quiz-btn[disabled]) {
-  background: #fff;
+  background: var(--color-white);
 }
 
 .quiz-button-container .quiz-btn:not(.quiz-button-container .quiz-btn[disabled]) .quiz-Button-label {
@@ -329,7 +333,7 @@ span.quiz-Button-label {
 }
 
 .quiz-button-container .quiz-btn .quiz-Button-label {
-  color: #fff;
+  color: var(--color-white);
   font-size: 1rem;
   font-weight: 500;
 }
@@ -347,9 +351,9 @@ span.quiz-Button-label {
   margin: 0 0 27px;
 }
 
-/* Adding style for quiz cards */
-.consonant-CardsGrid--options {
-  grid-template-columns: repeat(auto-fit, minmax(100px, max-content));
+.quiz-container .consonant-CardsGrid {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Added to prevent click event triggering below the cards 
@@ -357,6 +361,7 @@ TODO: Need to check if we can skip this somehow.
 */
 .quiz-container .consonant-CardsGrid--with4xGutter {
   padding-bottom: 0;
+  gap: 0;
 }
 
 .quiz-container .card .consonant-OneHalfCard-title {
@@ -387,7 +392,7 @@ div[data-valign="middle"] {
 }
 
 .quiz-container .card.selected {
-  background-color: #fff;
+  background-color: var(--color-white);
 }
 
 .quiz-container .card.selected .consonant-OneHalfCard-title {
@@ -396,22 +401,16 @@ div[data-valign="middle"] {
 }
 
 .quiz-container .card.selected {
-  background-color: #fff;
+  background-color: var(--color-white);
 }
 
 .quiz-container .consonant-OneHalfCard-inner {
   padding: 20px;
 }
 
-.quiz-container .quiz-options-container {
-  gap: 0;
-  display: flex; 
-  flex-direction: column;
-}
-
 .quiz-container .consonant-OneHalfCard {
   background-color: #efefef;
-  border: 1px solid #fff;
+  border: 1px solid var(--color-white);
 }
 
 .milo-card-wrapper {
@@ -443,8 +442,8 @@ div[data-valign="middle"] {
   cursor: not-allowed;
   pointer-events: none;
   outline: none;
-  background-color: ##fafafacc;
-  box-shadow: 10px 10px 6px 0 ##00000029;
+  background-color: #fafafacc;
+  box-shadow: 10px 10px 6px 0 #00000029;
 }
 
 .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option.disabled .consonant-OneHalfCard-image,
@@ -462,7 +461,7 @@ div[data-valign="middle"] {
 }
 
 .quiz-container .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option:hover {
-  background-color: #fff;
+  background-color: var(--color-white);
 }
 
 .quiz-container .consonant-OneHalfCard-inner {
@@ -536,7 +535,7 @@ div[data-valign="middle"] {
 }
 
 .dot:not(.prev)::before {
-  background-color: #fff;
+  background-color: var(--color-white);
   border: 2px solid #676767;
 }
 
@@ -576,7 +575,7 @@ div[data-valign="middle"] {
 }
 
 .dot-indicators:last-of-type.prev:not(.current):not(.prev)::after {
-  border-bottom: 2px solid #fff;
+  border-bottom: 2px solid var(--color-white);
 }
 
 .dot-indicators:last-of-type .dot:not(.current).prev::before {
@@ -584,21 +583,21 @@ div[data-valign="middle"] {
 }
   
 .dot-indicators:last-of-type .dot:not(.current).prev::after {
-  border-bottom: 2px solid #fff;
+  border-bottom: 2px solid var(--color-white);
 }
 
 .dot-indicators:last-of-type .dot.current::before {
-  background-color: #fff;
-  border: 2px solid #fff;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-white);
 }
 
 .dot-indicators:last-of-type .dot.prev::before {
-  background-color: #fff;
+  background-color: var(--color-white);
 }
 
 .dot-indicators:last-of-type .dot:not(.current):not(.prev)::before {
   background-color: transparent;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-white);
 }
 
 .dot-indicators:last-of-type .dot::after {
@@ -606,7 +605,7 @@ div[data-valign="middle"] {
   content: ' ';
   width: calc(100% - 23px);
   height: 2px;
-  border-bottom: 2px dashed #fff;
+  border-bottom: 2px dashed var(--color-white);
   position: absolute;
   top: 6px;
   margin-left: 20px;
@@ -709,7 +708,21 @@ div[data-valign="middle"] {
   }
 }
 
-@media screen and (min-width: 900px) {   
+@media screen and (min-width: 900px) {
+  .quiz-container .foreground {
+    margin: var(--spacing-xxxl) 0;
+  }
+
+  .quiz-container .consonant-CardsGrid--5up {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .quiz-container .consonant-CardsGrid {
+    flex-direction: row;
+  }
+
   .quiz-container .card .consonant-OneHalfCard-title {
     display: block;
   }
@@ -772,22 +785,22 @@ div[data-valign="middle"] {
   .quiz-container .consonant-OneHalfCard {
     padding-bottom: 0;
   }
-  .quiz-container .quiz-options-container {
-    display: grid;
-  }
 
   .milo-card-wrapper {
     padding: 0;
   }
 
-  .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option {
+  .quiz-container .card:not(.quiz-container .card.selected) {
     background-color: #fafafacc;
+  }
+
+  .card.half-card.border.consonant-Card.consonant-OneHalfCard.quiz-option {
     min-width: 9.625rem;
     min-height: 13.75rem;
     width: 9.625rem;
     margin: 0.9375rem;
     box-shadow: 10px 10px 6px 0 #00000029;
-    border: 1px solid #fff;
+    border: 1px solid var(--color-white);
     border-radius: 0.5rem;
     cursor: pointer;
     height: 10rem;
@@ -827,17 +840,22 @@ div[data-valign="middle"] {
 
   .quiz-container .consonant-OneHalfCard-cover {
     margin-right: 0;
-  }   
+  }
+  .dot-indicators:first-of-type {
+    display: flex;
+    position: fixed;
+  }
+  
+  .dot-indicators:last-of-type {
+    display: none;
+  }
+
   .dot-indicators:last-of-type {
     margin-top: var(--spacing-xl);
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .quiz-container {
-    min-height: 560px;
-    padding: var(--spacing-xl) 0;
-  }
 
   .quiz-container .foreground,
   .quiz-container .background {
@@ -877,10 +895,6 @@ div[data-valign="middle"] {
     width: 100%;
     max-width: initial;
     min-height: 150px;
-  }
-
-  .quiz-container .text {
-    padding: var(--spacing-xl) 0;
   }
 
   .quiz-container.small .text {
@@ -952,14 +966,6 @@ div[data-valign="middle"] {
   .quiz-container.split.one-third .text .icon-area img {
     max-height: 80px;
     max-width: 200px;
-  }
-  .dot-indicators:first-of-type {
-    display: flex;
-    position: fixed;
-  }
-  
-  .dot-indicators:last-of-type {
-    display: none;
   }
 
   .dot-indicators--wide {
