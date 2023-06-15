@@ -709,6 +709,9 @@ div[data-valign="middle"] {
 }
 
 @media screen and (min-width: 900px) {
+  .quiz-container .foreground {
+    margin: var(--spacing-xxxl) 0;
+  }
 
   .quiz-container .consonant-CardsGrid--5up {
     display: flex;
@@ -837,17 +840,22 @@ div[data-valign="middle"] {
 
   .quiz-container .consonant-OneHalfCard-cover {
     margin-right: 0;
-  }   
+  }
+  .dot-indicators:first-of-type {
+    display: flex;
+    position: fixed;
+  }
+  
+  .dot-indicators:last-of-type {
+    display: none;
+  }
+
   .dot-indicators:last-of-type {
     margin-top: var(--spacing-xl);
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .quiz-container {
-    min-height: 560px;
-    padding: var(--spacing-xl) 0;
-  }
 
   .quiz-container .foreground,
   .quiz-container .background {
@@ -887,10 +895,6 @@ div[data-valign="middle"] {
     width: 100%;
     max-width: initial;
     min-height: 150px;
-  }
-
-  .quiz-container .text {
-    padding: var(--spacing-xl) 0;
   }
 
   .quiz-container.small .text {
@@ -962,14 +966,6 @@ div[data-valign="middle"] {
   .quiz-container.split.one-third .text .icon-area img {
     max-height: 80px;
     max-width: 200px;
-  }
-  .dot-indicators:first-of-type {
-    display: flex;
-    position: fixed;
-  }
-  
-  .dot-indicators:last-of-type {
-    display: none;
   }
 
   .dot-indicators--wide {
