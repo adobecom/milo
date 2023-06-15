@@ -87,7 +87,6 @@ const AUTO_BLOCKS = [
 const ENVS = {
   local: {
     name: 'local',
-    adobeIO: 'cc-collab.adobe.io',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
     pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
   },
@@ -461,22 +460,13 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
-      if (key === 'fragment') {
-        if (url.hash === '') {
-          const { parentElement } = a;
-          const { nodeName, innerHTML } = parentElement;
-          const noText = innerHTML === a.outerHTML;
-          if (noText && nodeName === 'P') {
-            const div = createTag('div', null, a);
-            parentElement.parentElement.replaceChild(div, parentElement);
-          }
-        } else {
-          // Modals
-          a.dataset.modalPath = url.pathname;
-          a.dataset.modalHash = url.hash;
-          a.href = url.hash;
-          a.className = 'modal link-block';
-          return true;
+      if (key === 'fragment' && url.hash === '') {
+        const { parentElement } = a;
+        const { nodeName, innerHTML } = parentElement;
+        const noText = innerHTML === a.outerHTML;
+        if (noText && nodeName === 'P') {
+          const div = createTag('div', null, a);
+          parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
       // Modals
@@ -625,18 +615,20 @@ function decorateFooterPromo(config) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
-export function loadIms() {
+export function loadIms(onReadyFn) {
   if (window.adobeIMS) return;
 
-  const { locale, imsClientId, env, onReady } = getConfig();
+  const { locale, imsClientId, imsScope, env, onReady } = getConfig();
+  if (!imsClientId) return null;
+
   window.adobeid = {
     client_id: imsClientId,
-    scope: 'AdobeID,openid,gnav',
+    scope: imsScope || 'AdobeID,openid,gnav',
     locale: locale?.ietf?.replace('-', '_') || 'en_US',
     autoValidateToken: true,
     environment: env.ims,
     useLocalStorage: false,
-    onReady,
+    onReady: onReadyFn || onReady,
   };
   loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
 }

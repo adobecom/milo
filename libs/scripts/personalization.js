@@ -223,16 +223,13 @@ function getPersonalizationVariant(variantNames = [], variantLabel = null) {
 async function fetchManifest(path) {
   try {
     const resp = await fetch(path);
-    if (!resp.ok) {
-      console.log('error loading manifest:', resp);
-      return null;
-    }
+    if (!resp.ok) throw new Error(resp);
     const json = await resp.json();
     return json.data;
   } catch (e) {
-    console.log(`error loading manifest: ${path}`, e);
+    console.error(`Error loading manifest: ${path}`, e);
+    return null;
   }
-  return null;
 }
 
 export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
@@ -266,18 +263,19 @@ export async function fragmentPersonalization(doc) {
 
   const variantNames = [];
   const info = [...fpTableRows].reduce((obj, row) => {
-    if (row.children[0]?.innerText?.toLowerCase() === 'action') {
+    const [actionEl, selectorEl, variantEl, fragment] = row.children;
+    if (actionEl?.innerText?.toLowerCase() === 'action') {
       return obj;
     }
-    const variantName = row.children[2].innerText?.toLowerCase();
+    const variantName = variantEl?.innerText?.toLowerCase();
     if (!variantNames.includes(variantName)) {
       variantNames.push(variantName);
       obj[variantName] = [];
     }
     obj[variantName].push({
-      action: row.children[0].innerText?.toLowerCase(),
-      selector: row.children[1].innerText?.toLowerCase(),
-      htmlFragment: row.children[3].firstElementChild,
+      action: actionEl.innerText?.toLowerCase(),
+      selector: selectorEl.innerText?.toLowerCase(),
+      htmlFragment: fragment.firstElementChild,
     });
     return obj;
   }, {});
@@ -288,17 +286,42 @@ export async function fragmentPersonalization(doc) {
       const selectedEl = doc.querySelector(cmd.selector);
       if (!selectedEl) return;
 
-      if (['replace', 'replacecontent'].includes(cmd.action)) {
-        selectedEl.replaceWith(cmd.htmlFragment);
-      } else if (['insertbefore', 'insertcontentbefore'].includes(cmd.action)) {
-        selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
-      } else if (['insertafter', 'insertcontentafter'].includes(cmd.action)) {
-        selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
-      } else if (['remove', 'removecontent'].includes(cmd.action)) {
-        selectedEl.remove();
+      switch (cmd.action) {
+        case 'replace': case 'replacecontent':
+          selectedEl.replaceWith(cmd.htmlFragment);
+          break;
+        case 'insertbefore': case 'insertcontentbefore':
+          selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
+          break;
+        case 'insertafter': case 'insertcontentafter':
+          selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
+          break;
+        case 'remove': case 'removecontent':
+          selectedEl.remove();
+          break;
+        default:
+          console.warn(`Unknown action: ${cmd.action}`);
       }
     });
   }
+
+  // const selectedVariant = getPersonalizationVariant(variantNames);
+  // if (selectedVariant) {
+  //   info[selectedVariant].forEach((cmd) => {
+  //     const selectedEl = doc.querySelector(cmd.selector);
+  //     if (!selectedEl) return;
+
+  //     if (['replace', 'replacecontent'].includes(cmd.action)) {
+  //       selectedEl.replaceWith(cmd.htmlFragment);
+  //     } else if (['insertbefore', 'insertcontentbefore'].includes(cmd.action)) {
+  //       selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
+  //     } else if (['insertafter', 'insertcontentafter'].includes(cmd.action)) {
+  //       selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
+  //     } else if (['remove', 'removecontent'].includes(cmd.action)) {
+  //       selectedEl.remove();
+  //     }
+  //   });
+  // }
   return doc;
 }
 

@@ -9,7 +9,7 @@
 }
 
 .hlx-badge {
-    border-radius: 32px; 
+    border-radius: 32px;
     background-color: #888;
     color: #eee;
     padding: 16px 32px;
@@ -100,7 +100,7 @@
     height: 0;
     position: absolute;
     border-left: 15px solid transparent;
-    border-right: 15px solid transparent;    
+    border-right: 15px solid transparent;
     border-top: 15px solid #444;
     bottom: -15px;
     right: 30px;

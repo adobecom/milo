@@ -2,6 +2,7 @@
 import {
   getConfig,
   getMetadata,
+  loadIms as utilsLoadIms,
   loadScript,
   localizeLink,
   decorateSVG,
@@ -292,34 +293,22 @@ class Gnav {
   };
 
   loadIMS = () => {
-    const { locale, imsClientId, imsScope, env } = getConfig();
-    if (!imsClientId) return null;
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: imsScope || 'AdobeID,openid,gnav',
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: async () => {
-        const tasks = [
-          this.decorateProfile,
-          this.decorateAppLauncher,
-        ];
-        try {
-          for await (const task of tasks) {
-            await yieldToMain();
-            await task();
-          }
-        } catch (e) {
-          lanaLog({ message: 'GNAV: issues within onReady', e });
+    const onReady = async () => {
+      const tasks = [
+        this.decorateProfile,
+        this.decorateAppLauncher,
+      ];
+      try {
+        for await (const task of tasks) {
+          await yieldToMain();
+          await task();
         }
-      },
+      } catch (e) {
+        lanaLog({ message: 'GNAV: issues within onReady', e });
+      }
     };
-    const imsScript = document.querySelector('script[src$="/imslib.min.js"]') instanceof HTMLElement;
-    if (!imsScript && !window.adobeIMS) {
-      loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
-    }
+
+    utilsLoadIms(onReady);
     return null;
   };
 
