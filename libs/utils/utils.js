@@ -234,11 +234,13 @@ export function localizeLink(href, originHostName = window.location.hostname) {
   }
 }
 
-export function loadStyle(href, callback) {
+export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
-    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('rel', rel);
+    if (as) link.setAttribute('as', as);
+    if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     link.setAttribute('href', href);
     if (callback) {
       link.onload = (e) => callback(e.type);
@@ -251,19 +253,8 @@ export function loadStyle(href, callback) {
   return link;
 }
 
-export function preload(href, { rel = 'preload', as = 'script', crossorigin = false } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
-  if (!link) {
-    link = document.createElement('link');
-    link.setAttribute('rel', rel);
-    link.setAttribute('as', as);
-    if (crossorigin !== false) {
-      link.setAttribute('crossorigin', crossorigin);
-    }
-    link.setAttribute('href', href);
-    document.head.appendChild(link);
-  }
-  return link;
+export function loadStyle(href, callback) {
+  return loadLink(href, { rel: 'stylesheet', callback });
 }
 
 export function appendHtmlPostfix(area = document) {
@@ -651,7 +642,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     persEnabled,
     persManifests,
     utils: {
-      createTag, getConfig, getMetadata, preload, loadScript, updateConfig,
+      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
     },
   });
 
@@ -665,7 +656,11 @@ async function checkForPageMods() {
     persManifests = persMd.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim());
-    preload('/libs/scripts/personalization.js', { crossorigin: 'use-credentials' });
+    const { base } = getConfig();
+    loadLink(
+      `${base}/scripts/personalization.js`,
+      { as: 'script', crossorigin: 'use-credentials', rel: 'preload' },
+    );
   }
 
   const targetMd = getMetadata('target');
@@ -679,7 +674,7 @@ async function checkForPageMods() {
     const { applyPersonalization } = await import('../scripts/personalization.js');
     await applyPersonalization(
       { persManifests },
-      { createTag, getConfig, loadScript, preload, updateConfig },
+      { createTag, getConfig, loadScript, loadLink, updateConfig },
     );
   }
 }

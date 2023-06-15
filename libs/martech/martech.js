@@ -101,7 +101,7 @@ export default async function init({ persEnabled = false, persManifests, utils }
   const config = utils.getConfig();
 
   const { url, edgeConfigId } = getDetails(config.env);
-  utils.preload(url);
+  utils.loadLink(url, { as: 'script', rel: 'preload' });
 
   setDeep(
     window,

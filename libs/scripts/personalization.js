@@ -357,7 +357,7 @@ export async function runPersonalization(info) {
 
 export async function applyPersonalization(
   { persManifests = [], targetManifests = [] },
-  { createTag, getConfig, loadScript, preload, updateConfig },
+  { createTag, getConfig, loadLink, loadScript, updateConfig },
 ) {
   if (!(persManifests.length || targetManifests.length)) return;
 
@@ -372,7 +372,10 @@ export async function applyPersonalization(
   for (const manifest of manifests) {
     if (!manifest.manifestData && manifest.manifestPath) {
       manifest.manifestPath = normalizePath(manifest.manifestPath);
-      preload(manifest.manifestPath, { as: 'fetch', crossorigin: 'anonymous' });
+      loadLink(
+        manifest.manifestPath,
+        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
+      );
     }
   }
 
