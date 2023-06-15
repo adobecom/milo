@@ -119,7 +119,7 @@ export default async function init({ persEnabled = false, persManifests, utils }
   };
   window.edgeConfigId = edgeConfigId;
 
-  await utils.loadScript('/libs/deps/martech.main.standard.min.js');
+  await utils.loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
   // eslint-disable-next-line no-underscore-dangle
   window._satellite.track('pageload');
 

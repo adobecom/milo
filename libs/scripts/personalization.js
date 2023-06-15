@@ -334,7 +334,7 @@ export async function runPersonalization(info) {
 
 export async function applyPersonalization(
   { persManifests = [], targetManifests = [] },
-  { createTag, getConfig, loadScript, preload, setConfig },
+  { createTag, getConfig, loadScript, preload, updateConfig },
 ) {
   if (!(persManifests.length || targetManifests.length)) return;
 
@@ -365,7 +365,7 @@ export async function applyPersonalization(
   window.hlx ??= {};
   window.hlx.experiments = results.map((r) => r.experiment);
 
-  setConfig({
+  updateConfig({
     ...getConfig(),
     experiments: results.map((r) => r.experiment),
     p13nBlocks: consolidateObjects(results, 'blocks'),

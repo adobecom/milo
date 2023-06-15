@@ -151,7 +151,7 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
-export const [setConfig, getConfig] = (() => {
+export const [setConfig, updateConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
@@ -175,6 +175,7 @@ export const [setConfig, getConfig] = (() => {
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
+    (conf) => (config = conf),
     () => config,
   ];
 })();
@@ -658,7 +659,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     persEnabled,
     persManifests,
     utils: {
-      createTag, getConfig, setConfig, getMetadata, preload, loadScript,
+      createTag, getConfig, getMetadata, preload, loadScript, updateConfig,
     },
   });
 
@@ -686,7 +687,7 @@ async function checkForPageMods() {
     const { applyPersonalization } = await import('../scripts/personalization.js');
     await applyPersonalization(
       { persManifests },
-      { createTag, getConfig, loadScript, preload, setConfig },
+      { createTag, getConfig, loadScript, preload, updateConfig },
     );
   }
 }
