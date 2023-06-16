@@ -66,10 +66,9 @@ function normalizePath(p) {
 const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
 const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
-  Object.entries(item[prop] || {})
-    .forEach(([key, val]) => {
-      propMap[key] = val;
-    });
+  item[prop]?.forEach((i) => {
+    propMap[i.selector] = i.val;
+  });
   return propMap;
 }, {});
 
@@ -166,8 +165,9 @@ export function parseConfig(data) {
 
         if (GLOBAL_CMDS.includes(action)) {
           variants[vn][action] = variants[vn][action] || [];
+
           variants[vn][action].push({
-            selector: normalizePath(selector),
+            selector: action === 'useblockcode' ? line[vn]?.split('/').pop() : normalizePath(selector),
             val: normalizePath(line[vn]),
           });
         } else if (VALID_COMMANDS.includes(action)) {
@@ -305,23 +305,6 @@ export async function fragmentPersonalization(doc) {
     });
   }
 
-  // const selectedVariant = getPersonalizationVariant(variantNames);
-  // if (selectedVariant) {
-  //   info[selectedVariant].forEach((cmd) => {
-  //     const selectedEl = doc.querySelector(cmd.selector);
-  //     if (!selectedEl) return;
-
-  //     if (['replace', 'replacecontent'].includes(cmd.action)) {
-  //       selectedEl.replaceWith(cmd.htmlFragment);
-  //     } else if (['insertbefore', 'insertcontentbefore'].includes(cmd.action)) {
-  //       selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
-  //     } else if (['insertafter', 'insertcontentafter'].includes(cmd.action)) {
-  //       selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
-  //     } else if (['remove', 'removecontent'].includes(cmd.action)) {
-  //       selectedEl.remove();
-  //     }
-  //   });
-  // }
   return doc;
 }
 
@@ -394,7 +377,7 @@ export async function applyPersonalization(
   updateConfig({
     ...getConfig(),
     experiments: results.map((r) => r.experiment),
-    p13nBlocks: consolidateObjects(results, 'blocks'),
-    p13nFragments: consolidateObjects(results, 'fragments'),
+    expBlocks: consolidateObjects(results, 'blocks'),
+    expFragments: consolidateObjects(results, 'fragments'),
   });
 }
