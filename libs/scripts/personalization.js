@@ -16,7 +16,7 @@ export const PERSONALIZATION_TAGS = {
 };
 
 // Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- ,]/g;
+const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
 const RE_SPACE_COMMA = /[ ,]/;
 
 const MANIFEST_KEYS = [
@@ -84,12 +84,10 @@ const createFragmentLink = (url) => {
   return p;
 };
 
-function handleCommands(commands, rootEl) {
-  const mainEl = rootEl || document.querySelector('main');
-
+function handleCommands(commands, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
-      let targetEl = mainEl.querySelector(cmd.selector);
+      let targetEl = rootEl.querySelector(cmd.selector);
 
       if (!targetEl) return;
 
@@ -205,17 +203,42 @@ export async function replaceInner(path, element) {
   return false;
 }
 
+const getPageSearchParams = (() => {
+  let pageSearchParams;
+  return () => {
+    if (!pageSearchParams) {
+      pageSearchParams = new URL(window.location).searchParams;
+    }
+    return pageSearchParams;
+  };
+})();
+
+const checkForParamMatch = (paramStr) => {
+  const [paramName, paramValue] = paramStr.split('param-')[1].split('=');
+  if (!paramName) return false;
+  const searchParams = getPageSearchParams();
+  const searchParamVal = searchParams.get(paramName);
+  if (searchParamVal !== null) {
+    if (paramValue) return paramValue === searchParamVal;
+    return true; // if no paramValue is set, just check for existence of param
+  }
+  return false;
+};
+
 function getPersonalizationVariant(variantNames = [], variantLabel = null) {
   const tagNames = Object.keys(PERSONALIZATION_TAGS);
   // handle multiple variants that are space / comma delimited
   const matchingVariant = variantNames.find((variant) => {
     const names = variant.split(RE_SPACE_COMMA).filter(Boolean);
-    if (names.some((name) => (
-      name === variantLabel || (tagNames.includes(name) && PERSONALIZATION_TAGS[name]())))
-    ) {
-      return variant;
-    }
-    return false;
+    return names.some((name) => {
+      if (name === variantLabel) {
+        return true;
+      }
+      if (name.startsWith('param-')) {
+        return checkForParamMatch(name);
+      }
+      return tagNames.includes(name) && PERSONALIZATION_TAGS[name]();
+    });
   });
   return matchingVariant;
 }
