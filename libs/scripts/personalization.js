@@ -27,13 +27,19 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
+const createFrag = (url) => {
+  const a = utils.createTag('a', { href: url }, url);
+  const p = utils.createTag('p', undefined, a);
+  return p;
+};
+
 const COMMANDS = {
-  insertcontentafter: (el, fragment) => el.insertAdjacentElement('afterend', fragment),
-  insertcontentbefore: (el, fragment) => el.insertAdjacentElement('beforebegin', fragment),
-  removecontent: (el) => el.classList.add(CLASS_EL_DELETE),
-  replacecontent: (el, fragment) => {
+  insertcontentafter: (el, target) => el.insertAdjacentElement('afterend', createFrag(target)),
+  insertcontentbefore: (el, target) => el.insertAdjacentElement('beforebegin', createFrag(target)),
+  removecontent: (el, target) => (target !== 'false' && el.classList.add(CLASS_EL_DELETE)),
+  replacecontent: (el, target) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', fragment);
+    el.insertAdjacentElement('beforebegin', createFrag(target));
     el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   },
 };
@@ -78,24 +84,18 @@ const matchGlob = (searchStr, inputStr) => {
   return reg.test(inputStr);
 };
 
-const createFragmentLink = (url) => {
-  const a = utils.createTag('a', { href: url }, url);
-  const p = utils.createTag('p', undefined, a);
-  return p;
-};
-
 function handleCommands(commands, rootEl = document) {
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
-      let targetEl = rootEl.querySelector(cmd.selector);
+      let selectorEl = rootEl.querySelector(cmd.selector);
 
-      if (!targetEl) return;
+      if (!selectorEl) return;
 
-      if (targetEl.classList[0] === 'section-metadata') {
-        targetEl = targetEl.parentElement || targetEl;
+      if (selectorEl.classList[0] === 'section-metadata') {
+        selectorEl = selectorEl.parentElement || selectorEl;
       }
 
-      COMMANDS[cmd.action](targetEl, cmd !== 'remove' && createFragmentLink(cmd.target));
+      COMMANDS[cmd.action](selectorEl, cmd.target);
     } else {
       console.log('Invalid command found: ', cmd);
     }
