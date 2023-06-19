@@ -811,7 +811,7 @@ function decorateTitle() {
   document.title = `${document.title} (${regionName})`;
   const ogTitleEl = document.querySelector('meta[property="og:title"]');
   if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
-  const twitterTitleEl = document.querySelector('meta[property="twitter:title"]');
+  const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
   if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);
 }
 
