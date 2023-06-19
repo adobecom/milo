@@ -152,6 +152,11 @@ img {
   height: auto;
 }
 
+/* Tooltip */
+.tooltip-wrapper {
+  visibility: hidden;
+}
+
 /* Not blocks */
 div:not([class]) > div > div > img[src^="./media_"] {
   width: 100%;
@@ -194,7 +199,8 @@ main > .section,
   position: relative;
 }
 
-main > .section > .content {
+main > .section > .content,
+.fragment > .section > .content {
   display: block;
   max-width: var(--grid-container-width);
   margin: 0 auto;

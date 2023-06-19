@@ -6,9 +6,9 @@ import {
   decorateCta,
   closeAllDropdowns,
   trigger,
-  expandTrigger,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
+import { createFullGlobalNavigation } from '../test-utilities.js';
 
 describe('global navigation utilities', () => {
   beforeEach(() => {
@@ -84,34 +84,47 @@ describe('global navigation utilities', () => {
     });
   });
 
-  it('closeAllDropdowns should close all dropdowns, respecting the globalNavSelector', () => {
-    const openEl = toFragment`<div class="global-navigation"><div id="mock" class="feds-navLink" aria-expanded="true"></div></div>`;
-    document.body.appendChild(openEl);
-    expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(1);
+  it('closeAllDropdowns should close all dropdowns, respecting the globalNavSelector', async () => {
+    // Build navigation
+    await createFullGlobalNavigation({ });
+    // Mark first element with dropdown as being expanded
+    const firstNavItemWithDropdown = document.querySelector('.feds-navLink--hoverCaret');
+    firstNavItemWithDropdown.setAttribute('aria-expanded', true);
+    // Call method to close all dropdown menus
     closeAllDropdowns();
-    expect(document.querySelector('#mock').getAttribute('daa-lh')).to.equal('header|Open');
+    // Expect aria-expanded value to have been reset
     expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(0);
   });
 
-  it('trigger manages the aria-expanded state of a global-navigation element', () => {
-    const openEl = toFragment`<div class="global-navigation"><div id="mock" class="feds-navLink"></div></div>`;
-    document.body.appendChild(openEl);
-    const element = document.querySelector('#mock');
-    expect(trigger({ element })).to.equal(true);
-    expect(element.getAttribute('daa-lh')).to.equal('header|Close');
-    expect(element.getAttribute('aria-expanded')).to.equal('true');
-    expect(trigger({ element })).to.equal(false);
-    expect(element.getAttribute('daa-lh')).to.equal('header|Open');
-    expect(element.getAttribute('aria-expanded')).to.equal('false');
+  it('closeAllDropdowns doesn\'t close items with the "fedsPreventautoclose" attribute', async () => {
+    // Build navigation
+    await createFullGlobalNavigation({ });
+    // Get first two elements with a dropdown and expand them
+    const itemsWithDropdown = document.querySelectorAll('.feds-navLink--hoverCaret');
+    const [firstNavItemWithDropdown, secondNavItemWithDropdown] = itemsWithDropdown;
+    firstNavItemWithDropdown.setAttribute('aria-expanded', true);
+    secondNavItemWithDropdown.setAttribute('aria-expanded', true);
+    // Set the "data-feds-preventautoclose" attribute on the first item with a dropdown
+    firstNavItemWithDropdown.setAttribute('data-feds-preventautoclose', '');
+    // Expect that two dropdowns are expanded
+    expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(2);
+    // Call method to close all dropdown menus
+    closeAllDropdowns();
+    // Expect aria-expanded value to not have been reset for the first item with a dropdown
+    expect(firstNavItemWithDropdown.hasAttribute('aria-expanded')).to.be.true;
+    expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(1);
   });
 
-  it('expandTrigger opens a global-navigation element', () => {
-    const openEl = toFragment`<div class="global-navigation"><div id="mock" class="feds-navLink"></div></div>`;
-    document.body.appendChild(openEl);
-    const element = document.querySelector('#mock');
-    expandTrigger({ element });
-    expect(element.getAttribute('daa-lh')).to.equal('header|Close');
-    expandTrigger({ element });
-    expect(element.getAttribute('daa-lh')).to.equal('header|Close');
+  it('trigger manages the aria-expanded state of a global-navigation element', async () => {
+    // Build navigation
+    await createFullGlobalNavigation({ });
+    // Get first element with a dropdown
+    const element = document.querySelector('.feds-navLink--hoverCaret');
+    // Calling 'trigger' should open the element
+    expect(trigger({ element })).to.equal(true);
+    expect(element.getAttribute('aria-expanded')).to.equal('true');
+    // Calling 'trigger' again should close the element
+    expect(trigger({ element })).to.equal(false);
+    expect(element.getAttribute('aria-expanded')).to.equal('false');
   });
 });

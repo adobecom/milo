@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -9,6 +11,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'bulk-publish',
   'caas',
   'caas-config',
   'card',
@@ -78,6 +81,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
   local: {
@@ -139,6 +143,12 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getMetadata(name, doc = document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}
+
 export const [setConfig, getConfig] = (() => {
   let config = {};
   return [
@@ -147,13 +157,17 @@ export const [setConfig, getConfig] = (() => {
       const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
       try {
-        document.documentElement.setAttribute('dir', (new Intl.Locale(config.locale.ietf)).textInfo.direction);
+        const dir = getMetadata('content-direction')
+          || config.locale.dir
+          || (config.locale.ietf && (new Intl.Locale(config.locale.ietf)?.textInfo?.direction))
+          || 'ltr';
+        document.documentElement.setAttribute('dir', dir);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
@@ -165,12 +179,6 @@ export const [setConfig, getConfig] = (() => {
 
 export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
-}
-
-export function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
 }
 
 export function createTag(tag, attributes, html) {
@@ -295,7 +303,6 @@ export function appendHtmlPostfix(area = document) {
       }
     } catch (err) {
       /* c8 ignore next 3 */
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   });
@@ -349,7 +356,6 @@ export async function loadTemplate() {
       try {
         await import(`${base}/templates/${name}/${name}.js`);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
       resolve();
@@ -372,7 +378,6 @@ export async function loadBlock(block) {
         const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
         await init(block);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
@@ -535,10 +540,13 @@ function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const domIcons = area.querySelectorAll('span.icon');
-  if (domIcons.length === 0) return;
-  const { default: loadIcons } = await import('../features/icons.js');
-  loadIcons(domIcons, config);
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { miloLibs, codeRoot } = config;
+  const base = miloLibs || codeRoot;
+  await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -686,16 +694,13 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
-    // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
 
-    // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
@@ -780,4 +785,12 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
+}
+
+export function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
 }

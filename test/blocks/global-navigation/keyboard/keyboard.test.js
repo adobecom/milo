@@ -17,7 +17,7 @@ let keyboardNavigation;
 let allNavItems;
 
 const loadStyles = (path) => new Promise((resolve) => {
-  loadStyle(`../../../../libs/blocks/global-navigation/${path}`, resolve);
+  loadStyle(`../../../../libs/${path}`, resolve);
 });
 
 // TODO properly instantiate the whole global nav to get all the event listeners
@@ -25,11 +25,15 @@ const loadStyles = (path) => new Promise((resolve) => {
 describe('keyboard navigation', () => {
   before(async () => {
     await Promise.all([
-      loadStyles('base.css'),
-      loadStyles('global-navigation.css'),
-      loadStyles('features/search/gnav-search.css'),
-      loadStyles('features/profile/dropdown.css'),
-      loadStyles('utilities/menu/menu.css'),
+      loadStyles('styles/styles.css'),
+      loadStyles('styles/variables.css'),
+      loadStyles('styles/typography.css'),
+      loadStyles('blocks/global-footer/global-footer.css'),
+      loadStyles('blocks/global-navigation/base.css'),
+      loadStyles('blocks/global-navigation/global-navigation.css'),
+      loadStyles('blocks/global-navigation/features/search/gnav-search.css'),
+      loadStyles('blocks/global-navigation/features/profile/dropdown.css'),
+      loadStyles('blocks/global-navigation/utilities/menu/menu.css'),
     ]);
   });
 
@@ -40,8 +44,8 @@ describe('keyboard navigation', () => {
     keyboardNavigation = new KeyboardNavigation();
     allNavItems = [
       ...document.querySelectorAll(`
-     ${selectors.brand}, 
      ${selectors.mainNavToggle},
+     ${selectors.brand},
      ${selectors.searchTrigger},
      ${selectors.mainNavItems},
      ${selectors.searchField},
@@ -54,8 +58,8 @@ describe('keyboard navigation', () => {
     mainNavItems = [...document.querySelectorAll(selectors.mainNavItems)];
     otherNavItems = [
       ...document.querySelectorAll(`
-     ${selectors.brand}, 
      ${selectors.mainNavToggle},
+     ${selectors.brand},
      ${selectors.searchTrigger},
      ${selectors.searchField},
      ${selectors.signIn},
@@ -70,9 +74,13 @@ describe('keyboard navigation', () => {
   describe('mainNav', () => {
     describe('Tab', () => {
       it('shifts focus', async () => {
-        allNavItems[5].focus(); // last main nav item
         await sendKeys({ press: 'Tab' });
-        expect(document.activeElement).to.equal(allNavItems[6]); // outside of main nav
+        expect(document.activeElement).to.equal(allNavItems[1]);
+        await sendKeys({ press: 'Tab' });
+        expect(document.activeElement).to.equal(allNavItems[2]);
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        expect(document.activeElement).to.equal(allNavItems[4]);
       });
 
       it('does not open a popup', async () => {
@@ -95,7 +103,6 @@ describe('keyboard navigation', () => {
       it("On the first item, closes the popup if it's open and shifts focus", async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         await sendKeys({ down: 'Shift' });
         await sendKeys({ press: 'Tab' });
@@ -138,7 +145,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerOne.focus();
-        keyboardNavigation.mainNav.setActive(triggerOne);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerOne)).to.equal(true);
         await sendKeys({ press: 'ArrowRight' });
@@ -150,7 +156,6 @@ describe('keyboard navigation', () => {
         const triggerTwo = mainNavItems[1];
         const triggerPrimaryCTA = mainNavItems[2];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         await sendKeys({ press: 'ArrowRight' });
         expect(isClosed(triggerTwo)).to.equal(true);
@@ -191,7 +196,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerTwo)).to.equal(true);
         await sendKeys({ press: 'ArrowLeft' });
@@ -202,7 +206,6 @@ describe('keyboard navigation', () => {
       it('if first link has an open popup, it opens', async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         expect(isOpen(trigger)).to.equal(true);
         await sendKeys({ press: 'ArrowLeft' });
@@ -231,7 +234,6 @@ describe('keyboard navigation', () => {
       it('if first link has an open popup, it closes', async () => {
         const triggerOne = mainNavItems[0];
         triggerOne.focus();
-        keyboardNavigation.mainNav.setActive(triggerOne);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerOne)).to.equal(true);
         await sendKeys({ press: 'ArrowUp' });
@@ -242,7 +244,6 @@ describe('keyboard navigation', () => {
         const triggerOne = mainNavItems[0];
         const triggerTwo = mainNavItems[1];
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         expect(isOpen(triggerTwo)).to.equal(true);
         await sendKeys({ press: 'ArrowUp' });
@@ -253,7 +254,7 @@ describe('keyboard navigation', () => {
         // focus shifted to last item of the popup
         const navLinks = [
           ...triggerOne.parentElement.querySelectorAll(`
-        ${selectors.navLink}, 
+        ${selectors.navLink},
         ${selectors.promoLink},
         ${selectors.imagePromo}
       `),
@@ -338,7 +339,6 @@ describe('keyboard navigation', () => {
       it('closes a popup', async () => {
         const trigger = mainNavItems[0];
         trigger.focus();
-        keyboardNavigation.mainNav.setActive(trigger);
         keyboardNavigation.mainNav.open();
         expect(isOpen(trigger)).to.equal(true);
         await sendKeys({ press: 'Escape' });
@@ -354,8 +354,8 @@ describe('keyboard navigation', () => {
         search.setAttribute('aria-expanded', 'true');
         const withoutBreadcrumbs = [
           ...document.querySelectorAll(`
-        ${selectors.brand}, 
         ${selectors.mainNavToggle},
+        ${selectors.brand},
         ${selectors.mainNavItems},
         ${selectors.searchTrigger},
         ${selectors.searchField},
@@ -379,8 +379,8 @@ describe('keyboard navigation', () => {
         search.setAttribute('aria-expanded', 'true');
         const withoutBreadcrumbs = [
           ...document.querySelectorAll(`
-        ${selectors.brand}, 
         ${selectors.mainNavToggle},
+        ${selectors.brand},
         ${selectors.mainNavItems},
         ${selectors.searchTrigger},
         ${selectors.searchField},
@@ -435,7 +435,6 @@ describe('keyboard navigation', () => {
 
     describe('ArrowDown', () => {
       it('nothing', async () => {
-        // TODO - it opens search and profile
         for await (const element of otherNavItems) {
           if (!isElementVisible(element)) continue;
           element.focus();
@@ -478,10 +477,9 @@ describe('keyboard navigation', () => {
     beforeEach(async () => {
       [trigger, triggerTwo] = mainNavItems;
       trigger.focus();
-      keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
-      firstPopupItem = navLinks[0];
+      [firstPopupItem] = navLinks;
       firstPopupItem.focus();
     });
 
@@ -515,7 +513,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -554,7 +551,6 @@ describe('keyboard navigation', () => {
       it('shifts focus from the second popup item back to the trigger on RTL', async () => {
         document.dir = 'rtl';
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -578,7 +574,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus from the second popup item back to the trigger', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -628,7 +623,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -677,8 +671,8 @@ describe('keyboard navigation', () => {
       keyboardNavigation = new KeyboardNavigation();
       allNavItems = [
         ...document.querySelectorAll(`
-       ${selectors.brand}, 
        ${selectors.mainNavToggle},
+       ${selectors.brand},
        ${selectors.searchTrigger},
        ${selectors.mainNavItems},
        ${selectors.searchField},
@@ -691,8 +685,8 @@ describe('keyboard navigation', () => {
       mainNavItems = [...document.querySelectorAll(selectors.mainNavItems)];
       otherNavItems = [
         ...document.querySelectorAll(`
-       ${selectors.brand}, 
        ${selectors.mainNavToggle},
+       ${selectors.brand},
        ${selectors.searchTrigger},
        ${selectors.searchField},
        ${selectors.signIn},
@@ -704,10 +698,9 @@ describe('keyboard navigation', () => {
       keyboardNavigation.mainNav.popup.desktop = { matches: false };
       [trigger, triggerTwo] = mainNavItems;
       trigger.focus();
-      keyboardNavigation.mainNav.setActive(trigger);
       keyboardNavigation.mainNav.open();
       navLinks = getNavLinks(trigger);
-      firstPopupItem = navLinks[0];
+      [firstPopupItem] = navLinks;
       firstPopupItem.focus();
     });
 
@@ -750,7 +743,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -806,7 +798,6 @@ describe('keyboard navigation', () => {
       it('shifts focus from the second popup item back to the trigger', async () => {
         document.dir = 'rtl';
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -833,7 +824,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus from the second popup item back to the trigger', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[1].focus();
@@ -875,7 +865,6 @@ describe('keyboard navigation', () => {
 
       it('coming from trigger two, it will focus the last popup item of trigger one', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         await sendKeys({ press: 'ArrowUp' });
         expect(document.activeElement.innerText).to.equal('first-column-second-section-last-item');
@@ -899,7 +888,6 @@ describe('keyboard navigation', () => {
 
       it('shifts focus to the next item if it is not a popup', async () => {
         triggerTwo.focus();
-        keyboardNavigation.mainNav.setActive(triggerTwo);
         keyboardNavigation.mainNav.open();
         const navLinksTwo = getNavLinks(triggerTwo);
         navLinksTwo[navLinksTwo.length - 1].focus();
@@ -950,6 +938,121 @@ describe('keyboard navigation', () => {
         await sendKeys({ press: 'Escape' });
         expect(isClosed(trigger)).to.equal(true);
       });
+    });
+  });
+
+  describe('footer', () => {
+    it('Shifts focus using Tab', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+      expect(footerElements.length).to.equal(48);
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'Tab' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ down: 'Shift' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ up: 'Shift' });
+      }
+    });
+
+    it('Shifts focus using arrow keys', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowDown' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowUp' });
+      }
+    });
+
+    it('Shifts focus out of the footer', async () => {
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)];
+
+      footerElements[0].focus();
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      expect(document.activeElement.closest(selectors.globalFooter)).to.equal(null);
+
+      footerElements[footerElements.length - 1].focus();
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement.closest(selectors.globalFooter)).to.equal(null);
+    });
+
+    it('Shifts focus through footer sections', async () => {
+      const firstSectionItems = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.column} ${selectors.section}:first-of-type li:first-of-type > a`)];
+      firstSectionItems[0].focus();
+      for await (const element of firstSectionItems) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowRight' });
+      }
+
+      firstSectionItems[firstSectionItems.length - 1].focus();
+      for await (const element of firstSectionItems.reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowLeft' });
+      }
+    });
+
+    // we have a lot of individual tests for the popup
+    // so this is just a sanity check to make sure the footer keyboard nav is working
+    it('Opens headlines on mobile', async () => {
+      // setup mobile and close navigation
+      setViewport({ width: 600, height: 600 });
+      document.body.innerHTML = await readFile({ path: './mocks/global-nav-mobile.html' });
+      keyboardNavigation = new KeyboardNavigation();
+      [...document.querySelectorAll('.is-open')].forEach((el) => {
+        el.classList.remove('is-open');
+      });
+      const footerElements = [...document.querySelector(selectors.globalFooter)
+        .querySelectorAll(selectors.popupItems)]
+        .filter((el) => isElementVisible(el));
+
+      document
+        .querySelector(`${selectors.globalFooter} ${selectors.headline}`)
+        .setAttribute('aria-expanded', true);
+
+      footerElements[0].focus();
+      for await (const element of footerElements) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'Tab' });
+      }
+
+      footerElements[footerElements.length - 1].focus();
+      for await (const element of [...footerElements].reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ down: 'Shift' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ up: 'Shift' });
+      }
+
+      const firstSectionItems = [...document.querySelectorAll(`${selectors.globalFooter} ${selectors.column} ${selectors.section} li:first-of-type > a`)];
+      firstSectionItems[0].focus();
+      for await (const element of firstSectionItems) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowRight' });
+      }
+
+      firstSectionItems[firstSectionItems.length - 1].focus();
+      for await (const element of firstSectionItems.reverse()) {
+        expect(document.activeElement).to.equal(element);
+        await sendKeys({ press: 'ArrowLeft' });
+      }
     });
   });
 });
