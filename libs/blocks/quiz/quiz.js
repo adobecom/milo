@@ -28,21 +28,21 @@ const App = () => {
 
   useEffect(() => {
     (async () => {
-      const [questions, datastrings] = await getQuizData();
+      const [questions, dataStrings] = await getQuizData();
       const qMap = {};
       questions.questions.data.forEach((question) => {
         qMap[question.questions] = question;
       });
 
       const strMap = {};
-      datastrings.questions.data.forEach((question) => {
+      dataStrings.questions.data.forEach((question) => {
         strMap[question.q] = question;
       });
 
       // initial quesiton to load - picking 1st one
       setUserFlow([questions.questions.data[0].questions]);
 
-      setStringData(datastrings);
+      setStringData(dataStrings);
       setQuestionData(questions);
       setStringQuestionList(strMap);
       setQuestionList(qMap);
@@ -57,12 +57,11 @@ const App = () => {
 
   useEffect(() => {
     if (userFlow.length) {
-      const currentflow = userFlow.shift();
-      if (!currentflow.length) {
-        console.log('No next view so setting select question to empty');
+      const currentFlow = userFlow.shift();
+      if (!currentFlow.length) {
         return;
       }
-      setSelectedQuestion(questionList[currentflow] || []);
+      setSelectedQuestion(questionList[currentFlow] || []);
     }
   }, [userFlow, questionList]);
 

@@ -39,10 +39,10 @@ export const initConfigPathGlob = (rootElement) => {
 
 export const getQuizData = async () => {
   try {
-    const [questions, datastrings] = await Promise.all(
+    const [questions, dataStrings] = await Promise.all(
       [fetchContentOfFile(QUESTIONS_EP_NAME), fetchContentOfFile(STRINGS_EP_NAME)],
     );
-    return [questions, datastrings];
+    return [questions, dataStrings];
   } catch (ex) {
     console.log('Error while fetching data : ', ex);
   }
