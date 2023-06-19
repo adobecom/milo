@@ -187,11 +187,10 @@ async function getFilesData(filePaths, isFloodgate) {
   // process data in batches
   const fileJsonResp = [];
   for (let i = 0; i < batchArray.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     fileJsonResp.push(...await Promise.all(
       batchArray[i].map((file) => getFileData(file, isFloodgate)),
     ));
-    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_TIME));
   }
   return fileJsonResp;
@@ -400,10 +399,8 @@ async function copyFile(srcPath, destinationFolder, newName, isFloodgate, isFloo
   let copySuccess = false;
   let copyStatusJson = {};
   while (statusUrl && !copySuccess && copyStatusJson.status !== 'failed') {
-    // eslint-disable-next-line no-await-in-loop
     const status = await fetchWithRetry(statusUrl);
     if (status.ok) {
-      // eslint-disable-next-line no-await-in-loop
       copyStatusJson = await status.json();
       copySuccess = copyStatusJson.status === 'completed';
     }

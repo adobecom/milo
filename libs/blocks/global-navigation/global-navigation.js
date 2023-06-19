@@ -1,5 +1,4 @@
 /* eslint-disable no-async-promise-executor */
-/* eslint-disable no-restricted-syntax */
 import {
   getConfig,
   getMetadata,
