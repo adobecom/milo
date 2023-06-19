@@ -671,7 +671,7 @@ async function checkForPageMods() {
 
   if (persMd && !martechLoaded) {
     // load the personalization only
-    const { applyPersonalization } = await import('../scripts/personalization.js');
+    const { applyPersonalization } = await import('../features/personalization/personalization.js');
     await applyPersonalization(
       { persManifests },
       { createTag, getConfig, loadScript, loadLink, updateConfig },

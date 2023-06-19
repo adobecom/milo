@@ -84,23 +84,46 @@ const matchGlob = (searchStr, inputStr) => {
   return reg.test(inputStr);
 };
 
-function handleCommands(commands, rootEl = document) {
-  commands.forEach((cmd) => {
-    if (VALID_COMMANDS.includes(cmd.action)) {
-      let selectorEl = rootEl.querySelector(cmd.selector);
 
-      if (!selectorEl) return;
-
-      if (selectorEl.classList[0] === 'section-metadata') {
-        selectorEl = selectorEl.parentElement || selectorEl;
-      }
-
-      COMMANDS[cmd.action](selectorEl, cmd.target);
-    } else {
-      console.log('Invalid command found: ', cmd);
+export async function replaceInner(path, element) {
+  if (!path || !element) return false;
+  let plainPath = path.endsWith('/') ? `${path}index` : path;
+  plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
+  try {
+    const resp = await fetch(plainPath);
+    if (!resp.ok) {
+      throw new Error('Invalid response', resp);
     }
-  });
+    const html = await resp.text();
+    element.innerHTML = html;
+    return true;
+  } catch (e) {
+    console.log(`error loading experiment content: ${plainPath}`, e);
+  }
+  return false;
 }
+
+const getPageSearchParams = (() => {
+  let pageSearchParams;
+  return () => {
+    if (!pageSearchParams) {
+      pageSearchParams = new URL(window.location).searchParams;
+    }
+    return pageSearchParams;
+  };
+})();
+
+const checkForParamMatch = (paramStr) => {
+  const [paramName, paramValue] = paramStr.split('param-')[1].split('=');
+  if (!paramName) return false;
+  const searchParams = getPageSearchParams();
+  const searchParamVal = searchParams.get(paramName);
+  if (searchParamVal !== null) {
+    if (paramValue) return paramValue === searchParamVal;
+    return true; // if no paramValue is set, just check for existence of param
+  }
+  return false;
+};
 
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
@@ -125,6 +148,24 @@ function transformKeys(obj) {
     newObj[toLowerAlpha(key)] = obj[key];
     return newObj;
   }, {});
+}
+
+function handleCommands(commands, rootEl = document) {
+  commands.forEach((cmd) => {
+    if (VALID_COMMANDS.includes(cmd.action)) {
+      let selectorEl = rootEl.querySelector(cmd.selector);
+
+      if (!selectorEl) return;
+
+      if (selectorEl.classList[0] === 'section-metadata') {
+        selectorEl = selectorEl.parentElement || selectorEl;
+      }
+
+      COMMANDS[cmd.action](selectorEl, cmd.target);
+    } else {
+      console.log('Invalid command found: ', cmd);
+    }
+  });
 }
 
 export function parseConfig(data) {
@@ -185,46 +226,6 @@ export function parseConfig(data) {
   return null;
 }
 
-export async function replaceInner(path, element) {
-  if (!path || !element) return false;
-  let plainPath = path.endsWith('/') ? `${path}index` : path;
-  plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
-  try {
-    const resp = await fetch(plainPath);
-    if (!resp.ok) {
-      throw new Error('Invalid response', resp);
-    }
-    const html = await resp.text();
-    element.innerHTML = html;
-    return true;
-  } catch (e) {
-    console.log(`error loading experiment content: ${plainPath}`, e);
-  }
-  return false;
-}
-
-const getPageSearchParams = (() => {
-  let pageSearchParams;
-  return () => {
-    if (!pageSearchParams) {
-      pageSearchParams = new URL(window.location).searchParams;
-    }
-    return pageSearchParams;
-  };
-})();
-
-const checkForParamMatch = (paramStr) => {
-  const [paramName, paramValue] = paramStr.split('param-')[1].split('=');
-  if (!paramName) return false;
-  const searchParams = getPageSearchParams();
-  const searchParamVal = searchParams.get(paramName);
-  if (searchParamVal !== null) {
-    if (paramValue) return paramValue === searchParamVal;
-    return true; // if no paramValue is set, just check for existence of param
-  }
-  return false;
-};
-
 function getPersonalizationVariant(variantNames = [], variantLabel = null) {
   const tagNames = Object.keys(PERSONALIZATION_TAGS);
   // handle multiple variants that are space / comma delimited
@@ -279,20 +280,16 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   return config;
 }
 
-export async function fragmentPersonalization(doc) {
-  const fpTableRows = doc.querySelectorAll('.fragment-personalization > div');
-  doc.querySelector('.fragment-personalization').remove();
-  if (!fpTableRows) return doc;
-
-  const variantNames = [];
+const getFPInfo = (fpTableRows) => {
+  const names = [];
   const info = [...fpTableRows].reduce((obj, row) => {
     const [actionEl, selectorEl, variantEl, fragment] = row.children;
     if (actionEl?.innerText?.toLowerCase() === 'action') {
       return obj;
     }
     const variantName = variantEl?.innerText?.toLowerCase();
-    if (!variantNames.includes(variantName)) {
-      variantNames.push(variantName);
+    if (!names.includes(variantName)) {
+      names.push(variantName);
       obj[variantName] = [];
     }
     obj[variantName].push({
@@ -302,33 +299,45 @@ export async function fragmentPersonalization(doc) {
     });
     return obj;
   }, {});
+  return { info, names };
+};
 
-  const selectedVariant = getPersonalizationVariant(variantNames);
-  if (selectedVariant) {
-    info[selectedVariant].forEach((cmd) => {
-      const selectedEl = doc.querySelector(cmd.selector);
-      if (!selectedEl) return;
-
-      switch (cmd.action) {
-        case 'replace': case 'replacecontent':
-          selectedEl.replaceWith(cmd.htmlFragment);
-          break;
-        case 'insertbefore': case 'insertcontentbefore':
-          selectedEl.insertAdjacentElement('beforebegin', cmd.htmlFragment);
-          break;
-        case 'insertafter': case 'insertcontentafter':
-          selectedEl.insertAdjacentElement('afterend', cmd.htmlFragment);
-          break;
-        case 'remove': case 'removecontent':
-          selectedEl.remove();
-          break;
-        default:
-          console.warn(`Unknown action: ${cmd.action}`);
-      }
-    });
+const modifyFragment = (selectedEl, action, htmlFragment) => {
+  switch (action) {
+    case 'replace': case 'replacecontent':
+      selectedEl.replaceWith(htmlFragment);
+      break;
+    case 'insertbefore': case 'insertcontentbefore':
+      selectedEl.insertAdjacentElement('beforebegin', htmlFragment);
+      break;
+    case 'insertafter': case 'insertcontentafter':
+      selectedEl.insertAdjacentElement('afterend', htmlFragment);
+      break;
+    case 'remove': case 'removecontent':
+      selectedEl.remove();
+      break;
+    default:
+      console.warn(`Unknown action: ${action}`);
   }
+};
 
-  return doc;
+export async function fragmentPersonalization(el) {
+  const fpTableRows = el.querySelectorAll(':scope > div');
+  el.remove();
+  if (!fpTableRows) return el;
+
+  const { info, names } = getFPInfo(fpTableRows);
+
+  const selectedVariant = getPersonalizationVariant(names);
+  if (!selectedVariant) return el;
+
+  info[selectedVariant].forEach((cmd) => {
+    const selectedEl = el.querySelector(cmd.selector);
+    if (!selectedEl) return;
+    modifyFragment(selectedEl, cmd.action, cmd.htmlFragment);
+  });
+
+  return el;
 }
 
 export async function runPersonalization(info) {

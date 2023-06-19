@@ -126,7 +126,7 @@ export default async function init({ persEnabled = false, persManifests, utils }
   if (persEnabled) {
     const targetManifests = await getTargetPersonalization(utils);
     if (targetManifests || persManifests?.length) {
-      const { applyPersonalization } = await import('../scripts/personalization.js');
+      const { applyPersonalization } = await import('../features/personalization/personalization.js');
       await applyPersonalization({ persManifests, targetManifests }, utils);
     }
   }

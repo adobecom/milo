@@ -45,7 +45,7 @@ export default async function init(a) {
     const parser = new DOMParser();
     let doc = parser.parseFromString(html, 'text/html');
     if (doc.querySelector('.fragment-personalization')) {
-      const { fragmentPersonalization } = await import('../../scripts/personalization.js');
+      const { fragmentPersonalization } = await import('../../features/personalization/personalization.js');
       doc = await fragmentPersonalization(doc);
     }
     const sections = doc.querySelectorAll('body > div');
