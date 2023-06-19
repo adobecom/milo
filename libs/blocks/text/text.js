@@ -51,8 +51,14 @@ export default function init(el) {
     if (elAction) elAction.classList.add('body-s');
   }
   if (el.classList.contains('link-farm')) {
-    el.querySelectorAll('[id^="no-heading"]').forEach(elem => {
-      elem.innerHTML = '';
+    const foregroundDiv = el.querySelectorAll('.foreground')[1];
+    const count = foregroundDiv.querySelectorAll('h3').length;
+    foregroundDiv.querySelectorAll('div').forEach(divElem => {
+      if (!divElem.querySelector('h3') && count) {
+        let headingElem = document.createElement('h3');
+        headingElem.setAttribute('id', 'no-heading');
+        divElem.insertBefore(headingElem, divElem.firstChild);
+      }
     });
   }
   el.classList.add(...helperClasses);
