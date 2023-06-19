@@ -10,7 +10,7 @@
   box-sizing: border-box;
   max-width: 600px;
   min-height: 200px;
-  margin: var(--spacing-xxl) auto 104px;
+  margin: 0 auto;
   padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
 }
@@ -66,6 +66,11 @@
   border: none;
   margin: 0;
   padding: 0;
+}
+
+.marketo .mktoFormRow.demo fieldset.mktoFormCol {
+  width: 100%;
+  margin: 24px 0;
 }
 
 .marketo fieldset legend,
@@ -145,6 +150,11 @@
 .marketo .mktoForm .mktoRadioList input {
   width: auto !important;
   margin: 0 6px 0 0;
+}
+
+.marketo .mktoForm .mktoCheckboxList .mktoField:focus-visible,
+.marketo .mktoForm .mktoRadioList .mktoField:focus-visible {
+  outline: var(--link-color-dark) auto 2px;
 }
 
 .marketo .mktoForm .mktoCheckboxList label,
