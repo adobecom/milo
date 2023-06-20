@@ -138,6 +138,8 @@ const eagerLoad = (img) => {
   img?.setAttribute('fetchpriority', 'high');
 };
 
+export default config;
+
 (async function loadLCPImage() {
   const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
   if (firstDiv?.classList.contains('marquee')) {
