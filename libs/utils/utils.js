@@ -792,20 +792,23 @@ function decorateMeta() {
   });
 }
 
-function getRegionDisplayName(tag) {
+function getRegionDisplayName(locale) {
+  if (locale.rdn) return locale.rdn;
   if (!Intl || !Intl.DisplayNames) return null;
-  const displayRegion = new Intl.DisplayNames([tag], { type: 'region' });
+  const tag = locale.tag || locale.ietf;
   const ilocale = new Intl.Locale(tag);
+  if (!ilocale.region) return null;
+  const displayRegion = new Intl.DisplayNames([tag], { type: 'region' });
   return displayRegion.of(ilocale.region);
 }
 
 function decorateTitle() {
   const { locale } = getConfig();
   if (locale.ietf === 'en-US') return;
-  const regionDisplayName = locale.rdn || getRegionDisplayName(locale.tag || locale.ietf);
-  if (!regionDisplayName) return;
-  if (document.title.endsWith(`(${regionDisplayName})$`)) return;
-  document.title = `${document.title} (${regionDisplayName})`;
+  const rdn = getRegionDisplayName(locale);
+  if (!rdn) return;
+  if (document.title.endsWith(`(${rdn})`)) return;
+  document.title = `${document.title} (${rdn})`;
   const ogTitleEl = document.querySelector('meta[property="og:title"]');
   if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
   const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
@@ -861,7 +864,7 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
-    const richResults = getMetadata('richresults'); 
+    const richResults = getMetadata('richresults');
     if (richResults) {
       const { default: addRichResults } = await import('../features/richresults.js');
       addRichResults(richResults, { createTag, getMetadata });
