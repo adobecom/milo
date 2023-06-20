@@ -219,6 +219,15 @@ describe('Utils', () => {
       validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
     });
 
+    it('getRegionDisplayNames for different locales', () => {
+      [
+        { locale: { ietf: 'en-US' }, rdn: 'United States' },
+        { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
+        { locale: { ietf: 'ec', rdn: 'Latinoamérica' }, rdn: 'Latinoamérica' },
+        { locale: { ietf: 'es', tag: 'es-ES' }, rdn: 'España' },
+      ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
+    });
+
     it('Open link in new tab', () => {
       const newTabLink = document.querySelector('.new-tab');
       newTabLink.target = '_blank';

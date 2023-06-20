@@ -792,19 +792,20 @@ function decorateMeta() {
   });
 }
 
-function getRegionDisplayName(locale) {
+export function getRegionDisplayName(locale) {
   if (locale.rdn) return locale.rdn;
   if (!Intl || !Intl.DisplayNames) return null;
   const tag = locale.tag || locale.ietf;
   const ilocale = new Intl.Locale(tag);
   if (!ilocale.region) return null;
+  // eslint-disable-next-line
   const displayRegion = new Intl.DisplayNames([tag], { type: 'region' });
   return displayRegion.of(ilocale.region);
 }
 
 function decorateTitle() {
   const { locale } = getConfig();
-  if (locale.ietf === 'en-US') return;
+  if (!locale || locale.ietf === 'en-US') return;
   const rdn = getRegionDisplayName(locale);
   if (!rdn) return;
   if (document.title.endsWith(`(${rdn})`)) return;
