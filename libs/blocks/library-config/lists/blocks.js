@@ -53,6 +53,23 @@ function getTable(block) {
   return table.outerHTML;
 }
 
+function handleLinks(element, path) {
+  if (!element || !path) return;
+  const url = new URL(path);
+  element.querySelectorAll('a').forEach((a) => {
+    const { href } = a;
+    if (href.startsWith('/')) {
+      a.href = `${url.origin}${href}`;
+      return;
+    }
+    const linkUrl = new URL(href);
+    if (linkUrl.origin === url.origin) return;
+    if (linkUrl.origin === 'http://localhost:3000') {
+      a.href = href.replace(linkUrl.origin, url.origin);
+    }
+  });
+}
+
 function decorateImages(element, path) {
   if (!element || !path) return;
   const url = new URL(path);
@@ -71,6 +88,7 @@ export function getHtml(container, path) {
   if (!container || !path) return '';
   return container.elements.reduce((acc, element) => {
     decorateImages(element, path);
+    handleLinks(element, path);
     const isBlock = element.nodeName === 'DIV' && element.className;
     const content = isBlock ? getTable(element) : element.outerHTML;
     return `${acc}${content}`;
