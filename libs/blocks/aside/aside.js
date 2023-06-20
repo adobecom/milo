@@ -76,17 +76,25 @@ function decorateLayout(el) {
 }
 
 function decorateIconStack(el) {
-  if (!(el.classList.contains('split') && el.classList.contains('icon-stack'))) return; 
+  if (!(el.classList.contains('split')
+        && (el.classList.contains('medium') || el.classList.contains('large'))
+        && el.classList.contains('icon-stack'))) return;
   const foreground = el.querySelector('.foreground .text');
+  const actionArea = foreground.querySelector('p.action-area');
   const iconStackImgs = foreground.querySelectorAll('p.body-s > picture');
   if (!iconStackImgs) return;
-  const iconStackArea = createTag('div', {'class': 'icon-stack-area'});
+  const iconStackArea = createTag('div', { class: 'icon-stack-area' });
   foreground.insertBefore(iconStackArea, iconStackImgs[0].closest('p'));
-  iconStackImgs.forEach((iconStackImg) => { 
+  iconStackImgs.forEach((iconStackImg) => {
+    if (actionArea.compareDocumentPosition(iconStackImg) === Node.DOCUMENT_POSITION_FOLLOWING) {
+      return;
+    }
     const iconItemRaw = iconStackImg.closest('p');
     const iconItem = createTag('p', null, iconStackImg);
-    const iconItemDesc = iconItemRaw.innerText.trim()? createTag('span', {'class' : 'body-s'}, iconItemRaw.innerText.trim()) : null;
-    iconItemDesc && iconItem.appendChild(iconItemDesc);
+    const iconItemDesc = iconItemRaw.innerText.trim() ? createTag('span', { class: 'body-s' }, iconItemRaw.innerText.trim()) : null;
+    if (iconItemDesc) {
+      iconItem.appendChild(iconItemDesc);
+    }
     iconStackArea.appendChild(iconItem);
     foreground.removeChild(iconItemRaw);
   });
