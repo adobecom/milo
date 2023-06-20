@@ -57,15 +57,9 @@ function handleLinks(element, path) {
   if (!element || !path) return;
   const url = new URL(path);
   element.querySelectorAll('a').forEach((a) => {
-    const { href } = a;
+    const href = a.getAttribute('href');
     if (href.startsWith('/')) {
-      a.href = `${url.origin}${href}`;
-      return;
-    }
-    const linkUrl = new URL(href);
-    if (linkUrl.origin === url.origin) return;
-    if (linkUrl.origin === 'http://localhost:3000') {
-      a.href = href.replace(linkUrl.origin, url.origin);
+      a.setAttribute('href', `${url.origin}${href}`);
     }
   });
 }
