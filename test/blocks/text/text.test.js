@@ -44,10 +44,10 @@ describe('text block', () => {
       const headingElem = foregroundDiv.querySelectorAll('h3');
       expect(headingElem.length).to.equal(4);
     });
-    it('should add no-heading id to the h3 element', () => {
+    it('should add no-heading class to the h3 element', () => {
       const element = document.querySelector('.link-farm');
       const foregroundDiv = element.querySelectorAll('.foreground')[1];
-      const headingElem = foregroundDiv.querySelector('#no-heading');
+      const headingElem = foregroundDiv.querySelector('.no-heading');
       expect(headingElem).to.exist;
     });
     it('should add h3 as the first element in the div', () => {

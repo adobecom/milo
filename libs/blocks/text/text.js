@@ -1,4 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -55,8 +56,7 @@ export default function init(el) {
     const count = foregroundDiv.querySelectorAll('h3').length;
     foregroundDiv.querySelectorAll('div').forEach(divElem => {
       if (!divElem.querySelector('h3') && count) {
-        let headingElem = document.createElement('h3');
-        headingElem.setAttribute('id', 'no-heading');
+        const headingElem = createTag('h3', { class: 'no-heading'});
         divElem.insertBefore(headingElem, divElem.firstChild);
       }
     });

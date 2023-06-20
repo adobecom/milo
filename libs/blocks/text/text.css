@@ -141,7 +141,7 @@
   line-height: var(--type-heading-xs-lh);
 }
 
-.link-farm.text-block [id^="no-heading"] {
+.link-farm.text-block .no-heading {
   margin: 0;
 }
 
@@ -190,7 +190,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .link-farm.text-block [id^="no-heading"] {
+  .link-farm.text-block .no-heading {
     height: var(--type-heading-m-size);
     margin: 0 0 var(--spacing-l);
   }
