@@ -17,6 +17,17 @@ function getBlockName(block) {
   return classes.length > 0 ? `${name} (${classes.join(', ')})` : name;
 }
 
+function getMetadataName(container) {
+  if (!container['library-metadata']) return null;
+  const libraryMetadata = getMetadata(container['library-metadata']);
+  return libraryMetadata?.title?.text || null;
+}
+
+function getContainerName(container) {
+  const firstBlock = container.elements[0];
+  return getMetadataName(container) || getAuthorName(firstBlock) || getBlockName(firstBlock);
+}
+
 function getTable(block) {
   const name = getBlockName(block);
   const rows = [...block.children];
@@ -215,8 +226,7 @@ export default async function loadBlocks(blocks, list, query) {
     containers.forEach((container) => {
       const item = document.createElement('li');
       const name = document.createElement('p');
-      name.textContent = getAuthorName(container.elements[0])
-        || getBlockName(container.elements[0]);
+      name.textContent = getContainerName(container);
       const copy = document.createElement('button');
       copy.addEventListener('click', (e) => {
         const containerHtml = getHtml(container, block.path);
