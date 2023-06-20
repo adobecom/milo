@@ -415,6 +415,22 @@
   flex-shrink: 0;
 }
 
+.aside.center:not(.notification) .foreground.container .text .detail-m {
+  margin-bottom: var(--spacing-xs);
+}
+
+@media screen and (max-width: 600px) {
+  .aside.center:not(.notification) .foreground.container .text .icon-area {
+    height: 83px;
+  }
+
+  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+    height: 83px;
+    max-width: 300px;
+    width: auto;
+  }
+}
+
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
@@ -600,6 +616,16 @@
     height: 40px;
   }
 
+  .aside.center:not(.notification) .foreground.container .text .icon-area {
+    height: 80px;
+  }
+
+  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+    height: 80px;
+    max-width: 234px;
+    width: auto;
+  }
+
   .aside.medium.split.contributor-bio .foreground.container .text .icon-area,
   .aside.large.split.contributor-bio .foreground.container .text .icon-area {
     height: 80px;
@@ -754,5 +780,15 @@
 
   .aside.center:not(.notification) .foreground.container .text {
     max-width: 50%;
+  }
+
+  .aside.center:not(.notification) .foreground.container .text .icon-area {
+    height: 83px;
+  }
+
+  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+    height: 83px;
+    max-width: 400px;
+    width: auto;
   }
 }
