@@ -57,7 +57,7 @@ const decorateBlockBg = (block, node) => {
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
   marquee: {
-    small: ['l', 'm', 'm'],
+    small: ['xl', 'm', 'm'],
     medium: ['xl', 'm', 'm'],
     large: ['xxl', 'xl', 'l'],
     xlarge: ['xxl', 'xl', 'l'],
