@@ -62,19 +62,11 @@ function decorateText(el, size) {
     headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
     const sib = headingEl.previousElementSibling;
     if (sib) {
-      if (sib.querySelector('img, .icon')) {
-        sib.classList.add('icon-area');
-      } else {
-        sib.classList.add(`detail-${detailSize}`);
-      }
+      sib.querySelector('img, .icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  if (size === 'large') {
-    decorate(heading, 'xxl', 'xl', 'l');
-  } else {
-    decorate(heading, 'xl', 'm', 'm');
-  }
+  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
 }
 
 function decorateMultipleIconArea(iconArea) {
@@ -95,7 +87,7 @@ function decorateMultipleIconArea(iconArea) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
 }
 
 const decorateImage = (media) => {
