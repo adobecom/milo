@@ -31,4 +31,33 @@ describe('text block', () => {
       expect(body).to.exist;
     });
   });
+
+  describe('Link Farm', () => {
+    it('should check if the "link-farm" class is present', () => {
+      const element = document.querySelector('.link-farm');
+      expect(element).to.exist;
+    });
+  
+    it('should check if the "h3" elements are added when necessary', () => {
+      const element = document.querySelector('.link-farm');
+      const foregroundDiv = element.querySelectorAll('.foreground')[1];
+      const headingElem = foregroundDiv.querySelectorAll('h3');
+      expect(headingElem.length).to.equal(4);
+    });
+    it('should add no-heading id to the h3 element', () => {
+      const element = document.querySelector('.link-farm');
+      const foregroundDiv = element.querySelectorAll('.foreground')[1];
+      const headingElem = foregroundDiv.querySelector('#no-heading');
+      expect(headingElem).to.exist;
+    });
+    it('should add h3 as the first element in the div', () => {
+      const element = document.querySelector('.link-farm');
+      const foregroundDiv = element.querySelectorAll('.foreground')[1];
+      const divElements = foregroundDiv.querySelectorAll('div');
+      divElements.forEach(div => {
+        const firstChild = div.children[0];
+        expect(firstChild.tagName).to.equal('H3');
+      });
+    })
+  });
 });
