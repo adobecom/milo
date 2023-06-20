@@ -794,21 +794,18 @@ function decorateMeta() {
 
 function getRegionDisplayName(tag) {
   if (!Intl || !Intl.DisplayNames) return null;
-  const ilocale = new Intl.Locale(tag);
   const displayRegion = new Intl.DisplayNames([tag], { type: 'region' });
-  // TODO: update locales in /libs/scripts/scripts.js to always contain a region.
-  // ilocale.region may be undefined since some geos map to ietf with language subtag only.
-  // We need to understand if changes these tags will affect other code.
+  const ilocale = new Intl.Locale(tag);
   return displayRegion.of(ilocale.region);
 }
 
 function decorateTitle() {
   const { locale } = getConfig();
   if (locale.ietf === 'en-US') return;
-  const regionName = getRegionDisplayName(locale.ietf);
-  if (!regionName) return;
-  if (document.title.endsWith(`(${regionName})$`)) return;
-  document.title = `${document.title} (${regionName})`;
+  const regionDisplayName = locale.rdn || getRegionDisplayName(locale.tag || locale.ietf);
+  if (!regionDisplayName) return;
+  if (document.title.endsWith(`(${regionDisplayName})$`)) return;
+  document.title = `${document.title} (${regionDisplayName})`;
   const ogTitleEl = document.querySelector('meta[property="og:title"]');
   if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
   const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
