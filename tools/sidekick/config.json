@@ -93,7 +93,9 @@
       "title": "Use offer",
       "environments": [ "edit", "dev", "preview" ],
       "url": "https://milo.adobe.com/tools/ost",
-      "includePaths": [ "**.docx**" ]
+      "includePaths": [ "**.docx**" ],
+      "passConfig": true,
+      "passReferrer": true
     }
   ]
 }

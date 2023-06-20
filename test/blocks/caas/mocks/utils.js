@@ -52,6 +52,7 @@ export const parseEncodedConfig = stub().returns({
   showBookmarksFilter: false,
   showBookmarksOnCards: false,
   showFilters: false,
+  filters: [],
   showSearch: false,
   showTotalResults: false,
   sortDefault: 'dateDesc',
