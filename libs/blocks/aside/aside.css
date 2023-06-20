@@ -422,13 +422,6 @@
   border-radius: 50%;
 }
 
-@media screen and (max-width: 600px) {
-  .aside.large.split.icon-stack .icon-stack-area,
-  .aside.medium.split.icon-stack .icon-stack-area {
-    grid-template-columns: repeat(1, auto);
-  }
-}
-
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
