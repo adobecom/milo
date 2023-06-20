@@ -398,7 +398,6 @@
 }
 
 .aside.split.icon-stack .icon-stack-area picture {
-  display: inline;
   flex-shrink: 0;
 }
 
