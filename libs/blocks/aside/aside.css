@@ -385,7 +385,7 @@
   display: flex;
   flex-direction: row;
   gap: 12px;
-  margin: -8px 0 8px;
+  margin: -8px 0 var(--spacing-s);
 }
 
 .aside.split.icon-stack .foreground.container .text .icon-stack-area p {
@@ -589,11 +589,6 @@
     height: 40px;
   }
 
-  .aside.medium.split.contributor-bio .foreground.container .text,
-  .aside.large.split.contributor-bio .foreground.container .text {
-    margin: 80px 0;
-  }
-  
   .aside.medium.split.contributor-bio .foreground.container .text .icon-area,
   .aside.large.split.contributor-bio .foreground.container .text .icon-area {
     height: 80px;
@@ -719,5 +714,12 @@
 
   .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
+  }
+
+  .aside.medium.split.icon-stack .foreground.container .text,
+  .aside.large.split.icon-stack .foreground.container .text,
+  .aside.medium.split.contributor-bio .foreground.container .text,
+  .aside.large.split.contributor-bio .foreground.container .text {
+    margin: 80px 0;
   }
 }
