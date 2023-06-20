@@ -6,9 +6,10 @@ import {
   decorateCta,
   closeAllDropdowns,
   trigger,
+  getExperienceName,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
-import { createFullGlobalNavigation } from '../test-utilities.js';
+import { createFullGlobalNavigation, config } from '../test-utilities.js';
 
 describe('global navigation utilities', () => {
   beforeEach(() => {
@@ -126,5 +127,10 @@ describe('global navigation utilities', () => {
     // Calling 'trigger' again should close the element
     expect(trigger({ element })).to.equal(false);
     expect(element.getAttribute('aria-expanded')).to.equal('false');
+  });
+
+  it('getExperienceName defaults to imsClientId', () => {
+    const experienceName = getExperienceName();
+    expect(experienceName).to.equal(config.imsClientId);
   });
 });
