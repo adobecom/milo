@@ -356,10 +356,6 @@
   margin-bottom: var(--spacing-xxs);
 }
 
-.aside.split.icon-stack .icon-stack-area p {
-  margin-bottom: 16px;
-}
-
 .aside.notification.center.small .foreground.container .text p {
   text-align: left;
 }
@@ -386,19 +382,21 @@
 }
 
 .aside.split.icon-stack .icon-stack-area {
-  display: grid;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
   margin: -8px 0 8px;
+}
+
+.aside.split.icon-stack .icon-stack-area p {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
 }
 
 .aside.split.icon-stack .icon-stack-area picture {
   display: inline;
-}
-
-.aside.split.icon-stack .icon-stack-area p > span{
-  display: inline-block;
-  height: 100%;
-  margin: 0 0 16px 12px;
-  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 @media screen and (min-width: 600px) {
