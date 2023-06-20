@@ -104,17 +104,13 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside .foreground.container .text .action-area {
+.aside .foreground.container .text .action-area,
+.aside.split.icon-stack .foreground.container .text .icon-stack-area span.body-s { 
   margin-bottom: 0;
 }
 
 .aside .foreground.container .text .supplemental-text {
   padding-top: var(--spacing-s);
-  margin-bottom: 0;
-}
-
-.aside .foreground.container .text .action-area,
-.aside.split.icon-stack .foreground.container .text .icon-stack-area span.body-s {
   margin-bottom: 0;
 }
 
