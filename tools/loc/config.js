@@ -102,9 +102,12 @@ function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
 
 function getSharepointConfig(config) {
   const sharepointConfig = config.sp.data[0];
+  const { driveId } = sharepointConfig;
+  const drive = driveId ? `/drives/${driveId}` : '/drive';
+
   // ${sharepointConfig.site} - MS Graph API Url with site pointers.
-  const baseURI = `${sharepointConfig.site}/drive/root:${sharepointConfig.rootFolders}`;
-  const fgBaseURI = `${sharepointConfig.site}/drive/root:${sharepointConfig.fgRootFolder}`;
+  const baseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.rootFolders}`;
+  const fgBaseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.fgRootFolder}`;
   return {
     ...sharepointConfig,
     clientApp: {

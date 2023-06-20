@@ -4,7 +4,15 @@ import sinon from 'sinon';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 
 const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
-const { default: merch, VERSION, getTacocatEnv, imsCountryPromise, runTacocat } = await import('../../../libs/blocks/merch/merch.js');
+const {
+  default: merch,
+  VERSION,
+  getTacocatEnv,
+  getTacocatLocale,
+  getTacocatMetadata,
+  imsCountryPromise,
+  runTacocat,
+} = await import('../../../libs/blocks/merch/merch.js');
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -12,7 +20,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('Merch Block', () => {
   before(async () => {
     Object.assign(window.tacocat, {
-      loadPromise: Promise.resolve(),
+      loadPromise: Promise.resolve(false),
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
@@ -346,7 +354,7 @@ describe('Merch Block', () => {
     });
 
     it('does not initialize the block when tacocat fails to load', async () => {
-      window.tacocat.loadPromise = Promise.reject(new Error('404'));
+      window.tacocat.loadPromise = Promise.resolve(true);
       let el = document.querySelector('.merch.cta.notacocat');
       el = await merch(el);
       expect(el).to.be.undefined;
@@ -365,6 +373,31 @@ describe('Merch Block', () => {
         country: 'US',
         language: 'en',
       })).to.be.true;
+    });
+  });
+
+  describe('Utils', () => {
+    describe('getTacocatLocale', () => {
+      it('returns default locale if argument is not provided', () => {
+        expect(getTacocatLocale()).to.deep.equal({
+          country: 'US',
+          language: 'en',
+        });
+      });
+
+      it('returns locale extracted from provided argument', () => {
+        expect(getTacocatLocale({ ietf: 'de-CH' })).to.deep.equal({
+          country: 'CH',
+          language: 'de',
+        });
+      });
+
+      it('returns locale geo-mapped from provided argument', () => {
+        expect(getTacocatLocale({ prefix: 'africa' })).to.deep.equal({
+          country: 'ZA',
+          language: 'en',
+        });
+      });
     });
   });
 });

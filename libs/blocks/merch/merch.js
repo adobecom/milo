@@ -1,8 +1,8 @@
 import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
 
 export const VERSION = '1.16.0';
-const ENV_PROD = 'prod';
-const CTA_PREFIX = /^CTA +/;
+export const ENV_PROD = 'prod';
+export const CTA_PREFIX = /^CTA +/;
 
 const SUPPORTED_LANGS = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
@@ -18,7 +18,33 @@ const GEO_MAPPINGS = {
   no: 'nb-NO',
 };
 
-const omitNullValues = (target) => {
+// eslint-disable-next-line import/prefer-default-export
+export function getTacocatLocale(locale) {
+  if (!locale) {
+    return { country: 'US', language: 'en' };
+  }
+  const wcsLocale = (GEO_MAPPINGS[locale.prefix] ?? locale.ietf).split('-', 2);
+  let language = wcsLocale[0];
+  const country = wcsLocale[1] || 'US';
+  if (!SUPPORTED_LANGS.includes(language)) {
+    language = 'en';
+  }
+  return { country, language };
+}
+
+export function getTacocatEnv(envName, locale) {
+  const { country, language } = getTacocatLocale(locale);
+  const host = envName === ENV_PROD
+    ? 'https://www.adobe.com'
+    : 'https://www.stage.adobe.com';
+
+  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
+  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
+  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
+  return { country, language, literalScriptUrl, scriptUrl, tacocatEnv };
+}
+
+export const omitNullValues = (target) => {
   if (target != null) {
     Object.entries(target).forEach(([key, value]) => {
       if (value == null) delete target[key];
@@ -51,23 +77,6 @@ export const imsCountryPromise = () => new Promise((resolve) => {
 });
 window.tacocat.imsCountryPromise = imsCountryPromise();
 
-export const getTacocatEnv = (envName, locale) => {
-  const wcsLocale = (GEO_MAPPINGS[locale.prefix] ?? locale.ietf).split('-', 2);
-  let language = wcsLocale[0];
-  const country = wcsLocale[1] || 'US';
-  if (!SUPPORTED_LANGS.includes(language)) {
-    language = 'en';
-  }
-  const host = envName === ENV_PROD
-    ? 'https://www.adobe.com'
-    : 'https://www.stage.adobe.com';
-
-  const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
-  const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
-  return { literalScriptUrl, scriptUrl, country, language, tacocatEnv };
-};
-
 export const runTacocat = (tacocatEnv, country, language) => {
   // init lana logger
   window.tacocat.initLanaLogger('merch-at-scale', tacocatEnv, { country }, { consumer: 'milo' });
@@ -94,16 +103,22 @@ window.tacocat.loadPromise = new Promise((resolve) => {
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
-      resolve();
+      resolve(false);
+    })
+    .catch((error) => {
+      console.error('Failed to load tacocat', error);
+      resolve(true);
     });
 });
 
-function buildCheckoutButton(link, dataAttrs = {}) {
+export function buildCheckoutButton(link, dataAttrs = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
   const classes = ['con-button'];
-  if (link.closest('.marquee')) {
-    classes.push('button-l');
+  if (document.querySelector('.marquee')) {
+    if (link.closest('.marquee')) {
+      classes.push('button-l');
+    }
   }
   if (link.firstElementChild?.tagName === 'STRONG' || link.parentElement?.tagName === 'STRONG') {
     classes.push('blue');
@@ -142,7 +157,7 @@ function isCTA(type) {
  * @param {*} searchParams link level overrides for checkout parameters
  * @returns checkout context object required to build a checkout url
  */
-function getCheckoutContext(searchParams, config) {
+export function getCheckoutContext(searchParams, config) {
   const { commerce } = config;
   const checkoutClientId = commerce?.checkoutClientId;
   const checkoutWorkflow = searchParams.get('checkoutType') ?? getMetadata('checkout-type');
@@ -161,10 +176,8 @@ function getCheckoutContext(searchParams, config) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  try {
-    await window.tacocat.loadPromise;
-  } catch (e) {
-    console.error('Tacocat not loaded', e);
+  const fail = await window.tacocat.loadPromise;
+  if (fail) {
     return undefined;
   }
   const { searchParams } = new URL(el.href);
