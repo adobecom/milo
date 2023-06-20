@@ -394,6 +394,10 @@
   gap: 12px;
 }
 
+.aside.split.dark.icon-stack .icon-stack-area p span a {
+  color: inherit;
+}
+
 .aside.split.icon-stack .icon-stack-area picture {
   display: inline;
   flex-shrink: 0;
