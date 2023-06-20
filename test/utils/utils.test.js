@@ -221,9 +221,11 @@ describe('Utils', () => {
 
     it('getRegionDisplayNames for different locales', () => {
       [
-        { locale: { ietf: 'en-US' }, rdn: 'United States' },
+        { locale: null, rdn: null },
         { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
+        { locale: { ietf: 'en-US' }, rdn: 'United States' },
         { locale: { ietf: 'ec', rdn: 'Latinoamérica' }, rdn: 'Latinoamérica' },
+        { locale: { ietf: 'es' }, rdn: null },
         { locale: { ietf: 'es', tag: 'es-ES' }, rdn: 'España' },
       ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
     });

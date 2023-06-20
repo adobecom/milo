@@ -793,9 +793,10 @@ function decorateMeta() {
 }
 
 export function getRegionDisplayName(locale) {
+  if (!locale) return null;
   if (locale.rdn) return locale.rdn;
-  if (!Intl || !Intl.DisplayNames) return null;
   const tag = locale.tag || locale.ietf;
+  if (!Intl || !Intl.DisplayNames) return null;
   const ilocale = new Intl.Locale(tag);
   if (!ilocale.region) return null;
   // eslint-disable-next-line
@@ -805,9 +806,8 @@ export function getRegionDisplayName(locale) {
 
 function decorateTitle() {
   const { locale } = getConfig();
-  if (!locale || locale.ietf === 'en-US') return;
   const rdn = getRegionDisplayName(locale);
-  if (!rdn) return;
+  if (!rdn || rdn === 'United States') return;
   if (document.title.endsWith(`(${rdn})`)) return;
   document.title = `${document.title} (${rdn})`;
   const ogTitleEl = document.querySelector('meta[property="og:title"]');
