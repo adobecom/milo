@@ -77,7 +77,7 @@ describe('test the invalid article header', () => {
 
   it('does not init if the element is invalid', async () => {
     await init(document.body.querySelector('.article-header'));
-    const authorTextEl = await waitForElement('.article-author p');
+    const authorTextEl = await waitForElement('.article-author');
     const authorLink = document.querySelector('.article-author a');
     expect(authorTextEl).to.exist;
     expect(authorLink).to.not.exist;

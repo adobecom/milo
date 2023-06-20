@@ -1,7 +1,7 @@
 <!-- Before submitting, please review all open PRs. -->
 
 * Add your
-* Specicic
+* Specific
 * Features or fixes
 
 Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)
