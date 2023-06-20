@@ -33,30 +33,23 @@ describe('text block', () => {
   });
 
   describe('Link Farm', () => {
-    it('should check if the "link-farm" class is present', () => {
+    it('is present', () => {
       const element = document.querySelector('.link-farm');
       expect(element).to.exist;
     });
   
-    it('should check if the "h3" elements are added when necessary', () => {
-      const element = document.querySelector('.link-farm');
-      const foregroundDiv = element.querySelectorAll('.foreground')[1];
-      const headingElem = foregroundDiv.querySelectorAll('h3');
-      expect(headingElem.length).to.equal(4);
+    it('adds h3 elements when necessary', () => {
+      const headingElements = document.querySelectorAll('.link-farm .foreground h3');
+      expect(headingElements.length).to.equal(4);
     });
-    it('should add no-heading class to the h3 element', () => {
-      const element = document.querySelector('.link-farm');
-      const foregroundDiv = element.querySelectorAll('.foreground')[1];
-      const headingElem = foregroundDiv.querySelector('.no-heading');
+    it('adds no-heading class to the h3 element', () => {
+      const headingElem = document.querySelector('.link-farm .foreground .no-heading');
       expect(headingElem).to.exist;
     });
-    it('should add h3 as the first element in the div', () => {
-      const element = document.querySelector('.link-farm');
-      const foregroundDiv = element.querySelectorAll('.foreground')[1];
-      const divElements = foregroundDiv.querySelectorAll('div');
+    it('adds h3 as the first element in the div', () => {
+      const divElements = document.querySelectorAll('.link-farm .foreground:nth-child(2) div');
       divElements.forEach(div => {
-        const firstChild = div.children[0];
-        expect(firstChild.tagName).to.equal('H3');
+        expect(div.children[0].tagName).to.equal('H3');
       });
     })
   });
