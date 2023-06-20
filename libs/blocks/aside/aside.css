@@ -143,6 +143,20 @@
   margin-bottom: var(--spacing-s);
 }
 
+.aside.center:not(.notification) .foreground.container {
+  padding: 0;
+}
+
+.aside.center:not(.notification) .foreground.container .text {
+  margin: 80px 0;
+  text-align: center;
+  padding: 0;
+}
+
+.aside.center:not(.notification) .foreground.container .icon-area {
+  max-width: 100%;
+}
+
 .aside .foreground.container .icon-area .icon {
   color: transparent;
 }
@@ -413,7 +427,7 @@
     padding: 0;
   }
 
-  .aside:not(.notification):not(.inline) .foreground.container> :last-child {
+  .aside:not(.notification):not(.inline):not(.center) .foreground.container> :last-child {
     margin-bottom: 0;
   }
 
@@ -604,6 +618,10 @@
   .aside.split.icon-stack .foreground.container .text .icon-stack-area {
     flex-direction: column;
   }
+
+  .aside.center:not(.notification) .foreground.container .text {
+    max-width: 100%;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -732,5 +750,9 @@
 
   .aside.split.icon-stack .foreground.container .text .icon-stack-area {
     flex-direction: row;
+  }
+
+  .aside.center:not(.notification) .foreground.container .text {
+    max-width: 50%;
   }
 }
