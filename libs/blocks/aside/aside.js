@@ -91,8 +91,8 @@ function decorateIconStack(el) {
     }
     const iconItemRaw = iconStackImg.closest('p');
     const iconItem = createTag('p', null, iconStackImg);
-    const iconItemDesc = iconItemRaw.innerText.trim() ? createTag('span', { class: 'body-s' }, iconItemRaw.innerText.trim()) : null;
-    if (iconItemDesc) {
+    if (iconItemRaw.innerText.trim()) {
+      const iconItemDesc = createTag('span', { class: 'body-s' }, iconItemRaw.innerHTML);
       iconItem.appendChild(iconItemDesc);
     }
     iconStackArea.appendChild(iconItem);
