@@ -36,11 +36,11 @@ const config = {
 
 (async function loadPage() {
   const [
-    adobecomConfig,
     { loadArea, setConfig, loadLana },
+    adobecomConfig,
   ] = await Promise.all([
-    fetch('../libs/configs/adobecom.json').then((r) => r.json()),
     import('../utils/utils.js'),
+    fetch('/libs/configs/adobecom.json').then((r) => r.json(), () => {}),
   ]);
   setConfig({ ...adobecomConfig, ...config });
   loadLana({ clientId: 'milo' });
