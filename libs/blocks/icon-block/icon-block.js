@@ -68,15 +68,6 @@ function decorateContent(el) {
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
     decorateBlockText(el, isUpAndInline ? ['xs', 's'] : iconBlocks[size][variant]);
-    //adding body-xs class to plain links in inline xx-up blocks action-area
-    const actionArea = block.querySelector('.action-area');
-    if(actionArea && isUpAndInline){
-      [...actionArea.children].forEach((child) => {
-        if(!child.classList.length){
-          child.classList.add('body-xs');
-        }
-      });
-    }
     if (el.classList.contains('inline')) {
      const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
       const secondColumn = createTag('div', {class:'second-column'});
