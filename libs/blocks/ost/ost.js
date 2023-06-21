@@ -1,9 +1,10 @@
+import ctaTextOption from './ctaTextOption.js';
 import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
 import { ENV_PROD, getTacocatEnv } from '../merch/merch.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.10.4';
+const OST_VERSION = '1.11.0';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -29,7 +30,7 @@ export function createLinkMarkup(
   placeholderOptions,
   location = window.location,
 ) {
-  const ctaText = 'buy-now';
+  const { ctaText = 'buy-now' } = placeholderOptions;
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
@@ -136,6 +137,7 @@ export async function loadOstEnv() {
     language,
     searchParameters,
     wcsApiKey: WCS_API_KEY,
+    ctaTextOption,
   };
 }
 
