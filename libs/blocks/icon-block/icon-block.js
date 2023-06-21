@@ -39,8 +39,18 @@ const iconBlocks = {
   },
 };
 
+//checking if block is part of xx-up and is inline variant
+function upAndInline(el) {
+  const isInline = el.classList.contains('inline');
+  if(!isInline) return false;
+  const sectionMetadata = el.parentElement?.querySelector('.section-metadata');
+  if(!sectionMetadata) return false;
+  return /(two|three|four|five)[- ]?up/i.test(sectionMetadata.textContent);
+}
+
 function decorateContent(el) {
   const block = el.querySelector(':scope > div:not([class])');
+  const isUpAndInline = upAndInline(el);
   block.classList.add('foreground');
   if (!block) return;
   const text = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
@@ -57,7 +67,16 @@ function decorateContent(el) {
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
-    decorateBlockText(el, iconBlocks[size][variant]);
+    decorateBlockText(el, isUpAndInline ? ['xs', 's'] : iconBlocks[size][variant]);
+    //adding body-xs class to plain links in inline xx-up blocks action-area
+    const actionArea = block.querySelector('.action-area');
+    if(actionArea && isUpAndInline){
+      [...actionArea.children].forEach((child) => {
+        if(!child.classList.length){
+          child.classList.add('body-xs');
+        }
+      });
+    }
     if (el.classList.contains('inline')) {
      const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
       const secondColumn = createTag('div', {class:'second-column'});

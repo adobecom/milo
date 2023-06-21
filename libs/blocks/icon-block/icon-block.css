@@ -103,14 +103,16 @@
   width: 60px;
 }
 
-.icon-block.inline.icon-height-32 .icon-area,
-.icon-block.inline.icon-height-32 .icon-area picture img {
-  height: 32px;
+.icon-block.inline.icon-height-40 .icon-area,
+.icon-block.inline.icon-height-40 .icon-area picture img {
+  min-width:40px;
+  height: 40px;
 }
 
-.icon-block.inline.icon-height-64 .icon-area,
-.icon-block.inline.icon-height-64 .icon-area picture img {
-  height: 64px;
+.icon-block.inline.icon-height-56 .icon-area,
+.icon-block.inline.icon-height-56 .icon-area picture img {
+  min-width: 56px;
+  height: 56px;
 }
 
 .icon-block.bio.center .foreground .icon-area {
@@ -172,9 +174,13 @@
   margin-bottom: 0;
 }
 
-.icon-block.vertical:not(.center) .foreground .text-content .action-area > a {
+.icon-block.vertical:not(.center) .foreground .text-content .action-area > a,
+.icon-block.inline:not(.center) .foreground .text-content .action-area > a {
   margin-right: var(--spacing-s);
   white-space: nowrap;
+}
+.icon-block.inline:not(.center) .foreground .text-content .action-area > a:first-child {
+  margin-bottom: var(--spacing-xxs);
 }
 
 .icon-block .foreground div {
@@ -197,16 +203,16 @@
   text-align: center;
 }
 
-.icon-block.inline.icon-height-32.bio .icon-area,
-.icon-block.inline.icon-height-32.bio .icon-area picture img {
-  height: 32px;
-  width: 32px;
+.icon-block.inline.icon-height-40.bio .icon-area,
+.icon-block.inline.icon-height-40.bio .icon-area picture img {
+  height: 40px;
+  width: 40px;
 }
 
-.icon-block.inline.icon-height-64.bio .icon-area,
-.icon-block.inline.icon-height-64.bio .icon-area picture img {
-  height: 64px;
-  width: 64px;
+.icon-block.inline.icon-height-56.bio .icon-area,
+.icon-block.inline.icon-height-56.bio .icon-area picture img {
+  height: 56px;
+  width: 56px;
 }
 
 .icon-block.vertical.center .foreground .text-content .icon-area {
@@ -325,6 +331,13 @@
 
   .three-up .icon-block.bio .foreground {
     max-width: 300px;
+  }
+
+  .three-up .icon-block.bio.inline .foreground,
+  .four-up .icon-block.bio.inline .foreground,
+  .five-up .icon-block.bio.inline .foreground {
+    max-width: unset;
+    width: unset;
   }
 
   .three-up .icon-block.vertical .foreground .icon-area {
