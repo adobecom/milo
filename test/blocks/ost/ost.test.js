@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+
+const { createLinkMarkup } = await import('../../../libs/blocks/ost/ost.js');
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { stockOffer } = JSON.parse(data);
@@ -16,6 +17,7 @@ const placeholderOptions = {
   displayTax: true, // tax
   isPerpetual: true,
 };
+
 describe('test createLinkMarkup', () => {
   const WINDOW_LOCATION = 'https://main--milo--adobecom.hlx.page';
   const location = {
