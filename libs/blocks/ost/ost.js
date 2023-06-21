@@ -106,7 +106,7 @@ export async function loadOstEnv() {
       console.error('OST, failed to get env:', e.message);
       ({ country, language } = getTacocatEnv());
     }
-    
+
     if (url) {
       try {
         const res = await fetch(url);
