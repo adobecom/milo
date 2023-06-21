@@ -11,8 +11,8 @@ const accept = 'application/json;odata=nometadata';
 
 export const fetchVersions = async () => {
   const options = getReqOptions({
+    accept,
     contentType,
-    accept
   });
   //Fetching current version details
   const response = await fetch(url, options);
@@ -21,15 +21,15 @@ export const fetchVersions = async () => {
   const { CheckInComment, TimeLastModified, UIVersionLabel, ServerRelativeUrl, ID } = documentData;
   const currentVersion = {
     ID,
-    Url: ServerRelativeUrl,
-    VersionLabel: UIVersionLabel,
     CheckInComment,
-    Created: TimeLastModified,
+    Url: ServerRelativeUrl,
     IsCurrentVersion: true,
+    Created: TimeLastModified,
+    VersionLabel: UIVersionLabel,
   }
 
   const versions = await fetch(`${url}/Versions`, options);
-  const { value = {} } = await versions.json();
+  const { value = [] } = await versions.json();
   const versionHistory = [...value, currentVersion];
   //Filtering only Major versions
   return versionHistory.reverse().filter((item) => item.VersionLabel.indexOf('.0') !== -1);
