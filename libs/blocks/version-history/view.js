@@ -18,7 +18,7 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
     setVersions(versions);
   }, []);
 
-  const onClickCreate = async () => {
+  async function onClickCreate() {
     try {
       await createHistoryTag(comment);
       const versions = await fetchVersions();
@@ -47,9 +47,9 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
     const localeDate = date.toLocaleString();
     const splitDate = localeDate.split(', ');
     return html`
-    <td>
-      <span class=date>${splitDate[0]}</span>
-      <span class=time>${splitDate[1]}</span>
+      <td>
+        <span class=date>${splitDate[0]}</span>
+        <span class=time>${splitDate[1]}</span>
       </td>
     `;
   }
@@ -78,7 +78,7 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
   }
 
   function renderList() {
-    if(versions.length < 1) {
+    if (versions.length < 1) {
       return html`
         <div>No version history tags to show!</div>
       `;
@@ -88,7 +88,7 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Version</th>
             <th>Modified Date</th>
             <th>Comment</th>
           </tr>
