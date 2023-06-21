@@ -270,21 +270,22 @@ const findMatchForSelections = (results, selections) => {
     return defaultResult;
   }
 
-  const compundResults = results.find((destination) => {
+  const compoundResults = results.find((destination) => {
     if (destination.result.indexOf('&') !== -1 && destination.result.split('&').length === userSelectionLen) {
       return destination;
     }
   });
 
-  const productList = compundResults.result.split('&');
-  const isCompoundProductsMatched = selections.primary.every(
-    (product, index) => productList[index].includes(product),
-  );
+  const productList = compoundResults !== undefined ? compoundResults.result.split('&') : [];
 
-  if (isCompoundProductsMatched) {
-    recommendations.push(compundResults);
-
-    return recommendations;
+  if (productList.length) {
+    const isCompoundProductsMatched = selections.primary.every(
+      (product, index) => productList[index].includes(product),
+    );
+    if (isCompoundProductsMatched) {
+      recommendations.push(compoundResults);
+      return recommendations;
+    }
   }
 
   return defaultResult;
