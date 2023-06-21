@@ -10,14 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-import {
-  loadArea,
-  loadLana,
-  setConfig,
-} from '../utils/utils.js';
-
-import { locales } from './locales.js';
-
 // Production Domain
 const prodDomains = ['milo.adobe.com'];
 
@@ -28,7 +20,6 @@ const config = {
   imsClientId: 'milo',
   imsScope: 'AdobeID,openid,gnav',
   codeRoot: '/libs',
-  locales,
   prodDomains,
   jarvis: {
     id: 'milo',
@@ -44,7 +35,14 @@ const config = {
 }());
 
 (async function loadPage() {
-  setConfig(config);
+  const [
+    adobecomConfig,
+    { loadArea, setConfig, loadLana },
+  ] = await Promise.all([
+    fetch('../libs/configs/adobecom.json').then((r) => r.json()),
+    import('../utils/utils.js'),
+  ]);
+  setConfig({ ...adobecomConfig, ...config });
   loadLana({ clientId: 'milo' });
   await loadArea();
 }());
