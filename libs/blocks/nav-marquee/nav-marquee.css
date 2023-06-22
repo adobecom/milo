@@ -75,34 +75,29 @@ html {
   position: relative;
 }
 
-.nav-marquee .links .anchor-link .ui-icon {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  margin-top: -7px;
-  height: 14px;
-  width: 14px;
-}
-
 .nav-marquee .links .anchor-link .heading-xs {
   margin-bottom: var(--spacing-xxs);
 }
 
-/* todo: use real svg icon from lib */
-.nav-marquee .links .anchor-link::after {
-  content: '\2193';
+.nav-marquee .links .anchor-link .anchor-icon {
   position: absolute;
-  color: var(--color-gray-600);
-  font-size: 2em;
   top: 50%;
-  right: 18px;
-  margin-top: -12px;
-  height: 20px;
-  width: 20px;
+  right: 12px;
+  margin-top: -8px;
+  height: 14px;
+  width: 16px;
+  color: var(--text-color);
+}
+
+.nav-marquee .links .anchor-link:hover .anchor-icon,
+.nav-marquee .links .anchor-link:focus .anchor-icon, 
+.nav-marquee .links .anchor-link:active .anchor-icon {
+  color: var(--link-color);
 }
 
 .nav-marquee .links .anchor-link:hover,
-.nav-marquee .links .anchor-link:focus {
+.nav-marquee .links .anchor-link:focus,
+.nav-marquee .links .anchor-link:active {
   border-color: var(--link-color);
 }
 
@@ -112,10 +107,10 @@ html {
 
 .nav-marquee .links .anchor-link > div {
   padding: var(--spacing-xs);
-  padding-right: var(--spacing-xl-static);
+  padding-right: 40px;
 }
 
-/* Dark color sceme */
+/* dark color sceme */
 .dark .nav-marquee, 
 .nav-marquee.dark {
   color: var(--color-white);
@@ -126,9 +121,7 @@ html {
   color: initial;
 }
 
-
-
-/* Tablet up */
+/* tablet up */
 @media screen and (min-width: 600px) {
   .nav-marquee .links .link-group {
     grid-template-columns: minmax(0, max-content) minmax(50%, 1fr);

@@ -13,11 +13,8 @@
 /*
  * Navigation Marquee
  */
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateBlockText, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-// import { iconList } from '../../blocks/library-config/lists/icons/icons.js';
-
-// console.log('iconLIst', iconList);
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -29,6 +26,48 @@ const blockTypeSizes = {
     xlarge: ['xxl', 'l', 'xl'],
   },
 };
+
+let fetchedIcon;
+let fetched = false;
+
+async function getSVGfromFile(path, name) {
+  /* c8 ignore next */
+  if (!path) return null;
+  const resp = await fetch(path);
+  /* c8 ignore next */
+  if (!resp.ok) return null;
+  const text = await resp.text();
+  const parser = new DOMParser();
+  const parsedText = parser.parseFromString(text, 'image/svg+xml');
+  const svg = parsedText.querySelectorAll('svg')[0];
+  svg.removeAttribute('id');
+  svg.classList.add('ui-icon', `${name}`);
+  return svg;
+}
+const fetchIcon = (name) => new Promise((resolve) => {
+  /* c8 ignore next */
+  if (!fetched) {
+    const config = getConfig();
+    const path = `${config.miloLibs || config.codeRoot}/img/ui/${name}.svg`;
+    fetchedIcon = getSVGfromFile(path, name);
+    fetched = true;
+  }
+  resolve(fetchedIcon);
+});
+
+async function decorateAnchors(anchors) {
+  const iconList = {};
+  const name = 'arrow-down';
+  if (!iconList[name]) {
+    const iconArrowDown = await fetchIcon(name);
+    if (!iconArrowDown) return;
+    iconList[name] = iconArrowDown;
+  }
+  const anchorIcon = createTag('span', { class: 'anchor-icon' }, iconList[name]);
+  [...anchors].forEach((el) => {
+    el.append(anchorIcon.cloneNode(true));
+  });
+}
 
 export default function init(el) {
   el.classList.add('con-block');
@@ -85,5 +124,6 @@ export default function init(el) {
     [...anchors].forEach((a) => {
       linkGroup.append(a);
     });
+    decorateAnchors(anchors);
   }
 }
