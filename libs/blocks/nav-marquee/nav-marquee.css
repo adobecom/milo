@@ -17,7 +17,10 @@ html {
 .nav-marquee .foreground {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-s);
+}
+
+.nav-marquee .foreground .copy img {
+  vertical-align: bottom;
 }
 
 .nav-marquee .foreground .copy,
@@ -72,6 +75,20 @@ html {
   position: relative;
 }
 
+.nav-marquee .links .anchor-link .ui-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  margin-top: -7px;
+  height: 14px;
+  width: 14px;
+}
+
+.nav-marquee .links .anchor-link .heading-xs {
+  margin-bottom: var(--spacing-xxs);
+}
+
+/* todo: use real svg icon from lib */
 .nav-marquee .links .anchor-link::after {
   content: '\2193';
   position: absolute;

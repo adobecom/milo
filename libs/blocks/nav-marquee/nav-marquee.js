@@ -15,10 +15,14 @@
  */
 import { createTag } from '../../utils/utils.js';
 import { decorateBlockText, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+// import { iconList } from '../../blocks/library-config/lists/icons/icons.js';
+
+// console.log('iconLIst', iconList);
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
   default: {
+    xsmall: ['xs', 'xs', 'xs'],
     small: ['m', 's', 's'],
     medium: ['l', 'm', 'm'],
     large: ['xl', 'm', 'l'],
@@ -34,15 +38,14 @@ export default function init(el) {
   copy.classList.add('copy');
   decorateBlockBg(el, background);
   decorateBlockText(copy, blockTypeSizes.default[size]);
-
   const links = createTag('div', { class: 'links' }, list);
   const foreground = createTag('div', { class: 'foreground' }, copy);
+  decorateBlockText(links, blockTypeSizes.default.xsmall);
   foreground.append(links);
   el.append(foreground);
 
   [...list].forEach((i) => {
     const aTag = i.querySelector('a');
-
     let linkType = null;
     switch (aTag?.textContent.toLowerCase().charAt(0)) {
       case '_':
@@ -73,7 +76,7 @@ export default function init(el) {
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
   if (emptyLinkRows[0]) emptyLinkRows[0].classList.add('link-header');
   if (emptyLinkRows[1]) emptyLinkRows[1].classList.add('link-footer', 'body-s');
-  decorateBlockText(emptyLinkRows[0], ['l', 'm']);
+  decorateBlockText(emptyLinkRows[0], blockTypeSizes.default.xsmall);
 
   const anchors = el.querySelectorAll('.anchor-link');
   if (anchors) {
