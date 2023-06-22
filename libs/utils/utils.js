@@ -804,16 +804,17 @@ export function getRegionDisplayName(locale) {
   return displayRegion.of(ilocale.region);
 }
 
-function decorateTitle() {
-  const { locale } = getConfig();
-  const rdn = getRegionDisplayName(locale);
-  if (!rdn || rdn === 'United States') return;
-  if (document.title.endsWith(`(${rdn})`)) return;
-  document.title = `${document.title} (${rdn})`;
-  const ogTitleEl = document.querySelector('meta[property="og:title"]');
-  if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
-  const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
-  if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);
+export function decorateTitle(config) {
+  if (config.addTitleRegionSuffix === 'on') {
+    const rdn = getRegionDisplayName(config.locale);
+    if (!rdn || rdn === 'United States') return;
+    if (document.title.endsWith(`(${rdn})`)) return;
+    document.title = `${document.title} (${rdn})`;
+    const ogTitleEl = document.querySelector('meta[property="og:title"]');
+    if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
+    const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);
+  }
 }
 
 export async function loadArea(area = document) {
@@ -829,7 +830,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateMeta();
-    decorateTitle();
+    decorateTitle(config);
     decorateHeader();
     decorateFooterPromo(config);
 

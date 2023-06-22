@@ -219,17 +219,6 @@ describe('Utils', () => {
       validateLocale('/langstore/lv/page', { prefix: '/langstore/lv', ietf: 'en-US', tk: 'hah7vzn.css' });
     });
 
-    it('getRegionDisplayNames for different locales', () => {
-      [
-        { locale: null, rdn: null },
-        { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
-        { locale: { ietf: 'en-US' }, rdn: 'United States' },
-        { locale: { ietf: 'ec', rdn: 'Latinoamérica' }, rdn: 'Latinoamérica' },
-        { locale: { ietf: 'es' }, rdn: null },
-        { locale: { ietf: 'es', tag: 'es-ES' }, rdn: 'España' },
-      ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
-    });
-
     it('Open link in new tab', () => {
       const newTabLink = document.querySelector('.new-tab');
       newTabLink.target = '_blank';
@@ -382,6 +371,77 @@ describe('Utils', () => {
         },
       });
       expect(io instanceof IntersectionObserver).to.be.true;
+    });
+  });
+
+  describe('addTitleRegionSuffix', async () => {
+    beforeEach(async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head.html' });
+    });
+
+    it('getRegionDisplayNames for different locales', () => {
+      [
+        { locale: null, rdn: null },
+        { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
+        { locale: { ietf: 'en-US' }, rdn: 'United States' },
+        { locale: { ietf: 'ec', rdn: 'Latinoamérica' }, rdn: 'Latinoamérica' },
+        { locale: { ietf: 'es' }, rdn: null },
+        { locale: { ietf: 'es', tag: 'es-ES' }, rdn: 'España' },
+      ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
+    });
+
+    it('decorateTitle off', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'off',
+        locale: { ietf: 'fr-BE' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title');
+    });
+
+    it('decorateTitle on and locale invalid (noop)', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: null,
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title');
+    });
+
+    it('decorateTitle on in US (noop)', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: { ietf: 'en-US' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title');
+    });
+
+    it('decorateTitle on with rdn override', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: { rdn: 'hello!' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title (hello!)');
+    });
+
+    it('decorateTitle on with tag override', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: { ietf: 'fr-BE', tag: 'en-BE' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title (Belgium)');
+    });
+
+    it('decorateTitle on', async () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: { ietf: 'fr-BE' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title (Belgique)');
     });
   });
 });
