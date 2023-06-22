@@ -38,7 +38,7 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach(async(child, index) => {
+  Array.from(children).forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
@@ -50,7 +50,7 @@ const decorateBlockBg = (block, node) => {
     const pic = child.querySelector('picture');
     if (pic && (child.childElementCount == 2 || child.textContent)) {
       const { handleFocalpoint } = await import ('../section-metadata/section-metadata.js');
-      handleFocalpoint(pic,child);
+      handleFocalpoint(pic, child, true);
     }
   });
 
