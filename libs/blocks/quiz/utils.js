@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { getConfig } from '../../utils/utils.js';
 
@@ -5,7 +6,7 @@ const QUESTIONS_EP_NAME = 'questions.json';
 const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 
-let getConfigPath; let getQuizKey; let getAnalyticsType; let getAnalyticsQuiz; let metaData;
+let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 const { locale } = getConfig();
 
 const initConfigPath = (roolElm) => {
@@ -15,8 +16,8 @@ const initConfigPath = (roolElm) => {
 };
 
 const initQuizKey = () => {
-  getQuizKey = metaData.storagepath?.text;
-  return locale.ietf ? `${getQuizKey}-${locale.ietf}` : getQuizKey;
+  quizKey = metaData.storagepath?.text;
+  return locale.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
 
 const initAnalyticsType = () => metaData['analytics-type']?.text;
@@ -24,24 +25,24 @@ const initAnalyticsType = () => metaData['analytics-type']?.text;
 const initAnalyticsQuiz = () => metaData['analytics-quiz']?.text;
 
 async function fetchContentOfFile(path) {
-  const response = await fetch(getConfigPath(path));
+  const response = await fetch(configPath(path));
   return response.json();
 }
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
-  getConfigPath = initConfigPath(rootElement);
-  getQuizKey = initQuizKey(rootElement);
-  getAnalyticsType = initAnalyticsType();
-  getAnalyticsQuiz = initAnalyticsQuiz();
+  configPath = initConfigPath(rootElement);
+  quizKey = initQuizKey(rootElement);
+  analyticsType = initAnalyticsType();
+  analyticsQuiz = initAnalyticsQuiz();
 };
 
 export const getQuizData = async () => {
   try {
-    const [questions, datastrings] = await Promise.all(
+    const [questions, dataStrings] = await Promise.all(
       [fetchContentOfFile(QUESTIONS_EP_NAME), fetchContentOfFile(STRINGS_EP_NAME)],
     );
-    return [questions, datastrings];
+    return [questions, dataStrings];
   } catch (ex) {
     console.log('Error while fetching data : ', ex);
   }
@@ -67,12 +68,25 @@ export const handleResultFlow = async (answers = []) => {
     umbrellaProduct = resultData.matchedResults[0]['umbrella-result'];
   }
 
-  storeResultInLocalStorage(resultData, resultResources, primaryProductCodes, secondaryProductCodes, umbrellaProduct);
-
+  storeResultInLocalStorage(
+    answers,
+    resultData,
+    resultResources,
+    primaryProductCodes,
+    secondaryProductCodes,
+    umbrellaProduct,
+  );
   window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
 };
 
-const storeResultInLocalStorage = (resultData, resultResources, primaryProducts, secondaryProductCodes, umbrellaProduct) => {
+const storeResultInLocalStorage = (
+  answers,
+  resultData,
+  resultResources,
+  primaryProducts,
+  secondaryProductCodes,
+  umbrellaProduct,
+) => {
   const nestedFrags = resultData.matchedResults[0]['nested-fragments'];
   const structureFrags = resultData.matchedResults[0]['basic-fragments'];
 
@@ -83,13 +97,30 @@ const storeResultInLocalStorage = (resultData, resultResources, primaryProducts,
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
     umbrellaProduct,
-    basicFragments: structuredFragments(structureFragsArray, resultResources, primaryProducts, umbrellaProduct),
-    nestedFragments: nestedFragments(nestedFragsArray, resultResources, primaryProducts, secondaryProductCodes, umbrellaProduct)
+    basicFragments: structuredFragments(
+      structureFragsArray,
+      resultResources,
+      primaryProducts,
+      umbrellaProduct,
+    ),
+    nestedFragments: nestedFragments(
+      nestedFragsArray,
+      resultResources,
+      primaryProducts,
+      secondaryProductCodes,
+      umbrellaProduct,
+    ),
+    pageloadHash: getAnalyticsDataForLocalStorage(answers),
   };
-  localStorage.setItem(getQuizKey, JSON.stringify(resultToDelegate));
+  localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
 };
 
-const structuredFragments = (structureFragsArray, resultResources, primaryProducts, umbrellaProduct) => {
+const structuredFragments = (
+  structureFragsArray,
+  resultResources,
+  primaryProducts,
+  umbrellaProduct,
+) => {
   let structureFragments = [];
   structureFragsArray.forEach((frag) => {
     frag = frag.trim();
@@ -108,7 +139,13 @@ const structuredFragments = (structureFragsArray, resultResources, primaryProduc
   return structureFragments;
 };
 
-const nestedFragments = (nestedFragsArray, resultResources, primaryProducts, secondaryProductCodes, isUmbrella) => {
+const nestedFragments = (
+  nestedFragsArray,
+  resultResources,
+  primaryProducts,
+  secondaryProductCodes,
+  isUmbrella,
+) => {
   const nestedObject = {};
   nestedFragsArray.forEach((frag) => {
     const fragKey = frag.trim();
@@ -134,18 +171,16 @@ const nestedFragments = (nestedFragsArray, resultResources, primaryProducts, sec
   return nestedObject;
 };
 
-const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${getQuizKey}`;
-
-const buildQueryParam = (answers) => answers.reduce((str, [questionId, answersFromUser], i) => `${str + (i > 0 ? '&' : '') + questionId}=${answersFromUser.join(',')}`, '');
+const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
 
 const parseResultData = async (answers) => {
-  const results  = await fetchContentOfFile(RESULTS_EP_NAME);
+  const results = await fetchContentOfFile(RESULTS_EP_NAME);
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
       let hasMatch = false;
       const resultRow = Object.entries(resultMap);
 
-      for (let i = 0; i < resultRow.length; i++) {
+      for (let i = 0; i < resultRow.length; i += 1) {
         const key = resultRow[i][0];
         const val = resultRow[i][1];
 
@@ -235,21 +270,22 @@ const findMatchForSelections = (results, selections) => {
     return defaultResult;
   }
 
-  const compundResults = results.find((destination) => {
+  const compoundResults = results.find((destination) => {
     if (destination.result.indexOf('&') !== -1 && destination.result.split('&').length === userSelectionLen) {
       return destination;
     }
   });
 
-  const productList = compundResults.result.split('&');
-  const isCompoundProductsMatched = selections.primary.every(
-    (product, index) => productList[index].includes(product),
-  );
+  const productList = compoundResults !== undefined ? compoundResults.result.split('&') : [];
 
-  if (isCompoundProductsMatched) {
-    recommendations.push(compundResults);
-
-    return recommendations;
+  if (productList.length) {
+    const isCompoundProductsMatched = selections.primary.every(
+      (product, index) => productList[index].includes(product),
+    );
+    if (isCompoundProductsMatched) {
+      recommendations.push(compoundResults);
+      return recommendations;
+    }
   }
 
   return defaultResult;
@@ -271,7 +307,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
       (nextItem) => nextItem.options === selection,
     );
 
-    getAllSelectedQuestionsRelatedOptions.forEach(( { options, next }) => {
+    getAllSelectedQuestionsRelatedOptions.forEach(({ options, next }) => {
       if (options === selection) {
         const flowStepsList = next.split(',');
 
@@ -315,6 +351,25 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
 };
 
 export const transformToFlowData = (userSelection) => {
-  const flowData = userSelection.map(({ selectedCards, selectedQuestion}) => [selectedQuestion.questions, Object.keys(selectedCards)]);
+  const flowData = userSelection.map(({ selectedCards, selectedQuestion }) => [
+    selectedQuestion.questions, Object.keys(selectedCards)]);
   return flowData;
+};
+
+export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
+  const selectedCardNames = Object.keys(selectedCards);
+  if (selectedCardNames.length > 0) {
+    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion.questions}/${selectedCardNames.join('/')}`;
+    return btnAnalytics;
+  }
+};
+
+const getAnalyticsDataForLocalStorage = (answers) => {
+  let formattedAnswerString = '';
+  answers.forEach((answer) => {
+    const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
+    formattedAnswerString = formattedAnswerString === '' ? eachAnswer : formattedAnswerString.concat('|', eachAnswer);
+  });
+  const analyticsHash = `type=${analyticsType}&quiz=${analyticsQuiz}&selectedOptions=${formattedAnswerString}`;
+  return analyticsHash;
 };
