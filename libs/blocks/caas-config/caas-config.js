@@ -436,6 +436,15 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
+    <${MultiField}
+      onChange=${onChange('hideCtaIds')}
+      className="hideCtaIds"
+      values=${context.state.hideCtaIds}
+      title="Hidden CTAs"
+      subTitle="Enter the UUID for cards that should never have CTAs"
+    >
+      <${FormInput} name="contentId" onValidate${isValidUuid} />
+    <//>
   `;
 };
 
@@ -503,23 +512,62 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
+  `;
+  
+  const FilterBuildPanel = html`
+    <${FilterOptions}>
     <${MultiField}
       onChange=${onChange('filters')}
       className="filters"
       values=${context.state.filters}
-      title="Filter Tags"
+      title="Automatic Filters"
       subTitle=""
     >
-    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
     <//>
   `;
 
+  const FilterCustomBuildPanel = html`
+    <${FilterOptions}>
+    <${MultiField}
+      onChange=${onChange('filtersCustom')}
+      className="filtersCustom"
+      values=${context.state.filtersCustom}
+      title="Custom Filters"
+      addBtnTitle="New Group"
+      subTitle=""
+    >
+      <${FormInput} label="Group Name" name="group" />
+
+      <!-- nested multifield  -->
+      <${MultiField}
+        className="filtersCustomItems"
+        parentValues=${context.state.filtersCustom}
+        title="Filters"
+        subTitle=""
+        addBtnLabel="+"
+        addBtnTitle="New Filter"
+        name="filtersCustomItems"
+      >
+        <${FormInput} label="Filter label" name="filtersCustomLabel"/>
+        <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
+      <//>
+      <!-- End nested multifield -->
+      
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+    <//>
+  `;
+
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-    ${state.showFilters && FilterOptions}
+    ${state.showFilters
+      && (state.filterBuildPanel === 'custom'
+        ? FilterCustomBuildPanel
+        : FilterBuildPanel)}
   `;
 };
 
@@ -639,7 +687,9 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    if (lsState) {
+    // For backwards compatibilty: Check that localStorage state exists 
+    // and it contains the new filtersCustom attribute before using it
+    if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
