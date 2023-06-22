@@ -374,7 +374,7 @@ describe('Utils', () => {
     });
   });
 
-  describe('addTitleRegionSuffix', async () => {
+  describe('addTitleRegionSuffix', () => {
     beforeEach(async () => {
       document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     });
@@ -390,7 +390,7 @@ describe('Utils', () => {
       ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
     });
 
-    it('decorateTitle off', async () => {
+    it('decorateTitle off', () => {
       const cfg = {
         addTitleRegionSuffix: 'off',
         locale: { ietf: 'fr-BE' },
@@ -399,7 +399,7 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title');
     });
 
-    it('decorateTitle on and locale invalid (noop)', async () => {
+    it('decorateTitle on and locale invalid (noop)', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
         locale: null,
@@ -408,7 +408,7 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title');
     });
 
-    it('decorateTitle on in US (noop)', async () => {
+    it('decorateTitle on in US (noop)', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
         locale: { ietf: 'en-US' },
@@ -417,7 +417,7 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title');
     });
 
-    it('decorateTitle on with rdn override', async () => {
+    it('decorateTitle on with rdn override', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
         locale: { rdn: 'hello!' },
@@ -426,7 +426,7 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title (hello!)');
     });
 
-    it('decorateTitle on with tag override', async () => {
+    it('decorateTitle on with tag override', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
         locale: { ietf: 'fr-BE', tag: 'en-BE' },
@@ -435,7 +435,7 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title (Belgium)');
     });
 
-    it('decorateTitle on', async () => {
+    it('decorateTitle on', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
         locale: { ietf: 'fr-BE' },
