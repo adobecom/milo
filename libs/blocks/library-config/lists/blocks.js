@@ -2,6 +2,10 @@ import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
 import { getMetadata } from '../../section-metadata/section-metadata.js';
 
+const LIBRARY_METADATA = 'library-metadata';
+const LIBRARY_CONTAINER_START = 'library-container-start';
+const LIBRARY_CONTAINER_END = 'library-container-end';
+
 function getAuthorName(block) {
   const blockSib = block.previousElementSibling;
   if (!blockSib) return null;
@@ -18,8 +22,8 @@ function getBlockName(block) {
 }
 
 function getMetadataName(container) {
-  if (!container['library-metadata']) return null;
-  const libraryMetadata = getMetadata(container['library-metadata']);
+  if (!container[LIBRARY_METADATA]) return null;
+  const libraryMetadata = getMetadata(container[LIBRARY_METADATA]);
   return libraryMetadata?.title?.text || null;
 }
 
@@ -92,8 +96,8 @@ export function getHtml(container, path) {
 export function getSearchTags(container) {
   if (!container || !container.elements) return '';
   const firstBlock = container.elements[0];
-  if (container['library-metadata']) {
-    const libraryMetadata = getMetadata(container['library-metadata']);
+  if (container[LIBRARY_METADATA]) {
+    const libraryMetadata = getMetadata(container[LIBRARY_METADATA]);
     return libraryMetadata?.searchtags?.text
       ? `${libraryMetadata?.searchtags?.text} ${getBlockName(firstBlock)}`
       : getBlockName(firstBlock);
@@ -168,12 +172,12 @@ export function getContainers(doc) {
     if (subSections.length === 0) continue;
     for (let j = 0; j < subSections.length; j += 1) {
       const subSection = subSections[j];
-      if (subSection.className === 'library-container-start') {
+      if (subSection.className === LIBRARY_CONTAINER_START) {
         withinContainer = true;
-      } else if (subSection.className === 'library-container-end') {
+      } else if (subSection.className === LIBRARY_CONTAINER_END) {
         const nextSubSection = subSections[j + 1];
-        if (nextSubSection && nextSubSection.className === 'library-metadata') {
-          container['library-metadata'] = nextSubSection;
+        if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
+          container[LIBRARY_METADATA] = nextSubSection;
           j += 1;
         }
         containers.push(container);
@@ -185,8 +189,8 @@ export function getContainers(doc) {
         // single block container
         container.elements.push(subSection);
         const nextSubSection = subSections[j + 1];
-        if (nextSubSection && nextSubSection.className === 'library-metadata') {
-          container['library-metadata'] = nextSubSection;
+        if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
+          container[LIBRARY_METADATA] = nextSubSection;
           j += 1;
         }
         containers.push(container);
