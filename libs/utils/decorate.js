@@ -54,7 +54,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
 export function decorateBlockBg(block, node) {
   node.classList.add('background');
   if (node.childElementCount > 1) {
-    const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
     if (node.childElementCount === 2) {
       node.children[0].classList.add(viewports[0], viewports[1]);
       node.children[1].classList.add(viewports[2]);
