@@ -13,3 +13,13 @@ Offer Selector Tool will assume an offer selector returns always a single offer,
 Offer Selector Tool is loaded in Milo as external JS and CSS files hosted in Stage environment.
 
 For more info on Tacocat.js or Offer Selector Tool visit https://git.corp.adobe.com/Dexter/tacocat.js/tree/develop/packages/offer-selector-tool
+
+## Development
+
+To prevent IMS from redirecting to sign-in page and back,
+so to check OST in a PR branch when test URL is not supported by IMS,
+perform the following:
+- navigate to adobe.com,
+- open devtools console,
+- execute `copy(adobeIMS.getAccessToken().token)`,
+- add token to OST URL querystring, e.g.: `https://mwpw-127984--milo--vladen.hlx.page/tools/ost?token=eyJhb...`
