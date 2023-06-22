@@ -166,6 +166,16 @@ function openPicker(button, locales, country, event, dir) {
     list.appendChild(li);
   });
   button.parentNode.insertBefore(list, button.nextSibling);
+  const buttonRect = button.getBoundingClientRect();
+  const windowHeight = window.innerHeight;
+  const spaceBelowButton = windowHeight - buttonRect.bottom;
+
+  //Render it above the button if there is no space below
+  if (spaceBelowButton <= list.offsetHeight) {
+    list.style.bottom = buttonRect.height + 'px';
+    list.classList.add('top');
+  }
+  
   button.setAttribute('aria-expanded', true);
   removeOnClickOutsideElement(list, event, button);
 }
