@@ -81,18 +81,24 @@ html {
 
 .nav-marquee .links .anchor-link .anchor-icon {
   position: absolute;
-  top: 50%;
-  right: 12px;
-  margin-top: -8px;
-  height: 14px;
-  width: 16px;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 40px;
   color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.nav-marquee .links .anchor-link:hover .anchor-icon,
-.nav-marquee .links .anchor-link:focus .anchor-icon, 
-.nav-marquee .links .anchor-link:active .anchor-icon {
-  color: var(--link-color);
+.nav-marquee .links .anchor-link .anchor-icon img {
+  vertical-align: top;
+}
+
+.nav-marquee .links .anchor-link:hover .anchor-icon img,
+.nav-marquee .links .anchor-link:focus .anchor-icon img, 
+.nav-marquee .links .anchor-link:active .anchor-icon img{
+  filter: invert(30%) sepia(46%) saturate(6051%) hue-rotate(204deg) brightness(100%) contrast(85%);
 }
 
 .nav-marquee .links .anchor-link:hover,

@@ -29,43 +29,24 @@ const blockTypeSizes = {
 
 let fetchedIcon;
 let fetched = false;
-
-async function getSVGfromFile(path, name) {
-  /* c8 ignore next */
-  if (!path) return null;
-  const resp = await fetch(path);
-  /* c8 ignore next */
-  if (!resp.ok) return null;
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const parsedText = parser.parseFromString(text, 'image/svg+xml');
-  const svg = parsedText.querySelectorAll('svg')[0];
-  svg.removeAttribute('id');
-  svg.classList.add('ui-icon', `${name}`);
-  return svg;
-}
-const fetchIcon = (name) => new Promise((resolve) => {
-  /* c8 ignore next */
+function decorateAnchors(anchors) {
+  const linkGroup = createTag('div', { class: 'link-group' });
+  anchors[0].insertAdjacentElement('beforebegin', linkGroup);
   if (!fetched) {
-    const config = getConfig();
-    const path = `${config.miloLibs || config.codeRoot}/img/ui/${name}.svg`;
-    fetchedIcon = getSVGfromFile(path, name);
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    const iconImg = createTag('img', {
+      alt: 'arrow-down',
+      class: 'icon-milo',
+      src: `${base}/img/ui/arrow-down.svg`,
+    });
     fetched = true;
+    fetchedIcon = iconImg;
   }
-  resolve(fetchedIcon);
-});
-
-async function decorateAnchors(anchors) {
-  const iconList = {};
-  const name = 'arrow-down';
-  if (!iconList[name]) {
-    const iconArrowDown = await fetchIcon(name);
-    if (!iconArrowDown) return;
-    iconList[name] = iconArrowDown;
-  }
-  const anchorIcon = createTag('span', { class: 'anchor-icon' }, iconList[name]);
+  const anchorIcon = createTag('span', { class: 'anchor-icon' }, fetchedIcon);
   [...anchors].forEach((el) => {
     el.append(anchorIcon.cloneNode(true));
+    linkGroup.append(el);
   });
 }
 
@@ -85,31 +66,18 @@ export default function init(el) {
 
   [...list].forEach((i) => {
     const aTag = i.querySelector('a');
-    let linkType = null;
-    switch (aTag?.textContent.toLowerCase().charAt(0)) {
-      case '_':
-        linkType = '_';
-        break;
-      case '#':
-        linkType = '#';
-        break;
-      default:
-        linkType = null;
-    }
-
-    if (aTag && linkType) {
+    if (aTag?.textContent.charAt(0) === '#') {
       i.classList.add('anchor-link');
       i.setAttribute('tabindex', '0');
-      if (linkType === '_') {
-        i.setAttribute('onclick', `window.open('${aTag.href}')`);
-      }
-      if (linkType === '#') {
-        i.setAttribute('onclick', `window.location='${window.location}${aTag.textContent}'`);
-        aTag.parentElement.remove();
-      }
-      // TODO: keydown event listner on aTag:focus
-      // i.setAttribute('onclick', 'linkAnchor();');
+      // href === origin - it's a anchor link
+      const event = (aTag.href === window.location.origin + window.location.pathname)
+        ? `window.location='${window.location}${aTag.textContent}'`
+        : `window.open('${aTag.href}')`;
+      i.setAttribute('onclick', event);
+      aTag.parentElement.remove();
     }
+    // TODO: keydown event listner on aTag:focus
+    // i.setAttribute('onclick', 'linkAnchor();');
   });
 
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
@@ -118,12 +86,5 @@ export default function init(el) {
   decorateBlockText(emptyLinkRows[0], blockTypeSizes.default.xsmall);
 
   const anchors = el.querySelectorAll('.anchor-link');
-  if (anchors) {
-    const linkGroup = createTag('div', { class: 'link-group' });
-    anchors[0].insertAdjacentElement('beforebegin', linkGroup);
-    [...anchors].forEach((a) => {
-      linkGroup.append(a);
-    });
-    decorateAnchors(anchors);
-  }
+  if (anchors.length) decorateAnchors(anchors);
 }
