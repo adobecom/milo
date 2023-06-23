@@ -106,6 +106,7 @@ header.global-navigation {
 /* Brand and Logo blocks */
 .feds-brand-container {
   display: flex;
+  overflow: hidden;
 }
 
 .feds-brand,
@@ -127,6 +128,7 @@ header.global-navigation {
 .feds-brand-image,
 .feds-logo-image {
   width: 25px;
+  min-width: 25px;
   flex-shrink: 0;
 }
 
