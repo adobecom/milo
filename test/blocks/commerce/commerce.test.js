@@ -3,7 +3,6 @@ import { readFile } from '@web/test-runner-commands';
 import {
   filterOfferDetails,
   decorateOfferDetails,
-  handleSearch,
   decorateSearch,
 } from '../../../libs/blocks/commerce/commerce.js';
 
@@ -42,7 +41,7 @@ describe('filterOfferDetails', () => {
 describe('decorateOfferDetails', () => {
   it('decorates offer details correctly', async () => {
     const el = document.createElement('div');
-    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false');
+    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false&type=checkoutUrl&text=buy-now&promo=1234');
     await decorateOfferDetails(el, offer, searchParams);
     const offerDetailsList = el.querySelector('.offer-details');
     expect(offerDetailsList).to.exist;
@@ -53,9 +52,13 @@ describe('decorateOfferDetails', () => {
     expect(offerDetailsList.children[4].textContent).to.equal('CUSTOMER SEGMENT: INDIVIDUAL');
     expect(offerDetailsList.children[5].textContent).to.equal('COMMITMENT: YEAR');
     expect(offerDetailsList.children[6].textContent).to.equal('TERM: MONTHLY');
-    expect(offerDetailsList.children[7].textContent).to.equal('OFFER SELECTOR IDS: Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ');
+    expect(offerDetailsList.children[7].textContent).to.equal('OSI: Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ');
     expect(offerDetailsList.children[8].textContent).to.equal('PRICE: $10');
-    expect(offerDetailsList.children[9].textContent).to.equal('Checkout link');
+    expect(offerDetailsList.children[9].textContent).to.equal('TYPE: checkoutUrl');
+    expect(offerDetailsList.children[10].textContent).to.equal('CTA: buy-now');
+    expect(offerDetailsList.children[11].textContent).to.equal('PROMO: 1234');
+    expect(offerDetailsList.children[12].textContent).to.equal('Clear');
+    expect(offerDetailsList.children[13].textContent).to.equal('Checkout link');
   });
 });
 

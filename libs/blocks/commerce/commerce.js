@@ -56,16 +56,41 @@ export const filterOfferDetails = (o) => {
   return formattedOffer;
 };
 
+export function buildClearButton() {
+  const button = createTag('button', { type: 'button', class: 'con-button' });
+  button.textContent = 'Clear';
+  window.tacocat.imsCountryPromise.then((countryCode) => {
+    if (countryCode) {
+      button.dataset.imsCountry = countryCode;
+    }
+  })
+    .catch(() => { /* do nothing */ });
+  return button;
+}
+
 export const decorateOfferDetails = async (el, of, searchParams) => {
   function formatOfferDetailKeys(str) {
     const details = str.split(/(?=[A-Z])/);
     const allCapsDetail = details.map((detail) => detail.toUpperCase());
     const result = allCapsDetail.join(' ');
+    if (result === 'OFFER SELECTOR IDS') {
+      return 'OSI';
+    }
     return result;
   }
   const offerDetailsList = document.createElement('ul');
   offerDetailsList.className = 'offer-details';
   const offer = filterOfferDetails(of);
+  const promotionCode = searchParams.get('promo');
+  const type = searchParams.get('type');
+  offer.type = type;
+  if (type === 'checkoutUrl') {
+    offer.cta = searchParams.get('text');
+  }
+  if (promotionCode) {
+    offer.promo = promotionCode;
+  }
+
   Object.entries(offer).forEach(([key, value]) => {
     const offerData = document.createElement('li');
     const offerKey = document.createElement('span');
@@ -82,13 +107,21 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
   const checkoutLink = document.createElement('a');
   checkoutLink.textContent = 'Checkout link';
   const perpetual = searchParams.get('perp') === 'true' || undefined;
-  const promotionCode = searchParams.get('promo') || undefined;
+
   const options = omitNullValues({
     perpetual,
     promotionCode,
     wcsOsi: searchParams.get('osi'),
     ...getCheckoutContext(searchParams, getConfig()),
   });
+  const clearButton = buildClearButton();
+  clearButton.addEventListener('click', () => {
+    const input = document.querySelector('.offer-search');
+    input.value = '';
+    offerDetailsList.textContent = '';
+  });
+  offerDetailsList.appendChild(clearButton);
+
   const checkoutUrl = buildCheckoutButton(checkoutLink, options);
   checkoutUrl.target = '_blank';
   offerDetailsList.appendChild(checkoutUrl);
