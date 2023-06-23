@@ -11,6 +11,8 @@ jobs:
   run-tests:
     name: Running tests
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     strategy:
       matrix:
         node-version: [18.x]
@@ -41,4 +43,5 @@ jobs:
       with:
         coverage-files: coverage/lcov.info
         minimum-coverage: 95
-        update-comment: true
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        update-comment: false
