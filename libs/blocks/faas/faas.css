@@ -102,6 +102,7 @@ input[type="checkbox"] + label {
   background-position: 100% 50%;
   background-size: 1em 1em;
   height: 58px;
+  color: #000;
 }
 
 .faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]), 
