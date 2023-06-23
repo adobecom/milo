@@ -104,6 +104,11 @@
   --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
+
+  /* icon sizes */
+  --icon-size-m: 56px;
+  --icon-size-s: 40px;
+
 }
 
 :root:lang(ko-KR) {

@@ -48,7 +48,6 @@
   font-size: var(--type-body-m-size);
 }
 
-
 .icon-block .foreground .text-content p:not([class]) a {
   font-size: var(--type-body-m-size);
 }
@@ -72,6 +71,16 @@
 .icon-block .foreground .icon-area img {
   height: 80px;
   width: auto;
+}
+
+.icon-block.inline .icon-area,
+.icon-block.inline .icon-area picture img {
+  min-width:80px;
+}
+
+.icon-block.inline.bio .icon-area,
+.icon-block.inline.bio .icon-area picture img {
+  min-width:60px;
 }
 
 .icon-block.vertical .foreground .icon-area {
@@ -103,16 +112,16 @@
   width: 60px;
 }
 
-.icon-block.inline.icon-height-40 .icon-area,
-.icon-block.inline.icon-height-40 .icon-area picture img {
-  min-width:40px;
-  height: 40px;
+.icon-block.inline.icon-size-s .icon-area,
+.icon-block.inline.icon-size-s .icon-area picture img {
+  min-width:var(--icon-size-s);
+  height: var(--icon-size-s);
 }
 
-.icon-block.inline.icon-height-56 .icon-area,
-.icon-block.inline.icon-height-56 .icon-area picture img {
-  min-width: 56px;
-  height: 56px;
+.icon-block.inline.icon-size-m .icon-area,
+.icon-block.inline.icon-size-m .icon-area picture img {
+  min-width: var(--icon-size-m);
+  height: var(--icon-size-m);
 }
 
 .icon-block.bio.center .foreground .icon-area {
@@ -146,6 +155,23 @@
   max-width: 147px;
 }
 
+.five-up .icon-block.inline .foreground .icon-area,
+.five-up .icon-block.inline .foreground .icon-area img {
+  max-height: unset;
+  max-width: 80px;
+}
+
+.five-up .icon-block.inline.icon-size-s .foreground .icon-area,
+.five-up .icon-block.inline.icon-size-s .foreground .icon-area img {
+  max-width: var(--icon-size-s);
+}
+
+.five-up .icon-block.inline.icon-size-m .foreground .icon-area,
+.five-up .icon-block.inline.icon-size-m .foreground .icon-area img {
+  max-height: unset;
+  max-width: var(--icon-size-m);
+}
+
 .icon-block .foreground .text-content > * {
   width: 100%;
 }
@@ -154,10 +180,7 @@
   margin-bottom: var(--spacing-s);
 }
 
-.icon-block .foreground .text-content .heading-xl,
-.icon-block .foreground .text-content .heading-l,
-.icon-block .foreground .text-content .heading-m,
-.icon-block .foreground .text-content .heading-s {
+.icon-block .foreground .text-content [class*="heading"] {
   margin: 0 0 var(--spacing-xs);
 }
 
@@ -174,13 +197,22 @@
   margin-bottom: 0;
 }
 
-.icon-block.vertical:not(.center) .foreground .text-content .action-area > a,
-.icon-block.inline:not(.center) .foreground .text-content .action-area > a {
-  margin-right: var(--spacing-s);
+.icon-block .foreground .text-content .action-area {
   white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--spacing-s);
+  row-gap: var(--spacing-xs);
 }
-.icon-block.inline:not(.center) .foreground .text-content .action-area > a:first-child {
-  margin-bottom: var(--spacing-xxs);
+
+.icon-block.full-width .foreground .text-content .action-area {
+  justify-content: center;
+}
+
+.icon-block.center .foreground .text-content .action-area {
+  justify-content: center;
+  flex-direction: column;
 }
 
 .icon-block .foreground div {
@@ -202,21 +234,26 @@
   margin: 0 auto;
 }
 
+[class*="-up"] .icon-block.bio.inline .foreground {
+  max-width: unset;
+  width: unset;
+}
+
 .icon-block.bio.center .foreground,
 .icon-block.vertical.center .foreground {
   text-align: center;
 }
 
-.icon-block.inline.icon-height-40.bio .icon-area,
-.icon-block.inline.icon-height-40.bio .icon-area picture img {
-  height: 40px;
-  width: 40px;
+.icon-block.inline.icon-size-s.bio .icon-area,
+.icon-block.inline.icon-size-s.bio .icon-area picture img {
+  height: var(--icon-size-s);
+  width: var(--icon-size-s);
 }
 
-.icon-block.inline.icon-height-56.bio .icon-area,
-.icon-block.inline.icon-height-56.bio .icon-area picture img {
-  height: 56px;
-  width: 56px;
+.icon-block.inline.icon-size-m.bio .icon-area,
+.icon-block.inline.icon-size-m.bio .icon-area picture img {
+  height: var(--icon-size-m);
+  width: var(--icon-size-m);
 }
 
 .icon-block.vertical.center .foreground .text-content .icon-area {
@@ -232,11 +269,6 @@
 .five-up .foreground .text-content .body-m {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
-}
-
-.icon-block.center .foreground .text-content .action-area > a:not(.con-button) {
-  display: block;
-  margin-top: var(--spacing-xs);
 }
 
 .icon-block.vertical .foreground .text-content .action-area > a:not(.con-button),
@@ -274,11 +306,25 @@
     height: 80px;
   }
 
+  .icon-block.inline.bio .icon-area,
+  .icon-block.inline.bio .icon-area picture img {
+    min-width:80px;
+  }
+
+  .icon-block.inline.bio.icon-size-s .icon-area,
+  .icon-block.inline.bio.icon-size-s .icon-area picture img {
+    min-width: var(--icon-size-s);
+  }
+
+  .icon-block.inline.bio.icon-size-m .icon-area,
+  .icon-block.inline.bio.icon-size-m .icon-area picture img {
+    min-width: var(--icon-size-m);
+  }
+
   .five-up .icon-block .foreground .text-content,
   .five-up .icon-block .foreground .text-content .icon-area {
     text-align: center;
   }
-
 }
 
 @media screen and (min-width: 1200px) {
@@ -300,6 +346,33 @@
   .icon-block.bio .foreground .icon-area img {
     width: 80px;
     height: 80px;
+  }
+
+  .icon-block.inline.bio .icon-area,
+  .icon-block.inline.bio .icon-area picture img {
+    min-width:80px;
+  }
+
+  .icon-block.inline.bio.icon-size-s .icon-area,
+  .icon-block.inline.bio.icon-size-s .icon-area picture img {
+    min-width: var(--icon-size-s);
+  }
+
+  .icon-block.inline.bio.icon-size-m .icon-area,
+  .icon-block.inline.bio.icon-size-m .icon-area picture img {
+    min-width: var(--icon-size-m);
+  }
+
+  .five-up .icon-block.inline.icon-size-s .foreground .icon-area,
+  .five-up .icon-block.inline.icon-size-s .foreground .icon-area img {
+    max-width: var(--icon-size-s);
+  }
+
+  .five-up .icon-block.inline:not(.icon-size-s) .foreground .icon-area,
+  .five-up .icon-block.inline:not(.icon-size-s) .foreground .icon-area img {
+    min-width: 48px;
+    max-width: 48px;
+    max-height: 48px;
   }
 
   .icon-block.vertical .foreground {
@@ -336,14 +409,6 @@
 
   .three-up .icon-block.bio .foreground {
     max-width: 300px;
-  }
-
-  .two-up .icon-block.bio.inline .foreground,
-  .three-up .icon-block.bio.inline .foreground,
-  .four-up .icon-block.bio.inline .foreground,
-  .five-up .icon-block.bio.inline .foreground {
-    max-width: unset;
-    width: unset;
   }
 
   .three-up .icon-block.vertical .foreground .icon-area {
