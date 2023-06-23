@@ -25,6 +25,7 @@ function createItem(accordion, id, heading, num) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
+  const hTag = heading.querySelector('h1, h2, h3, h4, h5, h6');
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -38,7 +39,11 @@ function createItem(accordion, id, heading, num) {
   const para = panel.querySelector('p');
   const text = para ? para.textContent : panel.textContent;
 
-  const dt = createTag('dt', { role: 'heading', 'aria-level': 3 }, button);
+  const dt = createTag(
+    'dt',
+    { role: 'heading', 'aria-level': 3 },
+    hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button,
+  );
   const dd = createTag('dd', { role: 'region', 'aria-labelledby': triggerId, id: panelId, hidden: true }, panel);
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd); });
