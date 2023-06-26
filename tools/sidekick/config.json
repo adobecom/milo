@@ -102,7 +102,7 @@
       "title": "Tag Selector",
       "id": "tag-selector",
       "environments": ["edit"],
-      "url": "http://localhost:3000/drafts/methomas/tag-selector",
+      "url": "https://milo.adobe.com/tools/tag-selector",
       "isPalette": true,
       "paletteRect": "top: 150px; left: 7%; height: 675px; width: 85vw;"
     }
