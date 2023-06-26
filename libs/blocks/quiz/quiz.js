@@ -207,7 +207,6 @@ const App = () => {
 async function loadFragments() {
     const a = document.querySelector('.quiz-fragment');
     const { default: createFragment } = await import('../fragment/fragment.js');
-    console.log(a);
     await createFragment(a);
   }
 
