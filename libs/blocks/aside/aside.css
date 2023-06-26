@@ -104,8 +104,7 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside .foreground.container .text .action-area,
-.aside.split.icon-stack .foreground.container .text .icon-stack-area span.body-s { 
+.aside .foreground.container .text .action-area {
   margin-bottom: 0;
 }
 
@@ -147,6 +146,10 @@
   padding: 0;
 }
 
+.aside.simple .foreground.container .text {
+  margin-bottom: 80px;
+}
+
 .aside.center:not(.notification) .foreground.container .text {
   margin: 80px 0;
   text-align: center;
@@ -166,16 +169,17 @@
   min-height: 270px;
 }
 
+.aside.split.icon-stack .icon-stack-area li img {
+  height: 40px;
+  width: 40px;
+}
+
 .aside .foreground.container .icon-area img {
   max-width: 234px;
   height: 56px;
   width: auto;
   object-fit: cover;
   object-position: left top;
-}
-
-.aside.simple .foreground.container .text {
-  margin-bottom: 80px;
 }
 
 .aside.simple .foreground.container .image {
@@ -224,11 +228,6 @@
 
 .aside.notification .foreground.container img {
   display: block;
-}
-
-.aside.split.icon-stack .icon-stack-area img {
-  height: 48px;
-  width: 48px;
 }
 
 .aside .foreground.container .image video,
@@ -395,24 +394,28 @@
   justify-content: flex-start;
 }
 
-.aside.split.icon-stack .icon-stack-area {
+.aside.split.icon-stack .foreground.container .text .icon-stack-area {
   display: flex;
+  flex-flow: row wrap;
   gap: 12px;
   margin: -8px 0 var(--spacing-s);
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
 }
 
-.aside.split.icon-stack .foreground.container .text .icon-stack-area p {
+.aside.split.icon-stack .foreground.container .text .icon-stack-area li {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
 }
 
-.aside.split.dark.icon-stack .foreground.container .text .icon-stack-area p span a {
+.aside.split.dark.icon-stack .foreground.container .text .icon-stack-area li a {
   color: inherit;
 }
 
-.aside.split.icon-stack .icon-stack-area picture {
+.aside.split.icon-stack .foreground.container .text .icon-stack-area li picture {
+  display: inline-block;
   flex-shrink: 0;
 }
 
@@ -775,8 +778,9 @@
     margin: 80px 0;
   }
 
-  .aside.split.icon-stack .foreground.container .text .icon-stack-area p {
-    max-width: 50%;
+  .aside.split.icon-stack .foreground.container .text .icon-stack-area li {
+    max-width: calc(50% - 6px);
+    min-width: calc(50% - 6px);
   }
 
   .aside.split.icon-stack .foreground.container .text .icon-stack-area {
