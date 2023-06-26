@@ -38,7 +38,7 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach(async (child, index) => {
+  [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
