@@ -58,8 +58,8 @@ export default function init(el) {
     if (aTag?.textContent.charAt(0) === '#') {
       const content = i.querySelector(':scope > div');
       // (href === origin+path) - url is an anchor
-      const hrefUrl = (aTag.href === window.location.origin + window.location.pathname)
-        ? `${window.location.pathname}${aTag.textContent}`
+      const hrefUrl = (aTag.href.split('?')[0] === window.location.origin + window.location.pathname)
+        ? `${aTag.href}${aTag.textContent}`
         : `${aTag.href}`;
       const link = createTag('a', {
         class: 'anchor-link',
