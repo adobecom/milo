@@ -377,10 +377,10 @@ export async function loadBlock(block) {
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  let blockPath = `${base}/blocks/${name}/${name}`;
-  if (expBlocks?.[name]) {
-    blockPath = `${expBlocks[name]}/${name}`;
-  }
+  // TODO: use base for expBlocks
+  const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
+  const blockPath = `${path}/${name}`;
+
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
@@ -658,7 +658,7 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
     const { base } = getConfig();
     loadLink(
-      `${base}/scripts/personalization.js`,
+      `${base}/features/personalization/personalization.js`,
       { as: 'script', crossorigin: 'use-credentials', rel: 'preload' },
     );
   }

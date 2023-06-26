@@ -61,10 +61,6 @@ const handleAlloyResponse = (response) => {
 };
 
 const getTargetPersonalization = async () => {
-  // TODO: do we need this?
-  if (navigator.userAgent.match(/bot|crawl|spider/i)) {
-    return {};
-  }
   const params = new URL(window.location.href).searchParams;
 
   const experimentParam = params.get('experiment');

@@ -3,7 +3,9 @@ import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
-const removeHash = (url) => url?.endsWith('#_dnt') ? url : url?.split('#')[0];
+const removeHash = (url) => (url?.endsWith('#_dnt') ? url : url?.split('#')[0]);
+
+// TODO: Can we just use a simple list of loaded fragments?
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
@@ -42,8 +44,7 @@ export default async function init(a) {
   const resp = await fetch(`${a.href}.plain.html`);
   if (resp.ok) {
     const html = await resp.text();
-    const parser = new DOMParser();
-    let doc = parser.parseFromString(html, 'text/html');
+    let doc = (new DOMParser()).parseFromString(html, 'text/html');
     if (doc.querySelector('.fragment-personalization')) {
       const { fragmentPersonalization } = await import('../../features/personalization/personalization.js');
       doc = await fragmentPersonalization(doc);

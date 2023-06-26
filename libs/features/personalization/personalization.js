@@ -27,6 +27,11 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
+const DATA_TYPE = {
+  JSON: 'json',
+  TEXT: 'text',
+};
+
 const createFrag = (url) => {
   const a = utils.createTag('a', { href: url }, url);
   const p = utils.createTag('p', undefined, a);
@@ -54,6 +59,19 @@ const GLOBAL_CMDS = [
   'useblockcode',
 ];
 
+const fetchData = async (url, type = DATA_TYPE.JSON) => {
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error('Invalid response', resp);
+    }
+    return await resp[type]();
+  } catch (e) {
+    console.log(`Error loading content: ${url}`, e);
+  }
+  return null;
+};
+
 function normalizePath(p) {
   let path = p;
 
@@ -61,9 +79,13 @@ function normalizePath(p) {
     return path;
   }
 
-  if (path.startsWith('http')) {
-    path = new URL(path)?.pathname;
-  } else if (!path.startsWith('/')) {
+  const config = utils.getConfig();
+
+  if (path.startsWith(config.codeRoot) || path.startsWith(`https://${config.productionDomain}`)) {
+    try {
+      path = new URL(path).pathname;
+    } catch (e) { /* return path below */ }
+  } else if (!path.startsWith('http') && !path.startsWith('/')) {
     path = `/${path}`;
   }
   return path;
@@ -84,43 +106,35 @@ const matchGlob = (searchStr, inputStr) => {
   return reg.test(inputStr);
 };
 
-
 export async function replaceInner(path, element) {
   if (!path || !element) return false;
   let plainPath = path.endsWith('/') ? `${path}index` : path;
   plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
-  try {
-    const resp = await fetch(plainPath);
-    if (!resp.ok) {
-      throw new Error('Invalid response', resp);
-    }
-    const html = await resp.text();
-    element.innerHTML = html;
-    return true;
-  } catch (e) {
-    console.log(`error loading experiment content: ${plainPath}`, e);
-  }
-  return false;
+  const html = await fetchData(plainPath, DATA_TYPE.TEXT);
+  if (!html) return false;
+
+  element.innerHTML = html;
+  return true;
 }
 
 const getPageSearchParams = (() => {
-  let pageSearchParams;
+  let psParams;
   return () => {
-    if (!pageSearchParams) {
-      pageSearchParams = new URL(window.location).searchParams;
+    if (!psParams) {
+      psParams = new URL(window.location).searchParams;
     }
-    return pageSearchParams;
+    return psParams;
   };
 })();
 
 const checkForParamMatch = (paramStr) => {
-  const [paramName, paramValue] = paramStr.split('param-')[1].split('=');
-  if (!paramName) return false;
+  const [name, val] = paramStr.split('param-')[1].split('=');
+  if (!name) return false;
   const searchParams = getPageSearchParams();
-  const searchParamVal = searchParams.get(paramName);
+  const searchParamVal = searchParams.get(name);
   if (searchParamVal !== null) {
-    if (paramValue) return paramValue === searchParamVal;
-    return true; // if no paramValue is set, just check for existence of param
+    if (val) return val === searchParamVal;
+    return true; // if no val is set, just check for existence of param
   }
   return false;
 };
@@ -128,11 +142,11 @@ const checkForParamMatch = (paramStr) => {
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
   if (!selector || !val) return;
-
-  let metaEl = document.querySelector(`meta[name="${selector}"]`);
+  const propName = selector.startsWith('og:') ? 'property' : 'name';
+  let metaEl = document.querySelector(`meta[${propName}="${selector}"]`);
   if (!metaEl) {
     metaEl = document.createElement('meta');
-    metaEl.setAttribute('name', selector);
+    metaEl.setAttribute(propName, selector);
     document.head.append(metaEl);
   }
   metaEl.setAttribute('content', val);
@@ -143,7 +157,7 @@ function toLowerAlpha(str) {
   return s.replace(RE_KEY_REPLACE, '');
 }
 
-function transformKeys(obj) {
+function normalizeKeys(obj) {
   return Object.keys(obj).reduce((newObj, key) => {
     newObj[toLowerAlpha(key)] = obj[key];
     return newObj;
@@ -168,54 +182,54 @@ function handleCommands(commands, rootEl = document) {
   });
 }
 
+const getVariantInfo = (line, variantNames, variants) => {
+  const action = line.action?.toLowerCase();
+  const { selector } = line;
+  const pageFilter = line['page filter'] || line['page filter optional'];
+
+  if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
+
+  variantNames.forEach((vn) => {
+    if (!line[vn]) return;
+
+    const variantInfo = {
+      action,
+      selector,
+      pageFilter,
+      target: line[vn],
+    };
+
+    if (GLOBAL_CMDS.includes(action)) {
+      variants[vn][action] = variants[vn][action] || [];
+
+      variants[vn][action].push({
+        selector: action === 'useblockcode' ? line[vn]?.split('/').pop() : normalizePath(selector),
+        val: normalizePath(line[vn]),
+      });
+    } else if (VALID_COMMANDS.includes(action)) {
+      variants[vn].commands.push(variantInfo);
+    } else {
+      console.log('Invalid action found: ', line);
+    }
+  });
+};
+
 export function parseConfig(data) {
   if (!data?.length) return null;
 
   const config = {};
-  const experiences = data.map((d) => transformKeys(d));
+  const experiences = data.map((d) => normalizeKeys(d));
 
   try {
     const variants = {};
     const variantNames = Object.keys(experiences[0])
       .filter((vn) => !MANIFEST_KEYS.includes(vn));
 
-    variantNames.forEach((variantName) => {
-      variants[variantName] = { commands: [] };
+    variantNames.forEach((vn) => {
+      variants[vn] = { commands: [] };
     });
 
-    const currentPath = new URL(window.location).pathname;
-
-    experiences.forEach((line) => {
-      const action = line.action?.toLowerCase();
-      const { selector } = line;
-      const pageFilter = line['page filter'] || line['page filter optional'];
-
-      if (pageFilter && !matchGlob(pageFilter, currentPath)) return;
-
-      variantNames.forEach((vn) => {
-        if (!line[vn]) return;
-
-        const variantInfo = {
-          action,
-          selector,
-          pageFilter,
-          target: line[vn],
-        };
-
-        if (GLOBAL_CMDS.includes(action)) {
-          variants[vn][action] = variants[vn][action] || [];
-
-          variants[vn][action].push({
-            selector: action === 'useblockcode' ? line[vn]?.split('/').pop() : normalizePath(selector),
-            val: normalizePath(line[vn]),
-          });
-        } else if (VALID_COMMANDS.includes(action)) {
-          variants[vn].commands.push(variantInfo);
-        } else {
-          console.log('Invalid action found: ', line);
-        }
-      });
-    });
+    experiences.forEach((line) => getVariantInfo(line, variantNames, variants));
 
     config.variants = variants;
     config.variantNames = variantNames;
@@ -228,38 +242,22 @@ export function parseConfig(data) {
 
 function getPersonalizationVariant(variantNames = [], variantLabel = null) {
   const tagNames = Object.keys(PERSONALIZATION_TAGS);
-  // handle multiple variants that are space / comma delimited
   const matchingVariant = variantNames.find((variant) => {
+    // handle multiple variants that are space / comma delimited
     const names = variant.split(RE_SPACE_COMMA).filter(Boolean);
     return names.some((name) => {
-      if (name === variantLabel) {
-        return true;
-      }
-      if (name.startsWith('param-')) {
-        return checkForParamMatch(name);
-      }
+      if (name === variantLabel) return true;
+      if (name.startsWith('param-')) return checkForParamMatch(name);
       return tagNames.includes(name) && PERSONALIZATION_TAGS[name]();
     });
   });
   return matchingVariant;
 }
 
-async function fetchManifest(path) {
-  try {
-    const resp = await fetch(path);
-    if (!resp.ok) throw new Error(resp);
-    const json = await resp.json();
-    return json.data;
-  } catch (e) {
-    console.error(`Error loading manifest: ${path}`, e);
-    return null;
-  }
-}
-
 export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
   console.log('Personalization: ', name || manifestPath);
 
-  const data = manifestData || await fetchManifest(manifestPath);
+  const data = manifestData || await fetchData(manifestPath, DATA_TYPE.JSON);
   const config = parseConfig(data);
 
   if (!config) {
@@ -282,22 +280,22 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
 const getFPInfo = (fpTableRows) => {
   const names = [];
-  const info = [...fpTableRows].reduce((obj, row) => {
+  const info = [...fpTableRows].reduce((infoObj, row) => {
     const [actionEl, selectorEl, variantEl, fragment] = row.children;
     if (actionEl?.innerText?.toLowerCase() === 'action') {
-      return obj;
+      return infoObj;
     }
     const variantName = variantEl?.innerText?.toLowerCase();
     if (!names.includes(variantName)) {
       names.push(variantName);
-      obj[variantName] = [];
+      infoObj[variantName] = [];
     }
-    obj[variantName].push({
+    infoObj[variantName].push({
       action: actionEl.innerText?.toLowerCase(),
       selector: selectorEl.innerText?.toLowerCase(),
       htmlFragment: fragment.firstElementChild,
     });
-    return obj;
+    return infoObj;
   }, {});
   return { info, names };
 };
@@ -319,6 +317,11 @@ const modifyFragment = (selectedEl, action, htmlFragment) => {
     default:
       console.warn(`Unknown action: ${action}`);
   }
+};
+
+const deleteMarkedEls = () => {
+  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
 };
 
 export async function fragmentPersonalization(el) {
@@ -376,7 +379,7 @@ export async function applyPersonalization(
 ) {
   if (!(persManifests.length || targetManifests.length)) return;
 
-  utils = { createTag, loadScript };
+  utils = { createTag, getConfig, loadScript };
 
   let manifests = targetManifests;
 
@@ -399,8 +402,7 @@ export async function applyPersonalization(
     results.push(await runPersonalization(manifest));
   }
   results = results.filter(Boolean);
-
-  [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)].forEach((el) => el.remove());
+  deleteMarkedEls();
 
   // Currently required for preview.js
   window.hlx ??= {};
