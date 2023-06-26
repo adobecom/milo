@@ -32,6 +32,10 @@ const blockConfig = {
     [large]: ['l', 'm'],
   },
 };
+const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="play-icon">
+                      <path d="M8 5v14l11-7z"></path> 
+                      <path d="M0 0h24v24H0z" fill="none"></path>
+                  </svg>`;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -50,13 +54,8 @@ function decorateModalImage(el) {
   const modalLink = el.querySelector('a');
   modalLink.classList.add('play-btn');
   modalLink.innerHTML = '';
-  const addhtml = `<div class='play-btn-circle'>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="play-icon">
-                        <path d="M8 5v14l11-7z"></path> 
-                        <path d="M0 0h24v24H0z" fill="none"></path>
-                      </svg>
-                    </div>`;
-  modalLink.insertAdjacentHTML('afterbegin', addhtml);
+  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, PLAY_ICON);
+  modalLink.appendChild(playCircle);
 }
 
 function decorateLayout(el) {
@@ -88,32 +87,16 @@ function decorateLayout(el) {
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
   }
-  return foreground;
-}
-
-function decorateIconStack(el) {
-  if (!(el.classList.contains('split')
+  if (el.classList.contains('split')
         && (el.classList.contains('medium') || el.classList.contains('large'))
-        && el.classList.contains('icon-stack'))) return;
-  const foreground = el.querySelector('.foreground .text');
-  const actionArea = foreground.querySelector('p.action-area');
-  const iconStackImgs = foreground.querySelectorAll('p.body-s > picture');
-  if (!iconStackImgs) return;
-  const iconStackArea = createTag('div', { class: 'icon-stack-area' });
-  foreground.insertBefore(iconStackArea, iconStackImgs[0].closest('p'));
-  iconStackImgs.forEach((iconStackImg) => {
-    if (actionArea.compareDocumentPosition(iconStackImg) === Node.DOCUMENT_POSITION_FOLLOWING) {
-      return;
+        && el.classList.contains('icon-stack')) {
+    const ulElems = el.querySelectorAll('ul');
+    if (ulElems.length) {
+      const iconStackArea = ulElems[ulElems.length - 1];
+      iconStackArea.classList.add('icon-stack-area', 'body-s');
     }
-    const iconItemRaw = iconStackImg.closest('p');
-    const iconItem = createTag('p', null, iconStackImg);
-    if (iconItemRaw.innerText.trim()) {
-      const iconItemDesc = createTag('span', { class: 'body-s' }, iconItemRaw.innerHTML);
-      iconItem.appendChild(iconItemDesc);
-    }
-    iconStackArea.appendChild(iconItem);
-    foreground.removeChild(iconItemRaw);
-  });
+  }
+  return foreground;
 }
 
 export default function init(el) {
@@ -121,5 +104,4 @@ export default function init(el) {
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
-  decorateIconStack(el);
 }
