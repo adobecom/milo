@@ -28,11 +28,6 @@
   text-align: center;
 }
 
-.quiz-container ~ div { 
-  display: none; 
-  visibility: hidden; 
-}
-
 .quiz-option {
   display: flex;
   align-items: stretch;
