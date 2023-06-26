@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText, decorateButtons } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
