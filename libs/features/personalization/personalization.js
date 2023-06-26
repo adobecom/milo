@@ -257,7 +257,12 @@ function getPersonalizationVariant(variantNames = [], variantLabel = null) {
 export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
   console.log('Personalization: ', name || manifestPath);
 
-  const data = manifestData || (await fetchData(manifestPath, DATA_TYPE.JSON)).data;
+  let data = manifestData;
+  if (!data) {
+    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
+    if (fetchedData) data = fetchedData.data;
+  }
+  if (!data) return {};
   const config = parseConfig(data);
 
   if (!config) {
