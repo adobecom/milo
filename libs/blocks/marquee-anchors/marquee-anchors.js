@@ -1,17 +1,5 @@
 /*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-/*
- * Navigation Marquee
+ * Marquee Anchors
  */
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateBlockText, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
@@ -53,7 +41,8 @@ function decorateAnchors(anchors) {
 export default function init(el) {
   el.classList.add('con-block');
   const size = getBlockSize(el);
-  const [background, copy, ...list] = Array.from(el.querySelectorAll(':scope > div'));
+  const rows = el.querySelectorAll(':scope > div');
+  const [background, copy, ...list] = [...rows];
   background.classList.add('background');
   copy.classList.add('copy');
   decorateBlockBg(el, background);
@@ -67,17 +56,18 @@ export default function init(el) {
   [...list].forEach((i) => {
     const aTag = i.querySelector('a');
     if (aTag?.textContent.charAt(0) === '#') {
-      i.classList.add('anchor-link');
-      i.setAttribute('tabindex', '0');
-      // href === origin - it's a anchor link
-      const event = (aTag.href === window.location.origin + window.location.pathname)
-        ? `window.location='${window.location}${aTag.textContent}'`
-        : `window.open('${aTag.href}')`;
-      i.setAttribute('onclick', event);
+      const content = i.querySelector(':scope > div');
+      // (href === origin+path) - url is an anchor
+      const hrefUrl = (aTag.href === window.location.origin + window.location.pathname)
+        ? `${window.location.pathname}${aTag.textContent}`
+        : `${aTag.href}`;
+      const link = createTag('a', {
+        class: 'anchor-link',
+        href: hrefUrl,
+      }, content);
+      i.parentElement.replaceChild(link, i);
       aTag.parentElement.remove();
     }
-    // TODO: keydown event listner on aTag:focus
-    // i.setAttribute('onclick', 'linkAnchor();');
   });
 
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
