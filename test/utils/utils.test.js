@@ -23,6 +23,11 @@ describe('Utils', () => {
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
     });
+    window.hlx = { rum: { isSelected: false } };
+  });
+
+  after(() => {
+    delete window.hlx;
   });
 
   describe('with body', () => {
