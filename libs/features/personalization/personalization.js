@@ -358,7 +358,7 @@ export async function runPersonalization(info) {
 
   if (selectedVariant.replacepage) {
     // only one replacepage can be defined
-    await replaceInner(selectedVariant.replacepage[0], document.querySelector('main'));
+    await replaceInner(selectedVariant.replacepage[0]?.val, document.querySelector('main'));
   }
 
   selectedVariant.insertscript?.map((script) => utils.loadScript(script.val));
