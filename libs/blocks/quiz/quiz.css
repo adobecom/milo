@@ -1,3 +1,7 @@
+div.quiz > div {
+  display:none;
+}
+
 .quiz { 
   min-height: 1000px;
   display: flex;
@@ -5,7 +9,7 @@
   flex-direction: column;
 }
 
-.quiz-container {
+div.quiz > div.quiz-container {
   display: flex;
   align-items: center;
   justify-content: flex-start;
