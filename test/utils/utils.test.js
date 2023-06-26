@@ -177,7 +177,7 @@ describe('Utils', () => {
       window.dispatchEvent(event);
       await waitForElement('#milo');
       expect(document.getElementById('milo')).to.exist;
-    })
+    });
 
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
@@ -358,5 +358,4 @@ describe('Utils', () => {
       expect(io instanceof IntersectionObserver).to.be.true;
     });
   });
-
 });
