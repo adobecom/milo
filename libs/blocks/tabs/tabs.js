@@ -99,7 +99,7 @@ const handleDeferredImages = (block) => {
 }
 
 const init = (block) => {
-  const rootElem = block.closest('.fragment') || document;
+  const rootElem = block.closest('.georouting-wrapper.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   const parentSection = block.closest('.section');
   /* c8 ignore next */
