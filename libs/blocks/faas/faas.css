@@ -42,7 +42,8 @@ Common styles for faas form Dexter's
 }
 
 .faas-form .submit input {
-  appearance: button;
+  -webkit-appearance: none;
+  appearance: none;
   background-color: #2680eb;
   border: 0;
   border-radius: 24px;
