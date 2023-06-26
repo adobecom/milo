@@ -121,7 +121,7 @@ const locales = {
 };
 
 const config = {
-  // geoRouting: 'on',
+  geoRouting: 'on',
   fallbackRouting: 'on',
   links: 'on',
   imsClientId: 'milo',
