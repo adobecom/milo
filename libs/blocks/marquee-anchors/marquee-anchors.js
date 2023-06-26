@@ -18,7 +18,7 @@ const blockTypeSizes = {
 let fetchedIcon;
 let fetched = false;
 function decorateAnchors(anchors) {
-  const linkGroup = createTag('div', { class: 'link-group' });
+  const linkGroup = createTag('div', { class: 'links-group' });
   anchors[0].insertAdjacentElement('beforebegin', linkGroup);
   if (!fetched) {
     const { miloLibs, codeRoot } = getConfig();
@@ -71,8 +71,8 @@ export default function init(el) {
   });
 
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
-  if (emptyLinkRows[0]) emptyLinkRows[0].classList.add('link-header');
-  if (emptyLinkRows[1]) emptyLinkRows[1].classList.add('link-footer', 'body-s');
+  if (emptyLinkRows[0]) emptyLinkRows[0].classList.add('links-header');
+  if (emptyLinkRows[1]) emptyLinkRows[1].classList.add('links-footer', 'body-s');
   decorateBlockText(emptyLinkRows[0], blockTypeSizes.default.xsmall);
 
   const anchors = el.querySelectorAll('.anchor-link');
