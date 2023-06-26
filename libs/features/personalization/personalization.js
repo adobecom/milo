@@ -17,7 +17,6 @@ export const PERSONALIZATION_TAGS = {
 
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
-const RE_SPACE_COMMA = /[ ,]/;
 
 const MANIFEST_KEYS = [
   'action',
@@ -244,7 +243,7 @@ function getPersonalizationVariant(variantNames = [], variantLabel = null) {
   const tagNames = Object.keys(PERSONALIZATION_TAGS);
   const matchingVariant = variantNames.find((variant) => {
     // handle multiple variants that are space / comma delimited
-    const names = variant.split(RE_SPACE_COMMA).filter(Boolean);
+    const names = variant.split(',').map((v) => v.trim()).filter(Boolean);
     return names.some((name) => {
       if (name === variantLabel) return true;
       if (name.startsWith('param-')) return checkForParamMatch(name);
