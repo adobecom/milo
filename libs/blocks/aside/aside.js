@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -46,6 +46,19 @@ function decorateStaticLinks(el) {
   textLinks.forEach((link) => { link.classList.add('static') });
 }
 
+function decorateModalImage(el) {
+  const modalLink = el.querySelector('a');
+  modalLink.classList.add('play-btn');
+  modalLink.innerHTML = '';
+  const addhtml = `<div class='play-btn-circle'>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="play-icon">
+                        <path d="M8 5v14l11-7z"></path> 
+                        <path d="M0 0h24v24H0z" fill="none"></path>
+                      </svg>
+                    </div>`;
+  modalLink.insertAdjacentHTML('afterbegin', addhtml);
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
@@ -68,6 +81,9 @@ function decorateLayout(el) {
       const position = Array.from(image.parentNode.children).indexOf(image);
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(image);
+    }
+    if (foregroundImage && foregroundImage.querySelector('a')?.dataset?.modalHash) {
+      decorateModalImage(foregroundImage);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
