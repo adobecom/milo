@@ -1,12 +1,14 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
-import { getConfig, loadStyle } from '../../utils/utils.js';
+import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
-import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
+import { DecorateBlockBackground, DecorateBlockForeground, DecoratedBlockFooter } from './quizcontainer.js';
 import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas-uar.css`);
+
+
 
 const App = () => {
   const [questionData, setQuestionData] = useState({});
@@ -202,6 +204,13 @@ const App = () => {
   const minSelections = +selectedQuestion['min-selections'];
   const maxSelections = +selectedQuestion['max-selections'];
 
+async function loadFragments() {
+    const a = document.querySelector('.quiz-fragment');
+    const { default: createFragment } = await import('../fragment/fragment.js');
+    console.log(a);
+    await createFragment(a);
+  }
+
   return html`<div class="quiz-container">
                   <${StepIndicator} 
                     currentStep=${currentStep} 
@@ -232,7 +241,15 @@ const App = () => {
                       currentStep=${currentStep} 
                       totalSteps=${totalSteps} 
                       prevStepIndicator=${prevStepIndicator}
-                    />  
+                    />
+
+                  <div class="quiz-footer">
+                    <${DecoratedBlockFooter}
+                       footerFragment=${getStringValue('footerFragment')}
+                    />
+                    ${loadFragments()}
+                  </div>
+
               </div>`;
 };
 

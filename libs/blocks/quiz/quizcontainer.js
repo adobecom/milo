@@ -18,4 +18,6 @@ export const DecorateBlockForeground = ({ heading, subhead }) => html`<div class
     </div>
   </div>`;
 
+export const DecoratedBlockFooter = ({ footerFragment }) => html`<a class="quiz-fragment" href="${footerFragment}"></a>`;
+
 export const DecorateBlockBackground = (getStringValue) => html`<${DecorateBlockBackgroundCmp} background=${getStringValue('background')} />`;
