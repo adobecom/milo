@@ -101,21 +101,11 @@ html {
   vertical-align: top;
 }
 
-.marquee-anchors .links .anchor-link:hover .anchor-icon img,
-.marquee-anchors .links .anchor-link:focus .anchor-icon img, 
-.marquee-anchors .links .anchor-link:active .anchor-icon img{
-  filter: brightness(90%);
-}
-
 .marquee-anchors .links .anchor-link:hover,
 .marquee-anchors .links .anchor-link:focus,
 .marquee-anchors .links .anchor-link:active {
   border-color: var(--link-color);
   text-decoration: none;
-}
-
-.marquee-anchors .links .anchor-link:hover::after {
-  color: var(--link-color);
 }
 
 .marquee-anchors .links .anchor-link > div {
@@ -137,6 +127,11 @@ html {
 .marquee-anchors.transparent .links {
   background-color: transparent;
   padding: 0;
+}
+
+.dark .marquee-anchors.transparent .links, 
+.marquee-anchors.dark.transparent .links {
+  color: var(--color-white);
 }
 
 /* tablet up */
