@@ -106,23 +106,22 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
   const checkoutLink = document.createElement('a');
   checkoutLink.textContent = 'Checkout link';
   const perpetual = searchParams.get('perp') === 'true' || undefined;
-
   const options = omitNullValues({
     perpetual,
     promotionCode,
     wcsOsi: searchParams.get('osi'),
     ...getCheckoutContext(searchParams, getConfig()),
   });
+  const checkoutUrl = buildCheckoutButton(checkoutLink, options);
+  checkoutUrl.target = '_blank';
   const clearButton = buildClearButton();
+
   clearButton.addEventListener('click', () => {
     const input = document.querySelector('.offer-search');
     input.value = '';
     offerDetailsList.textContent = '';
   });
   offerDetailsList.appendChild(clearButton);
-
-  const checkoutUrl = buildCheckoutButton(checkoutLink, options);
-  checkoutUrl.target = '_blank';
   offerDetailsList.appendChild(checkoutUrl);
   el.append(offerDetailsList);
 };
