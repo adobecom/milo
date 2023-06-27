@@ -10,6 +10,7 @@ const emptyEntitlements = {
   arrangment_codes: {},
   fulfilled_codes: {},
   offer_families: {},
+  offers: {},
   list: { fulfilled_codes: [] },
 };
 

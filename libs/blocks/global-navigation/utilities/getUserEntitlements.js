@@ -29,6 +29,7 @@ const emptyEntitlements = {
   arrangment_codes: {},
   fulfilled_codes: {},
   offer_families: {},
+  offers: {},
   list: { fulfilled_codes: [] },
 };
 const CREATIVE_CLOUD = 'creative_cloud';
@@ -37,10 +38,10 @@ const EXPERIENCE_CLOUD = 'experience_cloud';
 
 /**
  * Breaks JIL offers(subscriptions) into easily addressable flat data structure.
- * @param {*} offers
+ * @param {*} allOffers
  */
-const mapSubscriptionCodes = (offers) => {
-  if (!Array.isArray(offers)) {
+const mapSubscriptionCodes = (allOffers) => {
+  if (!Array.isArray(allOffers)) {
     return emptyEntitlements;
   }
 
@@ -49,10 +50,11 @@ const mapSubscriptionCodes = (offers) => {
     arrangment_codes,
     fulfilled_codes,
     offer_families,
+    offers,
     list,
   } = emptyEntitlements;
 
-  offers.forEach(({ fulfilled_items, offer = {} }) => {
+  allOffers.forEach(({ fulfilled_items, offer = {} }) => {
     const cloud = offer.product_arrangement?.cloud;
     clouds[CREATIVE_CLOUD] = clouds[CREATIVE_CLOUD] || cloud === 'CREATIVE';
     clouds[DOCUMENT_CLOUD] = clouds[DOCUMENT_CLOUD] || cloud === 'DOCUMENT';
@@ -75,6 +77,11 @@ const mapSubscriptionCodes = (offers) => {
         }
       });
     }
+
+    if (Object.prototype.hasOwnProperty.call(offer, 'offer_id')) {
+      const { offer_id, ...rest } = offer;
+      offers[offer_id] = rest;
+    }
   });
 
   return {
@@ -82,6 +89,7 @@ const mapSubscriptionCodes = (offers) => {
     arrangment_codes,
     fulfilled_codes,
     offer_families,
+    offers,
     list,
   };
 };
