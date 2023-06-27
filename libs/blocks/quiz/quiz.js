@@ -1,7 +1,7 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
-import { DecorateBlockBackground, DecorateBlockForeground, DecoratedBlockFooter } from './quizcontainer.js';
+import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
