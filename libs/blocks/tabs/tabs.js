@@ -99,7 +99,7 @@ const handleDeferredImages = (block) => {
 }
 
 const init = (block) => {
-  const rootElem = block.closest('.georouting-wrapper.fragment') || document;
+  const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   const parentSection = block.closest('.section');
   /* c8 ignore next */
@@ -180,7 +180,7 @@ const init = (block) => {
         const values = row.children[1].textContent.split(',');
         id = values[0];
         val = getStringKeyName(String(values[1]));
-        assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
+        assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       }
       if (assocTabItem) {
         const section = sectionMetadata.closest('.section');
