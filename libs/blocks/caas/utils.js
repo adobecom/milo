@@ -235,6 +235,8 @@ const getCountryAndLang = ({ autoCountryLang, country, language }) => {
   };
 };
 
+const getfloodGateColor = ({ fetchCardsFromFloodgateTree }) => (fetchCardsFromFloodgateTree ? 'pink' : 'default');
+
 export function arrayToObj(input = []) {
   const obj = {};
   if (!Array.isArray(input)) {
@@ -252,6 +254,7 @@ export function arrayToObj(input = []) {
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
+  const floodGateColor = getfloodGateColor(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
@@ -263,6 +266,7 @@ export const getConfig = async (state, strs = {}) => {
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
 
   const config = {
+    floodGateColor,
     collection: {
       mode: state.theme,
       layout: {
@@ -278,7 +282,7 @@ export const getConfig = async (state, strs = {}) => {
         ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}&floodGateColor=${floodGateColor}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -457,6 +461,7 @@ export const defaultState = {
   analyticsTrackImpression: false,
   andLogicTags: [],
   autoCountryLang: false,
+  fetchCardsFromFloodgateTree: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

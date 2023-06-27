@@ -322,6 +322,7 @@ const BasicsPanel = ({ tagsData }) => {
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
+    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
 
   `;
@@ -656,6 +657,21 @@ const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
 };
 
+/**
+ * Removes the JSON key "fetchCardsFromFloodgateTree" from the Copied URL to Caas.
+ * Caas Collection will determine if the content should be served from floodgate
+ * based on  metadata.xslx logic in caas-libs
+ * @param {*} key jsonKey
+ * @param {*} value jsonValue
+ * @returns replacedJson
+ */
+const fgKeyReplacer = (key, value) => {
+  if (key === 'fetchCardsFromFloodgateTree') {
+    return undefined;
+  }
+  return value;
+};
+
 /* c8 ignore start */
 const CopyBtn = () => {
   const { state } = useContext(ConfiguratorContext);
@@ -673,7 +689,8 @@ const CopyBtn = () => {
 
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+    state.fetchCardsFromFloodgateTree = 'default';
+    return `${url}#${utf8ToB64(JSON.stringify(state, fgKeyReplacer))}`;
   };
 
   const copyConfig = () => {
