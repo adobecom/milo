@@ -1,5 +1,7 @@
 const TARGET_TIMEOUT_MS = 2000;
 
+let utils;
+
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
   let currentObj = obj;
@@ -84,20 +86,32 @@ const getTargetPersonalization = async () => {
   return manifests;
 };
 
-export default async function init({ persEnabled = false, persManifests, utils }) {
-  const getDetails = (env) => ({
-    edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-    url:
-      env.name === 'prod'
-        ? 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-        // TODO: This is a custom launch script for milo-target - update before merging to main
-        : 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-  });
+const getDtmLib = (env) => ({
+  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
+  url:
+    env.name === 'prod'
+      ? 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+      // TODO: This is a custom launch script for milo-target - update before merging to main
+      : 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+});
 
+export default async function init({ persEnabled = false, persManifests, utils: ogUtils }) {
+  utils = ogUtils;
   const config = utils.getConfig();
 
-  const { url, edgeConfigId } = getDetails(config.env);
+  const { url, edgeConfigId } = getDtmLib(config.env);
   utils.loadLink(url, { as: 'script', rel: 'preload' });
+
+  if (persEnabled) {
+    utils.loadLink(
+      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+    utils.loadLink(
+      `${config.miloLibs || config.codeRoot}/features/personalization/manifest-utils.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+  }
 
   setDeep(
     window,
@@ -122,8 +136,10 @@ export default async function init({ persEnabled = false, persManifests, utils }
   if (persEnabled) {
     const targetManifests = await getTargetPersonalization(utils);
     if (targetManifests || persManifests?.length) {
-      const { applyPersonalization } = await import('../features/personalization/personalization.js');
-      await applyPersonalization({ persManifests, targetManifests }, utils);
+      const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+      const manifests = preloadManifests({ targetManifests, persManifests }, utils.loadLink);
+      const { applyPers } = await import('../features/personalization/personalization.js');
+      await applyPers(manifests, utils);
     }
   }
 }

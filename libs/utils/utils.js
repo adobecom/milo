@@ -237,6 +237,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
 export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
+    console.log('loadlink: ', href);
     link = document.createElement('link');
     link.setAttribute('rel', rel);
     if (as) link.setAttribute('as', as);
@@ -651,29 +652,43 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
+  const targetMd = getMetadata('target');
   let persManifests = [];
-  if (persMd && persMd !== 'off') {
-    persManifests = persMd.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim());
+  const persEnabled = persMd && persMd !== 'off';
+  const targetEnabled = targetMd && targetMd !== 'off';
+
+  if (persEnabled || targetEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
-      { as: 'script', crossorigin: 'use-credentials', rel: 'preload' },
+      { as: 'script', rel: 'modulepreload' },
+    );
+    loadLink(
+      `${base}/features/personalization/manifest-utils.js`,
+      { as: 'script', rel: 'modulepreload' },
     );
   }
 
-  const targetMd = getMetadata('target');
+  if (persEnabled) {
+    persManifests = persMd.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim());
+  }
+
   let martechLoaded = false;
-  if (targetMd && targetMd !== 'off') {
+  if (targetEnabled) {
     martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
   }
 
-  if (persMd && !martechLoaded) {
+  if (persMd && persMd !== 'off' && !martechLoaded) {
     // load the personalization only
-    const { applyPersonalization } = await import('../features/personalization/personalization.js');
-    await applyPersonalization(
-      { persManifests },
+    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+
+    const { applyPers } = await import('../features/personalization/personalization.js');
+
+    await applyPers(
+      manifests,
       { createTag, getConfig, loadScript, loadLink, updateConfig },
     );
   }

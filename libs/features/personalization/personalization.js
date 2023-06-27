@@ -34,6 +34,7 @@ const DATA_TYPE = {
 const createFrag = (url) => {
   const a = utils.createTag('a', { href: url }, url);
   const p = utils.createTag('p', undefined, a);
+  utils.loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return p;
 };
 
@@ -71,6 +72,13 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
+const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
+  item[prop]?.forEach((i) => {
+    propMap[i.selector] = i.val;
+  });
+  return propMap;
+}, {});
+
 function normalizePath(p) {
   let path = p;
 
@@ -89,15 +97,6 @@ function normalizePath(p) {
   }
   return path;
 }
-
-const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
-
-const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
-  item[prop]?.forEach((i) => {
-    propMap[i.selector] = i.val;
-  });
-  return propMap;
-}, {});
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
@@ -258,7 +257,9 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
   let data = manifestData;
   if (!data) {
+    console.time('fetch')
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
+    console.timeEnd('fetch')
     if (fetchedData) data = fetchedData.data;
   }
   if (!data) return {};
@@ -377,29 +378,13 @@ export async function runPersonalization(info) {
   };
 }
 
-export async function applyPersonalization(
-  { persManifests = [], targetManifests = [] },
+export async function applyPers(
+  manifests,
   { createTag, getConfig, loadLink, loadScript, updateConfig },
 ) {
-  if (!(persManifests.length || targetManifests.length)) return;
+  if (!manifests?.length) return;
 
-  utils = { createTag, getConfig, loadScript };
-
-  let manifests = targetManifests;
-
-  manifests = manifests.concat(
-    persManifests.map((manifestPath) => ({ manifestPath: appendJsonExt(manifestPath) })),
-  );
-
-  for (const manifest of manifests) {
-    if (!manifest.manifestData && manifest.manifestPath) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath);
-      loadLink(
-        manifest.manifestPath,
-        { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-      );
-    }
-  }
+  utils = { createTag, getConfig, loadLink, loadScript };
 
   let results = [];
   for (const manifest of manifests) {
