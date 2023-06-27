@@ -22,7 +22,8 @@ function decorateAnchors(anchors) {
   anchors[0].insertAdjacentElement('beforebegin', linkGroup);
   if (!fetched) {
     const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
+    let base = miloLibs || codeRoot;
+    if (!base) base = 'https://milo.adobe.com/libs';
     const iconImg = createTag('img', {
       alt: 'arrow-down',
       class: 'icon-milo',
