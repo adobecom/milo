@@ -111,7 +111,7 @@ export default `<div>
       >
     </li>
   </ul>
-  <div class="link-group">
+  <div class="link-group blue">
     <div>
       <div>
         <picture>
