@@ -362,11 +362,11 @@ const UiPanel = () => html`
 `;
 
 const TagsPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
   if (!tagsData) return '';
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const allTags = getTagTree(tagsData);
-  const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
     context.dispatch({
@@ -696,7 +696,9 @@ const getInitialState = () => {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
-      } catch (e) {}
+      } catch (e) {
+        // Do nothing
+      }
     }
   }
 
