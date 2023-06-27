@@ -82,9 +82,8 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
   offerDetailsList.className = 'offer-details';
   const offer = filterOfferDetails(of);
   const promotionCode = searchParams.get('promo');
-  const type = searchParams.get('type');
-  offer.type = type;
-  if (type === 'checkoutUrl') {
+  offer.type = searchParams.get('type');
+  if (offer.type === 'checkoutUrl') {
     offer.cta = searchParams.get('text');
   }
   if (promotionCode) {
