@@ -49,6 +49,10 @@
   outline: 2px solid var(--modal-focus-color);
 }
 
+.dialog-modal > .fragment > .section > .content {
+  max-width: initial;
+}
+
 .dialog-modal > .fragment > .section > .content > *:last-child {
   margin-bottom: 0;
 }
