@@ -58,7 +58,9 @@ const decorateLinkGroup = (elem, index) => {
   const image = elem.querySelector('picture');
   const link = elem.querySelector('a');
   const description = elem.querySelector('p:nth-child(2)');
-
+  const modifierClasses = [...elem.classList]
+    .filter((className) => className !== 'link-group')
+    .map((className) => `feds-navLink--${className}`);
   const imageElem = image ? toFragment`<div class="feds-navLink-image">${image}</div>` : '';
   const descriptionElem = description ? toFragment`<div class="feds-navLink-description">${description.textContent}</div>` : '';
   const contentElem = link ? toFragment`<div class="feds-navLink-content">
@@ -67,7 +69,7 @@ const decorateLinkGroup = (elem, index) => {
     </div>` : '';
   const linkGroup = toFragment`<a
     href="${link.href}"
-    class="feds-navLink"
+    class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
