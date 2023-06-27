@@ -49,12 +49,32 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
+function decorateLottie(icon) {
+  const wrapper = icon.closest('a');
+  if (!wrapper) return;
+  const conf = wrapper.textContent.split('|');
+  conf.shift();
+  const lottieFile = conf.shift()?.trim();
+  if (!lottieFile) return;
+  const style = conf.shift()?.trim();
+  const player = 'dotlottie-player';
+  const lottiePlayer = document.createElement(player);
+  lottiePlayer.setAttribute('src', lottieFile);
+  lottiePlayer.setAttribute('background', 'transparent');
+  lottiePlayer.setAttribute('speed', '1');
+  lottiePlayer.setAttribute('loop', '');
+  lottiePlayer.setAttribute('autoplay', '');
+  if (style) lottiePlayer.setAttribute('style', style);
+  wrapper.parentElement.replaceChild(lottiePlayer, wrapper);
+}
+
 export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
   if (!iconSVGs) return;
   icons.forEach(async (icon) => {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
+    if (classList.contains('icon-lottie')) decorateLottie(icon);
     const iconName = icon.classList[1].replace('icon-', '');
     if (!iconSVGs[iconName]) return;
     const parent = icon.parentElement;

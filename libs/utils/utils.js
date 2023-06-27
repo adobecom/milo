@@ -565,7 +565,10 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  loadIcons(icons, config);
+  await loadIcons(icons, config);
+  if (area.querySelector('dotlottie-player')) {
+    await import('../deps/dotlottie-player.js');
+  }
 }
 
 async function decoratePlaceholders(area, config) {
