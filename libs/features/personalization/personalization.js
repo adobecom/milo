@@ -88,7 +88,9 @@ function normalizePath(p) {
 
   const config = utils.getConfig();
 
-  if (path.startsWith(config.codeRoot) || path.startsWith(`https://${config.productionDomain}`)) {
+  if (path.startsWith(config.codeRoot)
+    || path.includes('.hlx.')
+    || path.startsWith(`https://${config.productionDomain}`)) {
     try {
       path = new URL(path).pathname;
     } catch (e) { /* return path below */ }
@@ -371,6 +373,12 @@ export async function runPersonalization(info) {
 
   handleCommands(selectedVariant.commands);
 
+  selectedVariant.replacefragment = selectedVariant.replacefragment?.map(
+    ({ selector, val }) => ({
+      selector: normalizePath(selector),
+      val: normalizePath(val),
+    }),
+  );
   return {
     experiment,
     blocks: selectedVariant.useblockcode,
