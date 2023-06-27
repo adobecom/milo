@@ -9,7 +9,7 @@ const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas-uar.css`);
 
 async function loadFragments(fragmentURL) {
-    const quizSections = document.querySelector('.quiz > div');
+    const quizSections = document.querySelector('.quiz-footer');
     const a = createTag('a', { href: fragmentURL });
     quizSections.append(a);
     const { default: createFragment } = await import('../fragment/fragment.js');
@@ -211,12 +211,13 @@ const App = () => {
   const maxSelections = +selectedQuestion['max-selections'];
 
   const fragmentURL = getStringValue('footerFragment');
+  
 
   useEffect(() => {
     if (fragmentURL) {
       loadFragments(fragmentURL);
-    } 
-  }, []);
+    }
+  }, [fragmentURL]);
 
   return html`<div class="quiz-container">
                   <${StepIndicator} 
@@ -249,6 +250,9 @@ const App = () => {
                       totalSteps=${totalSteps} 
                       prevStepIndicator=${prevStepIndicator}
                     />
+
+                  <div class="quiz-footer">
+                  </div>
               </div>`;
 };
 
