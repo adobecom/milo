@@ -54,6 +54,11 @@ describe('getUserEntitlements', () => {
     const entitlementsRaw = await getUserEntitlements({ params: [{ name: 'Q', value: 'PARAM' }], format: 'raw' });
     expect(window.fetch.callCount).to.equal(2);
     expect(entitlementsRaw).to.deep.equal(res);
+
+    // empty entitlements should not have been modified
+    window.adobeIMS = { isSignedInUser: () => false };
+    const entitlements2 = await getUserEntitlements();
+    expect(entitlements2).to.deep.equal(emptyEntitlements);
   });
 
   it('should return the raw response if format is raw', async () => {
