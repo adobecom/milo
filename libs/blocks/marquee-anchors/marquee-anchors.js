@@ -33,7 +33,8 @@ function decorateAnchors(anchors) {
   }
   const anchorIcon = createTag('span', { class: 'anchor-icon' }, fetchedIcon);
   [...anchors].forEach((el) => {
-    el.append(anchorIcon.cloneNode(true));
+    const external = el.classList.contains('no-icon');
+    if (!external) el.append(anchorIcon.cloneNode(true));
     linkGroup.append(el);
   });
 }
@@ -58,13 +59,15 @@ export default function init(el) {
     if (aTag?.textContent.charAt(0) === '#') {
       const content = i.querySelector(':scope > div');
       // (href === origin+path) - url is an anchor
-      const hrefUrl = (aTag.href.split('?')[0] === window.location.origin + window.location.pathname)
+      const hrefPathEqual = (aTag.href.split('?')[0] === window.location.origin + window.location.pathname);
+      const hrefUrl = (hrefPathEqual)
         ? `${aTag.href}${aTag.textContent}`
         : `${aTag.href}`;
       const link = createTag('a', {
         class: 'anchor-link',
         href: hrefUrl,
       }, content);
+      if (!hrefPathEqual) link.classList.add('no-icon');
       i.parentElement.replaceChild(link, i);
       aTag.parentElement.remove();
     }
