@@ -382,6 +382,8 @@ class Gnav {
   };
 
   decorateToggle = () => {
+    if (!this.mainNavItemCount) return '';
+
     const toggle = toFragment`<button
       class="feds-toggle"
       aria-expanded="false"
@@ -492,6 +494,9 @@ class Gnav {
     // Get all main menu items, but exclude any that are nested inside other features
     const items = [...this.body.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
+
+    // Save number of items to decide whether a hamburger menu is required
+    this.mainNavItemCount = items.length;
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
