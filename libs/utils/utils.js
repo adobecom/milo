@@ -378,7 +378,6 @@ export async function loadBlock(block) {
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  // TODO: use base for expBlocks
   const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
   const blockPath = `${path}/${name}`;
 

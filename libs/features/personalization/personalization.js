@@ -350,6 +350,11 @@ export async function fragmentPersonalization(el) {
   return el;
 }
 
+const normalizeFragPaths = ({ selector, val }) => ({
+  selector: normalizePath(selector),
+  val: normalizePath(val),
+});
+
 export async function runPersonalization(info) {
   const {
     name,
@@ -373,12 +378,8 @@ export async function runPersonalization(info) {
 
   handleCommands(selectedVariant.commands);
 
-  selectedVariant.replacefragment = selectedVariant.replacefragment?.map(
-    ({ selector, val }) => ({
-      selector: normalizePath(selector),
-      val: normalizePath(val),
-    }),
-  );
+  selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
+
   return {
     experiment,
     blocks: selectedVariant.useblockcode,

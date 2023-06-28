@@ -1,8 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
 
-const capitalize = (string) => (string[0].toUpperCase() + string.slice(1));
-
 const fetchTags = async (path) => {
   const resp = await fetch(path);
   if (!resp.ok) return [];
@@ -20,13 +18,24 @@ const categorize = (tagData) => tagData
     return tags;
   }, {});
 
+const getCopyBtn = (tagName) => {
+  const copy = createTag('button', { class: 'copy' });
+  copy.addEventListener('click', (e) => {
+    e.target.classList.add('copied');
+    setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
+    const blob = new Blob([tagName], { type: 'text/plain' });
+    createCopy(blob);
+  });
+  return copy;
+};
+
 export default async function loadPersonalization(content, list) {
   const tagData = await fetchTags(content[0].path);
   const tagsObj = categorize(tagData);
   list.textContent = '';
 
   Object.entries(tagsObj).forEach(([category, tags]) => {
-    const titleTextEl = createTag('p', { class: 'item-title' }, capitalize(category));
+    const titleTextEl = createTag('p', { class: 'item-title' }, category);
     const titleEl = createTag('li', { class: 'block-group' }, titleTextEl);
     list.append(titleEl);
 
@@ -42,9 +51,9 @@ export default async function loadPersonalization(content, list) {
       const name = document.createElement('p');
       name.textContent = tag.description;
 
-      // TODO: copy btn code here
+      const copy = getCopyBtn(tag.tagname);
+      item.append(name, copy);
 
-      item.append(name);
       tagListEl.append(item);
     });
   });
