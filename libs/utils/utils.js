@@ -243,6 +243,7 @@ export function loadStyle(href, callback) {
   return link;
 }
 
+// all the code needed to support .html extension
 export function appendHtmlPostfix(area = document) {
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
@@ -363,11 +364,14 @@ export async function loadTemplate() {
 export async function loadBlock(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot } = getConfig();
+  // this is how we load milo blocks versus blocks in codeRoot
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  // dont wait for us in this code
   const styleLoaded = new Promise((resolve) => {
     loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
   });
 
+  // this is esm dynamic load of block.
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -385,10 +389,14 @@ export async function loadBlock(block) {
       resolve();
     })();
   });
+  // we don't allow moving on until everything is loaded.
   await Promise.all([styleLoaded, scriptLoaded]);
   return block;
 }
 
+// we figure out if the link is an SVG. If it's not an SVG, then return.
+// we have this link to an SVG, and they want alt text.
+// link.svg | text // then we split it and get it back
 export function decorateSVG(a) {
   const { textContent, href } = a;
   if (!(textContent.includes('.svg') || href.includes('.svg'))) return a;
@@ -421,6 +429,8 @@ export function decorateSVG(a) {
     return a;
   }
 }
+
+// I have a link, does it match one of these, if so convert it to an autoblack
 
 export function decorateAutoBlock(a) {
   const config = getConfig();
@@ -465,15 +475,23 @@ export function decorateAutoBlock(a) {
   });
 }
 
+// finds all the links, then we localize them.
+// author can be word doc can be german folder, with german page. the links wont say /de.
+// guessing because JS is doing it for the authors
 export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
+    // word doesn't support SVG, so we can past a link to an SVG.
     decorateSVG(a);
+    // Edit link in word doc doesn’t have way to add newtarget.
+    // So we have #_, (hash utils) we detect that and then parse to say hey we are in a new block.
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    // without this, it doesn't make it a block so you can paste an embed and
+    // its not converted into a block.
     if (a.href.includes('#_dnb')) {
       a.href = a.href.replace('#_dnb', '');
     } else {
@@ -518,6 +536,13 @@ function decorateDefaults(el) {
   });
 }
 
+// figures out what kind of header you want through meta data.
+// if header is off, then don't leave space for header. then remove the element.
+
+// eurovision added stuff for qa reasons.
+
+// if its based off meta tag or query, then load header. otherwise fallback to gnav.
+// if breadcumbs, then leave space for that.
 function decorateHeader() {
   const header = document.querySelector('header');
   if (!header) return;
@@ -569,15 +594,21 @@ function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
   return [...el.querySelectorAll(selector)].map((section, idx) => {
     const links = decorateLinks(section);
+    // We are decorating text stuff in word doc automatically for author.
+    // this is for plain text in word docs that authors just type
     decorateDefaults(section);
     const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
     section.className = 'section';
     section.dataset.status = 'decorated';
     section.dataset.idx = idx;
+
+    // we know sections, links and blocks at this point. everything is decorated at this
+    // point.
     return { el: section, blocks: [...links, ...blocks] };
   });
 }
 
+// we put DOM in, and then loadBlocks will have it and render
 function decorateFooterPromo(config) {
   const footerPromo = getMetadata('footer-promo-tag');
   if (!footerPromo) return;
@@ -596,6 +627,7 @@ async function loadMartech(config) {
 }
 
 async function loadPostLCP(config) {
+  // this wont affect LCP or CLS but will affect TBT
   loadMartech(config);
   const header = document.querySelector('header');
   if (header) {
@@ -603,7 +635,10 @@ async function loadPostLCP(config) {
     await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
+  // this is where you need to modify your entire page.
+  // you may cause CLS.
   loadTemplate();
+  // we use the users local fonts. we do not use font display swap.
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
 }
@@ -612,6 +647,10 @@ export async function loadDeferred(area, blocks, config) {
   const event = new Event('milo:deferred');
   area.dispatchEvent(event);
   if (config.links === 'on') {
+    // has list of third party links like shopify that should add no follow
+    // this is in an excel sheet.
+    // current since /seo is not under libs it is not federated so every consumer needs
+    // their own links.json
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
     import('../features/links.js').then((mod) => mod.default(path, area));
   }
@@ -625,6 +664,7 @@ export async function loadDeferred(area, blocks, config) {
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
+    // franklin bot can show most used blocks so you can see engagement.
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
@@ -645,6 +685,10 @@ function initSidekick() {
   }
 }
 
+// no more fully qualified links. if you point to hlx.page. then all your links will be
+// relative. They will automatically know hlx.page and make it relative link.
+
+// franklin code only does it for body tags, but not for meta.
 function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]');
@@ -658,6 +702,7 @@ function decorateMeta() {
     }
   });
 
+  // this has nothing to do w/ meta. This code really shouldn't be put here.
   // Event-based modal
   window.addEventListener('modal:open', async (e) => {
     const { miloLibs } = getConfig();
@@ -670,25 +715,47 @@ function decorateMeta() {
 
 export async function loadArea(area = document) {
   const config = getConfig();
+  // can be document or fragment. document decorates header, etc.
+  // what is the difference between a block and a fragment?
   const isDoc = area === document;
 
+  // all the code needed to support .html extension
   appendHtmlPostfix(area);
+  // if we find a placeeholder, then import placeholder.js
+  // LCP
+  // ----------
+  // <div> {{}} </div>
+  // But if we have placeholder, this will affect LCP. We will need to
+  // load placeholder json.
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
+    // decorate: means don't talk to js file or external. have everything needed.
+    // load means it requires dependency.
     decorateMeta();
+    // can cause CLS. If you don't leave space for header, you create CLS.
+    // if you  add space,  but the page doesn't want it, the  content goes back up and
+    // you  create CLS.
     decorateHeader();
+    //
     decorateFooterPromo(config);
 
+    // If you've ever used the Franklin Bot in Slack to say like, what's my most used block or what's my top pages,
+    // that's what rum means not to drink, but real user monitoring.
     import('./samplerum.js').then(({ addRumListeners }) => {
       addRumListeners();
     });
   }
 
+  //
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
   // eslint-disable-next-line no-restricted-syntax
+  // why do we use for instead of forEach here?
+  // forEach was built before async/await, it won't respect.
+
+
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
@@ -698,25 +765,32 @@ export async function loadArea(area = document) {
     await Promise.all(loaded);
 
     // eslint-disable-next-line no-await-in-loop
+    // if section 2 uses icons and sec 1 does not, those icons are not getting in the way.
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') {
+    if (isDoc && section.el.dataset.idx === '0') { // we are in the LCP.
+      // top section should only have one block in it.
+      // this is not an await, so we do it.
       loadPostLCP(config);
     }
 
     // Show the section when all blocks inside are done.
+    // removal of attributes
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
   }
 
   // Post section loading on document
   if (isDoc) {
+    // we would before automamtically route a visitor
+    // EU clamped down on that.
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
+    // add json ld. faq, video
     const richResults = getMetadata('richresults');
     if (richResults) {
       const { default: addRichResults } = await import('../features/richresults.js');
