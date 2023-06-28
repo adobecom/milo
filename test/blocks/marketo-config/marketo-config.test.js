@@ -126,8 +126,6 @@ describe('marketo-config', () => {
     copyButton.click();
     await delay(50);
 
-    console.log(select);
-
     const message = copyBtn.querySelector('.message');
     expect(message.textContent).to.contain('Required fields must be filled');
 

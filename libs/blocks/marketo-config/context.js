@@ -5,6 +5,8 @@ export const saveStateToLocalStorage = (state, lsKey) => {
   localStorage.setItem(lsKey, JSON.stringify(state));
 };
 
+const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+
 /* c8 ignore next 7 */
 const getHashConfig = () => {
   const { hash } = window.location;
@@ -37,10 +39,12 @@ const getInitialState = (defaultState, lsKey) => {
   return mergedState;
 };
 
-const reducer = (state, action) => {
+const createReducer = (defaultState) => (state, action) => {
   switch (action.type) {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
+    case 'RESET_STATE':
+      return cloneObj(defaultState);
     /* c8 ignore next 2 */
     default:
       return state;
@@ -50,6 +54,7 @@ const reducer = (state, action) => {
 export const ConfiguratorContext = createContext();
 
 export const ConfiguratorProvider = ({ children, defaultState = {}, lsKey = 'configuratorState' }) => {
+  const reducer = createReducer(defaultState);
   const [state, dispatch] = useReducer(reducer, getInitialState(defaultState, lsKey));
 
   return html`
