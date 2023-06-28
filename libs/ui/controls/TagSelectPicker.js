@@ -103,7 +103,7 @@ const Picker = ({
       return html`<${Tag}
         id=${id}
         label=${option.label}
-        hasChildren=${option.children}
+        hasChildren=${!!option.children}
         isChecked=${isChecked}
         onCheck=${onCheck}
         onExpand=${onExpand}
