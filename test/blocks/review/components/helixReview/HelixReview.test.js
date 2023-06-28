@@ -7,10 +7,16 @@ import {
   stubFetch,
   stubFetchError,
   stubEmptyResponse,
-} from './mockHelixData.js';
+} from '../../../../helpers/mockFetch.js';
+
+const helixData = [{
+  total: 100,
+  rating: 4,
+  average: 4,
+}];
 
 describe('HelixReview', () => {
-  stubFetch();
+  stubFetch(helixData);
   beforeEach(() => {
     const strings = {
       tooltipdelay: 5,
@@ -80,7 +86,7 @@ describe('HelixReview', () => {
   });
 
   it('should test the review without review path', async () => {
-    stubFetchError();
+    stubFetchError(helixData);
     window.localStorage.removeItem('/data/review');
     const strings = {
       tooltipdelay: 5,
