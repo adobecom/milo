@@ -180,7 +180,7 @@ const init = (block) => {
         const values = row.children[1].textContent.split(',');
         id = values[0];
         val = getStringKeyName(String(values[1]));
-        assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
+        assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       }
       if (assocTabItem) {
         const section = sectionMetadata.closest('.section');
