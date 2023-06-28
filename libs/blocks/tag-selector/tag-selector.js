@@ -16,8 +16,11 @@ const TagPreview = ({ selectedTags = [] }) => {
   }, '');
 
   const handleClick = () => {
-    navigator.clipboard?.writeText(getTagString);
-    setCopyText('Copied!');
+    navigator.clipboard?.writeText(getTagString).then(
+      () => setCopyText('Copied!'),
+      () => setCopyText('Copy Failed')
+    );
+      
     setTimeout(() => {
       setCopyText('Copy');
     }, 2000);
