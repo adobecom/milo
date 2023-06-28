@@ -463,6 +463,10 @@ class Gnav {
 
     if (!window.adobeIMS) {
       loadIms(onReady || defaultOnReady);
+    } else if (onReady) {
+      onReady();
+    } else if (defaultOnReady) {
+      defaultOnReady();
     }
     return profileEl;
   };
