@@ -237,7 +237,6 @@ export function localizeLink(href, originHostName = window.location.hostname) {
 export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
-    console.log('loadlink: ', href);
     link = document.createElement('link');
     link.setAttribute('rel', rel);
     if (as) link.setAttribute('as', as);
