@@ -48,6 +48,10 @@
   column-gap: 15px;
 }
 
+.feds-navLink--blue {
+  color: var(--feds-color-link--hover--light);
+}
+
 .feds-navLink--hoverCaret {
   position: relative;
   padding-right: 32px;
