@@ -259,9 +259,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
 
   let data = manifestData;
   if (!data) {
-    console.time(`Fetch manifest ${manifestPath}`);
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
-    console.timeEnd(`Fetch manifest ${manifestPath}`);
     if (fetchedData) data = fetchedData.data;
   }
   if (!data) return {};
