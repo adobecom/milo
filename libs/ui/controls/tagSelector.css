@@ -291,6 +291,7 @@
 .tagselect-modal-table .search-item label {
   display: flex;
   height: 100%;
+  width: auto;
   justify-content: space-between;
   margin: 5px 0 0;
 }
