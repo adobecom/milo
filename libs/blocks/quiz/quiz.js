@@ -13,7 +13,7 @@ async function loadFragments(fragmentURL) {
     const a = createTag('a', { href: fragmentURL });
     quizSections.append(a);
     const { default: createFragment } = await import('../fragment/fragment.js');
-    //await createFragment(a); 
+    await createFragment(a); 
 }
 
 const App = () => {
