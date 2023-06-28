@@ -559,8 +559,3 @@ header.global-navigation {
     display: flex;
   }
 }
-
-/* TODO: Old styles, to be refactored */
-.last-link-blue ul li:last-of-type a {
-  color: #1473E6;
-}

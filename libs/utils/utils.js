@@ -425,6 +425,24 @@ export function decorateSVG(a) {
   }
 }
 
+export function decorateImageLinks(el) {
+  const images = el.querySelectorAll('img[alt*="|"]');
+  if (!images.length) return;
+  [...images].forEach((img) => {
+    const [source, alt] = img.alt.split('|');
+    try {
+      const url = new URL(source.trim());
+      if (alt?.trim().length) img.alt = alt.trim();
+      const pic = img.closest('picture');
+      const picParent = pic.parentElement;
+      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
+      picParent.append(aTag);
+    } catch (e) {
+      console.log('Error:', `${e.message} '${source.trim()}'`);
+    }
+  });
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
@@ -469,6 +487,7 @@ export function decorateAutoBlock(a) {
 }
 
 export function decorateLinks(el) {
+  decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
