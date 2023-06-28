@@ -41,7 +41,9 @@ export default async function init(a) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
   }
+  console.time(`Fetch fragment ${a.href}`);
   const resp = await fetch(`${a.href}.plain.html`);
+  console.timeEnd(`Fetch fragment ${a.href}`);
   if (resp.ok) {
     const html = await resp.text();
     let doc = (new DOMParser()).parseFromString(html, 'text/html');

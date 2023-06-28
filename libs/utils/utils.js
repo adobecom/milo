@@ -671,8 +671,9 @@ async function checkForPageMods() {
   const persMd = getMetadata('personalization');
   const targetMd = getMetadata('target');
   let persManifests = [];
-  const persEnabled = persMd && persMd !== 'off';
-  const targetEnabled = targetMd && targetMd !== 'off';
+  const search = new URLSearchParams(window.location.search);
+  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
+  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
 
   if (persEnabled || targetEnabled) {
     const { base } = getConfig();
@@ -694,7 +695,7 @@ async function checkForPageMods() {
 
   let martechLoaded = false;
   if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+    martechLoaded = await loadMartech({ persEnabled, persManifests, targetMd });
   }
 
   if (persMd && persMd !== 'off' && !martechLoaded) {
