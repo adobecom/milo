@@ -5,6 +5,10 @@
   flex-direction: column;
 }
 
+.quiz > div:not([class]) {
+  display:none;
+}
+
 .quiz-container {
   display: flex;
   align-items: center;
@@ -22,11 +26,6 @@
   gap: var(--spacing-m);
   justify-content: center;
   text-align: center;
-}
-
-.quiz-container ~ div { 
-  display: none; 
-  visibility: hidden; 
 }
 
 .quiz-option {
