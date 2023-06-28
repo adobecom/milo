@@ -695,7 +695,7 @@ async function checkForPageMods() {
 
   let martechLoaded = false;
   if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled, persManifests, targetMd });
+    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
   }
 
   if (persMd && persMd !== 'off' && !martechLoaded) {
