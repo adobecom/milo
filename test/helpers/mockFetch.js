@@ -2,12 +2,6 @@ import { stub } from 'sinon';
 
 stub(window, 'fetch');
 
-const data = [{
-  total: 100,
-  rating: 4,
-  average: 4,
-}];
-
 function jsonOk(body) {
   const mockResponse = new window.Response(JSON.stringify(body), {
     status: 200,
@@ -27,12 +21,12 @@ function jsonError(status, body) {
   return Promise.reject(mockResponse);
 }
 
-export const stubFetch = () => {
+export const stubFetch = (data) => {
   const resp = jsonOk({ data: JSON.stringify(data) });
   window.fetch.returns(resp);
 };
 
-export const stubFetchError = () => {
+export const stubFetchError = (data) => {
   const resp = jsonError({
     status: 500,
     data: JSON.stringify(data),
