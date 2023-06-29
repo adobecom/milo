@@ -15,29 +15,30 @@ const blockTypeSizes = {
   },
 };
 
-let fetchedIcon;
-let fetched = false;
+const fetchedIcons = {};
 function decorateAnchors(anchors) {
   const linkGroup = createTag('div', { class: 'links-group' });
   anchors[0].insertAdjacentElement('beforebegin', linkGroup);
-  if (!fetched) {
-    const { miloLibs, codeRoot } = getConfig();
-    let base = miloLibs || codeRoot;
-    if (!base) base = 'https://milo.adobe.com/libs';
-    const iconImg = createTag('img', {
-      alt: 'arrow-down',
-      class: 'icon-milo',
-      src: `${base}/img/ui/arrow-down.svg`,
-    });
-    fetched = true;
-    fetchedIcon = iconImg;
-  }
-  const anchorIcon = createTag('span', { class: 'anchor-icon' }, fetchedIcon);
+  const { miloLibs, codeRoot } = getConfig();
+  let base = miloLibs || codeRoot;
+  if (!base) base = 'https://milo.adobe.com/libs';
+  const iconList = ['arrow-down', 'link-external'];
+  [...iconList].forEach((icon) => {
+    if (!fetchedIcons[icon]) {
+      const iconImg = createTag('img', {
+        alt: icon,
+        class: 'icon-milo',
+        src: `${base}/img/ui/${icon}.svg`,
+      });
+      fetchedIcons[icon] = iconImg;
+    }
+  });
+  const iconAnchor = createTag('span', { class: 'icon-ui anchor' }, fetchedIcons['arrow-down']);
+  const iconExternal = createTag('span', { class: 'icon-ui external' }, fetchedIcons['link-external']);
   [...anchors].forEach((el) => {
     const hTags = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
     [...hTags].forEach((h) => { h.id = `anchor-${h.id}`; });
-    const external = el.classList.contains('no-icon');
-    if (!external) el.append(anchorIcon.cloneNode(true));
+    el.append(el.classList.contains('external') ? iconExternal.cloneNode(true) : iconAnchor.cloneNode(true));
     linkGroup.append(el);
   });
 }
@@ -69,7 +70,7 @@ export default function init(el) {
         class: 'anchor-link',
         href: hrefUrl,
       }, content);
-      if (!hrefPathEqual) link.classList.add('no-icon');
+      if (!hrefPathEqual) link.classList.add('external');
       i.parentElement.replaceChild(link, i);
       aTag.parentElement.remove();
     }

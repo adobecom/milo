@@ -80,7 +80,7 @@ html {
   margin-bottom: var(--spacing-xxs);
 }
 
-.marquee-anchors .links .anchor-link .anchor-icon {
+.marquee-anchors .links .anchor-link .icon-ui {
   position: absolute;
   top: 0;
   right: 0;
@@ -92,7 +92,7 @@ html {
   align-items: center;
 }
 
-.marquee-anchors .links .anchor-link .anchor-icon img {
+.marquee-anchors .links .anchor-link .icon-ui img {
   vertical-align: top;
 }
 
@@ -106,10 +106,6 @@ html {
 .marquee-anchors .links .anchor-link > div {
   padding: var(--spacing-xs);
   padding-right: 40px;
-}
-
-.marquee-anchors .links .anchor-link.no-icon > div {
-  padding-right: var(--spacing-xs);
 }
 
 /* variant:dark */
