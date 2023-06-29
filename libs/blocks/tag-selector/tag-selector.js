@@ -5,18 +5,9 @@ import { loadCaasTags } from '../caas/utils.js';
 const TagPreview = ({ selectedTags = [] }) => {
   const [copyText, setCopyText] = useState('Copy');
 
-  /* c8 ignore next 16 */
-  const getTagString = selectedTags.reduce((rdx, tag, i, arr) => {
-    if (i === arr.length - 1) {
-      rdx += tag;
-    } else {
-      rdx += `${tag},`;
-    }
-    return rdx;
-  }, '');
-
+  /* c8 ignore next 10 */
   const handleClick = () => {
-    navigator.clipboard?.writeText(getTagString).then(
+    navigator.clipboard?.writeText(selectedTags.join(',')).then(
       () => setCopyText('Copied!'),
       () => setCopyText('Copy Failed')
     );
@@ -28,7 +19,7 @@ const TagPreview = ({ selectedTags = [] }) => {
 
   return html`
     <section class='tag-preview-container'>
-      <button disabled=${selectedTags.length === 0 ? true : false} onClick=${handleClick}>${copyText}</button>
+      <button disabled=${!selectedTags.length} onClick=${handleClick}>${copyText}</button>
       <div class='tag-preview'>
         ${selectedTags.map((tag) => html`<p>${tag}</p>`)}
       </div>
