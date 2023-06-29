@@ -8,6 +8,7 @@ const metadata = {
   hiddenEntries: 'breadcrumbs-hidden-entries',
   pageTitle: 'breadcrumbs-page-title',
   base: 'breadcrumbs-base',
+  fromUrl: 'breadcrumbs-from-url',
 };
 
 const setBreadcrumbSEO = (breadcrumb) => {
@@ -82,6 +83,7 @@ const createWithBase = async (element = toFragment`<div><ul></ul></div>`) => {
 };
 
 const fromUrl = () => {
+  if (getMetadata(metadata.fromUrl) !== 'on') return null;
   const list = toFragment`<ul></ul>`;
   const paths = document.location.pathname.split('/').filter((n) => n);
   for (let i = 0; i < paths.length; i += 1) {
