@@ -34,6 +34,8 @@ function decorateAnchors(anchors) {
   }
   const anchorIcon = createTag('span', { class: 'anchor-icon' }, fetchedIcon);
   [...anchors].forEach((el) => {
+    const hTags = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    [...hTags].forEach((h) => { h.id = `anchor-${h.id}`; });
     const external = el.classList.contains('no-icon');
     if (!external) el.append(anchorIcon.cloneNode(true));
     linkGroup.append(el);
@@ -59,8 +61,7 @@ export default function init(el) {
     const aTag = i.querySelector('a');
     if (aTag?.textContent.charAt(0) === '#') {
       const content = i.querySelector(':scope > div');
-      // (href === origin+path) - url is an anchor
-      const hrefPathEqual = (aTag.href.split('?')[0] === window.location.origin + window.location.pathname);
+      const hrefPathEqual = (aTag.href.split('?')[0] === window.location.href.split('?')[0]);
       const hrefUrl = (hrefPathEqual)
         ? `${aTag.href}${aTag.textContent}`
         : `${aTag.href}`;
