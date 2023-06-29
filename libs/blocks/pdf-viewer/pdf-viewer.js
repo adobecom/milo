@@ -2,7 +2,7 @@
 
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 
-const API_SOURCE_URL = 'https://documentcloud.adobe.com/view-sdk/viewer.js';
+const API_SOURCE_URL = 'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
 const CLIENT_ID_LIVE = '96e41871f28349e08b3562747a72dc75';
 

@@ -5,6 +5,7 @@
 # Milo Core (alphabetical order)
 /fstab.yaml @adobecom/admins
 /libs/features/ @adobecom/admins
+/libs/martech/ @adobecom/admins
 /libs/scripts/ @adobecom/admins
 /libs/utils/ @adobecom/admins
 
@@ -17,6 +18,7 @@
 /libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin @sanjayms01
 /libs/blocks/faas/ @seanchoi-dev
 /libs/blocks/faas-config/ @seanchoi-dev
+/libs/blocks/fragment-personalization/ @chrischrischris
 /libs/blocks/global-footer/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/global-navigation/ @overmyheadandbody @mokimo @narcis-radu
 /libs/blocks/how-to/ @fullcolorcoder @ryanmparrish

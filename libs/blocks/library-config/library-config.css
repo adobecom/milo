@@ -201,8 +201,8 @@ input.sk-library-search-input:focus {
   border-bottom: 1px solid #676767;
 }
 
-/* 
- * Fixes block list getting cut off with search 
+/*
+ * Fixes block list getting cut off with search
  * Margin height equal to search bar height
 */
 .sk-library ul.con-blocks-list.inset {
@@ -319,4 +319,8 @@ ul.con-type-list.con-assets-list {
 
 .con-assets-list li:nth-child(odd) {
   border-right: 1px solid #676767;
+}
+
+.con-personalization_tags-list .item-title::first-letter {
+  text-transform: capitalize;
 }
