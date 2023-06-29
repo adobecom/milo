@@ -1,17 +1,36 @@
 import { debounce } from '../../utils/utils.js';
 
 function handleBackground(div, section) {
-  const pic = div.querySelector('picture');
+  const pic = div.background.content.querySelector('picture');
   if (pic) {
     section.classList.add('has-background');
     pic.classList.add('section-background');
+    handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.textContent;
+    const color = div.background.content.textContent;
     if (color) {
       section.style.background = color;
     }
   }
+}
+
+export function handleFocalpoint(pic, child, removeChild) {
+  const image = pic.querySelector('img');
+  if (!child || !image) return;
+  let text = '';
+  if (child.childElementCount === 2) {
+    const dataElement = child.querySelectorAll('p')[1];
+    text = dataElement?.textContent;
+    removeChild ? dataElement?.remove() : '';
+  } else if (child.textContent) {
+    text = child.textContent;
+    const childData = child.childNodes;
+    removeChild ? childData.forEach(c => c.nodeType === Node.TEXT_NODE && c.remove()) : '';
+  }
+  const directions = text.trim().toLowerCase().split(',');
+  const [x, y = ''] = directions;
+  image.style.objectPosition = `${x} ${y}`;
 }
 
 function handleTopHeight(section) {
@@ -64,6 +83,6 @@ export default function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
   if (metadata.style) handleStyle(metadata.style.text, section);
-  if (metadata.background) handleBackground(metadata.background.content, section);
+  if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
 }
