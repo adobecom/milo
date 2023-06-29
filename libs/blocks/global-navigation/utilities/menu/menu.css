@@ -21,6 +21,10 @@
 }
 
 /* General menu styles */
+.feds-menu-column .feds-cta-wrapper {
+  padding: 6px 32px;
+}
+
 .feds-menu-items {
   display: none;
   padding: 12px 0;
@@ -66,10 +70,6 @@
 
 .feds-menu-items {
   border-bottom: solid 1px var(--feds-borderColor-menu--light);
-}
-
-.feds-menu-items .feds-cta-wrapper {
-  padding: 6px 32px;
 }
 
 .feds-promo {
