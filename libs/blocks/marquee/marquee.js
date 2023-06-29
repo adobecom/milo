@@ -163,9 +163,9 @@ export default function init(el) {
     }
 
     let mediaCreditInner;
-
-    if (media?.lastChild.textContent.trim()) {
-      mediaCreditInner = createTag('p', { class: 'body-s' }, media?.lastChild.textContent.trim());
+    const txtContent = media?.lastChild.textContent.trim();
+    if (txtContent) {
+      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
     } else if (media.lastElementChild && media.lastElementChild.tagName !== 'PICTURE') {
       mediaCreditInner = media.lastElementChild;
     }
