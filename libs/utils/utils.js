@@ -643,7 +643,8 @@ export function loadIms(onReadyFn) {
 }
 
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
-  if (window.marketingtech?.adobe?.launch !== undefined) {
+  // eslint-disable-next-line no-underscore-dangle
+  if (window.marketingtech?.adobe?.launch && window._satellite) {
     return true;
   }
 
