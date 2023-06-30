@@ -208,25 +208,25 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   return filterObj;
 };
 
-const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }) => {
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
   if (!group) return null;
 
   const items = filtersCustomItems.map((item) => ({
     id: item.customFilterTag[0],
-    label: item.filtersCustomLabel,
+    label: item.filtersCustomLabel?.match(/^{.*}$/) ? strs[item.filtersCustomLabel.replace(/{|}/g, '')] : item.filtersCustomLabel || '',
   }));
 
   const filterObj = {
     id: group,
     openedOnLoad: !!openedOnLoad,
     items,
-    group,
+    group: group?.match(/^{.*}$/) ? strs[group.replace(/{|}/g, '')] : group || '',
   };
 
   return filterObj;
 };
 
-const getFilterArray = async (state) => {
+const getFilterArray = async (state, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
@@ -241,7 +241,7 @@ const getFilterArray = async (state) => {
       .filter((filter) => filter !== null);
   } else {
     filters = state.filtersCustom.length > 0
-      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter))
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
       : [];
   }
 
