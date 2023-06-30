@@ -140,3 +140,48 @@ dl.accordion {
 .dark .accordion dt button:hover .accordion-icon::after {
   background: var(--color-gray-100);
 }
+
+
+
+
+@media screen and (min-width: 1200px) {
+  .editorial {
+    display: flex;
+    gap: 54px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .editorial .accordion {
+    width: 50%;
+    display: inline-block;
+    margin: 0 ;
+  }
+  
+  
+  .accordion-media {
+    width: 700px;
+    height: 525px;
+    border: 1px red solid;
+    background: aliceblue;
+    display: inline-block;
+    margin: 0 ;
+  }
+  
+}
+
+.accordion-media > div {
+  display: none;
+  position: relative;
+}
+
+/* .accordion-media div:first-child {
+  display: inline;
+  position: relative;
+} */
+
+.accordion-media > div.expanded {
+  display: inline;
+  position: relative;
+}
+
