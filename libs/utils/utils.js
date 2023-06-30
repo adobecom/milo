@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -9,6 +11,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'bulk-publish',
   'caas',
   'caas-config',
   'card',
@@ -22,6 +25,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'figure',
   'fragment',
+  'fragment-personalization',
   'featured-article',
   'global-footer',
   'global-navigation',
@@ -146,7 +150,7 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
-export const [setConfig, getConfig] = (() => {
+export const [setConfig, updateConfig, getConfig] = (() => {
   let config = {};
   return [
     (conf) => {
@@ -154,6 +158,7 @@ export const [setConfig, getConfig] = (() => {
       const pathname = conf.pathname || window.location.pathname;
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
+      config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       document.documentElement.setAttribute('lang', config.locale.ietf);
@@ -164,12 +169,12 @@ export const [setConfig, getConfig] = (() => {
           || 'ltr';
         document.documentElement.setAttribute('dir', dir);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
       return config;
     },
+    (conf) => (config = conf),
     () => config,
   ];
 })();
@@ -229,11 +234,13 @@ export function localizeLink(href, originHostName = window.location.hostname) {
   }
 }
 
-export function loadStyle(href, callback) {
+export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
-    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('rel', rel);
+    if (as) link.setAttribute('as', as);
+    if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     link.setAttribute('href', href);
     if (callback) {
       link.onload = (e) => callback(e.type);
@@ -244,6 +251,10 @@ export function loadStyle(href, callback) {
     callback('noop');
   }
   return link;
+}
+
+export function loadStyle(href, callback) {
+  return loadLink(href, { rel: 'stylesheet', callback });
 }
 
 export function appendHtmlPostfix(area = document) {
@@ -300,7 +311,6 @@ export function appendHtmlPostfix(area = document) {
       }
     } catch (err) {
       /* c8 ignore next 3 */
-      // eslint-disable-next-line no-console
       console.log(err);
     }
   });
@@ -354,7 +364,6 @@ export async function loadTemplate() {
       try {
         await import(`${base}/templates/${name}/${name}.js`);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`failed to load module for ${name}`, err);
       }
       resolve();
@@ -365,19 +374,22 @@ export async function loadTemplate() {
 
 export async function loadBlock(block) {
   const name = block.classList[0];
-  const { miloLibs, codeRoot } = getConfig();
+  const { miloLibs, codeRoot, expBlocks } = getConfig();
+
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
+  const blockPath = `${path}/${name}`;
+
   const styleLoaded = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/${name}/${name}.css`, resolve);
+    loadStyle(`${blockPath}.css`, resolve);
   });
 
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`${base}/blocks/${name}/${name}.js`);
+        const { default: init } = await import(`${blockPath}.js`);
         await init(block);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
         if (config.env.name !== 'prod') {
@@ -425,6 +437,24 @@ export function decorateSVG(a) {
   }
 }
 
+export function decorateImageLinks(el) {
+  const images = el.querySelectorAll('img[alt*="|"]');
+  if (!images.length) return;
+  [...images].forEach((img) => {
+    const [source, alt] = img.alt.split('|');
+    try {
+      const url = new URL(source.trim());
+      if (alt?.trim().length) img.alt = alt.trim();
+      const pic = img.closest('picture');
+      const picParent = pic.parentElement;
+      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
+      picParent.append(aTag);
+    } catch (e) {
+      console.log('Error:', `${e.message} '${source.trim()}'`);
+    }
+  });
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
@@ -469,6 +499,7 @@ export function decorateAutoBlock(a) {
 }
 
 export function decorateLinks(el) {
+  decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
     a.href = localizeLink(a.href);
@@ -593,11 +624,92 @@ function decorateFooterPromo(config) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
-async function loadMartech(config) {
+export function loadIms(onReadyFn) {
+  if (window.adobeIMS) return;
+
+  const { locale, imsClientId, imsScope, env, onReady } = getConfig();
+  if (!imsClientId) return null;
+
+  window.adobeid = {
+    client_id: imsClientId,
+    scope: imsScope || 'AdobeID,openid,gnav',
+    locale: locale?.ietf?.replace('-', '_') || 'en_US',
+    autoValidateToken: true,
+    environment: env.ims,
+    useLocalStorage: false,
+    onReady: onReadyFn || onReady,
+  };
+  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+}
+
+async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
+  // eslint-disable-next-line no-underscore-dangle
+  if (window.marketingtech?.adobe?.launch && window._satellite) {
+    return true;
+  }
+
   const query = new URL(window.location.href).searchParams.get('martech');
-  if (query !== 'off' && getMetadata('martech') !== 'off') {
-    const { default: martech } = await import('../martech/martech.js');
-    martech(config, loadScript, getMetadata);
+  if (query === 'off' || getMetadata('martech') === 'off') {
+    return false;
+  }
+
+  window.targetGlobalSettings = { bodyHidingEnabled: false };
+  loadIms();
+
+  const { default: initMartech } = await import('../martech/martech.js');
+  await initMartech({
+    persEnabled,
+    persManifests,
+    utils: {
+      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
+    },
+  });
+
+  return true;
+}
+
+async function checkForPageMods() {
+  const persMd = getMetadata('personalization');
+  const targetMd = getMetadata('target');
+  let persManifests = [];
+  const search = new URLSearchParams(window.location.search);
+  const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
+  const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+
+  if (persEnabled || targetEnabled) {
+    const { base } = getConfig();
+    loadLink(
+      `${base}/features/personalization/personalization.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+    loadLink(
+      `${base}/features/personalization/manifest-utils.js`,
+      { as: 'script', rel: 'modulepreload' },
+    );
+  }
+
+  if (persEnabled) {
+    persManifests = persMd.toLowerCase()
+      .split(/,|(\s+)|(\\n)/g)
+      .filter((path) => path?.trim());
+  }
+
+  let martechLoaded = false;
+  if (targetEnabled) {
+    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  }
+
+  if (persMd && persMd !== 'off' && !martechLoaded) {
+    // load the personalization only
+    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+    const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
+
+    const { applyPers } = await import('../features/personalization/personalization.js');
+
+    await applyPers(
+      manifests,
+      { createTag, getConfig, loadScript, loadLink, updateConfig },
+    );
   }
 }
 
@@ -675,8 +787,11 @@ function decorateMeta() {
 }
 
 export async function loadArea(area = document) {
-  const config = getConfig();
   const isDoc = area === document;
+
+  const config = getConfig();
+
+  if (isDoc) await checkForPageMods();
 
   appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
@@ -694,16 +809,13 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
     // Only move on to the next section when all blocks are loaded.
-    // eslint-disable-next-line no-await-in-loop
     await Promise.all(loaded);
 
-    // eslint-disable-next-line no-await-in-loop
     await decorateIcons(section.el, config);
 
     // Post LCP operations.
@@ -729,6 +841,9 @@ export async function loadArea(area = document) {
     loadFooter();
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
+    if (config.experiment?.selectedVariant?.scripts?.length) {
+      config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
+    }
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');

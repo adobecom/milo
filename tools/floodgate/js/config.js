@@ -9,6 +9,16 @@ const FLOODGATE_CONFIG = '/drafts/floodgate/configs/config.json';
 
 let decoratedConfig;
 
+function getPromoteIgnorePaths(configJson) {
+  const promoteIgnorePaths = configJson.promoteignorepaths.data;
+  const paths = [];
+  promoteIgnorePaths.forEach((pathRow) => {
+    const path = pathRow.FilesToIgnoreFromPromote;
+    paths.push(path);
+  });
+  return paths;
+}
+
 async function getConfig() {
   if (!decoratedConfig) {
     const urlInfo = getUrlInfo();
@@ -18,6 +28,7 @@ async function getConfig() {
       decoratedConfig = {
         sp: getSharepointConfig(configJson),
         admin: getHelixAdminConfig(),
+        promoteIgnorePaths: getPromoteIgnorePaths(configJson),
       };
     }
   }
