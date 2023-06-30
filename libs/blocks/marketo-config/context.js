@@ -5,7 +5,9 @@ export const saveStateToLocalStorage = (state, lsKey) => {
   localStorage.setItem(lsKey, JSON.stringify(state));
 };
 
-const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 /* c8 ignore next 7 */
 const getHashConfig = () => {
@@ -44,7 +46,7 @@ const createReducer = (defaultState) => (state, action) => {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
-      return cloneObj(defaultState);
+      return deepCopy(defaultState);
     /* c8 ignore next 2 */
     default:
       return state;

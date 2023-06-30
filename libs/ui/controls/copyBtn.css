@@ -10,17 +10,12 @@
 }
 
 .message {
-  position: absolute;
   right: 15px;
   bottom: -10px;
   padding: 5px 15px;
   transition: opacity .3s ease-in-out;
   width: 150px;
   text-align: center;
-}
-
-.message.hide-message {
-  opacity: 0;
 }
 
 .success-message {

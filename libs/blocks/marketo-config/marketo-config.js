@@ -124,7 +124,7 @@ const AdvancedPanel = (lsKey) => {
 
 const getPanels = (panelsData, lsKey) => {
   const panels = Object.entries(panelsData).map(([panelName, panelConfig]) => ({
-    title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
+    title: panelName.substring(0, 1).toUpperCase() + panelName.substring(1),
     content: html`<${Fields} fieldsData=${panelConfig} />`,
   }));
 

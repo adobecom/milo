@@ -24,7 +24,9 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   return x < y ? -1 : x > y ? 1 : 0;
 });
 
-const cloneObj = (obj) => JSON.parse(JSON.stringify(obj));
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 const getHashConfig = () => {
   const { hash } = window.location;
@@ -91,7 +93,7 @@ const reducer = (state, action) => {
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
-      return cloneObj(defaultState);
+      return deepCopy(defaultState);
     default:
       console.log('DEFAULT');
       return state;
