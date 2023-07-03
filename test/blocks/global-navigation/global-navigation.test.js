@@ -351,6 +351,9 @@ describe('global navigation', () => {
         [...navLinks].forEach((link) => {
           expect(isElementVisible(link)).to.equal(true);
         });
+
+        const hasLinkgroupModifier = document.querySelector(`${selectors.navLink}--blue`) instanceof HTMLElement;
+        expect(hasLinkgroupModifier).to.equal(true);
       });
 
       it('should render the promo', async () => {
@@ -385,6 +388,9 @@ describe('global navigation', () => {
         [...navLinks].forEach((link) => {
           expect(isElementVisible(link)).to.equal(true);
         });
+
+        const hasLinkgroupModifier = document.querySelector(`${selectors.navLink}--blue`) instanceof HTMLElement;
+        expect(hasLinkgroupModifier).to.equal(true);
       });
 
       it('should render the promo', async () => {
