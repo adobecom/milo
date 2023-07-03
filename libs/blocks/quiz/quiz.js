@@ -211,7 +211,6 @@ const App = () => {
   const maxSelections = +selectedQuestion['max-selections'];
 
   const fragmentURL = getStringValue('footerFragment');
-  
 
   useEffect(() => {
     if (fragmentURL) {
@@ -245,14 +244,14 @@ const App = () => {
                       getOptionsIcons=${getOptionsIcons}
                       handleOnNextClick=${handleOnNextClick}
                       btnAnalyticsData=${btnAnalytics}/>
-                      <${StepIndicator} 
-                      currentStep=${currentStep} 
-                      totalSteps=${totalSteps} 
-                      prevStepIndicator=${prevStepIndicator}
-                    />
 
                   <div class="quiz-footer">
                   </div>
+
+                  <${StepIndicator} 
+                  currentStep=${currentStep} 
+                  totalSteps=${totalSteps} 
+                  prevStepIndicator=${prevStepIndicator} />
               </div>`;
 };
 
