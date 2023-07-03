@@ -5,6 +5,12 @@ import { getMetadata } from '../../section-metadata/section-metadata.js';
 const LIBRARY_METADATA = 'library-metadata';
 const LIBRARY_CONTAINER_START = 'library-container-start';
 const LIBRARY_CONTAINER_END = 'library-container-end';
+// Block types:
+const CONTAINER_START_BLOCK = 0;
+const CONTAINER_END_BLOCK = 1;
+const CONTAINER_INSIDE_BLOCK = 2;
+const CONTAINER_OUTSIDE_BLOCK = 3;
+const CONTAINER_OUTSIDE_AUTO_BLOCK = 4;
 
 function getAuthorName(block) {
   const blockSib = block.previousElementSibling;
@@ -28,7 +34,7 @@ function getMetadataName(container) {
 }
 
 function getContainerName(container) {
-  const firstBlock = container.elements[0];
+  const firstBlock = container.elements?.[0];
   return getMetadataName(container) || getAuthorName(firstBlock) || getBlockName(firstBlock);
 }
 
@@ -59,27 +65,35 @@ function getTable(block) {
 
 function handleLinks(element, path) {
   if (!element || !path) return;
-  const url = new URL(path);
-  element.querySelectorAll('a').forEach((a) => {
-    const href = a.getAttribute('href');
-    if (href.startsWith('/')) {
-      a.setAttribute('href', `${url.origin}${href}`);
-    }
-  });
+  try {
+    const url = new URL(path);
+    element.querySelectorAll('a').forEach((a) => {
+      const href = a.getAttribute('href');
+      if (href.startsWith('/')) {
+        a.setAttribute('href', `${url.origin}${href}`);
+      }
+    });
+  } catch (e) {
+    // leave links as is
+  }
 }
 
 function decorateImages(element, path) {
   if (!element || !path) return;
-  const url = new URL(path);
-  element.querySelectorAll('img').forEach((img) => {
-    const srcSplit = img.src.split('/');
-    const mediaPath = srcSplit.pop();
-    img.src = `${url.origin}/${mediaPath}`;
-    const { width, height } = img;
-    const ratio = width > 200 ? 200 / width : 1;
-    img.width = width * ratio;
-    img.height = height * ratio;
-  });
+  try {
+    const url = new URL(path);
+    element.querySelectorAll('img').forEach((img) => {
+      const srcSplit = img.src.split('/');
+      const mediaPath = srcSplit.pop();
+      img.src = `${url.origin}/${mediaPath}`;
+      const { width, height } = img;
+      const ratio = width > 200 ? 200 / width : 1;
+      img.width = width * ratio;
+      img.height = height * ratio;
+    });
+  } catch (e) {
+    // leave images as is
+  }
 }
 
 export function getHtml(container, path) {
@@ -110,6 +124,14 @@ export function isMatching(container, query) {
   if (!query || !tagsString) return false;
   const searchTokens = query.split(' ');
   return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
+}
+
+function getBlockType(subSection, withinContainer) {
+  if (subSection.className === LIBRARY_CONTAINER_START) return CONTAINER_START_BLOCK;
+  if (subSection.className === LIBRARY_CONTAINER_END) return CONTAINER_END_BLOCK;
+  if (withinContainer) return CONTAINER_INSIDE_BLOCK;
+  if (subSection.nodeName === 'DIV' && subSection.className) return CONTAINER_OUTSIDE_BLOCK;
+  return CONTAINER_OUTSIDE_AUTO_BLOCK;
 }
 
 export function getContainers(doc) {
@@ -162,7 +184,7 @@ export function getContainers(doc) {
   if (sections.length === 0) return [];
   const containers = [];
   const sectionBreak = doc.createElement('p');
-  sectionBreak.innerHTML = '---';
+  sectionBreak.textContent = '---';
   let container = { elements: [] };
   let withinContainer = false;
   for (let i = 0; i < sections.length; i += 1) {
@@ -172,29 +194,36 @@ export function getContainers(doc) {
     if (subSections.length === 0) continue;
     for (let j = 0; j < subSections.length; j += 1) {
       const subSection = subSections[j];
-      if (subSection.className === LIBRARY_CONTAINER_START) {
-        withinContainer = true;
-      } else if (subSection.className === LIBRARY_CONTAINER_END) {
-        const nextSubSection = subSections[j + 1];
-        if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
-          container[LIBRARY_METADATA] = nextSubSection;
-          j += 1;
-        }
-        containers.push(container);
-        container = { elements: [] };
-        withinContainer = false;
-      } else if (withinContainer) {
-        container.elements.push(subSection);
-      } else if (subSection.nodeName === 'DIV' && subSection.className) {
-        // single block container
-        container.elements.push(subSection);
-        const nextSubSection = subSections[j + 1];
-        if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
-          container[LIBRARY_METADATA] = nextSubSection;
-          j += 1;
-        }
-        containers.push(container);
-        container = { elements: [] };
+      const nextSubSection = subSections[j + 1];
+      const type = getBlockType(subSection, withinContainer);
+      switch (type) {
+        case CONTAINER_START_BLOCK:
+          withinContainer = true;
+          break;
+        case CONTAINER_END_BLOCK:
+          if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
+            container[LIBRARY_METADATA] = nextSubSection;
+            j += 1;
+          }
+          containers.push(container);
+          container = { elements: [] };
+          withinContainer = false;
+          break;
+        case CONTAINER_INSIDE_BLOCK:
+          container.elements.push(subSection);
+          break;
+        case CONTAINER_OUTSIDE_BLOCK:
+          // single block container
+          container.elements.push(subSection);
+          if (nextSubSection && nextSubSection.className === LIBRARY_METADATA) {
+            container[LIBRARY_METADATA] = nextSubSection;
+            j += 1;
+          }
+          containers.push(container);
+          container = { elements: [] };
+          break;
+        default:
+          break;
       }
     }
     // when the container has multiple elements: add a section break after each section
