@@ -228,6 +228,7 @@ const formatted = {
     cc_all_apps: true,
     acrobat: true,
   },
+  offers: {},
   list: {
     fulfilled_codes: [
       'dma_reactor',
