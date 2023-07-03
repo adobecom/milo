@@ -1,10 +1,7 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
-import { createTag, setConfig, getConfig, updateConfig } from '../../../libs/utils/utils.js';
-import { waitForElement } from '../../helpers/waitfor.js';
+import { createTag, getConfig, updateConfig } from '../../../libs/utils/utils.js';
 import { stubFetch } from '../../helpers/mockFetch.js';
-import { applyPersonalization } from '../../../libs/features/personalization/personalization.js';
+import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 // document.body.innerHTML = await readFile({ path: './mocks/head.html' });
 
@@ -19,7 +16,7 @@ describe('Functional Test', () => {
       loadedlinkParams.options = options;
     };
 
-    await applyPersonalization(
+    await applyPers(
       // Path doesn't matter as we stub fetch above
       { persManifests: ['/path/to/manifest.json'] },
       { createTag, getConfig, updateConfig, loadLink, loadScript: () => {} },
@@ -31,4 +28,3 @@ describe('Functional Test', () => {
     });
   });
 });
-
