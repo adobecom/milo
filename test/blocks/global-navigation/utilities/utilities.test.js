@@ -133,4 +133,14 @@ describe('global navigation utilities', () => {
     const experienceName = getExperienceName();
     expect(experienceName).to.equal(config.imsClientId);
   });
+
+  it('getExperienceName is empty if no imsClientId is defined', () => {
+    const ogImsClientId = config.imsClientId;
+    delete config.imsClientId;
+    setConfig(config);
+    const experienceName = getExperienceName();
+    expect(experienceName).to.equal('');
+    config.imsClientId = ogImsClientId;
+    setConfig(config);
+  });
 });
