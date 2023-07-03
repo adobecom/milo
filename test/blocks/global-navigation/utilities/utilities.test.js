@@ -34,7 +34,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
       expect(ietf).to.equal('en-US');
       expect(prefix).to.equal('');
-      expect(contentRoot).to.equal('http://localhost:2000');
+      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page');
     });
 
     it('should return a config object for a specific locale', () => {
@@ -48,7 +48,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
       expect(ietf).to.equal('fi-FI');
       expect(prefix).to.equal('/fi');
-      expect(contentRoot).to.equal('http://localhost:2000/fi');
+      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page/fi');
     });
   });
 
