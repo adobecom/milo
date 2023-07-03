@@ -89,7 +89,7 @@ export const runTacocat = (tacocatEnv, country, language) => {
 };
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
+  const { env, locale, miloLibs, codeRoot } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
@@ -100,6 +100,14 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */
+    .then(() => {
+      // load custom elements polyfill for Safari only.
+      if (navigator.userAgent.indexOf('Safari') >= 0 && navigator.userAgent.indexOf('Chrome') < 0) {
+        const base = miloLibs || codeRoot;
+        return loadScript(`${base}/deps/custom-elements-1.3.0.js`);
+      }
+      return null;
+    })
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
