@@ -2,8 +2,7 @@
 import {
   getConfig,
   getMetadata,
-  loadIms as utilsLoadIms,
-  loadScript,
+  loadIms,
   localizeLink,
   decorateSVG,
 } from '../../utils/utils.js';
@@ -193,7 +192,7 @@ class Gnav {
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       this.addChangeEventListener,
-      this.loadIMS,
+      () => loadIms(this.imsReady.bind(this)),
     ];
     this.el.addEventListener('click', this.loadDelayed);
     this.el.addEventListener('keydown', setupKeyboardNav);
@@ -292,24 +291,19 @@ class Gnav {
     return this.ready;
   };
 
-  loadIMS = () => {
-    const onReady = async () => {
-      const tasks = [
-        this.decorateProfile,
-        this.decorateAppLauncher,
-      ];
-      try {
-        for await (const task of tasks) {
-          await yieldToMain();
-          await task();
-        }
-      } catch (e) {
-        lanaLog({ message: 'GNAV: issues within onReady', e });
+  imsReady = async () => {
+    const tasks = [
+      this.decorateProfile,
+      this.decorateAppLauncher,
+    ];
+    try {
+      for await (const task of tasks) {
+        await yieldToMain();
+        await task();
       }
-    };
-
-    utilsLoadIms(onReady);
-    return null;
+    } catch (e) {
+      lanaLog({ message: 'GNAV: issues within onReady', e });
+    }
   };
 
   decorateProfile = async () => {
