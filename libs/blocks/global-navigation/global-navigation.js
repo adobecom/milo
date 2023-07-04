@@ -2,8 +2,7 @@
 import {
   getConfig,
   getMetadata,
-  loadIms as utilsLoadIms,
-  loadScript,
+  loadIms,
   localizeLink,
   decorateSVG,
 } from '../../utils/utils.js';
@@ -22,6 +21,7 @@ import {
   loadBaseStyles,
   yieldToMain,
   isDesktop,
+  isTangentToViewport,
   setCurtainState,
   selectors,
   logErrorFor,
@@ -192,8 +192,8 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      this.addChangeEventListener,
-      this.loadIMS,
+      () => loadIms(this.imsReady.bind(this)),
+      this.addChangeEventListeners,
     ];
     this.el.addEventListener('click', this.loadDelayed);
     this.el.addEventListener('keydown', setupKeyboardNav);
@@ -232,7 +232,7 @@ class Gnav {
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
-  addChangeEventListener = () => {
+  addChangeEventListeners = () => {
     // Ensure correct DOM order for elements between mobile and desktop
     isDesktop.addEventListener('change', () => {
       if (isDesktop.matches) {
@@ -261,6 +261,18 @@ class Gnav {
         }
       }
     });
+
+    // Add a modifier when the nav is tangent to the viewport and content is partly hidden
+    const toggleContraction = () => {
+      const isOverflowing = isTangentToViewport.matches
+        && this.elements.topnav?.scrollWidth
+        && this.elements.topnav.scrollWidth > document.body.clientWidth;
+
+      this.elements.topnav.classList.toggle(selectors.overflowingTopNav.slice(1), isOverflowing);
+    };
+
+    toggleContraction();
+    isTangentToViewport.addEventListener('change', toggleContraction);
   };
 
   loadDelayed = async () => {
@@ -292,24 +304,19 @@ class Gnav {
     return this.ready;
   };
 
-  loadIMS = () => {
-    const onReady = async () => {
-      const tasks = [
-        this.decorateProfile,
-        this.decorateAppLauncher,
-      ];
-      try {
-        for await (const task of tasks) {
-          await yieldToMain();
-          await task();
-        }
-      } catch (e) {
-        lanaLog({ message: 'GNAV: issues within onReady', e });
+  imsReady = async () => {
+    const tasks = [
+      this.decorateProfile,
+      this.decorateAppLauncher,
+    ];
+    try {
+      for await (const task of tasks) {
+        await yieldToMain();
+        await task();
       }
-    };
-
-    utilsLoadIms(onReady);
-    return null;
+    } catch (e) {
+      lanaLog({ message: 'GNAV: issues within onReady', e });
+    }
   };
 
   decorateProfile = async () => {
@@ -463,22 +470,18 @@ class Gnav {
     return decoratedElem;
   };
 
-  decorateBrand = () => this.decorateGenericLogo(
-    {
-      selector: '.gnav-brand',
-      classPrefix: 'feds-brand',
-      analyticsValue: 'Brand',
-    },
-  );
+  decorateBrand = () => this.decorateGenericLogo({
+    selector: '.gnav-brand',
+    classPrefix: 'feds-brand',
+    analyticsValue: 'Brand',
+  });
 
-  decorateLogo = () => this.decorateGenericLogo(
-    {
-      selector: '.adobe-logo',
-      classPrefix: 'feds-logo',
-      includeLabel: false,
-      analyticsValue: 'Logo',
-    },
-  );
+  decorateLogo = () => this.decorateGenericLogo({
+    selector: '.adobe-logo',
+    classPrefix: 'feds-logo',
+    includeLabel: false,
+    analyticsValue: 'Logo',
+  });
 
   decorateMainNav = async () => {
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
