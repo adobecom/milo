@@ -6,6 +6,7 @@ export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  overflowingTopNav: '.feds-topnav--overflowing',
   navItem: '.feds-navItem',
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
@@ -131,6 +132,7 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem) {
   const activeClass = selectors.activeDropdown.replace('.', '');
