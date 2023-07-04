@@ -257,63 +257,56 @@ export function loadStyle(href, callback) {
   return loadLink(href, { rel: 'stylesheet', callback });
 }
 
-export function appendHtmlPostfix(area = document) {
+export function appendHtmlToCanonicalUrl() {
   const pageUrl = new URL(window.location.href);
   if (!pageUrl.pathname.endsWith('.html')) return;
+  const canonEl = document.head.querySelector('link[rel="canonical"]');
+  if (!canonEl) return;
+  const canonUrl = new URL(canonEl.href);
+  if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
+  const pagePath = pageUrl.pathname.replace('.html', '');
+  if (pagePath !== canonUrl.pathname) return;
+  canonEl.setAttribute('href', `${canonEl.href}.html`);
+}
+
+export function appendHtmlToLink(link) {
+  const pageUrl = new URL(window.location.href);
+  if (!pageUrl.pathname.endsWith('.html')) return;
+  const href = link.getAttribute('href');
+  if (!href.length) return;
 
   const { autoBlocks = [], htmlExclude = [] } = getConfig();
+
+  const HAS_EXTENSION = /\..*$/;
+  let url = { pathname: href };
+
+  try { url = new URL(href, pageUrl); } catch (e) { /* do nothing */ }
+
+  if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
+    || url.pathname?.endsWith('/')
+    || href === pageUrl.origin
+    || HAS_EXTENSION.test(href.split('/').pop())
+    || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
+    return;
+  }
 
   const relativeAutoBlocks = autoBlocks
     .map((b) => Object.values(b)[0])
     .filter((b) => b.startsWith('/'));
+  const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
+  if (isAutoblockLink) return;
 
-  const HAS_EXTENSION = /\..*$/;
-  const shouldNotConvert = (href) => {
-    let url = { pathname: href };
-
-    try { url = new URL(href, pageUrl); } catch (e) {}
-
-    if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
-      || url.pathname?.endsWith('/')
-      || href === pageUrl.origin
-      || HAS_EXTENSION.test(href.split('/').pop())
-      || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
-      return true;
+  try {
+    const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
+    if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
+      linkUrl.pathname = `${linkUrl.pathname}.html`;
+      link.setAttribute('href', href.startsWith('/')
+        ? `${linkUrl.pathname}${linkUrl.search}${linkUrl.hash}`
+        : linkUrl.href);
     }
-    const isAutoblockLink = relativeAutoBlocks.some((block) => href.includes(block));
-    if (isAutoblockLink) return true;
-    return false;
-  };
-
-  if (area === document) {
-    const canonEl = document.head.querySelector('link[rel="canonical"]');
-    if (!canonEl) return;
-    const { href } = canonEl;
-    const canonUrl = new URL(href);
-    if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
-    const pagePath = pageUrl.pathname.replace('.html', '');
-    if (pagePath !== canonUrl.pathname) return;
-    canonEl.setAttribute('href', `${href}.html`);
+  } catch (e) {
+    window.lana?.log(`Error while attempting to append '.html' to ${link}: ${e}`);
   }
-
-  const links = area.querySelectorAll('a');
-  links.forEach((el) => {
-    const href = el.getAttribute('href');
-    if (!href || shouldNotConvert(href)) return;
-
-    try {
-      const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
-      if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
-        linkUrl.pathname = `${linkUrl.pathname}.html`;
-        el.setAttribute('href', href.startsWith('/')
-          ? `${linkUrl.pathname}${linkUrl.search}${linkUrl.hash}`
-          : linkUrl.href);
-      }
-    } catch (err) {
-      /* c8 ignore next 3 */
-      console.log(err);
-    }
-  });
 }
 
 export const loadScript = (url, type) => new Promise((resolve, reject) => {
@@ -502,6 +495,7 @@ export function decorateLinks(el) {
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   return [...anchors].reduce((rdx, a) => {
+    appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -789,11 +783,12 @@ function decorateMeta() {
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
+  if (isDoc) {
+    await checkForPageMods();
+    appendHtmlToCanonicalUrl();
+  }
+
   const config = getConfig();
-
-  if (isDoc) await checkForPageMods();
-
-  appendHtmlPostfix(area);
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
