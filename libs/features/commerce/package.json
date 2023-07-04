@@ -1,0 +1,22 @@
+{
+  "name": "@milo/commerce",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "esbuild ./index.js --alias:react=./react-shim.js --bundle --external:react --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce.js --platform=browser --sourcemap --target=es2020",
+    "build:rollup": "rollup --config rollup.config.js --verbose"
+  },
+  "dependencies": {
+    "@dexter/tacocat-consonant-templates": "^1.9.6",
+    "@dexter/tacocat-core": "^1.10.3",
+    "@pandora/commerce-checkout-url-builder": "^0.1.0",
+    "@pandora/data-models-odm": "^0.5.1",
+    "@pandora/data-source-utils": "^0.3.1",
+    "@pandora/data-source-wcs": "^0.2.4",
+    "@pandora/fetch": "^1.2.4"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.18.11"
+  }
+}
