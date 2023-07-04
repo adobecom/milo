@@ -104,7 +104,7 @@ window.tacocat.loadPromise = new Promise((resolve) => {
       // load custom elements polyfill for Safari only.
       if (navigator.userAgent.indexOf('Safari') >= 0 && navigator.userAgent.indexOf('Chrome') < 0) {
         const base = miloLibs || codeRoot;
-        return loadScript(`${base}/deps/custom-elements-1.3.0.js`);
+        return loadScript(`${base}/deps/custom-elements.js`);
       }
       return null;
     })
