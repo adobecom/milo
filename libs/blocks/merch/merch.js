@@ -4,6 +4,8 @@ export const VERSION = '1.16.0';
 export const ENV_PROD = 'prod';
 export const CTA_PREFIX = /^CTA +/;
 
+const ENV_STAGE = 'stage';
+
 const SUPPORTED_LANGS = [
   'ar', 'bg', 'cs', 'da', 'de', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko',
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
@@ -32,15 +34,15 @@ export function getTacocatLocale(locale) {
   return { country, language };
 }
 
-export function getTacocatEnv(envName, locale) {
+export function getTacocatEnv(isProd = true, locale) {
   const { country, language } = getTacocatLocale(locale);
-  const host = envName === ENV_PROD
+  const host = isProd
     ? 'https://www.adobe.com'
     : 'https://www.stage.adobe.com';
 
   const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
   const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
+  const tacocatEnv = isProd ? 'PRODUCTION' : 'STAGE';
   return { country, language, literalScriptUrl, scriptUrl, tacocatEnv };
 }
 
@@ -89,14 +91,14 @@ export const runTacocat = (tacocatEnv, country, language) => {
 };
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
+  const { commerceEnv, locale } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
     country,
     language,
     tacocatEnv,
-  } = getTacocatEnv(env.name, locale);
+  } = getTacocatEnv(commerceEnv != ENV_STAGE, locale);
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */

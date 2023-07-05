@@ -24,7 +24,7 @@ describe('Merch Block', () => {
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
-        baseUrl: 'https://wcs.stage.adobe.com',
+        baseUrl: 'https://wcs.adobe.com',
         landscape: null,
         env: 'STAGE',
         environment: 'STAGE',
@@ -309,7 +309,7 @@ describe('Merch Block', () => {
     it('falls back to en for unsupported languages', async () => {
       const { literalScriptUrl, language } = getTacocatEnv('local', { ietf: 'xx-US' });
       expect(literalScriptUrl).to.equal(
-        'https://www.stage.adobe.com/special/tacocat/literals/en.js',
+        'https://www.adobe.com/special/tacocat/literals/en.js',
       );
       expect(language).to.equal('en');
     });

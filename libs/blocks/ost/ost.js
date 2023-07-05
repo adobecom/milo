@@ -101,7 +101,7 @@ export async function loadOstEnv() {
       const json = await res.json();
       url = new URL(json.preview.url);
       locale = getLocale(locales, url.pathname);
-      ({ country, language } = getTacocatEnv(ENV_PROD, locale));
+      ({ country, language } = getTacocatEnv(true, locale));
     } catch (e) {
       console.error('OST, failed to get env:', e.message);
       ({ country, language } = getTacocatEnv());
@@ -125,7 +125,7 @@ export async function loadOstEnv() {
     }
   }
 
-  ({ country, language } = getTacocatEnv(ENV_PROD, locale));
+  ({ country, language } = getTacocatEnv(true, locale));
 
   return {
     ...metadata,
