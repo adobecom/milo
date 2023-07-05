@@ -203,9 +203,12 @@ class Footer {
         </svg>
         ${regionPickerTextElem}
       </a>`;
-    this.elements.regionPicker = toFragment`<div class="feds-regionPicker-wrapper">
+    const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
+    this.elements.regionPicker = toFragment`<div class="${regionPickerWrapperClass}">
         ${regionPickerElem}
       </div>`;
+
+    const isRegionPickerExpanded = () => regionPickerElem.getAttribute('aria-expanded') === 'true';
 
     // Note: the region picker currently works only with Milo modals/fragments;
     // in the future we'll need to update this for non-Milo consumers
@@ -215,7 +218,6 @@ class Footer {
       await loadBlock(regionPickerElem); // load modal logic and styles
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
-      const isRegionPickerExpanded = () => regionPickerElem.getAttribute('aria-expanded') === 'true';
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
@@ -238,6 +240,13 @@ class Footer {
         e.preventDefault();
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
         regionPickerElem.setAttribute('aria-expanded', !isDialogActive);
+      });
+      // Close region picker dropdown on outside click
+      document.addEventListener('click', (e) => {
+        if (isRegionPickerExpanded()
+          && !e.target.closest(`.${regionPickerWrapperClass}`)) {
+          regionPickerElem.setAttribute('aria-expanded', false);
+        }
       });
     }
 

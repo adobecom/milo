@@ -5,14 +5,14 @@ import { mockRes } from '../test-utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 import { res, formatted } from '../mocks/subscriptionsAll.js';
 
-const emptyEntitlements = {
+const emptyEntitlements = () => ({
   clouds: {},
   arrangment_codes: {},
   fulfilled_codes: {},
   offer_families: {},
   offers: {},
   list: { fulfilled_codes: [] },
-};
+});
 
 describe('getUserEntitlements', () => {
   const ogFetch = window.fetch;
@@ -34,7 +34,7 @@ describe('getUserEntitlements', () => {
   it('should return empty entitlements if a user is not signed in', async () => {
     window.adobeIMS = { isSignedInUser: () => false };
     const entitlements = await getUserEntitlements();
-    expect(entitlements).to.deep.equal(emptyEntitlements);
+    expect(entitlements).to.deep.equal(emptyEntitlements());
   });
 
   it('should return a response with the formatted subscriptions', async () => {
@@ -58,11 +58,17 @@ describe('getUserEntitlements', () => {
     // empty entitlements should not have been modified
     window.adobeIMS = { isSignedInUser: () => false };
     const entitlements2 = await getUserEntitlements();
-    expect(entitlements2).to.deep.equal(emptyEntitlements);
+    expect(entitlements2).to.deep.equal(emptyEntitlements());
   });
 
   it('should return the raw response if format is raw', async () => {
     const entitlements = await getUserEntitlements({ format: 'raw' });
     expect(entitlements).to.deep.equal(res);
+  });
+
+  it('should return empty entitlements if response is not an array', async () => {
+    window.fetch = stub().callsFake(() => mockRes({ payload: '' }));
+    const entitlements = await getUserEntitlements({ params: [{ name: 'NOTARRAY', value: 'TRUE' }] });
+    expect(entitlements).to.deep.equal(emptyEntitlements());
   });
 });
