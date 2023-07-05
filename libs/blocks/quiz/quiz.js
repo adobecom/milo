@@ -1,5 +1,5 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
-import { getConfig, loadStyle } from '../../utils/utils.js';
+import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
 import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
@@ -7,6 +7,14 @@ import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas-uar.css`);
+
+async function loadFragments(fragmentURL) {
+    const quizSections = document.querySelector('.quiz-footer');
+    const a = createTag('a', { href: fragmentURL });
+    quizSections.append(a);
+    const { default: createFragment } = await import('../fragment/fragment.js');
+    await createFragment(a); 
+}
 
 const App = () => {
   const [questionData, setQuestionData] = useState({});
@@ -133,7 +141,7 @@ const App = () => {
       setPrevStepIndicator(userSelection.map((_, index) => index));
     }
   }, [userSelection]);
-
+  
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
@@ -202,6 +210,14 @@ const App = () => {
   const minSelections = +selectedQuestion['min-selections'];
   const maxSelections = +selectedQuestion['max-selections'];
 
+  const fragmentURL = getStringValue('footerFragment');
+
+  useEffect(() => {
+    if (fragmentURL) {
+      loadFragments(fragmentURL);
+    }
+  }, [fragmentURL]);
+
   return html`<div class="quiz-container">
                   <${StepIndicator} 
                     currentStep=${currentStep} 
@@ -228,11 +244,14 @@ const App = () => {
                       getOptionsIcons=${getOptionsIcons}
                       handleOnNextClick=${handleOnNextClick}
                       btnAnalyticsData=${btnAnalytics}/>
-                      <${StepIndicator} 
-                      currentStep=${currentStep} 
-                      totalSteps=${totalSteps} 
-                      prevStepIndicator=${prevStepIndicator}
-                    />  
+
+                  <div class="quiz-footer">
+                  </div>
+
+                  <${StepIndicator} 
+                  currentStep=${currentStep} 
+                  totalSteps=${totalSteps} 
+                  prevStepIndicator=${prevStepIndicator} />
               </div>`;
 };
 
