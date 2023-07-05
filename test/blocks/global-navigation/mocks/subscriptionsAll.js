@@ -50,6 +50,7 @@ const res = [
         cloud: 'EXPERIENCE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
+      offer_id: 'testOffer',
     },
     fulfilled_items: [{ code: 'dma_analytics' }],
   },
@@ -228,7 +229,19 @@ const formatted = {
     cc_all_apps: true,
     acrobat: true,
   },
-  offers: {},
+  offers: {
+    testOffer: {
+      product_code: 'DMA_ANALYTICS',
+      product_arrangement_code: 'dm_analytics_enterprise_ml',
+      product_arrangement: {
+        code: 'dm_analytics_enterprise_ml',
+        label: 'DM_ANALYTICS_ENTERPRISE_ML',
+        family: 'ANALYTICS',
+        cloud: 'EXPERIENCE',
+      },
+      payment_structure: 'PAID_IN_ADVANCE',
+    },
+  },
   list: {
     fulfilled_codes: [
       'dma_reactor',
