@@ -59,8 +59,13 @@ export function getAnalyticsValue(str, index) {
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
+  const explicitExperience = experiencePath?.split('/').pop();
+  if (explicitExperience?.length) return explicitExperience;
 
-  return experiencePath?.split('/').pop() || '';
+  const { imsClientId } = getConfig();
+  if (imsClientId?.length) return imsClientId;
+
+  return '';
 }
 
 export function loadStyles(path) {
