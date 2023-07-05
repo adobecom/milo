@@ -1,23 +1,35 @@
+// @ts-nocheck
+
+export const IMS_POLL_INTERVAL = 200;
+export const IMS_POLL_MAX_ATTEMPTS = 25;
+
 /** @type {Commerce.pollImsCountry} */
-export default function pollImsCountry() {
+export function pollImsCountry({
+  interval = IMS_POLL_INTERVAL,
+  maxAttempts = IMS_POLL_MAX_ATTEMPTS,
+} = {}) {
   return new Promise((resolve) => {
     let count = 0;
-    const check = setInterval(() => {
-      count += 1;
+
+    function poll() {
       if (window.adobeIMS) {
-        clearInterval(check);
         if (window.adobeIMS.isSignedInUser()) {
           window.adobeIMS
             .getProfile()
-            .then(({ countryCode }) => resolve(countryCode))
+            .then((profile) => resolve(profile.countryCode))
             .catch(() => resolve());
         } else {
           resolve();
         }
-      } else if (count > 25) {
-        clearInterval(check);
+      } else if (++count > maxAttempts) {
         resolve();
+      } else {
+        setTimeout(poll, interval);
       }
-    }, 200);
+    }
+
+    poll();
   });
 }
+
+export default pollImsCountry;

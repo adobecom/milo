@@ -37,7 +37,7 @@ function serializeArgument(key, value) {
 }
 
 export default {
-  writer(message, ...args) {
+  append(message, ...args) {
     const errors = [];
     let payload = message;
     const values = [];

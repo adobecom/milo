@@ -1,45 +1,56 @@
-import singleton from './singleton.js';
-import { ignore, toBoolean } from './utils.js';
+import Service from './service.js';
 
-const PLACEHOLDER_RESOLVED = 'placeholder-resolved';
-const PLACEHOLDER_FAILED = 'placeholder-failed';
-const PLACEHOLDER_PENDING = 'placeholder-pending';
+export const RESOLVED = 'placeholder-resolved';
+export const FAILED = 'placeholder-failed';
+export const PENDING = 'placeholder-pending';
 
-const Placeholder = {
-  initPlaceholder() {
-    this.resolved = false;
-    this.pending = false;
+/** @type {Commerce.PLaceholderElement & Record<string, any>} */
+// @ts-ignore
+const Mixin = {
+  attributeChangedCallback() {
+    this.render();
+  },
+
+  connectedCallback() {
+    this.render();
+  },
+
+  init() {
     this.failed = false;
+    this.pending = false;
     this.promises = [];
+    this.resolved = false;
   },
 
   onceResolved() {
-    if (this.resolved) return Promise.resolve();
+    if (this.resolved) return Promise.resolve(this);
     if (this.failed) return Promise.reject();
     return new Promise((resolve, reject) => {
       this.promises.push({ resolve, reject });
-    }).then(ignore);
+    }).then(() => this);
   },
 
   toggle() {
-    this.classList.toggle(PLACEHOLDER_RESOLVED, this.resolved);
-    this.classList.toggle(PLACEHOLDER_FAILED, this.failed);
-    this.classList.toggle(PLACEHOLDER_PENDING, this.pending);
+    this.classList.toggle(RESOLVED, this.resolved);
+    this.classList.toggle(FAILED, this.failed);
+    this.classList.toggle(PENDING, this.pending);
   },
 
   toggleResolved() {
     this.pending = false;
     this.resolved = true;
+
     this.toggle();
     this.dispatchEvent(
-      new CustomEvent(PLACEHOLDER_RESOLVED, { bubbles: true }),
+      new CustomEvent(RESOLVED, { bubbles: true }),
     );
 
     this.log?.debug('Resolved:', {
       dataset: { ...this.dataset },
       node: this,
-      settings: { ...singleton.instance.settings },
+      settings: Service.settings,
     });
+
     setTimeout(() => {
       this.promises.forEach(({ resolve }) => resolve());
       this.promises = [];
@@ -49,9 +60,10 @@ const Placeholder = {
   toggleFailed(reason) {
     this.pending = false;
     this.failed = true;
+
     this.toggle();
     this.dispatchEvent(
-      new CustomEvent(PLACEHOLDER_FAILED, { bubbles: true }),
+      new CustomEvent(FAILED, { bubbles: true }),
     );
 
     this.log?.error(
@@ -59,10 +71,11 @@ const Placeholder = {
       {
         dataset: { ...this.dataset },
         node: this,
-        settings: { ...singleton.instance.settings },
+        settings: Service.settings,
       },
       reason,
     );
+
     setTimeout(() => {
       this.promises.forEach(({ reject }) => reject(reason));
       this.promises = [];
@@ -77,13 +90,17 @@ const Placeholder = {
     this.pending = true;
     this.toggle();
     this.dispatchEvent(
-      new CustomEvent(PLACEHOLDER_PENDING, { bubbles: true }),
+      new CustomEvent(PENDING, { bubbles: true }),
     );
   },
-
-  get initiliazed() {
-    return this.resolved || this.pending || this.failed;
-  },
 };
+
+function Placeholder(extendsTag, customTag, Class) {
+  if (!customElements.get(customTag)) {
+    Object.assign(Class.prototype, Mixin);
+    customElements.define(customTag, Class, { extends: extendsTag });
+  }
+  return Class;
+}
 
 export default Placeholder;

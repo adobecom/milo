@@ -43,19 +43,47 @@ export const ignore = () => {
   /* do nothing */
 };
 
-export const isFunction = (value) => typeof value === 'function';
+export const isBoolean = (val) => typeof val === 'boolean';
+export const isFunction = (val) => typeof val === 'function';
+export const isNumber = (val) => typeof val === 'number';
+export const isPositiveFiniteNumber = (val) => isNumber(val) && Number.isFinite(val) && val > 0;
 
-export const isBoolean = (value) => typeof value === 'boolean';
-
-export const equalsCI = (value1, value2) => value1.localeCompare(
+export const equalsCI = (value1, value2) => 0 === String(value1 ?? '').localeCompare(
   value2,
   'en',
   { sensitivity: 'base' },
 );
 
-export const toBoolean = (value) => (isBoolean(value) ? value : ['1', 'true'].includes(String(value)));
+export function toBoolean(val, def) {
+  const str = String(val);
+  if (['1', 'true'].includes(str)) return true;
+  if (['0', 'false'].includes(str)) return false;
+  return def;
+}
 
-export const toKebabCase = (value) => value.replace(
+/**
+ * @template T
+ * @param {any} val - value to convert
+ * @param {T} enm - enum object
+ * @param {T[keyof T]} [def] - default value
+ * @returns {T[keyof T]}
+ */
+export function toEnum(val, enm, def) {
+  const vals = Object.values(enm);
+  return vals.find(itm => equalsCI(itm, val)) ?? def ?? vals[0];
+}
+
+export function toPositiveFiniteNumber(val, def = 1) {
+  if (isPositiveFiniteNumber(val)) return val;
+  const num = Number.parseInt(val, 10);
+  return isPositiveFiniteNumber(num) ? num : def;
+}
+
+/**
+ * Converts value to `kebab-case` string.
+ * @param {any} val - value to convert
+ */
+export const toKebabCase = (val) => String(val ?? '').replace(
   /(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,
   (_, p1, p2) => `${p1}-${p2}`,
 ).replace(

@@ -1,73 +1,88 @@
 declare namespace Commerce {
-  type getSettings = (config: Config) => Checkout.Settings & Wcs.Settings;
-  type init = (injector: () => Dependencies) => Promise<Instance>;
-  type pollImsCountry = () => Promise<string>;
+  type CheckoutWorkflow = import('@pandora/commerce-checkout-url-builder').CheckoutType;
+  type CheckoutWorkflowStep = import('@pandora/commerce-checkout-url-builder').WorkflowStep;
+  type Environment = import('@pandora/data-source-utils').Environment;
+  type WcsLandscape = import('@pandora/data-source-utils').Landscape;
+  type WcsFetchOptions = import('@pandora/data-source-utils').FetchOptions;
+  type WcsProviderEnvironment = import('@pandora/data-source-utils').ProviderEnvironment;
+  type WcsQueryOptions = import('@pandora/data-source-utils').QueryOptions;
+  type WcsResolvedOffer = import('@pandora/data-models-odm').ResolvedOffer;
+
+  type getSettings = (config?: Config) => Checkout.Settings & Wcs.Settings;
+  type init = (callback: () => Config) => Promise<Instance>;
+  type pollImsCountry = (options?: {
+    interval?: number;
+    maxAttempts?: number;
+  }) => Promise<string | void>;
 
   interface Config {
-    commerce: Partial<Record<keyof Checkout.Settings | keyof Wcs.Settings, any>>;
-    env: {
+    commerce?: Partial<
+      Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
+    >;
+    env?: {
       name: string;
     };
-    locale: {
-      ietf: string;
+    locale?: {
+      ietf?: string;
       prefix?: string;
     };
   }
 
-  interface Dependencies {
-    config: Config;
-    loadScript: () => Promise<any>;
-  }
-
   interface Instance {
-    imsCountryPromise: Promise<string>;
-    literals: Record<string, string>;
-    settings: Settings;
+    imsCountryPromise: Promise<string | void>;
+    providers: {
+      price(
+        provider: (
+          element: InlinePriceElement,
+          options: Record<string, any>
+        ) => void
+      ): () => void;
+    };
+    literals: {
+      price: Record<string, string>;
+    };
+    settings: Checkout.Settings & Wcs.Settings;
     wcs: Wcs.Client;
   }
 
   interface Settings {
     country: string;
-    env: ProviderEnvironment;
+    env: WcsProviderEnvironment;
     language: string;
     locale: string;
-    prod: boolean;
   }
 
-  module Checkout {
-    type Workflow =
-      import('@pandora/commerce-checkout-url-builder').CheckoutType;
-    type WorkflowStep =
-      import('@pandora/commerce-checkout-url-builder').WorkflowStep;
+  interface PLaceholderElement {
+    init(): void;
+    onceResolved(): Promise<PLaceholderElement>;
+    render(): void;
+    toggleFailed(reason?: Error): void;
+    togglePending(): void;
+    toggleResolved(): void;
+  }
 
+  interface CheckoutLinkElement extends PLaceholderElement, HTMLSpanElement {}
+  interface InlinePriceElement extends PLaceholderElement, HTMLSpanElement {}
+
+  module Checkout {
     interface Settings extends Commerce.Settings {
       checkoutClientId: string;
-      checkoutWorkflow: Workflow;
-      checkoutWorkflowStep: WorkflowStep;
+      checkoutWorkflow: CheckoutWorkflow;
+      checkoutWorkflowStep: CheckoutWorkflowStep;
     }
   }
 
   module Log {
-    type Factory = {
-      (namespace: string): Instance;
-      commerce: Instance;
-      common: Instance;
-      level: {
-        debug: 'debug';
-        error: 'error';
-        info: 'info';
-        warn: 'warn';
-      };
-
-      consoleWriter: Module;
-      debugFilter: Module;
-      quietFilter: Module;
-
-      reset({ isProd: boolean }): void;
-      use(...modules: Module[]): Factory;
-    };
-
     type Level = 'debug' | 'error' | 'info' | 'warn';
+
+    interface Entry {
+      level: Level;
+      message: string;
+      namespace: string;
+      params: any[];
+      source: string;
+      timestamp: number;
+    }
 
     interface Instance {
       readonly id: string;
@@ -79,30 +94,32 @@ declare namespace Commerce {
       warn(message: string, ...params: any[]): void;
     }
 
-    interface Module {
-      filter?(record: Record): boolean;
-      writer?(record: Record): void;
+    interface Plugin {
+      append?(record: Entry): void;
+      filter?(record: Entry): boolean;
     }
 
-    interface Record {
-      instance: number;
-      level: Level;
-      message: string;
-      namespace: string;
-      params: any[];
-      timestamp: number;
+    interface Root {
+      commerce: Instance;
+      common: Instance;
+      level: Record<Level, string>;
+      consoleAppender: Plugin;
+      debugFilter: Plugin;
+      quietFilter: Plugin;
+      lanaAppender: Plugin;
+      /**
+       * De-registers all log plugins and registers only base plugins suitable for given `env`.
+       * @param env Milo `config.env` object.
+       */
+      init(env?: { name: string }): void;
+      /**
+       * Registers given log plugins.
+       */
+      use(...plugins: Plugin[]): void;
     }
   }
 
   module Wcs {
-    type Environment = import('@pandora/data-source-utils').Environment;
-    type Landscape = import('@pandora/data-source-utils').Landscape;
-    type FetchOptions = import('@pandora/data-source-utils').FetchOptions;
-    type ProviderEnvironment =
-      import('@pandora/data-source-utils').ProviderEnvironment;
-    type QueryOptions = import('@pandora/data-source-utils').QueryOptions;
-    type ResolvedOffer = import('@pandora/data-models-odm').ResolvedOffer;
-
     type PlanType = 'ABM' | 'PUF' | 'M2M' | 'PERPETUAL' | 'UNKNOWN';
 
     type getClient = (settings: Settings) => Client;
@@ -113,7 +130,7 @@ declare namespace Commerce {
         osi: string;
         promotionCode?: string;
         taxExclusive?: boolean;
-      }): Promise<ResolvedOffer[]>;
+      }): Promise<WcsResolvedOffer[]>;
     }
 
     interface Settings extends Commerce.Settings {
@@ -121,7 +138,7 @@ declare namespace Commerce {
       wcsDebounceDelay: Number;
       wcsEnvironment: Environment;
       wcsForceTaxExclusive: boolean;
-      wcsLandscape: Landscape;
+      wcsLandscape: WcsLandscape;
       wcsOfferSelectorLimit: Number;
     }
   }

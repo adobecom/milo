@@ -1,12 +1,12 @@
 import { buildCheckoutUrl } from '@pandora/commerce-checkout-url-builder';
+import { computePromoStatus } from '@dexter/tacocat-core';
 
 import Log from './log.js';
 import Placeholder from './placeholder.js';
-import { computePromoStatus } from './promotion.js';
-import singleton from './singleton.js';
+import Service from './service.js';
 import { getSingleOffer, toBoolean } from './utils.js';
 
-export default class CheckoutLink extends HTMLAnchorElement {
+class CheckoutLinkElement extends HTMLAnchorElement {
   static get observedAttributes() {
     return [
       'data-wcs-osi',
@@ -23,30 +23,22 @@ export default class CheckoutLink extends HTMLAnchorElement {
   constructor() {
     super();
     this.log = Log.commerce.module('checkoutLink');
-    this.initPlaceholder();
+    this.placeholder.init();
   }
 
-  attributeChangedCallback() {
-    this.updateHref();
+  /** @type {Commerce.CheckoutLinkElement} */
+  get placeholder() {
+    // @ts-ignore
+    return this;
   }
 
-  connectedCallback() {
-    this.updateHref();
-  }
-
-  init() {
-    if (!this.initiliazed) {
-      this.updateHref();
-    }
-  }
-
-  updateHref() {
+  render() {
     if (!this.isConnected) return;
 
-    this.togglePending();
+    this.placeholder.togglePending();
     this.setAttribute('href', '#');
 
-    const { settings: { country } } = singleton.instance;
+    const { settings: { country } } = Service.instance;
     let { promotionCode } = this.dataset;
     promotionCode = computePromoStatus(promotionCode, null).effectivePromoCode;
     const { wcsOsi, quantity = '', perpetual } = this.dataset;
@@ -56,7 +48,7 @@ export default class CheckoutLink extends HTMLAnchorElement {
     if (osis.length > 1) {
       const quantities = quantity.split(',');
       Promise.all(
-        osis.map((osi, index) => singleton.instance.wcs
+        osis.map((osi, index) => Service.instance.wcs
           .resolveOfferSelector({
             isPerpetual,
             osi,
@@ -68,12 +60,12 @@ export default class CheckoutLink extends HTMLAnchorElement {
             quantity: quantities[index] ?? 1,
           }))),
       )
-        .then((items) => this.buildCheckoutUrl(items))
-        .catch((reason) => this.toggleFailed(reason));
+        .then((items) => this.renderHref(items))
+        .catch((reason) => this.placeholder.toggleFailed(reason));
       return;
     }
 
-    singleton.instance.wcs
+    Service.instance.wcs
       .resolveOfferSelector({
         isPerpetual,
         osi: wcsOsi,
@@ -86,27 +78,26 @@ export default class CheckoutLink extends HTMLAnchorElement {
           offerType,
           productArrangementCode,
           marketSegments: [marketSegment],
-        }) => this.buildCheckoutUrl(
+        }) => this.renderHref(
           [{ id: offerId }],
           offerType,
           productArrangementCode,
           marketSegment,
         ),
       )
-      .catch((reason) => this.toggleFailed(reason));
+      .catch((reason) => this.placeholder.toggleFailed(reason));
   }
 
-  buildCheckoutUrl(items, offerType, productArrangementCode, marketSegment) {
+  renderHref(items, offerType, productArrangementCode, marketSegment) {
     const {
-      settings: {
-        checkoutClientId,
-        checkoutWorkflow: defaultCheckoutWorkflow,
-        checkoutWorkflowStep: defaultCheckoutWorkflowStep,
-        country,
-        env,
-        language,
-      },
-    } = singleton.instance;
+      checkoutClientId,
+      checkoutWorkflow: defaultCheckoutWorkflow,
+      checkoutWorkflowStep: defaultCheckoutWorkflowStep,
+      country,
+      env,
+      language,
+    } = Service.instance.settings;
+
     const {
       customParameters = '{}',
       promotionCode,
@@ -114,8 +105,11 @@ export default class CheckoutLink extends HTMLAnchorElement {
       checkoutWorkflowStep = defaultCheckoutWorkflowStep,
     } = this.dataset;
 
-    const checkoutParams = {
+    this.href = buildCheckoutUrl(
+      // @ts-ignore
+      checkoutWorkflow, {
       clientId: checkoutClientId,
+      context: window.frameElement ? 'if' : 'fp',
       country: this.dataset.imsCountry || country,
       env,
       items,
@@ -126,13 +120,10 @@ export default class CheckoutLink extends HTMLAnchorElement {
       productArrangementCode,
       checkoutPromoCode: promotionCode,
       ...JSON.parse(customParameters),
-    };
-    if (window.frameElement) checkoutParams.context = 'if';
-    this.href = buildCheckoutUrl(checkoutWorkflow, checkoutParams);
-    this.toggleResolved();
+    });
+
+    this.placeholder.toggleResolved();
   }
 }
-if (!customElements.get('checkout-link')) {
-  Object.assign(CheckoutLink.prototype, Placeholder);
-  customElements.define('checkout-link', CheckoutLink, { extends: 'a' });
-}
+
+export default Placeholder('a', 'checkout-link', CheckoutLinkElement);

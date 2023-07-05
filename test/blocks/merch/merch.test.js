@@ -1,41 +1,63 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+
 import sinon from 'sinon';
+
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 
-const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
-const {
-  default: merch,
-  VERSION,
-  getTacocatEnv,
-  getTacocatLocale,
-  getTacocatMetadata,
-  imsCountryPromise,
-  runTacocat,
-} = await import('../../../libs/blocks/merch/merch.js');
+window.adobeIMS = {
+  isSignedInUser: () => true,
+  getProfile: () => Promise.resolve({ countryCode: 'CH' }),
+};
 
+const {
+  CheckoutWorkflow,
+  CheckoutWorkflowStep,
+  defaults,
+  init,
+  Log,
+  reset,
+} = await import('../../../libs/deps/commerce/index.js');
+
+const offers = JSON.parse(await readFile({ path: './mocks/offers.json' }));
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
+const config = setConfig({ codeRoot: '/libs', env: { name: 'local' } });
+Log.use(Log.quietFilter);
+
+async function initCommerce(commerce = {}) {
+  reset();
+  await init(() => setConfig({ commerce, ...config }));
+}
+
+const { default: merch } = await import('../../../libs/blocks/merch/merch.js');
+
 describe('Merch Block', () => {
-  before(async () => {
-    Object.assign(window.tacocat, {
-      loadPromise: Promise.resolve(false),
-      price: { optionProviders: [] },
-      defaults: {
-        apiKey: 'wcms-commerce-ims-ro-user-milo',
-        baseUrl: 'https://wcs.stage.adobe.com',
-        landscape: null,
-        env: 'STAGE',
-        environment: 'STAGE',
-        country: 'US',
-        clientId: 'adobe_com',
-        language: 'en',
-        locale: 'en_US',
-        checkoutWorkflow: 'UCv3',
-        checkoutWorkflowStep: 'email',
-      },
-    });
+  const ogFetch = window.fetch;
+
+  after(() => {
+    delete window.adobeIMS;
+    window.fetch = ogFetch;
+  });
+
+  beforeEach(() => {
+    let request = 0;
+    window.fetch = sinon.stub()
+      .onFirstCall()
+      .callsFake(() => Promise.resolve({
+        status: 200,
+        statusText: '',
+        ok: true,
+        json: () => Promise.resolve({}),
+      }))
+      .callsFake(() => Promise.resolve({
+        status: 200,
+        statusText: '',
+        ok: true,
+        // eslint-disable-next-line no-plusplus
+        json: () => Promise.resolve({ resolvedOffers: [offers[request++ % offers.length]] }),
+      }));
   });
 
   it('Doesnt decorate merch with bad content', async () => {
@@ -182,14 +204,14 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(undefined);
-      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
-      expect(dataset.checkoutClientId).to.equal(undefined);
+      expect(dataset.checkoutWorkflow).to.equal(defaults.checkoutWorkflow);
+      expect(dataset.checkoutWorkflowStep).to.equal(defaults.checkoutWorkflowStep);
+      expect(dataset.checkoutClientId).to.equal(defaults.checkoutClientId);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
     it('merch link to CTA, config values', async () => {
-      setConfig({ commerce: { checkoutClientId: 'dc' } });
+      await initCommerce({ checkoutClientId: 'dc' });
       let el = document.querySelector('.merch.cta.config');
       el = await merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -197,17 +219,16 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(undefined);
-      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
+      expect(dataset.checkoutWorkflow).to.equal(defaults.checkoutWorkflow);
+      expect(dataset.checkoutWorkflowStep).to.equal(defaults.checkoutWorkflowStep);
       expect(dataset.checkoutClientId).to.equal('dc');
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
-
-      setConfig(config);
     });
 
     it('merch link to CTA, metadata values', async () => {
-      const metadata = createTag('meta', { name: 'checkout-type', content: 'UCv2' });
+      const metadata = createTag('meta', { name: 'checkout-workflow', content: 'UCv2' });
       document.head.appendChild(metadata);
+      await initCommerce();
       let el = document.querySelector('.merch.cta.metadata');
       el = await merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -215,9 +236,9 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal('UCv2');
-      expect(dataset.checkoutWorkflowStep).to.equal(undefined);
-      expect(dataset.checkoutClientId).to.equal(undefined);
+      expect(dataset.checkoutWorkflow).to.equal(CheckoutWorkflow.V2);
+      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.CHECKOUT);
+      expect(dataset.checkoutClientId).to.equal(defaults.checkoutClientId);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       document.head.removeChild(metadata);
     });
@@ -270,23 +291,9 @@ describe('Merch Block', () => {
     });
 
     it('should add ims country to checkout link', async () => {
-      window.tacocat.imsCountryPromise = Promise.resolve('CH');
       let el = document.querySelector('.merch.cta.ims');
       el = await merch(el);
-      const { dataset: { imsCountry } } = el;
-      expect(imsCountry).to.equal('CH');
-    });
-
-    it('should esolve IMS country', async () => {
-      window.adobeIMS = { isSignedInUser: () => true, getProfile: () => Promise.resolve({ countryCode: 'CH' }) };
-      const imsCountry = await imsCountryPromise();
-      expect(imsCountry).to.equal('CH');
-    });
-
-    it('should resolve ims country', async () => {
-      window.adobeIMS = { isSignedInUser: () => false };
-      const imsCountry = await imsCountryPromise();
-      expect(imsCountry).to.undefined;
+      expect(el.dataset.imsCountry).to.equal('CH');
     });
 
     it('should render blue CTAs', async () => {
@@ -302,102 +309,6 @@ describe('Merch Block', () => {
       const el = document.querySelector('.merch.cta.inside-marquee');
       const cta = await merch(el);
       expect(cta.classList.contains('button-l')).to.be.true;
-    });
-  });
-
-  describe('Tacocat config', () => {
-    it('falls back to en for unsupported languages', async () => {
-      const { literalScriptUrl, language } = getTacocatEnv('local', { ietf: 'xx-US' });
-      expect(literalScriptUrl).to.equal(
-        'https://www.stage.adobe.com/special/tacocat/literals/en.js',
-      );
-      expect(language).to.equal('en');
-    });
-
-    it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(
-        'prod',
-        { ietf: 'fr-CA' },
-      );
-      expect(scriptUrl).to.equal(
-        `https://www.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
-      );
-      expect(literalScriptUrl).to.equal(
-        'https://www.adobe.com/special/tacocat/literals/fr.js',
-      );
-      expect(country).to.equal('CA');
-      expect(language).to.equal('fr');
-    });
-
-    it('returns geo mapping', async () => {
-      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
-      expect(country).to.equal('ZA');
-      expect(language).to.equal('en');
-
-      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
-      expect(country).to.equal('NO');
-      expect(language).to.equal('nb');
-
-      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
-      expect(country).to.equal('NO');
-      expect(language).to.equal('nb');
-    });
-
-    it('returns geo mapping', async () => {
-      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
-      expect(country).to.equal('ZA');
-      expect(language).to.equal('en');
-
-      ({ country, language } = getTacocatEnv('prod', { ietf: 'en' }));
-      expect(country).to.equal('US');
-      expect(language).to.equal('en');
-    });
-
-    it('does not initialize the block when tacocat fails to load', async () => {
-      window.tacocat.loadPromise = Promise.resolve(true);
-      let el = document.querySelector('.merch.cta.notacocat');
-      el = await merch(el);
-      expect(el).to.be.undefined;
-    });
-  });
-
-  describe('Tacocat trigger', () => {
-    it('should trigger tacocat', async () => {
-      window.tacocat.tacocat = sinon.spy();
-      window.tacocat.initLanaLogger = sinon.spy();
-      runTacocat('PRODUCTION', 'US', 'en');
-
-      expect(window.tacocat.initLanaLogger.calledWith('merch-at-scale', 'PRODUCTION', { country: 'US' }, { consumer: 'milo' })).to.be.true;
-      expect(window.tacocat.tacocat.calledWith({
-        env: 'PRODUCTION',
-        country: 'US',
-        language: 'en',
-      })).to.be.true;
-    });
-  });
-
-  describe('Utils', () => {
-    describe('getTacocatLocale', () => {
-      it('returns default locale if argument is not provided', () => {
-        expect(getTacocatLocale()).to.deep.equal({
-          country: 'US',
-          language: 'en',
-        });
-      });
-
-      it('returns locale extracted from provided argument', () => {
-        expect(getTacocatLocale({ ietf: 'de-CH' })).to.deep.equal({
-          country: 'CH',
-          language: 'de',
-        });
-      });
-
-      it('returns locale geo-mapped from provided argument', () => {
-        expect(getTacocatLocale({ prefix: 'africa' })).to.deep.equal({
-          country: 'ZA',
-          language: 'en',
-        });
-      });
     });
   });
 });

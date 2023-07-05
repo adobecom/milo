@@ -4,14 +4,14 @@ import {
   priceOptical,
   priceStrikethrough,
 } from '@dexter/tacocat-consonant-templates';
+import { computePromoStatus } from '@dexter/tacocat-core';
 
-import Placeholder from './placeholder.js';
-import { computePromoStatus } from './promotion.js';
-import singleton from './singleton.js';
-import { getSingleOffer, toBoolean } from './utils.js';
 import Log from './log.js';
+import Placeholder from './placeholder.js';
+import Service from './service.js';
+import { getSingleOffer, toBoolean } from './utils.js';
 
-export default class InlinePrice extends HTMLSpanElement {
+class HTMLInlinePriceElement extends HTMLSpanElement {
   static get observedAttributes() {
     return [
       'data-wcs-osi',
@@ -29,55 +29,48 @@ export default class InlinePrice extends HTMLSpanElement {
   constructor() {
     super();
     this.log = Log.commerce.module('inlinePrice');
-    this.initPlaceholder();
+    this.placeholder.init();
   }
 
-  attributeChangedCallback() {
-    this.render();
-  }
-
-  connectedCallback() {
-    this.render();
-  }
-
-  init() {
-    if (!this.initiliazed) {
-      this.render();
-    }
+  /** @type {Commerce.InlinePriceElement} */
+  get placeholder() {
+    // @ts-ignore
+    return this;
   }
 
   render() {
     if (!this.isConnected) return;
 
-    this.togglePending();
+    this.placeholder.togglePending();
     this.innerHTML = '';
-    const { settings: { country } } = singleton.instance;
+    const { settings: { country } } = Service.instance;
 
-    const { isPerpetual } = this;
     const { wcsOsi: osi, perpetual, promotionCode, taxExclusive } = this.dataset;
+    const isPerpetual = toBoolean(perpetual);
 
-    singleton.instance.wcs
+    Service.instance.wcs
       .resolveOfferSelector({
-        isPerpetual: toBoolean(perpetual),
+        isPerpetual,
         osi,
         promotionCode: computePromoStatus(promotionCode, null).effectivePromoCode,
-        taxExclusive,
+        taxExclusive: toBoolean(taxExclusive),
       })
       .then((offers) => getSingleOffer(offers, country, isPerpetual))
       .then((offer) => {
-        const options = { literals: { ...(singleton.instance.literals) } };
-        singleton.instance.price.optionProviders.forEach((provider) => provider(this, options));
+        const { instance, providers } = Service;
+        const options = { literals: { ...instance.literals.price } };
+        providers.price.forEach((provider) => provider(this, options));
         this.renderOffer(offer, options);
-        this.toggleResolved();
+        this.placeholder.toggleResolved();
       })
       .catch((reason) => {
         this.innerHTML = '';
-        this.toggleFailed(reason);
+        this.placeholder.toggleFailed(reason);
       });
   }
 
   renderOffer(offer, options) {
-    const { settings: { country, language } } = singleton.instance;
+    const { settings: { country, language } } = Service.instance;
     const {
       promotionCode,
       template,
@@ -87,13 +80,13 @@ export default class InlinePrice extends HTMLSpanElement {
       displayOldPrice,
     } = this.dataset;
 
-    let priceFn = promotionCode ? pricePromo : price;
+    let method = promotionCode ? pricePromo : price;
     if (template === 'strikethrough') {
-      priceFn = priceStrikethrough;
+      method = priceStrikethrough;
     } else if (template === 'optical') {
-      priceFn = priceOptical;
+      method = priceOptical;
     }
-    this.innerHTML = priceFn(
+    this.innerHTML = method(
       {
         country,
         language,
@@ -108,7 +101,4 @@ export default class InlinePrice extends HTMLSpanElement {
   }
 }
 
-if (!customElements.get('inline-price')) {
-  Object.assign(InlinePrice.prototype, Placeholder);
-  customElements.define('inline-price', InlinePrice, { extends: 'span' });
-}
+export default Placeholder('span', 'inline-price', HTMLInlinePriceElement);

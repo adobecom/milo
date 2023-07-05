@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "outDir": "../../deps/commerce",
+    "rootDir": "../../..",
+    "module": "esnext",
+    "moduleResolution": "NodeNext",
+    "target": "esnext"
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules"]
+}

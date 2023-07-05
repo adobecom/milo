@@ -1,13 +1,14 @@
-import lanaWriter from './lana.js';
+import lanaAppender from './lana.js';
 import { isFunction } from './utils.js';
 
 const epoch = Date.now();
 
+/** @type {Set<(record: Commerce.Log.Entry) => boolean>} */
+const appenders = new Set();
+/** @type {Set<(record: Commerce.Log.Entry) => void>} */
 const filters = new Set();
 /** @type {Map<string, number>} */
-const instances = new Map();
-const tag = 'Log';
-const writers = new Set();
+const indexes = new Map();
 
 const Level = Object.freeze({
   debug: 'debug',
@@ -16,133 +17,97 @@ const Level = Object.freeze({
   warn: 'warn',
 });
 
+const consoleAppender = {
+  append({ level, message, params, timestamp, source }) {
+    // eslint-disable-next-line no-console
+    console[level](`[${source}]`, message, ...params, `(+${timestamp}ms)`);
+  },
+};
+const debugFilter = { filter: ({ level }) => level !== Level.debug };
+const quietFilter = { filter: () => false };
+
 /**
- * @param {number} instance
  * @param {Commerce.Log.Level} level
  * @param {string} message
  * @param {string} namespace
  * @param {object} params
+ * @param {string} source
+ * @returns {Commerce.Log.Entry}
  */
-const createRecord = (instance, level, message, namespace, params) => ({
-  instance,
+const createEntry = (level, message, namespace, params, source) => ({
   level,
   message,
   namespace,
   params,
+  source,
   timestamp: Date.now() - epoch,
 });
 
-function reportError(message, ...params) {
-  /* eslint-disable no-use-before-define */
-  Log.consoleWriter.writer(createRecord(
-    undefined,
-    0,
-    Log.level.error,
-    message,
-    Log.common.namespace,
-    params,
-  ));
-  /* eslint-enable no-use-before-define */
-}
-
-function writeRecord(record) {
-  const toWrite = [...filters].every((filter) => {
-    try {
-      return filter(record);
-    } catch (error) {
-      reportError('Log filter error:', { record, filter });
-      return true;
-    }
-  });
-  if (toWrite) {
-    writers.forEach((writer) => {
-      try {
-        writer(record);
-      } catch (error) {
-        reportError('Log writer error:', { record, writer });
-      }
-    });
+function handleEntry(entry) {
+  if ([...filters].every((filter) => filter(entry))) {
+    appenders.forEach((appender) => appender(entry));
   }
 }
 
-/**
- * @type {Commerce.Log.Factory}
- */
-function Log(namespace) {
-  const instance = (instances.get(namespace) ?? 0) + 1;
-  instances.set(namespace, instance);
-  const id = `${namespace}-${instance}`;
+function createLog(namespace) {
+  const index = (indexes.get(namespace) ?? 0) + 1;
+  indexes.set(namespace, index);
+  const id = `${namespace}-${index}`;
 
-  const createWriter = (level) => (message, ...params) => writeRecord(
-    createRecord(instance, level, message, namespace, params),
+  const createHandler = (level) => (message, ...params) => handleEntry(
+    createEntry(level, message, namespace, params, id),
   );
 
   const log = Object.seal({
     id,
     namespace,
-    // eslint-disable-next-line no-shadow
-    module(namespace) {
-      return Log(`${log.namespace}/${namespace}`);
+    module(name) {
+      return createLog(`${log.namespace}/${name}`);
     },
-    debug: createWriter(Level.debug),
-    error: createWriter(Level.error),
-    info: createWriter(Level.info),
-    warn: createWriter(Level.warn),
-    [Symbol.toStringTag]: tag,
+    debug: createHandler(Level.debug),
+    error: createHandler(Level.error),
+    info: createHandler(Level.info),
+    warn: createHandler(Level.warn),
   });
 
   return log;
 }
 
-Log.level = Level;
+const common = createLog('milo');
 
-Log.debugFilter = { filter: ({ level }) => level !== Level.debug };
-Log.quietFilter = { filter: () => false };
-
-Log.consoleWriter = {
-  writer({
-    instance, level, message, namespace, params, timestamp,
-  }) {
-    console[level](
-      `[${namespace} #${instance}]`,
-      message,
-      ...params,
-      `(+${timestamp}ms)`,
-    );
-  },
-};
-Log.lanaWriter = lanaWriter;
-
-Log.reset = (env = {}) => {
-  filters.clear();
-  writers.clear();
-  if (env.name === 'prod') {
-    Log.use(Log.debugFilter);
-    Log.use(Log.lanaWriter);
-  } else {
-    Log.use(Log.consoleWriter);
-  }
-};
-
-Log.use = (...modules) => {
-  modules.forEach(
-    (module) => {
-      const { filter, writer } = module;
+function use(...plugins) {
+  plugins.forEach(
+    (plugin) => {
+      const { append, filter } = plugin;
       if (isFunction(filter)) {
         filters.add(filter);
-      } else if (isFunction(writer)) {
-        writers.add(writer);
-      } else {
-        Log.common.warn('Unknown log module:', { module });
+      } else if (isFunction(append)) {
+        appenders.add(append);
       }
     },
   );
+}
 
-  return Log;
+function init(env) {
+  if (env) {
+    if (env.name === 'prod') {
+      use(debugFilter);
+      use(lanaAppender);
+    } else {
+      use(consoleAppender);
+    }
+  }
+}
+
+/** @type {Commerce.Log.Root} */
+export default {
+  commerce: common.module('commerce'),
+  common,
+  level: Level,
+  consoleAppender,
+  debugFilter,
+  quietFilter,
+  lanaAppender,
+  init,
+  use,
 };
-
-Log.common = Log('milo');
-Log.commerce = Log.common.module('commerce');
-Log.reset();
-
-export default Log;

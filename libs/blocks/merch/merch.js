@@ -1,8 +1,6 @@
-import { loadScript, getConfig, getMetadata } from '../../utils/utils.js';
+import { getConfig, getMetadata } from '../../utils/utils.js';
 
 export const CTA_PREFIX = /^CTA +/;
-
-const config = getConfig();
 
 export const omitNullValues = (target) => {
   if (target != null) {
@@ -28,11 +26,10 @@ export function buildCta(el, commerce, options = {}) {
   a.setAttribute('class', classes.join(' '));
   Object.assign(a.dataset, options);
   a.textContent = el.textContent?.replace(CTA_PREFIX, '');
-  commerce.imsCountryPromise.then((countryCode) => {
-    if (countryCode) {
-      a.dataset.imsCountry = countryCode;
-    }
-  })
+  commerce.imsCountryPromise
+    .then((countryCode) => {
+      if (countryCode) a.dataset.imsCountry = countryCode;
+    })
     .catch(() => { /* do nothing */ });
   return a;
 }
@@ -52,7 +49,7 @@ function buildPrice(el, commerce, options = {}) {
  * checkoutType - merch link -> metadata -> default (UCv3)
  * workflowStep - merch link -> default (email)
  * marketSegment - merch link -> default (COM)
- * @param {*} searchParams link level overrides for checkout parameters
+ * @param {URLSearchParams} searchParams link level overrides for checkout parameters
  * @returns checkout context object required to build a checkout url
  */
 export function getCheckoutContext(commerce, searchParams) {
@@ -77,11 +74,9 @@ export function getCheckoutContext(commerce, searchParams) {
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
 
-  const { init: initCommerce, Log } = await import('../../deps/commerce.js');
+  const { init: initCommerce, Log } = await import('../../deps/commerce/index.js');
   const log = Log.commerce.module('merch');
-  const commerce = await initCommerce(
-    () => ({ config, loadScript }),
-  );
+  const commerce = await initCommerce(getConfig);
 
   const { searchParams } = new URL(el.href);
   const osi = searchParams.get('osi');
@@ -97,17 +92,18 @@ export default async function init(el) {
   ) || undefined;
   const perpetual = searchParams.get('perp') === 'true' || undefined;
 
-  let method;
+  let build;
   let options;
   if (type === 'checkoutUrl') {
+    build = buildCta;
     options = {
       promotionCode,
       perpetual,
       wcsOsi: osi,
       ...getCheckoutContext(commerce, searchParams),
     };
-    method = buildCta;
   } else {
+    build = buildPrice;
     const displayRecurrence = searchParams.get('term');
     const displayPerUnit = searchParams.get('seat');
     const displayTax = searchParams.get('tax');
@@ -122,11 +118,11 @@ export default async function init(el) {
       template: type === 'price' ? undefined : type,
       wcsOsi: osi,
     };
-    method = buildPrice;
   }
 
-  const node = method(el, commerce, options);
+  const node = build(el, commerce, omitNullValues(options));
   log.debug('Rendering:', { type, options, node });
   el.replaceWith(node);
+
   return node;
 }
