@@ -123,8 +123,8 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
 
 // Current limitation: we can only add one link
 const decoratePromo = (elem, index) => {
-  const isDarkTheme = elem.classList.contains('dark');
-  const isImageOnly = elem.classList.contains('image-only');
+  const isDarkTheme = elem.matches('.dark');
+  const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
   decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });

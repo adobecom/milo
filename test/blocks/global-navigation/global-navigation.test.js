@@ -3,10 +3,12 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
+import longNav from './mocks/global-navigation-long.plain.js';
+import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -94,6 +96,12 @@ describe('global navigation', () => {
         const brandImage = document.querySelector(`${selectors.brandImage} img`);
         expect(isElementVisible(brandImage)).to.equal(true);
         expect(brandImage.getAttribute('alt')).to.equal('Alternative text');
+      });
+
+      it('should not render an image if the "no-logo" modifier is used', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(false);
       });
     });
 
@@ -888,6 +896,31 @@ describe('global navigation', () => {
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
         .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+    });
+
+    it('should add a modifier class when nav content overflows', async () => {
+      const getOverflowingTopnav = () => document.querySelector(selectors.overflowingTopNav);
+
+      await createFullGlobalNavigation();
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await createFullGlobalNavigation({ globalNavigation: longNav });
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.wide);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await setViewport(viewports.desktop);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.mobile);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
     });
   });
 });
