@@ -56,7 +56,7 @@ export default function getWcsClient(settings) {
   const {
     env,
     wcsApiKey: apiKey,
-    wcsEnvironment: environment,
+    wcsEnv: environment,
     wcsLandscape: landscape,
   } = settings;
   const fetchOptions = {

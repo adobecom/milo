@@ -1,5 +1,5 @@
 import lanaAppender from './lana.js';
-import { isFunction } from './utils.js';
+import { getParam, isFunction, toBoolean } from './utils.js';
 
 const epoch = Date.now();
 
@@ -88,15 +88,15 @@ function use(...plugins) {
   );
 }
 
-function init(env) {
-  if (env) {
-    if (env.name === 'prod') {
-      use(debugFilter);
-      use(lanaAppender);
-    } else {
-      use(consoleAppender);
-    }
-  }
+function init(env = {}) {
+  const { name } = env;
+  const debug = toBoolean(
+    getParam('debug', false, true),
+    name === 'local'
+  );
+  if (debug) use(consoleAppender);
+  else use(debugFilter);
+  if (name === 'prod') use(lanaAppender);
 }
 
 function reset() {

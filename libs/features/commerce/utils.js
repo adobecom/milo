@@ -43,6 +43,28 @@ export const ignore = () => {
   /* do nothing */
 };
 
+/**
+ * @param {string} key
+ * @param {boolean} useMetadata
+ * @param {boolean} useSearchAndStorage
+ * @returns 
+ */
+export function getParam(key, useMetadata = false, useSearchAndStorage = false) {
+  let param;
+  if (useMetadata) {
+    param = document.documentElement
+      .querySelector(`meta[name="${toKebabCase(key)}"]`)
+      // @ts-ignore
+      ?.content;
+  }
+  if (useSearchAndStorage && param === undefined) {
+    param = new URLSearchParams(window.location.search).get(key)
+      ?? window.sessionStorage.getItem(key)
+      ?? window.localStorage.getItem(key);
+  }
+  return param;
+}
+
 export const isBoolean = (val) => typeof val === 'boolean';
 export const isFunction = (val) => typeof val === 'function';
 export const isNumber = (val) => typeof val === 'number';

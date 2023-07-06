@@ -2,8 +2,8 @@ import CheckoutLinkElement from './checkoutLink.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
-  Environment,
-  WcsEnvironment,
+  Env,
+  WcsEnv,
   WcsLandscape
 } from './externals.js';
 import InlinePriceElement from './inlinePrice.js';
@@ -19,11 +19,11 @@ export {
   CheckoutLinkElement,
   CheckoutWorkflow,
   CheckoutWorkflowStep,
-  Environment,
+  Env as Environment,
   InlinePriceElement,
   Log,
   Placeholder,
-  WcsEnvironment,
+  WcsEnv as WcsEnvironment,
   WcsLandscape,
   getLocaleSettings,
   getSettings,

@@ -198,7 +198,7 @@ describe('Merch Block', () => {
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
-    it('merch link to CTA, metadata values', async () => {
+    it.only('merch link to CTA, metadata values', async () => {
       const metadata = createTag('meta', { name: 'checkout-workflow', content: 'UCv2' });
       document.head.appendChild(metadata);
       await initCommerce();

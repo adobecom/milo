@@ -1,8 +1,8 @@
-import { Environment } from '../externals.js';
+import { Env } from '../externals.js';
 
 import { expect } from '@esm-bundle/chai';
 import { defaults, getSettings } from '../settings.js';
-import { CheckoutWorkflow, CheckoutWorkflowStep, WcsEnvironment, WcsLandscape } from '../externals.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, WcsEnv, WcsLandscape } from '../externals.js';
 
 describe('getSettings', () => {
   it('returns default settings, if called without arguments', () => {
@@ -19,7 +19,7 @@ describe('getSettings', () => {
       checkoutWorkflowStep: CheckoutWorkflowStep.CHECKOUT,
       wcsApiKey: 'wcs-api-key',
       wcsDebounceDelay: 1,
-      wcsEnvironment: WcsEnvironment.STAGE,
+      wcsEnv: WcsEnv.STAGE,
       wcsForceTaxExclusive: true,
       wcsLandscape: WcsLandscape.DRAFT,
       wcsOfferSelectorLimit: 1,
@@ -31,7 +31,7 @@ describe('getSettings', () => {
     })).to.deep.equal({
       ...commerce,
       country: 'ZA',
-      env: Environment.STAGE,
+      env: Env.STAGE,
       language: 'en',
       locale: `en_ZA`,
     });

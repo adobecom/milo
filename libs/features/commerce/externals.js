@@ -4,7 +4,7 @@ import { Environment, Landscape, ProviderEnvironment } from '@pandora/data-sourc
 export {
   CheckoutType as CheckoutWorkflow,
   WorkflowStep as CheckoutWorkflowStep,
-  ProviderEnvironment as Environment,
-  Environment as WcsEnvironment,
+  ProviderEnvironment as Env,
+  Environment as WcsEnv,
   Landscape as WcsLandscape,
 }

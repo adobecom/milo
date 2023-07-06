@@ -1,15 +1,15 @@
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
-  Environment,
-  WcsEnvironment,
+  Env,
+  WcsEnv,
   WcsLandscape
 } from './externals.js';
 import {
   equalsCI,
+  getParam,
   toBoolean,
   toEnum,
-  toKebabCase,
   toPositiveFiniteNumber
 } from './utils.js';
 
@@ -20,11 +20,11 @@ export const defaults = {
   checkoutWorkflow: CheckoutWorkflow.V3,
   checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
   country: 'US',
-  env: Environment.PRODUCTION,
+  env: Env.PRODUCTION,
   language: 'en',
   wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
   wcsDebounceDelay: 50,
-  wcsEnvironment: WcsEnvironment.PRODUCTION,
+  wcsEnv: WcsEnv.PRODUCTION,
   wcsForceTaxExclusive: false,
   wcsLandscape: WcsLandscape.PUBLISHED,
   wcsOfferSelectorLimit: 20,
@@ -68,15 +68,20 @@ export function getLocaleSettings({
 /** @type {Commerce.getSettings} */
 export function getSettings({
   commerce = {},
-  env = { name: PROD },
+  env: miloEnv = { name: PROD },
   locale = undefined,
 } = {}) {
-  const isProd = env.name === PROD;
+  const env = toEnum(
+    commerce['env']
+      ?? getParam('env', false, miloEnv.name !== PROD)
+      ?? ['local', 'stage'].some((item) => equalsCI(item, miloEnv.name))
+        ? Env.STAGE
+        : Env.PRODUCTION,
+    Env,
+  );
 
-  const getSetting = (key) => commerce[key] ?? document.documentElement
-    .querySelector(`meta[name="${toKebabCase(key)}"]`)
-    // @ts-ignore
-    ?.content;
+  const getSetting = (key, useMetadata = true, useSearchAndStorage = env === Env.STAGE) => commerce[key]
+    ?? getParam(key, useMetadata, useSearchAndStorage);
 
   const checkoutClientId = getSetting('checkoutClientId') ?? defaults.checkoutClientId;
   const checkoutWorkflow = toEnum(
@@ -92,22 +97,21 @@ export function getSettings({
     )
     : CheckoutWorkflowStep.CHECKOUT;
   const wcsApiKey = getSetting('wcsApiKey') ?? defaults.wcsApiKey;
-  const wcsEnvironment = isProd ? WcsEnvironment.PRODUCTION : WcsEnvironment.STAGE;
   const wcsForceTaxExclusive = toBoolean(
     getSetting('wcsForceTaxExclusive'),
     defaults.wcsForceTaxExclusive
   );
   const wcsLandscape = toEnum(
-    getSetting('wcsLandscape'),
+    getSetting('wcsLandscape', false),
     WcsLandscape,
     defaults.wcsLandscape
   );
   const wcsDebounceDelay = toPositiveFiniteNumber(
-    getSetting('wcsDebounceDelay'),
+    getSetting('wcsDebounceDelay', false),
     defaults.wcsDebounceDelay
   );
   const wcsOfferSelectorLimit = toPositiveFiniteNumber(
-    getSetting('wcsOfferSelectorLimit'),
+    getSetting('wcsOfferSelectorLimit', false),
     defaults.wcsOfferSelectorLimit
   );
 
@@ -117,9 +121,9 @@ export function getSettings({
     checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
-    env: isProd ? Environment.PRODUCTION : Environment.STAGE,
+    env,
     wcsApiKey,
-    wcsEnvironment,
+    wcsEnv: env === Env.STAGE ? WcsEnv.STAGE : WcsEnv.PRODUCTION,
     wcsForceTaxExclusive,
     wcsLandscape,
     wcsDebounceDelay,

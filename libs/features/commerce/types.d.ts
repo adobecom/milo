@@ -2,10 +2,10 @@ declare namespace Commerce {
   type CheckoutData = import('@pandora/commerce-checkout-url-builder').CheckoutData;
   type CheckoutWorkflow = import('@pandora/commerce-checkout-url-builder').CheckoutType;
   type CheckoutWorkflowStep = import('@pandora/commerce-checkout-url-builder').WorkflowStep;
-  type Environment = import('@pandora/data-source-utils').Environment;
+  type Env = import('@pandora/data-source-utils').Environment;
   type WcsLandscape = import('@pandora/data-source-utils').Landscape;
   type WcsFetchOptions = import('@pandora/data-source-utils').FetchOptions;
-  type WcsProviderEnvironment = import('@pandora/data-source-utils').ProviderEnvironment;
+  type WcsProviderEnv = import('@pandora/data-source-utils').ProviderEnvironment;
   type WcsQueryOptions = import('@pandora/data-source-utils').QueryOptions;
   type WcsResolvedOffer = import('@pandora/data-models-odm').ResolvedOffer;
 
@@ -50,7 +50,7 @@ declare namespace Commerce {
 
   interface Settings {
     country: string;
-    env: WcsProviderEnvironment;
+    env: WcsProviderEnv;
     language: string;
     locale: string;
   }
@@ -155,7 +155,7 @@ declare namespace Commerce {
     interface Settings extends Commerce.Settings {
       wcsApiKey: string;
       wcsDebounceDelay: Number;
-      wcsEnvironment: Environment;
+      wcsEnv: Env;
       wcsForceTaxExclusive: boolean;
       wcsLandscape: WcsLandscape;
       wcsOfferSelectorLimit: Number;
