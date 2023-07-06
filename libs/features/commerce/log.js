@@ -99,6 +99,11 @@ function init(env) {
   }
 }
 
+function reset() {
+  appenders.clear();
+  filters.clear();
+}
+
 /** @type {Commerce.Log.Root} */
 export default {
   commerce: common.module('commerce'),
@@ -109,5 +114,6 @@ export default {
   quietFilter,
   lanaAppender,
   init,
+  reset,
   use,
 };

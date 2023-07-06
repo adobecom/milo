@@ -46,7 +46,7 @@ function buildPrice(el, commerce, options = {}) {
  * To get the default, 'undefinded' should be passed, empty string will trigger an error!
  *
  * clientId - code config -> default (adobe_com)
- * checkoutType - merch link -> metadata -> default (UCv3)
+ * workflow - merch link -> metadata -> default (UCv3)
  * workflowStep - merch link -> default (email)
  * marketSegment - merch link -> default (COM)
  * @param {URLSearchParams} searchParams link level overrides for checkout parameters
@@ -54,7 +54,7 @@ function buildPrice(el, commerce, options = {}) {
  */
 export function getCheckoutContext(commerce, searchParams) {
   const { checkoutClientId } = commerce.settings;
-  const checkoutWorkflow = searchParams.get('checkoutType')
+  const checkoutWorkflow = searchParams.get('workflow')
     ?? getMetadata('checkout-type')
     ?? commerce.settings.checkoutWorkflow;
   const checkoutWorkflowStep = searchParams

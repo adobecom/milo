@@ -1,7 +1,13 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 
-const { createLinkMarkup } = await import('../../../libs/blocks/ost/ost.js');
+const { LinkMarkupFactory } = await import('../../../libs/blocks/ost/ost.js');
+const createLinkMarkup = LinkMarkupFactory({
+  defaults: {
+    checkoutWorkflow: 'UCv3',
+    checkoutWorkflowStep: 'email',
+  },
+});
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { stockOffer } = JSON.parse(data);
@@ -63,7 +69,7 @@ describe('test createLinkMarkup', () => {
     placeholderOptions.workflowStep = 'email_checkout';
     placeholderOptions.workflow = 'UCv2';
     const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email%2Fcheckout`;
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&workflow=UCv2&workflowStep=email%2Fcheckout`;
 
     const type = 'checkoutUrl';
     const link = createLinkMarkup(

@@ -1,4 +1,4 @@
-import CheckoutLink from './checkoutLink.js';
+import CheckoutLinkElement from './checkoutLink.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
@@ -6,25 +6,27 @@ import {
   WcsEnvironment,
   WcsLandscape
 } from './externals.js';
-import InlinePrice from './inlinePrice.js';
+import InlinePriceElement from './inlinePrice.js';
 import Log from './log.js';
 import Placeholder from './placeholder.js';
 import service from './service.js';
-import { defaults } from './settings.js';
+import { defaults, getLocaleSettings, getSettings } from './settings.js';
 
 const { init, reset } = service;
 
 export {
   defaults,
+  CheckoutLinkElement,
   CheckoutWorkflow,
   CheckoutWorkflowStep,
   Environment,
-  WcsEnvironment,
-  WcsLandscape,
-  InlinePrice,
-  CheckoutLink,
+  InlinePriceElement,
   Log,
   Placeholder,
+  WcsEnvironment,
+  WcsLandscape,
+  getLocaleSettings,
+  getSettings,
   init,
   reset,
 };

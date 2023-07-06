@@ -8,6 +8,7 @@ declare namespace Commerce {
   type WcsQueryOptions = import('@pandora/data-source-utils').QueryOptions;
   type WcsResolvedOffer = import('@pandora/data-models-odm').ResolvedOffer;
 
+  type getLocaleSettings = (config?: Pick<Config, 'locale'>) => Omit<Settings, 'env'>;
   type getSettings = (config?: Config) => Checkout.Settings & Wcs.Settings;
   type init = (callback: () => Config) => Promise<Instance>;
   type pollImsCountry = (options?: {
@@ -108,12 +109,16 @@ declare namespace Commerce {
       quietFilter: Plugin;
       lanaAppender: Plugin;
       /**
-       * De-registers all log plugins and registers only base plugins suitable for given `env`.
+       * Registers built-in log plugins suitable for provided `env`.
        * @param env Milo `config.env` object.
        */
       init(env?: { name: string }): void;
       /**
-       * Registers given log plugins.
+       * De-registers all log plugins.
+       */
+      reset(): void;
+      /**
+       * Registers provided log plugins.
        */
       use(...plugins: Plugin[]): void;
     }

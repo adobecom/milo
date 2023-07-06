@@ -1,35 +1,36 @@
 import ctaTextOption from './ctaTextOption.js';
 import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
-import { ENV_PROD, getTacocatEnv } from '../merch/merch.js';
 
+export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
+export const CHECKOUT_CLIENT_ID = 'creative';
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
+const IMS_SCOPE = 'AdobeID,openid';
+const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const OST_VERSION = '1.11.0';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
-
-export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
-export const CHECKOUT_CLIENT_ID = 'creative';
+export const PANDORA_ENV = 'production';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 
 /**
  * Maps Franklin page metadata to OST properties.
  * Only values present in this object will be provided to OST.
  * Each key of the object is metadata key.
- * Each value - OST property name.
+ * Each value is OST property name.
  */
-const METADATA_MAPPINGS = { 'checkout-type': 'checkoutType' };
+const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
 document.body.classList.add('tool', 'tool-ost');
 
-export function createLinkMarkup(
+export const LinkMarkupFactory = ({ defaults }) => (
   offerSelectorId,
   type,
   { offer_id: offerId, name: offerName, commitment, planType },
   placeholderOptions,
   location = window.location,
-) {
+) => {
   const { ctaText = 'buy-now' } = placeholderOptions;
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
@@ -51,14 +52,12 @@ export function createLinkMarkup(
       : '');
 
     if (isCheckoutPlaceholder) {
-      const DEFAULT_WORKFLOW = 'UCv3';
-      const DEFAULT_WORKFLOW_STEP = 'email';
-      const { workflow, workflowStep } = placeholderOptions;
       url.searchParams.set('text', ctaText);
-      if (workflow !== DEFAULT_WORKFLOW) {
-        url.searchParams.set('checkoutType', workflow);
+      const { workflow, workflowStep } = placeholderOptions;
+      if (workflow !== defaults.checkoutWorkflow) {
+        url.searchParams.set('workflow', workflow);
       }
-      if (workflowStep !== DEFAULT_WORKFLOW_STEP) {
+      if (workflowStep !== defaults.checkoutWorkflowStep) {
         url.searchParams.set(
           'workflowStep',
           toggleWorkflowStepFormat(workflowStep),
@@ -70,6 +69,7 @@ export function createLinkMarkup(
       url.searchParams.set('seat', displayPerUnit);
       url.searchParams.set('tax', displayTax);
     }
+
     return url.toString();
   };
 
@@ -77,9 +77,11 @@ export function createLinkMarkup(
   link.textContent = createText();
   link.href = createHref();
   return link;
-}
+};
 
 export async function loadOstEnv() {
+  const Commerce = await import('../../deps/commerce/index.js');
+
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
   searchParameters.delete('token');
@@ -87,10 +89,9 @@ export async function loadOstEnv() {
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
 
-  let country;
-  let language;
-  let locale;
+  let { country, language } = Commerce.getLocaleSettings();
   const { locales } = getConfig();
+  const log = Commerce.Log.common.module('ost');
   const metadata = {};
   let url;
 
@@ -100,11 +101,10 @@ export async function loadOstEnv() {
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const json = await res.json();
       url = new URL(json.preview.url);
-      locale = getLocale(locales, url.pathname);
-      ({ country, language } = getTacocatEnv(ENV_PROD, locale));
-    } catch (e) {
-      console.error('OST, failed to get env:', e.message);
-      ({ country, language } = getTacocatEnv());
+      const locale = getLocale(locales, url.pathname);
+      ({ country, language } = Commerce.getLocaleSettings({ locale }));
+    } catch (error) {
+      log.error('Unable to fetch page status:', error);
     }
 
     if (url) {
@@ -119,21 +119,20 @@ export async function loadOstEnv() {
             if (content) metadata[value] = content;
           },
         );
-      } catch (e) {
-        console.error('OST, failed to get metadata:', e.message);
+      } catch (error) {
+        log.error('Unable to fetch page metadata:', error);
       }
     }
   }
-
-  ({ country, language } = getTacocatEnv(ENV_PROD, locale));
 
   return {
     ...metadata,
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
+    createLinkMarkup: LinkMarkupFactory(Commerce),
     country,
-    environment: ENV_PROD.toUpperCase(),
+    environment: PANDORA_ENV,
     language,
     searchParameters,
     wcsApiKey: WCS_API_KEY,
@@ -155,7 +154,6 @@ export default async function init(el) {
   function openOst() {
     window.ost.openOfferSelectorTool({
       ...ostEnv,
-      createLinkMarkup,
       rootElement: el.firstElementChild,
     });
   }
@@ -165,10 +163,10 @@ export default async function init(el) {
   } else {
     window.adobeid = {
       client_id: IMS_COMMERCE_CLIENT_ID,
-      environment: 'prod',
+      environment: IMS_ENV,
       optimizations: { fastEvents: true },
       autoValidateToken: true,
-      scope: 'AdobeID,openid',
+      scope: IMS_SCOPE,
       onAccessToken: ({ token }) => {
         ostEnv.aosAccessToken = token;
         openOst();
@@ -179,6 +177,7 @@ export default async function init(el) {
         }
       },
     };
+
     await loadScript(IMS_PROD_URL);
   }
 }

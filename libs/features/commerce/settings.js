@@ -44,16 +44,13 @@ const supportedLanguages = [
   'lt', 'lv', 'nb', 'nl', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'tr', 'uk', 'zh_CN', 'zh_TW',
 ];
 
-/** @type {Commerce.getSettings} */
-export function getSettings({
-  commerce = {},
-  env = { name: PROD },
+/** @type {Commerce.getLocaleSettings} */
+export function getLocaleSettings({
   locale = { ietf: 'en-US' },
 } = {}) {
-  const isProd = env.name === PROD;
-
   const ietf = geoMappings[locale.prefix ?? ''] ?? locale.ietf;
   let [language = defaults.language, country = defaults.country] = ietf.split('-', 2);
+
   country = country.toUpperCase();
   language = (
     supportedLanguages.some((candidate) => equalsCI(candidate, language))
@@ -61,50 +58,73 @@ export function getSettings({
       : defaults.language
   ).toLowerCase();
 
-  const head = document.documentElement;
-  const getSetting = (key) => commerce[key]
-    // @ts-ignore
-    ?? head.querySelector(`meta[name="${toKebabCase(key)}"]`)?.content;
+  return {
+    country,
+    language,
+    locale: `${language}_${country}`
+  }
+}
 
-  /** @type {Commerce.Checkout.Settings & Commerce.Wcs.Settings} */
-  const settings = {};
-  settings.checkoutClientId = getSetting('checkoutClientId') ?? defaults.checkoutClientId;
-  settings.checkoutWorkflow = toEnum(
+/** @type {Commerce.getSettings} */
+export function getSettings({
+  commerce = {},
+  env = { name: PROD },
+  locale = undefined,
+} = {}) {
+  const isProd = env.name === PROD;
+
+  const getSetting = (key) => commerce[key] ?? document.documentElement
+    .querySelector(`meta[name="${toKebabCase(key)}"]`)
+    // @ts-ignore
+    ?.content;
+
+  const checkoutClientId = getSetting('checkoutClientId') ?? defaults.checkoutClientId;
+  const checkoutWorkflow = toEnum(
     getSetting('checkoutWorkflow'),
     CheckoutWorkflow,
     defaults.checkoutWorkflow
   );
-  settings.checkoutWorkflowStep = settings.checkoutWorkflow === CheckoutWorkflow.V3
+  const checkoutWorkflowStep = checkoutWorkflow === CheckoutWorkflow.V3
     ? toEnum(
       getSetting('checkoutWorkflowStep'),
       CheckoutWorkflowStep,
       defaults.checkoutWorkflowStep
     )
     : CheckoutWorkflowStep.CHECKOUT;
-  settings.country = country;
-  settings.env = isProd ? Environment.PRODUCTION : Environment.STAGE;
-  settings.language = language;
-  settings.locale = `${language}_${country}`;
-  settings.wcsApiKey = getSetting('wcsApiKey') ?? defaults.wcsApiKey;
-  settings.wcsEnvironment = isProd ? WcsEnvironment.PRODUCTION : WcsEnvironment.STAGE;
-  settings.wcsForceTaxExclusive = toBoolean(
+  const wcsApiKey = getSetting('wcsApiKey') ?? defaults.wcsApiKey;
+  const wcsEnvironment = isProd ? WcsEnvironment.PRODUCTION : WcsEnvironment.STAGE;
+  const wcsForceTaxExclusive = toBoolean(
     getSetting('wcsForceTaxExclusive'),
     defaults.wcsForceTaxExclusive
   );
-  settings.wcsLandscape = toEnum(
+  const wcsLandscape = toEnum(
     getSetting('wcsLandscape'),
     WcsLandscape,
     defaults.wcsLandscape
   );
-  settings.wcsDebounceDelay = toPositiveFiniteNumber(
+  const wcsDebounceDelay = toPositiveFiniteNumber(
     getSetting('wcsDebounceDelay'),
     defaults.wcsDebounceDelay
   );
-  settings.wcsOfferSelectorLimit = toPositiveFiniteNumber(
+  const wcsOfferSelectorLimit = toPositiveFiniteNumber(
     getSetting('wcsOfferSelectorLimit'),
     defaults.wcsOfferSelectorLimit
   );
-  return settings;
+
+  /** @type {Commerce.Checkout.Settings & Commerce.Wcs.Settings} */
+  return {
+    ...getLocaleSettings({ locale }),
+    checkoutClientId,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    env: isProd ? Environment.PRODUCTION : Environment.STAGE,
+    wcsApiKey,
+    wcsEnvironment,
+    wcsForceTaxExclusive,
+    wcsLandscape,
+    wcsDebounceDelay,
+    wcsOfferSelectorLimit,
+  };
 }
 
 export default getSettings;
