@@ -90,37 +90,28 @@ class CheckoutLinkElement extends HTMLAnchorElement {
 
   renderHref(items, offerType, productArrangementCode, marketSegment) {
     const {
-      checkoutClientId,
-      checkoutWorkflow: defaultCheckoutWorkflow,
-      checkoutWorkflowStep: defaultCheckoutWorkflowStep,
-      country,
-      env,
-      language,
-    } = Service.instance.settings;
-
-    const {
+      checkoutClientId: clientId,
       customParameters = '{}',
+      imsCountry,
       promotionCode,
-      checkoutWorkflow = defaultCheckoutWorkflow,
-      checkoutWorkflowStep = defaultCheckoutWorkflowStep,
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
     } = this.dataset;
 
-    this.href = buildCheckoutUrl(
-      // @ts-ignore
-      checkoutWorkflow, {
-      clientId: checkoutClientId,
-      context: window.frameElement ? 'if' : 'fp',
-      country: this.dataset.imsCountry || country,
-      env,
+    const options = {
+      workflow,
+      workflowStep,
+      clientId,
       items,
-      language,
-      workflowStep: checkoutWorkflowStep,
       marketSegment,
       offerType,
       productArrangementCode,
       checkoutPromoCode: promotionCode,
       ...JSON.parse(customParameters),
-    });
+    };
+    if (imsCountry) options.country = imsCountry;
+
+    this.href = Service.instance.checkout.buildUrl(options);
 
     this.placeholder.toggleResolved();
   }

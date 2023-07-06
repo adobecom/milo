@@ -1,4 +1,5 @@
 declare namespace Commerce {
+  type CheckoutData = import('@pandora/commerce-checkout-url-builder').CheckoutData;
   type CheckoutWorkflow = import('@pandora/commerce-checkout-url-builder').CheckoutType;
   type CheckoutWorkflowStep = import('@pandora/commerce-checkout-url-builder').WorkflowStep;
   type Environment = import('@pandora/data-source-utils').Environment;
@@ -30,7 +31,8 @@ declare namespace Commerce {
   }
 
   interface Instance {
-    imsCountryPromise: Promise<string | void>;
+    checkout: Checkout.Client;
+    ims: Ims.Client;
     providers: {
       price(
         provider: (
@@ -66,10 +68,22 @@ declare namespace Commerce {
   interface InlinePriceElement extends PLaceholderElement, HTMLSpanElement {}
 
   module Checkout {
+    interface Client {
+      buildUrl(options: CheckoutData & {
+        workflow: CheckoutWorkflow
+      }): string;
+    }
+
     interface Settings extends Commerce.Settings {
       checkoutClientId: string;
       checkoutWorkflow: CheckoutWorkflow;
       checkoutWorkflowStep: CheckoutWorkflowStep;
+    }
+  }
+
+  module Ims {
+    interface Client {
+      get country(): Promise<string | void>;
     }
   }
 

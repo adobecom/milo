@@ -52,7 +52,7 @@ function handleEntry(entry) {
 function createLog(namespace) {
   const index = (indexes.get(namespace) ?? 0) + 1;
   indexes.set(namespace, index);
-  const id = `${namespace}-${index}`;
+  const id = `${namespace} #${index}`;
 
   const createHandler = (level) => (message, ...params) => handleEntry(
     createEntry(level, message, namespace, params, id),

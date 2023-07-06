@@ -26,7 +26,7 @@ export function buildCta(el, commerce, options = {}) {
   a.setAttribute('class', classes.join(' '));
   Object.assign(a.dataset, options);
   a.textContent = el.textContent?.replace(CTA_PREFIX, '');
-  commerce.imsCountryPromise
+  commerce.ims.country
     .then((countryCode) => {
       if (countryCode) a.dataset.imsCountry = countryCode;
     })

@@ -1,3 +1,4 @@
+import Checkout from './checkout.js';
 import pollImsCountry from './ims.js';
 import Log from './log.js';
 import getSettings from './settings.js';
@@ -19,12 +20,18 @@ async function init(callback) {
   log.debug('Initialising:', config);
   const literals = { price: {} };
   const settings = getSettings(config);
+  const imsCountry = pollImsCountry().then((countryCode) => {
+    if (countryCode) settings.country = countryCode;
+    return countryCode;
+  });
 
   instance = {
-    imsCountryPromise: pollImsCountry().then((countryCode) => {
-      if (countryCode) settings.country = countryCode;
-      return countryCode;
-    }),
+    checkout: Checkout(settings),
+    ims: {
+      get country() {
+        return imsCountry;
+      }
+    },
     providers: {
       price(interceptor) {
         providers.add(interceptor);
