@@ -8,10 +8,12 @@
     "build:literals": "./scripts/fetch-price-literals.sh",
     "build:watch": "npm run build:bundle --watch",
     "test": "wtr --config ../../../web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2001 --coverage --concurrent-browsers 4",
-    "test:watch": "npm test -- --watch"
+    "test:watch": "npm test -- --watch",
+    "test:file": "wtr --config ../../../web-test-runner.config.mjs --node-resolve --port=2001 --coverage",
+    "test:file:watch": "wtr --config ../../../web-test-runner.config.mjs --node-resolve --port=2001 --coverage --watch"
   },
   "dependencies": {
-    "@dexter/tacocat-consonant-templates": "^1.9.6",
+    "@dexter/tacocat-consonant-templates": "file:./tacocat-consonant-templates-tmp.tgz",
     "@dexter/tacocat-core": "^1.10.3",
     "@pandora/commerce-checkout-url-builder": "^1.0.3",
     "@pandora/data-models-odm": "^0.5.1",
@@ -21,6 +23,8 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@esm-bundle/chai-as-promised": "^7.1.1",
+    "@types/chai-as-promised": "^7.1.5",
     "@types/sinon": "^10.0.15",
     "esbuild": "^0.18.11"
   }

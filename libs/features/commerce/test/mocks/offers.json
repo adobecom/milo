@@ -1,0 +1,220 @@
+{
+  "abm-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["abm-mult"],
+        "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+        "priceDetails": {
+          "price": 54.99,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "YEAR",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "no-offer-mult": {
+    "resolvedOffers": []
+  },
+  "stock-abm-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["stock-abm-mult"],
+        "offerId": "7164A328080BC96CC60FEBF33F64342D",
+        "priceDetails": {
+          "price": 29.99,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "stks_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "YEAR",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "TRIAL",
+        "pricePoint": "TRIAL_STOCK_7_DAY_TRIAL",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "puf-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["puf-mult"],
+        "offerId": "9E618D5A589EF8D6364DFBE02FC2C264",
+        "priceDetails": {
+          "price": 599.88,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "YEAR",
+        "term": "ANNUAL",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "m2m-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["m2m-mult"],
+        "offerId": "257E1D82082387D152029F93C1030624",
+        "priceDetails": {
+          "price": 82.49,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "MONTH",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "abm-promo-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["abm-promo-mult"],
+        "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+        "priceDetails": {
+          "price": 43.99,
+          "priceWithoutDiscount": 54.99,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "YEAR",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "m2m-promo-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["m2m-promo-mult"],
+        "offerId": "257E1D82082387D152029F93C1030624",
+        "priceDetails": {
+          "price": 65.99,
+          "priceWithoutDiscount": 82.49,
+          "usePrecision": true,
+          "formatString": "'US$'#,##0.00",
+          "taxDisplay": "TAX_EXCLUSIVE",
+          "taxTerm": "TAX"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "MONTH",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "perpetual-en": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["perpetual-en"],
+        "offerId": "C5AC20C8AAF4892B67DE2E89B26D8ACA",
+        "priceDetails": {
+          "price": 502.56,
+          "usePrecision": true,
+          "formatString": "# ##0,00 '&euro;'",
+          "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+          "taxTerm": "VAT"
+        },
+        "productArrangementCode": "perpetual_acrobat_standard_2020_perpetual_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "PERPETUAL",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "FULL",
+        "language": "FR",
+        "merchant": "ADOBE"
+      }
+    ]
+  },
+  "perpetual-mult": {
+    "resolvedOffers": []
+  },
+  "tax-exclusive-mult": {
+    "resolvedOffers": [
+      {
+        "offerSelectorIds": ["tax-exclusive-mult"],
+        "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+        "priceDetails": {
+          "price": 49.98,
+          "priceWithoutDiscount": 62.47,
+          "priceWithoutTax": 41.65,
+          "priceWithoutDiscountAndTax": 52.06,
+          "usePrecision": true,
+          "formatString": "# ##0,00 '&euro;'",
+          "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+          "taxTerm": "VAT"
+        },
+        "productArrangementCode": "ccsn_direct_individual",
+        "buyingProgram": "RETAIL",
+        "commitment": "YEAR",
+        "term": "MONTHLY",
+        "customerSegment": "INDIVIDUAL",
+        "marketSegments": ["COM"],
+        "salesChannel": "DIRECT",
+        "offerType": "BASE",
+        "pricePoint": "REGULAR",
+        "language": "MULT",
+        "merchant": "ADOBE"
+      }
+    ]
+  }
+}

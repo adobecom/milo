@@ -11,7 +11,7 @@ import Placeholder from './placeholder.js';
 import Service from './service.js';
 import { getSingleOffer, toBoolean } from './utils.js';
 
-class HTMLInlinePriceElement extends HTMLSpanElement {
+export class HTMLInlinePriceElement extends HTMLSpanElement {
   static get observedAttributes() {
     return [
       'data-wcs-osi',

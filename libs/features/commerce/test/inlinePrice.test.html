@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "@pandora/fetch": "./mocks/fetch.js",
+          "react": "./mocks/react.js"
+        }
+      }
+    </script>
+    <style>
+      span {
+        padding: 0px 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import { runTests } from '@web/test-runner-mocha';
+
+      runTests(async () => {
+        window.process = { env: {} };
+        await import('./inlinePrice.test.html.js');
+      });
+    </script>
+  </body>
+</html>

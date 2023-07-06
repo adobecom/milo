@@ -7,11 +7,13 @@ export const PENDING = 'placeholder-pending';
 /** @type {Commerce.PLaceholderElement & Record<string, any>} */
 // @ts-ignore
 const Mixin = {
-  attributeChangedCallback() {
+  attributeChangedCallback(attr, prev, next) {
+    this.log?.debug('Changed:', attr, "=", next);
     this.render();
   },
 
   connectedCallback() {
+    this.log?.debug('Connected');
     this.render();
   },
 

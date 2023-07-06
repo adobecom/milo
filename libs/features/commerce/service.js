@@ -34,8 +34,8 @@ async function init(callback) {
     },
     providers: {
       price(interceptor) {
-        providers.add(interceptor);
-        return () => providers.delete(interceptor);
+        providers.price.add(interceptor);
+        return () => providers.price.delete(interceptor);
       },
     },
     literals,

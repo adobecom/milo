@@ -31,7 +31,7 @@ export function forceTaxExclusivePrice(offer) {
  * @param {*} isPerpetual whether the OSI corresponds to a perpetual offer
  * @returns a single offer
  */
-export function getSingleOffer([first, second], country, isPerpetual) {
+export function getSingleOffer([first, second] = [], country, isPerpetual) {
   if (!second) return first;
   if (country === 'GB' || isPerpetual) {
     return first.language === 'EN' ? first : second;
