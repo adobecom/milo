@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/ay} YEAR {/yıl} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {(aylık)} YEAR {(yıllık)} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {(lisans başına)} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {(lisans başına)} other {}}",
+  "freeLabel": "Ücretsiz",
+  "freeAriaLabel": "Ücretsiz",
+  "taxExclusiveLabel": "{taxTerm, select, GST {GST hariç} VAT {KDV hariç} TAX {vergi hariç} IVA {IVA hariç} SST {SST hariç} KDV {KDV hariç} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {GST dahil} VAT {KDV dahil} TAX {vergi dahil} IVA {IVA dahil} SST {SST dahil} KDV {KDV dahil} other {}}",
+  "alternativePriceAriaLabel": "Ya da {alternativePrice}",
+  "strikethroughAriaLabel": "Standart fiyat: {strikethroughPrice}"
+}

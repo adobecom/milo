@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/міс.} YEAR {/рік} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {на місяць} YEAR {на рік} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {за ліцензію} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {за ліцензію} other {}}",
+  "freeLabel": "Безкоштовно",
+  "freeAriaLabel": "Безкоштовно",
+  "taxExclusiveLabel": "{taxTerm, select, GST {без GST} VAT {без ПДВ} TAX {без податку} IVA {без IVA} SST {без SST} KDV {без KDV} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {разом із GST} VAT {разом із ПДВ} TAX {разом із податком} IVA {разом з IVA} SST {разом із SST} KDV {разом із KDV} other {}}",
+  "alternativePriceAriaLabel": "Або за {alternativePrice}",
+  "strikethroughAriaLabel": "Звичайна ціна {strikethroughPrice}"
+}

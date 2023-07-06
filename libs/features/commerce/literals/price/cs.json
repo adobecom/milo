@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/měsíc} YEAR {/rok} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {za měsíc} YEAR {za rok} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {za licenci} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {za licenci} other {}}",
+  "freeLabel": "Zdarma",
+  "freeAriaLabel": "Zdarma",
+  "taxExclusiveLabel": "{taxTerm, select, GST {bez daně ze zboží a služeb} VAT {bez DPH} TAX {bez daně} IVA {bez IVA} SST {bez SST} KDV {bez KDV} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {včetně daně ze zboží a služeb} VAT {včetně DPH} TAX {včetně daně} IVA {včetně IVA} SST {včetně SST} KDV {včetně KDV} other {}}",
+  "alternativePriceAriaLabel": "Případně za {alternativePrice}",
+  "strikethroughAriaLabel": "Pravidelně za {strikethroughPrice}"
+}

@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/월} YEAR {/년} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {월간} YEAR {연간} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {라이선스당} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {라이선스당} other {}}",
+  "freeLabel": "무료",
+  "freeAriaLabel": "무료",
+  "taxExclusiveLabel": "{taxTerm, select, GST {GST 제외} VAT {VAT 제외} TAX {세금 제외} IVA {IVA 제외} SST {SST 제외} KDV {KDV 제외} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {GST 포함} VAT {VAT 포함} TAX {세금 포함} IVA {IVA 포함} SST {SST 포함} KDV {KDV 포함} other {}}",
+  "alternativePriceAriaLabel": "또는 {alternativePrice}에",
+  "strikethroughAriaLabel": "일반가 {strikethroughPrice}"
+}

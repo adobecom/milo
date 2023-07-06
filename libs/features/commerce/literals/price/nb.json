@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/mnd.} YEAR {/år} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {per måned} YEAR {per år} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {per lisens} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {per lisens} other {}}",
+  "freeLabel": "Fri",
+  "freeAriaLabel": "Fri",
+  "taxExclusiveLabel": "{taxTerm, select, GST {ekskl. GST} VAT {ekskl. moms} TAX {ekskl. avgift} IVA {ekskl. IVA} SST {ekskl. SST} KDV {ekskl. KDV} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. avgift} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}",
+  "alternativePriceAriaLabel": "Alternativt til {alternativePrice}",
+  "strikethroughAriaLabel": "Regelmessig til {strikethroughPrice}"
+}

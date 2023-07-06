@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/kk} YEAR {/v} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {kuukausittain} YEAR {vuosittain} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}",
+  "freeLabel": "Maksuton",
+  "freeAriaLabel": "Maksuton",
+  "taxExclusiveLabel": "{taxTerm, select, GST {ilman GST:tä} VAT {ilman ALV:tä} TAX {ilman veroja} IVA {ilman IVA:ta} SST {ilman SST:tä} KDV {ilman KDV:tä} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {sis. GST:n} VAT {sis. ALV:n} TAX {sis. verot} IVA {sis. IVA:n} SST {sis. SST:n} KDV {sis. KDV:n} other {}}",
+  "alternativePriceAriaLabel": "Vaihtoehtoisesti hintaan {alternativePrice}",
+  "strikethroughAriaLabel": "Säännöllisesti hintaan {strikethroughPrice}"
+}

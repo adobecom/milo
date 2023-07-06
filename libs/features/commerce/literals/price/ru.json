@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/мес.} YEAR {/г.} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {в месяц} YEAR {в год} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {за лицензию} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {за лицензию} other {}}",
+  "freeLabel": "Бесплатно",
+  "freeAriaLabel": "Бесплатно",
+  "taxExclusiveLabel": "{taxTerm, select, GST {искл. налог на товары и услуги} VAT {искл. НДС} TAX {искл. налог} IVA {искл. ИВА} SST {искл. SST} KDV {искл. КДВ} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {вкл. налог на товары и услуги} VAT {вкл. НДС} TAX {вкл. налог} IVA {вкл. ИВА} SST {вкл. SST} KDV {вкл. КДВ} other {}}",
+  "alternativePriceAriaLabel": "Альтернативный вариант за {alternativePrice}",
+  "strikethroughAriaLabel": "Регулярно по цене {strikethroughPrice}"
+}

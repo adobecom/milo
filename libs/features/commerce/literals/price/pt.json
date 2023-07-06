@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/mês} YEAR {/ano} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {por mês} YEAR {por ano} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {por licença} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {por licença} other {}}",
+  "freeLabel": "Gratuito",
+  "freeAriaLabel": "Gratuito",
+  "taxExclusiveLabel": "{taxTerm, select, GST {ICMS não incluso} VAT {IVA não incluso} TAX {impostos não inclusos} IVA {IVA não incluso} SST { SST não incluso} KDV {KDV não incluso} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {ICMS incluso} VAT {IVA incluso} TAX {impostos inclusos} IVA {IVA incluso} SST {SST incluso} KDV {KDV incluso} other {}}",
+  "alternativePriceAriaLabel": "Ou a {alternativePrice}",
+  "strikethroughAriaLabel": "Preço normal: {strikethroughPrice}"
+}

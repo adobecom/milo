@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {每月} YEAR {每年} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {每個授權} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {每個授權} other {}}",
+  "freeLabel": "免費",
+  "freeAriaLabel": "免費",
+  "taxExclusiveLabel": "{taxTerm, select, GST {不含 GST} VAT {不含 VAT} TAX {不含稅} IVA {不含 IVA} SST {不含 SST} KDV {不含 KDV} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {含 GST} VAT {含 VAT} TAX {含稅} IVA {含 IVA} SST {含 SST} KDV {含 KDV} other {}}",
+  "alternativePriceAriaLabel": "或者在 {alternativePrice}",
+  "strikethroughAriaLabel": "標準價格為 {strikethroughPrice}"
+}

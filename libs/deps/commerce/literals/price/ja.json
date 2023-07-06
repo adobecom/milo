@@ -1,0 +1,12 @@
+{
+  "recurrenceLabel": "{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}",
+  "recurrenceAriaLabel": "{recurrenceTerm, select, MONTH {毎月} YEAR {毎年} other {}}",
+  "perUnitLabel": "{perUnit, select, LICENSE {ライセンスごと} other {}}",
+  "perUnitAriaLabel": "{perUnit, select, LICENSE {ライセンスごと} other {}}",
+  "freeLabel": "無料",
+  "freeAriaLabel": "無料",
+  "taxExclusiveLabel": "{taxTerm, select, GST {GST 別} VAT {VAT 別} TAX {税別} IVA {IVA 別} SST {SST 別} KDV {KDV 別} other {}}",
+  "taxInclusiveLabel": "{taxTerm, select, GST {GST 込} VAT {VAT 込} TAX {税込} IVA {IVA 込} SST {SST 込} KDV {KDV 込} other {}}",
+  "alternativePriceAriaLabel": "特別価格 : {alternativePrice}",
+  "strikethroughAriaLabel": "通常価格 : {strikethroughPrice}"
+}

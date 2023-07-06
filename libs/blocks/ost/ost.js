@@ -11,6 +11,7 @@ const OST_VERSION = '1.11.0';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
+/** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const PANDORA_ENV = 'production';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 
