@@ -1,8 +1,7 @@
-import { Env } from '../externals.js';
-
 import { expect } from '@esm-bundle/chai';
-import { defaults, getSettings } from '../settings.js';
-import { CheckoutWorkflow, CheckoutWorkflowStep, WcsEnv, WcsLandscape } from '../externals.js';
+
+import { MiloEnv, defaults, getSettings } from '../settings.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Env, WcsEnv, WcsLandscape } from '../externals.js';
 
 describe('getSettings', () => {
   it('returns default settings, if called without arguments', () => {
@@ -26,7 +25,7 @@ describe('getSettings', () => {
     }
     expect(getSettings({
       commerce,
-      env: { name: 'stage' },
+      env: { name: MiloEnv.LOCAL },
       locale: { prefix: 'africa' }
     })).to.deep.equal({
       ...commerce,

@@ -13,7 +13,11 @@ import {
   toPositiveFiniteNumber
 } from './utils.js';
 
-export const PROD = 'prod';
+export const MiloEnv = {
+  LOCAL: 'local',
+  PROD: 'prod',
+  STAGE: 'stage',
+}
 
 export const defaults = {
   checkoutClientId: 'adobe_com',
@@ -68,16 +72,17 @@ export function getLocaleSettings({
 /** @type {Commerce.getSettings} */
 export function getSettings({
   commerce = {},
-  env: { name: envName } = { name: PROD },
+  env: { name: envName } = { name: MiloEnv.PROD },
   locale = undefined,
 } = {}) {
-  const env = toEnum(
-    commerce['env'] ?? getParam('env', false, envName !== PROD),
-    Env,
-    'stage' == envName || 'local' == envName
-      ? Env.STAGE
-      : Env.PRODUCTION
+  const miloEnv = toEnum(
+    commerce['env'] ?? getParam('env', false, envName !== MiloEnv.PROD),
+    MiloEnv,
+    envName ?? MiloEnv.PROD
   );
+  const env = miloEnv === MiloEnv.LOCAL || miloEnv === MiloEnv.STAGE
+    ? Env.STAGE
+    : Env.PRODUCTION;
 
   const getSetting = (key, useMetadata = true, useSearchAndStorage = env === Env.STAGE) => commerce[key]
     ?? getParam(key, useMetadata, useSearchAndStorage);
