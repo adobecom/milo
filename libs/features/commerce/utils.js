@@ -57,7 +57,7 @@ export function getParam(key, useMetadata = false, useSearchAndStorage = false) 
       // @ts-ignore
       ?.content;
   }
-  if (useSearchAndStorage && param === undefined) {
+  if (useSearchAndStorage && param == null) {
     param = new URLSearchParams(window.location.search).get(key)
       ?? window.sessionStorage.getItem(key)
       ?? window.localStorage.getItem(key);

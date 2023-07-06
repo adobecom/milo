@@ -74,7 +74,9 @@ function use() {
 }
 
 export default {
-  providers,
+  get providers() {
+    return providers;
+  },
 
   /** @type {Commerce.Instance} */
   get instance() {

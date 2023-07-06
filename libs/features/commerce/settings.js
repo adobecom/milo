@@ -68,16 +68,15 @@ export function getLocaleSettings({
 /** @type {Commerce.getSettings} */
 export function getSettings({
   commerce = {},
-  env: miloEnv = { name: PROD },
+  env: { name: envName } = { name: PROD },
   locale = undefined,
 } = {}) {
   const env = toEnum(
-    commerce['env']
-      ?? getParam('env', false, miloEnv.name !== PROD)
-      ?? ['local', 'stage'].some((item) => equalsCI(item, miloEnv.name))
-        ? Env.STAGE
-        : Env.PRODUCTION,
+    commerce['env'] ?? getParam('env', false, envName !== PROD),
     Env,
+    'stage' == envName || 'local' == envName
+      ? Env.STAGE
+      : Env.PRODUCTION
   );
 
   const getSetting = (key, useMetadata = true, useSearchAndStorage = env === Env.STAGE) => commerce[key]

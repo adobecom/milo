@@ -31,9 +31,9 @@ declare namespace Commerce {
   }
 
   interface Instance {
-    checkout: Checkout.Client;
-    ims: Ims.Client;
-    providers: {
+    readonly checkout: Checkout.Client;
+    readonly ims: Ims.Client;
+    readonly providers: {
       price(
         provider: (
           element: InlinePriceElement,
@@ -41,11 +41,11 @@ declare namespace Commerce {
         ) => void
       ): () => void;
     };
-    literals: {
+    readonly literals: {
       price: Record<string, string>;
     };
-    settings: Checkout.Settings & Wcs.Settings;
-    wcs: Wcs.Client;
+    readonly settings: Checkout.Settings & Wcs.Settings;
+    readonly wcs: Wcs.Client;
   }
 
   interface Settings {
