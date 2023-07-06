@@ -443,7 +443,7 @@ header.global-navigation {
     display: flex;
   }
 
-  .feds-topnav--overflowing .feds-brand-label {
+  .feds-topnav--overflowing .feds-brand-label:nth-child(2) {
     display: none;
   }
 

@@ -912,7 +912,7 @@ describe('global navigation', () => {
 
       expect(getOverflowingTopnav()).to.equal(null);
 
-      await setViewport(viewports.desktop);
+      await setViewport(viewports.smallDesktop);
       isTangentToViewport.dispatchEvent(new Event('change'));
 
       expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
