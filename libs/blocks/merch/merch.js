@@ -74,7 +74,7 @@ export function getCheckoutContext(commerce, searchParams) {
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
 
-  const { init: initCommerce, Log } = await import('../../deps/commerce/index.js');
+  const { init: initCommerce, Log } = await import('../../deps/commerce.js');
   const log = Log.commerce.module('merch');
   const commerce = await initCommerce(getConfig);
 

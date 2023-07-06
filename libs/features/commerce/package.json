@@ -3,10 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "build": "mkdir -p ../../deps/commerce && npm run build:bundle && npm run build:literals",
-    "build:bundle": "esbuild ./index.js --alias:react=./react-shim.js --bundle --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce/index.js --platform=browser --sourcemap --target=es2020",
+    "build": "npm run build:bundle && npm run build:literals",
+    "build:bundle": "esbuild ./index.js --alias:react=./react-shim.js --bundle --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce.js --platform=browser --sourcemap --target=es2020",
     "build:literals": "./scripts/fetch-price-literals.sh",
-    "build:rollup": "rollup --config rollup.config.js --verbose",
     "build:watch": "npm run build:bundle --watch",
     "test": "wtr --config ../../../web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2001 --coverage --concurrent-browsers 4",
     "test:watch": "npm test -- --watch"

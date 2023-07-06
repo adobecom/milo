@@ -26,7 +26,7 @@ describe('Merch Block', () => {
     await mockIms();
     await mockWcs();
     setConfig(config);
-    Commerce = await import('../../../libs/deps/commerce/index.js');
+    Commerce = await import('../../../libs/deps/commerce.js');
     Commerce.Log.use(Commerce.Log.quietFilter);
     Merch = (await import('../../../libs/blocks/merch/merch.js')).default;
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
