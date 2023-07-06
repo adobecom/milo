@@ -77,7 +77,7 @@ export const waitForElement = (selector, parent) => new Promise((resolve, reject
 
 const ogFetch = window.fetch;
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const config = {
+export const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
