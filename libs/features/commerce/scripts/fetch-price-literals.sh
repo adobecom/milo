@@ -35,7 +35,7 @@ languages=(
 )
 
 scriptDir=$(dirname "$0")
-outputFolder="$scriptDir/../literals/price"
+outputFolder="$scriptDir/../../../deps/commerce/literals/price"
 
 # Create the output folder if it doesn't exist
 mkdir -p "$outputFolder"
