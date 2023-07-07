@@ -28,7 +28,7 @@ declare global {
       maxAttempts?: number;
     }) => Promise<string | void>;
     type providePriceOptions = (
-      element: InlinePriceElement,
+      element: HTMLInlinePriceElement,
       options: Record<string, any>
     ) => void;
     type reset = () => void;
@@ -37,9 +37,6 @@ declare global {
       commerce?: Partial<
         Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
       >;
-      env?: {
-        name: string;
-      };
       locale?: {
         ietf?: string;
         prefix?: string;

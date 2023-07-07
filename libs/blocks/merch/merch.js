@@ -2,7 +2,9 @@ import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
 export const CTA_PREFIX = /^CTA +/;
 
-export function checkCustomElementsSupport() {
+export async function polyfill() {
+  if (polyfill.done) return;
+  polyfill.done = true;
   let isSupported = false;
   document.createElement('div', {
     // eslint-disable-next-line getter-return
@@ -10,7 +12,11 @@ export function checkCustomElementsSupport() {
       isSupported = true;
     },
   });
-  return isSupported;
+  if (!isSupported) {
+    const { codeRoot, miloLibs } = getConfig();
+    const base = miloLibs || codeRoot;
+    await loadScript(`${base}/deps/custom-elements.js`);
+  }
 }
 
 export const omitNullValues = (target) => {
@@ -85,15 +91,10 @@ export function getCheckoutContext(commerce, searchParams) {
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
 
-  const config = getConfig();
-  if (!checkCustomElementsSupport()) {
-    const base = config.miloLibs || config.codeRoot;
-    return loadScript(`${base}/deps/custom-elements.js`);
-  }
-
+  await polyfill();
   const { init: initCommerce, Log } = await import('../../deps/commerce.js');
   const log = Log.commerce.module('merch');
-  const commerce = await initCommerce(() => config);
+  const commerce = await initCommerce(getConfig);
 
   const { searchParams } = new URL(el.href);
   const osi = searchParams.get('osi');

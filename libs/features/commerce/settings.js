@@ -53,17 +53,14 @@ export function getLocaleSettings({
 /** @type {Commerce.getSettings} */
 export function getSettings({
   commerce = {},
-  env: { name: envName } = { name: MiloEnv.PROD },
   locale = undefined,
 } = {}) {
-  const miloEnv = toEnum(
-    commerce['env'] ?? getParam('env', false, envName !== MiloEnv.PROD),
-    MiloEnv,
-    envName ?? MiloEnv.PROD
-  );
-  const env = miloEnv === MiloEnv.LOCAL || miloEnv === MiloEnv.STAGE
-    ? Env.STAGE
-    : Env.PRODUCTION;
+  // always use `prod` env by default, regardless Milo env
+  // but allow overriding it in metadata, location.search or storage
+  // @see https://github.com/adobecom/milo/pull/923
+  const env = MiloEnv.PROD === toEnum(getParam('env', true, true), MiloEnv, MiloEnv.PROD)
+    ? Env.PRODUCTION
+    : Env.STAGE;
 
   const getSetting = (key, useMetadata = true, useSearchAndStorage = env === Env.STAGE) => commerce[key]
     ?? getParam(key, useMetadata, useSearchAndStorage);
