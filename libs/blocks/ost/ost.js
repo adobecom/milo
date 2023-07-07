@@ -81,6 +81,7 @@ export const LinkMarkupFactory = ({ defaults }) => (
 };
 
 export async function loadOstEnv() {
+  /* c8 ignore next */
   const Commerce = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);

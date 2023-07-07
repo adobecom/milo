@@ -12,11 +12,13 @@ export async function polyfill() {
       isSupported = true;
     },
   });
+  /* c8 ignore start */
   if (!isSupported) {
     const { codeRoot, miloLibs } = getConfig();
     const base = miloLibs || codeRoot;
     await loadScript(`${base}/deps/custom-elements.js`);
   }
+  /* c8 ignore stop */
 }
 
 export const omitNullValues = (target) => {
