@@ -34,7 +34,7 @@ export function getTacocatLocale(locale) {
   return { country, language };
 }
 
-export function getTacocatEnv(isProd = true, locale) {
+export function getTacocatEnv(locale, isProd = true) {
   const { country, language } = getTacocatLocale(locale);
   const host = isProd
     ? 'https://www.adobe.com'
@@ -91,17 +91,31 @@ export const runTacocat = (tacocatEnv, country, language) => {
 };
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { commerceEnv, locale } = getConfig();
+  const { commerceEnv, locale, miloLibs, codeRoot } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
     country,
     language,
     tacocatEnv,
-  } = getTacocatEnv(commerceEnv != ENV_STAGE, locale);
+  } = getTacocatEnv(locale, commerceEnv != ENV_STAGE);
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */
+    .then(() => {
+      let isSupported = false;
+      document.createElement('div', {
+        // eslint-disable-next-line getter-return
+        get is() {
+          isSupported = true;
+        },
+      });
+      if (!isSupported) {
+        const base = miloLibs || codeRoot;
+        return loadScript(`${base}/deps/custom-elements.js`);
+      }
+      return null;
+    })
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);

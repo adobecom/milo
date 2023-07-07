@@ -2,14 +2,14 @@ import { createTag, getConfig, loadScript, debounce } from '../../utils/utils.js
 import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
+  const { locale } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
     country,
     language,
     tacocatEnv,
-  } = getTacocatEnv(env.name, locale);
+  } = getTacocatEnv(locale);
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */

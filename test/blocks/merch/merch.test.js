@@ -307,7 +307,7 @@ describe('Merch Block', () => {
 
   describe('Tacocat config', () => {
     it('falls back to en for unsupported languages', async () => {
-      const { literalScriptUrl, language } = getTacocatEnv('local', { ietf: 'xx-US' });
+      const { literalScriptUrl, language } = getTacocatEnv({ ietf: 'xx-US' });
       expect(literalScriptUrl).to.equal(
         'https://www.adobe.com/special/tacocat/literals/en.js',
       );
@@ -316,8 +316,7 @@ describe('Merch Block', () => {
 
     it('returns production values', async () => {
       const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(
-        'prod',
-        { ietf: 'fr-CA' },
+        { ietf: 'fr-CA' }
       );
       expect(scriptUrl).to.equal(
         `https://www.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
@@ -330,25 +329,25 @@ describe('Merch Block', () => {
     });
 
     it('returns geo mapping', async () => {
-      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
+      let { country, language } = getTacocatEnv({ prefix: 'africa' });
       expect(country).to.equal('ZA');
       expect(language).to.equal('en');
 
-      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
+      ({ country, language } = getTacocatEnv({ prefix: 'no' }));
       expect(country).to.equal('NO');
       expect(language).to.equal('nb');
 
-      ({ country, language } = getTacocatEnv('prod', { prefix: 'no' }));
+      ({ country, language } = getTacocatEnv({ prefix: 'no' }));
       expect(country).to.equal('NO');
       expect(language).to.equal('nb');
     });
 
     it('returns geo mapping', async () => {
-      let { country, language } = getTacocatEnv('prod', { prefix: 'africa' });
+      let { country, language } = getTacocatEnv({ prefix: 'africa' });
       expect(country).to.equal('ZA');
       expect(language).to.equal('en');
 
-      ({ country, language } = getTacocatEnv('prod', { ietf: 'en' }));
+      ({ country, language } = getTacocatEnv({ ietf: 'en' }));
       expect(country).to.equal('US');
       expect(language).to.equal('en');
     });
