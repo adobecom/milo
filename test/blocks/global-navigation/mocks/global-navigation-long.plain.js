@@ -111,7 +111,7 @@ export default `<div>
       >
     </li>
   </ul>
-  <div class="link-group blue">
+  <div class="link-group">
     <div>
       <div>
         <picture>
@@ -217,6 +217,15 @@ export default `<div>
 </div>
 <div>
   <h2 id="no-dropdown"><a href="https://www.adobe.com/">No Dropdown</a></h2>
+</div>
+<div>
+  <h2 id="product-dropdown"><a href="https://www.adobe.com/">Product link</a></h2>
+</div>
+<div>
+  <h2 id="solution-link"><a href="https://www.adobe.com/">Solution link</a></h2>
+</div>
+<div>
+  <h2 id="unbelievably-long-link-label"><a href="https://www.adobe.com/">Unbelievably long link label</a></h2>
 </div>
 <div>
   <div class="search">

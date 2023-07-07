@@ -45,6 +45,7 @@ export const viewports = {
   mobile: { width: 899, height: 1024 },
   smallDesktop: { width: 901, height: 1024 },
   desktop: { width: 1200, height: 1024 },
+  wide: { width: 1600, height: 1024 },
 };
 
 export const loadStyles = (path) => new Promise((resolve) => loadStyle(path, resolve));
@@ -76,7 +77,7 @@ export const waitForElement = (selector, parent) => new Promise((resolve, reject
 
 const ogFetch = window.fetch;
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const config = {
+export const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
@@ -148,8 +149,7 @@ export const createFullGlobalNavigation = async ({
   ]);
 
   const instance = await initGnav(document.body.querySelector('header'));
-  instance.loadIMS();
-  window.adobeid.onReady();
+  instance.imsReady();
   await clock.runAllAsync();
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
