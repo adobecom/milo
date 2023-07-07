@@ -1,30 +1,9 @@
-import { createTag, getConfig, loadScript, debounce } from '../../utils/utils.js';
-import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
+// TODO: rename this block to avoid confusion with commerce feature
 
-window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
-  const {
-    literalScriptUrl,
-    scriptUrl,
-    country,
-    language,
-    tacocatEnv,
-  } = getTacocatEnv(env.name, locale);
+import { createTag, getConfig, debounce } from '../../utils/utils.js';
+import { buildCta, getCheckoutContext, omitNullValues } from '../merch/merch.js';
 
-  loadScript(literalScriptUrl)
-    .catch(() => ({})) /* ignore if literals fail */
-    .then(() => loadScript(scriptUrl))
-    .then(() => {
-      runTacocat(tacocatEnv, country, language);
-      resolve(false);
-    })
-    .catch((error) => {
-      console.error('Failed to load tacocat', error);
-      resolve(true);
-    });
-});
-
-export const filterOfferDetails = (o) => {
+export const filterOfferDetails = (offerDetails) => {
   const formattedOffer = {};
 
   function formatPrice(price, format) {
@@ -42,7 +21,7 @@ export const filterOfferDetails = (o) => {
     term,
     offerSelectorIds,
     priceDetails,
-  } = o;
+  } = offerDetails;
 
   formattedOffer.offerType = offerType;
   formattedOffer.offerId = offerId;
@@ -56,7 +35,7 @@ export const filterOfferDetails = (o) => {
   return formattedOffer;
 };
 
-export const decorateOfferDetails = async (el, of, searchParams) => {
+export const decorateOfferDetails = async (commerce, el, offerDetails, searchParams) => {
   function formatOfferDetailKeys(str) {
     const details = str.split(/(?=[A-Z])/);
     const allCapsDetail = details.map((detail) => detail.toUpperCase());
@@ -65,7 +44,7 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
   }
   const offerDetailsList = document.createElement('ul');
   offerDetailsList.className = 'offer-details';
-  const offer = filterOfferDetails(of);
+  const offer = filterOfferDetails(offerDetails);
   Object.entries(offer).forEach(([key, value]) => {
     const offerData = document.createElement('li');
     const offerKey = document.createElement('span');
@@ -87,15 +66,15 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
     perpetual,
     promotionCode,
     wcsOsi: searchParams.get('osi'),
-    ...getCheckoutContext(searchParams, getConfig()),
+    ...getCheckoutContext(commerce, searchParams),
   });
-  const checkoutUrl = buildCheckoutButton(checkoutLink, options);
+  const checkoutUrl = buildCta(commerce, checkoutLink, options);
   checkoutUrl.target = '_blank';
   offerDetailsList.appendChild(checkoutUrl);
   el.append(offerDetailsList);
 };
 
-export const handleSearch = async (event, el) => {
+export const handleSearch = async (commerce, event, el) => {
   let searchParams = {};
   const displaySearchError = () => {
     const notValidUrl = document.createElement('h4');
@@ -111,33 +90,33 @@ export const handleSearch = async (event, el) => {
     displaySearchError();
     return undefined;
   }
-  window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
-    decorateOfferDetails(el, offerDetails, searchParams);
-  }).catch(displaySearchError);
+  commerce.wcs.resolveOfferSelector({ osi })
+    .then(([offerDetails]) => {
+      decorateOfferDetails(commerce, el, offerDetails, searchParams);
+    })
+    .catch(displaySearchError);
 };
 
-export const decorateSearch = (el) => {
+export const decorateSearch = (commerce, el) => {
   const search = createTag('input', { class: 'offer-search', placeholder: 'Enter offer URL to preview' });
   const icon = createTag('div', { class: 'offer-search-icon' });
   const searchWrapper = createTag('div', { class: 'offer-search-wrapper' }, [search, icon]);
   const offerDetailsWrapper = createTag('div', { class: 'offer-details-wrapper' });
   el.append(searchWrapper);
   el.append(offerDetailsWrapper);
-  search.addEventListener('keyup', debounce((event) => handleSearch(event, offerDetailsWrapper), 500));
+  search.addEventListener(
+    'keyup',
+    debounce((event) => handleSearch(commerce, event, offerDetailsWrapper), 500),
+  );
 };
 
 function detectContext() {
   if (window.self === window.top) document.body.classList.add('in-page');
 }
 
-// eslint-disable-next-line consistent-return
-const init = async (el) => {
-  const fail = await window.tacocat.loadPromise;
-  if (fail) {
-    return undefined;
-  }
+export default async function init(el) {
+  const { init: initCommerce } = await import('../../deps/commerce.js');
+  const commerce = await initCommerce(getConfig);
   detectContext();
-  decorateSearch(el);
-};
-
-export default init;
+  decorateSearch(commerce, el);
+}

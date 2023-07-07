@@ -1,9 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import {
+import init, {
   filterOfferDetails,
   decorateOfferDetails,
-  handleSearch,
   decorateSearch,
 } from '../../../libs/blocks/commerce/commerce.js';
 
@@ -43,7 +42,15 @@ describe('decorateOfferDetails', () => {
   it('decorates offer details correctly', async () => {
     const el = document.createElement('div');
     const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false');
-    await decorateOfferDetails(el, offer, searchParams);
+    const commerce = {
+      ims: { country: Promise.resolve() },
+      settings: {
+        checkoutClientId: 'test',
+        checkoutWorkflow: 'UCv3',
+        checkoutWorkflowStep: 'email',
+      },
+    };
+    await decorateOfferDetails(commerce, el, offer, searchParams);
     const offerDetailsList = el.querySelector('.offer-details');
     expect(offerDetailsList).to.exist;
     expect(offerDetailsList.children[0].textContent).to.equal('OFFER TYPE: BASE');
@@ -60,9 +67,9 @@ describe('decorateOfferDetails', () => {
 });
 
 describe('decorateSearch', () => {
-  it('decorates search input correctly', () => {
+  it('decorates search input correctly', async () => {
     const el = document.createElement('div');
-    decorateSearch(el);
+    await init(el);
     const searchWrapper = el.querySelector('.offer-search-wrapper');
     const offerDetailsWrapper = el.querySelector('.offer-details-wrapper');
     expect(searchWrapper).to.exist;

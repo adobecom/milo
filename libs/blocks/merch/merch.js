@@ -28,7 +28,7 @@ export const omitNullValues = (target) => {
   return target;
 };
 
-export function buildCta(el, commerce, options = {}) {
+export function buildCta(commerce, el, options = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
   const classes = ['con-button'];
@@ -51,7 +51,7 @@ export function buildCta(el, commerce, options = {}) {
   return a;
 }
 
-function buildPrice(el, commerce, options = {}) {
+function buildPrice(commerce, el, options = {}) {
   const span = document.createElement('span', { is: 'inline-price' });
   span.setAttribute('is', 'inline-price');
   Object.assign(span.dataset, omitNullValues(options));
@@ -69,19 +69,18 @@ function buildPrice(el, commerce, options = {}) {
  * @param {URLSearchParams} searchParams link level overrides for checkout parameters
  * @returns checkout context object required to build a checkout url
  */
-export function getCheckoutContext(commerce, searchParams) {
-  const { checkoutClientId } = commerce.settings;
+export function getCheckoutContext({ settings }, searchParams) {
   const checkoutWorkflow = searchParams.get('workflow')
     ?? getMetadata('checkout-type')
-    ?? commerce.settings.checkoutWorkflow;
+    ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = searchParams
     ?.get('workflowStep')
     ?.replace('_', '/')
-    ?? commerce.settings.checkoutWorkflowStep;
+    ?? settings.checkoutWorkflowStep;
   const checkoutMarketSegment = searchParams.get('marketSegment');
 
   return {
-    checkoutClientId,
+    checkoutClientId: settings.checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
@@ -138,7 +137,7 @@ export default async function init(el) {
     };
   }
 
-  const node = build(el, commerce, omitNullValues(options));
+  const node = build(commerce, el, omitNullValues(options));
   log.debug('Rendering:', { type, options, node });
   el.replaceWith(node);
 

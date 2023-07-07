@@ -1,4 +1,5 @@
 import HTMLCheckoutLinkElement from './checkoutLink.js';
+import defaults from './defaults.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
@@ -10,10 +11,12 @@ import HTMLInlinePriceElement from './inlinePrice.js';
 import Log from './log.js';
 import HTMLPlaceholderMixin from './placeholder.js';
 import { init, reset } from './service.js';
+import { getLocaleSettings, getSettings } from './settings.js';
 
 export {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
+  defaults,
   Env,
   HTMLCheckoutLinkElement,
   HTMLInlinePriceElement,
@@ -21,6 +24,8 @@ export {
   Log,
   WcsEnv,
   WcsLandscape,
+  getLocaleSettings,
+  getSettings,
   init,
   reset,
 };
