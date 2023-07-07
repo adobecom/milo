@@ -1,6 +1,17 @@
-import { getConfig, getMetadata } from '../../utils/utils.js';
+import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
 export const CTA_PREFIX = /^CTA +/;
+
+export function checkCustomElementsSupport() {
+  let isSupported = false;
+  document.createElement('div', {
+    // eslint-disable-next-line getter-return
+    get is() {
+      isSupported = true;
+    },
+  });
+  return isSupported;
+}
 
 export const omitNullValues = (target) => {
   if (target != null) {
@@ -74,9 +85,15 @@ export function getCheckoutContext(commerce, searchParams) {
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
 
+  const config = getConfig();
+  if (!checkCustomElementsSupport()) {
+    const base = config.miloLibs || config.codeRoot;
+    return loadScript(`${base}/deps/custom-elements.js`);
+  }
+
   const { init: initCommerce, Log } = await import('../../deps/commerce.js');
   const log = Log.commerce.module('merch');
-  const commerce = await initCommerce(getConfig);
+  const commerce = await initCommerce(() => config);
 
   const { searchParams } = new URL(el.href);
   const osi = searchParams.get('osi');

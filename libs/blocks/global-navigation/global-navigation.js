@@ -28,7 +28,7 @@ import {
   lanaLog,
 } from './utilities/utilities.js';
 
-import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray, replaceText } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -446,25 +446,44 @@ class Gnav {
     const rawBlock = this.body.querySelector(selector);
     if (!rawBlock) return '';
 
+    // Get all non-image links
     const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)/;
     const blockLinks = [...rawBlock.querySelectorAll('a')];
-    const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
-      || imgRegex.test(blockLink.textContent));
     const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
       && !imgRegex.test(blockLink.textContent));
 
     if (!link) return '';
 
-    const imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    // Check which elements should be rendered
+    const renderImage = !rawBlock.matches('.no-logo');
     const renderLabel = includeLabel && !rawBlock.matches('.image-only');
-    const labelEl = renderLabel ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>` : '';
 
+    if (!renderImage && !renderLabel) return '';
+
+    // Create image element
+    let imageEl = '';
+
+    if (renderImage) {
+      const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+      imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    }
+
+    // Create label element
+    let labelEl = '';
+
+    if (renderLabel) {
+      labelEl = toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`;
+    }
+
+    // Create final template
     const decoratedElem = toFragment`
       <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
 
+    // Add accessibility attributes if just an image is rendered
     if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
 
     return decoratedElem;
@@ -700,8 +719,10 @@ export default async function init(header) {
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
   if (!html) return null;
+  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+
   try {
-    const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
+    const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);
