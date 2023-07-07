@@ -1,3 +1,4 @@
+/// <reference path="../../deps/commerce.d.ts" />
 import { getConfig, getMetadata, loadScript } from '../../utils/utils.js';
 
 export const CTA_PREFIX = /^CTA +/;
@@ -30,6 +31,12 @@ export const omitNullValues = (target) => {
   return target;
 };
 
+/**
+ * @param {Commerce.Instance} commerce
+ * @param {HTMLElement} el
+ * @param {Record<string, string>} [options]
+ * @returns {Commerce.HTMLCheckoutLinkElement}
+ */
 export function buildCta(commerce, el, options = {}) {
   const a = document.createElement('a', { is: 'checkout-link' });
   a.setAttribute('is', 'checkout-link');
@@ -43,7 +50,7 @@ export function buildCta(commerce, el, options = {}) {
     classes.push('blue');
   }
   a.setAttribute('class', classes.join(' '));
-  Object.assign(a.dataset, options);
+  Object.assign(a.dataset, omitNullValues(options));
   a.textContent = el.textContent?.replace(CTA_PREFIX, '');
   commerce.ims.country
     .then((countryCode) => {
@@ -53,6 +60,12 @@ export function buildCta(commerce, el, options = {}) {
   return a;
 }
 
+/**
+ * @param {Commerce.Instance} [commerce]
+ * @param {HTMLElement} [el]
+ * @param {Record<string, string>} [options]
+ * @returns {Commerce.HTMLInlinePriceElement}
+ */
 function buildPrice(commerce, el, options = {}) {
   const span = document.createElement('span', { is: 'inline-price' });
   span.setAttribute('is', 'inline-price');
@@ -68,6 +81,7 @@ function buildPrice(commerce, el, options = {}) {
  * workflow - merch link -> metadata -> default (UCv3)
  * workflowStep - merch link -> default (email)
  * marketSegment - merch link -> default (COM)
+ * @param {Commerce.Instance} commerce
  * @param {URLSearchParams} searchParams link level overrides for checkout parameters
  * @returns checkout context object required to build a checkout url
  */

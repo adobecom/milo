@@ -1,9 +1,6 @@
 // @ts-nocheck
-
 export const IMS_POLL_INTERVAL = 200;
 export const IMS_POLL_MAX_ATTEMPTS = 25;
-
-let imsCountry;
 
 /** @type {Commerce.pollImsCountry} */
 export function pollImsCountry({

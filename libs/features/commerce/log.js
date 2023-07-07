@@ -1,3 +1,4 @@
+import { MiloEnv } from './deps.js';
 import lanaAppender from './lana.js';
 import { getParam, isFunction, toBoolean } from './utils.js';
 
@@ -92,11 +93,11 @@ function init(env = {}) {
   const { name } = env;
   const debug = toBoolean(
     getParam('debug', false, true),
-    name === 'local'
+    name === MiloEnv.LOCAL
   );
   if (debug) use(consoleAppender);
   else use(debugFilter);
-  if (name === 'prod') use(lanaAppender);
+  if (name === MiloEnv.PROD) use(lanaAppender);
 }
 
 function reset() {

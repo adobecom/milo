@@ -1,3 +1,4 @@
+/// <reference path="../../deps/commerce.d.ts" />
 import ctaTextOption from './ctaTextOption.js';
 import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
 
@@ -25,6 +26,9 @@ const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 
 document.body.classList.add('tool', 'tool-ost');
 
+/**
+ * @param {Commerce.Instance} commerce
+ */
 export const LinkMarkupFactory = ({ defaults }) => (
   offerSelectorId,
   type,

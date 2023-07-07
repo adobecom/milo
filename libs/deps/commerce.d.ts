@@ -1,13 +1,5 @@
-import {
-  CheckoutData,
-  CheckoutType as CheckoutWorkflow,
-  WorkflowStep as CheckoutWorkflowStep,
-} from '@pandora/commerce-checkout-url-builder';
-import {
-  ProviderEnvironment as Env,
-  Landscape as WcsLandscape,
-  Environment as WcsEnv,
-} from '@pandora/data-source-utils';
+import { CheckoutData, CheckoutType, WorkflowStep } from '@pandora/commerce-checkout-url-builder';
+import { ProviderEnvironment, Landscape, Environment } from '@pandora/data-source-utils';
 import { ResolvedOffer as WcsResolvedOffer } from '@pandora/data-models-odm';
 
 // TODO: expose this type from @dexter/tacocat-consonant-templates package
@@ -18,6 +10,9 @@ declare global {
     type Defaults = Readonly<
       Omit<Commerce.Checkout.Settings & Commerce.Wcs.Settings, 'locale'>
     >;
+
+    type Env = ProviderEnvironment;
+
     type getLocaleSettings = (
       config?: Pick<Config, 'locale'>
     ) => Omit<Settings, 'env'>;
@@ -87,18 +82,19 @@ declare global {
     }
 
     module Checkout {
+      type Workflow = CheckoutType;
       interface Client {
         buildUrl(
           options: CheckoutData & {
-            workflow: CheckoutWorkflow;
+            workflow: Workflow;
           }
         ): string;
       }
 
       interface Settings extends Commerce.Settings {
         checkoutClientId: string;
-        checkoutWorkflow: CheckoutWorkflow;
-        checkoutWorkflowStep: CheckoutWorkflowStep;
+        checkoutWorkflow: Workflow;
+        checkoutWorkflowStep: WorkflowStep;
       }
     }
 
@@ -171,6 +167,8 @@ declare global {
 
     module Wcs {
       type PlanType = 'ABM' | 'PUF' | 'M2M' | 'PERPETUAL' | 'UNKNOWN';
+      type Env = Environment;
+
       interface Client {
         resolveOfferSelector(options: {
           isPerpetual?: boolean;
@@ -183,11 +181,26 @@ declare global {
       interface Settings extends Commerce.Settings {
         wcsApiKey: string;
         wcsDebounceDelay: number;
-        wcsEnv: WcsEnv;
+        wcsEnv: Env;
         wcsForceTaxExclusive: boolean;
-        wcsLandscape: WcsLandscape;
+        wcsLandscape: Landscape;
         wcsOfferSelectorLimit: number;
       }
     }
   }
 }
+
+export declare const CheckoutWorkflow: Commerce.Checkout.Workflow;
+export declare const CheckoutWorkflowStep: WorkflowStep;
+export declare const defaults: Commerce.Defaults;
+export declare const Env: Commerce.Env;
+export declare const HTMLCheckoutLinkElement: Commerce.HTMLCheckoutLinkElement; 
+export declare const HTMLInlinePriceElement: Commerce.HTMLInlinePriceElement;
+export declare const HTMLPlaceholderMixin: Commerce.PLaceholderElement
+export declare const Log: Commerce.Log.Root;
+export declare const WcsEnv: Commerce.Wcs.Env;
+export declare const WcsLandscape: Landscape;
+export declare const getLocaleSettings: Commerce.getLocaleSettings;
+export declare const getSettings: Commerce.getSettings;
+export declare const init: Commerce.init;
+export declare const reset: Commerce.reset;

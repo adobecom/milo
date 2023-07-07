@@ -19,19 +19,18 @@ describe('getSettings', () => {
       checkoutWorkflowStep: CheckoutWorkflowStep.CHECKOUT,
       wcsApiKey: 'wcs-api-key',
       wcsDebounceDelay: 1,
-      wcsEnv: WcsEnv.STAGE,
+      wcsEnv: WcsEnv.PRODUCTION,
       wcsForceTaxExclusive: true,
       wcsLandscape: WcsLandscape.DRAFT,
       wcsOfferSelectorLimit: 1,
     }
     expect(getSettings({
       commerce,
-      env: { name: MiloEnv.LOCAL },
       locale: { prefix: 'africa' }
     })).to.deep.equal({
       ...commerce,
       country: 'ZA',
-      env: Env.STAGE,
+      env: Env.PRODUCTION,
       language: 'en',
       locale: `en_ZA`,
     });
