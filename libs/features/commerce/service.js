@@ -1,18 +1,19 @@
 import Checkout from './checkout.js';
-import pollImsCountry from './ims.js';
+import defaults from './defaults.js';
+import { pollImsCountry } from './ims.js';
 import Log from './log.js';
-import getSettings from './settings.js';
-import getWcsClient from './wcs.js';
+import { getSettings } from './settings.js';
+import Wcs from './wcs.js';
 
-let providers = {
-  price: new Set(),
-};
 /** @type {Commerce.Instance} */
 let instance = null;
 let promise = null;
+const providers = {
+  /** @type {Set<Commerce.providePriceOptions>} */
+  price: new Set(),
+};
 
-/** @type {Commerce.init} */
-async function init(callback) {
+async function activate(callback) {
   const config = callback();
 
   Log.init(config.env);
@@ -27,20 +28,21 @@ async function init(callback) {
 
   instance = {
     checkout: Checkout(settings),
+    defaults: Object.freeze({ ...defaults }),
     ims: {
       get country() {
         return imsCountry;
       }
     },
     providers: {
-      price(interceptor) {
-        providers.price.add(interceptor);
-        return () => providers.price.delete(interceptor);
+      price(provider) {
+        providers.price.add(provider);
+        return () => providers.price.delete(provider);
       },
     },
     literals,
     settings,
-    wcs: getWcsClient(settings)
+    wcs: Wcs(settings)
   };
 
   // fetch price literals
@@ -68,40 +70,45 @@ async function init(callback) {
   return instance;
 }
 
-function use() {
+function demand() {
   if (instance === null) throw new Error('Not initialised');
   return instance;
 }
 
+/** @type {Commerce.init} */
+export function init(callback) {
+  // eslint-disable-next-line no-return-assign
+  return promise ??= activate(callback);
+}
+
+/** @type {Commerce.reset} */
+export function reset() {
+  instance = null;
+  promise = null;
+  providers.price.clear();
+}
+
+/** @type {Commerce.Internal.Instance} */
 export default {
+  get checkout() {
+    return demand().checkout;
+  },
+  get defaults() {
+    return demand().defaults;
+  },
+  get ims() {
+    return demand().ims;
+  },
+  get literals() {
+    return demand().literals;
+  },
   get providers() {
     return providers;
   },
-
-  /** @type {Commerce.Instance} */
-  get instance() {
-    return use();
-  },
-
-  /** @type {Commerce.Checkout.Settings & Commerce.Wcs.Settings} */
   get settings() {
-    return use().settings;
+    return demand().settings;
   },
-
-  /** @type {Commerce.Wcs.Client} */
   get wcs() {
-    return use().wcs;
-  },
-
-  /** @type {Commerce.init} */
-  init(callback) {
-    // eslint-disable-next-line no-return-assign
-    return promise ??= init(callback);
-  },
-
-  reset() {
-    instance = null;
-    promise = null;
-    providers.price.clear();
+    return demand().wcs;
   },
 };

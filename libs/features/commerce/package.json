@@ -13,7 +13,7 @@
     "test:file:watch": "wtr --config ../../../web-test-runner.config.mjs --node-resolve --port=2001 --coverage --watch"
   },
   "dependencies": {
-    "@dexter/tacocat-consonant-templates": "file:./tacocat-consonant-templates-tmp.tgz",
+    "@dexter/tacocat-consonant-templates": "^1.9.7",
     "@dexter/tacocat-core": "^1.10.3",
     "@pandora/commerce-checkout-url-builder": "^1.0.3",
     "@pandora/data-models-odm": "^0.5.1",

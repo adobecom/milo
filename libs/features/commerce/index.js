@@ -1,32 +1,26 @@
-import CheckoutLinkElement from './checkoutLink.js';
+import HTMLCheckoutLinkElement from './checkoutLink.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
   Env,
   WcsEnv,
   WcsLandscape
-} from './externals.js';
-import InlinePriceElement from './inlinePrice.js';
+} from './deps.js';
+import HTMLInlinePriceElement from './inlinePrice.js';
 import Log from './log.js';
-import Placeholder from './placeholder.js';
-import service from './service.js';
-import { defaults, getLocaleSettings, getSettings } from './settings.js';
-
-const { init, reset } = service;
+import HTMLPlaceholderMixin from './placeholder.js';
+import { init, reset } from './service.js';
 
 export {
-  defaults,
-  CheckoutLinkElement,
   CheckoutWorkflow,
   CheckoutWorkflowStep,
-  Env as Environment,
-  InlinePriceElement,
+  Env,
+  HTMLCheckoutLinkElement,
+  HTMLInlinePriceElement,
+  HTMLPlaceholderMixin,
   Log,
-  Placeholder,
-  WcsEnv as WcsEnvironment,
+  WcsEnv,
   WcsLandscape,
-  getLocaleSettings,
-  getSettings,
   init,
   reset,
 };

@@ -1,11 +1,11 @@
-import { buildCheckoutUrl } from "@pandora/commerce-checkout-url-builder";
+import { buildCheckoutUrl } from './deps.js';
 import Log from "./log.js";
 
 /**
  * @param {Commerce.Checkout.Settings} settings
  * @returns {Commerce.Checkout.Client}
  */
-const Checkout = (settings) => {
+export default function Checkout(settings) {
   const log = Log.commerce.module('checkout');
 
   function buildUrl(options) {
@@ -17,6 +17,7 @@ const Checkout = (settings) => {
       env,
       language: checkoutLanguage,
     } = settings;
+
     const {
       clientId = checkoutClientId,
       country = checkoutCountry,
@@ -42,6 +43,4 @@ const Checkout = (settings) => {
   };
 
   return { buildUrl };
-};
-
-export default Checkout;
+}

@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-import pollImsCountry from '../ims.js';
+import { pollImsCountry } from '../ims.js';
 
 describe('pollImsCountry', () => {
   afterEach(() => {

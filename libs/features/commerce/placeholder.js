@@ -6,7 +6,7 @@ export const PENDING = 'placeholder-pending';
 
 /** @type {Commerce.PLaceholderElement & Record<string, any>} */
 // @ts-ignore
-const Mixin = {
+export const HTMLPlaceholderMixinBase = {
   attributeChangedCallback(attr, prev, next) {
     this.log?.debug('Changed:', attr, "=", next);
     this.render();
@@ -97,12 +97,17 @@ const Mixin = {
   },
 };
 
-function Placeholder(extendsTag, customTag, Class) {
+/**
+ * @template T
+ * @param {string} extendsTag
+ * @param {string} customTag
+ * @param {T extends CustomElementConstructor ? T : never} Class
+ * @return {T & ReturnType<Commerce.PLaceholderElement>}
+ */
+export default function HTMLPlaceholderMixin(extendsTag, customTag, Class) {
   if (!customElements.get(customTag)) {
-    Object.assign(Class.prototype, Mixin);
+    Object.assign(Class.prototype, HTMLPlaceholderMixinBase);
     customElements.define(customTag, Class, { extends: extendsTag });
   }
   return Class;
 }
-
-export default Placeholder;

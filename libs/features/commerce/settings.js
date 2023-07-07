@@ -1,10 +1,12 @@
+import defaults from './defaults.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
   Env,
+  MiloEnv,
   WcsEnv,
   WcsLandscape
-} from './externals.js';
+} from './deps.js';
 import {
   equalsCI,
   getParam,
@@ -12,27 +14,6 @@ import {
   toEnum,
   toPositiveFiniteNumber
 } from './utils.js';
-
-export const MiloEnv = {
-  LOCAL: 'local',
-  PROD: 'prod',
-  STAGE: 'stage',
-}
-
-export const defaults = {
-  checkoutClientId: 'adobe_com',
-  checkoutWorkflow: CheckoutWorkflow.V3,
-  checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
-  country: 'US',
-  env: Env.PRODUCTION,
-  language: 'en',
-  wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-  wcsDebounceDelay: 50,
-  wcsEnv: WcsEnv.PRODUCTION,
-  wcsForceTaxExclusive: false,
-  wcsLandscape: WcsLandscape.PUBLISHED,
-  wcsOfferSelectorLimit: 20,
-};
 
 const geoMappings = {
   africa: 'en-ZA',
@@ -134,5 +115,3 @@ export function getSettings({
     wcsOfferSelectorLimit,
   };
 }
-
-export default getSettings;

@@ -1,17 +1,16 @@
 import {
+  computePromoStatus,
   price,
   pricePromo,
   priceOptical,
   priceStrikethrough,
-} from '@dexter/tacocat-consonant-templates';
-import { computePromoStatus } from '@dexter/tacocat-core';
-
+} from './deps.js';
 import Log from './log.js';
-import Placeholder from './placeholder.js';
-import Service from './service.js';
-import { getSingleOffer, toBoolean } from './utils.js';
+import HTMLPlaceholderMixin from './placeholder.js';
+import service from './service.js';
+import { toBoolean } from './utils.js';
 
-export class HTMLInlinePriceElement extends HTMLSpanElement {
+class HTMLInlinePriceElement extends HTMLSpanElement {
   static get observedAttributes() {
     return [
       'data-wcs-osi',
@@ -32,7 +31,10 @@ export class HTMLInlinePriceElement extends HTMLSpanElement {
     this.placeholder.init();
   }
 
-  /** @type {Commerce.InlinePriceElement} */
+  /**
+   * Returns `this` object typed as `Commerce.InlinePriceElement`.
+   * @type {Commerce.HTMLInlinePriceElement}
+   */
   get placeholder() {
     // @ts-ignore
     return this;
@@ -43,23 +45,20 @@ export class HTMLInlinePriceElement extends HTMLSpanElement {
 
     this.placeholder.togglePending();
     this.innerHTML = '';
-    const { settings: { country } } = Service.instance;
-
     const { wcsOsi: osi, perpetual, promotionCode, taxExclusive } = this.dataset;
     const isPerpetual = toBoolean(perpetual);
 
-    Service.instance.wcs
+    service.wcs
       .resolveOfferSelector({
         isPerpetual,
         osi,
         promotionCode: computePromoStatus(promotionCode, null).effectivePromoCode,
+        singleOffer: true,
         taxExclusive: toBoolean(taxExclusive),
       })
-      .then((offers) => getSingleOffer(offers, country, isPerpetual))
-      .then((offer) => {
-        const { instance, providers } = Service;
-        const options = { literals: { ...instance.literals.price } };
-        providers.price.forEach((provider) => provider(this, options));
+      .then(([offer]) => {
+        const options = { literals: { ...service.literals.price } };
+        service.providers.price.forEach((provider) => provider(this.placeholder, options));
         this.renderOffer(offer, options);
         this.placeholder.toggleResolved();
       })
@@ -70,7 +69,6 @@ export class HTMLInlinePriceElement extends HTMLSpanElement {
   }
 
   renderOffer(offer, options) {
-    const { settings: { country, language } } = Service.instance;
     const {
       promotionCode,
       template,
@@ -80,12 +78,18 @@ export class HTMLInlinePriceElement extends HTMLSpanElement {
       displayOldPrice,
     } = this.dataset;
 
-    let method = promotionCode ? pricePromo : price;
-    if (template === 'strikethrough') {
+    let method;
+    if (promotionCode) {
+      method = pricePromo;
+    } else if (template === 'strikethrough') {
       method = priceStrikethrough;
     } else if (template === 'optical') {
       method = priceOptical;
+    } else {
+      method = price;
     }
+
+    const { country, language } = service.settings;
     this.innerHTML = method(
       {
         country,
@@ -101,4 +105,5 @@ export class HTMLInlinePriceElement extends HTMLSpanElement {
   }
 }
 
-export default Placeholder('span', 'inline-price', HTMLInlinePriceElement);
+/** @type {Commerce.HTMLInlinePriceElement} */
+export default HTMLPlaceholderMixin('span', 'inline-price', HTMLInlinePriceElement);

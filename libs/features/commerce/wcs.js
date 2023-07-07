@@ -2,7 +2,49 @@ import { ProviderEnvironment } from '@pandora/data-source-utils';
 import { webCommerceArtifact } from '@pandora/data-source-wcs';
 
 import Log from './log.js';
-import { forceTaxExclusivePrice } from './utils.js';
+
+const TAX_INCLUSIVE_DETAILS = 'TAX_INCLUSIVE_DETAILS';
+const TAX_EXCLUSIVE = 'TAX_EXCLUSIVE';
+
+/**
+ * Updates the offer price and priceWithoutDiscount from tax exclusive prices.
+ * @param {*} offer
+ * @returns
+ */
+// eslint-disable-next-line import/prefer-default-export
+export function forceTaxExclusivePrice(offer) {
+  const { priceDetails } = offer;
+  const { price, priceWithoutTax, priceWithoutDiscountAndTax, taxDisplay } = priceDetails;
+
+  if (taxDisplay !== TAX_INCLUSIVE_DETAILS) {
+    return;
+  }
+
+  priceDetails.price = priceWithoutTax ?? price;
+  priceDetails.priceWithoutDiscount = priceWithoutDiscountAndTax
+    ?? priceDetails.priceWithoutDiscount;
+  priceDetails.taxDisplay = TAX_EXCLUSIVE;
+}
+
+/**
+ *  Find a single offer among a pair of offers at max, based on the following rules.
+ *  - whether the country is GB
+ *  - whether the OSI corresponds to a perpetual offer
+ * @param {*} offers, array of resolved offers.
+ * Usually the response of WCS for an OSI with or without language parameter.
+ * @param {*} country
+ * @param {*} isPerpetual whether the OSI corresponds to a perpetual offer
+ * @returns a single offer
+ */
+export function getSingleOffer(offers, country, isPerpetual) {
+  if (!Array.isArray(offers)) return undefined;
+  const [first, second] = offers;
+  if (!second) return first;
+  if (country === 'GB' || isPerpetual) {
+    return first.language === 'EN' ? first : second;
+  }
+  return first.language === 'MULT' ? first : second;
+}
 
 function debounceAndBuffer(fn, delay, bufferSize) {
   let timeoutId;
@@ -49,8 +91,11 @@ function partitionArray(arr, callback) {
   return partitions;
 }
 
-/** @type {Commerce.Wcs.getClient} */
-export default function getWcsClient(settings) {
+/**
+ * @param {Commerce.Wcs.Settings} settings
+ * @returns {Commerce.Wcs.Client}
+ */
+export default function Wcs(settings) {
   const log = Log.commerce.module('wcs');
 
   const {
@@ -93,7 +138,9 @@ export default function getWcsClient(settings) {
         const promise = getWebCommerceArtifact(callParams, queryOptions)
           .then(({ data }) => {
             log.debug('Fetched:', data);
-            if (data?.resolvedOffers.length === 0) { throw new Error('Offer not found'); }
+            if (data?.resolvedOffers.length === 0) {
+              throw new Error('Offer not found');
+            }
             if (taxExclusive) {
               data.resolvedOffers.forEach((offer) => {
                 forceTaxExclusivePrice(offer);
@@ -105,11 +152,16 @@ export default function getWcsClient(settings) {
             );
             callParams.offerSelectorIds.forEach((osi) => {
               const cacheKey = `${osi}-${cacheBase}`;
-              if (cacheKey) {
-                const { osi, resolve } = pendingCache.get(cacheKey);
-                if (osi) {
-                  pendingCache.delete(cacheKey);
-                  resolve(resolvedOffers[osi]);
+              if (pendingCache.has(cacheKey)) {
+                const { reject, resolve } = pendingCache.get(cacheKey);
+                pendingCache.delete(cacheKey);
+                const offers = resolvedOffers[osi];
+                if (offers) {
+                  resolve(callParams.singleOffer
+                    ? [getSingleOffer(offers, callParams.country, callParams.isPerpetual)]
+                    : offers);
+                } else {
+                  reject(new Error('Offer not found'));
                 }
               }
             });
@@ -138,6 +190,7 @@ export default function getWcsClient(settings) {
     osi,
     promotionCode,
     isPerpetual,
+    singleOffer = true,
     taxExclusive = settings.wcsForceTaxExclusive,
   }) => {
     const { country, locale } = settings;
@@ -154,9 +207,11 @@ export default function getWcsClient(settings) {
     }
 
     const params = {
-      offerSelectorIds: [osi],
       country,
+      isPerpetual,
       locale,
+      offerSelectorIds: [osi],
+      singleOffer,
       taxExclusive,
     };
 

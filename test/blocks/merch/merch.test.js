@@ -8,26 +8,22 @@ import { createTag, setConfig } from '../../../libs/utils/utils.js';
 const config = { codeRoot: '/libs', env: { name: 'local' } };
 
 describe('Merch Block', () => {
-  let Commerce;
   let Merch;
 
-  async function initCommerce(commerce = {}) {
-    Commerce.reset();
-    await Commerce.init(() => setConfig({ commerce, ...config }));
-  }
-
-  after(() => {
+  after(async () => {
     unmockWcs();
     unmockIms();
-    Commerce.Log.reset();
+    const { Log } = await import('../../../libs/deps/commerce.js');
+    Log.reset();
   });
 
   before(async () => {
     await mockIms();
     await mockWcs();
     setConfig(config);
-    Commerce = await import('../../../libs/deps/commerce.js');
-    Commerce.Log.use(Commerce.Log.quietFilter);
+    const { init, Log } = await import('../../../libs/deps/commerce.js');
+    Log.use(Log.quietFilter);
+    await init(() => config);
     Merch = (await import('../../../libs/blocks/merch/merch.js')).default;
     document.head.innerHTML = await readFile({ path: './mocks/head.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -170,6 +166,8 @@ describe('Merch Block', () => {
 
   describe('CTAs', () => {
     it('merch link to CTA, default values', async () => {
+      const { defaults } = await import('../../../libs/deps/commerce.js');
+
       let el = document.querySelector('.merch.cta');
       el = await Merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -177,14 +175,17 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Commerce.defaults.checkoutWorkflow);
-      expect(dataset.checkoutWorkflowStep).to.equal(Commerce.defaults.checkoutWorkflowStep);
-      expect(dataset.checkoutClientId).to.equal(Commerce.defaults.checkoutClientId);
+      expect(dataset.checkoutWorkflow).to.equal(defaults.checkoutWorkflow);
+      expect(dataset.checkoutWorkflowStep).to.equal(defaults.checkoutWorkflowStep);
+      expect(dataset.checkoutClientId).to.equal(defaults.checkoutClientId);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
     it('merch link to CTA, config values', async () => {
-      await initCommerce({ checkoutClientId: 'dc' });
+      const { defaults, init, reset } = await import('../../../libs/deps/commerce.js');
+      reset();
+      await init(() => ({ ...config, commerce: { checkoutClientId: 'dc' } }));
+
       let el = document.querySelector('.merch.cta.config');
       el = await Merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -192,16 +193,19 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Commerce.defaults.checkoutWorkflow);
-      expect(dataset.checkoutWorkflowStep).to.equal(Commerce.defaults.checkoutWorkflowStep);
+      expect(dataset.checkoutWorkflow).to.equal(defaults.checkoutWorkflow);
+      expect(dataset.checkoutWorkflowStep).to.equal(defaults.checkoutWorkflowStep);
       expect(dataset.checkoutClientId).to.equal('dc');
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
     });
 
-    it.only('merch link to CTA, metadata values', async () => {
-      const metadata = createTag('meta', { name: 'checkout-workflow', content: 'UCv2' });
+    it('merch link to CTA, metadata values', async () => {
+      const { CheckoutWorkflow, CheckoutWorkflowStep, defaults, init, reset } = await import('../../../libs/deps/commerce.js');
+      reset();
+      const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
       document.head.appendChild(metadata);
-      await initCommerce();
+      await init(() => config);
+
       let el = document.querySelector('.merch.cta.metadata');
       el = await Merch(el);
       const { nodeName, textContent, dataset } = el;
@@ -209,11 +213,13 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Commerce.CheckoutWorkflow.V2);
-      expect(dataset.checkoutWorkflowStep).to.equal(Commerce.CheckoutWorkflowStep.CHECKOUT);
-      expect(dataset.checkoutClientId).to.equal(Commerce.defaults.checkoutClientId);
+      expect(dataset.checkoutWorkflow).to.equal(CheckoutWorkflow.V2);
+      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.CHECKOUT);
+      expect(dataset.checkoutClientId).to.equal(defaults.checkoutClientId);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
+
       document.head.removeChild(metadata);
+      await init(() => config);
     });
 
     it('merch link to cta with empty promo', async () => {
