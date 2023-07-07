@@ -86,7 +86,7 @@ describe('breadcrumbs', () => {
             item: 'http://www.adobe.com/',
           },
           { '@type': 'ListItem', position: 3, name: 'Players' },
-          { '@type': 'ListItem', position: 4, name: '\n        \n      ' },
+          { '@type': 'ListItem', position: 4, name: '' },
         ],
       },
     );

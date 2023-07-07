@@ -563,10 +563,10 @@ function decorateHeader() {
   }
   const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
   header.className = headerQuery || headerMeta || 'gnav';
-  const breadcrumbs = document.querySelector('.breadcrumbs');
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
-    || getConfig().breadcrumbs;
+  || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
+  const breadcrumbs = document.querySelector('.breadcrumbs');
   header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
 }

@@ -2,7 +2,8 @@ import { getMetadata } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 
 const metadata = {
-  seo: 'breadcrumb-seo',
+  seo: 'breadcrumbs-seo',
+  seoLegacy: 'breadcrumb-seo',
   fromFile: 'breadcrumbs-from-file',
   hideCurrent: 'breadcrumbs-hide-current-page',
   hiddenEntries: 'breadcrumbs-hidden-entries',
@@ -11,26 +12,25 @@ const metadata = {
   fromUrl: 'breadcrumbs-from-url',
 };
 
-const setBreadcrumbSEO = (breadcrumb) => {
-  const seoDisabled = getMetadata(metadata.seo) === 'off';
-  if (seoDisabled || !breadcrumb) return;
-  const breadcrumbSEO = {
+const setBreadcrumbSEO = (breadcrumbs) => {
+  const seoDisabled = (getMetadata(metadata.seo) || getMetadata(metadata.seoLegacy)) === 'off';
+  if (seoDisabled || !breadcrumbs) return;
+  const breadcrumbsSEO = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [],
   };
-  const items = breadcrumb.querySelectorAll('ul > li');
-  items.forEach((item, idx) => {
+  breadcrumbs.querySelectorAll('ul > li').forEach((item, idx) => {
     const link = item.querySelector('a');
-    breadcrumbSEO.itemListElement.push({
+    breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
       position: idx + 1,
-      name: link ? link.innerHTML : item.innerHTML,
+      name: link ? link.innerText.trim() : item.innerText.trim(),
       item: link?.href,
     });
   });
   const script = toFragment`<script type="application/ld+json">${JSON.stringify(
-    breadcrumbSEO,
+    breadcrumbsSEO,
   )}</script>`;
   document.head.append(script);
 };
@@ -57,7 +57,6 @@ const createBreadcrumbs = (element) => {
       </li>
     `);
   }
-
   removeHiddenEntries({ ul });
   const breadcrumbs = toFragment`
     <div class="feds-breadcrumbs-wrapper">
