@@ -257,9 +257,11 @@ export function loadStyle(href, callback) {
   return loadLink(href, { rel: 'stylesheet', callback });
 }
 
+const pageUrl = new URL(window.location.href);
+const pathEndsWithHtml = pageUrl.pathname.endsWith('.html');
+
 export function appendHtmlToCanonicalUrl() {
-  const pageUrl = new URL(window.location.href);
-  if (!pageUrl.pathname.endsWith('.html')) return;
+  if (!pathEndsWithHtml) return;
   const canonEl = document.head.querySelector('link[rel="canonical"]');
   if (!canonEl) return;
   const canonUrl = new URL(canonEl.href);
@@ -270,8 +272,7 @@ export function appendHtmlToCanonicalUrl() {
 }
 
 export function appendHtmlToLink(link) {
-  const pageUrl = new URL(window.location.href);
-  if (!pageUrl.pathname.endsWith('.html')) return;
+  if (!pathEndsWithHtml) return;
   const href = link.getAttribute('href');
   if (!href.length) return;
 
