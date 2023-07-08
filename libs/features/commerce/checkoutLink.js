@@ -1,8 +1,8 @@
-import { computePromoStatus } from './deps.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, computePromoStatus } from './deps.js';
 import Log from './log.js';
 import HTMLPlaceholderMixin from './placeholder.js';
 import service from './service.js';
-import { toBoolean } from './utils.js';
+import { toBoolean, toEnum } from './utils.js';
 
 class HTMLCheckoutLinkElement extends HTMLAnchorElement {
   static get observedAttributes() {
@@ -30,88 +30,86 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
     return this;
   }
 
-  render() {
+  async render(overrides = {}) {
     if (!this.isConnected) return;
 
-    this.placeholder.togglePending();
-    this.setAttribute('href', '#');
+    const version = this.placeholder.togglePending();
+    this.href = '#';
 
-    let { promotionCode } = this.dataset;
+    const { wcsOsi, perpetual } = this.dataset;
+    let { promotionCode = overrides.promotionCode } = this.dataset;
     promotionCode = computePromoStatus(promotionCode, null).effectivePromoCode;
-    const { wcsOsi, quantity = '', perpetual } = this.dataset;
-    const isPerpetual = toBoolean(perpetual);
+    const offerSelectorIds = wcsOsi.split(',');
 
-    const osis = wcsOsi.split(',');
-    if (osis.length > 1) {
-      const quantities = quantity.split(',', osis.length);
-      Promise.all(osis.map((osi, index) => service.wcs
-        .resolveOfferSelector({
-          isPerpetual,
-          osi,
-          promotionCode,
-        })
-        .then(([{ offerId }]) => ({
-          id: offerId,
-          quantity: quantities[index] ?? 1,
-        }))),
-      )
-        .then((items) => this.renderHref(items))
-        .catch((reason) => this.placeholder.toggleFailed(reason));
+    try {
+      const offers = await Promise
+        .all(service.wcs.resolveOfferSelectors({
+          perpetual: toBoolean(perpetual),
+          offerSelectorIds,
+          promotionCode: this.dataset.promotionCode,
+        }))
+        .then((offers) => offers.flat());
+      this.renderOffers(offers, { ...overrides, promotionCode }, version);
+    } catch (error) {
+      this.placeholder.toggleFailed(version, error);
+    }
+  }
+
+  /**
+   * @param {Commerce.Wcs.Offer[]} offers
+   * @param {Record<string, any>} overrides
+   */
+  renderOffers(offers, overrides = {}, version) {
+    version ??= this.placeholder.togglePending();
+    if (!this.placeholder.toggleResolved(version)) return;
+
+    if (!offers.length) {
+      this.href = '#';
+      this.placeholder.toggleFailed(version);
       return;
     }
 
-    service.wcs
-      .resolveOfferSelector({
-        isPerpetual,
-        osi: wcsOsi,
-        promotionCode,
-      })
-      .then(([{
-        offerId,
-        offerType,
-        productArrangementCode,
-        marketSegments: [marketSegment],
-      }]) => this.renderHref(
-        [{ id: offerId }],
-        offerType,
-        productArrangementCode,
-        marketSegment,
-      ))
-      .catch((reason) => this.placeholder.toggleFailed(reason));
-  }
-
-  renderHref(items, offerType, productArrangementCode, marketSegment) {
-    const {
-      checkoutClientId,
-      checkoutWorkflow,
-      checkoutWorkflowStep,
-    } = service.settings;
-
+    const { checkoutClientId, checkoutWorkflow, checkoutWorkflowStep, country, env } = service.settings;
     const {
       checkoutClientId: clientId = checkoutClientId,
-      checkoutWorkflow: workflow = checkoutWorkflow,
-      checkoutWorkflowStep: workflowStep = checkoutWorkflowStep,
-      customParameters = '{}',
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
       imsCountry,
-      promotionCode,
+      quantity = '',
     } = this.dataset;
-
-    const options = {
-      checkoutPromoCode: promotionCode,
+    const quantities = quantity.split(',', offers.length);
+    /** @type {Commerce.Checkout.Options} */
+    let options = {
       clientId,
-      items,
-      marketSegment,
-      offerType,
-      productArrangementCode,
-      workflow,
-      workflowStep,
-      ...JSON.parse(customParameters),
+      country: imsCountry ? imsCountry : country,
+      env,
+      workflow: toEnum(workflow, CheckoutWorkflow, checkoutWorkflow),
+      workflowStep: toEnum(workflowStep, CheckoutWorkflowStep, checkoutWorkflowStep),
+      ...overrides,
+      checkoutPromoCode: overrides.promotionCode,
     };
-    if (imsCountry) options.country = imsCountry;
+
+    if (offers.length === 1) {
+      const { offerId, offerType, productArrangementCode } = offers[0];
+      // TODO: fix type definition in @pandora, Wcs responds with marketSegments (array)
+      // @ts-ignore
+      const { marketSegments: [marketSegment] } = offers[0];
+      // TODO: add marketSegment property definition in @pandora
+      options = Object.assign({ marketSegment, offerType, productArrangementCode }, options);
+      options.items = [{ id: offerId }];
+      const [quantity] = quantities[0] || '1';
+      if ('1' !== quantity) options.items[0].quantity = quantity;
+    } else {
+      // TODO: verify the need of extra params in this case:
+      // marketSegment, offerType, productArrangementCode
+      options.items = offers.map(({ offerId }) => ({
+        id: offerId,
+        quantity: quantities[0] ?? '1',
+      }));
+    }
 
     this.href = service.checkout.buildUrl(options);
-
-    this.placeholder.toggleResolved();
+    this.placeholder.toggleResolved(version);
   }
 }
 

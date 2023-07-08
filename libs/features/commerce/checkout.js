@@ -38,7 +38,7 @@ export default function Checkout(settings) {
       ...rest,
     });
 
-    log.debug('Url:', url, options);
+    log.debug('Url:', { options, url });
     return url;
   };
 

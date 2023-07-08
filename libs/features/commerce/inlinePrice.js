@@ -40,35 +40,42 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
     return this;
   }
 
-  render() {
+  /**
+   * @param {Record<string, any>} overrides
+   */
+  async render(overrides = {}) {
     if (!this.isConnected) return;
 
-    this.placeholder.togglePending();
-    this.innerHTML = '';
     const { wcsOsi: osi, perpetual, promotionCode, taxExclusive } = this.dataset;
-    const isPerpetual = toBoolean(perpetual);
+    const version = this.placeholder.togglePending();
+    this.innerHTML = '';
 
-    service.wcs
-      .resolveOfferSelector({
-        isPerpetual,
-        osi,
+    try {
+      const [promise] = service.wcs.resolveOfferSelectors({
+        perpetual: toBoolean(perpetual),
+        offerSelectorIds: [osi],
         promotionCode: computePromoStatus(promotionCode, null).effectivePromoCode,
-        singleOffer: true,
         taxExclusive: toBoolean(taxExclusive),
-      })
-      .then(([offer]) => {
-        const options = { literals: { ...service.literals.price } };
-        service.providers.price.forEach((provider) => provider(this.placeholder, options));
-        this.renderOffer(offer, options);
-        this.placeholder.toggleResolved();
-      })
-      .catch((reason) => {
-        this.innerHTML = '';
-        this.placeholder.toggleFailed(reason);
       });
+      const [offer] = await promise;
+      this.renderOffer(offer, overrides, version);
+    } catch (error) {
+      this.innerHTML = '';
+      this.placeholder.toggleFailed(version, error);
+    };
   }
 
-  renderOffer(offer, options) {
+  /**
+   * @param {Commerce.Wcs.Offer} offer 
+   * @param {Record<string, any>} overrides
+   */
+  renderOffer(offer, overrides = {}, version) {
+    version ??= this.placeholder.togglePending();
+    if (!this.placeholder.toggleResolved(version)) return;
+
+    this.innerHTML = '';
+
+    const { country, language } = service.settings;
     const {
       promotionCode,
       template,
@@ -77,6 +84,18 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
       displayTax,
       displayOldPrice,
     } = this.dataset;
+    const options = {
+      country,
+      language,
+      displayRecurrence,
+      displayPerUnit,
+      displayTax,
+      displayOldPrice,
+      literals: { ...service.literals.price },
+      ...overrides,
+    };
+
+    service.providers.price.forEach((provider) => provider(this.placeholder, options));
 
     let method;
     if (promotionCode) {
@@ -89,19 +108,7 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
       method = price;
     }
 
-    const { country, language } = service.settings;
-    this.innerHTML = method(
-      {
-        country,
-        language,
-        displayRecurrence,
-        displayPerUnit,
-        displayTax,
-        displayOldPrice,
-        ...options,
-      },
-      { ...offer, ...offer.priceDetails },
-    );
+    this.innerHTML = method(options, { ...offer, ...offer.priceDetails });
   }
 }
 

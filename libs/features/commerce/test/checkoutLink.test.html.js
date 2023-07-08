@@ -1,8 +1,11 @@
 import { CheckoutWorkflowStep, MiloEnv } from '../deps.js';
 import Log from '../log.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
-import { expect } from './utils.js';
+import { mockLana, unmockLana } from './mocks/lana.js';
+import { delay, expect } from './utils.js';
+// @ts-ignore
 import { setConfig } from '../../../utils/utils.js';
+import { WcsErrorMessage } from '../wcs.js';
 
 /**
  * @param {string} wcsOsi 
@@ -27,9 +30,11 @@ describe('HTMLCheckoutLinkElement', () => {
 
   after(() => {
     unmockFetch();
+    unmockLana();
   });
 
   before(async () => {
+    mockLana();
     fetch = await mockFetch();
     const { init } = await import('../service.js');
     commerce = await init(() => setConfig({ env: { name: MiloEnv.PROD } }));
@@ -126,9 +131,7 @@ describe('HTMLCheckoutLinkElement', () => {
 
   it('fails with bad request', async () => {
     const checkoutLink = appendCheckoutLink('xyz');
-    await expect(checkoutLink.onceResolved()).eventually.be.rejectedWith(
-      'Bad WCS request'
-    );
+    await expect(checkoutLink.onceResolved()).eventually.be.rejectedWith(WcsErrorMessage.badRequest);
   });
 
   it('renders link for perpetual offers', async () => {
@@ -143,9 +146,9 @@ describe('HTMLCheckoutLinkElement', () => {
 
     // no more perpetual offer
     checkoutLink.dataset.perpetual = 'false';
-    await expect(checkoutLink.onceResolved()).eventually.be.rejectedWith(
-      'Offer not found'
-    );
+    await delay();
+    const promise = checkoutLink.onceResolved();
+    await expect(promise).eventually.be.rejectedWith(WcsErrorMessage.notFound);
     expect(fetch.lastCall.args[0]).to.contain('language=MULT');
   });
 });

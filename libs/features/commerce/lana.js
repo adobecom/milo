@@ -7,6 +7,7 @@ const seenPayloads = new Set();
 
 const isError = (value) => value instanceof Error
   // WCS error response
+  // TODO: check if still actual
   || typeof value.originatingRequest === 'string';
 
 function serializeValue(value) {
@@ -31,20 +32,22 @@ function serializeValue(value) {
   return value;
 }
 
-function serializeArgument(key, value) {
+function serializeParam(key, value) {
   if (ignoredProperties.includes(key)) return undefined;
   return serializeValue(value);
 }
 
-export default {
-  append(message, ...args) {
+/** @type {Commerce.Log.Plugin} */
+const plugin = {
+  append(entry) {
+    const { message, params } = entry;
     const errors = [];
     let payload = message;
     const values = [];
 
-    args.forEach((arg) => {
-      if (arg != null) {
-        (isError(arg) ? errors : values).push(arg);
+    params.forEach((param) => {
+      if (param != null) {
+        (isError(param) ? errors : values).push(param);
       }
     });
 
@@ -61,11 +64,12 @@ export default {
 
     if (values.length) {
       payload += `${delimiter}facts=`;
-      payload += JSON.stringify(values, serializeArgument);
+      payload += JSON.stringify(values, serializeParam);
     }
 
     if (!seenPayloads.has(payload)) {
       seenPayloads.add(payload);
+      // @ts-ignore
       window.lana.log(payload, {
         // Sample rate is set to 100 meaning each error will get logged in Splunk
         sampleRate: 100,
@@ -74,3 +78,11 @@ export default {
     }
   },
 };
+
+export default plugin;
+export {
+  delimiter,
+  ignoredProperties,
+  plugin,
+  serializableTypes,
+}

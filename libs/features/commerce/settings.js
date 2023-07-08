@@ -62,8 +62,7 @@ export function getSettings({
     ? Env.PRODUCTION
     : Env.STAGE;
 
-  const getSetting = (key, useMetadata = true, useSearchAndStorage = env === Env.STAGE) => commerce[key]
-    ?? getParam(key, useMetadata, useSearchAndStorage);
+  const getSetting = (key, useMetadata = true) => commerce[key] ?? getParam(key, useMetadata, true);
 
   const checkoutClientId = getSetting('checkoutClientId') ?? defaults.checkoutClientId;
   const checkoutWorkflow = toEnum(
@@ -84,16 +83,16 @@ export function getSettings({
     defaults.wcsForceTaxExclusive
   );
   const wcsLandscape = toEnum(
-    getSetting('wcsLandscape', false),
+    getSetting('wcsLandscape'),
     WcsLandscape,
     defaults.wcsLandscape
   );
   const wcsDebounceDelay = toPositiveFiniteNumber(
-    getSetting('wcsDebounceDelay', false),
+    getSetting('wcsDebounceDelay'),
     defaults.wcsDebounceDelay
   );
   const wcsOfferSelectorLimit = toPositiveFiniteNumber(
-    getSetting('wcsOfferSelectorLimit', false),
+    getSetting('wcsOfferSelectorLimit'),
     defaults.wcsOfferSelectorLimit
   );
 

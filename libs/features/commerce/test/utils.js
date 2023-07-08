@@ -30,4 +30,6 @@ use((chai) => {
   });
 });
 
-export { expect };
+const delay = (timeout = 1) => new Promise((resolve) => setTimeout(resolve, timeout));
+
+export { delay, expect };

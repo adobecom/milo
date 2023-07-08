@@ -18,16 +18,18 @@ export async function mockFetch() {
       if (buckets.some(bucket => bucket == null)) {
         return Promise.resolve({
           ok: false,
+          status: 404,
           json: () => Promise.reject(),
-          text: () => Promise.resolve('Bad WCS request')
+          text: () => Promise.resolve('Some osis were not found')
         });
       }
       return Promise.resolve({
         ok: true,
+        status: 200,
         json: () => Promise.resolve({
           resolvedOffers: buckets.flatMap((array) => array ?? [])
         }),
-        text: () => Promise.resolve('Bad WCS request')
+        text: () => Promise.resolve('Unexpected error')
       });
     }
     

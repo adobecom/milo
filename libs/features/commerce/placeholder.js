@@ -1,10 +1,11 @@
 import Service from './service.js';
+import { setImmediate } from './utils.js';
 
-export const RESOLVED = 'placeholder-resolved';
 export const FAILED = 'placeholder-failed';
 export const PENDING = 'placeholder-pending';
+export const RESOLVED = 'placeholder-resolved';
 
-/** @type {Commerce.PLaceholderElement & Record<string, any>} */
+/** @type {Commerce.HTMLPlaceholderMixin & Record<string, any>} */
 // @ts-ignore
 export const HTMLPlaceholderMixinBase = {
   attributeChangedCallback(attr, prev, next) {
@@ -18,82 +19,73 @@ export const HTMLPlaceholderMixinBase = {
   },
 
   init() {
-    this.failed = false;
-    this.pending = false;
+    this.status = undefined;
     this.promises = [];
-    this.resolved = false;
+    this.version = 0;
   },
 
   onceResolved() {
-    if (this.resolved) return Promise.resolve(this);
-    if (this.failed) return Promise.reject();
+    if (RESOLVED === this.status) return Promise.resolve(this);
+    if (FAILED === this.status) return Promise.reject(this.error);
     return new Promise((resolve, reject) => {
       this.promises.push({ resolve, reject });
     }).then(() => this);
   },
 
   toggle() {
-    this.classList.toggle(RESOLVED, this.resolved);
-    this.classList.toggle(FAILED, this.failed);
-    this.classList.toggle(PENDING, this.pending);
+    [FAILED, PENDING, RESOLVED].forEach((status) => {
+      this.classList.toggle(status, status === this.status);
+    });
   },
 
-  toggleResolved() {
-    this.pending = false;
-    this.resolved = true;
-
+  toggleResolved(version) {
+    if (version !== this.version) return false;
+    this.status = RESOLVED;
     this.toggle();
-    this.dispatchEvent(
-      new CustomEvent(RESOLVED, { bubbles: true }),
-    );
-
     this.log?.debug('Resolved:', {
-      dataset: { ...this.dataset },
-      node: this,
-      settings: Service.settings,
+      dataset: { ...this.dataset }, node: this, settings: Service.settings,
     });
-
-    setTimeout(() => {
+    setImmediate(() => {
       this.promises.forEach(({ resolve }) => resolve());
       this.promises = [];
-    }, 0);
+      this.dispatchEvent(
+        new CustomEvent(RESOLVED, { bubbles: true }),
+      );
+    });
+    return true;
   },
 
-  toggleFailed(reason) {
-    this.pending = false;
-    this.failed = true;
-
+  toggleFailed(version, error) {
+    if (version !== this.version) return false;
+    this.error = error;
+    this.status = FAILED;
     this.toggle();
-    this.dispatchEvent(
-      new CustomEvent(FAILED, { bubbles: true }),
-    );
-
-    this.log?.error(
-      'Failed:',
-      {
-        dataset: { ...this.dataset },
-        node: this,
-        settings: Service.settings,
-      },
-      reason,
-    );
-
-    setTimeout(() => {
-      this.promises.forEach(({ reject }) => reject(reason));
+    this.log?.error('Failed:', {
+      dataset: { ...this.dataset }, node: this, settings: Service.settings,
+    }, error);
+    setImmediate(() => {
+      this.promises.forEach(({ reject }) => reject(error));
       this.promises = [];
-    }, 0);
+      this.dispatchEvent(
+        new CustomEvent(FAILED, { bubbles: true }),
+      );
+    });
+    return true;
   },
 
   togglePending() {
-    this.log?.debug('Pending');
-
-    this.resolved = false;
-    this.failed = false;
-    this.pending = true;
-    this.toggle();
-    this.dispatchEvent(
-      new CustomEvent(PENDING, { bubbles: true }),
-    );
+    this.version++;
+    if (PENDING !== this.status) {
+      this.log?.debug('Pending');
+      this.status = PENDING;
+      this.toggle();
+      setImmediate(() => {
+        this.dispatchEvent(
+          new CustomEvent(PENDING, { bubbles: true }),
+        );
+      });
+    }
+    return this.version;
   },
 };
 
@@ -102,7 +94,7 @@ export const HTMLPlaceholderMixinBase = {
  * @param {string} extendsTag
  * @param {string} customTag
  * @param {T extends CustomElementConstructor ? T : never} Class
- * @return {T & ReturnType<Commerce.PLaceholderElement>}
+ * @return {T & ReturnType<Commerce.HTMLPlaceholderMixin>}
  */
 export default function HTMLPlaceholderMixin(extendsTag, customTag, Class) {
   if (!customElements.get(customTag)) {

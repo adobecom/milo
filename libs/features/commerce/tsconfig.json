@@ -3,8 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
-    "outDir": "../../deps/commerce",
-    "rootDir": "../../..",
+    "rootDir": ".",
     "module": "esnext",
     "moduleResolution": "NodeNext",
     "target": "esnext"

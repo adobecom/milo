@@ -1,236 +1,258 @@
-import { ProviderEnvironment } from '@pandora/data-source-utils';
+import { Term, Commitment } from '@pandora/data-models-odm';
 import { webCommerceArtifact } from '@pandora/data-source-wcs';
-
+import { Env } from './deps.js';
 import Log from './log.js';
 
-const TAX_INCLUSIVE_DETAILS = 'TAX_INCLUSIVE_DETAILS';
-const TAX_EXCLUSIVE = 'TAX_EXCLUSIVE';
+/** @typedef {import('@pandora/data-source-wcs').GetWebCommerceArtifactOptions} WcsOptions */
+/** @typedef {import('@pandora/data-source-wcs').getWebCommerceArtifactPromise} getWcsOffers */
+/**
+ * @typedef {Map<string, {
+ *  resolve: (offers: Commerce.Wcs.Offer[]) => void,
+ *  reject: (reason: Error) => void
+ * }>} WcsPromises
+ */
+
+export const COUNTRY_GB = 'GB';
+export const LANGUAGE_EN = 'EN';
+export const LANGUAGE_MULT = 'MULT';
+export const TAX_INCLUSIVE_DETAILS = 'TAX_INCLUSIVE_DETAILS';
+export const TAX_EXCLUSIVE = 'TAX_EXCLUSIVE';
+
+const BaseUrl = {
+  [Env.PRODUCTION]: 'https://wcs.adobe.com',
+  [Env.STAGE]: 'https://wcs.stage.adobe.com',
+};
+
+const ErrorMessage = {
+  badRequest: 'Bad Wcs request',
+  notFound: 'Offer not found',
+}
+
+/** @type {Record<Commerce.Wcs.PlanType, Commerce.Wcs.PlanType>} */
+const PlanType = {
+  ABM: 'ABM',
+  PUF: 'PUF',
+  M2M: 'M2M',
+  PERPETUAL: 'PERPETUAL',
+};
+
+/** @type {[Commerce.Wcs.PlanType, Commitment, Term?][]} */
+const planTypesMap = [
+  [PlanType.ABM, Commitment.YEAR, Term.MONTHLY],
+  [PlanType.PUF, Commitment.YEAR, Term.ANNUAL],
+  [PlanType.M2M, Commitment.MONTH, Term.MONTHLY],
+  [PlanType.PERPETUAL, Commitment.PERPETUAL],
+];
 
 /**
- * Updates the offer price and priceWithoutDiscount from tax exclusive prices.
- * @param {*} offer
- * @returns
+ * @param {Commerce.Wcs.Offer} offer 
+ * @returns {Commerce.Wcs.Offer}
  */
-// eslint-disable-next-line import/prefer-default-export
-export function forceTaxExclusivePrice(offer) {
-  const { priceDetails } = offer;
-  const { price, priceWithoutTax, priceWithoutDiscountAndTax, taxDisplay } = priceDetails;
-
-  if (taxDisplay !== TAX_INCLUSIVE_DETAILS) {
-    return;
-  }
-
-  priceDetails.price = priceWithoutTax ?? price;
-  priceDetails.priceWithoutDiscount = priceWithoutDiscountAndTax
-    ?? priceDetails.priceWithoutDiscount;
-  priceDetails.taxDisplay = TAX_EXCLUSIVE;
-}
+const applyPlanType = (offer) => ({
+  planType: planTypesMap.find(([, commitment, term]) => (
+    commitment === offer.commitment && (!term || term === offer.term)
+  ))[0],
+  ...offer
+});
 
 /**
- *  Find a single offer among a pair of offers at max, based on the following rules.
- *  - whether the country is GB
- *  - whether the OSI corresponds to a perpetual offer
- * @param {*} offers, array of resolved offers.
- * Usually the response of WCS for an OSI with or without language parameter.
- * @param {*} country
- * @param {*} isPerpetual whether the OSI corresponds to a perpetual offer
- * @returns a single offer
+ * @param {Commerce.Wcs.Offer[]} offers
+ * @param {{
+ *  country: string;
+ *  isPerpetual: boolean;
+ *  multipleOffers: boolean;
+ *  taxExclusive: boolean;
+ * }} conditions
+ * @returns {Commerce.Wcs.Offer[]}
  */
-export function getSingleOffer(offers, country, isPerpetual) {
-  if (!Array.isArray(offers)) return undefined;
-  const [first, second] = offers;
-  if (!second) return first;
-  if (country === 'GB' || isPerpetual) {
-    return first.language === 'EN' ? first : second;
-  }
-  return first.language === 'MULT' ? first : second;
-}
+function selectOffers(offers, {
+  country,
+  isPerpetual,
+  multipleOffers,
+  taxExclusive,
+}) {
+  let selected;
 
-function debounceAndBuffer(fn, delay, bufferSize) {
-  let timeoutId;
-  let buffer = [];
-
-  function flushBuffer() {
-    const currentBuffer = buffer.slice();
-    buffer = [];
-    fn(currentBuffer);
-  }
-
-  return function (...args) {
-    buffer.push(args);
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    if (buffer.length >= bufferSize) {
-      flushBuffer();
-    } else if (args.length > 0) {
-      timeoutId = setTimeout(flushBuffer, delay);
-    }
-  };
-}
-
-function partitionArray(arr, callback) {
-  const partitions = {};
-
-  for (let i = 0; i < arr.length; i++) {
-    const keys = callback(arr[i]);
-
-    for (let j = 0; j < keys.length; j++) {
-      const key = keys[j];
-
-      if (!partitions[key]) {
-        partitions[key] = [];
-      }
-
-      partitions[key].push(arr[i]);
-    }
+  if (multipleOffers || offers.length === 1) selected = offers;
+  else {
+    const [first, second] = offers;
+    const { language } = first;
+    selected = [
+      country === COUNTRY_GB || isPerpetual
+        ? (language === LANGUAGE_EN) ? first : second
+        : (language === LANGUAGE_MULT) ? first : second
+    ];
   }
 
-  return partitions;
+  if (taxExclusive) {
+    selected = selected.map((offer) => {
+      const { priceDetails } = offer;
+      if (priceDetails.taxDisplay !== TAX_INCLUSIVE_DETAILS) return offer;
+      const { price, priceWithoutDiscount, priceWithoutTax, priceWithoutDiscountAndTax } = priceDetails;
+      return {
+        ...offer,
+        priceDetails: {
+          ...offer.priceDetails,
+          price: priceWithoutTax ?? price,
+          priceWithoutDiscount: priceWithoutDiscountAndTax ?? priceWithoutDiscount,
+          taxDisplay: TAX_EXCLUSIVE,
+        },
+      };
+    });
+  }
+
+  return selected;
 }
 
 /**
  * @param {Commerce.Wcs.Settings} settings
  * @returns {Commerce.Wcs.Client}
  */
-export default function Wcs(settings) {
+function Wcs(settings) {
   const log = Log.commerce.module('wcs');
+  const { env, wcsApiKey: apiKey } = settings;
 
-  const {
-    env,
-    wcsApiKey: apiKey,
-    wcsEnv: environment,
-    wcsLandscape: landscape,
-  } = settings;
   const fetchOptions = {
     apiKey,
-    baseUrl: env === ProviderEnvironment.PRODUCTION
-      ? 'https://wcs.adobe.com'
-      : 'https://wcs.stage.adobe.com',
-    env,
+    baseUrl: BaseUrl[env],
     fetch: window.fetch.bind(window),
   };
-  const queryOptions = { apiKey, environment, landscape };
+  const getWcsOffers = webCommerceArtifact(fetchOptions);
 
-  const offerCache = new Map();
-  const pendingCache = new Map();
-  const getWebCommerceArtifact = webCommerceArtifact(fetchOptions);
-  const loadPendings = debounceAndBuffer(
-    (pendings) => {
-      const calls = [...pendings].reduce((acc, [current]) => {
-        let item = acc.get(current.cacheBase);
-        if (!item) {
-          item = acc.set(current.cacheBase, current.params);
-        } else {
-          item.offerSelectorIds.push(
-            current.params.offerSelectorIds[0],
-          );
+  /** @type {Map<string, Promise<Commerce.Wcs.Offer[]>>} */
+  const cache = new Map();
+  /** @type {Map<string, { options: WcsOptions, promises: WcsPromises }>} */
+  const queue = new Map();
+  let timer;
+
+  function flushQueue() {
+    clearTimeout(timer);
+    const pending = [...queue.values()];
+    queue.clear();
+    pending.forEach(({ options, promises }) => resolveWcsOffers(options, promises));
+  }
+
+  /**
+   * @param {WcsOptions} options
+   * @param {WcsPromises} promises
+   */
+  async function resolveWcsOffers(options, promises, finalise = true) {
+    let message = ErrorMessage.notFound;
+    try {
+      log.debug('Fetching:', options);
+      options.offerSelectorIds = options.offerSelectorIds.sort();
+      const { wcsEnv, wcsLandscape } = settings;
+      const { data } = await getWcsOffers(
+        options,
+        { apiKey, environment: wcsEnv, landscape: wcsLandscape },
+        ({ resolvedOffers }) => ({
+          offers: resolvedOffers.map(applyPlanType),
+        })
+      );
+
+      log.debug('Fetched:', options, data);
+      const { offers } = data ?? {};
+      // resolve all promises which obtained offers
+      promises.forEach(({ resolve }, offerSelectorId) => {
+        const resolved = offers
+          .filter(({ offerSelectorIds }) => offerSelectorIds.includes(offerSelectorId))
+          .flat();
+        if (resolved.length) {
+          promises.delete(offerSelectorId);
+          resolve(resolved);
         }
-        return acc;
-      }, new Map());
-      calls.forEach((callParams, cacheBase) => {
-        const { taxExclusive } = callParams;
-        delete callParams.taxExclusive;
-        callParams.offerSelectorIds = callParams.offerSelectorIds.sort();
-        log.debug('Fetching:', callParams);
-        const promise = getWebCommerceArtifact(callParams, queryOptions)
-          .then(({ data }) => {
-            log.debug('Fetched:', data);
-            if (data?.resolvedOffers.length === 0) {
-              throw new Error('Offer not found');
+      });
+    } catch (error) {
+      // in case of 404 Wcs error and for a request with multiple osis,
+      // fallback to `fetch-by-one` strategy
+      if (error.status === 404 && options.offerSelectorIds.length > 1) {
+        log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
+        await Promise.allSettled(
+          options.offerSelectorIds.map(
+            (offerSelectorId) => resolveWcsOffers(
+              { ...options, offerSelectorIds: [offerSelectorId] },
+              promises,
+              false, // do not missied promises, it will be done below
+            )),
+        );
+      } else {
+        log.error('Failed:', options, error);
+        message = ErrorMessage.badRequest;
+      }
+    }
+
+    if (finalise && promises.size) {
+      // reject pending promises, their offers weren't provided by Wcs
+      log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+      promises.forEach(({ reject }) => { reject(new Error(message)); });
+    }
+  }
+
+  return {
+    resolveOfferSelectors({
+      perpetual = false,
+      multiple = false,
+      offerSelectorIds = [],
+      promotionCode,
+      taxExclusive = settings.wcsForceTaxExclusive,
+    }) {
+      const { country, locale } = settings;
+      const language = country === 'GB' ? undefined : perpetual ? 'EN' : 'MULT';
+
+      const groupKey = [country, language, promotionCode]
+        .filter((val) => val)
+        .join('-')
+        .toLowerCase();
+
+      return offerSelectorIds.map((offerSelectorId) => {
+        const cacheKey = `${offerSelectorId}-${groupKey}`;
+
+        if (!cache.has(cacheKey)) {
+          cache.set(cacheKey, new Promise((resolve, reject) => {
+            let group = queue.get(groupKey);
+            if (!group) {
+              group = {
+                options: {
+                  country,
+                  language,
+                  locale,
+                  offerSelectorIds: [],
+                },
+                promises: new Map(),
+              };
+              queue.set(groupKey, group);
             }
-            if (taxExclusive) {
-              data.resolvedOffers.forEach((offer) => {
-                forceTaxExclusivePrice(offer);
-              });
+            if (promotionCode) group.options.promotionCode = promotionCode;
+            group.options.offerSelectorIds.push(offerSelectorId);
+            group.promises.set(offerSelectorId, { resolve, reject });
+            if (group.options.offerSelectorIds.length >= settings.wcsOfferSelectorLimit) {
+              flushQueue();
+            } else {
+              log.debug('Queued:', group.options);
+              if (!timer) timer = setTimeout(flushQueue, settings.wcsDebounceDelay);
             }
-            const resolvedOffers = partitionArray(
-              data.resolvedOffers,
-              ({ offerSelectorIds }) => offerSelectorIds,
-            );
-            callParams.offerSelectorIds.forEach((osi) => {
-              const cacheKey = `${osi}-${cacheBase}`;
-              if (pendingCache.has(cacheKey)) {
-                const { reject, resolve } = pendingCache.get(cacheKey);
-                pendingCache.delete(cacheKey);
-                const offers = resolvedOffers[osi];
-                if (offers) {
-                  resolve(callParams.singleOffer
-                    ? [getSingleOffer(offers, callParams.country, callParams.isPerpetual)]
-                    : offers);
-                } else {
-                  reject(new Error('Offer not found'));
-                }
-              }
-            });
-          })
-          .catch((e) => {
-            log.error('Failed:', e);
-            callParams.offerSelectorIds.forEach((osi) => {
-              const cacheKey = `${osi}-${cacheBase}`;
-              if (cacheKey) {
-                const { osi, reject } = pendingCache.get(cacheKey);
-                if (osi) {
-                  pendingCache.delete(cacheKey);
-                  reject(e);
-                }
-              }
-            });
-          });
+          }));
+        }
+
+        const promise = cache.get(cacheKey).then((offers) => selectOffers(offers, {
+          country,
+          isPerpetual: perpetual,
+          multipleOffers: multiple,
+          taxExclusive,
+        }));
+
         return promise;
       });
-    },
-    settings.wcsDebounceDelay,
-    settings.wcsOfferSelectorLimit,
-  );
-
-  const resolveOfferSelector = ({
-    osi,
-    promotionCode,
-    isPerpetual,
-    singleOffer = true,
-    taxExclusive = settings.wcsForceTaxExclusive,
-  }) => {
-    const { country, locale } = settings;
-    const language = country === 'GB' ? undefined : isPerpetual ? 'EN' : 'MULT';
-
-    const cacheBase = `
-      ${country}-${language}${promotionCode ? `-${promotionCode}` : ''}${taxExclusive ? '' : '-tax'}
-    `.trim();
-
-    const cacheKey = `${osi}-${cacheBase}`;
-
-    if (offerCache.has(cacheKey)) {
-      return offerCache.get(cacheKey);
     }
+  }
+}
 
-    const params = {
-      country,
-      isPerpetual,
-      locale,
-      offerSelectorIds: [osi],
-      singleOffer,
-      taxExclusive,
-    };
-
-    if (language) {
-      params.language = language;
-    }
-    if (promotionCode) {
-      params.promotionCode = promotionCode;
-    }
-
-    const resolvePromise = new Promise((resolve, reject) => {
-      pendingCache.set(cacheKey, { osi, resolve, reject });
-      loadPendings({ params, cacheBase });
-    });
-
-    offerCache.set(cacheKey, resolvePromise);
-    return resolvePromise;
-  };
-
-  log.debug('Initialised');
-  return { resolveOfferSelector };
+export default Wcs;
+export {
+  BaseUrl as WcsBaseUrl,
+  ErrorMessage as WcsErrorMessage,
+  PlanType as WcsPlanType,
+  Wcs,
+  Commitment as WcsCommitment,
+  Term as WcsTerm,
 }

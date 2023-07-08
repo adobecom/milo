@@ -35,6 +35,8 @@ export const equalsCI = (value1, value2) => 0 === String(value1 ?? '').localeCom
   { sensitivity: 'base' },
 );
 
+export const setImmediate = (callback) => setTimeout(callback, 0);
+
 export function toBoolean(val, def) {
   const str = String(val);
   if (['1', 'true'].includes(str)) return true;
@@ -44,9 +46,9 @@ export function toBoolean(val, def) {
 
 /**
  * @template T
- * @param {any} val - value to convert
- * @param {T} enm - enum object
- * @param {T[keyof T]} [def] - default value
+ * @param {any} val
+ * @param {T} enm
+ * @param {T[keyof T]} [def]
  * @returns {T[keyof T]}
  */
 export function toEnum(val, enm, def) {

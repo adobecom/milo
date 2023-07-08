@@ -14,10 +14,10 @@ declare global {
     type Env = ProviderEnvironment;
 
     type getLocaleSettings = (
-      config?: Pick<Config, 'locale'>
+      config?: Pick<MiloConfig, 'locale'>
     ) => Omit<Settings, 'env'>;
-    type getSettings = (config?: Config) => Checkout.Settings & Wcs.Settings;
-    type init = (callback: () => Config) => Promise<Instance>;
+    type getSettings = (config?: MiloConfig) => Checkout.Settings & Wcs.Settings;
+    type init = (callback: () => MiloConfig) => Promise<Instance>;
     type pollImsCountry = (options?: {
       interval?: number;
       maxAttempts?: number;
@@ -27,16 +27,6 @@ declare global {
       options: Record<string, any>
     ) => void;
     type reset = () => void;
-
-    interface Config {
-      commerce?: Partial<
-        Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
-      >;
-      locale?: {
-        ietf?: string;
-        prefix?: string;
-      };
-    }
 
     interface Instance {
       readonly checkout: Checkout.Client;
@@ -54,9 +44,14 @@ declare global {
       price: Record<string, string>;
     }
 
-    interface Root extends Instance {
-      init: init;
-      reset: reset;
+    interface MiloConfig {
+      commerce?: Partial<
+        Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
+      >;
+      locale?: {
+        ietf?: string;
+        prefix?: string;
+      };
     }
 
     interface Settings {
@@ -66,17 +61,20 @@ declare global {
       locale: string;
     }
 
-    interface PLaceholderElement {
+    interface HTMLPlaceholderMixin {
       init(): void;
-      onceResolved(): Promise<PLaceholderElement>;
+      onceResolved(): Promise<HTMLPlaceholderMixin>;
       render(): void;
       toggleFailed(reason?: Error): void;
       togglePending(): void;
       toggleResolved(): void;
     }
 
-    interface HTMLCheckoutLinkElement extends PLaceholderElement, HTMLAnchorElement {}
-    interface HTMLInlinePriceElement extends PLaceholderElement, HTMLSpanElement {
+    interface HTMLCheckoutLinkElement extends HTMLPlaceholderMixin, HTMLAnchorElement {
+      renderHref(): HTMLCheckoutLinkElement;
+    }
+
+    interface HTMLInlinePriceElement extends HTMLPlaceholderMixin, HTMLSpanElement {
       new(): HTMLInlinePriceElement;
       renderOffer(offer: WcsResolvedOffer, options: Record<string, any>): void;
     }
@@ -131,6 +129,12 @@ declare global {
         readonly namespace: string;
         debug(message: string, ...params: any[]): void;
         error(message: string, ...params: any[]): void;
+        /**
+         * Creates and returns new instance of `Log` module
+         * bound to `name` of the logging module.
+         * 
+         * New instance will use `name` in namespace of its records.
+         */
         module(name: string): Instance;
         info(message: string, ...params: any[]): void;
         warn(message: string, ...params: any[]): void;
@@ -192,15 +196,45 @@ declare global {
 
 export declare const CheckoutWorkflow: Commerce.Checkout.Workflow;
 export declare const CheckoutWorkflowStep: WorkflowStep;
+/**
+ * Default values for commerce module settings.
+ */
 export declare const defaults: Commerce.Defaults;
 export declare const Env: Commerce.Env;
 export declare const HTMLCheckoutLinkElement: Commerce.HTMLCheckoutLinkElement; 
 export declare const HTMLInlinePriceElement: Commerce.HTMLInlinePriceElement;
-export declare const HTMLPlaceholderMixin: Commerce.PLaceholderElement
+export declare const HTMLPlaceholderMixin: Commerce.HTMLPlaceholderMixin
 export declare const Log: Commerce.Log.Root;
 export declare const WcsEnv: Commerce.Wcs.Env;
 export declare const WcsLandscape: Landscape;
+/**
+ * Returns Checkout/Wcs-compatible locale info
+ * mapped out of Milo config.
+ */
 export declare const getLocaleSettings: Commerce.getLocaleSettings;
+/**
+ * Collects `Commerce` module settings from:
+ * - provided Milo config,
+ * - page metadata,
+ * - `location.search` params,
+ * - storage (local/session).
+ */
 export declare const getSettings: Commerce.getSettings;
+/**
+ * Initialises `Commerce` module:
+ * - configures `Wcs Client` and `Checkout Url Builder`,
+ * - downloads commerce literals needed for requested locale,
+ * - activates web components for `merch` auto-blocks:
+ * `checkout link` and `inline price`.
+ * 
+ * Requires `callback` function providing Milo config (e.g. `getConfig`).
+ * Call this function only once and then returns shared instance
+ * of Commerce module to subsequent calls to `init`, until `reset`.
+ */
 export declare const init: Commerce.init;
+/**
+ * Disposes shared instance of `commerce` module and enables subsequent re-`init`.
+ * 
+ * Useful in tests.
+ */
 export declare const reset: Commerce.reset;

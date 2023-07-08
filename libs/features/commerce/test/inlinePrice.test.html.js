@@ -1,9 +1,11 @@
 import { MiloEnv } from '../deps.js';
 import Log from '../log.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockLana, unmockLana } from './mocks/lana.js';
 import snapshots from './mocks/snapshots.js';
 import { expect } from './utils.js';
 import { setConfig } from '../../../utils/utils.js';
+import { WcsErrorMessage } from '../wcs.js';
 
 /**
  * @param {string} wcsOsi 
@@ -28,18 +30,16 @@ describe('HTMLInlinePriceElement', () => {
 
   after(() => {
     unmockFetch();
+    unmockLana();
   });
 
   before(async () => {
-    Log.use(Log.quietFilter);
+    mockLana();
     fetch = await mockFetch();
     const { init } = await import('../service.js');
     commerce = await init(() => setConfig({ env: { name: MiloEnv.PROD } }));
+    Log.use(Log.quietFilter);
     await import('../inlinePrice.js');
-  });
-
-  beforeEach(async () => {
-    // document.body.innerHTML = '';
   });
 
   it('renders price', async () => {
@@ -85,11 +85,8 @@ describe('HTMLInlinePriceElement', () => {
     const HTMLInlinePriceElement = (await import('../inlinePrice.js')).default;
     const HTMLPlaceholderMixin = (await import('../placeholder.js')).default;
     class HTMLInlineOfferElement extends HTMLInlinePriceElement {
-      renderOffer(offer, options) {
-        super.renderOffer(offer, {
-          ...options,
-          displayFormatted: false,
-        });
+      renderOffer(offer, overrides) {
+        super.renderOffer(offer, { ...overrides, displayFormatted: false });
         const {
           productArrangementCode,
           commitment,
@@ -141,21 +138,17 @@ describe('HTMLInlinePriceElement', () => {
   it('does not render failed price', async () => {
     const inlinePrice = appendInlinePrice('xyz');
     inlinePrice.innerHTML = 'test';
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(
-      'Bad WCS request'
-    );
+    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.badRequest);
     expect(inlinePrice.innerHTML).to.be.empty;
   });
 
   it('does not render missing offer', async () => {
     const inlinePrice = appendInlinePrice('no-offer');
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(
-      'Offer not found'
-    );
+    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
     expect(inlinePrice.innerHTML).to.equal('');
   });
 
-  it.only('renders perpetual offer', async () => {
+  it('renders perpetual offer', async () => {
     const inlinePrice = appendInlinePrice('perpetual', {
       perpetual: true,
     });
@@ -164,9 +157,7 @@ describe('HTMLInlinePriceElement', () => {
     expect(fetch.lastCall.args[0]).to.contain('language=EN');
     // no more perpetual offer
     inlinePrice.dataset.perpetual = 'false';
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(
-      'Offer not found'
-    );
+    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
     expect(fetch.lastCall.args[0]).to.contain('language=MULT');
   });
 
@@ -177,6 +168,5 @@ describe('HTMLInlinePriceElement', () => {
     await inlinePrice.onceResolved();
     commerce.settings.wcsForceTaxExclusive = false;
     expect(inlinePrice.innerHTML).to.be.html(snapshots.taxExclusive);
-    expect('').to.match
   });
 });
