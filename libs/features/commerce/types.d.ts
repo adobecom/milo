@@ -21,7 +21,7 @@ declare global {
       config?: Pick<MiloConfig, 'locale'>
     ) => Omit<Settings, 'env'>;
     type getSettings = (config?: MiloConfig) => Checkout.Settings & Wcs.Settings;
-    type init = (callback?: () => MiloConfig) => Promise<Instance>;
+    type init = (callback?: () => MiloConfig, force?: boolean) => Promise<Instance>;
     type pollImsCountry = (options?: {
       interval?: number;
       maxAttempts?: number;
@@ -52,6 +52,9 @@ declare global {
       commerce?: Partial<
         Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
       >;
+      env?: {
+        name: string;
+      };
       locale?: {
         ietf?: string;
         prefix?: string;
@@ -84,9 +87,10 @@ declare global {
     }
 
     module Checkout {
+      type buildUrl = (options: Options) => string;
       type Workflow = CheckoutType;
       interface Client {
-        buildUrl(options: Options): string;
+        buildUrl: buildUrl;
       }
 
       interface Options extends CheckoutData {
@@ -248,7 +252,8 @@ export declare const getSettings: Commerce.getSettings;
  * 
  * Requires `callback` function providing Milo config (e.g. `getConfig`).
  * Call this function only once and then returns shared instance
- * of Commerce module to subsequent calls to `init`, until `reset`.
+ * of Commerce module to subsequent calls to `init`,
+ * unless `force` argument is set to `true`.
  */
 export declare const init: Commerce.init;
 /**

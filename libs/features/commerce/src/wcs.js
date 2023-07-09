@@ -1,5 +1,6 @@
 import { Term, Commitment } from '@pandora/data-models-odm';
 import { webCommerceArtifact } from '@pandora/data-source-wcs';
+
 import { Env } from './deps.js';
 import Log from './log.js';
 
@@ -25,7 +26,7 @@ const BaseUrl = {
 
 const ErrorMessage = {
   badRequest: 'Bad Wcs request',
-  notFound: 'Offer not found',
+  notFound: 'Wcs offer not found',
 }
 
 /** @type {Record<Commerce.Wcs.PlanType, Commerce.Wcs.PlanType>} */
@@ -45,7 +46,7 @@ const planTypesMap = [
 ];
 
 /**
- * @param {Commerce.Wcs.Offer} offer 
+ * @param {Omit<Commerce.Wcs.Offer, 'planType'>} offer
  * @returns {Commerce.Wcs.Offer}
  */
 const applyPlanType = (offer) => ({
@@ -88,7 +89,12 @@ function selectOffers(offers, {
     selected = selected.map((offer) => {
       const { priceDetails } = offer;
       if (priceDetails.taxDisplay !== TAX_INCLUSIVE_DETAILS) return offer;
-      const { price, priceWithoutDiscount, priceWithoutTax, priceWithoutDiscountAndTax } = priceDetails;
+      const {
+        price, priceWithoutDiscount,
+        // TODO: update @pandora typings to include these two
+        // @ts-ignore
+        priceWithoutTax, priceWithoutDiscountAndTax,
+      } = priceDetails;
       return {
         ...offer,
         priceDetails: {
@@ -112,6 +118,7 @@ function Wcs(settings) {
   const log = Log.commerce.module('wcs');
   const { env, wcsApiKey: apiKey } = settings;
 
+  // Create @pandora Wcs client.
   const fetchOptions = {
     apiKey,
     baseUrl: BaseUrl[env],
@@ -119,12 +126,22 @@ function Wcs(settings) {
   };
   const getWcsOffers = webCommerceArtifact(fetchOptions);
 
-  /** @type {Map<string, Promise<Commerce.Wcs.Offer[]>>} */
+  /**
+   * Cache of promises resolving to arrays of Wcs offers grouped by osi-based keys.
+   * @type {Map<string, Promise<Commerce.Wcs.Offer[]>>}
+   */
   const cache = new Map();
-  /** @type {Map<string, { options: WcsOptions, promises: WcsPromises }>} */
+  /**
+   * Queue of pending requests to Wcs grouped by locale and promo.
+   * @type {Map<string, { options: WcsOptions, promises: WcsPromises }>}
+   */
   const queue = new Map();
   let timer;
 
+  /**
+   * Process Wcs requests queue.
+   * Wach Wcs request can contain array of osis having same locale and promo.
+   */
   function flushQueue() {
     clearTimeout(timer);
     const pending = [...queue.values()];
@@ -133,10 +150,15 @@ function Wcs(settings) {
   }
 
   /**
+   * Performs one rejquest to Wcs and settles all pending promises if `settle` is set to true.
+   * Pending promises are grouped by osi.
+   * If Wcs does not provide an offer having particular osi,
+   * its pending promise will be rejected with "not found" error.
+   * If any other Wcs/Network error, promises are rejected with "bad request" error.
    * @param {WcsOptions} options
    * @param {WcsPromises} promises
    */
-  async function resolveWcsOffers(options, promises, finalise = true) {
+  async function resolveWcsOffers(options, promises, settle = true) {
     let message = ErrorMessage.notFound;
     try {
       log.debug('Fetching:', options);
@@ -181,7 +203,7 @@ function Wcs(settings) {
       }
     }
 
-    if (finalise && promises.size) {
+    if (settle && promises.size) {
       // reject pending promises, their offers weren't provided by Wcs
       log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
       promises.forEach(({ reject }) => { reject(new Error(message)); });

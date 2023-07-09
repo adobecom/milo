@@ -24,7 +24,10 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
     this.placeholder.init();
   }
 
-  /** @type {Commerce.HTMLCheckoutLinkElement} */
+  /**
+   * Returns strongly typed `this`.
+   * @type {Commerce.HTMLCheckoutLinkElement}
+   */
   get placeholder() {
     // @ts-ignore
     return this;
@@ -56,6 +59,7 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
   }
 
   /**
+   * Renders checkout link href for provided offers into this element.
    * @param {Commerce.Wcs.Offer[]} offers
    * @param {Record<string, any>} overrides
    */

@@ -1,13 +1,17 @@
 import { readFile } from '@web/test-runner-commands';
-import { sinon } from '../utils';
+import { sinon } from '../utils.js';
+
+const { fetch } = window;
 
 export async function mockFetch() {
-  const { fetch } = window;
+  const literals = JSON.parse(await readFile({ path: './mocks/literals.json' }));
   const offers = JSON.parse(await readFile({ path: './mocks/offers.json' }));
-  return sinon.stub(window, 'fetch').callsFake((...args) => {
+
+  const stub = sinon.stub().callsFake((...args) => {
     const { searchParams, pathname } = new URL(String(args[0]));
 
-    if (pathname === '/web_commerce_artifact') {
+    // mock Wcs responses
+    if (pathname.endsWith('/web_commerce_artifact')) {
       const language = searchParams.get('language').toLowerCase()
       const buckets = searchParams.get('offer_selector_ids')
         .split(',')
@@ -15,6 +19,8 @@ export async function mockFetch() {
           ...offer,
           offerSelectorIds: [osi],
         })));
+
+      // 404 if any of requested osis does not exist
       if (buckets.some(bucket => bucket == null)) {
         return Promise.resolve({
           ok: false,
@@ -23,6 +29,8 @@ export async function mockFetch() {
           text: () => Promise.resolve('Some osis were not found')
         });
       }
+
+      // 200, all osis were found
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -33,18 +41,21 @@ export async function mockFetch() {
       });
     }
     
-    if (pathname === '/literals/price/en.json') {
+    // mock literals fetches
+    if (pathname.endsWith('/literals/price/en.json')) {
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({}),
+        json: () => Promise.resolve(literals),
       });
     }
 
     return fetch.apply(window, args);
   });
+
+  window.fetch = stub;
+  return stub;
 }
 
 export function unmockFetch() {
-  // @ts-ignore
-  window.fetch.restore?.();
+  window.fetch = fetch;
 }

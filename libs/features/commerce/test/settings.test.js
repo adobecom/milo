@@ -1,8 +1,8 @@
-import { expect } from './utils.js';
-
 import defaults from '../src/defaults.js';
 import { CheckoutWorkflow, CheckoutWorkflowStep, Env, WcsEnv, WcsLandscape } from '../src/deps.js';
 import { getSettings } from '../src/settings.js';
+
+import { expect } from './utils.js';
 
 describe('getSettings', () => {
   it('returns default settings, if called without arguments', () => {

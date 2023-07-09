@@ -32,7 +32,7 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
   }
 
   /**
-   * Returns `this` object typed as `Commerce.InlinePriceElement`.
+   * Returns strongly typed `this`.
    * @type {Commerce.HTMLInlinePriceElement}
    */
   get placeholder() {
@@ -41,6 +41,7 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
   }
 
   /**
+   * Resolves associated osi via Wcs and renders price offer.
    * @param {Record<string, any>} overrides
    */
   async render(overrides = {}) {
@@ -66,6 +67,7 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
   }
 
   /**
+   * Render price offer info into this element.
    * @param {Commerce.Wcs.Offer} offer 
    * @param {Record<string, any>} overrides
    */

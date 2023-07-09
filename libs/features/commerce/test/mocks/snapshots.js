@@ -1,3 +1,5 @@
+// HTML snapshots to compare with `innerHTML` of rendered web components
+
 const price = `
 <span class="price" aria-label="US$599.88 per year">
   <span class="price-currency-symbol">US$</span>
@@ -112,9 +114,9 @@ const taxExclusive = `
 `;
 
 export default {
-  price,
   customLiterals,
   optical,
+  price,
   promo,
   promoStikethrough,
   strikethrough,

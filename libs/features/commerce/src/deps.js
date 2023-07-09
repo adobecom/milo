@@ -1,3 +1,4 @@
+// this file aliases/declares and re-exports commonly used external dependencies
 import {
   CheckoutType,
   WorkflowStep,
@@ -16,19 +17,12 @@ import {
 } from '@dexter/tacocat-consonant-templates';
 import { computePromoStatus } from '@dexter/tacocat-core';
 
-const MiloEnv = {
-  LOCAL: 'local',
-  PROD: 'prod',
-  STAGE: 'stage',
-};
-
 export {
   CheckoutType as CheckoutWorkflow,
   WorkflowStep as CheckoutWorkflowStep,
   ProviderEnvironment as Env,
   Environment as WcsEnv,
   Landscape as WcsLandscape,
-  MiloEnv,
   buildCheckoutUrl,
   computePromoStatus,
   price,

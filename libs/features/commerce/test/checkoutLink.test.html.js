@@ -1,9 +1,10 @@
-import { CheckoutWorkflowStep, MiloEnv } from '../src/deps.js';
+import { CheckoutWorkflowStep } from '../src/deps.js';
 import Log from '../src/log.js';
+import { WcsErrorMessage } from '../src/wcs.js';
+
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import { delay, expect } from './utils.js';
-import { WcsErrorMessage } from '../src/wcs.js';
 
 /**
  * @param {string} wcsOsi 
@@ -37,6 +38,8 @@ describe('HTMLCheckoutLinkElement', () => {
     const { init } = await import('../src/service.js');
     commerce = await init();
     Log.reset();
+    // replace `quietFilter` with `consoleAppender` to enable logs in tests
+    // to see debug logs in chrome devtools console, set verbose level
     Log.use(Log.quietFilter);
     await import('../src/checkoutLink.js');
   });
@@ -122,9 +125,7 @@ describe('HTMLCheckoutLinkElement', () => {
 
   it('fails with missing offer', async () => {
     const checkoutLink = appendCheckoutLink('no-offer');
-    await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
-      'Offer not found'
-    );
+    await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(WcsErrorMessage.notFound);
   });
 
   it('fails with bad request', async () => {

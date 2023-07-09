@@ -1,17 +1,20 @@
-import { expect, sinon } from './utils.js';
 import { pollImsCountry } from '../src/ims.js';
+
+import { mockIms, unmockIms } from './mocks/ims.js';
+import { expect, sinon } from './utils.js';
 
 describe('pollImsCountry', () => {
   afterEach(() => {
-    delete window.adobeIMS;
+    unmockIms();
   });
 
   it('resolves to undefined for anonymous user', async () => {
-    window.adobeIMS = { isSignedInUser: () => false };
+    await mockIms();
     expect(await pollImsCountry()).to.be.undefined;
   });
 
   it('resolves to country set in IMS user profile', async () => {
+    await mockIms('CH');
     window.adobeIMS = {
       isSignedInUser: () => true,
       getProfile: () => Promise.resolve({ countryCode: 'CH' }),

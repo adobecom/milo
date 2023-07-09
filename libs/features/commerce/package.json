@@ -19,7 +19,7 @@
     "@dexter/tacocat-consonant-templates": "^1.9.7",
     "@dexter/tacocat-core": "^1.10.3",
     "@pandora/commerce-checkout-url-builder": "^1.0.3",
-    "@pandora/data-models-odm": "^0.5.1",
+    "@pandora/data-models-odm": "^0.4.2",
     "@pandora/data-source-utils": "^0.3.1",
     "@pandora/data-source-wcs": "^0.2.4",
     "@pandora/fetch": "^1.2.4"

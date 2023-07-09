@@ -1,9 +1,13 @@
 import { CheckoutData, CheckoutType, WorkflowStep } from '@pandora/commerce-checkout-url-builder';
 import { ProviderEnvironment, Landscape, Environment } from '@pandora/data-source-utils';
-import { ResolvedOffer as WcsResolvedOffer } from '@pandora/data-models-odm';
+import { ResolvedOffer } from '@pandora/data-models-odm';
 
 // TODO: expose this type from @dexter/tacocat-consonant-templates package
 // type PriceLiterals = import('@dexter/tacocat-consonant-templates').PriceLiterals;
+
+type RequiredKey<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property];
+};
 
 declare global {
   namespace Commerce {
@@ -17,7 +21,7 @@ declare global {
       config?: Pick<MiloConfig, 'locale'>
     ) => Omit<Settings, 'env'>;
     type getSettings = (config?: MiloConfig) => Checkout.Settings & Wcs.Settings;
-    type init = (callback: () => MiloConfig) => Promise<Instance>;
+    type init = (callback?: () => MiloConfig, force?: boolean) => Promise<Instance>;
     type pollImsCountry = (options?: {
       interval?: number;
       maxAttempts?: number;
@@ -48,6 +52,9 @@ declare global {
       commerce?: Partial<
         Record<keyof Checkout.Settings | keyof Wcs.Settings, any>
       >;
+      env?: {
+        name: string;
+      };
       locale?: {
         ietf?: string;
         prefix?: string;
@@ -63,30 +70,32 @@ declare global {
 
     interface HTMLPlaceholderMixin {
       init(): void;
-      onceResolved(): Promise<HTMLPlaceholderMixin>;
-      render(): void;
-      toggleFailed(reason?: Error): void;
-      togglePending(): void;
-      toggleResolved(): void;
+      onceSettled(): Promise<HTMLPlaceholderMixin>;
+      render(overrides?: Record<string, any>): void;
+      toggleFailed(version: number, error?: Error): boolean;
+      togglePending(): number;
+      toggleResolved(version: number): boolean;
     }
 
     interface HTMLCheckoutLinkElement extends HTMLPlaceholderMixin, HTMLAnchorElement {
-      renderHref(): HTMLCheckoutLinkElement;
+      renderOffers(offers: Wcs.Offer[], overrides?: Record<string, any>): void;
     }
 
     interface HTMLInlinePriceElement extends HTMLPlaceholderMixin, HTMLSpanElement {
       new(): HTMLInlinePriceElement;
-      renderOffer(offer: WcsResolvedOffer, options: Record<string, any>): void;
+      renderOffer(offer: Wcs.Offer, overrides?: Record<string, any>): void;
     }
 
     module Checkout {
+      type buildUrl = (options: Options) => string;
       type Workflow = CheckoutType;
       interface Client {
-        buildUrl(
-          options: CheckoutData & {
-            workflow: Workflow;
-          }
-        ): string;
+        buildUrl: buildUrl;
+      }
+
+      interface Options extends CheckoutData {
+        checkoutPromoCode: string;
+        workflow: Workflow;
       }
 
       interface Settings extends Commerce.Settings {
@@ -113,6 +122,8 @@ declare global {
     }
 
     module Log {
+      type Appender = RequiredKey<Plugin, 'append'>;
+      type Filter = RequiredKey<Plugin, 'filter'>;
       type Level = 'debug' | 'error' | 'info' | 'warn';
 
       interface Entry {
@@ -170,16 +181,21 @@ declare global {
     }
 
     module Wcs {
-      type PlanType = 'ABM' | 'PUF' | 'M2M' | 'PERPETUAL' | 'UNKNOWN';
+      type PlanType = 'ABM' | 'PUF' | 'M2M' | 'PERPETUAL';
       type Env = Environment;
 
       interface Client {
-        resolveOfferSelector(options: {
-          isPerpetual?: boolean;
-          osi: string;
+        resolveOfferSelectors(options: {
+          multiple?: boolean;
+          offerSelectorIds: string[];
+          perpetual?: boolean;
           promotionCode?: string;
           taxExclusive?: boolean;
-        }): Promise<WcsResolvedOffer[]>;
+        }): Promise<Offer[]>[];
+      }
+
+      interface Offer extends ResolvedOffer {
+        planType: PlanType;
       }
 
       interface Settings extends Commerce.Settings {
@@ -190,6 +206,13 @@ declare global {
         wcsLandscape: Landscape;
         wcsOfferSelectorLimit: number;
       }
+    }
+  }
+
+  interface Window {
+    adobeIMS: {};
+    lana: {
+      log: (msg: string, options: {}) => void;
     }
   }
 }
@@ -229,7 +252,8 @@ export declare const getSettings: Commerce.getSettings;
  * 
  * Requires `callback` function providing Milo config (e.g. `getConfig`).
  * Call this function only once and then returns shared instance
- * of Commerce module to subsequent calls to `init`, until `reset`.
+ * of Commerce module to subsequent calls to `init`,
+ * unless `force` argument is set to `true`.
  */
 export declare const init: Commerce.init;
 /**

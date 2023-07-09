@@ -1,5 +1,5 @@
-import { MiloEnv } from './deps.js';
 import lanaAppender from './lana.js';
+import { MiloEnv } from './settings.js';
 import { getParam, isFunction, toBoolean } from './utils.js';
 
 const epoch = Date.now();

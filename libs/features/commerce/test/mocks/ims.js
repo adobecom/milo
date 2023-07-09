@@ -1,10 +1,12 @@
-export async function mockIms(countryCode) {
+async function mockIms(countryCode) {
   window.adobeIMS = {
     isSignedInUser: () => !!countryCode,
     getProfile: () => Promise.resolve({ countryCode }),
   };
 }
 
-export function unmockIms() {
+function unmockIms() {
   delete window.adobeIMS;
 }
+
+export { mockIms, unmockIms };

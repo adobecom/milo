@@ -2,8 +2,12 @@ import Checkout from './checkout.js';
 import defaults from './defaults.js';
 import { pollImsCountry } from './ims.js';
 import Log from './log.js';
-import { getSettings } from './settings.js';
+import getSettings from './settings.js';
 import Wcs from './wcs.js';
+
+const ErrorMessage = {
+  init: 'Not initialised',
+};
 
 /** @type {Commerce.Instance} */
 let instance = null;
@@ -22,7 +26,10 @@ async function activate(callback) {
   const literals = { price: {} };
   const settings = getSettings(config);
   const imsCountry = pollImsCountry().then((countryCode) => {
-    if (countryCode) settings.country = countryCode;
+    if (countryCode) {
+      log.debug('Ims country code:', countryCode);
+      settings.country = countryCode;
+    }
     return countryCode;
   });
 
@@ -46,7 +53,7 @@ async function activate(callback) {
   };
 
   // fetch price literals
-  await fetch(
+  await window.fetch(
     await import.meta.resolve(`./literals/price/${settings.language.toLowerCase()}.json`),
   )
     .then((response) => response.json())
@@ -56,6 +63,7 @@ async function activate(callback) {
         log.debug('Price literals loaded:', priceLiterals);
       },
       (error) => {
+        /* c8 ignore next */
         log.error('Price literals not loaded:', error);
       },
     );
@@ -71,21 +79,24 @@ async function activate(callback) {
 }
 
 function demand() {
-  if (instance === null) throw new Error('Not initialised');
+  if (instance === null) {
+    throw new Error(ErrorMessage.init);
+  }
   return instance;
 }
 
-/** @type {Commerce.init} */
-export function init(callback) {
-  // eslint-disable-next-line no-return-assign
-  return promise ??= activate(callback);
-}
-
-/** @type {Commerce.reset} */
-export function reset() {
+function reset() {
   instance = null;
   promise = null;
   providers.price.clear();
+  Log.reset();
+}
+
+/** @type {Commerce.init} */
+function init(callback, force) {
+  if (force) reset();
+  // eslint-disable-next-line no-return-assign
+  return promise ??= activate(callback);
 }
 
 /** @type {Commerce.Internal.Instance} */
@@ -112,3 +123,4 @@ export default {
     return demand().wcs;
   },
 };
+export { ErrorMessage, init, reset };

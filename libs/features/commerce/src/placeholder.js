@@ -6,50 +6,73 @@ export const RESOLVED = 'placeholder-resolved';
 
 const setImmediate = (callback) => setTimeout(callback, 0);
 
+/**
+ * Stores private bucket of values for each instance of placeholder.
+ * @type {WeakMap<HTMLPlaceholderMethods, {
+ *  error?: Error;
+ *  promises: {
+ *    resolve: (HTMLPlaceholderMethods) => void;
+ *    reject: (error: Error) => void;
+ *  }[];
+ *  state: FAILED | PENDING | RESOLVED | undefined;
+ *  timer?: NodeJS.Timeout;
+ *  version: number;
+ * }>}
+ */
+const buckets = new WeakMap();
+
 /** @type {Commerce.HTMLPlaceholderMixin & Record<string, any>} */
 // @ts-ignore
 export const HTMLPlaceholderMethods = {
-  attributeChangedCallback(attr, prev, next) {
-    this.log?.debug('Changed:', attr, "=", next);
+  attributeChangedCallback(name, _, value) {
+    this.log?.debug(`Attribute "${name}":`, value);
     this.update();
   },
 
   connectedCallback() {
-    this.log?.debug('Connected');
+    this.log?.debug('Connected:', this.parentElement);
     this.update();
   },
 
   init() {
-    this.status = undefined;
-    this.promises = [];
-    this.timer = 0;
-    this.version = 0;
+    buckets.set(this, {
+      promises: [],
+      state: undefined,
+      version: 0,
+    });
   },
 
   onceSettled() {
-    if (RESOLVED === this.status) return Promise.resolve(this);
-    if (FAILED === this.status) return Promise.reject(this.error);
+    const { error, promises, state } = buckets.get(this);
+    if (RESOLVED === state) return Promise.resolve(this);
+    if (FAILED === state) return Promise.reject(error);
     return new Promise((resolve, reject) => {
-      this.promises.push({ resolve, reject });
+      promises.push({ resolve, reject });
     });
   },
 
   toggle() {
-    [FAILED, PENDING, RESOLVED].forEach((status) => {
-      this.classList.toggle(status, status === this.status);
+    const bucket = buckets.get(this);
+    [FAILED, PENDING, RESOLVED].forEach((state) => {
+      this.classList.toggle(state, state === bucket.state);
     });
   },
 
   toggleResolved(version) {
-    if (version !== this.version) return false;
-    this.status = RESOLVED;
+    const bucket = buckets.get(this);
+    // skip obsolete asyncs
+    if (version !== bucket.version) return false;
+    bucket.state = RESOLVED;
     this.toggle();
     this.log?.debug('Resolved:', {
       dataset: { ...this.dataset }, node: this, settings: Service.settings,
     });
+    // allow calling code to perform sync updates of this element
+    // before notifying observers about state change
     setImmediate(() => {
-      this.promises.forEach(({ resolve }) => resolve(this));
-      this.promises = [];
+      const promises = bucket.promises;
+      bucket.promises = [];
+      promises.forEach(({ resolve }) => resolve(this));
       this.dispatchEvent(
         new CustomEvent(RESOLVED, { bubbles: true }),
       );
@@ -58,16 +81,19 @@ export const HTMLPlaceholderMethods = {
   },
 
   toggleFailed(version, error) {
-    if (version !== this.version) return false;
-    this.error = error;
-    this.status = FAILED;
+    const bucket = buckets.get(this);
+    // skip obsolete asyncs
+    if (version !== bucket.version) return false;
+    bucket.error = error;
+    bucket.state = FAILED;
     this.toggle();
     this.log?.error('Failed:', {
       dataset: { ...this.dataset }, node: this, settings: Service.settings,
     }, error);
     setImmediate(() => {
-      this.promises.forEach(({ reject }) => reject(error));
-      this.promises = [];
+      const promises = bucket.promises;
+      bucket.promises = [];
+      promises.forEach(({ reject }) => reject(error));
       this.dispatchEvent(
         new CustomEvent(FAILED, { bubbles: true }),
       );
@@ -76,10 +102,11 @@ export const HTMLPlaceholderMethods = {
   },
 
   togglePending() {
-    this.version++;
-    if (PENDING !== this.status) {
+    const bucket = buckets.get(this);
+    bucket.version++;
+    if (PENDING !== bucket.state) {
       this.log?.debug('Pending');
-      this.status = PENDING;
+      bucket.state = PENDING;
       this.toggle();
       setImmediate(() => {
         this.dispatchEvent(
@@ -87,18 +114,21 @@ export const HTMLPlaceholderMethods = {
         );
       });
     }
-    return this.version;
+    return bucket.version;
   },
 
   update() {
     if (!this.isConnected) return;
 
     this.togglePending();
+    const bucket = buckets.get(this);
     // batch consecutive updates
-    this.timer = setImmediate(() => {
-      this.timer = 0;
-      this.render();
-    });
+    if (!bucket.timer) {
+      bucket.timer = setImmediate(() => {
+        delete bucket.timer;
+        this.render();
+      });
+    }
   }
 };
 

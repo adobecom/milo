@@ -1,4 +1,4 @@
-import { sinon } from '../utils';
+import { sinon } from '../utils.js';
 
 const ogLana = window.lana;
 

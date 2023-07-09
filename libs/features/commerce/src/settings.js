@@ -3,7 +3,6 @@ import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
   Env,
-  MiloEnv,
   WcsEnv,
   WcsLandscape
 } from './deps.js';
@@ -14,6 +13,12 @@ import {
   toEnum,
   toPositiveFiniteNumber
 } from './utils.js';
+
+const MiloEnv = {
+  LOCAL: 'local',
+  PROD: 'prod',
+  STAGE: 'stage',
+};
 
 const geoMappings = {
   africa: 'en-ZA',
@@ -30,7 +35,7 @@ const supportedLanguages = [
 ];
 
 /** @type {Commerce.getLocaleSettings} */
-export function getLocaleSettings({
+function getLocaleSettings({
   locale = { ietf: 'en-US' },
 } = {}) {
   const ietf = geoMappings[locale.prefix ?? ''] ?? locale.ietf;
@@ -51,7 +56,7 @@ export function getLocaleSettings({
 }
 
 /** @type {Commerce.getSettings} */
-export function getSettings({
+function getSettings({
   commerce = {},
   locale = undefined,
 } = {}) {
@@ -111,3 +116,6 @@ export function getSettings({
     wcsOfferSelectorLimit,
   };
 }
+
+export default getSettings;
+export { MiloEnv, getLocaleSettings, getSettings };

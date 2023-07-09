@@ -1,10 +1,10 @@
 import Log from '../src/log.js';
+import { WcsErrorMessage } from '../src/wcs.js';
+
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import snapshots from './mocks/snapshots.js';
 import { expect } from './utils.js';
-// @ts-ignore
-import { WcsErrorMessage } from '../src/wcs.js';
 
 /**
  * @param {string} wcsOsi 
@@ -37,6 +37,8 @@ describe('HTMLInlinePriceElement', () => {
     fetch = await mockFetch();
     const { init } = await import('../src/service.js');
     commerce = await init();
+    // replace `quietFilter` with `consoleAppender` to enable logs in tests
+    // to see debug logs in chrome devtools console, set verbose level
     Log.use(Log.quietFilter);
     await import('../src/inlinePrice.js');
   });

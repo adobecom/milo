@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta name="wcs-debounce-delay" content="1">
+    <meta name="wcs-offer-selector-limit" content="1">
+    <script type="importmap">
+      {
+        "imports": {
+          "@pandora/fetch": "./mocks/pandora-fetch.js",
+          "react": "./mocks/react.js"
+        }
+      }
+    </script>
+    <style>
+      span {
+        padding: 0px 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import { runTests } from '@web/test-runner-mocha';
+
+      runTests(async () => {
+        window.process = { env: {} };
+        await import('./service.test.html.js');
+      });
+    </script>
+  </body>
+</html>
