@@ -1,11 +1,10 @@
-import { MiloEnv } from '../deps.js';
-import Log from '../log.js';
+import Log from '../src/log.js';
 import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import snapshots from './mocks/snapshots.js';
 import { expect } from './utils.js';
-import { setConfig } from '../../../utils/utils.js';
-import { WcsErrorMessage } from '../wcs.js';
+// @ts-ignore
+import { WcsErrorMessage } from '../src/wcs.js';
 
 /**
  * @param {string} wcsOsi 
@@ -36,22 +35,22 @@ describe('HTMLInlinePriceElement', () => {
   before(async () => {
     mockLana();
     fetch = await mockFetch();
-    const { init } = await import('../service.js');
-    commerce = await init(() => setConfig({ env: { name: MiloEnv.PROD } }));
+    const { init } = await import('../src/service.js');
+    commerce = await init();
     Log.use(Log.quietFilter);
-    await import('../inlinePrice.js');
+    await import('../src/inlinePrice.js');
   });
 
   it('renders price', async () => {
     const inlinePrice = appendInlinePrice('puf');
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
   });
 
   it('renders strikethrough price', async () => {
     const inlinePrice = appendInlinePrice('puf');
     Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.strikethrough);
   });
 
@@ -62,14 +61,14 @@ describe('HTMLInlinePriceElement', () => {
       displayPerUnit: true,
       displayTax: true,
     });
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.optical);
   });
 
   it('renders price with promo with strikethrough', async () => {
     const inlinePrice = appendInlinePrice('abm-promo');
     inlinePrice.dataset.promotionCode = 'nicopromo';
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.promoStikethrough);
   });
 
@@ -77,13 +76,13 @@ describe('HTMLInlinePriceElement', () => {
     const inlinePrice = appendInlinePrice('abm-promo');
     inlinePrice.dataset.promotionCode = 'nicopromo';
     inlinePrice.dataset.displayOldPrice = 'false';
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.promo);
   });
 
-  it('renders with with offer data', async () => {
-    const HTMLInlinePriceElement = (await import('../inlinePrice.js')).default;
-    const HTMLPlaceholderMixin = (await import('../placeholder.js')).default;
+  it('renders price with offer data', async () => {
+    const HTMLInlinePriceElement = (await import('../src/inlinePrice.js')).default;
+    const HTMLPlaceholderMixin = (await import('../src/placeholder.js')).default;
     class HTMLInlineOfferElement extends HTMLInlinePriceElement {
       renderOffer(offer, overrides) {
         super.renderOffer(offer, { ...overrides, displayFormatted: false });
@@ -114,7 +113,7 @@ describe('HTMLInlinePriceElement', () => {
     });
     Object.assign(inlineOffer.dataset, { wcsOsi: 'abm' });
     document.body.appendChild(inlineOffer);
-    await inlineOffer.onceResolved();
+    await inlineOffer.onceSettled();
     expect(inlineOffer.textContent).equal(
       'US$54.99/mo - ccsn_direct_individual - YEAR - MONTHLY - INDIVIDUAL - BASE - REGULAR'
     );
@@ -127,24 +126,24 @@ describe('HTMLInlinePriceElement', () => {
       }
     );
     const inlinePrice = appendInlinePrice('abm');
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.customLiterals);
     disposer();
     inlinePrice.dataset.wcsOsi = 'puf'; // to force a re-render
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
   });
 
   it('does not render failed price', async () => {
     const inlinePrice = appendInlinePrice('xyz');
     inlinePrice.innerHTML = 'test';
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.badRequest);
+    await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(WcsErrorMessage.badRequest);
     expect(inlinePrice.innerHTML).to.be.empty;
   });
 
   it('does not render missing offer', async () => {
     const inlinePrice = appendInlinePrice('no-offer');
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
+    await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
     expect(inlinePrice.innerHTML).to.equal('');
   });
 
@@ -152,12 +151,12 @@ describe('HTMLInlinePriceElement', () => {
     const inlinePrice = appendInlinePrice('perpetual', {
       perpetual: true,
     });
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     // expect(inlinePrice.innerHTML).to.be.empty;
     expect(fetch.lastCall.args[0]).to.contain('language=EN');
     // no more perpetual offer
     inlinePrice.dataset.perpetual = 'false';
-    await expect(inlinePrice.onceResolved()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
+    await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(WcsErrorMessage.notFound);
     expect(fetch.lastCall.args[0]).to.contain('language=MULT');
   });
 
@@ -165,7 +164,7 @@ describe('HTMLInlinePriceElement', () => {
     commerce.settings.wcsForceTaxExclusive = true;
     const inlinePrice = appendInlinePrice('tax-exclusive');
     inlinePrice.dataset.promotionCode = 'nicopromo';
-    await inlinePrice.onceResolved();
+    await inlinePrice.onceSettled();
     commerce.settings.wcsForceTaxExclusive = false;
     expect(inlinePrice.innerHTML).to.be.html(snapshots.taxExclusive);
   });

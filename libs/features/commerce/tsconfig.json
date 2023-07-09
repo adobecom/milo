@@ -6,6 +6,7 @@
     "rootDir": ".",
     "module": "esnext",
     "moduleResolution": "NodeNext",
+    "outDir": "../../libs",
     "target": "esnext"
   },
   "include": ["./**/*"],

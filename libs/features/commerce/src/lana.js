@@ -1,7 +1,11 @@
-const delimiter = '¶';
-
-const ignoredProperties = ['analytics', 'literals'];
-const serializableTypes = ['Array', 'Object'];
+const defaults = {
+  delimiter: '¶',
+  ignoredProperties: ['analytics', 'literals'],
+  serializableTypes: ['Array', 'Object'],
+  // Sample rate is set to 100 meaning each error will get logged in Splunk
+  sampleRate: 100,
+  tags: 'consumer=milo',
+};
 
 const seenPayloads = new Set();
 
@@ -27,19 +31,20 @@ function serializeValue(value) {
     }
     const name = value[Symbol.toStringTag]
       ?? Object.getPrototypeOf(value).constructor.name;
-    if (!serializableTypes.includes(name)) return name;
+    if (!defaults.serializableTypes.includes(name)) return name;
   }
   return value;
 }
 
 function serializeParam(key, value) {
-  if (ignoredProperties.includes(key)) return undefined;
+  if (defaults.ignoredProperties.includes(key)) return undefined;
   return serializeValue(value);
 }
 
-/** @type {Commerce.Log.Plugin} */
-const plugin = {
+/** @type {Commerce.Log.Appender} */
+const lanaAppender = {
   append(entry) {
+    const { delimiter, sampleRate, tags } = defaults;
     const { message, params } = entry;
     const errors = [];
     let payload = message;
@@ -69,20 +74,10 @@ const plugin = {
 
     if (!seenPayloads.has(payload)) {
       seenPayloads.add(payload);
-      // @ts-ignore
-      window.lana.log(payload, {
-        // Sample rate is set to 100 meaning each error will get logged in Splunk
-        sampleRate: 100,
-        tags: 'consumer=milo',
-      });
+      window.lana.log(payload, { sampleRate, tags });
     }
   },
 };
 
-export default plugin;
-export {
-  delimiter,
-  ignoredProperties,
-  plugin,
-  serializableTypes,
-}
+export default lanaAppender;
+export { defaults, lanaAppender };

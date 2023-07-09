@@ -109,7 +109,6 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
     }
 
     this.href = service.checkout.buildUrl(options);
-    this.placeholder.toggleResolved(version);
   }
 }
 

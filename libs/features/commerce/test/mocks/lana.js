@@ -1,12 +1,13 @@
-// @ts-nocheck
-import Sinon from 'sinon';
+import { sinon } from '../utils';
 
 const ogLana = window.lana;
 
 export function mockLana() {
-  window.lana = {
-    log: Sinon.spy(),
-  }
+  const lana = {
+    log: sinon.spy(),
+  };
+  window.lana = lana;
+  return lana;
 }
 
 export function unmockLana() {

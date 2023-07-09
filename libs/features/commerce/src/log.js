@@ -118,3 +118,11 @@ export default {
   reset,
   use,
 };
+
+export {
+  Level,
+  consoleAppender,
+  debugFilter,
+  quietFilter,
+  lanaAppender,
+}

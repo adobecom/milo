@@ -1,8 +1,5 @@
-// @ts-nocheck
-import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
-
-import { pollImsCountry } from '../ims.js';
+import { expect, sinon } from './utils.js';
+import { pollImsCountry } from '../src/ims.js';
 
 describe('pollImsCountry', () => {
   afterEach(() => {

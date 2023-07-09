@@ -1,35 +1,37 @@
 import Service from './service.js';
-import { setImmediate } from './utils.js';
 
 export const FAILED = 'placeholder-failed';
 export const PENDING = 'placeholder-pending';
 export const RESOLVED = 'placeholder-resolved';
 
+const setImmediate = (callback) => setTimeout(callback, 0);
+
 /** @type {Commerce.HTMLPlaceholderMixin & Record<string, any>} */
 // @ts-ignore
-export const HTMLPlaceholderMixinBase = {
+export const HTMLPlaceholderMethods = {
   attributeChangedCallback(attr, prev, next) {
     this.log?.debug('Changed:', attr, "=", next);
-    this.render();
+    this.update();
   },
 
   connectedCallback() {
     this.log?.debug('Connected');
-    this.render();
+    this.update();
   },
 
   init() {
     this.status = undefined;
     this.promises = [];
+    this.timer = 0;
     this.version = 0;
   },
 
-  onceResolved() {
+  onceSettled() {
     if (RESOLVED === this.status) return Promise.resolve(this);
     if (FAILED === this.status) return Promise.reject(this.error);
     return new Promise((resolve, reject) => {
       this.promises.push({ resolve, reject });
-    }).then(() => this);
+    });
   },
 
   toggle() {
@@ -46,7 +48,7 @@ export const HTMLPlaceholderMixinBase = {
       dataset: { ...this.dataset }, node: this, settings: Service.settings,
     });
     setImmediate(() => {
-      this.promises.forEach(({ resolve }) => resolve());
+      this.promises.forEach(({ resolve }) => resolve(this));
       this.promises = [];
       this.dispatchEvent(
         new CustomEvent(RESOLVED, { bubbles: true }),
@@ -87,7 +89,21 @@ export const HTMLPlaceholderMixinBase = {
     }
     return this.version;
   },
+
+  update() {
+    if (!this.isConnected) return;
+
+    this.togglePending();
+    // batch consecutive updates
+    this.timer = setImmediate(() => {
+      this.timer = 0;
+      this.render();
+    });
+  }
 };
+
+// TODO: old name for backward compatibility, needs to be removed somewhen
+HTMLPlaceholderMethods.onceResolved = HTMLPlaceholderMethods.onceSettled;
 
 /**
  * @template T
@@ -96,10 +112,12 @@ export const HTMLPlaceholderMixinBase = {
  * @param {T extends CustomElementConstructor ? T : never} Class
  * @return {T & ReturnType<Commerce.HTMLPlaceholderMixin>}
  */
-export default function HTMLPlaceholderMixin(extendsTag, customTag, Class) {
+function HTMLPlaceholderMixin(extendsTag, customTag, Class) {
   if (!customElements.get(customTag)) {
-    Object.assign(Class.prototype, HTMLPlaceholderMixinBase);
+    Object.assign(Class.prototype, HTMLPlaceholderMethods);
     customElements.define(customTag, Class, { extends: extendsTag });
   }
   return Class;
 }
+
+export default HTMLPlaceholderMixin;

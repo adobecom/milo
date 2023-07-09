@@ -5,6 +5,10 @@ import { ResolvedOffer } from '@pandora/data-models-odm';
 // TODO: expose this type from @dexter/tacocat-consonant-templates package
 // type PriceLiterals = import('@dexter/tacocat-consonant-templates').PriceLiterals;
 
+type RequiredKey<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property];
+};
+
 declare global {
   namespace Commerce {
     type Defaults = Readonly<
@@ -17,7 +21,7 @@ declare global {
       config?: Pick<MiloConfig, 'locale'>
     ) => Omit<Settings, 'env'>;
     type getSettings = (config?: MiloConfig) => Checkout.Settings & Wcs.Settings;
-    type init = (callback: () => MiloConfig) => Promise<Instance>;
+    type init = (callback?: () => MiloConfig) => Promise<Instance>;
     type pollImsCountry = (options?: {
       interval?: number;
       maxAttempts?: number;
@@ -63,7 +67,7 @@ declare global {
 
     interface HTMLPlaceholderMixin {
       init(): void;
-      onceResolved(): Promise<HTMLPlaceholderMixin>;
+      onceSettled(): Promise<HTMLPlaceholderMixin>;
       render(overrides?: Record<string, any>): void;
       toggleFailed(version: number, error?: Error): boolean;
       togglePending(): number;
@@ -114,6 +118,8 @@ declare global {
     }
 
     module Log {
+      type Appender = RequiredKey<Plugin, 'append'>;
+      type Filter = RequiredKey<Plugin, 'filter'>;
       type Level = 'debug' | 'error' | 'info' | 'warn';
 
       interface Entry {
@@ -196,6 +202,13 @@ declare global {
         wcsLandscape: Landscape;
         wcsOfferSelectorLimit: number;
       }
+    }
+  }
+
+  interface Window {
+    adobeIMS: {};
+    lana: {
+      log: (msg: string, options: {}) => void;
     }
   }
 }

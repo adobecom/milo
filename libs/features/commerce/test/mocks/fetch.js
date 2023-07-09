@@ -1,5 +1,5 @@
 import { readFile } from '@web/test-runner-commands';
-import sinon from 'sinon';
+import { sinon } from '../utils';
 
 export async function mockFetch() {
   const { fetch } = window;

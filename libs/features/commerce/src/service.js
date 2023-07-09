@@ -14,7 +14,7 @@ const providers = {
 };
 
 async function activate(callback) {
-  const config = callback();
+  const config = callback?.() ?? {};
 
   Log.init(config.env);
   const log = Log.commerce;

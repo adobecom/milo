@@ -1,8 +1,8 @@
-import { expect, use } from '@esm-bundle/chai';
-// @ts-ignore
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
+import { expect, use } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
-import { equalsCI } from '../utils.js';
+import { equalsCI } from '../src/utils.js';
 
 use(chaiAsPromised);
 
@@ -32,4 +32,4 @@ use((chai) => {
 
 const delay = (timeout = 1) => new Promise((resolve) => setTimeout(resolve, timeout));
 
-export { delay, expect };
+export { delay, expect, sinon };

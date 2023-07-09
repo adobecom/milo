@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+cd libs/features/commerce
+npm run test
+npm run build:bundle
+npm run build:types

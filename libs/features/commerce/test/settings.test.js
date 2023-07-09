@@ -1,8 +1,8 @@
-import { expect } from '@esm-bundle/chai';
+import { expect } from './utils.js';
 
-import defaults from '../defaults.js';
-import { CheckoutWorkflow, CheckoutWorkflowStep, Env, WcsEnv, WcsLandscape } from '../deps.js';
-import { getSettings } from '../settings.js';
+import defaults from '../src/defaults.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Env, WcsEnv, WcsLandscape } from '../src/deps.js';
+import { getSettings } from '../src/settings.js';
 
 describe('getSettings', () => {
   it('returns default settings, if called without arguments', () => {

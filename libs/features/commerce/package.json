@@ -1,19 +1,20 @@
 {
   "name": "@milo/commerce",
-  "module": "./index.js",
+  "module": "./src/index.js",
   "type": "module",
-  "types": "./index.d.ts",
+  "types": "./src/index.d.ts",
   "version": "0.0.1",
   "scripts": {
     "build": "npm run build:bundle && npm run build:literals && npm run build:types",
-    "build:bundle": "esbuild ./index.js --alias:react=./react-shim.js --bundle --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce.js --platform=browser --sourcemap --target=es2020",
+    "build:bundle": "esbuild ./src/index.js --alias:react=./src/react-shim.js --bundle --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce.js --platform=browser --sourcemap --target=es2020",
     "build:literals": "./scripts/fetch-price-literals.sh",
     "build:types": "cp ./index.d.ts ../../deps/commerce.d.ts",
     "build:watch": "npm run build:bundle --watch",
     "test": "wtr --config ../../../web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2001 --coverage --concurrent-browsers 4",
     "test:watch": "npm test -- --watch",
-    "test:file": "wtr --config ../../../web-test-runner.config.mjs --node-resolve --port=2001 --coverage",
-    "test:file:watch": "wtr --config ../../../web-test-runner.config.mjs --node-resolve --port=2001 --coverage --watch"
+    "test:file": "wtr --config ../../../web-test-runner.config.mjs --coverage --node-resolve --port=2001",
+    "test:file:watch": "wtr --config ../../../web-test-runner.config.mjs --coverage --node-resolve --port=2001 --watch",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@dexter/tacocat-consonant-templates": "^1.9.7",
@@ -24,11 +25,11 @@
     "@pandora/data-source-wcs": "^0.2.4",
     "@pandora/fetch": "^1.2.4"
   },
-  "license": "ISC",
   "devDependencies": {
     "@esm-bundle/chai-as-promised": "^7.1.1",
     "@types/chai-as-promised": "^7.1.5",
     "@types/sinon": "^10.0.15",
-    "esbuild": "^0.18.11"
+    "esbuild": "^0.18.11",
+    "husky": "^8.0.3"
   }
 }

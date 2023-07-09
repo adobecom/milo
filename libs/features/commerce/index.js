@@ -1,18 +1,18 @@
-import HTMLCheckoutLinkElement from './checkoutLink.js';
-import defaults from './defaults.js';
+import HTMLCheckoutLinkElement from './src/checkoutLink.js';
+import defaults from './src/defaults.js';
 import {
   CheckoutWorkflow,
   CheckoutWorkflowStep,
   Env,
   WcsEnv,
   WcsLandscape
-} from './deps.js';
-import HTMLInlinePriceElement from './inlinePrice.js';
-import Log from './log.js';
-import HTMLPlaceholderMixin from './placeholder.js';
-import { init, reset } from './service.js';
-import { getLocaleSettings, getSettings } from './settings.js';
-import { WcsCommitment, WcsErrorMessage, WcsPlanType, WcsTerm } from './wcs.js';
+} from './src/deps.js';
+import HTMLInlinePriceElement from './src/inlinePrice.js';
+import Log from './src/log.js';
+import HTMLPlaceholderMixin from './src/placeholder.js';
+import { init, reset } from './src/service.js';
+import { getLocaleSettings, getSettings } from './src/settings.js';
+import { WcsCommitment, WcsErrorMessage, WcsPlanType, WcsTerm } from './src/wcs.js';
 
 export {
   CheckoutWorkflow,

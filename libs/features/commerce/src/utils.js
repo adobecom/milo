@@ -35,8 +35,6 @@ export const equalsCI = (value1, value2) => 0 === String(value1 ?? '').localeCom
   { sensitivity: 'base' },
 );
 
-export const setImmediate = (callback) => setTimeout(callback, 0);
-
 export function toBoolean(val, def) {
   const str = String(val);
   if (['1', 'true'].includes(str)) return true;

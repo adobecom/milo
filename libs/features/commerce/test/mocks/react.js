@@ -1,4 +1,4 @@
-import { ignore } from '../../utils.js';
+import { ignore } from '../../src/utils.js';
 
 // @ts-ignore
 ignore.createContext = ignore;
