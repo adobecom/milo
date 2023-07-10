@@ -89,7 +89,7 @@ export const runTacocat = (tacocatEnv, country, language) => {
 };
 
 window.tacocat.loadPromise = new Promise((resolve) => {
-  const { env, locale } = getConfig();
+  const { env, locale, miloLibs, codeRoot } = getConfig();
   const {
     literalScriptUrl,
     scriptUrl,
@@ -100,6 +100,20 @@ window.tacocat.loadPromise = new Promise((resolve) => {
 
   loadScript(literalScriptUrl)
     .catch(() => ({})) /* ignore if literals fail */
+    .then(() => {
+      let isSupported = false;
+      document.createElement('div', {
+        // eslint-disable-next-line getter-return
+        get is() {
+          isSupported = true;
+        },
+      });
+      if (!isSupported) {
+        const base = miloLibs || codeRoot;
+        return loadScript(`${base}/deps/custom-elements.js`);
+      }
+      return null;
+    })
     .then(() => loadScript(scriptUrl))
     .then(() => {
       runTacocat(tacocatEnv, country, language);
