@@ -49,7 +49,7 @@
   outline: 2px solid var(--modal-focus-color);
 }
 
-.dialog-modal > .fragment > .section > .content {
+.dialog-modal .section > .content {
   max-width: initial;
 }
 
