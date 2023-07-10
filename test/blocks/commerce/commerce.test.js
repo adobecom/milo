@@ -1,9 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
+
 import {
   filterOfferDetails,
   decorateOfferDetails,
   decorateSearch,
+  buildClearButton,
 } from '../../../libs/blocks/commerce/commerce.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -73,5 +75,30 @@ describe('decorateSearch', () => {
     const input = searchWrapper.querySelector('.offer-search');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal('Enter offer URL to preview');
+  });
+});
+
+describe('clearButton', () => {
+  it('should create a button with correct attributes and textContent', () => {
+    const button = buildClearButton();
+    expect(button.type).to.equal('button');
+    expect(button.className).to.equal('con-button');
+    expect(button.textContent).to.equal('Clear');
+  });
+
+  it('should clear offer details when press clear button', async () => {
+    const el = document.createElement('div');
+    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false&type=checkoutUrl&text=buy-now&promo=1234');
+    await decorateOfferDetails(el, offer, searchParams);
+    const offerDetailsList = el.querySelector('.offer-details');
+    expect(offerDetailsList).to.exist;
+
+    const clickEvent = new MouseEvent('click');
+    const buttons = Array.from(el.querySelectorAll('.con-button'));
+    const clearButton = buttons.find((button) => button.textContent.trim() === 'Clear');
+
+    clearButton.dispatchEvent(clickEvent);
+
+    expect(offerDetailsList.textContent).to.equal('');
   });
 });
