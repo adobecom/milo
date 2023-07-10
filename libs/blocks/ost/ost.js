@@ -27,9 +27,9 @@ const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
 document.body.classList.add('tool', 'tool-ost');
 
 /**
- * @param {Commerce.Instance} commerce
+ * @param {Commerce.Defaults} defaults
  */
-export const LinkMarkupFactory = ({ defaults }) => (
+export const LinkMarkupFactory = (defaults) => (
   offerSelectorId,
   type,
   { offer_id: offerId, name: offerName, commitment, planType },
@@ -86,7 +86,7 @@ export const LinkMarkupFactory = ({ defaults }) => (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, getLocaleSettings } = await import('../../deps/commerce.js');
+  const { Log, defaults, getLocaleSettings } = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
@@ -136,7 +136,7 @@ export async function loadOstEnv() {
     aosAccessToken,
     aosApiKey: AOS_API_KEY,
     checkoutClientId: CHECKOUT_CLIENT_ID,
-    createLinkMarkup: LinkMarkupFactory(Commerce),
+    createLinkMarkup: LinkMarkupFactory(defaults),
     country,
     environment: PANDORA_ENV,
     language,

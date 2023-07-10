@@ -1,10 +1,18 @@
 # Milo Commerce
 
-A future that retrieves and displays product prices and checkout URL on Milo pages.
+A future that retrieves and displays product prices and checkout URLs on Milo pages.
 
-## Architecture
+Price offers are provided by [Web Commerce Service](https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml).
+To communicate with this service, Milo Commerce uses `@pandora/data-source-wcs` npm package hosted on corporate Artifactory.
+Checkout URLs are constructed with another `@pandora` npm package.
 
+## Build artifacts
 
+The need to use corporate npm packages results in need for build step.
+It emits several files to Milo deps folder:
+- `libs/deps/commerce.js` - ESM bundle to be used by consumers
+- `libs/deps/commerce.d.ts` - types and docs, used by VS code
+- `libs/deps/literals/price/{lang}.json` - price literals obtained from Odin endpoint
 
 ## Development
 
@@ -30,3 +38,8 @@ A future that retrieves and displays product prices and checkout URL on Milo pag
   - `npm run test:file:watch -- test/blocks/merch/merch.test.js`
   - `npm run test:file:watch -- test/blocks/ost/ost.test.js`
 
+## Useful links
+- [Web Commerce Service](https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml)
+- [PandoraUI](https://git.corp.adobe.com/PandoraUI/odm-core/tree/master/packages/data-source-wcs)
+- [UCv2 link creation guide](https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=BPS&title=UCv2+Link+Creation+Guide)
+- [UCv3 link creation guide](https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide)

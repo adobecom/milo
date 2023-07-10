@@ -10,6 +10,7 @@ export function pollImsCountry({
     let count = 0;
 
     function poll() {
+      // TODO: check if gnav provides better implementation than this
       if (window.adobeIMS) {
         if (window.adobeIMS.isSignedInUser()) {
           window.adobeIMS

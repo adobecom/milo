@@ -277,7 +277,8 @@ export {
   BaseUrl as WcsBaseUrl,
   ErrorMessage as WcsErrorMessage,
   PlanType as WcsPlanType,
-  Wcs,
   Commitment as WcsCommitment,
   Term as WcsTerm,
+  Wcs,
+  selectOffers,
 };

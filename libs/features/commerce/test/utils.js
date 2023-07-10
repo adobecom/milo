@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+// @ts-ignore
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
 import { expect, use } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -19,6 +20,7 @@ use((chai) => {
   }
 
   chai.Assertion.addMethod('html', function assertHtml(snapshot) {
+    // eslint-disable-next-line no-underscore-dangle
     const normAct = normalise(this._obj);
     const normExp = normalise(snapshot);
     this.assert(
