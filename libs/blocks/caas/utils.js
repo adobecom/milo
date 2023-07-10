@@ -184,11 +184,11 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
-      if (excludeTags.includes(itemTag.tagID)) return null;
-      const label = getLocalTitle(itemTag, country, lang);
+      if (excludeTags?.includes(itemTag.tagID)) return null;
+      const titleLabel = getLocalTitle(itemTag, country, lang);
       return {
         id: itemTag.tagID,
-        label: label.replace('&amp;', '&'),
+        label: titleLabel.replace('&amp;', '&'),
       };
     })
     .filter((i) => i !== null)
@@ -208,15 +208,43 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
   return filterObj;
 };
 
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }) => {
+  if (!group) return null;
+
+  const items = filtersCustomItems.map((item) => ({
+    id: item.customFilterTag[0],
+    label: item.filtersCustomLabel,
+  }));
+
+  const filterObj = {
+    id: group,
+    openedOnLoad: !!openedOnLoad,
+    items,
+    group,
+  };
+
+  return filterObj;
+};
+
 const getFilterArray = async (state) => {
-  if (!state.showFilters || state.filters.length === 0) {
+  if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
 
   const { tags } = await getTags(state.tagsUrl);
-  const filters = state.filters
-    .map((filter) => getFilterObj(filter, tags, state))
-    .filter((filter) => filter !== null);
+  const useCustomFilters = state.filterBuildPanel === 'custom';
+
+  let filters = [];
+  if (!useCustomFilters) {
+    filters = state.filters
+      .map((filter) => getFilterObj(filter, tags, state))
+      .filter((filter) => filter !== null);
+  } else {
+    filters = state.filtersCustom.length > 0
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter))
+      : [];
+  }
+
   return filters;
 };
 
@@ -251,12 +279,24 @@ export function arrayToObj(input = []) {
   return obj;
 }
 
-export const getConfig = async (state, strs = {}) => {
+const addMissingStateProps = (state) => {
+  // eslint-disable-next-line no-use-before-define
+  Object.entries(defaultState).forEach(([key, val]) => {
+    if (state[key] === undefined) {
+      state[key] = val;
+    }
+  });
+  return state;
+};
+
+export const getConfig = async (originalState, strs = {}) => {
+  const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
   const floodGateColor = getfloodGateColor(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
+  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
@@ -319,13 +359,14 @@ export const getConfig = async (state, strs = {}) => {
       ctaAction: state.ctaAction,
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
+    hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state),
+      filters: await getFilterArray(state, strs),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
@@ -485,11 +526,14 @@ export const defaultState = {
   fallbackEndpoint: '',
   featuredCards: [],
   filterEvent: '',
+  filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',
   filters: [],
+  filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  hideCtaIds: [],
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',

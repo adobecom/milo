@@ -1,6 +1,4 @@
 /* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { delay, waitForElement, waitForUpdate } from './waitfor.js';
 
 const asyncSome = async (arr, predicate) => {

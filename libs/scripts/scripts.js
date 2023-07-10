@@ -129,9 +129,6 @@ const config = {
   codeRoot: '/libs',
   locales,
   prodDomains,
-  marketoBaseURL: '//app-aba.marketo.com',
-  marketoFormID: '1761',
-  marketoMunchkinID: '345-TTI-184',
   jarvis: {
     id: 'milo',
     version: '1.0',
@@ -140,12 +137,22 @@ const config = {
   privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db', // valid for *.adobe.com
 };
 
+const eagerLoad = (img) => {
+  img?.setAttribute('loading', 'eager');
+  img?.setAttribute('fetchpriority', 'high');
+};
+
 (async function loadLCPImage() {
-  const lcpImg = document.querySelector('img');
-  lcpImg?.setAttribute('loading', 'eager');
+  const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
+  if (firstDiv?.classList.contains('marquee')) {
+    firstDiv.querySelectorAll('img').forEach(eagerLoad);
+  } else {
+    eagerLoad(document.querySelector('img'));
+  }
 }());
 
 (async function loadPage() {
+  performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();

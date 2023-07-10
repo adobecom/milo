@@ -1,79 +1,140 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
-import init, { formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
+import init, { formValidate, formSuccess, setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
-const config = {
-  marketoBaseURL: '//engage.adobe.com',
-  marketoFormID: '1723',
-  marketoMunchkinID: '360-KCI-804',
-};
 
-// There have been a lot of changes to the Marketo form coming from the Marketo instance
-// that we do not have control over.
-// This test is not reliable and is skipped for now.
-describe.skip('marketo', () => {
-  it('hides form if no base url', async () => {
-    setConfig({});
+describe('marketo', () => {
+  let loadScriptStub;
+
+  const forms2Mock = {
+    getFormElem: () => ({ get: () => document.querySelector('form') }),
+    onValidate: stub(),
+    onSuccess: stub(),
+    loadForm: stub(),
+    whenReady: stub().callsFake((fn) => fn(forms2Mock)),
+  };
+
+  beforeEach(() => {
+    document.body.innerHTML = innerHTML;
+    loadScriptStub = stub().returns(new Promise((resolve) => {
+      window.MktoForms2 = forms2Mock;
+      resolve();
+    }));
+  });
+
+  afterEach(() => {
+    loadScriptStub.reset();
+    window.MktoForms2 = undefined;
+    window.mcz_marketoForm_pref = undefined;
+  });
+
+  it('hides form if no data url', async () => {
     document.body.innerHTML = innerHTML;
     const el = document.querySelector('.marketo');
+    el.querySelector('a').remove();
+
     init(el);
 
     expect(el.style.display).to.equal('none');
   });
 
-  describe('marketo with correct config', () => {
-    before(() => {
-      setConfig(config);
-      document.body.innerHTML = innerHTML;
-      const el = document.querySelector('.marketo');
-      init(el);
-    });
+  it('initializes form with correct data', async () => {
+    const marketoElement = document.querySelector('.marketo');
 
-    it('initializes', async () => {
-      const wrapper = await waitForElement('.marketo-form-wrapper');
-      expect(wrapper).to.exist;
+    init(marketoElement, loadScriptStub);
 
-      const title = document.querySelector('.marketo-title');
-      expect(title).to.exist;
-    });
+    expect(loadScriptStub.calledOnce).to.be.true;
+    expect(loadScriptStub.calledWith('https://engage.adobe.com/js/forms2/js/forms2.min.js')).to.be.true;
 
-    it('loads hidden fields', async function () {
-      this.timeout(3000);
-      const hiddenInput = await waitForElement('.marketo form input[name="hiddenField"]');
-      expect(hiddenInput).to.exist;
-    });
+    const wrapper = await waitForElement('.marketo-form-wrapper');
+    expect(wrapper).to.exist;
 
-    it('shows form errors', async () => {
-      expect(window.MktoForms2).to.exist;
-      const form = window.MktoForms2.getForm(config.marketoFormID);
-      const formEl = await waitForElement(`#mktoForm_${config.marketoFormID}`);
+    const title = document.querySelector('.marketo-title');
+    expect(title).to.exist;
 
-      formValidate(form);
+    expect(window.mcz_marketoForm_pref).to.exist;
+    expect(window.MktoForms2).to.exist;
 
-      expect(formEl.classList.contains('show-warnings')).to.be.true;
-    });
+    expect(window.mcz_marketoForm_pref).to.have.property('program');
+    expect(window.mcz_marketoForm_pref.program).to.have.property('campaignids');
+    expect(window.mcz_marketoForm_pref.program.campaignids).to.have.property('sfdc');
+  });
 
-    it('scrolls to top upon submitting with errors', async () => {
-      const button = await waitForElement('.marketo button');
-      button.click();
+  it('sets preferences on the data layer', async () => {
+    const formData = {
+      'first.key': 'value1',
+      'second.key': 'value2',
+    };
 
-      const firstField = document.querySelector('.mktoField');
-      const bounding = firstField.getBoundingClientRect();
+    setPreferences(formData);
 
-      expect(bounding.top >= 0 && bounding.bottom <= window.innerHeight).to.be.true;
-    });
+    expect(window.mcz_marketoForm_pref).to.have.property('first');
+    expect(window.mcz_marketoForm_pref.first).to.have.property('key');
+    expect(window.mcz_marketoForm_pref.first.key).to.equal('value1');
+    expect(window.mcz_marketoForm_pref).to.have.property('second');
+    expect(window.mcz_marketoForm_pref.second).to.have.property('key');
+    expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
 
-    it('submits successfully', async () => {
-      const redirectUrl = '';
+  it('formValidate adds class', async () => {
+    const marketoElement = document.querySelector('.marketo');
+    init(marketoElement, loadScriptStub);
 
-      expect(window.MktoForms2).to.exist;
-      const form = window.MktoForms2.getForm(config.marketoFormID);
+    expect(window.MktoForms2).to.exist;
 
-      formSuccess(form, redirectUrl);
-      expect(window.mktoSubmitted).to.be.true;
-    });
+    formValidate(window.MktoForms2);
+    const formElem = window.MktoForms2.getFormElem().get(0);
+    expect(formElem.classList.contains('show-warnings')).to.be.true;
+  });
+
+  it('submits successfully', async () => {
+    const marketoElement = document.querySelector('.marketo');
+    init(marketoElement, loadScriptStub);
+
+    expect(window.MktoForms2).to.exist;
+
+    formSuccess(window.MktoForms2);
+    expect(window.mktoSubmitted).to.be.true;
+  });
+});
+
+describe('marketo decorateURL', () => {
+  it('decorates absolute URL with local base URL', () => {
+    const baseURL = new URL('http://localhost:6456/marketo-block');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('http://localhost:6456/marketo-block/thank-you');
+  });
+
+  it('decorates relative URL with absolute base URL', () => {
+    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const result = decorateURL('/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+  });
+
+  it('decorates absolute URL with matching base URL', () => {
+    const baseURL = new URL('https://main--milo--adobecom.hlx.page/marketo-block');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://main--milo--adobecom.hlx.page/marketo-block/thank-you');
+  });
+
+  it('decorates absolute URL with .html base URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('https://main--milo--adobecom.hlx.page/marketo-block/thank-you', baseURL);
+    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
+  });
+
+  it('keeps identical absolute URL with .html base URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('https://business.adobe.com/marketo-block/thank-you.html', baseURL);
+    expect(result.href).to.equal('https://business.adobe.com/marketo-block/thank-you.html');
+  });
+
+  it('returns null when provided a malformed URL', () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = decorateURL('tps://business', baseURL);
+    expect(result).to.be.null;
   });
 });
