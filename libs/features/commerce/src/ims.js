@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const IMS_POLL_INTERVAL = 200;
 export const IMS_POLL_MAX_ATTEMPTS = 25;
 
@@ -20,6 +19,7 @@ export function pollImsCountry({
         } else {
           resolve();
         }
+      // eslint-disable-next-line no-plusplus
       } else if (++count > maxAttempts) {
         resolve();
       } else {

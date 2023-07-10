@@ -4,14 +4,14 @@ import {
   CheckoutWorkflowStep,
   Env,
   WcsEnv,
-  WcsLandscape
+  WcsLandscape,
 } from './deps.js';
 import {
   equalsCI,
   getParam,
   toBoolean,
   toEnum,
-  toPositiveFiniteNumber
+  toFiniteNumber,
 } from './utils.js';
 
 const MiloEnv = {
@@ -35,9 +35,7 @@ const supportedLanguages = [
 ];
 
 /** @type {Commerce.getLocaleSettings} */
-function getLocaleSettings({
-  locale = { ietf: 'en-US' },
-} = {}) {
+function getLocaleSettings({ locale = { ietf: 'en-US' } } = {}) {
   const ietf = geoMappings[locale.prefix ?? ''] ?? locale.ietf;
   let [language = defaults.language, country = defaults.country] = ietf.split('-', 2);
 
@@ -51,8 +49,8 @@ function getLocaleSettings({
   return {
     country,
     language,
-    locale: `${language}_${country}`
-  }
+    locale: `${language}_${country}`,
+  };
 }
 
 /** @type {Commerce.getSettings} */
@@ -73,33 +71,35 @@ function getSettings({
   const checkoutWorkflow = toEnum(
     getSetting('checkoutWorkflow'),
     CheckoutWorkflow,
-    defaults.checkoutWorkflow
+    defaults.checkoutWorkflow,
   );
   const checkoutWorkflowStep = checkoutWorkflow === CheckoutWorkflow.V3
     ? toEnum(
       getSetting('checkoutWorkflowStep'),
       CheckoutWorkflowStep,
-      defaults.checkoutWorkflowStep
+      defaults.checkoutWorkflowStep,
     )
     : CheckoutWorkflowStep.CHECKOUT;
   const wcsApiKey = getSetting('wcsApiKey') ?? defaults.wcsApiKey;
   const wcsForceTaxExclusive = toBoolean(
     getSetting('wcsForceTaxExclusive'),
-    defaults.wcsForceTaxExclusive
+    defaults.wcsForceTaxExclusive,
   );
   const wcsLandscape = toEnum(
     getSetting('wcsLandscape'),
     WcsLandscape,
-    defaults.wcsLandscape
+    defaults.wcsLandscape,
   );
-  const wcsBufferDelay = toPositiveFiniteNumber(
+  let wcsBufferDelay = toFiniteNumber(
     getSetting('wcsBufferDelay'),
-    defaults.wcsBufferDelay
+    defaults.wcsBufferDelay,
   );
-  const wcsBufferLimit = toPositiveFiniteNumber(
+  if (wcsBufferDelay < 0) wcsBufferDelay = 0;
+  let wcsBufferLimit = toFiniteNumber(
     getSetting('wcsBufferLimit'),
-    defaults.wcsBufferLimit
+    defaults.wcsBufferLimit,
   );
+  if (wcsBufferLimit < 1) wcsBufferLimit = 1;
 
   /** @type {Commerce.Checkout.Settings & Commerce.Wcs.Settings} */
   return {

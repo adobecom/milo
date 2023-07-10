@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import Checkout from './checkout.js';
 import defaults from './defaults.js';
 import { pollImsCountry } from './ims.js';
@@ -5,9 +6,7 @@ import Log from './log.js';
 import getSettings from './settings.js';
 import Wcs from './wcs.js';
 
-const ErrorMessage = {
-  init: 'Not initialised',
-};
+const ErrorMessage = { init: 'Not initialised' };
 
 /** @type {Commerce.Instance} */
 let instance = null;
@@ -39,7 +38,7 @@ async function activate(callback) {
     ims: {
       get country() {
         return imsCountry;
-      }
+      },
     },
     providers: {
       price(provider) {
@@ -49,7 +48,7 @@ async function activate(callback) {
     },
     literals,
     settings,
-    wcs: Wcs(settings)
+    wcs: Wcs(settings),
   };
 
   // fetch price literals
@@ -78,7 +77,7 @@ async function activate(callback) {
   return instance;
 }
 
-function demand() {
+function assertExists() {
   if (instance === null) {
     throw new Error(ErrorMessage.init);
   }
@@ -102,25 +101,25 @@ function init(callback, force) {
 /** @type {Commerce.Internal.Instance} */
 const singleton = {
   get checkout() {
-    return demand().checkout;
+    return assertExists().checkout;
   },
   get defaults() {
-    return demand().defaults;
+    return assertExists().defaults;
   },
   get ims() {
-    return demand().ims;
+    return assertExists().ims;
   },
   get literals() {
-    return demand().literals;
+    return assertExists().literals;
   },
   get providers() {
     return providers;
   },
   get settings() {
-    return demand().settings;
+    return assertExists().settings;
   },
   get wcs() {
-    return demand().wcs;
+    return assertExists().wcs;
   },
 };
 

@@ -5,7 +5,7 @@ import {
   CheckoutWorkflowStep,
   Env,
   WcsEnv,
-  WcsLandscape
+  WcsLandscape,
 } from './src/deps.js';
 import HTMLInlinePriceElement from './src/inlinePrice.js';
 import Log from './src/log.js';

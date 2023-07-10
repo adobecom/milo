@@ -79,5 +79,4 @@ const lanaAppender = {
   },
 };
 
-export default lanaAppender;
 export { defaults, lanaAppender };

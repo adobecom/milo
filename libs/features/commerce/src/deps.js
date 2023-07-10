@@ -1,4 +1,4 @@
-// this file aliases/declares and re-exports commonly used external dependencies
+// this file aliases and re-exports commonly used external dependencies
 import {
   CheckoutType,
   WorkflowStep,
@@ -29,4 +29,4 @@ export {
   pricePromo,
   priceOptical,
   priceStrikethrough,
-}
+};

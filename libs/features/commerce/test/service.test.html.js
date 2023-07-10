@@ -1,6 +1,6 @@
 import service, { ErrorMessage, init, reset } from '../src/service.js';
 
-import { mockFetch, unmockFetch } from './mocks/fetch.js'
+import { mockFetch, unmockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { delay, expect } from './utils.js';
 
@@ -27,7 +27,7 @@ describe('service', () => {
     const { settings } = await init(() => ({ locale: { prefix: 'mena_en' } }));
     expect(settings).to.deep.contain({
       country: 'DZ',
-      language: 'en'
+      language: 'en',
     });
   });
 

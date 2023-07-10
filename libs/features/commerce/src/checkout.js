@@ -1,5 +1,5 @@
 import { buildCheckoutUrl } from './deps.js';
-import Log from "./log.js";
+import Log from './log.js';
 
 /**
  * @param {Commerce.Checkout.Settings} settings
@@ -31,8 +31,7 @@ function Checkout(settings) {
     } = options;
 
     // call pandora
-    const url = buildCheckoutUrl(
-      workflow, {
+    const url = buildCheckoutUrl(workflow, {
       clientId,
       context: window.frameElement ? 'if' : 'fp',
       country,
@@ -44,7 +43,7 @@ function Checkout(settings) {
 
     log.debug(`Url: ${url}`, { options });
     return url;
-  };
+  }
 
   return { buildUrl };
 }

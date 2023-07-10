@@ -1,4 +1,4 @@
-import lanaAppender from './lana.js';
+import { lanaAppender } from './lana.js';
 import { MiloEnv } from './settings.js';
 import { getParam, isFunction, toBoolean } from './utils.js';
 
@@ -93,7 +93,7 @@ function init(env = {}) {
   const { name } = env;
   const debug = toBoolean(
     getParam('debug', false, true),
-    name === MiloEnv.LOCAL
+    name === MiloEnv.LOCAL,
   );
   if (debug) use(consoleAppender);
   else use(debugFilter);
@@ -108,7 +108,7 @@ function reset() {
 /** @type {Commerce.Log.Root} */
 export default {
   commerce: common.module('commerce'),
-  common,
+  milo: common,
   level: Level,
   consoleAppender,
   debugFilter,
@@ -125,4 +125,4 @@ export {
   debugFilter,
   quietFilter,
   lanaAppender,
-}
+};

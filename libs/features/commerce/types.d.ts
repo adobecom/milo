@@ -20,16 +20,21 @@ declare global {
     type getLocaleSettings = (
       config?: Pick<MiloConfig, 'locale'>
     ) => Omit<Settings, 'env'>;
+
     type getSettings = (config?: MiloConfig) => Checkout.Settings & Wcs.Settings;
+
     type init = (callback?: () => MiloConfig, force?: boolean) => Promise<Instance>;
+
     type pollImsCountry = (options?: {
       interval?: number;
       maxAttempts?: number;
     }) => Promise<string | void>;
+
     type providePriceOptions = (
       element: HTMLInlinePriceElement,
       options: Record<string, any>
     ) => void;
+
     type reset = () => void;
 
     interface Instance {
@@ -37,6 +42,10 @@ declare global {
       readonly defaults: Defaults;
       readonly ims: Ims.Client;
       readonly providers: {
+        /**
+         * Registers price options provider - a function accepting
+         * price options object and modifying it as needed in specific context.
+         */
         price(provider: providePriceOptions): () => void;
       };
       readonly literals: Literals;
@@ -89,7 +98,11 @@ declare global {
     module Checkout {
       type buildUrl = (options: Options) => string;
       type Workflow = CheckoutType;
+
       interface Client {
+        /**
+         * Returns checkout url string for given product offers and checkout options.
+         */
         buildUrl: buildUrl;
       }
 
@@ -107,6 +120,9 @@ declare global {
 
     module Ims {
       interface Client {
+        /**
+         * A promise resolving with country code configured for current user in IMS.
+         */
         get country(): Promise<string | void>;
       }
     }
@@ -141,10 +157,10 @@ declare global {
         debug(message: string, ...params: any[]): void;
         error(message: string, ...params: any[]): void;
         /**
-         * Creates and returns new instance of `Log` module
-         * bound to `name` of the logging module.
+         * Creates and returns new instance of `Log`
+         * bound to source module specified by `name`.
          * 
-         * New instance will use `name` in namespace of its records.
+         * New log instance will append `name` to namespace of its records.
          */
         module(name: string): Instance;
         info(message: string, ...params: any[]): void;
@@ -158,11 +174,27 @@ declare global {
 
       interface Root {
         commerce: Instance;
-        common: Instance;
         level: Record<Level, string>;
+        milo: Instance;
+        /**
+         * Writes log records to devtools console.
+         * Used by default in `local` env.
+         */
         consoleAppender: Plugin;
+        /**
+         * Filters out all debug records.
+         * Used by default in `prod` env.
+         */
         debugFilter: Plugin;
+        /**
+         * Filters out all records.
+         * Useful in tests.
+         */
         quietFilter: Plugin;
+        /**
+         * Sends log error records to Lana.
+         * Used by default in `prod` env.
+         */
         lanaAppender: Plugin;
         /**
          * Registers built-in log plugins suitable for provided `env`.
@@ -170,11 +202,11 @@ declare global {
          */
         init(env?: { name: string }): void;
         /**
-         * De-registers all log plugins.
+         * Resets all log plugins registrations.
          */
         reset(): void;
         /**
-         * Registers provided log plugins.
+         * Registers given log plugins.
          */
         use(...plugins: Plugin[]): void;
       }
@@ -185,6 +217,18 @@ declare global {
       type Env = Environment;
 
       interface Client {
+        /**
+         * Resolves requested list of "Offer Selector Ids" (`osis`) from Wcs or local cache.
+         * Returns one promise per osi, the promise resolves to array of product offers
+         * associated with this osi.
+         * 
+         * If `multiple` is set to false (this is default value), resolved array will contain only one
+         * offer, selected by country/language-perpetual algorithm.
+         * Otherwise. all responded offers are returned.
+         * 
+         * If `taxExclusive` is set to true (default value defined in settings),
+         * then returned prices are transformed into tax exclusive variant.
+         */
         resolveOfferSelectors(options: {
           multiple?: boolean;
           offerSelectorIds: string[];
@@ -210,7 +254,10 @@ declare global {
   }
 
   interface Window {
-    adobeIMS: {};
+    adobeIMS: {
+      getProfile(): Promise<{ countryCode: string }>;
+      isSignedInUser(): boolean;
+    };
     lana: {
       log: (msg: string, options: {}) => void;
     }

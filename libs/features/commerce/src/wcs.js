@@ -27,7 +27,7 @@ const BaseUrl = {
 const ErrorMessage = {
   badRequest: 'Bad Wcs request',
   notFound: 'Wcs offer not found',
-}
+};
 
 /** @type {Record<Commerce.Wcs.PlanType, Commerce.Wcs.PlanType>} */
 const PlanType = {
@@ -53,35 +53,36 @@ const applyPlanType = (offer) => ({
   planType: planTypesMap.find(([, commitment, term]) => (
     commitment === offer.commitment && (!term || term === offer.term)
   ))[0],
-  ...offer
+  ...offer,
 });
 
 /**
  * @param {Commerce.Wcs.Offer[]} offers
  * @param {{
  *  country: string;
- *  isPerpetual: boolean;
- *  multipleOffers: boolean;
+ *  multiple: boolean;
+ *  perpetual: boolean;
  *  taxExclusive: boolean;
  * }} conditions
  * @returns {Commerce.Wcs.Offer[]}
  */
 function selectOffers(offers, {
   country,
-  isPerpetual,
-  multipleOffers,
+  perpetual,
+  multiple,
   taxExclusive,
 }) {
   let selected;
 
-  if (multipleOffers || offers.length === 1) selected = offers;
+  if (multiple || offers.length === 1) selected = offers;
   else {
     const [first, second] = offers;
     const { language } = first;
     selected = [
-      country === COUNTRY_GB || isPerpetual
+      // eslint-disable-next-line no-nested-ternary
+      country === COUNTRY_GB || perpetual
         ? (language === LANGUAGE_EN) ? first : second
-        : (language === LANGUAGE_MULT) ? first : second
+        : (language === LANGUAGE_MULT) ? first : second,
     ];
   }
 
@@ -139,22 +140,11 @@ function Wcs(settings) {
   let timer;
 
   /**
-   * Process Wcs requests queue.
-   * Wach Wcs request can contain array of osis having same locale and promo.
-   */
-  function flushQueue() {
-    clearTimeout(timer);
-    const pending = [...queue.values()];
-    queue.clear();
-    pending.forEach(({ options, promises }) => resolveWcsOffers(options, promises));
-  }
-
-  /**
-   * Performs one rejquest to Wcs and settles all pending promises if `settle` is set to true.
+   * Performs one request to Wcs and settles all pending promises if `settle` is true.
    * Pending promises are grouped by osi.
    * If Wcs does not provide an offer having particular osi,
-   * its pending promise will be rejected with "not found" error.
-   * If any other Wcs/Network error, promises are rejected with "bad request" error.
+   * its pending promise will be rejected with "not found".
+   * In case of any other Wcs/Network error, promises are rejected with "bad request".
    * @param {WcsOptions} options
    * @param {WcsPromises} promises
    */
@@ -167,9 +157,7 @@ function Wcs(settings) {
       const { data } = await getWcsOffers(
         options,
         { apiKey, environment: wcsEnv, landscape: wcsLandscape },
-        ({ resolvedOffers }) => ({
-          offers: resolvedOffers.map(applyPlanType),
-        })
+        ({ resolvedOffers }) => ({ offers: resolvedOffers.map(applyPlanType) }),
       );
 
       log.debug('Fetched:', options, data);
@@ -195,7 +183,8 @@ function Wcs(settings) {
               { ...options, offerSelectorIds: [offerSelectorId] },
               promises,
               false, // do not missied promises, it will be done below
-            )),
+            ),
+          ),
         );
       } else {
         log.error('Failed:', options, error);
@@ -210,6 +199,17 @@ function Wcs(settings) {
     }
   }
 
+  /**
+   * Process Wcs requests queue.
+   * Wach Wcs request can contain array of osis having same locale and promo.
+   */
+  function flushQueue() {
+    clearTimeout(timer);
+    const pending = [...queue.values()];
+    queue.clear();
+    pending.forEach(({ options, promises }) => resolveWcsOffers(options, promises));
+  }
+
   return {
     resolveOfferSelectors({
       perpetual = false,
@@ -219,7 +219,10 @@ function Wcs(settings) {
       taxExclusive = settings.wcsForceTaxExclusive,
     }) {
       const { country, locale } = settings;
-      const language = country === 'GB' ? undefined : perpetual ? 'EN' : 'MULT';
+      // eslint-disable-next-line no-nested-ternary
+      const language = country === 'GB'
+        ? undefined
+        : (perpetual ? 'EN' : 'MULT');
 
       const groupKey = [country, language, promotionCode]
         .filter((val) => val)
@@ -258,15 +261,15 @@ function Wcs(settings) {
 
         const promise = cache.get(cacheKey).then((offers) => selectOffers(offers, {
           country,
-          isPerpetual: perpetual,
-          multipleOffers: multiple,
+          perpetual,
+          multiple,
           taxExclusive,
         }));
 
         return promise;
       });
-    }
-  }
+    },
+  };
 }
 
 export default Wcs;
@@ -277,4 +280,4 @@ export {
   Wcs,
   Commitment as WcsCommitment,
   Term as WcsTerm,
-}
+};

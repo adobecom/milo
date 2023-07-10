@@ -23,16 +23,16 @@ describe('getSettings', () => {
       wcsEnv: WcsEnv.PRODUCTION,
       wcsForceTaxExclusive: true,
       wcsLandscape: WcsLandscape.DRAFT,
-    }
+    };
     expect(getSettings({
       commerce,
-      locale: { prefix: 'africa' }
+      locale: { prefix: 'africa' },
     })).to.deep.equal({
       ...commerce,
       country: 'ZA',
       env: Env.PRODUCTION,
       language: 'en',
-      locale: `en_ZA`,
+      locale: 'en_ZA',
     });
   });
 });

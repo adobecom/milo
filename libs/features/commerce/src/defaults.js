@@ -3,7 +3,7 @@ import {
   CheckoutWorkflowStep,
   Env,
   WcsEnv,
-  WcsLandscape
+  WcsLandscape,
 } from './deps.js';
 
 /** @type {Commerce.Defaults} */
@@ -15,11 +15,11 @@ const defaults = {
   env: Env.PRODUCTION,
   language: 'en',
   wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-  wcsBufferDelay: 50,
+  wcsBufferDelay: 1,
   wcsEnv: WcsEnv.PRODUCTION,
   wcsForceTaxExclusive: false,
   wcsLandscape: WcsLandscape.PUBLISHED,
-  wcsBufferLimit: 20,
+  wcsBufferLimit: 1,
 };
 
 export default defaults;

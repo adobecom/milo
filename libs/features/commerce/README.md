@@ -1,5 +1,11 @@
 # Milo Commerce
 
+A future that retrieves and displays product prices and checkout URL on Milo pages.
+
+## Architecture
+
+
+
 ## Development
 
 1. Obtain corporate artifactory access token and make it accessible to npm.

@@ -7,14 +7,12 @@ import snapshots from './mocks/snapshots.js';
 import { expect } from './utils.js';
 
 /**
- * @param {string} wcsOsi 
+ * @param {string} wcsOsi
  * @param {Record<string, any>} dataset
  * @returns {Commerce.HTMLInlinePriceElement}
  */
 function appendInlinePrice(wcsOsi, dataset = {}) {
-  const span = document.createElement('span', {
-    is: 'inline-price',
-  });
+  const span = document.createElement('span', { is: 'inline-price' });
   Object.assign(span.dataset, { wcsOsi, ...dataset });
   document.body.append(span, document.createElement('br'));
   // @ts-ignore
@@ -39,11 +37,12 @@ describe('HTMLInlinePriceElement', () => {
     commerce = await init();
     // replace `quietFilter` with `consoleAppender` to enable logs in tests
     // to see debug logs in chrome devtools console, set verbose level
+    // eslint-disable-next-line import/no-named-as-default-member
     Log.use(Log.quietFilter);
     await import('../src/inlinePrice.js');
   });
 
-  it('renders price', async () => {
+  it.only('renders price', async () => {
     const inlinePrice = appendInlinePrice('puf');
     await inlinePrice.onceSettled();
     expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
@@ -110,14 +109,12 @@ describe('HTMLInlinePriceElement', () => {
     HTMLPlaceholderMixin('span', 'inline-offer', HTMLInlineOfferElement);
     /** @type {Commerce.HTMLInlinePriceElement} */
     // @ts-ignore
-    const inlineOffer = document.createElement('span', {
-      is: 'inline-offer',
-    });
+    const inlineOffer = document.createElement('span', { is: 'inline-offer' });
     Object.assign(inlineOffer.dataset, { wcsOsi: 'abm' });
     document.body.appendChild(inlineOffer);
     await inlineOffer.onceSettled();
     expect(inlineOffer.textContent).equal(
-      'US$54.99/mo - ccsn_direct_individual - YEAR - MONTHLY - INDIVIDUAL - BASE - REGULAR'
+      'US$54.99/mo - ccsn_direct_individual - YEAR - MONTHLY - INDIVIDUAL - BASE - REGULAR',
     );
   });
 
@@ -125,7 +122,7 @@ describe('HTMLInlinePriceElement', () => {
     const disposer = commerce.providers.price(
       (element, options) => {
         options.literals.recurrenceLabel = 'every month';
-      }
+      },
     );
     const inlinePrice = appendInlinePrice('abm');
     await inlinePrice.onceSettled();
@@ -139,7 +136,9 @@ describe('HTMLInlinePriceElement', () => {
   it('does not render failed price', async () => {
     const inlinePrice = appendInlinePrice('xyz');
     inlinePrice.innerHTML = 'test';
-    await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(WcsErrorMessage.badRequest);
+    await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
+      WcsErrorMessage.badRequest,
+    );
     expect(inlinePrice.innerHTML).to.be.empty;
   });
 
@@ -150,9 +149,7 @@ describe('HTMLInlinePriceElement', () => {
   });
 
   it('renders perpetual offer', async () => {
-    const inlinePrice = appendInlinePrice('perpetual', {
-      perpetual: true,
-    });
+    const inlinePrice = appendInlinePrice('perpetual', { perpetual: true });
     await inlinePrice.onceSettled();
     // expect(inlinePrice.innerHTML).to.be.empty;
     expect(fetch.lastCall.args[0]).to.contain('language=EN');

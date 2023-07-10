@@ -29,8 +29,8 @@ describe('lana', () => {
     });
     window.history.replaceState({}, '', href);
     expect(lana.log.firstCall.args).to.deep.equal([
-      'Test¶page=/test/page¶facts=[{\"err\":\"Houston\",\"fn\":\"function open\",\"str\":\"test\"}]',
-      {sampleRate, tags },
+      'Test¶page=/test/page¶facts=[{"err":"Houston","fn":"function open","str":"test"}]',
+      { sampleRate, tags },
     ]);
-  })
+  });
 });

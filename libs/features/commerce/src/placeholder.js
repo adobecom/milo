@@ -64,13 +64,11 @@ export const HTMLPlaceholderMethods = {
     if (version !== bucket.version) return false;
     bucket.state = RESOLVED;
     this.toggle();
-    this.log?.debug('Resolved:', {
-      dataset: { ...this.dataset }, node: this, settings: Service.settings,
-    });
+    this.log?.debug('Resolved:', { dataset: { ...this.dataset }, node: this, settings: Service.settings });
     // allow calling code to perform sync updates of this element
     // before notifying observers about state change
     setImmediate(() => {
-      const promises = bucket.promises;
+      const { promises } = bucket;
       bucket.promises = [];
       promises.forEach(({ resolve }) => resolve(this));
       this.dispatchEvent(
@@ -87,11 +85,13 @@ export const HTMLPlaceholderMethods = {
     bucket.error = error;
     bucket.state = FAILED;
     this.toggle();
-    this.log?.error('Failed:', {
-      dataset: { ...this.dataset }, node: this, settings: Service.settings,
-    }, error);
+    this.log?.error(
+      'Failed:',
+      { dataset: { ...this.dataset }, node: this, settings: Service.settings },
+      error,
+    );
     setImmediate(() => {
-      const promises = bucket.promises;
+      const { promises } = bucket;
       bucket.promises = [];
       promises.forEach(({ reject }) => reject(error));
       this.dispatchEvent(
@@ -103,6 +103,7 @@ export const HTMLPlaceholderMethods = {
 
   togglePending() {
     const bucket = buckets.get(this);
+    // eslint-disable-next-line no-plusplus
     bucket.version++;
     if (PENDING !== bucket.state) {
       this.log?.debug('Pending');
@@ -129,7 +130,7 @@ export const HTMLPlaceholderMethods = {
         this.render();
       });
     }
-  }
+  },
 };
 
 // TODO: old name for backward compatibility, needs to be removed somewhen

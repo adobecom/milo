@@ -63,20 +63,25 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
     } catch (error) {
       this.innerHTML = '';
       this.placeholder.toggleFailed(version, error);
-    };
+    }
   }
 
+  // TODO: can be extended to accept array of offers and compute subtotal price
   /**
-   * Render price offer info into this element.
-   * @param {Commerce.Wcs.Offer} offer 
+   * Renders price offer info into this component.
+   * @param {Commerce.Wcs.Offer} offer
    * @param {Record<string, any>} overrides
    */
-  renderOffer(offer, overrides = {}, version) {
+  renderOffer(offer, overrides = {}, version = undefined) {
+    // If called from `render` method that
+    // gets version of this component before making async Wcs call,
+    // ensures that no another pending operaion was initiated since
+    // and that version has not changed.
+    // eslint-disable-next-line no-param-reassign
     version ??= this.placeholder.togglePending();
     if (!this.placeholder.toggleResolved(version)) return;
-
     this.innerHTML = '';
-
+    // Collect settings/dataset and construct price options object.
     const { country, language } = service.settings;
     const {
       promotionCode,
@@ -96,9 +101,9 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
       literals: { ...service.literals.price },
       ...overrides,
     };
-
+    // Call price option providers to extend base options object.
     service.providers.price.forEach((provider) => provider(this.placeholder, options));
-
+    // Select price rendering method.
     let method;
     if (promotionCode) {
       method = pricePromo;
@@ -109,7 +114,7 @@ class HTMLInlinePriceElement extends HTMLSpanElement {
     } else {
       method = price;
     }
-
+    // Use selected method to build HTML for this component.
     this.innerHTML = method(options, { ...offer, ...offer.priceDetails });
   }
 }

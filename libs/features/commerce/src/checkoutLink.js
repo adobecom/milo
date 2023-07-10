@@ -51,7 +51,7 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
           offerSelectorIds,
           promotionCode: this.dataset.promotionCode,
         }))
-        .then((offers) => offers.flat());
+        .then((array) => array.flat());
       this.renderOffers(offers, { ...overrides, promotionCode }, version);
     } catch (error) {
       this.placeholder.toggleFailed(version, error);
@@ -59,11 +59,16 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
   }
 
   /**
-   * Renders checkout link href for provided offers into this element.
+   * Renders checkout link href for provided offers into this component.
    * @param {Commerce.Wcs.Offer[]} offers
    * @param {Record<string, any>} overrides
    */
-  renderOffers(offers, overrides = {}, version) {
+  renderOffers(offers, overrides = {}, version = undefined) {
+    // If called from `render` method that
+    // gets version of this component before making async Wcs call,
+    // ensures that no another pending operaion was initiated since
+    // and that version has not changed.
+    // eslint-disable-next-line no-param-reassign
     version ??= this.placeholder.togglePending();
     if (!this.placeholder.toggleResolved(version)) return;
 
@@ -73,7 +78,10 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
       return;
     }
 
-    const { checkoutClientId, checkoutWorkflow, checkoutWorkflowStep, country, env } = service.settings;
+    const {
+      checkoutClientId, checkoutWorkflow, checkoutWorkflowStep,
+      country, env,
+    } = service.settings;
     const {
       checkoutClientId: clientId = checkoutClientId,
       checkoutWorkflow: workflow,
@@ -85,7 +93,7 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
     /** @type {Commerce.Checkout.Options} */
     let options = {
       clientId,
-      country: imsCountry ? imsCountry : country,
+      country: imsCountry || country,
       env,
       workflow: toEnum(workflow, CheckoutWorkflow, checkoutWorkflow),
       workflowStep: toEnum(workflowStep, CheckoutWorkflowStep, checkoutWorkflowStep),
@@ -99,10 +107,11 @@ class HTMLCheckoutLinkElement extends HTMLAnchorElement {
       // @ts-ignore
       const { marketSegments: [marketSegment] } = offers[0];
       // TODO: add marketSegment property definition in @pandora
-      options = Object.assign({ marketSegment, offerType, productArrangementCode }, options);
+      // @ts-ignore
+      options = { marketSegment, offerType, productArrangementCode, ...options };
       options.items = [{ id: offerId }];
-      const [quantity] = quantities[0] || '1';
-      if ('1' !== quantity) options.items[0].quantity = quantity;
+      const [qty] = quantities[0] || '1';
+      if (qty !== '1') options.items[0].quantity = qty;
     } else {
       // TODO: verify the need of extra params in this case:
       // marketSegment, offerType, productArrangementCode

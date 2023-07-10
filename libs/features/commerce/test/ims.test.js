@@ -29,9 +29,10 @@ describe('pollImsCountry', () => {
       interval: IMS_POLL_INTERVAL,
       maxAttempts: IMS_POLL_MAX_ATTEMPTS,
     });
-    
+
     const clock = sinon.useFakeTimers();
     let attempt = -1;
+    // eslint-disable-next-line no-plusplus
     while (++attempt < IMS_POLL_MAX_ATTEMPTS) {
       clock.tick(IMS_POLL_INTERVAL);
       clock.runAll();
