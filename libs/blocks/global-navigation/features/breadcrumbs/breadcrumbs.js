@@ -36,11 +36,11 @@ const setBreadcrumbSEO = (breadcrumbs) => {
 };
 
 const removeHiddenEntries = ({ ul }) => {
-  // hide-page,other-hidden-page => ['hide-page', 'other-hidden-page']
+  // "hide-page, other hidden page" => ['hide-page', 'other hidden page']
   const hiddenEntries = getMetadata(metadata.hiddenEntries)
     ?.toLowerCase()
-    .replaceAll(' ', '')
-    .split(',') || [];
+    .split(',')
+    .map((item) => item.trim()) || [];
   ul.querySelectorAll('li').forEach(
     (li) => hiddenEntries.includes(li.innerText?.toLowerCase().trim()) && li.remove(),
   );

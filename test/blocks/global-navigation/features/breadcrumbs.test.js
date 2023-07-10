@@ -10,6 +10,7 @@ export const breadcrumbMock = () => toFragment`
       <div>
         <ul>
           <li><a href="http://www.google.com/">1-from-page</a></li>
+          <li><a href="http://www.future-releases.com/">Future Releases</a></li>
           <li><a href="http://www.adobe.com/">Actors</a></li>
           <li>Players</li>
         </ul>
@@ -35,17 +36,17 @@ describe('breadcrumbs', () => {
 
   it('should create a breadcrumb from markup', async () => {
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 4 });
+    assertBreadcrumb({ breadcrumb, length: 5 });
   });
 
   it('should hide the last item', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-hide-current-page" content="on">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 3 });
+    assertBreadcrumb({ breadcrumb, length: 4 });
   });
 
   it('should hide multiple items', async () => {
-    document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="Actors,Players">';
+    document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="Actors,Future Releases,Players">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 2 });
   });
@@ -53,13 +54,13 @@ describe('breadcrumbs', () => {
   it('should hide multiple items with spaces and wrong capitalization', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="ActOrs, PlaYers">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 2 });
+    assertBreadcrumb({ breadcrumb, length: 3 });
   });
 
   it("should use a custom page title if it's set", async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 4 });
+    assertBreadcrumb({ breadcrumb, length: 5 });
     expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
   });
 
@@ -82,11 +83,17 @@ describe('breadcrumbs', () => {
           {
             '@type': 'ListItem',
             position: 2,
+            name: 'Future Releases',
+            item: 'http://www.future-releases.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
             name: 'Actors',
             item: 'http://www.adobe.com/',
           },
-          { '@type': 'ListItem', position: 3, name: 'Players' },
-          { '@type': 'ListItem', position: 4, name: '' },
+          { '@type': 'ListItem', position: 4, name: 'Players' },
+          { '@type': 'ListItem', position: 5, name: '' },
         ],
       },
     );
@@ -102,7 +109,7 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
     window.fetch = stub().callsFake(() => mockRes({ payload: breadcrumbMock().outerHTML }));
     const breadcrumb = await breadcrumbs();
-    expect(breadcrumb.querySelector('ul').children.length).to.equal(4);
+    expect(breadcrumb.querySelector('ul').children.length).to.equal(5);
     expect(
       breadcrumb
         .querySelector('ul li:last-of-type')
@@ -114,7 +121,7 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
     window.fetch = stub().callsFake(() => mockRes({ payload: breadcrumbMock().outerHTML }));
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    expect(breadcrumb.querySelector('ul').children.length).to.equal(7);
+    expect(breadcrumb.querySelector('ul').children.length).to.equal(9);
     expect(
       breadcrumb
         .querySelector('ul li:last-of-type')

@@ -567,7 +567,8 @@ function decorateHeader() {
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const breadcrumbs = document.querySelector('.breadcrumbs');
-  header.classList.add('has-breadcrumbs');
+  const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
+  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
 }
 
