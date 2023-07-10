@@ -5,9 +5,8 @@
   "types": "./src/index.d.ts",
   "version": "0.0.1",
   "scripts": {
-    "build": "npm run build:bundle && npm run build:literals && npm run build:types",
+    "build": "npm run build:bundle && npm run build:types",
     "build:bundle": "esbuild index.js --alias:react=./src/react-shim.js --bundle --format=esm --metafile=stats.json --minify --outfile=../../deps/commerce.js --platform=browser --sourcemap --target=es2020",
-    "build:literals": "scripts/fetch-price-literals.sh",
     "build:types": "cp types.d.ts ../../deps/commerce.d.ts",
     "build:watch": "npm run build:bundle --watch",
     "test": "wtr --config ../../../web-test-runner.config.mjs \"./test/**/*.test.(js|html)\" --node-resolve --port=2001 --coverage --concurrent-browsers 4",
