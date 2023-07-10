@@ -211,16 +211,22 @@ const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, stat
 const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
   if (!group) return null;
 
+  const IN_BRACKETS_RE = /^{.*}$/;
+
   const items = filtersCustomItems.map((item) => ({
     id: item.customFilterTag[0],
-    label: item.filtersCustomLabel?.match(/^{.*}$/) ? strs[item.filtersCustomLabel.replace(/{|}/g, '')] : item.filtersCustomLabel || '',
+    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE) 
+      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')] 
+      : item.filtersCustomLabel || '',
   }));
 
   const filterObj = {
     id: group,
     openedOnLoad: !!openedOnLoad,
     items,
-    group: group?.match(/^{.*}$/) ? strs[group.replace(/{|}/g, '')] : group || '',
+    group: group?.match(IN_BRACKETS_RE)
+      ? strs[group.replace(/{|}/g, '')] 
+      : group || '',
   };
 
   return filterObj;
