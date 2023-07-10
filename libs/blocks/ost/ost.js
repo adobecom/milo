@@ -86,7 +86,7 @@ export const LinkMarkupFactory = ({ defaults }) => (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const Commerce = await import('../../deps/commerce.js');
+  const { Log, getLocaleSettings } = await import('../../deps/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
   const aosAccessToken = searchParameters.get('token');
@@ -95,9 +95,9 @@ export async function loadOstEnv() {
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
 
-  let { country, language } = Commerce.getLocaleSettings();
+  let { country, language } = getLocaleSettings();
   const { locales } = getConfig();
-  const log = Commerce.Log.common.module('ost');
+  const log = Log.commerce.module('ost');
   const metadata = {};
   let url;
 
@@ -108,7 +108,7 @@ export async function loadOstEnv() {
       const json = await res.json();
       url = new URL(json.preview.url);
       const locale = getLocale(locales, url.pathname);
-      ({ country, language } = Commerce.getLocaleSettings({ locale }));
+      ({ country, language } = getLocaleSettings({ locale }));
     } catch (error) {
       log.error('Unable to fetch page status:', error);
     }

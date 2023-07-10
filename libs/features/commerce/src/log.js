@@ -74,8 +74,6 @@ function createLog(namespace) {
   return log;
 }
 
-const common = createLog('milo');
-
 function use(...plugins) {
   plugins.forEach(
     (plugin) => {
@@ -105,10 +103,12 @@ function reset() {
   filters.clear();
 }
 
+const milo = createLog('milo');
+
 /** @type {Commerce.Log.Root} */
 export default {
-  commerce: common.module('commerce'),
-  milo: common,
+  commerce: milo.module('commerce'),
+  milo,
   level: Level,
   consoleAppender,
   debugFilter,
