@@ -111,10 +111,12 @@ const ENVS = {
 };
 const LANGSTORE = 'langstore';
 
+const PAGE_URL = new URL(window.location.href);
+const DOT_HTML_PATH = PAGE_URL.pathname.endsWith('.html');
+
 function getEnv(conf) {
-  const { host, href } = window.location;
-  const location = new URL(href);
-  const query = location.searchParams.get('env');
+  const { host } = window.location;
+  const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
   if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
@@ -257,22 +259,19 @@ export function loadStyle(href, callback) {
   return loadLink(href, { rel: 'stylesheet', callback });
 }
 
-const pageUrl = new URL(window.location.href);
-const pathEndsWithHtml = pageUrl.pathname.endsWith('.html');
-
 export function appendHtmlToCanonicalUrl() {
-  if (!pathEndsWithHtml) return;
+  if (!DOT_HTML_PATH) return;
   const canonEl = document.head.querySelector('link[rel="canonical"]');
   if (!canonEl) return;
   const canonUrl = new URL(canonEl.href);
   if (canonUrl.pathname.endsWith('/') || canonUrl.pathname.endsWith('.html')) return;
-  const pagePath = pageUrl.pathname.replace('.html', '');
+  const pagePath = PAGE_URL.pathname.replace('.html', '');
   if (pagePath !== canonUrl.pathname) return;
   canonEl.setAttribute('href', `${canonEl.href}.html`);
 }
 
 export function appendHtmlToLink(link) {
-  if (!pathEndsWithHtml) return;
+  if (!DOT_HTML_PATH) return;
   const href = link.getAttribute('href');
   if (!href.length) return;
 
@@ -281,11 +280,11 @@ export function appendHtmlToLink(link) {
   const HAS_EXTENSION = /\..*$/;
   let url = { pathname: href };
 
-  try { url = new URL(href, pageUrl); } catch (e) { /* do nothing */ }
+  try { url = new URL(href, PAGE_URL); } catch (e) { /* do nothing */ }
 
-  if (!(href.startsWith('/') || href.startsWith(pageUrl.origin))
+  if (!(href.startsWith('/') || href.startsWith(PAGE_URL.origin))
     || url.pathname?.endsWith('/')
-    || href === pageUrl.origin
+    || href === PAGE_URL.origin
     || HAS_EXTENSION.test(href.split('/').pop())
     || htmlExclude?.some((excludeRe) => excludeRe.test(href))) {
     return;
@@ -298,7 +297,7 @@ export function appendHtmlToLink(link) {
   if (isAutoblockLink) return;
 
   try {
-    const linkUrl = new URL(href.startsWith('http') ? href : `${pageUrl.origin}${href}`);
+    const linkUrl = new URL(href.startsWith('http') ? href : `${PAGE_URL.origin}${href}`);
     if (linkUrl.pathname && !linkUrl.pathname.endsWith('.html')) {
       linkUrl.pathname = `${linkUrl.pathname}.html`;
       link.setAttribute('href', href.startsWith('/')
@@ -643,7 +642,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     return true;
   }
 
-  const query = new URL(window.location.href).searchParams.get('martech');
+  const query = PAGE_URL.searchParams.get('martech');
   if (query === 'off' || getMetadata('martech') === 'off') {
     return false;
   }
