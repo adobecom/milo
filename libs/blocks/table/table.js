@@ -409,13 +409,16 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 }
 
 export default function init(el) {
+  el.setAttribute('role', 'table');
   const rows = Array.from(el.children);
   rows.forEach((row, rdx) => {
     row.classList.add('row', `row-${rdx + 1}`);
+    row.setAttribute('role', 'row');
     const cols = Array.from(row.children);
     cols.forEach((col, cdx) => {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
+      col.setAttribute('role', 'cell');
     });
   });
 
