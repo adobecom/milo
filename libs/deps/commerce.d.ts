@@ -200,11 +200,11 @@ declare global {
 
       interface Settings extends Commerce.Settings {
         wcsApiKey: string;
-        wcsDebounceDelay: number;
+        wcsBufferDelay: number;
+        wcsBufferLimit: number;
         wcsEnv: Env;
         wcsForceTaxExclusive: boolean;
         wcsLandscape: Landscape;
-        wcsOfferSelectorLimit: number;
       }
     }
   }

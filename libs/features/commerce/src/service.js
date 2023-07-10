@@ -100,7 +100,7 @@ function init(callback, force) {
 }
 
 /** @type {Commerce.Internal.Instance} */
-export default {
+const singleton = {
   get checkout() {
     return demand().checkout;
   },
@@ -123,4 +123,6 @@ export default {
     return demand().wcs;
   },
 };
+
+export default singleton;
 export { ErrorMessage, init, reset };

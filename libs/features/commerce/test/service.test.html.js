@@ -39,7 +39,7 @@ describe('service', () => {
     expect(instance.ims.country).to.be.eventually.equal('CH');
   });
 
-  it('call to reset de-initialises the service', async () => {
+  it('destructs shared instance via call to reset', async () => {
     await init();
     reset();
     expect(() => service.ims).to.throw(ErrorMessage.init);

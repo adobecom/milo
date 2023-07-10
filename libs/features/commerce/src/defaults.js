@@ -15,11 +15,11 @@ const defaults = {
   env: Env.PRODUCTION,
   language: 'en',
   wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-  wcsDebounceDelay: 50,
+  wcsBufferDelay: 50,
   wcsEnv: WcsEnv.PRODUCTION,
   wcsForceTaxExclusive: false,
   wcsLandscape: WcsLandscape.PUBLISHED,
-  wcsOfferSelectorLimit: 20,
+  wcsBufferLimit: 20,
 };
 
 export default defaults;

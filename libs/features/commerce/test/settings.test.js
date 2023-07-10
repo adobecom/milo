@@ -18,11 +18,11 @@ describe('getSettings', () => {
       checkoutWorkflow: CheckoutWorkflow.V2,
       checkoutWorkflowStep: CheckoutWorkflowStep.CHECKOUT,
       wcsApiKey: 'wcs-api-key',
-      wcsDebounceDelay: 1,
+      wcsBufferDelay: 1,
+      wcsBufferLimit: 1,
       wcsEnv: WcsEnv.PRODUCTION,
       wcsForceTaxExclusive: true,
       wcsLandscape: WcsLandscape.DRAFT,
-      wcsOfferSelectorLimit: 1,
     }
     expect(getSettings({
       commerce,

@@ -247,11 +247,11 @@ function Wcs(settings) {
             if (promotionCode) group.options.promotionCode = promotionCode;
             group.options.offerSelectorIds.push(offerSelectorId);
             group.promises.set(offerSelectorId, { resolve, reject });
-            if (group.options.offerSelectorIds.length >= settings.wcsOfferSelectorLimit) {
+            if (group.options.offerSelectorIds.length >= settings.wcsBufferLimit) {
               flushQueue();
             } else {
               log.debug('Queued:', group.options);
-              if (!timer) timer = setTimeout(flushQueue, settings.wcsDebounceDelay);
+              if (!timer) timer = setTimeout(flushQueue, settings.wcsBufferDelay);
             }
           }));
         }

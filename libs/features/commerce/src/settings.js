@@ -92,13 +92,13 @@ function getSettings({
     WcsLandscape,
     defaults.wcsLandscape
   );
-  const wcsDebounceDelay = toPositiveFiniteNumber(
-    getSetting('wcsDebounceDelay'),
-    defaults.wcsDebounceDelay
+  const wcsBufferDelay = toPositiveFiniteNumber(
+    getSetting('wcsBufferDelay'),
+    defaults.wcsBufferDelay
   );
-  const wcsOfferSelectorLimit = toPositiveFiniteNumber(
-    getSetting('wcsOfferSelectorLimit'),
-    defaults.wcsOfferSelectorLimit
+  const wcsBufferLimit = toPositiveFiniteNumber(
+    getSetting('wcsBufferLimit'),
+    defaults.wcsBufferLimit
   );
 
   /** @type {Commerce.Checkout.Settings & Commerce.Wcs.Settings} */
@@ -109,11 +109,11 @@ function getSettings({
     checkoutWorkflowStep,
     env,
     wcsApiKey,
+    wcsBufferDelay,
+    wcsBufferLimit,
     wcsEnv: env === Env.STAGE ? WcsEnv.STAGE : WcsEnv.PRODUCTION,
     wcsForceTaxExclusive,
     wcsLandscape,
-    wcsDebounceDelay,
-    wcsOfferSelectorLimit,
   };
 }
 
