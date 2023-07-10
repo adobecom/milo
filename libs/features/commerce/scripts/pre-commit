@@ -3,3 +3,4 @@
 echo "Building libs/features/commerce"
 cd libs/features/commerce
 npm run test && npm run build:bundle && npm run build:types
+git add .

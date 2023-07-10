@@ -1,6 +1,6 @@
 import { CheckoutData, CheckoutType, WorkflowStep } from '@pandora/commerce-checkout-url-builder';
 import { ProviderEnvironment, Landscape, Environment } from '@pandora/data-source-utils';
-import { ResolvedOffer } from '@pandora/data-models-odm';
+import { PriceDetails, ResolvedOffer } from '@pandora/data-models-odm';
 
 // TODO: expose this type from @dexter/tacocat-consonant-templates package
 // type PriceLiterals = import('@dexter/tacocat-consonant-templates').PriceLiterals;
@@ -240,6 +240,11 @@ declare global {
 
       interface Offer extends ResolvedOffer {
         planType: PlanType;
+        priceDetails: PriceDetails & {
+          priceWithoutDiscount?: number;
+          priceWithoutDiscountAndTax?: number;
+          priceWithoutTax?: number;
+        }
       }
 
       interface Settings extends Commerce.Settings {
