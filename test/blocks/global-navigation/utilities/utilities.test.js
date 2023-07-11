@@ -6,9 +6,10 @@ import {
   decorateCta,
   closeAllDropdowns,
   trigger,
+  getExperienceName,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
-import { createFullGlobalNavigation } from '../test-utilities.js';
+import { createFullGlobalNavigation, config } from '../test-utilities.js';
 
 describe('global navigation utilities', () => {
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
       expect(ietf).to.equal('en-US');
       expect(prefix).to.equal('');
-      expect(contentRoot).to.equal('http://localhost:2000');
+      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page');
     });
 
     it('should return a config object for a specific locale', () => {
@@ -48,7 +49,7 @@ describe('global navigation utilities', () => {
       const { locale: { ietf, prefix, contentRoot } } = getFedsPlaceholderConfig();
       expect(ietf).to.equal('fi-FI');
       expect(prefix).to.equal('/fi');
-      expect(contentRoot).to.equal('http://localhost:2000/fi');
+      expect(contentRoot).to.equal('https://main--milo--adobecom.hlx.page/fi');
     });
   });
 
@@ -126,5 +127,20 @@ describe('global navigation utilities', () => {
     // Calling 'trigger' again should close the element
     expect(trigger({ element })).to.equal(false);
     expect(element.getAttribute('aria-expanded')).to.equal('false');
+  });
+
+  it('getExperienceName defaults to imsClientId', () => {
+    const experienceName = getExperienceName();
+    expect(experienceName).to.equal(config.imsClientId);
+  });
+
+  it('getExperienceName is empty if no imsClientId is defined', () => {
+    const ogImsClientId = config.imsClientId;
+    delete config.imsClientId;
+    setConfig(config);
+    const experienceName = getExperienceName();
+    expect(experienceName).to.equal('');
+    config.imsClientId = ogImsClientId;
+    setConfig(config);
   });
 });

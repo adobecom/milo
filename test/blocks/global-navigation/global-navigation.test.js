@@ -8,6 +8,7 @@ import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
+import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
 
 const ogFetch = window.fetch;
 
@@ -95,6 +96,12 @@ describe('global navigation', () => {
         const brandImage = document.querySelector(`${selectors.brandImage} img`);
         expect(isElementVisible(brandImage)).to.equal(true);
         expect(brandImage.getAttribute('alt')).to.equal('Alternative text');
+      });
+
+      it('should not render an image if the "no-logo" modifier is used', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(false);
       });
     });
 
@@ -905,7 +912,7 @@ describe('global navigation', () => {
 
       expect(getOverflowingTopnav()).to.equal(null);
 
-      await setViewport(viewports.desktop);
+      await setViewport(viewports.smallDesktop);
       isTangentToViewport.dispatchEvent(new Event('change'));
 
       expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
