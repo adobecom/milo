@@ -119,7 +119,6 @@ function handleSection(table) {
   const isHighlightTable = table.classList.contains('highlight');
   const isMerch = table.classList.contains('merch');
   const allRows = Array.from(table.getElementsByClassName('row'));
-
   let defaultExpandRow = true;
 
   allRows.forEach((row, i) => {
@@ -130,6 +129,7 @@ function handleSection(table) {
 
     if (row.querySelector('hr') && nextRow) {
       row.classList.add('divider');
+      row.removeAttribute('role');
       nextRow.classList.add('section-head');
       const sectionHeadTitle = nextRow.querySelector('.col-1');
 
@@ -142,6 +142,7 @@ function handleSection(table) {
       if (isCollapseTable) {
         const iconTag = document.createElement('span');
         iconTag.classList.add('icon', 'expand');
+        iconTag.tabIndex = 0;
         sectionHeadTitle.appendChild(iconTag);
 
         if (defaultExpandRow) {
@@ -169,7 +170,6 @@ function handleSection(table) {
           merchCol.classList.add('col-merch');
           const children = Array.from(merchCol.children);
           const merchContent = createTag('div', { class: 'col-merch-content' });
-
           if (children.length) {
             children.forEach((child) => {
               if (!child.querySelector('.icon')) {
@@ -299,9 +299,13 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
   const reAssignEvents = (tableEl) => {
     tableEl.dispatchEvent(tableHighlightLoadedEvent);
-    tableEl.querySelectorAll('.icon.expand').forEach((icon) => icon.addEventListener('click', (e) => {
-      handleExpand(e.target);
-    }));
+    tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
+      icon.addEventListener('click', (e) => handleExpand(e.target));
+      icon.addEventListener('keydown', (e) => {
+        e.preventDefault();
+        if (e.key === 'Enter' || e.key === ' ') handleExpand(e.target);
+      });
+    });
     handleHovering(tableEl);
   };
 
@@ -419,6 +423,9 @@ export default function init(el) {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
       col.setAttribute('role', 'cell');
+      if (col.innerHTML) {
+        col.tabIndex = 0;
+      }
     });
   });
 
