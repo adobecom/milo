@@ -1,9 +1,15 @@
+import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { debounce } from "../../libs/utils/action.js";
 
 
 describe('Input', () => {
     it('Debounces callback correctly', async () => {
+        const clock = sinon.useFakeTimers({
+            toFake: ['setTimeout'],
+            shouldAdvanceTime: true,
+        });
+
         const header = document.createElement('h2')
         header.setAttribute('id', 'debounce');
         const setValue = () => {
@@ -13,12 +19,11 @@ describe('Input', () => {
         debounce(setValue, 300)();
 
         expect(header.textContent).to.equal('');
-        setTimeout(() => {
-            expect(header.textContent).to.equal('');
-        }, 100)
-        setTimeout(() => {
-            expect(header.textContent).to.equal('debounced!');
-            header.remove();
-        }, 300)
+        clock.tick(100);
+        expect(header.textContent).to.equal('');
+        clock.tick(300);
+        expect(header.textContent).to.equal('debounced!');
+        header.remove();
+        clock.restore();
     });
 });

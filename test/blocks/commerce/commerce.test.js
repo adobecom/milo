@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 
@@ -77,7 +78,12 @@ describe('decorateSearch', () => {
     expect(input.getAttribute('placeholder')).to.equal('Enter offer URL to preview');
   });
 
-  it('calls handle search correctly on keyup', () => {
+  it('calls handle search correctly on keyup', async () => {
+    const clock = sinon.useFakeTimers({
+      toFake: ['setTimeout'],
+      shouldAdvanceTime: true,
+    });
+
     const el = document.createElement('div');
     decorateSearch(el);
     const searchWrapper = el.querySelector('.offer-search-wrapper');
@@ -92,10 +98,11 @@ describe('decorateSearch', () => {
     input.dispatchEvent(e);
     let h4 = el.querySelector('h4');
     expect(h4).to.equal(null);
-    setTimeout(() => {
-      h4 = el.querySelector('h4');
-      expect(h4).to.not.equal(null);
-    }, 500)
+    clock.tick(500);
+    h4 = el.querySelector('h4');
+    expect(h4).to.not.equal(null);
+
+    clock.restore();
   });
 });
 
