@@ -35,19 +35,11 @@ function handleTopHeight(section) {
   const headerHeight = document.querySelector('header').offsetHeight;
   section.style.top = `${headerHeight}px`;
 }
-
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
-}
-
-function handleStickySection(sticky, section) {
+async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top':
+      const { debounce } = await import('../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
       main.prepend(section);
       break;

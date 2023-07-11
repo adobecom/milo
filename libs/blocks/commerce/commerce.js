@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
+import { debounce } from "../../utils/action.js";
 
 window.tacocat.loadPromise = new Promise((resolve) => {
   const { env, locale } = getConfig();
@@ -23,14 +24,6 @@ window.tacocat.loadPromise = new Promise((resolve) => {
       resolve(true);
     });
 });
-
-function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
-}
 
 export const filterOfferDetails = (o) => {
   const formattedOffer = {};
