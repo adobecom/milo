@@ -104,7 +104,7 @@ export default async function init({ persEnabled = false, persManifests, utils: 
 
   if (persEnabled) {
     utils.loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/  `,
+      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
     utils.loadLink(
