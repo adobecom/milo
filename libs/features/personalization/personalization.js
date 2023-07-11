@@ -462,11 +462,33 @@ export async function runPersonalization(info, utils) {
   };
 }
 
+function cleanManifestList(manifests) {
+  const manifestPaths = [];
+  const cleanedList = [];
+  manifests.forEach((manifest, index) => {
+    try {
+      const url = new URL(manifest.manifestPath);
+      manifest.manifestPath = url.pathname;
+    } catch (e) {
+      //do nothing
+    }
+    const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
+    if (foundIndex === -1) {
+      manifestPaths.push(manifest.manifestPath);
+      cleanedList.push(manifest);
+    } else {
+      cleanedList[foundIndex] = {...cleanedList[foundIndex], ...manifest};
+    }
+  });
+  return cleanedList;
+}
+
 export async function applyPers(
   manifests,
   { createTag, getConfig, loadLink, loadScript, updateConfig },
 ) {
   if (!manifests?.length) return;
+  manifests = cleanManifestList(manifests);
 
   utils = { createTag, getConfig, loadLink, loadScript, updateConfig };
 
