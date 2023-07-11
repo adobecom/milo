@@ -34,10 +34,8 @@ const DATA_TYPE = {
 };
 
 const createFrag = (url, manifestId = 'unknown') => {
-  const a = utils.createTag('a', { href: url }, url);
-  const p = utils.createTag('p', {
-    'data-manifest-id': manifestId
-  }, a);
+  const a = utils.createTag('a', { href: url, 'data-manifest-id': manifestId }, url);
+  const p = utils.createTag('p', undefined, a);
   utils.loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return p;
 };
