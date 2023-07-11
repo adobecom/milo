@@ -178,7 +178,7 @@ function buildContent(currentPage, locale, geoData, locales) {
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
   const title = createTag('h3', { lang, dir }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
-  const flagFile = `flag-${locale.geo.replace('_', '-')}.svg`;
+  const flagFile = locale.globeGrid?.toLowerCase().trim() === 'yes' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     width: 15,
