@@ -37,6 +37,7 @@ const MILO_BLOCKS = [
   'instagram',
   'marketo',
   'marquee',
+  'marquee-anchors',
   'media',
   'merch',
   'modal',
