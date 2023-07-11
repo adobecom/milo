@@ -51,12 +51,12 @@ async function handleStickySection(sticky, section) {
   }
 }
 
-export function handleStyle(text, section) {
+export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) {
-    handleStickySection(sticky, section);
+    await handleStickySection(sticky, section);
   }
   section.classList.add(...styles);
 }
@@ -77,10 +77,10 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
-export default function init(el) {
+export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
-  if (metadata.style) handleStyle(metadata.style.text, section);
+  if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
 }
