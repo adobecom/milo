@@ -20,7 +20,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 export const IS_OPEN = 'is-open';
 const SEARCH_TYPE_CONTEXTUAL = 'contextual';
 
-const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
+const getLocale = () => getConfig()?.locale?.ietf || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
 const isHeading = (el) => el?.nodeName.startsWith('H');
 const childIndexOf = (el) => [...el.parentElement.children]
