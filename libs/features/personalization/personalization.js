@@ -449,7 +449,7 @@ export async function runPersonalization(info, utils) {
   selectedVariant.insertscript?.map((script) => utils.loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  const manifestId = experiment.manifest;
+  let manifestId = experiment.manifest;
   if (experiment.name) manifestId = `${experiment.name}: ${manifestId}`;
   handleCommands(selectedVariant.commands, manifestId);
 
