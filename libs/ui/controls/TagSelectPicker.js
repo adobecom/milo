@@ -34,11 +34,23 @@ const Picker = ({
   const [columns, setColumns] = useState();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedCol, setSelectedCol] = useState();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    setColumns([getCol(options)]);
-  }, []);
+    const cols = [];
+    const addColumn = (option) => {
+      if (!option) return;
+      cols.unshift(getCol(option));
+      if (option.parent) {
+        addColumn(option.parent);
+      }
+    };
+
+    addColumn(optionMap[selectedCol]);
+    cols.unshift(getCol(options)); // add the root
+    setColumns(cols);
+  }, [selectedCol]);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
@@ -47,6 +59,24 @@ const Picker = ({
       setIsSearching(false);
     }
   }, [debouncedSearchTerm]);
+
+  const getSearchResults = () => {
+    const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
+    return Object.entries(optionMap)
+      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
+      .map(([id, { label, path }]) => {
+        const isChecked = selectedTags.includes(id);
+        return html`
+          <div class="search-item" onClick=${onCheck}>
+            <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
+            <label>
+              <span class="label">${label}</span>
+              <span class="path">${path}</span>
+            </label>
+          </div>
+        `;
+      });
+  };
 
   const onCheck = (e) => {
     e.preventDefault();
@@ -78,21 +108,7 @@ const Picker = ({
 
     itemEl.parentElement.childNodes.forEach((node) => node.classList.remove('expanded'));
     itemEl.classList.add('expanded');
-
-    const cols = [];
-    const addColumn = (option) => {
-      if (!option) return;
-      cols.unshift(getCol(option));
-      if (option.parent) {
-        addColumn(option.parent);
-      }
-    };
-
-    const { key: selectedKey } = itemEl.dataset;
-    addColumn(optionMap[selectedKey]);
-    cols.unshift(getCol(options)); // add the root
-
-    setColumns(cols);
+    setSelectedCol(itemEl.dataset.key);
   };
 
   const getCol = (root) => {
@@ -110,24 +126,6 @@ const Picker = ({
       />`;
     });
     return html`<div class="col">${items}</div>`;
-  };
-
-  const getSearchResults = () => {
-    const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
-    return Object.entries(optionMap)
-      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
-      .map(([id, { label, path }]) => {
-        const isChecked = selectedTags.includes(id);
-        return html`
-          <div class="search-item" onClick=${onCheck}>
-            <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
-            <label>
-              <span class="label">${label}</span>
-              <span class="path">${path}</span>
-            </label>
-          </div>
-        `;
-      });
   };
 
   return html`
