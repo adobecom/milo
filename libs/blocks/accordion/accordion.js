@@ -20,8 +20,7 @@ function handleClick(el, dd, num, id) {
     dd.removeAttribute('hidden');
   }
 
-  //if edit carosuel 
-  console.log(el.closest('.editorial'));
+
   if (el.closest('.editorial')) {
     displayMedia(document.querySelector('.accordion-media'), el, num, id)
   }
