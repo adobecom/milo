@@ -104,7 +104,7 @@ export default async function init({ persEnabled = false, persManifests, utils: 
 
   if (persEnabled) {
     utils.loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
+      `${config.miloLibs || config.codeRoot}/features/personalization/  `,
       { as: 'script', rel: 'modulepreload' },
     );
     utils.loadLink(
@@ -137,7 +137,7 @@ export default async function init({ persEnabled = false, persManifests, utils: 
     const targetManifests = await getTargetPersonalization(utils);
     if (targetManifests || persManifests?.length) {
       const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
-      const manifests = preloadManifests({ targetManifests, persManifests }, utils.loadLink);
+      const manifests = preloadManifests({ targetManifests, persManifests }, utils);
       const { applyPers } = await import('../features/personalization/personalization.js');
       await applyPers(manifests, utils);
     }

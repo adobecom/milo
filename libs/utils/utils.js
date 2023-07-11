@@ -129,6 +129,17 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
+export const getPageSearchParams = (() => {
+  let psParams;
+  return () => {
+    if (!psParams) {
+      psParams = new URL(window.location).searchParams;
+    }
+    return psParams;
+  };
+})();
+
+
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
@@ -675,8 +686,11 @@ async function checkForPageMods() {
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
+  const searchParams = getPageSearchParams();
+  const mepOverride = searchParams.get('mep');
+  const mepMarker = searchParams.get('mepMarker');
 
-  if (persEnabled || targetEnabled) {
+  if (persEnabled || targetEnabled || mepOverride || mepMarker) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -694,12 +708,20 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
+  if (mepOverride && mepOverride !== '') {
+    const mepManifests = decodeURIComponent(mepOverride).split(',');
+    mepManifests.forEach(manifestPair => {
+      const manifest = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!persManifests.includes(manifest) && !persManifests.includes(`${manifest}.json`) && !persManifests.includes(manifest.replace('.json', ''))) {
+        persManifests.push(manifest);
+      }
+    })
+  }
+
   let martechLoaded = false;
   if (targetEnabled) {
     martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
-  }
-
-  if (persMd && persMd !== 'off' && !martechLoaded) {
+  } else if (persManifests.length) {
     // load the personalization only
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
@@ -710,6 +732,9 @@ async function checkForPageMods() {
       manifests,
       { createTag, getConfig, loadScript, loadLink, updateConfig },
     );
+  } else if (mepOverride !== null || mepMarker !== null) {
+    const { decoratePreviewMode } = await import('../features/personalization/preview.js');
+    await decoratePreviewMode([]);
   }
 }
 
