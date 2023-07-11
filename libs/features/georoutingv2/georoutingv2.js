@@ -170,9 +170,8 @@ function openPicker(button, locales, country, event, dir) {
   const windowHeight = window.innerHeight;
   const spaceBelowButton = windowHeight - buttonRect.bottom;
 
-  //Render it above the button if there is no space below
   if (spaceBelowButton <= list.offsetHeight) {
-    list.style.bottom = buttonRect.height + 'px';
+    list.style.bottom = `${buttonRect.height}px`;
     list.classList.add('top');
   }
   
