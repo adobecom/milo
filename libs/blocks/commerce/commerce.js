@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadScript, debounce } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
 
 window.tacocat.loadPromise = new Promise((resolve) => {
@@ -23,6 +23,14 @@ window.tacocat.loadPromise = new Promise((resolve) => {
       resolve(true);
     });
 });
+
+function debounce(func, timeout = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func.apply(this, args); }, timeout);
+  };
+}
 
 export const filterOfferDetails = (o) => {
   const formattedOffer = {};
@@ -98,18 +106,21 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
 export const handleSearch = async (event, el) => {
   let searchParams = {};
   const displaySearchError = () => {
-    const notValidUrl = document.createElement('h4');
-    notValidUrl.classList.add('not-valid-url');
-    notValidUrl.textContent = 'Not a valid offer link';
+    const notValidUrl = createTag('h4', { class: 'not-valid-url' }, 'Not a valid offer link')
     el.append(notValidUrl);
   };
   el.textContent = '';
   const search = event.target.value;
-  searchParams = new URL(search).searchParams;
+  try {
+    searchParams = new URL(search).searchParams;
+  } catch (e) {
+    displaySearchError();
+    return;
+  }
   const osi = searchParams.get('osi');
   if (!osi) {
     displaySearchError();
-    return undefined;
+    return;
   }
   window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
     decorateOfferDetails(el, offerDetails, searchParams);
