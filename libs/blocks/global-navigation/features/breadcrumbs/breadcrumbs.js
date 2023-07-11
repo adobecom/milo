@@ -35,14 +35,16 @@ const setBreadcrumbSEO = (breadcrumbs) => {
   document.head.append(script);
 };
 
+const getHiddenEntries = (str) => str
+  ?.toLowerCase()
+  .split(',')
+  .map((item) => item.trim()) || [];
+
 const removeHiddenEntries = ({ ul }) => {
-  // "hide-page, other hidden page" => ['hide-page', 'other hidden page']
-  const hiddenEntries = getMetadata(metadata.hiddenEntries)
-    ?.toLowerCase()
-    .split(',')
-    .map((item) => item.trim()) || [];
+  const hidden = getHiddenEntries(getMetadata(metadata.hiddenEntries));
+  if (!hidden.length) return;
   ul.querySelectorAll('li').forEach(
-    (li) => hiddenEntries.includes(li.innerText?.toLowerCase().trim()) && li.remove(),
+    (li) => hidden.includes(li.innerText?.toLowerCase().trim()) && li.remove(),
   );
 };
 
