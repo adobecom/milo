@@ -35,16 +35,40 @@ export const filterOfferDetails = (offerDetails) => {
   return formattedOffer;
 };
 
-export const decorateOfferDetails = async (commerce, el, offerDetails, searchParams) => {
+export function buildClearButton(commerce) {
+  const button = createTag('button', { type: 'button', class: 'con-button' });
+  button.textContent = 'Clear';
+  commerce.ims.country.then((countryCode) => {
+    if (countryCode) {
+      button.dataset.imsCountry = countryCode;
+    }
+  })
+    .catch(() => { /* do nothing */ });
+  return button;
+}
+
+export const decorateOfferDetails = async (commerce, el, of, searchParams) => {
   function formatOfferDetailKeys(str) {
     const details = str.split(/(?=[A-Z])/);
     const allCapsDetail = details.map((detail) => detail.toUpperCase());
     const result = allCapsDetail.join(' ');
+    if (result === 'OFFER SELECTOR IDS') {
+      return 'OSI';
+    }
     return result;
   }
   const offerDetailsList = document.createElement('ul');
   offerDetailsList.className = 'offer-details';
-  const offer = filterOfferDetails(offerDetails);
+  const offer = filterOfferDetails(of);
+  const promotionCode = searchParams.get('promo');
+  offer.type = searchParams.get('type');
+  if (offer.type === 'checkoutUrl') {
+    offer.cta = searchParams.get('text');
+  }
+  if (promotionCode) {
+    offer.promo = promotionCode;
+  }
+
   Object.entries(offer).forEach(([key, value]) => {
     const offerData = document.createElement('li');
     const offerKey = document.createElement('span');
@@ -61,7 +85,6 @@ export const decorateOfferDetails = async (commerce, el, offerDetails, searchPar
   const checkoutLink = document.createElement('a');
   checkoutLink.textContent = 'Checkout link';
   const perpetual = searchParams.get('perp') === 'true' || undefined;
-  const promotionCode = searchParams.get('promo') || undefined;
   const options = omitNullValues({
     perpetual,
     promotionCode,
@@ -70,6 +93,14 @@ export const decorateOfferDetails = async (commerce, el, offerDetails, searchPar
   });
   const checkoutUrl = buildCta(commerce, checkoutLink, options);
   checkoutUrl.target = '_blank';
+  const clearButton = buildClearButton(commerce);
+
+  clearButton.addEventListener('click', () => {
+    const input = document.querySelector('.offer-search');
+    input.value = '';
+    offerDetailsList.textContent = '';
+  });
+  offerDetailsList.appendChild(clearButton);
   offerDetailsList.appendChild(checkoutUrl);
   el.append(offerDetailsList);
 };

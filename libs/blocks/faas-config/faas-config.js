@@ -24,6 +24,10 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   return x < y ? -1 : x > y ? 1 : 0;
 });
 
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 const getHashConfig = () => {
   const { hash } = window.location;
   if (!hash) return null;
@@ -68,9 +72,11 @@ const getInitialState = () => {
   }
   return null;
 };
+
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
 };
+
 const getObjFromAPI = async (apiPath) => {
   const resp = await fetch(`${faasHostUrl}${apiPath}`);
   if (resp.ok) {
@@ -79,12 +85,15 @@ const getObjFromAPI = async (apiPath) => {
   }
   return false;
 };
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
+    case 'RESET_STATE':
+      return deepCopy(defaultState);
     default:
       console.log('DEFAULT');
       return state;
@@ -131,7 +140,7 @@ const CopyBtn = () => {
         input.focus();
         return;
       }
-      if (input.name == 'v' && !/^[A-Za-z0-9]*$/.test(input.value)) {
+      if (input.name === 'v' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
         setErrorMessage('Campagin ID allows only letters and numbers');
         input.focus();
@@ -144,6 +153,16 @@ const CopyBtn = () => {
     const url = window.location.href.split('#')[0];
     return `${url}#${utf8ToB64(JSON.stringify(state))}`;
   };
+
+  const dateStr = new Date().toLocaleString('us-EN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  });
 
   const copyConfig = () => {
     setConfigUrl(getUrl());
@@ -161,7 +180,7 @@ const CopyBtn = () => {
     const formTemplate = document.getElementById('id').options[document.getElementById('id').selectedIndex].text;
     const link = document.createElement('a');
     link.href = getUrl();
-    link.textContent = `Form as a Service - ${formTemplate}`;
+    link.textContent = `Form as a Service - ${formTemplate} - ${dateStr}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     // eslint-disable-next-line no-undef
@@ -409,6 +428,22 @@ const StylePanel = () => html`
   <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
+
+const AdvancedPanel = () => {
+  const { dispatch } = useContext(ConfiguratorContext);
+  const onClick = () => {
+    const firstPanel = document.querySelector('.accordion-item button[aria-label=Expand]');
+
+    localStorage.removeItem(LS_KEY);
+    dispatch({ type: 'RESET_STATE' });
+    firstPanel.click();
+  };
+
+  return html`
+    <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+  `;
+};
+
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isFaasLoaded, setIsFaasLoaded] = useState(false);
@@ -446,7 +481,12 @@ const Configurator = ({ rootEl }) => {
   {
     title: 'Style',
     content: html`<${StylePanel} />`,
+  },
+  {
+    title: 'Advanced',
+    content: html`<${AdvancedPanel} />`,
   }];
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
       <div class="tool-header">

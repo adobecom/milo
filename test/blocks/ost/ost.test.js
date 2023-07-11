@@ -3,10 +3,8 @@ import { readFile } from '@web/test-runner-commands';
 
 const { LinkMarkupFactory } = await import('../../../libs/blocks/ost/ost.js');
 const createLinkMarkup = LinkMarkupFactory({
-  defaults: {
-    checkoutWorkflow: 'UCv3',
-    checkoutWorkflowStep: 'email',
-  },
+  checkoutWorkflow: 'UCv3',
+  checkoutWorkflowStep: 'email',
 });
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });

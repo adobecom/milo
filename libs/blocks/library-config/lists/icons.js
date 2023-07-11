@@ -1,4 +1,4 @@
-import { fetchIcons } from '../../../features/icons.js';
+import { fetchIcons } from '../../../features/icons/icons.js';
 import { createTag, getConfig } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
 

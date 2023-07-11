@@ -1,12 +1,22 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
+
 import init, {
   filterOfferDetails,
   decorateOfferDetails,
-  decorateSearch,
+  buildClearButton,
 } from '../../../libs/blocks/commerce/commerce.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+
+const commerce = {
+  ims: { country: Promise.resolve() },
+  settings: {
+    checkoutClientId: 'test',
+    checkoutWorkflow: 'UCv3',
+    checkoutWorkflowStep: 'email',
+  },
+};
 
 const offer = {
   offerType: 'BASE',
@@ -41,15 +51,7 @@ describe('filterOfferDetails', () => {
 describe('decorateOfferDetails', () => {
   it('decorates offer details correctly', async () => {
     const el = document.createElement('div');
-    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false');
-    const commerce = {
-      ims: { country: Promise.resolve() },
-      settings: {
-        checkoutClientId: 'test',
-        checkoutWorkflow: 'UCv3',
-        checkoutWorkflowStep: 'email',
-      },
-    };
+    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false&type=checkoutUrl&text=buy-now&promo=1234');
     await decorateOfferDetails(commerce, el, offer, searchParams);
     const offerDetailsList = el.querySelector('.offer-details');
     expect(offerDetailsList).to.exist;
@@ -60,9 +62,13 @@ describe('decorateOfferDetails', () => {
     expect(offerDetailsList.children[4].textContent).to.equal('CUSTOMER SEGMENT: INDIVIDUAL');
     expect(offerDetailsList.children[5].textContent).to.equal('COMMITMENT: YEAR');
     expect(offerDetailsList.children[6].textContent).to.equal('TERM: MONTHLY');
-    expect(offerDetailsList.children[7].textContent).to.equal('OFFER SELECTOR IDS: Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ');
+    expect(offerDetailsList.children[7].textContent).to.equal('OSI: Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ');
     expect(offerDetailsList.children[8].textContent).to.equal('PRICE: $10');
-    expect(offerDetailsList.children[9].textContent).to.equal('Checkout link');
+    expect(offerDetailsList.children[9].textContent).to.equal('TYPE: checkoutUrl');
+    expect(offerDetailsList.children[10].textContent).to.equal('CTA: buy-now');
+    expect(offerDetailsList.children[11].textContent).to.equal('PROMO: 1234');
+    expect(offerDetailsList.children[12].textContent).to.equal('Clear');
+    expect(offerDetailsList.children[13].textContent).to.equal('Checkout link');
   });
 });
 
@@ -77,5 +83,30 @@ describe('decorateSearch', () => {
     const input = searchWrapper.querySelector('.offer-search');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal('Enter offer URL to preview');
+  });
+});
+
+describe('clearButton', () => {
+  it('should create a button with correct attributes and textContent', () => {
+    const button = buildClearButton({ ims: { country: Promise.resolve() } });
+    expect(button.type).to.equal('button');
+    expect(button.className).to.equal('con-button');
+    expect(button.textContent).to.equal('Clear');
+  });
+
+  it('should clear offer details when press clear button', async () => {
+    const el = document.createElement('div');
+    const searchParams = new URLSearchParams('osi=01A09572A72A7D7F848721DE4D3C73FA&perp=false&type=checkoutUrl&text=buy-now&promo=1234');
+    await decorateOfferDetails(commerce, el, offer, searchParams);
+    const offerDetailsList = el.querySelector('.offer-details');
+    expect(offerDetailsList).to.exist;
+
+    const clickEvent = new MouseEvent('click');
+    const buttons = Array.from(el.querySelectorAll('.con-button'));
+    const clearButton = buttons.find((button) => button.textContent.trim() === 'Clear');
+
+    clearButton.dispatchEvent(clickEvent);
+
+    expect(offerDetailsList.textContent).to.equal('');
   });
 });
