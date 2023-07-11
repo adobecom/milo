@@ -274,7 +274,7 @@ export function appendHtmlToCanonicalUrl() {
 export function appendHtmlToLink(link) {
   if (!DOT_HTML_PATH) return;
   const href = link.getAttribute('href');
-  if (!href.length) return;
+  if (!href?.length) return;
 
   const { autoBlocks = [], htmlExclude = [] } = getConfig();
 
