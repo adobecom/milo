@@ -125,7 +125,6 @@ export const createFullGlobalNavigation = async ({
         });
       }),
     ),
-    initialized: true,
   };
   document.body.innerHTML = `
     <header class="global-navigation has-breadcrumbs" daa-im="true" daa-lh="gnav|milo">
