@@ -55,9 +55,7 @@ export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
-  if (sticky) {
-    await handleStickySection(sticky, section);
-  }
+  if (sticky) await handleStickySection(sticky, section);
   section.classList.add(...styles);
 }
 

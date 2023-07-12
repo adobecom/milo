@@ -130,18 +130,12 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
 export const handleSearch = async (event, el) => {
   let searchParams = {};
   const displaySearchError = () => {
-    const notValidUrl = createTag('h4', { class: 'not-valid-url' }, 'Not a valid offer link')
+    const notValidUrl = createTag('h4', { class: 'not-valid-url' }, 'Not a valid offer link');
     el.append(notValidUrl);
   };
   el.textContent = '';
   const search = event.target.value;
-  try {
-    searchParams = new URL(search).searchParams;
-  } catch (e) {
-    displaySearchError();
-    return;
-  }
-  const osi = searchParams.get('osi');
+  const osi = new URLSearchParams(search).get('osi');
   if (!osi) {
     displaySearchError();
     return;
