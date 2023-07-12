@@ -36,6 +36,7 @@ const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24
                       <path d="M8 5v14l11-7z"></path> 
                       <path d="M0 0h24v24H0z" fill="none"></path>
                   </svg>`;
+const ASPECT_RATIO = /^format: /i;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -88,12 +89,25 @@ function decorateLayout(el) {
     foreground?.classList.add('no-image');
   }
   if (el.classList.contains('split')
-        && (el.classList.contains('medium') || el.classList.contains('large'))
-        && el.classList.contains('icon-stack')) {
+  && (el.classList.contains('medium')
+  || el.classList.contains('large'))) {
     const ulElems = el.querySelectorAll('ul');
-    if (ulElems.length) {
+    if (el.classList.contains('icon-stack') && ulElems.length) {
       const iconStackArea = ulElems[ulElems.length - 1];
       iconStackArea.classList.add('icon-stack-area', 'body-s');
+    }
+    const mediaPtags = el.querySelectorAll(':scope > div.image > p');
+    const ptag = (mediaPtags.length > 1)
+    && [...mediaPtags].filter((mediaPtag) => mediaPtag.textContent.match(ASPECT_RATIO)?.index >= 0);
+    if (ptag.length) {
+      const formats = ptag[0].textContent.split(': ')[1]?.split(/\s+/);
+      const formatClasses = formats ? ['format',
+        `mobile-${formats[0]}`,
+        `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
+        `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
+      ] : [];
+      el.querySelector(':scope > div.image').classList.add(...formatClasses);
+      ptag[0].remove();
     }
   }
   return foreground;
