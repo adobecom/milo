@@ -464,9 +464,11 @@ class Gnav {
     if (!window.adobeIMS) {
       loadIms(onReady || defaultOnReady);
     } else if (onReady) {
-      onReady();
+      if (window.adobeIMS.initialized) return onReady();
+      return window.addEventListener('onImsLibInstance', onReady, { once: true });
     } else if (defaultOnReady) {
-      defaultOnReady();
+      if (window.adobeIMS.initialized) return defaultOnReady();
+      return window.addEventListener('onImsLibInstance', defaultOnReady, { once: true });
     }
     return profileEl;
   };
