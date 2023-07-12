@@ -21,6 +21,7 @@
   padding-inline-start: 0;
   min-width: 176px;
   margin-bottom: 8px;
+  z-index: 10;
 }
 
 .dialog-modal.locale-modal-v2 .picker.top {
