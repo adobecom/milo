@@ -558,11 +558,13 @@ function decorateHeader() {
   }
   const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
   header.className = headerQuery || headerMeta || 'gnav';
+  const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
+  || getConfig().breadcrumbs;
+  if (metadataConfig === 'off') return;
   const breadcrumbs = document.querySelector('.breadcrumbs');
-  if (breadcrumbs) {
-    header.classList.add('has-breadcrumbs');
-    header.append(breadcrumbs);
-  }
+  const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
+  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  if (breadcrumbs) header.append(breadcrumbs);
 }
 
 async function decorateIcons(area, config) {

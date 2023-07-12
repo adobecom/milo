@@ -14,7 +14,6 @@ const ogFetch = window.fetch;
 
 // TODO
 // - test localization
-// - test breadcrumbs SEO
 
 describe('global navigation', () => {
   describe('basic sanity tests', () => {
@@ -879,7 +878,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.mobile);
       isDesktop.dispatchEvent(new Event('change'));
@@ -887,7 +886,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).previousElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.navWrapper).firstElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.smallDesktop);
       isDesktop.dispatchEvent(new Event('change'));
@@ -895,7 +894,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
     });
 
     it('should add a modifier class when nav content overflows', async () => {
