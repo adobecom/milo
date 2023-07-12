@@ -321,6 +321,7 @@ header.global-navigation {
 .feds-breadcrumbs a,
 .feds-breadcrumbs [aria-current] {
   line-height: var(--feds-height-breadcrumbs);
+  text-transform: capitalize;
 }
 
 .feds-breadcrumbs a {
