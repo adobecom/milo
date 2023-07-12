@@ -925,8 +925,4 @@ describe('global navigation', () => {
       expect(getOverflowingTopnav()).to.equal(null);
     });
   });
-
-  describe('ims', () => {
-
-  });
 });
