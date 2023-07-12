@@ -204,8 +204,7 @@
   cursor: pointer;
 }
 
-.table .icon.expand:hover,
-.table .icon.expand[aria-expanded=true]:hover {
+.table .section-head-title:hover .icon.expand {
   filter: invert(41%) sepia(22%) saturate(100) hue-rotate(203deg) brightness(96%) contrast(93%);
 }
 

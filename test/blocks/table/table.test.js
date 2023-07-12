@@ -21,16 +21,14 @@ describe('table and tablemetadata', () => {
 
     it('click expand icon', async () => {
       const expandIcon = table.querySelector('.icon.expand');
-      expandIcon.dispatchEvent(new Event('click'));
-      delay(500);
-      expect(expandIcon.ariaExpanded).to.be.equal('false');
-      expandIcon.click();
       expect(expandIcon.ariaExpanded).to.be.equal('true');
-      expandIcon.focus();
+      expandIcon.parentElement.click();
+      expect(expandIcon.ariaExpanded).to.be.equal('false');
+      expandIcon.parentElement.focus();
       await sendKeys({ type: 'Enter' });
-      expect(expandIcon.ariaExpanded).to.be.equal('true');
-      await sendKeys({ type: ' ' });
       expect(expandIcon.ariaExpanded).to.be.equal('false');
+      await sendKeys({ type: ' ' });
+      expect(expandIcon.ariaExpanded).to.be.equal('true');
     });
 
     it('hovering-test', async () => {

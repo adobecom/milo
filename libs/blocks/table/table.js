@@ -236,7 +236,7 @@ function handleHovering(table) {
             );
             matchingCols.forEach((className) => {
               const noTopBorderCol = headingRow.querySelector(`.${className}`);
-              noTopBorderCol.classList.add('no-top-border');
+              noTopBorderCol?.classList.add('no-top-border');
             });
           }
           if (isCollapseTable && isLastRowCollapsed) {
