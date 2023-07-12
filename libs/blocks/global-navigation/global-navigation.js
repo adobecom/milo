@@ -48,6 +48,7 @@ const CONFIG = {
     'app-launcher',
     'adobe-logo',
   ],
+  imsReady: 'onImsLibInstance',
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
@@ -193,7 +194,7 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      () => loadIms(this.imsReady.bind(this)),
+      this.ims,
       this.addChangeEventListeners,
     ];
     this.el.addEventListener('click', this.loadDelayed);
@@ -232,6 +233,14 @@ class Gnav {
       </div>`;
 
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
+  };
+
+  ims = () => {
+    if (window.adobeIMS) {
+      if (window.adobeIMS.initialized) return this.imsReady();
+      return window.addEventListener(CONFIG.imsReady, this.imsReady, { once: true });
+    }
+    return loadIms(this.imsReady.bind(this));
   };
 
   addChangeEventListeners = () => {

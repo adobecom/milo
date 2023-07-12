@@ -125,6 +125,7 @@ export const createFullGlobalNavigation = async ({
         });
       }),
     ),
+    initialized: true,
   };
   document.body.innerHTML = `
     <header class="global-navigation has-breadcrumbs" daa-im="true" daa-lh="gnav|milo">
@@ -149,7 +150,6 @@ export const createFullGlobalNavigation = async ({
   ]);
 
   const instance = await initGnav(document.body.querySelector('header'));
-  instance.imsReady();
   await clock.runAllAsync();
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
