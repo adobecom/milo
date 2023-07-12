@@ -454,22 +454,15 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl);
-    };
-
-    const { imsClientId, onReady } = getConfig();
+    const { imsClientId } = getConfig();
     if (!imsClientId) return null;
 
-    if (!window.adobeIMS) {
-      loadIms(onReady || defaultOnReady);
-    } else if (onReady) {
-      if (window.adobeIMS.initialized) return onReady();
-      return window.addEventListener('onImsLibInstance', onReady, { once: true });
-    } else if (defaultOnReady) {
-      if (window.adobeIMS.initialized) return defaultOnReady();
-      return window.addEventListener('onImsLibInstance', defaultOnReady, { once: true });
-    }
+    loadIms()
+      .then(() => {
+        this.imsReady(blockEl, profileEl);
+      })
+      .catch(() => {});
+
     return profileEl;
   };
 

@@ -150,6 +150,7 @@ export const createFullGlobalNavigation = async ({
   ]);
 
   const instance = await initGnav(document.body.querySelector('header'));
+  instance.imsReady();
   await clock.runAllAsync();
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
