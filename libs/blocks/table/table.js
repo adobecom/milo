@@ -111,9 +111,9 @@ function handleExpand(e) {
 }
 
 function handleSection(table) {
-  const isCollapseTable = table.classList.contains('collapse') && !table.classList.contains('merch');
-  const isHighlightTable = table.classList.contains('highlight');
   const isMerch = table.classList.contains('merch');
+  const isCollapseTable = table.classList.contains('collapse') && !isMerch;
+  const isHighlightTable = table.classList.contains('highlight');
   const allRows = Array.from(table.getElementsByClassName('row'));
   let defaultExpandRow = true;
 
@@ -136,9 +136,7 @@ function handleSection(table) {
       }
 
       if (isCollapseTable) {
-        const iconTag = document.createElement('span');
-        iconTag.classList.add('icon', 'expand');
-        iconTag.tabIndex = 0;
+        const iconTag = createTag('span', { class: 'icon expand' });
         sectionHeadTitle.appendChild(iconTag);
 
         if (defaultExpandRow) {
@@ -153,7 +151,7 @@ function handleSection(table) {
           }
         }
       }
-    } else if (previousRow && previousRow.querySelector('hr') && nextRow) {
+    } else if (previousRow?.querySelector('hr') && nextRow) {
       nextRow.classList.add('section-row');
       if (!isMerch) {
         const sectionRowTitle = nextRow.querySelector('.col-1');
@@ -174,8 +172,7 @@ function handleSection(table) {
             });
             merchCol.insertBefore(merchContent, merchCol.firstChild);
           } else if (merchCol.innerText) {
-            const pTag = createTag('p', { class: 'merch-col-text' });
-            pTag.append(merchCol.innerText);
+            const pTag = createTag('p', { class: 'merch-col-text' }, merchCol.innerText);
             merchCol.innerText = '';
             merchContent.append(pTag);
             merchCol.append(merchContent);
@@ -211,11 +208,7 @@ function formatMerchTable(table) {
 }
 
 function removeHover(cols) {
-  cols.forEach((e) => {
-    e.classList.remove('hover');
-    e.classList.remove('no-top-border');
-    e.classList.remove('hover-border-bottom');
-  });
+  cols.forEach((col) => col.classList.remove('hover', 'no-top-border', 'hover-border-bottom'));
 }
 
 function handleHovering(table) {
@@ -288,10 +281,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const reAssignEvents = (tableEl) => {
     tableEl.dispatchEvent(tableHighlightLoadedEvent);
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
-      icon.addEventListener('click', (e) => handleExpand(e.target));
-      icon.addEventListener('keydown', (e) => {
+      icon.parentElement.classList.add('point-cursor');
+      icon.parentElement.addEventListener('click', () => handleExpand(icon));
+      icon.parentElement.addEventListener('keydown', (e) => {
         e.preventDefault();
-        if (e.key === 'Enter' || e.key === ' ') handleExpand(e.target);
+        if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
       });
     });
     handleHovering(tableEl);

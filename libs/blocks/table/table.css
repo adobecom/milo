@@ -138,6 +138,10 @@
   padding: 16px 24px;
 }
 
+.table .section-head-title.point-cursor {
+  cursor: pointer;
+}
+
 .table .section-head .section-head-title > :not(.icon) {
   font-size: var(--type-body-m-size);
   line-height: var(--type-heading-s-lh);
