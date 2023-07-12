@@ -18,8 +18,16 @@ function defineDeviceByScreenSize() {
 }
 
 function handleHeading(headingCols) {
-  headingCols.forEach((col) => {
-    if (!col.innerHTML) return;
+  headingCols.forEach((col, i) => {
+    if (!col.innerHTML) {
+      col.classList.add('hidden');
+      return;
+    }
+
+    col.classList.add('col-heading');
+    if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+      col.classList.add('top-left-rounded');
+    }
 
     const elements = col.children;
     if (!elements.length) {
@@ -59,12 +67,12 @@ function handleHighlight(table) {
 
   if (isHighlightTable) {
     firstRow.classList.add('row-highlight');
-    firstRowCols.forEach((e) => e.classList.add('col-highlight'));
     secondRow.classList.add('row-heading');
-    secondRowCols.forEach((e) => e.classList.add('col-heading'));
+    secondRowCols.forEach((col) => col.classList.add('col-heading'));
     headingCols = secondRowCols;
 
     firstRowCols.forEach((col, i) => {
+      col.classList.add('col-highlight');
       const hasText = headingCols[i]?.innerText && col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
@@ -73,7 +81,7 @@ function handleHighlight(table) {
         headingCols[i]?.classList.add('hidden');
       } else {
         col.classList.add('hidden');
-        if (headingCols[i - 1] && !headingCols[i - 1]?.innerText) {
+        if (!headingCols[i - 1]?.innerText) {
           headingCols[i]?.classList.add('top-left-rounded');
         }
       }
@@ -81,18 +89,6 @@ function handleHighlight(table) {
   } else {
     headingCols = firstRowCols;
     firstRow.classList.add('row-heading');
-
-    headingCols.forEach((e, i) => {
-      e.classList.add('col-heading');
-
-      if (e.innerText) {
-        if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
-          e.classList.add('top-left-rounded');
-        }
-      } else {
-        e.classList.add('hidden');
-      }
-    });
   }
 
   handleHeading(headingCols);
@@ -196,7 +192,6 @@ function handleSection(table) {
 function formatMerchTable(table) {
   const rows = table.querySelectorAll('.row');
   const rowsNum = rows.length;
-
   const firstRow = rows[0];
   const colsInRow = firstRow.querySelectorAll('.col');
   const colsInRowNum = colsInRow.length;
@@ -215,38 +210,11 @@ function formatMerchTable(table) {
   }
 }
 
-function handleMouseOut(cols) {
+function removeHover(cols) {
   cols.forEach((e) => {
     e.classList.remove('hover');
     e.classList.remove('no-top-border');
     e.classList.remove('hover-border-bottom');
-  });
-}
-
-function handleMouseOver(cols, table, colNum, isCollapseTable, lastSectionHead, lastExpandIcon) {
-  handleMouseOut(cols);
-
-  const headingRow = table.querySelector('.row-heading');
-  const colClass = `col-${colNum}`;
-  const isLastRowCollapsed = lastExpandIcon?.getAttribute('aria-expanded') === 'false';
-
-  cols.forEach((e) => {
-    if (e.classList.contains('col-highlight') && e.innerText) {
-      const matchingCols = Array.from(e.classList).filter(
-        (className) => className.startsWith(colClass),
-      );
-      matchingCols.forEach((className) => {
-        const noTopBorderCol = headingRow.querySelector(`.${className}`);
-        noTopBorderCol.classList.add('no-top-border');
-      });
-    }
-
-    if (isCollapseTable && isLastRowCollapsed) {
-      const lastSectionHeadCol = lastSectionHead.querySelector(`.col-${colNum}`);
-      lastSectionHeadCol.classList.add('hover-border-bottom');
-    }
-
-    e.classList.add('hover');
   });
 }
 
@@ -263,8 +231,29 @@ function handleHovering(table) {
   for (let i = startValue; i <= colsInRowNum; i++) {
     const cols = table.querySelectorAll(`.col-${i}`);
     cols.forEach((e) => {
-      e.addEventListener('mouseover', () => handleMouseOver(cols, table, i, isCollapseTable, lastSectionHead, lastExpandIcon));
-      e.addEventListener('mouseout', () => handleMouseOut(cols));
+      e.addEventListener('mouseover', () => {
+        removeHover(cols);
+        const headingRow = table.querySelector('.row-heading');
+        const colClass = `col-${i}`;
+        const isLastRowCollapsed = lastExpandIcon?.getAttribute('aria-expanded') === 'false';
+        cols.forEach((col) => {
+          if (col.classList.contains('col-highlight') && col.innerText) {
+            const matchingCols = Array.from(col.classList).filter(
+              (className) => className.startsWith(colClass),
+            );
+            matchingCols.forEach((className) => {
+              const noTopBorderCol = headingRow.querySelector(`.${className}`);
+              noTopBorderCol.classList.add('no-top-border');
+            });
+          }
+          if (isCollapseTable && isLastRowCollapsed) {
+            const lastSectionHeadCol = lastSectionHead.querySelector(`.col-${i}`);
+            lastSectionHeadCol.classList.add('hover-border-bottom');
+          }
+          col.classList.add('hover');
+        });
+      });
+      e.addEventListener('mouseout', () => removeHover(cols));
     });
   }
 }
@@ -281,8 +270,7 @@ function handleScrollEffect(table, gnavHeight) {
   }
   headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
 
-  const intercept = table.querySelector('.intercept') || document.createElement('div');
-  intercept.className = 'intercept';
+  const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
   table.append(intercept);
   headingRow.insertAdjacentElement('beforebegin', intercept);
@@ -440,23 +428,27 @@ export default function init(el) {
 
   window.addEventListener('milo:icons:loaded', () => {
     let originTable;
-    if (el.querySelectorAll(`.col-heading:not(.hidden${isMerch ? '' : ', .col-1'})`).length > 2) {
+    let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
+    if (isMerch) {
+      visibleHeadingsSelector = '.col-heading:not(.hidden)';
+    }
+    if (el.querySelectorAll(visibleHeadingsSelector).length > 2) {
       originTable = el.cloneNode(true);
     } else {
       originTable = el;
     }
 
-    const windowResized = () => {
+    const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader) handleScrollEffect(el, gnavHeight);
     };
-    windowResized();
+    handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
-      windowResized();
+      handleResize();
     });
   });
 }
