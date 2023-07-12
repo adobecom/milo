@@ -209,7 +209,11 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init');
 
-  ims = async () => loadIms().then(() => this.imsReady()).catch(() => {});
+  ims = async () => loadIms()
+    .then(() => this.imsReady())
+    .catch((e) => {
+      lanaLog({ message: 'GNAV: Error with IMS', e });
+    });
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
