@@ -1,0 +1,175 @@
+html {
+  scroll-behavior: smooth;
+}
+
+:target::before {
+  content: "";
+  display: block;
+  height: 100px;
+  margin: -100px 0 0;
+}
+
+.marquee-anchors {
+  position: relative;
+  padding: var(--spacing-s) 0;
+}
+
+.marquee-anchors .foreground {
+  display: flex;
+  flex-direction: column;
+}
+
+.marquee-anchors .foreground .copy img {
+  vertical-align: bottom;
+}
+
+.marquee-anchors .foreground .copy,
+.marquee-anchors .foreground .links > div {
+  margin: 0 auto;
+  width: var(--grid-container-width);
+}
+
+.marquee-anchors h1,
+.marquee-anchors h2,
+.marquee-anchors h3,
+.marquee-anchors h4,
+.marquee-anchors h5,
+.marquee-anchors h6 {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.marquee-anchors p {
+  margin: 0 0 var(--spacing-xxs);
+}
+
+.marquee-anchors p:last-child {
+  margin-bottom: 0;
+}
+
+.marquee-anchors .action-area {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin: var(--spacing-s) 0;
+}
+
+.marquee-anchors .links {
+  background-color: var(--color-gray-100);
+  padding: var(--spacing-s) 0;
+}
+
+.marquee-anchors .links .links-group {
+  display: grid;
+  gap: var(--spacing-s);
+}
+
+.marquee-anchors .foreground .links > .links-group {
+  margin: var(--spacing-s) auto;
+}
+
+.marquee-anchors .links .anchor-link {
+  display: block;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-600);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  color: var(--text-color);
+}
+
+.marquee-anchors .links .anchor-link .heading-xs {
+  margin-bottom: var(--spacing-xxs);
+}
+
+.marquee-anchors .links .anchor-link .icon-ui {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 40px;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.marquee-anchors .links .anchor-link .icon-ui img {
+  vertical-align: top;
+}
+
+.marquee-anchors .links .anchor-link:hover,
+.marquee-anchors .links .anchor-link:focus,
+.marquee-anchors .links .anchor-link:active {
+  border-color: var(--link-color);
+  text-decoration: none;
+}
+
+.marquee-anchors .links .anchor-link > div {
+  padding: var(--spacing-xs);
+  padding-right: 40px;
+}
+
+/* variant:dark */
+.dark .marquee-anchors, 
+.marquee-anchors.dark {
+  color: var(--color-white);
+}
+
+.dark .marquee-anchors .links, 
+.marquee-anchors.dark .links {
+  color: initial;
+}
+
+/* variant:transparent */
+.marquee-anchors.transparent .links {
+  background-color: transparent;
+}
+
+.dark .marquee-anchors.transparent .links, 
+.marquee-anchors.dark.transparent .links {
+  color: var(--color-white);
+}
+
+/* tablet up */
+@media screen and (min-width: 600px) {
+  .marquee-anchors .links .links-group {
+    grid-template-columns: minmax(0, 50%) minmax(50%, 1fr);
+  }
+}
+
+/* desktop up */
+@media screen and (min-width: 1200px) {
+  .marquee-anchors .links .links-group {
+    grid-template-columns: unset;
+  }
+
+  .marquee-anchors .foreground {
+    display: grid;
+    grid-template-columns: minmax(auto, max-content) minmax(400px, 1fr);
+    margin: 0 auto;
+    width: var(--grid-container-width);
+    gap: 100px;
+  }
+
+  .marquee-anchors .links {
+    padding: var(--spacing-xs);
+  }
+
+  .marquee-anchors .foreground .copy,
+  .marquee-anchors .foreground .links > div {
+    width: unset;
+    margin: 0;
+  }
+
+  .marquee-anchors .foreground .links > .links-group {
+    margin: var(--spacing-s) 0;
+  }
+
+  .marquee-anchors .foreground .copy {
+    max-width: 700px;
+  }
+
+  /* variant:transparent */
+  .marquee-anchors.transparent .links {
+    padding: 0;
+  }
+}
