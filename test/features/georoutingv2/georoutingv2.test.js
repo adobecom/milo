@@ -198,6 +198,7 @@ const setHideGeorouting = (setting) => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('hideGeorouting').returns(setting);
 };
 
+const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
@@ -246,6 +247,7 @@ describe('GeoRouting', () => {
     restoreFetch();
   });
   afterEach(() => {
+    window.innerHeight = ogInnerHeight;
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
     closeModal();
   });
@@ -528,6 +530,7 @@ describe('GeoRouting', () => {
   });
 
   it('Closes picker if picker open and then clicking somewhere else within the modal', async () => {
+    
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
@@ -537,6 +540,7 @@ describe('GeoRouting', () => {
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker');
+    
     expect(picker).to.not.be.null;
     const pickersOptions = picker.querySelectorAll('a');
     expect(pickersOptions.length).to.be.equal(3);
@@ -545,6 +549,16 @@ describe('GeoRouting', () => {
     expect(pickersOptions[2].textContent).to.be.equal('Schweiz - Italiano');
     modal.click();
     expect(document.querySelector('.picker')).to.be.null;
+  });
+
+  it('Add class .top to picker when there is no space to render below the trigger button', async () => {
+    window.innerHeight = 200;
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const links = modal.querySelectorAll('a');
+    links[0].click();
+    const picker = document.querySelector('.locale-modal-v2 .picker.top');
+    expect(picker).to.not.be.null;
   });
 
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
