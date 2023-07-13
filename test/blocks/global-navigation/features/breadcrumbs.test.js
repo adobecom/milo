@@ -39,8 +39,8 @@ describe('breadcrumbs', () => {
     assertBreadcrumb({ breadcrumb, length: 5 });
   });
 
-  it('should hide the last item', async () => {
-    document.head.innerHTML = '<meta name="breadcrumbs-hide-current-page" content="on">';
+  it('should show the last item', async () => {
+    document.head.innerHTML = '<meta name="breadcrumbs-show-current-page" content="on">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 4 });
   });
