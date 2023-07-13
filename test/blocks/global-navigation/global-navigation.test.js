@@ -16,6 +16,10 @@ const ogFetch = window.fetch;
 // - test localization
 
 describe('global navigation', () => {
+  before(() => {
+    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+  });
+
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
@@ -695,7 +699,6 @@ describe('global navigation', () => {
 
       it('renders the sign in button and dropdown on click', async () => {
         await createFullGlobalNavigation({ signedIn: false });
-
         const signIn = document.querySelector(selectors.signIn);
         expect(isElementVisible(signIn)).to.equal(true);
         expect(signIn.getAttribute('aria-haspopup')).to.equal('true');
