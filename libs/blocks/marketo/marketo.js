@@ -13,7 +13,7 @@
 /*
  * Marketo Form
  */
-import { parseEncodedConfig, loadScript, createTag } from '../../utils/utils.js';
+import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
@@ -105,7 +105,7 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-const init = (el, loadScriptFunc = loadScript) => {
+const loadMarketo = (el, entry, loadScriptFunc = loadScript) => {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
@@ -186,4 +186,6 @@ const init = (el, loadScriptFunc = loadScript) => {
     });
 };
 
-export default init;
+export default function init(el) {
+  createIntersectionObserver({ el, callback: loadMarketo });
+}
