@@ -83,7 +83,7 @@ function decorateImage(el) {
   }
 }
 
-async function decorateVideo(container) {
+function decorateVideo(container) {
   const link = container.querySelector('a[href*=".mp4"]');
   if (!link) return;
   const isNotLooped = !!(link.hash?.includes('autoplay1'));
