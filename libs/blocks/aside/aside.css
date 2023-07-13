@@ -109,6 +109,12 @@
   margin-bottom: 0;
 }
 
+.aside:not(.notification) .foreground.container .text .action-area {
+  display: flex;
+  flex-flow: wrap;
+  gap: 24px;
+}
+
 .aside .foreground.container .text .supplemental-text {
   padding-top: var(--spacing-s);
   margin-bottom: 0;
