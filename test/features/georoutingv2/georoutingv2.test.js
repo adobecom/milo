@@ -247,7 +247,6 @@ describe('GeoRouting', () => {
     restoreFetch();
   });
   afterEach(() => {
-    window.innerHeight = ogInnerHeight;
     document.cookie = 'international=; expires= Thu, 01 Jan 1970 00:00:00 GMT';
     closeModal();
   });
@@ -557,6 +556,7 @@ describe('GeoRouting', () => {
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker.top');
     expect(picker).to.not.be.null;
+    window.innerHeight = ogInnerHeight;
   });
 
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
