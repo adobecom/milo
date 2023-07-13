@@ -31,7 +31,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
 
   const addVersion = async (event) => {
     const folderPath = (siteConfig.value?.data?.find(item=> item.key === 'prod.sharepoint.folderPath'))?.value || '';
-    const url = `${originUrl}/_api/web/GetFileByServerRelativeUrl';('/sites/adobecom/${folderPath}${event.detail.data}.docx')`;
+    const url = `${originUrl}/_api/web/GetFileByServerRelativeUrl('/sites/adobecom${folderPath}${event.detail.data}.docx')`;
     const options = getReqOptions({
       method: 'POST',
       accept: 'application/json; odata=nometadata',
