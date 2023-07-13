@@ -24,6 +24,22 @@ export function decorateButtons(el, size) {
   }
 }
 
+export function decorateIconStack(el) {
+  const ulElems = el.querySelectorAll(':scope > ul');
+  if (ulElems.length) {
+    const iconStackArea = ulElems[ulElems.length - 1];
+    iconStackArea.classList.add('icon-stack-area', 'body-s');
+    const items = iconStackArea.querySelectorAll(':scope > li');
+    [...items].forEach((i) => {
+      if (i.childElementCount === 2 && i.children[0].tagName === 'PICTURE' && i.children[1]?.tagName === 'A') {
+        const aTag = i.children[1];
+        aTag.prepend(i.children[0]);
+        aTag.classList.add('flex-link');
+      }
+    });
+  }
+}
+
 export function decorateIconArea(el) {
   const icons = el.querySelectorAll('.icon');
   icons.forEach((icon) => {
@@ -32,7 +48,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm']) {
+export function decorateBlockText(el, config = ['m', 's', 'm'], hasIconStack = false) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
@@ -48,6 +64,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
+  if (hasIconStack) decorateIconStack(el);
   decorateLinkAnalytics(el, headings);
 }
 
@@ -78,12 +95,12 @@ export function getBlockSize(el, defaultSize = 1) {
 }
 
 function applyTextOverrides(el, override) {
-  const parts = override.split("-");
+  const parts = override.split('-');
   const type = parts[1];
   const els = el.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
-  els.forEach(elem => {
-    const replace = [...elem.classList].find(i => i.startsWith(type));
+  els.forEach((elem) => {
+    const replace = [...elem.classList].find((i) => i.startsWith(type));
     elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
   });
 }

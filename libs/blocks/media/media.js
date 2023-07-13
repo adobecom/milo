@@ -43,7 +43,7 @@ export default function init(el) {
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
-      decorateBlockText(text, blockTypeSizes[size]);
+      decorateBlockText(text, blockTypeSizes[size], true);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
