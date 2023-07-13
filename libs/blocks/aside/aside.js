@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockText } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -80,6 +80,38 @@ function decorateImage(el) {
     ] : [];
     el.querySelector(':scope > div.image').classList.add(...formatClasses);
     ptag[0].remove();
+  }
+}
+
+async function decorateVideo(container) {
+  const link = container.querySelector('a[href*=".mp4"]');
+  if (!link) return;
+  const isNotLooped = !!(link.hash?.includes('autoplay1'));
+  const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
+  container.innerHTML = `<video preload="metadata" ${attrs}>
+    <source src="${link.href}" type="video/mp4" />
+  </video>`;
+  container.classList.add('has-video');
+}
+
+function decorateBlockBg(block, node) {
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
+  const childCount = node.childElementCount;
+  const { children } = node;
+  node.classList.add('background');
+  if (childCount === 2) {
+    children[0].classList.add(viewports[0], viewports[1]);
+    children[1].classList.add(viewports[2]);
+  }
+  [...children].forEach(async (child, index) => {
+    if (childCount === 3) {
+      child.classList.add(viewports[index]);
+    }
+    decorateVideo(child);
+  });
+  if (!node.querySelector(':scope img') && !node.querySelector(':scope video')) {
+    block.style.background = node.textContent;
+    node.remove();
   }
 }
 
