@@ -157,20 +157,23 @@ describe('Library Config: containers', () => {
     const containers = getContainers(document);
     const singleBlockWithoutMetadataSearchTags = getSearchTags(containers[0]);
     const singleBlockWithMetadataSearchTags = getSearchTags(containers[1]);
-    const containerWithoutMetadataSearchTags = getSearchTags(containers[2]);
-    const containerWithMetadataSearchTags = getSearchTags(containers[3]);
-    expect(singleBlockWithoutMetadataSearchTags).to.equal('carousel (container1)');
-    expect(singleBlockWithMetadataSearchTags).to.equal('test1 carousel (container2)');
-    expect(containerWithoutMetadataSearchTags).to.equal('carousel (container)');
-    expect(containerWithMetadataSearchTags).to.equal('test3 carousel (lightbox)');
+    const containerWithH2TitleAndSearchTags = getSearchTags(containers[2]);
+    const containerWithMetadataTitleAndSearchTags = getSearchTags(containers[3]);
+    const containerWithBlockTitleAndSearchTags = getSearchTags(containers[4]);
+    expect(singleBlockWithoutMetadataSearchTags).to.equal('carousel (container0)');
+    expect(singleBlockWithMetadataSearchTags).to.equal('tag1 carousel (container1)');
+    expect(containerWithH2TitleAndSearchTags).to.equal('tag2 Carousel (container2)');
+    expect(containerWithMetadataTitleAndSearchTags).to.equal('tag3 container3-title-from-metadata');
+    expect(containerWithBlockTitleAndSearchTags).to.equal('tag4 carousel (lightbox4)');
   });
 
   it('isMatching', async () => {
     document.body.innerHTML = mixedHtml;
     const containers = getContainers(document);
-    expect(isMatching(containers[0], 'test1')).to.be.false;
-    expect(isMatching(containers[1], 'test1')).to.be.true;
-    expect(isMatching(containers[2], 'test3')).to.be.false;
-    expect(isMatching(containers[3], 'test3')).to.be.true;
+    expect(isMatching(containers[0], 'tag1')).to.be.false;
+    expect(isMatching(containers[1], 'tag1')).to.be.true;
+    expect(isMatching(containers[2], 'tag2')).to.be.true;
+    expect(isMatching(containers[3], 'tag3')).to.be.true;
+    expect(isMatching(containers[4], 'tag4')).to.be.true;
   });
 });

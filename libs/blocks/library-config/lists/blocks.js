@@ -12,8 +12,19 @@ const CONTAINER_INSIDE_BLOCK = 2;
 const CONTAINER_OUTSIDE_BLOCK = 3;
 const CONTAINER_OUTSIDE_AUTO_BLOCK = 4;
 
-function getAuthorName(block) {
-  const blockSib = block.previousElementSibling;
+function getPreviousBlock(container) {
+  const firstBlock = container.elements?.[0];
+  const previousBlock = firstBlock?.previousElementSibling;
+  if (!previousBlock) return null;
+  if (previousBlock.classList.contains('library-container-start')) {
+    return previousBlock.previousElementSibling;
+  }
+  return previousBlock;
+}
+
+function getAuthorName(container) {
+  const block = getPreviousBlock(container);
+  const blockSib = block?.previousElementSibling;
   if (!blockSib) return null;
   if (['H2', 'H3'].includes(blockSib.nodeName)) {
     return blockSib.textContent;
@@ -35,7 +46,7 @@ function getMetadataName(container) {
 
 function getContainerName(container) {
   const firstBlock = container.elements?.[0];
-  return getMetadataName(container) || getAuthorName(firstBlock) || getBlockName(firstBlock);
+  return getAuthorName(container) || getMetadataName(container) || getBlockName(firstBlock);
 }
 
 function getTable(block) {
@@ -109,14 +120,14 @@ export function getHtml(container, path) {
 
 export function getSearchTags(container) {
   if (!container || !container.elements) return '';
-  const firstBlock = container.elements[0];
+  const containerName = getContainerName(container);
   if (container[LIBRARY_METADATA]) {
     const libraryMetadata = getMetadata(container[LIBRARY_METADATA]);
     return libraryMetadata?.searchtags?.text
-      ? `${libraryMetadata?.searchtags?.text} ${getBlockName(firstBlock)}`
-      : getBlockName(firstBlock);
+      ? `${libraryMetadata?.searchtags?.text} ${containerName}`
+      : containerName;
   }
-  return getBlockName(firstBlock);
+  return containerName;
 }
 
 export function isMatching(container, query) {
