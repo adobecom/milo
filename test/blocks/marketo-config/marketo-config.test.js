@@ -126,8 +126,6 @@ describe('marketo-config', () => {
     copyButton.click();
     await delay(50);
 
-    console.log(select);
-
     const message = copyBtn.querySelector('.message');
     expect(message.textContent).to.contain('Required fields must be filled');
 
@@ -140,5 +138,23 @@ describe('marketo-config', () => {
 
     const copyContent = copyBtn.querySelector('.copy-content');
     expect(copyContent.textContent).to.contain('http');
+  });
+
+  it('resets to default state', async () => {
+    const el = document.querySelector('.marketo-config');
+    await init(el);
+
+    const accordion = await waitForElement('.accordion');
+
+    const resetButton = accordion.querySelector('.resetToDefaultState');
+    resetButton.click();
+
+    await delay(50);
+
+    const lsState = JSON.parse(localStorage.getItem('marketo-test-ConfiguratorState'));
+
+    const panelsData = getConfigOptions(options);
+    const defaults = getDefaultStates(panelsData);
+    expect(lsState).to.deep.equal(defaults);
   });
 });

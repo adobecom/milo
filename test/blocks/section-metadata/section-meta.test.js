@@ -20,6 +20,14 @@ describe('Section Metdata', () => {
     expect(sec.classList.contains('has-background')).to.be.true;
   });
 
+  it('Handles background image focal point', async() => {
+    const sec = document.querySelector('.section.image');
+    const sm = sec.querySelector('.section-metadata');
+    init(sm);
+    const image = sec.querySelector('img');
+    expect(image.style.objectPosition).to.equal('center bottom');
+  });
+
   it('Handles background color', () => {
     const sec = document.querySelector('.section.color');
     const sm = sec.querySelector('.section-metadata');

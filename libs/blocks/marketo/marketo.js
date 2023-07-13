@@ -18,11 +18,41 @@ import { parseEncodedConfig, loadScript, createTag } from '../../utils/utils.js'
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
+const FORM_MAP = {
+  'destination-url': 'form.success.content',
+  'co-partner-names': 'program.copartnernames',
+  'sfdc-campaign-id': 'program.campaignids.sfdc',
+};
 
 export const formValidate = (form) => {
   const formEl = form.getFormElem().get(0);
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+};
+
+export const decorateURL = (destination, baseURL = window.location) => {
+  try {
+    let destinationUrl = new URL(destination, baseURL.origin);
+    const { hostname, pathname, search, hash } = destinationUrl;
+
+    if (!hostname) {
+      throw new Error('URL does not have a valid host');
+    }
+
+    if (destinationUrl.hostname.includes('.hlx.')) {
+      destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
+    }
+
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html')) {
+      destinationUrl.pathname = `${pathname}.html`;
+    }
+
+    return destinationUrl;
+  } catch (e) {
+    window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`);
+  }
+
+  return null;
 };
 
 export const formSuccess = (form) => {
@@ -72,38 +102,54 @@ const setPreference = (key, value) => {
 
 export const setPreferences = (formData) => {
   window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
-  Object.entries(formData).forEach(([key, value]) => {
-    setPreference(key, value);
-  });
+  Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
 const init = (el, loadScriptFunc = loadScript) => {
   const children = Array.from(el.querySelectorAll(':scope > div'));
-  const link = children[0].querySelector('a');
+  const encodedConfigDiv = children.shift();
+  const link = encodedConfigDiv.querySelector('a');
   let formData = {};
 
-  if (link?.href) {
-    const encodedConfig = link.href.split('#')[1];
-
-    formData = parseEncodedConfig(encodedConfig);
+  if (!link?.href) {
+    el.style.display = 'none';
+    return;
   }
 
+  const encodedConfig = link.href.split('#')[1];
+
+  formData = parseEncodedConfig(encodedConfig);
+
   children.forEach((element) => {
-    const key = element.children[0]?.textContent.toLowerCase();
-    const value = element.children[1]?.textContent;
-    if (key && value) { formData[key] = value; }
+    const key = element.children[0]?.textContent.trim().toLowerCase().replaceAll(' ', '-');
+    const value = element.children[1]?.href ?? element.children[1]?.textContent;
+    if (!key || !value) return;
+    if (key in FORM_MAP) {
+      formData[FORM_MAP[key]] = value;
+    } else {
+      formData[key] = value;
+    }
   });
 
   const formID = formData[FORM_ID];
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
 
-  setPreferences(formData);
-
   if (!formID || !baseURL || !munchkinID) {
     el.style.display = 'none';
     return;
   }
+
+  if (formData['form.success.content']) {
+    const destinationUrl = decorateURL(formData['form.success.content']);
+
+    if (destinationUrl) {
+      formData['form.success.type'] = 'redirect';
+      formData['form.success.content'] = destinationUrl.href;
+    }
+  }
+
+  setPreferences(formData);
 
   const fragment = new DocumentFragment();
   const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
