@@ -33,6 +33,10 @@
   min-height: 700px;
 }
 
+.aside.split picture {
+  display: flex;
+}
+
 .aside .background {
   overflow: hidden;
   position: absolute;
