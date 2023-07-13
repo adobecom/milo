@@ -629,7 +629,7 @@ export async function loadIms() {
       reject(new Error('Missing IMS Client ID'));
       return;
     }
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 3000);
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || 'AdobeID,openid,gnav',
