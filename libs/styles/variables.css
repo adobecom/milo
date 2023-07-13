@@ -106,8 +106,8 @@
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
 
   /* icon sizes */
-  --icon-size-m: 56px;
-  --icon-size-s: 40px;
+  --l-icon: 56px;
+  --m-icon: 40px;
 
 }
 

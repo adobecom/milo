@@ -20,7 +20,7 @@ describe('icon blocks', () => {
         });
       }
     });
-    if(block.classList.contains('inline')){
+    if (block.classList.contains('inline')) {
       describe('icon block inline has 2 columns', () => {
         it('has 2 columns', () => {
           const firstColumn = block.querySelector('.text-content .icon-area');

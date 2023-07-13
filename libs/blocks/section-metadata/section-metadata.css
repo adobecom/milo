@@ -145,7 +145,7 @@ main>.section[class*='-up']>.content {
   padding-right: var(--grid-margins-width);
 }
 
-.section.five-up :not(.icon-block.inline) {
+.section.five-up {
   grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
 }
 
