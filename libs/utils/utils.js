@@ -621,22 +621,31 @@ function decorateFooterPromo(config) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
-export function loadIms(onReadyFn) {
-  if (window.adobeIMS) return;
-
-  const { locale, imsClientId, imsScope, env, onReady } = getConfig();
-  if (!imsClientId) return null;
-
-  window.adobeid = {
-    client_id: imsClientId,
-    scope: imsScope || 'AdobeID,openid,gnav',
-    locale: locale?.ietf?.replace('-', '_') || 'en_US',
-    autoValidateToken: true,
-    environment: env.ims,
-    useLocalStorage: false,
-    onReady: onReadyFn || onReady,
-  };
-  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+let imsLoaded;
+export async function loadIms() {
+  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
+    const { locale, imsClientId, imsScope, env } = getConfig();
+    if (!imsClientId) {
+      reject(new Error('Missing IMS Client ID'));
+      return;
+    }
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
+    window.adobeid = {
+      client_id: imsClientId,
+      scope: imsScope || 'AdobeID,openid,gnav',
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      autoValidateToken: true,
+      environment: env.ims,
+      useLocalStorage: false,
+      onReady: () => {
+        resolve();
+        clearTimeout(timeout);
+      },
+      onError: reject,
+    };
+    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+  });
+  return imsLoaded;
 }
 
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
@@ -651,7 +660,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   }
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
-  loadIms();
+  loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({
