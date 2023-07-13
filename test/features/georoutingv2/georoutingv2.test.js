@@ -530,7 +530,6 @@ describe('GeoRouting', () => {
   });
 
   it('Closes picker if picker open and then clicking somewhere else within the modal', async () => {
-    
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const cookie = getCookie('international');
@@ -540,7 +539,6 @@ describe('GeoRouting', () => {
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker');
-    
     expect(picker).to.not.be.null;
     const pickersOptions = picker.querySelectorAll('a');
     expect(pickersOptions.length).to.be.equal(3);
