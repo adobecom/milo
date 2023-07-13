@@ -10,12 +10,15 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    async function loginAndFetchVersion() {
+      await loginToSharePoint(scope);
+      setIsAuthenticated(true);
+      const versions = await fetchVersions();
+      setVersions(versions);
+    }
 
-  useEffect(async () => {
-    await loginToSharePoint(scope);
-    setIsAuthenticated(true);
-    const versions = await fetchVersions();
-    setVersions(versions);
+    loginAndFetchVersion();
   }, []);
 
   async function onClickCreate() {

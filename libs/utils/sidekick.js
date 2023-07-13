@@ -1,6 +1,9 @@
 import '../../tools/loc/lib/msal-browser.js';
 import loginToSharePoint from './deps/login.js';
 import { getReqOptions } from './deps/msal.js';
+import { siteConfig } from './deps/state.js';
+
+const originUrl = 'https://adobe.sharepoint.com/sites/adobecom';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
@@ -27,7 +30,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   };
 
   const addVersion = async (event) => {
-    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileByServerRelativeUrl('/sites/adobecom/CC/www${event.detail.data}.docx')`;
+    const folderPath = (siteConfig.value?.data?.find(item=> item.key === 'prod.sharepoint.folderPath'))?.value || '';
+    const url = `${originUrl}/_api/web/GetFileByServerRelativeUrl';('/sites/adobecom/${folderPath}${event.detail.data}.docx')`;
     const options = getReqOptions({
       method: 'POST',
       accept: 'application/json; odata=nometadata',
