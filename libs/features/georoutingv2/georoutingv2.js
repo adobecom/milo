@@ -167,11 +167,8 @@ function openPicker(button, locales, country, event, dir) {
   });
   button.parentNode.insertBefore(list, button.nextSibling);
   const buttonRect = button.getBoundingClientRect();
-  const windowHeight = window.innerHeight;
-  const spaceBelowButton = windowHeight - buttonRect.bottom;
-
+  const spaceBelowButton = window.innerHeight - buttonRect.bottom;
   if (spaceBelowButton <= list.offsetHeight) {
-    list.style.bottom = `${buttonRect.height}px`;
     list.classList.add('top');
   }
   

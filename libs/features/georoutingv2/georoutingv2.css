@@ -25,6 +25,7 @@
 }
 
 .dialog-modal.locale-modal-v2 .picker.top {
+  bottom: 41px;
   position: absolute;
 }
 
