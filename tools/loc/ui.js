@@ -163,7 +163,7 @@ function getStatus(subproject, url) {
   return status;
 }
 
-async function initRollout(task, language) {
+async function initRollout(task, language, skipDocMerge = true) {
   const status = { success: false, language, errorMsg: '' };
   const failedRollouts = [];
 
@@ -175,7 +175,7 @@ async function initRollout(task, language) {
     }
     const file = { path: languageFilePath, blob: fileBlob };
     loadingON(`Rollout live-copy folders of ${languageFilePath} in progress..`);
-    const failedRolloutPages = await rollout(file, langInfo.livecopyFolders);
+    const failedRolloutPages = await rollout(file, langInfo.livecopyFolders, skipDocMerge);
     failedRollouts.push(...failedRolloutPages);
     loadingON(`Rollout to live-copy folders of ${languageFilePath} complete..`);
   }
@@ -195,13 +195,13 @@ async function initRollout(task, language) {
   return status;
 }
 
-async function rolloutAll(projectInfo) {
+async function rolloutAll(projectInfo, skipDocMerge = true) {
   const { language } = projectInfo;
   let failedRollouts = [];
   loadingON(`Rollout to target folders of ${language}`);
   if (projectInfo.status === PROJECT_STATUS.COMPLETED) {
     const rolloutStatuses = await Promise.all(
-      [...projectInfo.urls].map((taskArray) => initRollout(taskArray[1], language)),
+      [...projectInfo.urls].map((taskArray) => initRollout(taskArray[1], language, skipDocMerge)),
     );
     failedRollouts = rolloutStatuses.filter(
       (status) => !status.success || status.failedRollouts.length > 0,
@@ -223,6 +223,7 @@ async function displayProjectDetail() {
   if (!config) {
     return;
   }
+  const skipDocMerge = (config.sp?.skipDocMerge === 'true' || config.sp?.skipDocMerge === undefined);
   const container = getProjectDetailContainer();
   const subprojects = new Map([
     ...projectDetail.englishCopyProjects,
@@ -263,7 +264,7 @@ async function displayProjectDetail() {
         }
         const $rolloutAllButton = createButton('Rollout');
         $rolloutAllButton.addEventListener('click', () => {
-          rolloutAll(projectInfo);
+          rolloutAll(projectInfo, skipDocMerge);
         });
         $td.appendChild($rolloutAllButton);
         row.appendChild($td);
