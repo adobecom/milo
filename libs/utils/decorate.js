@@ -3,7 +3,7 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = {'STRONG': 'blue', 'EM': 'outline', 'A': 'blue'};
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
@@ -106,9 +106,11 @@ function applyTextOverrides(el, override) {
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
+  const overrides = [...el.classList].filter(
+    (elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0,
+  );
   if (!overrides.length) return;
-  overrides.forEach(override => {
+  overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
   });
