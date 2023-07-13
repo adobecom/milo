@@ -59,6 +59,30 @@ function decorateModalImage(el) {
   modalLink.appendChild(playCircle);
 }
 
+function decorateIconStack(el) {
+  const ulElems = el.querySelectorAll('ul');
+  if (el.classList.contains('icon-stack') && ulElems.length) {
+    const iconStackArea = ulElems[ulElems.length - 1];
+    iconStackArea.classList.add('icon-stack-area', 'body-s');
+  }
+}
+
+function decorateImage(el) {
+  const mediaPtags = el.querySelectorAll(':scope > div.image > p');
+  const ptag = (mediaPtags.length > 1)
+  && [...mediaPtags].filter((mediaPtag) => mediaPtag.textContent.match(ASPECT_RATIO)?.index >= 0);
+  if (ptag.length) {
+    const formats = ptag[0].textContent.split(': ')[1]?.split(/\s+/);
+    const formatClasses = formats ? ['format',
+      `mobile-${formats[0]}`,
+      `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
+      `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
+    ] : [];
+    el.querySelector(':scope > div.image').classList.add(...formatClasses);
+    ptag[0].remove();
+  }
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
@@ -91,24 +115,8 @@ function decorateLayout(el) {
   if (el.classList.contains('split')
   && (el.classList.contains('medium')
   || el.classList.contains('large'))) {
-    const ulElems = el.querySelectorAll('ul');
-    if (el.classList.contains('icon-stack') && ulElems.length) {
-      const iconStackArea = ulElems[ulElems.length - 1];
-      iconStackArea.classList.add('icon-stack-area', 'body-s');
-    }
-    const mediaPtags = el.querySelectorAll(':scope > div.image > p');
-    const ptag = (mediaPtags.length > 1)
-    && [...mediaPtags].filter((mediaPtag) => mediaPtag.textContent.match(ASPECT_RATIO)?.index >= 0);
-    if (ptag.length) {
-      const formats = ptag[0].textContent.split(': ')[1]?.split(/\s+/);
-      const formatClasses = formats ? ['format',
-        `mobile-${formats[0]}`,
-        `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
-        `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
-      ] : [];
-      el.querySelector(':scope > div.image').classList.add(...formatClasses);
-      ptag[0].remove();
-    }
+    decorateIconStack(el);
+    decorateImage(el);
   }
   return foreground;
 }
