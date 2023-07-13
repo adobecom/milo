@@ -36,29 +36,23 @@ describe('breadcrumbs', () => {
 
   it('should create a breadcrumb from markup', async () => {
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 5 });
-  });
-
-  it('should show the last item', async () => {
-    document.head.innerHTML = '<meta name="breadcrumbs-show-current-page" content="on">';
-    const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 4 });
   });
 
   it('should hide multiple items', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="Actors,Future Releases,Players">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 2 });
+    assertBreadcrumb({ breadcrumb, length: 1 });
   });
 
   it('should hide multiple items with spaces and wrong capitalization', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="ActOrs, PlaYers">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    assertBreadcrumb({ breadcrumb, length: 3 });
+    assertBreadcrumb({ breadcrumb, length: 2 });
   });
 
-  it("should use a custom page title if it's set", async () => {
-    document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
+  it('should use a custom page title and show the current page if set', async () => {
+    document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title"><meta name="breadcrumbs-show-current-page" content="on">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 5 });
     expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
@@ -93,7 +87,6 @@ describe('breadcrumbs', () => {
             item: 'http://www.adobe.com/',
           },
           { '@type': 'ListItem', position: 4, name: 'Players' },
-          { '@type': 'ListItem', position: 5, name: '' },
         ],
       },
     );
@@ -109,7 +102,7 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
     window.fetch = stub().callsFake(() => mockRes({ payload: breadcrumbMock().outerHTML }));
     const breadcrumb = await breadcrumbs();
-    expect(breadcrumb.querySelector('ul').children.length).to.equal(5);
+    expect(breadcrumb.querySelector('ul').children.length).to.equal(4);
     expect(
       breadcrumb
         .querySelector('ul li:last-of-type')
@@ -121,7 +114,7 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
     window.fetch = stub().callsFake(() => mockRes({ payload: breadcrumbMock().outerHTML }));
     const breadcrumb = await breadcrumbs(breadcrumbMock());
-    expect(breadcrumb.querySelector('ul').children.length).to.equal(9);
+    expect(breadcrumb.querySelector('ul').children.length).to.equal(8);
     expect(
       breadcrumb
         .querySelector('ul li:last-of-type')
