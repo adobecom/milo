@@ -472,7 +472,7 @@
     height: 83px;
   }
 
-  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+  .aside.center:not(.notification) .foreground.container .text .icon-area img {
     height: 83px;
     max-width: 300px;
     width: auto;
