@@ -137,7 +137,7 @@ export const handleSearch = async (event, el) => {
   try {
     const url = new URL(search);
     const osi = url.searchParams.get('osi');
-    if(!osi) { displaySearchError(); return; }
+    if (!osi) { displaySearchError(); return; }
     window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
       decorateOfferDetails(el, offerDetails, url.searchParams);
     }).catch(displaySearchError);
