@@ -1,7 +1,7 @@
 import '../../tools/loc/lib/msal-browser.js';
-import loginToSharePoint from './deps/login.js';
-import { getReqOptions } from './deps/msal.js';
-import { siteConfig } from './deps/state.js';
+import loginToSharePoint from '../tools/sharepoint/login.js';
+import { getReqOptions } from '../tools/sharepoint/msal.js';
+import { siteConfig } from '../tools/sharepoint/state.js';
 
 const originUrl = 'https://adobe.sharepoint.com/sites/adobecom';
 

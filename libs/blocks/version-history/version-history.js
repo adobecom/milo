@@ -1,7 +1,7 @@
 import { html, render } from '../../deps/htm-preact.js';
-import View from './view.js';
-import loginToSharePoint from '../../utils/deps/login.js';
+import loginToSharePoint from '../../tools/sharepoint/login.js';
 import { createHistoryTag } from './index.js';
+import View from './view.js';
 
 export default async function init(el) {
   if (window.self === window.top) {

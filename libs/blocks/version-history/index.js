@@ -1,4 +1,4 @@
-import { getReqOptions } from '../../utils/deps/msal.js';
+import { getReqOptions } from '../../tools/sharepoint/msal.js';
 
 const urlParams = new URLSearchParams(window.location.href);
 const referrer = urlParams.get("referrer");
