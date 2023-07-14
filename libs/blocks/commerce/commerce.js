@@ -128,7 +128,6 @@ export const decorateOfferDetails = async (el, of, searchParams) => {
 };
 
 export const handleSearch = async (event, el) => {
-  let searchParams = {};
   const displaySearchError = () => {
     const notValidUrl = createTag('h4', { class: 'not-valid-url' }, 'Not a valid offer link');
     el.append(notValidUrl);
@@ -138,9 +137,9 @@ export const handleSearch = async (event, el) => {
   try {
     const url = new URL(search);
     const osi = url.searchParams.get('osi');
-    if(!osi) throw new Error('no osi query param in URL');
+    if(!osi) { displaySearchError(); return; }
     window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
-      decorateOfferDetails(el, offerDetails, searchParams);
+      decorateOfferDetails(el, offerDetails, url.searchParams);
     }).catch(displaySearchError);
   }
   catch (e) {
