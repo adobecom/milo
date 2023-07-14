@@ -145,7 +145,6 @@ export const handleSearch = async (event, el) => {
   }
   catch (e) {
     displaySearchError();
-    return;
   }
 };
 
