@@ -36,7 +36,7 @@ const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24
                       <path d="M8 5v14l11-7z"></path> 
                       <path d="M0 0h24v24H0z" fill="none"></path>
                   </svg>`;
-const ASPECT_RATIO = /^format: /i;
+const ASPECT_RATIO = /^format:/i;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));

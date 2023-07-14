@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
+const { default: initModal } = await import('../../../libs/blocks/modal/modal.js');
 const types = ['simple', 'split', 'inline', 'notification'];
 
 describe('aside', () => {
@@ -40,6 +41,20 @@ describe('aside', () => {
 
           if (aside.querySelector('.text .con-button')) {
             expect(button.closest('p')).to.exist;
+          }
+        });
+
+        it('Has video modal', () => {
+          if (aside.classList.contains('asideWithVideoModal')) {
+            const playButton = aside.querySelector('.play-btn-circle');
+            expect(playButton).to.exist;
+          }
+        });
+
+        it('Has icon stack area', () => {
+          if (aside.classList.contains('icon-stack')) {
+            const iconStack = aside.querySelector('ul.icon-stack-area');
+            expect(iconStack).to.exist;
           }
         });
       }
