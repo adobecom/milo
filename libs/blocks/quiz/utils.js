@@ -311,6 +311,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   const allcards = Object.keys(userInputSelections);
   let nextQuizViews = [];
   let hasResultTigger = false;
+  let lastStopValue;
 
   allcards.forEach((selection) => {
     // for each elem in current selection, find its coresponding
@@ -342,11 +343,11 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
             nextQuizViews = nextQuizViews.filter((val) => val !== skip);
           });
         }
-
         // RESET the queue and add only the next question.
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
           userFlow = []; // Resetting the userFlow as well
+          lastStopValue = 'RESET';
         }
 
         if (!hasResultTigger) {
@@ -360,7 +361,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
     });
   });
 
-  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])] };
+  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
 };
 
 export const transformToFlowData = (userSelection) => {

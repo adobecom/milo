@@ -141,7 +141,7 @@ const App = () => {
       setPrevStepIndicator(userSelection.map((_, index) => index));
     }
   }, [userSelection]);
-  
+
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
@@ -149,7 +149,12 @@ const App = () => {
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
-    const { nextQuizViews } = handleNext(questionData, selectedQuestion, selCards, userFlow);
+    const { nextQuizViews, lastStopValue } = handleNext(
+      questionData,
+      selectedQuestion,
+      selCards,
+      userFlow,
+    );
     const nextQuizViewsLen = nextQuizViews.length;
 
     setNextQuizViewsExist(!!nextQuizViewsLen);
@@ -167,6 +172,9 @@ const App = () => {
       } else {
         setTotalSteps(totalSteps);
       }
+    }
+    if (lastStopValue && lastStopValue === 'RESET') {
+      setTotalSteps(totalSteps - 1);
     }
   };
 
