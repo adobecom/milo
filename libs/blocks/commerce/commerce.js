@@ -135,14 +135,18 @@ export const handleSearch = async (event, el) => {
   };
   el.textContent = '';
   const search = event.target.value;
-  const osi = new URLSearchParams(search).get('osi');
-  if (!osi) {
+  try {
+    const url = new URL(search);
+    const osi = url.searchParams.get('osi');
+    if(!osi) throw new Error('no osi query param in URL');
+    window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
+      decorateOfferDetails(el, offerDetails, searchParams);
+    }).catch(displaySearchError);
+  }
+  catch (e) {
     displaySearchError();
     return;
   }
-  window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
-    decorateOfferDetails(el, offerDetails, searchParams);
-  }).catch(displaySearchError);
 };
 
 export const decorateSearch = (el) => {
