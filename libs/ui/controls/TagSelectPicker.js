@@ -70,7 +70,7 @@ const Picker = ({
           <div class="search-item" onClick=${onCheck}>
             <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
             <label>
-              <span class="label">${label}</span>
+              <span class="label">${label?.replace('&amp;', '&')}</span>
               <span class="path">${path}</span>
             </label>
           </div>
