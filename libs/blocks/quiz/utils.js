@@ -9,9 +9,14 @@ const RESULTS_EP_NAME = 'results.json';
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 const { locale } = getConfig();
 
-const initConfigPath = (roolElm) => {
-  const link = roolElm.querySelector('.quiz > div > div > a');
+export const initConfigPath = (rootElm) => {
+  const link = rootElm.querySelector('.quiz > div > div > a');
   const quizConfigPath = link?.text.toLowerCase();
+  const urlParams = new URLSearchParams(window.location.search);
+  const stringsPath = urlParams.get('quiz-data');
+  if (stringsPath) {
+    return (filepath) => `${stringsPath}/${filepath}`;
+  }
   return (filepath) => `${quizConfigPath}${filepath}`;
 };
 
@@ -47,6 +52,15 @@ export const getQuizData = async () => {
     console.log('Error while fetching data : ', ex);
   }
 };
+
+export const getUrlParams = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const params = {};
+  urlParams.forEach((value, key) => {
+    params[key] = value.split(',');
+  });
+  return params;
+}
 
 /**
  * Handling the result flow from here. Will need to make sure we capture all
@@ -222,7 +236,6 @@ const parseResultData = async (answers) => {
   );
 
   filteredResults.matchedResults = matchedResults;
-
   const rObj = {};
   rObj.filteredResults = filteredResults;
   rObj.resultResources = results['result-fragments'];

@@ -2,7 +2,7 @@ import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
+import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn, getUrlParams } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
@@ -31,7 +31,7 @@ const App = () => {
   const [totalSteps, setTotalSteps] = useState(3);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
-  const [urlParam, setUrlParam] = useState({});
+  const [urlParam, setUrlParam] = useState(getUrlParams());
   const [btnAnalytics, setBtnAnalytics] = useState(null);
 
   useEffect(() => {
