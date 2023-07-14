@@ -36,8 +36,7 @@ export default async function interlink(path, language, limit = 1000) {
   const maxLinks = (Math.floor(articleWords / 100)) - articleLinks;
   // eslint-disable-next-line no-useless-return
   if (maxLinks <= 0) return;
-  let wordBorder = '';
-  if (!exceptionLanguages.includes(language)) { wordBorder = '\\b';}
+  const wordBorder = exceptionLanguages.includes(language) ? '' : '\\b';
   const keywords = (Array.isArray(json) ? json : json.data)
     // scan article to filter keywords down to relevant ones
     .filter(({ Keyword }) => articleText.indexOf(Keyword.toLowerCase()) !== -1)
