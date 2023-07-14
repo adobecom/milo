@@ -16,7 +16,6 @@
   color: inherit;
 }
 
-
 .aside p {
   margin: 0;
 }
@@ -69,6 +68,10 @@
   justify-content: center;
   flex-direction: column;
   gap: var(--spacing-xl);
+}
+
+.aside .foreground.container .image {
+  position: relative;
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :first-child {

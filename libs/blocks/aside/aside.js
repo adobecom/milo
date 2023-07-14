@@ -48,7 +48,7 @@ function getBlockData(el) {
 function decorateStaticLinks(el) {
   if (!el.classList.contains('notification')) return;
   const textLinks = el.querySelectorAll('a:not([class])');
-  textLinks.forEach((link) => { link.classList.add('static') });
+  textLinks.forEach((link) => { link.classList.add('static'); });
 }
 
 function decorateModalImage(el) {
