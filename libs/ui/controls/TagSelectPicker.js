@@ -55,11 +55,7 @@ const Picker = ({
   }, [selectedCol, isSearching]);
 
   useEffect(() => {
-    if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
-      setIsSearching(true);
-    } else {
-      setIsSearching(false);
-    }
+    setIsSearching(debouncedSearchTerm?.length > 2);
   }, [debouncedSearchTerm]);
 
   const getSearchResults = () => {
@@ -90,11 +86,7 @@ const Picker = ({
       return;
     }
 
-    if (inputEl.classList.contains('checked')) {
-      inputEl.classList.remove('checked');
-    } else {
-      inputEl.classList.add('checked');
-    }
+    inputEl.classList.toggle('checked');
     toggleTag(inputEl.id);
   };
 
