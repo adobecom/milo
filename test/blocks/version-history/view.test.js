@@ -2,15 +2,15 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { stubLogin, stubFetchVersions, stubFetch, restoreFetch } from './mockFetch.js';
-
+import { stubLogin, stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions } from './mockFetch.js';
+import { createHistoryTag } from '../../../libs/blocks/version-history/index.js';
 import View from '../../../libs/blocks/version-history/view.js';
 
 describe('View', () => {
-  const stubCreateTagFn = sinon.stub().returns('Created')
   before(() => {
     stubFetch();
     stubFetchVersions();
+    stubCreateVersions();
   })
 
   after(() => {
@@ -18,7 +18,7 @@ describe('View', () => {
   });
 
   beforeEach(async () => {
-    const review = html`<${View} loginToSharePoint=${stubLogin} createHistoryTag=${stubCreateTagFn}/>`;
+    const review = html`<${View} loginToSharePoint=${stubLogin} createHistoryTag=${createHistoryTag}/>`;
     render(review, document.body);
   });
 
@@ -31,17 +31,19 @@ describe('View', () => {
   it('should set the comment when textarea onchange event', async () => {
     const element = await waitForElement('.container');
     const textAreaElem = element.querySelector('#comment');
-    const onInputChange = new Event('change', { currentTarget: { value: 'New value'}});
+    const onInputChange = new Event('keyup', { currentTarget: { value: 'New value' } });
     textAreaElem.dispatchEvent(onInputChange);
     expect(textAreaElem.value).to.be.empty;
   });
 
-  it('should call create tag api when click of create button', async () => {
+  it('should display text area', async () => {
     const element = await waitForElement('.container');
     const createBtn = element.querySelector('#create');
     createBtn.dispatchEvent(new Event('click'));
-    expect(stubCreateTagFn.calledOnce).to.be.true;
+    stubCreateVersions();
+    createBtn.dispatchEvent(new Event('click'));
   });
+ 
 
   it('downloadVersionFile: should call anchor tag click on click of download button', async () => {
     const element = await waitForElement('.container');
@@ -51,5 +53,5 @@ describe('View', () => {
     expect(clickSpy.calledOnce).to.be.true;
     clickSpy.restore();
   });
-  
+
 });

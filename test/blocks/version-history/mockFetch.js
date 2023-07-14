@@ -54,6 +54,16 @@ export const stubFetchVersions = () => {
   );
 };
 
+export const stubCreateVersions = (comment = '') => {
+  window.fetch.withArgs(`${url}/Publish('Through API: ${comment}')`).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: false,
+      });
+    }),
+  );
+};
+
 export const stubLogin = stub().returns('Logged in')
 
 export const restoreFetch = () => {
