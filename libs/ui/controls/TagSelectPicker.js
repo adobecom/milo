@@ -6,12 +6,13 @@ const Tag = ({
   label,
   hasChildren,
   isChecked,
+  isExpanded,
   onCheck,
   onExpand,
 }) => {
   return html`
     <div
-      class="tagselect-item"
+      class="tagselect-item${isExpanded ? ' expanded' : ''}"
       key=${id}
       data-key=${id}
       onClick=${hasChildren ? onExpand : onCheck}
@@ -39,18 +40,19 @@ const Picker = ({
 
   useEffect(() => {
     const cols = [];
-    const addColumn = (option) => {
-      if (!option) return;
-      cols.unshift(getCol(option));
-      if (option.parent) {
-        addColumn(option.parent);
+    const addColumn = (option, expandedPath) => {
+      const expandedId = expandedPath ? `caas:${expandedPath}` : null;
+      if (!option) {
+        cols.unshift(getCol(options, expandedId));
+      } else {
+        cols.unshift(getCol(option, expandedId));
+        addColumn(option.parent, option.path);
       }
     };
 
     addColumn(optionMap[selectedCol]);
-    cols.unshift(getCol(options)); // add the root
     setColumns(cols);
-  }, [selectedCol]);
+  }, [selectedCol, isSearching]);
 
   useEffect(() => {
     if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
@@ -106,12 +108,10 @@ const Picker = ({
       ? e.target
       : e.target.parentElement;
 
-    itemEl.parentElement.childNodes.forEach((node) => node.classList.remove('expanded'));
-    itemEl.classList.add('expanded');
     setSelectedCol(itemEl.dataset.key);
   };
 
-  const getCol = (root) => {
+  const getCol = (root, expandedId) => {
     if (!root) return;
 
     const items = Object.entries(root.children || root).map(([id, option]) => {
@@ -121,6 +121,7 @@ const Picker = ({
         label=${option.label}
         hasChildren=${!!option.children}
         isChecked=${isChecked}
+        isExpanded=${expandedId === id}
         onCheck=${onCheck}
         onExpand=${onExpand}
       />`;
