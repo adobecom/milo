@@ -62,7 +62,8 @@ const loadDelayed = ([
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const path = `${getConfig().locale.contentRoot}/keywords.json`;
-      import('../features/interlinks.js').then((mod) => { mod.default(path); resolve(mod); });
+      const language = getConfig().locale.lang ?? getConfig().locale.ietf.split('-')[0];
+      import('../features/interlinks.js').then((mod) => { mod.default(path, language); resolve(mod); });
     } else {
       resolve(null);
     }
