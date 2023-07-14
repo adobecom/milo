@@ -1,5 +1,5 @@
 /* global msal */
-import { loadScript, getConfig } from '../../utils/utils';
+import { loadScript, getConfig } from '../../utils/utils.js';
 import { getSiteConfig, spAccessToken } from './state.js';
 
 let msalConfig;

@@ -81,12 +81,6 @@ export default function View({ loginToSharePoint, createHistoryTag }) {
   }
 
   function renderList() {
-    if (versions.length < 1) {
-      return html`
-        <div>No version history tags to show!</div>
-      `;
-    }
-
     return html`
       <table>
         <thead>
