@@ -41,11 +41,11 @@ describe('Tag Selector', () => {
   });
 
   it('shows children on arrow click', async () => {
-    const arrow = await waitForElement('.tagselect-modal-cols .has-children');
+    const arrow = await waitForElement('.tagselect-picker-cols .has-children');
 
     arrow.click();
 
-    const secondCol = await waitForElement('.tagselect-modal-cols .col:nth-child(2)');
+    const secondCol = await waitForElement('.tagselect-picker-cols .col:nth-child(2)');
 
     expect(secondCol).to.exist;
   });

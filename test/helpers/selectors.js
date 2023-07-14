@@ -68,11 +68,11 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
   selectEl.click();
   const modalEl = await waitForElement('.tagselect-modal-overlay');
 
-  const columnsEl = modalEl.querySelector('.tagselect-modal-cols');
+  const columnsEl = modalEl.querySelector('.tagselect-picker-cols');
   await waitForUpdate(columnsEl);
 
   const selectItem = async (choice, idx, selectCheckbox = false) => {
-    await waitForElement(`.tagselect-modal-cols .col:nth-child(${idx + 1})`, {
+    await waitForElement(`.tagselect-picker-cols .col:nth-child(${idx + 1})`, {
       rootEl: modalEl,
       options: { subtree: true, characterData: true, childList: true },
     });

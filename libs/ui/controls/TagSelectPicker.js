@@ -131,13 +131,13 @@ const Picker = ({
   return html`
     <section class="tagselect-picker">
       <input
-        class="tagselect-modal-search"
+        class="tagselect-picker-search"
         placeholder="Search..."
         onInput=${(e) => setSearchTerm(e.target.value)}
         type="search"
       />
-      ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
-      ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+      ${!isSearching && html`<div class="tagselect-picker-cols">${columns}</div>`}
+      ${isSearching && html`<div class="tagselect-picker-table">${getSearchResults()}</div>`}
     </section>
   `;
 };
