@@ -795,7 +795,7 @@ function decorateMeta() {
 export function getRegionDisplayName(locale) {
   if (!locale) return null;
   if (locale.rdn) return locale.rdn;
-  const tag = locale.tag || locale.ietf;
+  const tag = (locale.lang && locale.reg && `${locale.lang}-${locale.reg}`) || locale.lang || locale.ietf;
   if (!Intl || !Intl.DisplayNames) return null;
   const ilocale = new Intl.Locale(tag);
   if (!ilocale.region) return null;

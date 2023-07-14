@@ -384,9 +384,11 @@ describe('Utils', () => {
         { locale: null, rdn: null },
         { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
         { locale: { ietf: 'en-US' }, rdn: 'United States' },
-        { locale: { ietf: 'ec', rdn: 'Latinoamérica' }, rdn: 'Latinoamérica' },
+        { locale: { lang: 'fr', reg: 'BE' }, rdn: 'Belgique' },
+        { locale: { lang: 'en', reg: 'US' }, rdn: 'United States' },
+        { locale: { lang: 'es', reg: '419' }, rdn: 'Latinoamérica' },
         { locale: { ietf: 'es' }, rdn: null },
-        { locale: { ietf: 'es', tag: 'es-ES' }, rdn: 'España' },
+        { locale: { lang: 'es', reg: 'ES' }, rdn: 'España' },
       ].forEach((t) => expect(utils.getRegionDisplayName(t.locale)).to.equal(t.rdn));
     });
 
@@ -417,31 +419,22 @@ describe('Utils', () => {
       expect(document.title).to.equal('Document Title');
     });
 
-    it('decorateTitle on with rdn override', () => {
-      const cfg = {
-        addTitleRegionSuffix: 'on',
-        locale: { rdn: 'hello!' },
-      };
-      utils.decorateTitle(cfg);
-      expect(document.title).to.equal('Document Title (hello!)');
-    });
-
-    it('decorateTitle on with tag override', () => {
-      const cfg = {
-        addTitleRegionSuffix: 'on',
-        locale: { ietf: 'fr-BE', tag: 'en-BE' },
-      };
-      utils.decorateTitle(cfg);
-      expect(document.title).to.equal('Document Title (Belgium)');
-    });
-
     it('decorateTitle on', () => {
       const cfg = {
         addTitleRegionSuffix: 'on',
-        locale: { ietf: 'fr-BE' },
+        locale: { lang: 'fr', reg: 'BE' },
       };
       utils.decorateTitle(cfg);
       expect(document.title).to.equal('Document Title (Belgique)');
+    });
+
+    it('decorateTitle on overridng ietf', () => {
+      const cfg = {
+        addTitleRegionSuffix: 'on',
+        locale: { ietf: 'fr-BE', lang: 'en', reg: 'BE' },
+      };
+      utils.decorateTitle(cfg);
+      expect(document.title).to.equal('Document Title (Belgium)');
     });
   });
 });
