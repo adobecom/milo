@@ -33,6 +33,7 @@
 /libs/blocks/quote/ @ryanmparrish
 /libs/blocks/table-of-contents/ @Brandon32
 /libs/blocks/tabs/ @ryanmparrish
+/libs/blocks/tag-selector/ @meganthecoder
 /libs/blocks/text/ @ryanmparrish
 /libs/blocks/video-metadata/ @hparra
 /libs/blocks/z-pattern/ @ryanmparrish
