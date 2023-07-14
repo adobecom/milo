@@ -25,6 +25,15 @@ const blockTypeSizes = {
   xlarge: ['xxl', 'm', 'l'],
 };
 
+function decorateAvatar(el) {
+  // is the first row a picture only
+  const childElements = el.children[0]?.children;
+  if (childElements.length !== 1) return;
+  [...childElements].forEach((e, i) => {
+    if (e.localName !== null && e.localName === 'picture') childElements[i].classList.add('avatar');
+  });
+}
+
 export default function init(el) {
   decorateBlockAnalytics(el);
   el.classList.add('con-block');
@@ -43,6 +52,7 @@ export default function init(el) {
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
+      decorateAvatar(text);
       decorateBlockText(text, blockTypeSizes[size], true);
     }
     const image = row.querySelector(':scope > div:not([class])');
