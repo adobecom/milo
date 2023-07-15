@@ -144,30 +144,10 @@ dl.accordion {
 
 
 
-@media screen and (min-width: 1200px) {
-  .editorial {
-    display: flex;
-    gap: 54px;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .editorial .accordion {
-    width: 50%;
-    display: inline-block;
-    margin: 0 ;
-  }
-  
-  
-  .accordion-media {
-    width: 700px;
-    height: 525px;
-    border: 1px red solid;
-    background: aliceblue;
-    display: inline-block;
-    margin: 0 ;
-  }
-  
+
+
+.accordion-media {
+  display:  none;
 }
 
 .accordion-media > div {
@@ -185,3 +165,45 @@ dl.accordion {
   position: relative;
 }
 
+@media screen and (min-width: 1200px) {
+  .editorial {
+    display: flex;
+    gap: 54px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .editorial .accordion {
+    width: 50%;
+    display: inline-block;
+    margin: 0 ;
+  }
+
+  .media-p {
+    display: none;
+  }
+  
+  
+  .accordion-media {
+    width: 700px;
+    height: 525px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    /* display: flex; */
+    /* justify-content: center; */
+    margin: 0 ;
+  }
+  
+  .accordion-media > div {
+  }
+
+  /* .accordion-media .milo-video {
+    width: 700px;
+    height: 525px;
+    display: block;
+    padding: 0;
+  } */
+}
