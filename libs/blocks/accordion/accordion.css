@@ -141,28 +141,54 @@ dl.accordion {
   background: var(--color-gray-100);
 }
 
-
-
-
-
-
+/* Editorial Variation  */
 .accordion-media {
   display:  none;
 }
 
 .accordion-media > div {
-  display: none;
   position: relative;
+  display: none;
+  animation-duration: .1s;
+  animation-name: slide-left;
 }
 
-/* .accordion-media div:first-child {
-  display: inline;
-  position: relative;
-} */
+/***** Slide to the Left *****/
+.slide-left {
+  animation: 1s slide-left;
+}
+@keyframes slide-left {
+  from {
+    margin-right: -100%;
+  }
+  to {
+    margin-right: 0%;
+  }
+}
 
-.accordion-media > div.expanded {
+.accordion-media > div.expanded, 
+.accordion-media > div.expanded > img {
   display: inline;
   position: relative;
+  max-height: 525px;
+  width: auto;
+  max-width: 700px;
+  animation-duration: .1s;
+  animation-name: slide-left;
+}
+
+.accordion-media > div.expanded > img {
+  height: 525px;
+}
+
+.accordion-media > div.expanded img {
+  max-height: 525px;
+  width: auto;
+}
+
+dd.media-p {
+  width: 268px;
+  padding: 0;
 }
 
 @media screen and (min-width: 1200px) {
@@ -176,14 +202,13 @@ dl.accordion {
   .editorial .accordion {
     width: 50%;
     display: inline-block;
-    margin: 0 ;
+    margin: 0;
   }
 
   .media-p {
     display: none;
   }
-  
-  
+
   .accordion-media {
     width: 700px;
     height: 525px;
@@ -191,19 +216,6 @@ dl.accordion {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-
-    /* display: flex; */
-    /* justify-content: center; */
-    margin: 0 ;
+    margin: 0;
   }
-  
-  .accordion-media > div {
-  }
-
-  /* .accordion-media .milo-video {
-    width: 700px;
-    height: 525px;
-    display: block;
-    padding: 0;
-  } */
 }

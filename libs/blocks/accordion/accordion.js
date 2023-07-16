@@ -11,6 +11,39 @@ function setSEO(questions) {
   document.head.append(script);
 }
 
+function displayMedia(displayArea, el, dd, i, id, expanded) {
+  const theID = el.getAttribute('aria-controls').split('-')[1];
+  [...mediaCollection[theID]].map(
+    (mediaCollectionItem, idx, total) => {
+      mediaCollectionItem.classList.remove('expanded');
+
+      for (let index = 0; index < total.length; index++) {
+        mediaCollectionItem.classList.remove('expanded');
+        const trigger = document.querySelector(`#accordion-${theID}-trigger-${index + 1}`);
+        const content = document.querySelector(`#accordion-${theID}-content-${index + 1}`);
+        trigger.setAttribute('hidden', '');
+        trigger.setAttribute('aria-expanded', 'false');  
+        content.setAttribute('hidden', '');
+        content.setAttribute('aria-expanded', 'false');
+      }
+      el.setAttribute('aria-expanded', 'true');;
+      el.removeAttribute('hidden');
+      dd.setAttribute('aria-expanded', 'true');;
+      dd.removeAttribute('hidden');
+      displayArea.childNodes[i - 1].classList.add('expanded')
+
+      // toggle
+      if (expanded) {
+        el.setAttribute('hidden', '');
+        el.setAttribute('aria-expanded', 'false');  
+        dd.setAttribute('hidden', '');
+        dd.setAttribute('aria-expanded', 'false');
+        displayArea.childNodes[i - 1].classList.remove('expanded')
+      } 
+    }
+  );
+}
+
 function handleClick(el, dd, num, id) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
@@ -21,13 +54,8 @@ function handleClick(el, dd, num, id) {
     dd.removeAttribute('hidden');
   }
 
-  const theID = el.getAttribute('aria-controls').split('-')[1];
-  console.log(theID);
   if (el.closest('.editorial')) {
-    console.log(el.closest('.editorial'));
-    console.log(id);
-    console.log(num);
-    displayMedia(el.closest('.editorial').querySelector('.accordion-media'), el, dd, num, id, expanded, theID)
+    displayMedia(el.closest('.editorial').querySelector('.accordion-media'), el, dd, num, id, expanded)
   }
 }
 
@@ -35,62 +63,7 @@ function defalutOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('dd'), 1, 0);
 }
 
-function displayMedia(area,bi, d, i, id, expandd, newID) {
-  console.log('dispaly media');
-  console.log('id');
-  console.log(id);
-  console.log('newID');
-  console.log(newID);
-  console.log(mediaCollection[newID]);
-    const theID = bi.getAttribute('aria-controls').split('-')[1];
-     const items = [...mediaCollection[newID]].map(
-      (mediaCollectionItem, idx, total) => {
-        console.log(mediaCollectionItem);
-        console.log(area);
-        console.log('bi');
-        console.log(bi.id);
-        console.log(`d ${d}`);
-        console.log(`you clicked item ${i}`);
-        console.log(`id ${id}`);
-        mediaCollectionItem.classList.remove('expanded');
-        const panels = document.querySelectorAll(`.accordion-${id}`);
-        console.log( document.querySelectorAll(`.accordion-${id}`));
-        console.log('total');
-        console.log(total.length);
-
-        // Reset all 
-        for (let index = 0; index < total.length; index++) {
-          mediaCollectionItem.classList.remove('expanded');
-          console.log(`#accordion-${theID}-trigger-${index + 1}`);
-          console.log(document.querySelector(`#accordion-${theID}-trigger-${index + 1}`));
-          document.querySelector(`#accordion-${theID}-trigger-${index + 1}`).setAttribute('hidden', '');
-          document.querySelector(`#accordion-${theID}-trigger-${index + 1}`).setAttribute('aria-expanded', 'false');  
-          document.querySelector(`#accordion-${theID}-content-${index + 1}`).setAttribute('hidden', '');
-          document.querySelector(`#accordion-${theID}-content-${index + 1}`).setAttribute('aria-expanded', 'false');
-        }
-        document.querySelector(`#accordion-${theID}-trigger-${i}`).setAttribute('aria-expanded', 'true');;
-        document.querySelector(`#accordion-${theID}-trigger-${i}`).removeAttribute('hidden');
-        document.querySelector(`#accordion-${theID}-content-${i}`).setAttribute('aria-expanded', 'true');;
-        document.querySelector(`#accordion-${theID}-content-${i}`).removeAttribute('hidden');
-        document.querySelector('.accordion-media').childNodes[i - 1].classList.add('expanded')
-
-        // toggle
-        if (expandd) {
-          console.log(`you clicked item ${i} and its expanded`);
-          document.querySelector(`#accordion-${theID}-trigger-${i}`).setAttribute('hidden', '');
-          document.querySelector(`#accordion-${theID}-trigger-${i}`).setAttribute('aria-expanded', 'false');  
-          document.querySelector(`#accordion-${theID}-content-${i}`).setAttribute('hidden', '');
-          document.querySelector(`#accordion-${theID}-content-${i}`).setAttribute('aria-expanded', 'false');
-          document.querySelector('.accordion-media').childNodes[i - 1].classList.remove('expanded')
-
-        } 
-
-      }
-    );
-}
-
 function createItem(accordion, id, heading, num, edit) {
-  console.log(`create item ${id}`);
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const panelClass = `accordion-${id}`;
@@ -114,10 +87,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dm = createTag('dd', { class: 'media-p' });
 
   if (edit) {
-    const ogMedia = mediaCollection[id][0];
-    console.log('ogMedia');
-    console.log(ogMedia);
-    console.log(mediaCollection[id][0]);
+    const ogMedia = mediaCollection[id][num - 1];
     const mediaCopy = ogMedia.cloneNode(true);
     dm.append(mediaCopy)
     dd.prepend(dm);
@@ -137,19 +107,9 @@ function getUniqueId(el) {
 
 const mediaCollection = {};
 
-
-setTimeout( () => {
-  console.log(mediaCollection);
-}, 10000)
-
-
-// remove media from DOM and add to array to later display 
-function createMedia(accordion, id, media, num, length) {
-  mediaCollection[id] = length;
-  // media.remove();
+function populateMedia(accordion, id, num, collection) {
+  mediaCollection[id] = collection;
   accordion.append(mediaCollection[id][num]);
-  // document.querySelector(`#accordion-${id}-content-${1 + num}`).append
-
 }
 
 export default function init(el) {
@@ -161,11 +121,10 @@ export default function init(el) {
   decorateButtons(el);
 
   if (isEditorial) {
-    const editMediaItems = el.querySelectorAll(':scope > div:nth-child(3n)');
-    const it = [...editMediaItems].map(
-      (media, idx, length, dd) => 
-      createMedia(accordionMedia, id, media, idx, length),
-
+    const editorialMedia = el.querySelectorAll(':scope > div:nth-child(3n)');
+    [...editorialMedia].map(
+      (media, idx, collection) => 
+      populateMedia(accordionMedia, id, idx, collection),
     );
   };
 
