@@ -1,0 +1,207 @@
+{
+  "total": 25,
+  "offset": 0,
+  "limit": 25,
+  "data": [
+      {
+          "product": "ps-edu",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-edu",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+          "page": ""
+      },
+      {
+          "product": "ps-bus",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-bus",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+          "page": ""
+      },
+      {
+          "product": "ps-ind",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ps-ind",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ps",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ps",
+          "page": ""
+      },
+      {
+          "product": "lr-edu",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-edu",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+          "page": ""
+      },
+      {
+          "product": "lr-bus",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-bus",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+          "page": ""
+      },
+      {
+          "product": "lr-ind",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-lr-ind",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-lr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-lr",
+          "page": ""
+      },
+      {
+          "product": "pr-edu",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-edu",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+          "page": ""
+      },
+      {
+          "product": "pr-bus",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-bus",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+          "page": ""
+      },
+      {
+          "product": "pr-ind",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-pr-ind",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-pr",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+          "page": ""
+      },
+      {
+          "product": "ae",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ae",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ae",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+          "page": ""
+      },
+      {
+          "product": "an",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-an",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "/fragments/card/animate",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-pr",
+          "page": ""
+      },
+      {
+          "product": "au",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-au",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-au",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-au",
+          "page": ""
+      },
+      {
+          "product": "id",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-id",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-id",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-id",
+          "page": ""
+      },
+      {
+          "product": "ai",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-ai",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-ai",
+          "marquee-product": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-product-ai",
+          "page": ""
+      },
+      {
+          "product": "acrobat-pro",
+          "marquee": "/fragments/marquee/acrobat",
+          "card-list": "",
+          "commerce-card": "/fragments/card/acrobat",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-collection",
+          "marquee": "/fragments/marquee/subtance-3d",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-stager",
+          "marquee": "/fragments/marquee/subtance-3d-stager",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-painter",
+          "marquee": "/fragments/marquee/subtance-3d-painter",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-sampler",
+          "marquee": "/fragments/marquee/subtance-3d-sampler",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-modeler",
+          "marquee": "/fragments/marquee/subtance-3d-modeler",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "substance-3d-designer",
+          "marquee": "/fragments/marquee/subtance-3d-designer",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "express",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-whole-marquee-express",
+          "card-list": "",
+          "commerce-card": "path-to-commerce-card",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "cc",
+          "marquee": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-marquee-cc",
+          "card-list": "https://main--milo--adobecom.hlx.page/fragments/colloyd/sample-uar-fragments/uar-sample-card-list",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "ac",
+          "marquee": "",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      },
+      {
+          "product": "3d-umbrella",
+          "marquee": "",
+          "card-list": "",
+          "commerce-card": "",
+          "marquee-product": "",
+          "page": ""
+      }
+  ]
+}
