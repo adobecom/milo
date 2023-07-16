@@ -7,7 +7,6 @@ const STRINGS_EP_NAME = 'strings.json';
 const RESULTS_EP_NAME = 'results.json';
 
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
-const { locale } = getConfig();
 
 const initConfigPath = (roolElm) => {
   const link = roolElm.querySelector('.quiz > div > div > a');
@@ -16,6 +15,7 @@ const initConfigPath = (roolElm) => {
 };
 
 const initQuizKey = () => {
+  const { locale } = getConfig();
   quizKey = metaData.storagepath?.text;
   return locale.ietf ? `${quizKey}-${locale.ietf}` : quizKey;
 };
@@ -266,10 +266,29 @@ const findMatchForSelections = (results, selections) => {
 
   const userSelectionLen = selections.primary.length; // 1 - lr
 
-  if (userSelectionLen <= 1) {
+  // Case 1 - when no user selection is matched default result is returned.
+  if (userSelectionLen < 1) {
     return defaultResult;
   }
 
+  let singleProductResults;
+
+  // Case 2 - when exactly one product is matched and it is not grouped with '&' in between.
+  if (userSelectionLen === 1) {
+    // eslint-disable-next-line max-len
+    singleProductResults = results.find((destination) => {
+      if (destination.result.indexOf('&') === -1 && destination.result.includes(selections.primary[0])) {
+        return destination;
+      }
+    });
+  }
+
+  if (singleProductResults) {
+    recommendations.push(singleProductResults);
+    return recommendations;
+  }
+
+  // Case 3 - when two or more products are matched and they are grouped with '&' in between.
   const compoundResults = results.find((destination) => {
     if (destination.result.indexOf('&') !== -1 && destination.result.split('&').length === userSelectionLen) {
       return destination;
