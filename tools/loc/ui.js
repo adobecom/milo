@@ -12,6 +12,7 @@
 /* eslint-disable no-use-before-define */
 
 import { getConfig } from './config.js';
+import { init as getProjectFile } from './project.js';
 import {
   createTag,
   fetchProjectFile,
@@ -631,7 +632,7 @@ async function copyFilesToLangstoreEn() {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments();
+  const status = await updateFragments(getProjectFile);
   loadingON(status);
 }
 
