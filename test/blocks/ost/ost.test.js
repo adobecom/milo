@@ -7,7 +7,6 @@ const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { stockOffer } = JSON.parse(data);
 
 const osi = 'cea462e983f649bca2293325c9894bdd';
-const offerId = 'aeb0bf53517d46e89a1b039f859cf573';
 const offerType = 'M2M';
 const placeholderOptions = {
   workflow: 'UCv3',
@@ -27,7 +26,7 @@ describe('test createLinkMarkup', () => {
 
   it('create a default "cta" link', async () => {
     const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now`;
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&type=checkoutUrl&perp=true&text=buy-now`;
 
     const type = 'checkoutUrl';
     const link = createLinkMarkup(
@@ -44,7 +43,7 @@ describe('test createLinkMarkup', () => {
   it('create custom "cta" link', async () => {
     placeholderOptions.ctaText = 'free-trial';
     const EXPECTED_CTA_TEXT = 'CTA {{free-trial}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=free-trial`;
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&type=checkoutUrl&perp=true&text=free-trial`;
 
     const type = 'checkoutUrl';
     const link = createLinkMarkup(
@@ -63,7 +62,7 @@ describe('test createLinkMarkup', () => {
     placeholderOptions.workflowStep = 'email_checkout';
     placeholderOptions.workflow = 'UCv2';
     const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
-    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email%2Fcheckout`;
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&type=checkoutUrl&perp=true&text=buy-now&checkoutType=UCv2&workflowStep=email%2Fcheckout`;
 
     const type = 'checkoutUrl';
     const link = createLinkMarkup(
@@ -79,7 +78,7 @@ describe('test createLinkMarkup', () => {
 
   it('create a "price" link', async () => {
     const EXPECTED_PRICE_TEXT = `PRICE - ${offerType} - Stock`;
-    const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&perp=true&term=false&seat=true&tax=true`;
+    const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&type=price&perp=true&term=false&seat=true&tax=true`;
 
     const type = 'price';
     const link = createLinkMarkup(
