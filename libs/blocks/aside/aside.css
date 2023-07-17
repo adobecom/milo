@@ -12,7 +12,7 @@
   color: var(--color-white);
 }
 
-.aside.dark-link:not(.notification) a:not(.con-button) {
+.aside.link-dark:not(.notification) a:not(.con-button) {
   color: inherit;
 }
 
