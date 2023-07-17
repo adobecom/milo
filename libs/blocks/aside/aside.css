@@ -678,11 +678,14 @@
     right: 0;
   }
   
-  .aside.split.half .play-container {
-    position: absolute;
+  .aside.split.half .split-image .play-container {
     width: 50vw;
     max-width: 1396px;
-    right: 0;
+  }
+
+  [dir="rtl"] .aside.split .split-image .play-container {
+    left: 0;
+    right: auto;
   }
 
   .aside.split .foreground.container {
