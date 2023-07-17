@@ -13,9 +13,9 @@ describe('Accordion', () => {
     const accordions = document.body.querySelectorAll('.accordion');
     accordions.forEach((accordion) => {
       module.default(accordion);
-    })
+    });
   });
-  
+
   it('Renders with accordion class', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
     const accordionDl = document.querySelector('dl.accordion');
@@ -39,6 +39,9 @@ describe('Accordion', () => {
     // handleClick() => expanded = true.
     firstAccordionButton.click();
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
+
+    // ensure <h1> is kept
+    expect(firstAccordionButton.parentElement.tagName).to.equal('H1');
   });
 
   it('Loads description in the JSON-LD with no null value', async () => {
