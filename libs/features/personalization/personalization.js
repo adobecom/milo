@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-import { getPageSearchParams } from '../../utils/utils.js';
-
 let utils;
 
 const CLASS_EL_DELETE = 'p13n-deleted';
@@ -33,8 +31,9 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (url, manifestId = 'unknown') => {
-  const a = utils.createTag('a', { href: url, 'data-manifest-id': manifestId }, url);
+const createFrag = (url, manifestId) => {
+  const a = utils.createTag('a', { href: url }, url);
+  if (manifestId) a.dataset.manifestId = manifestId;
   const p = utils.createTag('p', undefined, a);
   utils.loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return p;
@@ -131,7 +130,7 @@ export async function replaceInner(path, element) {
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParams = getPageSearchParams();
+  const searchParams = utils.getPageSearchParams();
   const searchParamVal = searchParams.get(name);
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
@@ -166,10 +165,6 @@ function normalizeKeys(obj) {
 }
 
 function handleCommands(commands, manifestId, rootEl = document) {
-  const searchParams = getPageSearchParams();
-  const mepOverride = decodeURIComponent(searchParams.get('mep'));
-  const mepMarker = decodeURIComponent(searchParams.get('mepMarker'));
-  if (!mepOverride && !mepMarker) manifestId = false;
   commands.forEach((cmd) => {
     if (VALID_COMMANDS.includes(cmd.action)) {
       let selectorEl = rootEl.querySelector(cmd.selector);
@@ -274,11 +269,10 @@ function parsePlaceholders (placeholders, config, selectedVariantName) {
 }
 
 function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
-  const searchParams = getPageSearchParams();
-  const mepOverride = decodeURIComponent(searchParams.get('mep'));
+  const config = utils.getConfig();
   let manifestFound = false;
-  if (mepOverride !== null && mepOverride !== '') {
-    mepOverride.split(',').forEach(item => {
+  if (config.mep.override !== '') {
+    config.mep.override.split(',').forEach(item => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath) {
         if (pair.length > 1) {
@@ -371,6 +365,7 @@ const getFPInfo = (fpTableRows) => {
 };
 
 const modifyFragment = (selectedEl, action, htmlFragment, manifestId) => {
+  htmlFragment.dataset.manifestId = manifestId;
   switch (action) {
     case 'replace': case 'replacecontent':
       selectedEl.replaceWith(htmlFragment);
@@ -382,6 +377,8 @@ const modifyFragment = (selectedEl, action, htmlFragment, manifestId) => {
       selectedEl.insertAdjacentElement('afterend', htmlFragment);
       break;
     case 'remove': case 'removecontent':
+      const div = utils.createTag('div', { 'data-remove-manifest-id': manifestId });
+      selectedEl.insertAdjacentElement('beforebegin', div);
       selectedEl.remove();
       break;
     default:
@@ -420,7 +417,7 @@ const normalizeFragPaths = ({ selector, val }) => ({
   val: normalizePath(val),
 });
 
-export async function runPersonalization(info, utils) {
+export async function runPersonalization(info, utils, config) {
   const {
     name,
     manifestData,
@@ -448,7 +445,11 @@ export async function runPersonalization(info, utils) {
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   let manifestId = experiment.manifest;
-  if (experiment.name) manifestId = `${experiment.name}: ${manifestId}`;
+  if (!config.mep.preview) {
+    manifestId = false;
+  } else if (experiment.name) {
+    manifestId = `${experiment.name}: ${manifestId}`;
+  }
   handleCommands(selectedVariant.commands, manifestId);
 
   selectedVariant.replacefragment &&= selectedVariant.replacefragment.map(normalizeFragPaths);
@@ -483,32 +484,30 @@ function cleanManifestList(manifests) {
 
 export async function applyPers(
   manifests,
-  { createTag, getConfig, loadLink, loadScript, updateConfig },
+  { createTag, getConfig, loadLink, loadScript, updateConfig, getPageSearchParams },
 ) {
   if (!manifests?.length) return;
   manifests = cleanManifestList(manifests);
 
-  utils = { createTag, getConfig, loadLink, loadScript, updateConfig };
+  utils = { createTag, getConfig, loadLink, loadScript, updateConfig, getPageSearchParams };
+  const config = getConfig();
 
   let results = [];
   for (const manifest of manifests) {
-    results.push(await runPersonalization(manifest, utils));
+    results.push(await runPersonalization(manifest, utils, config));
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
 
   const experiments = results.map((r) => r.experiment);
   updateConfig({
-    ...getConfig(),
+    ...config,
     experiments: experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
 
-  const searchParams = getPageSearchParams();
-  const mepOverride = searchParams.get('mep');
-  const mepMarker = searchParams.get('mepMarker');
-  if (mepOverride !== null || mepMarker !== null) {
+  if (config.mep.preview) {
     const { decoratePreviewMode } = await import('./preview.js');
     decoratePreviewMode(experiments);
   }

@@ -10,8 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-console */
-import { getMetadata, loadStyle } from '../../utils/utils.js';
-import { PERSONALIZATION_TAGS } from './personalization.js';
+import { getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -113,10 +112,9 @@ async function createPreviewPill(manifests, overlay) {
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('manifest', manifestParameter.join(','));
 
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
+  const config = getConfig();
   let mepMarkerChecked = '';
-  if (urlParams.get('mepMarker') === 'true') {
+  if (config.mep.marker) {
     mepMarkerChecked = 'checked="checked"';
     document.body.dataset.mepMarker = true;
   }

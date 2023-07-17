@@ -679,6 +679,21 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   return true;
 }
 
+function addPreviewToConfig() {
+  const searchParams = getPageSearchParams();
+  const mepOverride = searchParams.get('mep');
+  const mepMarker = searchParams.get('mepMarker');
+  const config = updateConfig({
+    ...getConfig(),
+    mep: {
+      override: mepOverride ? decodeURIComponent(mepOverride) : '',
+      marker: (mepMarker !== undefined && mepMarker !== 'false'),
+      preview: mepOverride || mepMarker ? true : false
+    }
+  });
+  return config;
+}
+
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
   const targetMd = getMetadata('target');
@@ -686,11 +701,9 @@ async function checkForPageMods() {
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const searchParams = getPageSearchParams();
-  const mepOverride = searchParams.get('mep');
-  const mepMarker = searchParams.get('mepMarker');
+  const config = addPreviewToConfig();
 
-  if (persEnabled || targetEnabled || mepOverride || mepMarker) {
+  if (persEnabled || targetEnabled || config.mep.preview) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -708,14 +721,10 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  if (mepOverride && mepOverride !== '') {
-    const mepManifests = decodeURIComponent(mepOverride).split(',');
-    mepManifests.forEach(manifestPair => {
-      const manifest = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!persManifests.includes(manifest) && !persManifests.includes(`${manifest}.json`) && !persManifests.includes(manifest.replace('.json', ''))) {
-        persManifests.push(manifest);
-      }
-    })
+  if (config.mep.preview && config.mep.override !== '') {
+    config.mep.override.split(',').forEach(manifestPair => {
+      persManifests.push(manifestPair.trim().toLowerCase().split('--')[0]);
+    });
   }
 
   let martechLoaded = false;
@@ -730,9 +739,9 @@ async function checkForPageMods() {
 
     await applyPers(
       manifests,
-      { createTag, getConfig, loadScript, loadLink, updateConfig },
+      { createTag, getConfig, loadScript, loadLink, updateConfig, getPageSearchParams },
     );
-  } else if (mepOverride !== null || mepMarker !== null) {
+  } else if (config.mep.preview) {
     const { decoratePreviewMode } = await import('../features/personalization/preview.js');
     await decoratePreviewMode([]);
   }
