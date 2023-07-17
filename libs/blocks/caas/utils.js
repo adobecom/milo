@@ -248,9 +248,12 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-const getCountryAndLang = ({ autoCountryLang, country, language }) => {
+export function getCountryAndLang(
+  { autoCountryLang, country, language },
+  miloConfig = pageConfig,
+) {
   if (autoCountryLang) {
-    const htmlLang = pageConfig.locale?.ietf;
+    const htmlLang = miloConfig.locale?.ietf;
     const [lang, cntry] = htmlLang.split('-');
     return {
       country: cntry,
@@ -261,7 +264,7 @@ const getCountryAndLang = ({ autoCountryLang, country, language }) => {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
   };
-};
+}
 
 export function arrayToObj(input = []) {
   const obj = {};

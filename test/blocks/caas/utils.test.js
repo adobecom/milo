@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings, arrayToObj, getPageLocale } from '../../../libs/blocks/caas/utils.js';
+import { defaultState, getConfig, loadStrings, arrayToObj, getPageLocale, getCountryAndLang } from '../../../libs/blocks/caas/utils.js';
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -325,6 +325,34 @@ describe('getConfig', () => {
         enabled: true,
         lastViewedSession: "",
       },
+    });
+  });
+
+  describe('getCountryAndLang', () => {
+    const caasCfg = {
+      country: 'caas:country/ec',
+      language: 'caas:laguange/es',
+    };
+    const locale = { locale: { ietf: 'en-GB' } };
+    it('should use country and lang from CaaS Config', () => {
+      const expected = getCountryAndLang({
+        ...caasCfg,
+        autoCountryLang: false,
+      }, locale);
+      expect(expected).to.deep.eq({
+        country: 'ec',
+        language: 'es',
+      });
+    });
+    it('should use country and lang from locale in Milo Config', () => {
+      const expected = getCountryAndLang({
+        ...caasCfg,
+        autoCountryLang: true,
+      }, locale);
+      expect(expected).to.deep.eq({
+        country: 'GB',
+        language: 'en',
+      });
     });
   });
 });
