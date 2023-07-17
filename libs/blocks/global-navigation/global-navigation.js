@@ -193,7 +193,7 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      () => loadIms(this.imsReady.bind(this)),
+      this.ims,
       this.addChangeEventListeners,
     ];
     this.el.addEventListener('click', this.loadDelayed);
@@ -208,6 +208,12 @@ class Gnav {
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init');
+
+  ims = async () => loadIms()
+    .then(() => this.imsReady())
+    .catch((e) => {
+      lanaLog({ message: 'GNAV: Error with IMS', e });
+    });
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();

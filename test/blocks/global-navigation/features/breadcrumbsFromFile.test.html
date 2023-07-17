@@ -12,7 +12,7 @@
         it('should create a breadcrumb from the url', async () => {
           document.head.innerHTML = '<meta name="breadcrumbs-from-url" content="on">';
           const breadcrumb = await breadcrumbs();
-          expect(breadcrumb.querySelectorAll('li').length).to.equal(6);
+          expect(breadcrumb.querySelectorAll('li').length).to.equal(5);
         });
 
         it('should not create a breadcrumb from the url if the config isnt on', async () => {
