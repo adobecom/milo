@@ -794,14 +794,17 @@ function decorateMeta() {
 
 export function getRegionDisplayName(locale) {
   if (!locale) return null;
-  if (locale.rdn) return locale.rdn;
+  if (locale.rdn) return locale.rdn; // workaround for https://bugs.chromium.org/p/chromium/issues/detail?id=1465052
   const tag = (locale.lang && locale.reg && `${locale.lang}-${locale.reg}`) || locale.lang || locale.ietf;
   if (!Intl || !Intl.DisplayNames) return null;
-  const ilocale = new Intl.Locale(tag);
-  if (!ilocale.region) return null;
-  // eslint-disable-next-line
-  const displayRegion = new Intl.DisplayNames([tag], { type: 'region' });
-  return displayRegion.of(ilocale.region);
+  try {
+    const intlLocale = new Intl.Locale(tag);
+    // eslint-disable-next-line
+    const displayRegion = new Intl.DisplayNames([intlLocale.language], { type: 'region', fallback: 'none' });
+    return displayRegion.of(intlLocale.region) || null;
+  } catch {
+    return null;
+  }
 }
 
 export function decorateTitle(config) {

@@ -382,10 +382,12 @@ describe('Utils', () => {
     it('getRegionDisplayNames for different locales', () => {
       [
         { locale: null, rdn: null },
+        { locale: { ietf: null }, rdn: null },
         { locale: { ietf: 'fr-BE' }, rdn: 'Belgique' },
         { locale: { ietf: 'en-US' }, rdn: 'United States' },
         { locale: { lang: 'fr', reg: 'BE' }, rdn: 'Belgique' },
         { locale: { lang: 'en', reg: 'US' }, rdn: 'United States' },
+        { locale: { lang: 'en', reg: '002', rdn: 'Africa' }, rdn: 'Africa' },
         { locale: { lang: 'es', reg: '419' }, rdn: 'Latinoamérica' },
         { locale: { ietf: 'es' }, rdn: null },
         { locale: { lang: 'es', reg: 'ES' }, rdn: 'España' },
