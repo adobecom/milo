@@ -184,7 +184,7 @@ const parseResultData = async (answers) => {
         const key = resultRow[i][0];
         const val = resultRow[i][1];
 
-        if (key.startsWith('q-') && val) {
+        if (!key.startsWith('result-') && val) {
           const answer = answers.find((a) => a[0] === key);
           if (answer && answer[1].includes(val)) {
             hasMatch = true;
