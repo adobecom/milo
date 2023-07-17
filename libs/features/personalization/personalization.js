@@ -45,9 +45,7 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = utils.createTag('div', {
-        'data-removed-manifest-id': manifestId
-      });
+      const div = utils.createTag('div', { 'data-removed-manifest-id': manifestId });
       el.insertAdjacentElement('beforebegin', div);
     }
     el.classList.add(CLASS_EL_DELETE);
@@ -240,21 +238,21 @@ export function parseConfig(data) {
   return null;
 }
 
-function parsePlaceholders (placeholders, config, selectedVariantName) {
+function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   const valueNames = [
-    'value', 
+    'value',
     selectedVariantName.toLowerCase(),
     config.locale.ietf.toLowerCase(),
-    ...config.locale.ietf.toLowerCase().split('-')
+    ...config.locale.ietf.toLowerCase().split('-'),
   ];
   let val = false;
-  let results = {};
+  const results = {};
   if (placeholders.length) {
     Object.entries(placeholders[0]).forEach(([key]) => {
-      if (!val && valueNames.includes(key.toLowerCase())) val = key; 
-    });    
+      if (!val && valueNames.includes(key.toLowerCase())) val = key;
+    });
     if (val !== false) {
-      placeholders.forEach(item => {
+      placeholders.forEach((item) => {
         results[item.key] = item[val];
       });
       if (config.placeholders) {
@@ -272,10 +270,11 @@ function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel
   const config = utils.getConfig();
   let manifestFound = false;
   if (config.mep.override !== '') {
-    config.mep.override.split(',').forEach(item => {
+    config.mep.override.split(',').forEach((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath) {
         if (pair.length > 1) {
+          // eslint-disable-next-line prefer-destructuring
           manifestFound = pair[1];
         }
       }
@@ -296,7 +295,7 @@ function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel
   return matchingVariant;
 }
 
-export async function getPersConfig(name, variantLabel, manifestData, manifestPath, utils) {
+export async function getPersConfig(name, variantLabel, manifestData, manifestPath) {
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
@@ -321,20 +320,21 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     return {};
   }
 
-  const selectedVariant = getPersonalizationVariant(manifestPath, config.variantNames, variantLabel);
+  const selVar = getPersonalizationVariant(manifestPath, config.variantNames, variantLabel);
 
-  if (selectedVariant && config.variantNames.includes(selectedVariant)) {
+  if (selVar && config.variantNames.includes(selVar)) {
     config.run = true;
-    config.selectedVariantName = selectedVariant;
-    config.selectedVariant = config.variants[selectedVariant];
+    config.selVarName = selVar;
+    config.selectedVariant = config.variants[selVar];
   } else {
     config.selectedVariantName = 'no changes';
     config.selectedVariant = 'no changes';
   }
 
   if (placeholders) {
-    //const utilConfig = parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName);
-    utils.updateConfig(parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName));
+    utils.updateConfig(
+      parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName),
+    );
   }
 
   config.name = name;
@@ -377,8 +377,7 @@ const modifyFragment = (selectedEl, action, htmlFragment, manifestId) => {
       selectedEl.insertAdjacentElement('afterend', htmlFragment);
       break;
     case 'remove': case 'removecontent':
-      const div = utils.createTag('div', { 'data-remove-manifest-id': manifestId });
-      selectedEl.insertAdjacentElement('beforebegin', div);
+      selectedEl.insertAdjacentElement('beforebegin', utils.createTag('div', { 'data-remove-manifest-id': manifestId }));
       selectedEl.remove();
       break;
     default:
@@ -425,14 +424,12 @@ export async function runPersonalization(info, utils, config) {
     variantLabel,
   } = info;
 
-  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath, utils);
+  const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
   if (selectedVariant === 'no changes') {
-    return {
-      experiment
-    };
+    return { experiment };
   }
 
   if (selectedVariant.replacepage) {
@@ -469,14 +466,14 @@ function cleanManifestList(manifests) {
       const url = new URL(manifest.manifestPath);
       manifest.manifestPath = url.pathname;
     } catch (e) {
-      //do nothing
+      // do nothing
     }
     const foundIndex = manifestPaths.indexOf(manifest.manifestPath);
     if (foundIndex === -1) {
       manifestPaths.push(manifest.manifestPath);
       cleanedList.push(manifest);
     } else {
-      cleanedList[foundIndex] = {...cleanedList[foundIndex], ...manifest};
+      cleanedList[foundIndex] = { ...cleanedList[foundIndex], ...manifest };
     }
   });
   return cleanedList;
@@ -484,31 +481,31 @@ function cleanManifestList(manifests) {
 
 export async function applyPers(
   manifests,
-  { createTag, getConfig, loadLink, loadScript, updateConfig, getPageSearchParams },
+  utilities,
 ) {
   if (!manifests?.length) return;
-  manifests = cleanManifestList(manifests);
+  const cleanedManifests = cleanManifestList(manifests);
 
-  utils = { createTag, getConfig, loadLink, loadScript, updateConfig, getPageSearchParams };
-  const config = getConfig();
+  utils = utilities;
+  const config = utils.getConfig();
 
   let results = [];
-  for (const manifest of manifests) {
+  for (const manifest of cleanedManifests) {
     results.push(await runPersonalization(manifest, utils, config));
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
 
   const experiments = results.map((r) => r.experiment);
-  updateConfig({
+  utils.updateConfig({
     ...config,
-    experiments: experiments,
+    experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
     expFragments: consolidateObjects(results, 'fragments'),
   });
 
   if (config.mep.preview) {
     const { decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
+    decoratePreviewMode(experiments, utils);
   }
 }

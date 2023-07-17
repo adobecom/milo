@@ -9,12 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* eslint-disable no-console */
-import { getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
-    '.hlx-popup input[type="radio"]:checked, .hlx-popup input[type="text"]'
+    '.hlx-popup input[type="radio"]:checked, .hlx-popup input[type="text"]',
   );
   const manifestParameter = [];
 
@@ -42,7 +40,7 @@ function updatePreviewButton() {
   simulateHref.searchParams.set('mep', manifestParameter.join(','));
 
   const checkbox = document.querySelector(
-    '.hlx-popup input[type="checkbox"]#mepMarkerCheckbox'
+    '.hlx-popup input[type="checkbox"]#mepMarkerCheckbox',
   );
   document.body.dataset.mepMarker = checkbox.checked;
   if (checkbox.checked) {
@@ -55,11 +53,8 @@ function updatePreviewButton() {
     .querySelector('.hlx-popup a.con-button')
     .setAttribute('href', simulateHref.href);
 }
-/**
- * Create Badge if a Page is enlisted in a Helix manifest
- * @return {Object} returns a badge or empty string
- */
-async function createPreviewPill(manifests, overlay) {
+
+async function createPreviewPill(manifests, overlay, utils) {
   // eslint-disable-next-line no-undef
   const div = document.createElement('div');
   div.classList.add('hlx-hidden');
@@ -106,13 +101,13 @@ async function createPreviewPill(manifests, overlay) {
       <div class="hlx-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
-  const personalizationOn = getMetadata('personalization');
+  const targetOnText = utils.getMetadata('target') === 'on' ? 'on' : 'off';
+  const personalizationOn = utils.getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('manifest', manifestParameter.join(','));
 
-  const config = getConfig();
+  const config = utils.getConfig();
   let mepMarkerChecked = '';
   if (config.mep.marker) {
     mepMarkerChecked = 'checked="checked"';
@@ -187,13 +182,13 @@ async function createPreviewPill(manifests, overlay) {
 function addMarkerData(manifests) {
   manifests.forEach((manifest) => {
     manifest.selectedVariant.useblockcode?.forEach((item) => {
-      document.querySelectorAll(`.${item.selector}`).forEach(el => {
+      document.querySelectorAll(`.${item.selector}`).forEach((el) => {
         el.dataset.codeManifestId = manifest.manifest;
       });
     });
     manifest.selectedVariant.updatemetadata?.forEach((item) => {
       if (item.selector === 'gnav-source') {
-        document.querySelectorAll('header, footer').forEach(el => {
+        document.querySelectorAll('header, footer').forEach((el) => {
           el.dataset.manifestId = manifest.manifest;
         });
       }
@@ -201,15 +196,11 @@ function addMarkerData(manifests) {
   });
 }
 
-/**
- * Decorates Preview mode badges and overlays
- * @return {Object} returns a badge or empty string
- */
-export async function decoratePreviewMode(manifests) {
-  loadStyle('/libs/features/personalization/preview.css');0
-  const overlay = document.createElement('div');
-  overlay.className = 'hlx-preview-overlay';
+// eslint-disable-next-line import/prefer-default-export
+export async function decoratePreviewMode(manifests, utils) {
+  utils.loadStyle('/libs/features/personalization/preview.css');
+  const overlay = utils.createTag('div', { class: 'hlx-preview-overlay' });
   document.body.append(overlay);
-  createPreviewPill(manifests, overlay);
+  createPreviewPill(manifests, overlay, utils);
   addMarkerData(manifests);
 }

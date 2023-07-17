@@ -139,7 +139,6 @@ export const getPageSearchParams = (() => {
   };
 })();
 
-
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
@@ -596,6 +595,8 @@ async function decoratePlaceholders(area, config) {
   const regex = /{{(.*?)}}/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
+  const updatedConfig = getConfig();
+  if (updatedConfig.placeholders) config.config = updatedConfig.placeholders;
   const { replaceText } = await import('../features/placeholders.js');
   el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
@@ -688,8 +689,8 @@ function addPreviewToConfig() {
     mep: {
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       marker: (mepMarker !== undefined && mepMarker !== 'false'),
-      preview: mepOverride || mepMarker ? true : false
-    }
+      preview: (mepOverride !== null || mepMarker !== null),
+    },
   });
   return config;
 }
@@ -722,14 +723,13 @@ async function checkForPageMods() {
   }
 
   if (config.mep.preview && config.mep.override !== '') {
-    config.mep.override.split(',').forEach(manifestPair => {
+    config.mep.override.split(',').forEach((manifestPair) => {
       persManifests.push(manifestPair.trim().toLowerCase().split('--')[0]);
     });
   }
 
-  let martechLoaded = false;
   if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+    await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
     // load the personalization only
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
@@ -739,7 +739,16 @@ async function checkForPageMods() {
 
     await applyPers(
       manifests,
-      { createTag, getConfig, loadScript, loadLink, updateConfig, getPageSearchParams },
+      {
+        createTag,
+        getConfig,
+        loadScript,
+        loadLink,
+        updateConfig,
+        getPageSearchParams,
+        loadStyle,
+        getMetadata,
+      },
     );
   } else if (config.mep.preview) {
     const { decoratePreviewMode } = await import('../features/personalization/preview.js');

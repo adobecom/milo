@@ -62,10 +62,7 @@ async function getPlaceholder(key, config, sheet) {
     return defaultPlaceholders;
   };
 
-  const { getConfig } = await import('../utils/utils.js');
-  const utilConfig = getConfig();
-  if (utilConfig.placeholders?.[key]) return utilConfig.placeholders[key];
-
+  if (config.placeholders?.[key]) return config.placeholders[key];
 
   const placeholders = await fetchPlaceholders(config, sheet).catch(async () => {
     const defaultPlaceholders = await getDefaultPlaceholders();
