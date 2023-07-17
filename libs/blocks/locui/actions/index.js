@@ -5,7 +5,7 @@ import { heading, setStatus, urls } from '../utils/state.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../loc/index.js';
-import { copyFile, listChildrenDocs } from '../utils/sp/file.js';
+import copyFile from '../utils/sp/file.js';
 import makeGroups from '../utils/group.js';
 
 const MISSING_SOURCE = 'There are missing source docs in the project. Remove the missing docs or create them.';
@@ -75,27 +75,21 @@ function checkSource() {
   });
 }
 
-function getFilePath(pathname, filename) {
-  const pathArr = pathname.split('/');
-  pathArr.pop();
-  pathArr.push(filename);
-  return pathArr.join('/');
-}
-
 async function syncFile(url) {
-  return new Promise((resolve) => {
-    const sourcePath = getFilePath(url.pathname, url.actions.edit.filename);
-    const destPath = getFilePath(url.langstore.pathname, url.actions.edit.filename);
-    console.log(sourcePath);
-    copyFile(sourcePath, destPath).then((json) => {
-      if (json.webUrl) {
-        url.langstore.actions = {
-          ...url.langstore.actions,
-          edit: { url: json.webUrl, status: 200 },
-        };
-      }
+  return new Promise(async (resolve) => {
+    const sourcePath = url.pathname;
+    const destPath = url.langstore.pathname;
+    const json = await copyFile(sourcePath, destPath);
+    if (json.webUrl) {
+      url.langstore.actions = {
+        ...url.langstore.actions,
+        edit: {
+          url: json.webUrl,
+          status: 200,
+        },
+      };
       resolve(url);
-    });
+    }
   });
 }
 
@@ -105,26 +99,13 @@ export async function syncToLangstore() {
     return;
   }
 
+  let total = urls.value.length;
   for (const [idx, url] of urls.value.entries()) {
-    setStatus(`langstore-${idx}`, 'info', `Syncing - ${url.pathname}`);
+    setStatus('langstore', 'info', `Syncing - ${total} left.`, 'Syncing to Langstore.');
+    // eslint-disable-next-line no-await-in-loop
     urls.value[idx] = await syncFile(url);
-    setStatus(`langstore-${idx}`);
     urls.value = [...urls.value];
+    total -= 1;
+    if (total === 0) setStatus('langstore');
   }
 }
-
-// async function makeOne(num) {
-//   return new Promise((resolve) => {
-//     const source = '/drafts/cmillar/batch/Doc_';
-//     const dest = `/drafts/cmillar/batch/Doc_${num}`;
-//     copyFile(source, dest).then((json) => {
-//       resolve(json);
-//     });
-//   });
-// }
-
-(async function loadPage() {
-  setTimeout(async () => {
-    listChildrenDocs('/resources');
-  }, 1500);
-}());

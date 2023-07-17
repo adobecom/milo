@@ -8,7 +8,7 @@ function getFileName(editUrl) {
 
 async function getDetails(path) {
   setStatus('url', 'info', 'Getting URL details.');
-  const json = await getStatus(path);
+  const json = await getStatus(path, false);
   setStatus('url');
   const filename = json.edit.url ? getFileName(json.edit.url) : undefined;
   return {

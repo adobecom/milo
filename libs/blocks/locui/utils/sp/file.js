@@ -19,8 +19,7 @@ async function downloadFile(id) {
 // }
 
 async function getItem(path) {
-  const newBase = baseUri.replace('milo', 'bacom');
-  const fullpath = `${newBase}${path}`;
+  const fullpath = `${baseUri}${path}`;
   const options = getReqOptions();
   const resp = await fetch(fullpath, options);
   const json = await resp.json();
@@ -31,7 +30,6 @@ async function copyItem(id, parentReference, folder, name) {
   const body = { ...BODY_BASE, parentReference, name };
   const options = getReqOptions({ method: 'POST', body });
   const resp = await fetch(`${site}/drive/items/${id}/copy`, options);
-  console.log(resp.headers.get('Location'));
   if (resp.status !== 202) return {};
   return getItem(`${folder}/${name}`);
 }
@@ -106,9 +104,10 @@ async function uploadAttempt(dest, destItem, uploadUrl, blob) {
 function getDocDetails(path) {
   const parentArr = path.split('/');
   const name = parentArr.pop();
+  const file = name.endsWith('.json') ? name.replace('.json', '.xlsx') : `${name}.docx`;
   const folder = parentArr.join('/');
-  const split = name.split('.');
-  return { folder, name, lockName: `${split[0]} (lock copy).${split[1]}` };
+  const split = file.split('.');
+  return { folder, name: file, lockName: `${split[0]} (lock copy).${split[1]}` };
 }
 
 /**
@@ -124,13 +123,7 @@ function getDocDetails(path) {
  * @param {String} destPath the destination document path
  * @returns {Object} json an object describing the copied item
  */
-export async function copyFile(sourcePath, destPath) {
-  console.log(site);
-  const opts = getReqOptions({ method: 'GET' });
-  const resp = await fetch(`${site}/drives`, opts);
-  const json = await resp.json();
-  console.log(json);
-
+export default async function copyFile(sourcePath, destPath) {
   const source = getDocDetails(sourcePath);
   const dest = getDocDetails(destPath);
 
@@ -142,46 +135,4 @@ export async function copyFile(sourcePath, destPath) {
   const { uploadUrl } = session.error ? await breakLock(dest, destItem, blob.size) : session;
   if (uploadUrl) return uploadAttempt(dest, destItem, uploadUrl, blob);
   return { error: { msg: 'Couldn\'t copy file. Contact Milo Community.' } };
-}
-
-async function listChildren(startUrl, options) {
-  let path = startUrl;
-  const items = [];
-  const folders = [];
-  while (path) {
-    const resp = await fetch(path, options);
-    const json = await resp.json();
-    json.value.forEach((child) => {
-      if (child.name.endsWith('.docx')) {
-        const parent = child.parentReference.path.split('bacom').pop();
-        console.log(`${parent}/${child.name.replace('.docx', '')}`);
-        items.push(`${parent}/${child.name.replace('.docx', '')}`);
-      } else {
-        folders.push(child.id);
-      }
-    });
-    path = json['@odata.nextLink'];
-  }
-  return { items, folders };
-}
-
-export async function listChildrenDocs(folder) {
-  const sourceItem = await getItem(folder);
-  const { id } = sourceItem;
-  const options = getReqOptions({ method: 'GET' });
-  const path = `${site}/drive/items/${id}/children`;
-  const items = [];
-  const folders = [];
-  const children = await listChildren(path, options);
-  items.push(...children.items);
-  folders.push(...children.folders);
-  while (folders.length > 0) {
-    console.log(folders.length);
-    const first = folders.shift();
-    const { items: subItems, folders: subFolders } = await listChildren(`${site}/drive/items/${first}/children`, options);
-    items.push(...subItems);
-    folders.push(...subFolders);
-  }
-  console.log(items);
-  console.log(folders);
 }
