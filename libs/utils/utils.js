@@ -164,7 +164,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
-      document.documentElement.setAttribute('lang', config.locale.ietf);
+      document.documentElement.setAttribute('lang', config.locale.lang || config.locale.ietf);
       try {
         const dir = getMetadata('content-direction')
           || config.locale.dir
@@ -910,12 +910,4 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
-}
-
-export function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
 }
