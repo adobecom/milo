@@ -9,7 +9,7 @@ import {
   trigger,
   isDesktop,
 } from '../utilities.js';
-import { decorateLinks } from '../../../../utils/utils.js';
+import { decorateLinks, localizeLink } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
 
 const decorateHeadline = (elem) => {
@@ -123,8 +123,8 @@ const decorateElements = ({ elem, className = 'feds-navLink', parseCtas = true, 
 
 // Current limitation: we can only add one link
 const decoratePromo = (elem, index) => {
-  const isDarkTheme = elem.classList.contains('dark');
-  const isImageOnly = elem.classList.contains('image-only');
+  const isDarkTheme = elem.matches('.dark');
+  const isImageOnly = elem.matches('.image-only');
   const imageElem = elem.querySelector('picture');
 
   decorateElements({ elem, className: 'feds-promo-link', parseCtas: false, index });
@@ -247,7 +247,6 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 // is found in a menu column, no new sections can be created without a heading
 const decorateMenu = (config) => logErrorFor(async () => {
   let menuTemplate;
-
   if (config.type === 'syncDropdownTrigger') {
     const itemTopParent = config.item.closest('div');
     // The initial heading is already part of the item template,
@@ -265,8 +264,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const path = pathElement.href;
-
+    const path = localizeLink(pathElement.href);
     const res = await fetch(`${path}.plain.html`);
     if (res.status !== 200) return;
     const content = await res.text();

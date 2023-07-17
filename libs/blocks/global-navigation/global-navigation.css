@@ -321,6 +321,7 @@ header.global-navigation {
 .feds-breadcrumbs a,
 .feds-breadcrumbs [aria-current] {
   line-height: var(--feds-height-breadcrumbs);
+  text-transform: capitalize;
 }
 
 .feds-breadcrumbs a {
@@ -443,7 +444,7 @@ header.global-navigation {
     display: flex;
   }
 
-  .feds-topnav--overflowing .feds-brand-label {
+  .feds-topnav--overflowing .feds-brand-label:nth-child(2) {
     display: none;
   }
 

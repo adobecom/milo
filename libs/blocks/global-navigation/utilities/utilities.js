@@ -34,17 +34,10 @@ export function toFragment(htmlStrings, ...values) {
 export const getFedsPlaceholderConfig = () => {
   const { locale } = getConfig();
   let libOrigin = 'https://milo.adobe.com';
+  const { origin } = window.location;
 
-  if (window.location.origin.includes('localhost')) {
-    libOrigin = `${window.location.origin}`;
-  }
-
-  if (window.location.origin.includes('.hlx.page')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.page';
-  }
-
-  if (window.location.origin.includes('.hlx.live')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.live';
+  if (origin.includes('localhost') || origin.includes('.hlx.')) {
+    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
   return {
@@ -66,8 +59,13 @@ export function getAnalyticsValue(str, index) {
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
+  const explicitExperience = experiencePath?.split('/').pop();
+  if (explicitExperience?.length) return explicitExperience;
 
-  return experiencePath?.split('/').pop() || '';
+  const { imsClientId } = getConfig();
+  if (imsClientId?.length) return imsClientId;
+
+  return '';
 }
 
 export function loadStyles(path) {
