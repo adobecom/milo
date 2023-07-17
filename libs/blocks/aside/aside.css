@@ -114,19 +114,14 @@
 
 .aside .foreground.container .text .action-area {
   margin-bottom: 0;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .aside .foreground.container .text .supplemental-text {
   padding-top: var(--spacing-s);
   margin-bottom: 0;
-}
-
-.aside .foreground.container .text .action-area > a {
-  margin-right: var(--spacing-s);
-}
-
-.aside .foreground.container .text .action-area > a:last-child {
-  margin-right: 0;
 }
 
 .aside .foreground.container > div {
@@ -166,6 +161,10 @@
 
 .aside.center:not(.notification) .foreground.container .icon-area {
   max-width: 100%;
+}
+
+.aside.center:not(.notification) .foreground.container .text .action-area {
+  justify-content: center;
 }
 
 .aside .foreground.container .icon-area .icon {
