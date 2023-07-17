@@ -62,12 +62,20 @@
   font-weight: 700;
 }
 
-.offer-details a.con-button.placeholder-resolved {
+.offer-details .con-button {
   border: 2px solid #fff;
   color: #fff;
-  float: right;
-  margin: 5px 10px 10px 10px;
+  margin: 5px 10px 10px;
 }
+
+.offer-details a.con-button.placeholder-resolved {
+  float: right;
+}
+
+.offer-details button.con-button {
+  float: left;
+}
+
 .offer-search {
   width: 100%;
   display: block;

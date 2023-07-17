@@ -1,3 +1,4 @@
+/* global ClipboardItem */
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
 
@@ -8,30 +9,27 @@ const CopyBtn = ({ getContent, configFormValidation }) => {
   const [showCopyContent, setShowCopyContent] = useState(false);
   const [copyContent, setCopyContent] = useState('');
 
-  useEffect(() => {
-    const hideMessage = setTimeout(() => {
+  const setMessage = (type, message) => {
+    setStatusType(type);
+    setStatusMessage(message);
+    setTimeout(() => {
       setStatusType('hide');
+      setStatusMessage('');
     }, 2000);
-
-    return () => {
-      clearTimeout(hideMessage);
-    };
-  }, [statusMessage]);
+  };
 
   const copyConfig = async () => {
     const { content, contentHtml } = getContent();
     setCopyContent(content);
 
     if (!navigator?.clipboard) {
-      setStatusType('error');
-      setStatusMessage('Clipboard not available.');
+      setMessage('error', 'Clipboard not available.');
       setShowCopyContent(true);
       return;
     }
 
     if (!configFormValidation()) {
-      setStatusType('error');
-      setStatusMessage('Required fields must be filled.');
+      setMessage('error', 'Required fields must be filled.');
       setShowCopyContent(false);
       return;
     }
@@ -39,16 +37,15 @@ const CopyBtn = ({ getContent, configFormValidation }) => {
     const blob = new Blob([contentHtml], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
 
-    try {
-      await navigator.clipboard.write(data);
-      setStatusType('success');
-      setStatusMessage('Copied to clipboard!');
-      setShowCopyContent(true);
-    } catch {
-      setStatusType('error');
-      setStatusMessage('Failed to copy.');
-      setShowCopyContent(true);
-    }
+    await navigator.clipboard.write(data)
+      .then(() => {
+        setMessage('success', 'Copied to clipboard!');
+        setShowCopyContent(true);
+      })
+      .catch(() => {
+        setMessage('error', 'Failed to copy.');
+        setShowCopyContent(true);
+      });
   };
 
   loadStyle(`${miloLibs || codeRoot}/ui/controls/copyBtn.css`);

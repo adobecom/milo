@@ -37,7 +37,7 @@ export const selectors = {
   popupItems: '.feds-menu-items',
   promoImage: '.feds-promo-image',
   topNavWrapper: '.feds-topnav-wrapper',
-  breadCrumbsWrapper: '.feds-breadcrumbs-wrapper',
+  breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
 };
 
@@ -156,6 +156,8 @@ export const createFullGlobalNavigation = async ({
 
   // I'm not 100% sure why we need to wait for the large menu, profile
   // the clock.tickAsync should call all the setTimeouts immediately
+  // waiting for async elements to actually be on the page
+  // reduces flakiness though.
   const waitForElements = [];
   const profile = document.querySelector(selectors.profile);
   const signIn = document.querySelector(selectors.signIn);
@@ -169,6 +171,7 @@ export const createFullGlobalNavigation = async ({
     waitForElements.push(waitForElement(selectors.profileMenu, profile));
   }
 
+  waitForElements.push(waitForElement(selectors.breadcrumbsWrapper, document.body));
   await Promise.all(waitForElements);
 
   window.fetch = ogFetch;
