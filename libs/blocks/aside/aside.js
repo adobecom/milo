@@ -53,6 +53,7 @@ function decorateStaticLinks(el) {
 
 function decorateModalImage(el) {
   const modalLink = el.querySelector('a');
+  modalLink.closest('p').classList.add('play-container');
   modalLink.classList.add('play-btn');
   modalLink.innerHTML = '';
   const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, PLAY_ICON);
