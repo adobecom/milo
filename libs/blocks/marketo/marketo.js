@@ -105,7 +105,7 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-const loadMarketo = (el, entry, loadScriptFunc = loadScript) => {
+export const loadMarketo = (el, entry, loadScriptFunc = loadScript) => {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
