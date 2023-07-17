@@ -24,7 +24,7 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
  * @param {number} limit The maximum amount of keywords to fetch from the file.  Default is 1000.
  */
 export default async function interlink(path, language, limit = 1000) {
-  const exceptionLanguages = ['zh', 'ko', 'ja'];
+  const exceptionLanguages = ['zh', 'ko', 'ja', 'th', 'he'];
   const articleBody = document.querySelector('main');
   const resp = await fetch(`${path}?limit=${limit}`);
   if (!(articleBody && resp.ok)) return;
