@@ -250,9 +250,11 @@ const getFilterArray = async (state) => {
 
 const getCountryAndLang = ({ autoCountryLang, country, language }) => {
   if (autoCountryLang) {
+    const htmlLang = pageConfig.locale?.ietf;
+    const [lang, cntry] = htmlLang.split('-');
     return {
-      country: pageConfig?.locale?.reg,
-      language: pageConfig?.locale?.lang,
+      country: cntry,
+      language: lang,
     };
   }
   return {
