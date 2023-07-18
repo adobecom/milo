@@ -684,17 +684,25 @@
   
   .aside.split.split-left .split-image .play-container,
   .aside.split.split-left .split-image img,
-  .aside.split.split-left .split-image video
-  [dir="rtl"] .aside.split.split-right .split-image .play-container,
-  [dir="rtl"] .aside.split.split-right .split-image img,
-  [dir="rtl"] .aside.split.split-right .split-image video {
+  .aside.split.split-left .split-image video {
     right: 0;
     left: auto;
   }
 
   .aside.split.split-right .split-image .play-container,
   .aside.split.split-right .split-image img,
-  .aside.split.split-right .split-image video
+  .aside.split.split-right .split-image video {
+    left: 0;
+    right: auto;
+  }
+
+  [dir="rtl"] .aside.split.split-right .split-image .play-container,
+  [dir="rtl"] .aside.split.split-right .split-image img,
+  [dir="rtl"] .aside.split.split-right .split-image video {
+    right: 0;
+    left: auto;
+  }
+  
   [dir="rtl"] .aside.split.split-left .split-image .play-container,
   [dir="rtl"] .aside.split.split-left .split-image img,
   [dir="rtl"] .aside.split.split-left .split-image video {
