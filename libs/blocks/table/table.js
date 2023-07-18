@@ -231,13 +231,11 @@ function handleHovering(table) {
         const isLastRowCollapsed = lastExpandIcon?.getAttribute('aria-expanded') === 'false';
         cols.forEach((col) => {
           if (col.classList.contains('col-highlight') && col.innerText) {
-            const matchingCols = Array.from(col.classList).filter(
+            const matchingColsClass = Array.from(col.classList).find(
               (className) => className.startsWith(colClass),
             );
-            matchingCols.forEach((className) => {
-              const noTopBorderCol = headingRow.querySelector(`.${className}`);
-              noTopBorderCol?.classList.add('no-top-border');
-            });
+            const noTopBorderCol = headingRow.querySelector(`.${matchingColsClass}`);
+            noTopBorderCol?.classList.add('no-top-border');
           }
           if (isCollapseTable && isLastRowCollapsed) {
             const lastSectionHeadCol = lastSectionHead.querySelector(`.col-${i}`);
