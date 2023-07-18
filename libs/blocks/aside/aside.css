@@ -495,8 +495,8 @@
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   border: 2px solid #fff;
   -ms-flex-negative: 0;
@@ -518,8 +518,8 @@
 
 .aside .play-icon {
   fill: #fff;
-  width: 24px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
 }
 
 @media screen and (max-width: 600px) {
