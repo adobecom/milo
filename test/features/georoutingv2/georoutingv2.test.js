@@ -4,6 +4,7 @@ import { expect } from '@esm-bundle/chai';
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
 const { createTag, loadStyle, loadBlock, setConfig } = await import('../../../libs/utils/utils.js');
+import { setViewport } from '@web/test-runner-commands';
 
 const mockConfig = {
   locales: {
@@ -549,14 +550,14 @@ describe('GeoRouting', () => {
   });
 
   it('Add class .top to picker when there is no space to render below the trigger button', async () => {
-    window.innerHeight = 200;
+    await setViewport({ width: 600, height: 100 });
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
     const modal = document.querySelector('.dialog-modal');
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker.top');
     expect(picker).to.not.be.null;
-    window.innerHeight = ogInnerHeight;
+    await setViewport({ width: 600, height: ogInnerHeight });
   });
 
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
