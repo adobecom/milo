@@ -1,4 +1,4 @@
-import { readFile, sendMouse } from '@web/test-runner-commands';
+import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
@@ -19,12 +19,15 @@ describe('table and tablemetadata', () => {
       expect(table.querySelector('.row-heading')).to.exist;
     });
 
-    it('click expand icon', () => {
+    it('click expand icon', async () => {
       const expandIcon = table.querySelector('.icon.expand');
-      expandIcon.dispatchEvent(new Event('click'));
-      delay(500);
+      expect(expandIcon.ariaExpanded).to.be.equal('true');
+      expandIcon.parentElement.click();
       expect(expandIcon.ariaExpanded).to.be.equal('false');
-      expandIcon.click();
+      expandIcon.parentElement.focus();
+      await sendKeys({ type: 'Enter' });
+      expect(expandIcon.ariaExpanded).to.be.equal('false');
+      await sendKeys({ type: ' ' });
       expect(expandIcon.ariaExpanded).to.be.equal('true');
     });
 

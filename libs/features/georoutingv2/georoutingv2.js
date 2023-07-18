@@ -172,13 +172,13 @@ function openPicker(button, locales, country, event, dir) {
 
 function buildContent(currentPage, locale, geoData, locales) {
   const fragment = new DocumentFragment();
-  const lang = config.locales[currentPage.prefix]?.ietf ?? '';
+  const lang = config.locales[locale.prefix]?.ietf ?? '';
   const dir = config.locales[locale.prefix]?.dir ?? 'ltr';
   const geo = geoData.filter((c) => c.prefix === locale.prefix);
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
   const title = createTag('h3', { lang, dir }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
-  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag-${locale.geo}.svg`;
+  const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     width: 15,

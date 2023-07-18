@@ -138,6 +138,10 @@
   padding: 16px 24px;
 }
 
+.table .section-head-title.point-cursor {
+  cursor: pointer;
+}
+
 .table .section-head .section-head-title > :not(.icon) {
   font-size: var(--type-body-m-size);
   line-height: var(--type-heading-s-lh);
@@ -200,8 +204,7 @@
   cursor: pointer;
 }
 
-.table .icon.expand:hover,
-.table .icon.expand[aria-expanded=true]:hover {
+.table .section-head-title:hover .icon.expand {
   filter: invert(41%) sepia(22%) saturate(100) hue-rotate(203deg) brightness(96%) contrast(93%);
 }
 
