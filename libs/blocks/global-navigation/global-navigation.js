@@ -175,6 +175,7 @@ class Gnav {
         decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
+      breadcrumbs: { wrapper: '' },
     };
 
     this.el = el;
@@ -192,7 +193,7 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      () => loadIms(this.imsReady.bind(this)),
+      this.ims,
       this.addChangeEventListeners,
     ];
     this.el.addEventListener('click', this.loadDelayed);
@@ -207,6 +208,12 @@ class Gnav {
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init');
+
+  ims = async () => loadIms()
+    .then(() => this.imsReady())
+    .catch((e) => {
+      lanaLog({ message: 'GNAV: Error with IMS', e });
+    });
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
@@ -223,10 +230,11 @@ class Gnav {
     `;
   };
 
-  decorateTopnavWrapper = () => {
+  decorateTopnavWrapper = async () => {
+    const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
         ${this.elements.topnav}
-        ${isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+        ${breadcrumbs}
       </div>`;
 
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
@@ -503,10 +511,11 @@ class Gnav {
   });
 
   decorateMainNav = async () => {
+    const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
-        ${isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+      <div class="feds-nav-wrapper id="feds-nav-wrapper"">
+        ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
@@ -642,6 +651,14 @@ class Gnav {
     }
   };
 
+  decorateBreadcrumbs = async () => {
+    if (!this.el.classList.contains('has-breadcrumbs')) return null;
+    if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
+    const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
+    this.elements.breadcrumbsWrapper = await createBreadcrumbs(this.el.querySelector('.breadcrumbs'));
+    return this.elements.breadcrumbsWrapper;
+  };
+
   decorateSearch = () => {
     const searchBlock = this.body.querySelector('.search');
 
@@ -671,45 +688,6 @@ class Gnav {
 
     return this.elements.search;
   };
-
-  setBreadcrumbSEO = () => {
-    const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
-    if (!seoEnabled) return;
-    const breadcrumb = this.el.querySelector('.breadcrumbs');
-    if (!breadcrumb) return;
-    const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
-    const items = breadcrumb.querySelectorAll('ul > li');
-    items.forEach((item, idx) => {
-      const link = item.querySelector('a');
-      breadcrumbSEO.itemListElement.push({
-        '@type': 'ListItem',
-        position: idx + 1,
-        name: link ? link.innerHTML : item.innerHTML,
-        item: link?.href,
-      });
-    });
-    const script = toFragment`<script type="application/ld+json">${JSON.stringify(breadcrumbSEO)}</script>`;
-    document.head.append(script);
-  };
-
-  decorateBreadcrumbs = () => {
-    this.setBreadcrumbSEO();
-    const parent = this.el.querySelector('.breadcrumbs');
-    if (parent) {
-      const ul = parent.querySelector('ul');
-      if (ul) {
-        ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        this.elements.breadcrumbsWrapper = toFragment`<div class="feds-breadcrumbs-wrapper">
-            <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>
-          </div>`;
-        parent.remove();
-        return this.elements.breadcrumbsWrapper;
-      }
-    }
-
-    return null;
-  };
-  /* c8 ignore stop */
 }
 
 export default async function init(header) {
