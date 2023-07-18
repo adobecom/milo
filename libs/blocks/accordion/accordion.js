@@ -18,7 +18,6 @@ function displayMedia(displayArea, el, dd, i, id, expanded) {
       mediaCollectionItem.classList.remove('expanded');
 
       for (let index = 0; index < total.length; index++) {
-        mediaCollectionItem.classList.remove('expanded');
         const trigger = document.querySelector(`#accordion-${theID}-trigger-${index + 1}`);
         const content = document.querySelector(`#accordion-${theID}-content-${index + 1}`);
         trigger.setAttribute('hidden', '');
@@ -26,11 +25,11 @@ function displayMedia(displayArea, el, dd, i, id, expanded) {
         content.setAttribute('hidden', '');
         content.setAttribute('aria-expanded', 'false');
       }
-      el.setAttribute('aria-expanded', 'true');;
+      el.setAttribute('aria-expanded', 'true');
       el.removeAttribute('hidden');
-      dd.setAttribute('aria-expanded', 'true');;
+      dd.setAttribute('aria-expanded', 'true');
       dd.removeAttribute('hidden');
-      displayArea.childNodes[i - 1].classList.add('expanded')
+      displayArea.childNodes[i - 1].classList.add('expanded');
 
       // toggle
       if (expanded) {
@@ -38,7 +37,7 @@ function displayMedia(displayArea, el, dd, i, id, expanded) {
         el.setAttribute('aria-expanded', 'false');  
         dd.setAttribute('hidden', '');
         dd.setAttribute('aria-expanded', 'false');
-        displayArea.childNodes[i - 1].classList.remove('expanded')
+        displayArea.childNodes[i - 1]?.classList.remove('expanded');
       } 
     }
   );
@@ -54,9 +53,8 @@ function handleClick(el, dd, num, id) {
     dd.removeAttribute('hidden');
   }
 
-  if (el.closest('.editorial')) {
-    displayMedia(el.closest('.editorial').querySelector('.accordion-media'), el, dd, num, id, expanded)
-  }
+  const closestEditorial = el.closest('.editorial');
+  if (closestEditorial) displayMedia(closestEditorial.querySelector('.accordion-media'), el, dd, num, id, expanded);
 }
 
 function defalutOpen(accordion) {
@@ -84,7 +82,7 @@ function createItem(accordion, id, heading, num, edit) {
 
   const dt = createTag('dt', { role: 'heading', 'aria-level': 3 }, button);
   const dd = createTag('dd', { role: 'region', 'aria-labelledby': triggerId, id: panelId, hidden: true, class: panelClass}, panel);
-  const dm = createTag('dd', { class: 'media-p' });
+  const dm = createTag('div', { class: 'media-p' });
 
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
@@ -103,7 +101,6 @@ function getUniqueId(el) {
   const accordions = document.querySelectorAll('.accordion');
   return [...accordions].indexOf(el) + 1;
 }
-
 
 const mediaCollection = {};
 
@@ -145,7 +142,7 @@ export default function init(el) {
   decorateLinkAnalytics(accordion, headings);
   el.append(accordion)
   if (isEditorial) {
-    el.append(accordionMedia)
+    el.append(accordionMedia);
     defalutOpen(el);
     };
 }
