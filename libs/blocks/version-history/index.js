@@ -1,6 +1,7 @@
 import { getReqOptions } from '../../tools/sharepoint/msal.js';
 
-const urlParams = new URLSearchParams(window.location.href);
+const href = new URL(window.location.href);
+const urlParams = new URLSearchParams(href.search);
 const referrer = urlParams.get("referrer");
 const sourceCode = referrer?.match(/sourcedoc=([^&]+)/)[1];
 const sourceId = decodeURIComponent(sourceCode);
