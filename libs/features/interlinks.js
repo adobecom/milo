@@ -24,7 +24,7 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
  * @param {number} limit The maximum amount of keywords to fetch from the file.  Default is 1000.
  */
 export default async function interlink(path, language, limit = 1000) {
-  const exceptionLanguages = ['zh', 'ko', 'ja', 'th', 'he'];
+  const isExceptionLanguage = ['zh', 'ko', 'ja', 'th', 'he'].includes(language);
   const articleBody = document.querySelector('main');
   const resp = await fetch(`${path}?limit=${limit}`);
   if (!(articleBody && resp.ok)) return;
@@ -36,7 +36,7 @@ export default async function interlink(path, language, limit = 1000) {
   const maxLinks = (Math.floor(articleWords / 100)) - articleLinks;
   // eslint-disable-next-line no-useless-return
   if (maxLinks <= 0) return;
-  const wordBorder = exceptionLanguages.includes(language) ? '' : '\\b';
+  const wordBorder = isExceptionLanguage ? '' : '\\b';
   const keywords = (Array.isArray(json) ? json : json.data)
     // scan article to filter keywords down to relevant ones
     .filter(({ Keyword }) => articleText.indexOf(Keyword.toLowerCase()) !== -1)
@@ -57,7 +57,7 @@ export default async function interlink(path, language, limit = 1000) {
       const paraLinks = p.querySelectorAll('a').length;
       const paraWords = p.textContent.split(/\s/).length;
       const maxParaLinks = Math.floor(paraWords / 40) - paraLinks;
-      if (exceptionLanguages.includes(language) || maxParaLinks > 0) {
+      if (isExceptionLanguage || maxParaLinks > 0) {
         Array.from(p.childNodes)
         // filter out non text nodes
           .filter((node) => node.nodeType === Node.TEXT_NODE)
