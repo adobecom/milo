@@ -52,7 +52,7 @@
     },
     {
       "containerId": "tools",
-      "title": "Preflight",
+      "title": "Preflight 2",
       "id": "preflight",
       "environments": ["dev", "preview", "live"],
       "event": "preflight"
