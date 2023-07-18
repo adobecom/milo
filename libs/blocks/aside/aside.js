@@ -130,17 +130,20 @@ function decorateLayout(el) {
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text) img')?.closest('div');
+  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text) video')?.closest('div');
   const image = foregroundImage ?? bgImage;
-  if (image && !image.classList.contains('text')) {
+  const asideMedia = foregroundMedia ?? bgMedia ?? image;
+  if (asideMedia && !asideMedia.classList.contains('text')) {
     const isSplit = el.classList.contains('split');
-    image.classList.add(`${isSplit ? 'split-' : ''}image`);
+    asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
-      const position = Array.from(image.parentNode.children).indexOf(image);
+      const position = Array.from(asideMedia.parentNode.children).indexOf(asideMedia);
       el.classList.add(`split${!position ? '-right' : '-left'}`);
-      foreground.parentElement.appendChild(image);
+      foreground.parentElement.appendChild(asideMedia);
     }
-    if (foregroundImage && foregroundImage.querySelector('a')?.dataset?.modalHash) {
-      decorateModalImage(foregroundImage);
+    if (image && image.querySelector('a')?.dataset?.modalHash) {
+      decorateModalImage(image);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
