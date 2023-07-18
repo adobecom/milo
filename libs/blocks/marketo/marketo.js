@@ -105,10 +105,10 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-export const loadMarketo = (el, formData, loadScriptFunc = loadScript) => {
+export const loadMarketo = (el, formData) => {
   const baseURL = formData[BASE_URL];
 
-  loadScriptFunc(`https://${baseURL}/js/forms2/js/forms2.min.js`)
+  loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
@@ -190,7 +190,6 @@ export default function init(el) {
   el.replaceChildren(fragment);
 
   createIntersectionObserver({ el, callback: (el) => {
-    console.log('formData', formData);
     loadMarketo(el, formData);
   }});
 }

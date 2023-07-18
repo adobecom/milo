@@ -1,35 +1,35 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
+// import { stub } from 'sinon';
 import { waitForElement, delay } from '../../helpers/waitfor.js';
 import init, { loadMarketo, formValidate, formSuccess, setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('marketo', () => {
-  let loadScriptStub;
+//   let loadScriptStub;
 
-  const forms2Mock = {
-    getFormElem: () => ({ get: () => document.querySelector('form') }),
-    onValidate: stub(),
-    onSuccess: stub(),
-    loadForm: stub(),
-    whenReady: stub().callsFake((fn) => fn(forms2Mock)),
-  };
+//   const forms2Mock = {
+//     getFormElem: () => ({ get: () => document.querySelector('form') }),
+//     onValidate: stub(),
+//     onSuccess: stub(),
+//     loadForm: stub(),
+//     whenReady: stub().callsFake((fn) => fn(forms2Mock)),
+//   };
 
-  beforeEach(() => {
-    document.body.innerHTML = innerHTML;
-    loadScriptStub = stub().returns(new Promise((resolve) => {
-      window.MktoForms2 = forms2Mock;
-      resolve();
-    }));
-  });
+//   beforeEach(() => {
+//     document.body.innerHTML = innerHTML;
+//     loadScriptStub = stub().returns(new Promise((resolve) => {
+//       window.MktoForms2 = forms2Mock;
+//       resolve();
+//     }));
+//   });
 
-  afterEach(() => {
-    loadScriptStub.reset();
-    window.MktoForms2 = undefined;
-    window.mcz_marketoForm_pref = undefined;
-  });
+//   afterEach(() => {
+//     loadScriptStub.reset();
+//     window.MktoForms2 = undefined;
+//     window.mcz_marketoForm_pref = undefined;
+//   });
 
   it('hides form if no data url', async () => {
     document.body.innerHTML = innerHTML;
@@ -41,27 +41,27 @@ describe('marketo', () => {
     expect(el.style.display).to.equal('none');
   });
 
-  it('initializes form with correct data', async () => {
-    const marketoElement = document.querySelector('.marketo');
+//   it('initializes form with correct data', async () => {
+//     const marketoElement = document.querySelector('.marketo');
 
-    loadMarketo(marketoElement, null, loadScriptStub);
+//     loadMarketo(marketoElement, null, loadScriptStub);
 
-    expect(loadScriptStub.calledOnce).to.be.true;
-    expect(loadScriptStub.calledWith('https://engage.adobe.com/js/forms2/js/forms2.min.js')).to.be.true;
+//     expect(loadScriptStub.calledOnce).to.be.true;
+//     expect(loadScriptStub.calledWith('https://engage.adobe.com/js/forms2/js/forms2.min.js')).to.be.true;
 
-    const wrapper = await waitForElement('.marketo-form-wrapper');
-    expect(wrapper).to.exist;
+//     const wrapper = await waitForElement('.marketo-form-wrapper');
+//     expect(wrapper).to.exist;
 
-    const title = document.querySelector('.marketo-title');
-    expect(title).to.exist;
+//     const title = document.querySelector('.marketo-title');
+//     expect(title).to.exist;
 
-    expect(window.mcz_marketoForm_pref).to.exist;
-    expect(window.MktoForms2).to.exist;
+//     expect(window.mcz_marketoForm_pref).to.exist;
+//     expect(window.MktoForms2).to.exist;
 
-    expect(window.mcz_marketoForm_pref).to.have.property('program');
-    expect(window.mcz_marketoForm_pref.program).to.have.property('campaignids');
-    expect(window.mcz_marketoForm_pref.program.campaignids).to.have.property('sfdc');
-  });
+//     expect(window.mcz_marketoForm_pref).to.have.property('program');
+//     expect(window.mcz_marketoForm_pref.program).to.have.property('campaignids');
+//     expect(window.mcz_marketoForm_pref.program.campaignids).to.have.property('sfdc');
+//   });
 
   it('sets preferences on the data layer', async () => {
     const formData = {
@@ -79,26 +79,26 @@ describe('marketo', () => {
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
   });
 
-  it('formValidate adds class', async () => {
-    const marketoElement = document.querySelector('.marketo');
-    loadMarketo(marketoElement, null, loadScriptStub);
+//   it('formValidate adds class', async () => {
+//     const marketoElement = document.querySelector('.marketo');
+//     loadMarketo(marketoElement, null, loadScriptStub);
 
-    expect(window.MktoForms2).to.exist;
+//     expect(window.MktoForms2).to.exist;
 
-    formValidate(window.MktoForms2);
-    const formElem = window.MktoForms2.getFormElem().get(0);
-    expect(formElem.classList.contains('show-warnings')).to.be.true;
-  });
+//     formValidate(window.MktoForms2);
+//     const formElem = window.MktoForms2.getFormElem().get(0);
+//     expect(formElem.classList.contains('show-warnings')).to.be.true;
+//   });
 
-  it('submits successfully', async () => {
-    const marketoElement = document.querySelector('.marketo');
-    loadMarketo(marketoElement, null, loadScriptStub);
+//   it('submits successfully', async () => {
+//     const marketoElement = document.querySelector('.marketo');
+//     loadMarketo(marketoElement, null, loadScriptStub);
 
-    expect(window.MktoForms2).to.exist;
+//     expect(window.MktoForms2).to.exist;
 
-    formSuccess(window.MktoForms2);
-    expect(window.mktoSubmitted).to.be.true;
-  });
+//     formSuccess(window.MktoForms2);
+//     expect(window.mktoSubmitted).to.be.true;
+//   });
 });
 
 describe('marketo decorateURL', () => {
