@@ -326,11 +326,25 @@
     max-width: calc(50% - var(--grid-column-width));
   }
 
-  .marquee.split .media.bleed {
+  html:not([dir="rtl"]) .marquee.split .media.bleed {
     position: absolute;
     width: 50vw;
     right: 0;
     height: 100%;
+  }
+
+  html[dir="rtl"]  .marquee.split .media.bleed{
+    position: absolute;
+    width: 50vw;
+    height: 100%;
+    left:0;
+  }
+
+  html[dir="rtl"]  .marquee.split.row-reversed .media.bleed{
+    position: absolute;
+    width: 50vw;
+    height: 100%;
+    right:0;
   }
 
   .marquee.split:not(.row-reversed) .media-credit {
@@ -510,10 +524,17 @@
     justify-content: flex-end;
   }
 
-  .marquee.split.one-third .media.bleed {
+  html:not([dir="rtl"]) .marquee.split.one-third .media.bleed {
     position: absolute;
     width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
     right: 0;
+    height: 100%;
+  }
+
+  html[dir="rtl"] .marquee.split.one-third .media.bleed {
+    position: absolute;
+    width: calc(var(--grid-container-width) * 0.6667 + (100vw - var(--grid-container-width)) / 2);
+    left: 0;
     height: 100%;
   }
 
