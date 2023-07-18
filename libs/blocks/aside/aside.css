@@ -148,7 +148,7 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside.center:not(.notification) .foreground.container {
+.aside.center:not(.notification):not(.split) .foreground.container {
   padding: 0;
 }
 
@@ -156,17 +156,17 @@
   margin-bottom: 80px;
 }
 
-.aside.center:not(.notification) .foreground.container .text {
+.aside.center:not(.notification):not(.split) .foreground.container .text {
   margin: 80px 0;
   text-align: center;
   padding: 0;
 }
 
-.aside.center:not(.notification) .foreground.container .icon-area {
+.aside.center:not(.notification):not(.split) .foreground.container .icon-area {
   max-width: 100%;
 }
 
-.aside.center:not(.notification) .foreground.container .text .action-area {
+.aside.center:not(.notification):not(.split) .foreground.container .text .action-area {
   justify-content: center;
 }
 
@@ -459,7 +459,7 @@
   flex-shrink: 0;
 }
 
-.aside.center:not(.notification) .foreground.container .text .detail-m {
+.aside.center:not(.notification):not(.split) .foreground.container .text .detail-m {
   margin-bottom: var(--spacing-xs);
 }
 
@@ -494,10 +494,10 @@
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  width: 90px;
-  height: 90px;
+  width: 67px;
+  height: 67px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2.5px solid #fff;
   -ms-flex-negative: 0;
   flex-shrink: 0;
   background-color: #1473e6;
@@ -517,25 +517,13 @@
 
 .aside .play-icon {
   fill: #fff;
-  width: 64px;
-  height: 64px;
-}
-
-@media only screen and (max-width: 425px) {
-  .aside .play-btn {
-    transform: scale(0.75);
-  }
+  width: 24px;
+  height: 32px;
 }
 
 @media screen and (max-width: 600px) {
-  .aside.center:not(.notification) .foreground.container .text .icon-area {
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 83px;
-  }
-
-  .aside.center:not(.notification) .foreground.container .text .icon-area img {
-    height: 83px;
-    max-width: 300px;
-    width: auto;
   }
 
   .aside.split .image.mobile-square img,
@@ -551,6 +539,12 @@
   .aside.split .image.mobile-standard img,
   .aside.split .image.mobile-standard video {
     aspect-ratio: 4/3;
+  }
+
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
+    height: 83px;
+    max-width: 300px;
+    width: auto;
   }
 
   .aside.split .split-image {
@@ -789,11 +783,11 @@
     height: 40px;
   }
 
-  .aside.center:not(.notification) .foreground.container .text .icon-area {
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 80px;
   }
 
-  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
     height: 80px;
     max-width: 234px;
     width: auto;
@@ -913,7 +907,7 @@
     justify-content: flex-start;
   }
 
-  .aside.center:not(.notification) .foreground.container .text {
+  .aside.center:not(.notification):not(.split) .foreground.container .text {
     max-width: 50%;
   }
 
@@ -954,11 +948,11 @@
     flex-direction: row;
   }
 
-  .aside.center:not(.notification) .foreground.container .text .icon-area {
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 83px;
   }
 
-  .aside.center:not(.notification) .foreground.container .text .icon-area img{
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
     height: 83px;
     max-width: 400px;
     width: auto;
