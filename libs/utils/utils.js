@@ -792,34 +792,6 @@ function decorateMeta() {
   });
 }
 
-export function getRegionDisplayName(locale) {
-  if (!locale) return null;
-  if (locale.rdn) return locale.rdn; // workaround for https://bugs.chromium.org/p/chromium/issues/detail?id=1465052
-  const tag = (locale.lang && locale.reg && `${locale.lang}-${locale.reg}`) || locale.lang || locale.ietf;
-  if (!Intl || !Intl.DisplayNames) return null;
-  try {
-    const intlLocale = new Intl.Locale(tag);
-    // eslint-disable-next-line
-    const displayRegion = new Intl.DisplayNames([intlLocale.language], { type: 'region', fallback: 'none' });
-    return displayRegion.of(intlLocale.region) || null;
-  } catch {
-    return null;
-  }
-}
-
-export function decorateTitle(config) {
-  if (config.addTitleRegionSuffix === 'on') {
-    const rdn = getRegionDisplayName(config.locale);
-    if (!rdn || rdn === 'United States') return;
-    if (document.title.endsWith(`(${rdn})`)) return;
-    document.title = `${document.title} (${rdn})`;
-    const ogTitleEl = document.querySelector('meta[property="og:title"]');
-    if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
-    const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);
-  }
-}
-
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
@@ -833,7 +805,6 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     decorateMeta();
-    decorateTitle(config);
     decorateHeader();
     decorateFooterPromo(config);
 
@@ -868,6 +839,11 @@ export async function loadArea(area = document) {
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    }
+    const titleI18n = getMetadata('title-i18n') || config.titleI18n;
+    if (titleI18n === 'on') {
+      const { decorateTitle } = await import('../features/title-i18n/title-i18n.js');
+      decorateTitle(config);
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
