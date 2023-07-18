@@ -17,7 +17,7 @@ export const initConfigPath = (rootElm) => {
   if (stringsPath) {
     return (filepath) => `${stringsPath}/${filepath}`;
   }
-  return (filepath) => `${quizConfigPath}/${filepath}`;
+  return (filepath) => `${quizConfigPath}${filepath}`;
 };
 
 const initQuizKey = () => {
