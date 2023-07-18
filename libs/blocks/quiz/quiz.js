@@ -1,4 +1,4 @@
-import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
+import { render, html, useEffect, useState, useLayoutEffect } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
@@ -9,11 +9,11 @@ const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas-uar.css`);
 
 async function loadFragments(fragmentURL) {
-    const quizSections = document.querySelector('.quiz-footer');
-    const a = createTag('a', { href: fragmentURL });
-    quizSections.append(a);
-    const { default: createFragment } = await import('../fragment/fragment.js');
-    await createFragment(a); 
+  const quizSections = document.querySelector('.quiz-footer');
+  const a = createTag('a', { href: fragmentURL });
+  quizSections.append(a);
+  const { default: createFragment } = await import('../fragment/fragment.js');
+  await createFragment(a);
 }
 
 const App = () => {
@@ -119,7 +119,7 @@ const App = () => {
   /**
    * Updates the url when the url param is updated as part of the option click.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Object.keys(urlParam).length > 0) {
       const urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];

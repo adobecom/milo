@@ -11,13 +11,13 @@ const { locale } = getConfig();
 
 export const initConfigPath = (rootElm) => {
   const link = rootElm.querySelector('.quiz > div > div > a');
-  const quizConfigPath = link?.text.toLowerCase();
+  const quizConfigPath = link?.text?.toLowerCase() || '';
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
   if (stringsPath) {
     return (filepath) => `${stringsPath}/${filepath}`;
   }
-  return (filepath) => `${quizConfigPath}${filepath}`;
+  return (filepath) => `${quizConfigPath}/${filepath}`;
 };
 
 const initQuizKey = () => {
