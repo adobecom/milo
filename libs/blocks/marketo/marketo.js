@@ -105,7 +105,24 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-export const loadMarketo = (el, entry, loadScriptFunc = loadScript) => {
+export const loadMarketo = (el, formData, loadScriptFunc = loadScript) => {
+  const baseURL = formData[BASE_URL];
+
+  loadScriptFunc(`https://${baseURL}/js/forms2/js/forms2.min.js`)
+    .then(() => {
+      const { MktoForms2 } = window;
+      if (!MktoForms2) throw new Error('Marketo forms not loaded');
+
+      MktoForms2.loadForm(`//${baseURL}`, formData[MUNCHKIN_ID], formData[FORM_ID]);
+      MktoForms2.whenReady((form) => { readyForm(form, formData); });
+    })
+    .catch(() => {
+      /* c8 ignore next */
+      el.style.display = 'none';
+    });
+};
+
+export default function init(el) {
   const children = Array.from(el.querySelectorAll(':scope > div'));
   const encodedConfigDiv = children.shift();
   const link = encodedConfigDiv.querySelector('a');
@@ -172,20 +189,8 @@ export const loadMarketo = (el, entry, loadScriptFunc = loadScript) => {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
 
-  loadScriptFunc(`https://${baseURL}/js/forms2/js/forms2.min.js`)
-    .then(() => {
-      const { MktoForms2 } = window;
-      if (!MktoForms2) throw new Error('Marketo forms not loaded');
-
-      MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
-      MktoForms2.whenReady((form) => { readyForm(form, formData); });
-    })
-    .catch(() => {
-      /* c8 ignore next */
-      el.style.display = 'none';
-    });
-};
-
-export default function init(el) {
-  createIntersectionObserver({ el, callback: loadMarketo });
+  createIntersectionObserver({ el, callback: (el) => {
+    console.log('formData', formData);
+    loadMarketo(el, formData);
+  }});
 }
