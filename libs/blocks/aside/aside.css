@@ -449,6 +449,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  font-weight: bold;
 }
 
 .aside.split.dark.icon-stack .foreground.container .text .icon-stack-area li a {
@@ -456,7 +457,6 @@
 }
 
 .aside.split.icon-stack .foreground.container .text .icon-stack-area li picture {
-  display: inline-block;
   flex-shrink: 0;
 }
 
