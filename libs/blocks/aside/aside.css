@@ -495,10 +495,10 @@
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  width: 67px;
-  height: 67px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  border: 2.5px solid #fff;
+  border: 2px solid #fff;
   -ms-flex-negative: 0;
   flex-shrink: 0;
   background-color: #1473e6;
