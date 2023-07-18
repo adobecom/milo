@@ -1,9 +1,17 @@
+:root {
+  --borderColor: #D9D9D9;
+  --highlightBackground: #F3D949;
+  --hoverBorderColor: #357BEB;
+  --sectionHeadBackground: #E6E6E6;
+  --checkmarkColor: #268E6C;
+}
+
 .table,
 .table.merch {
   max-width: 1200px;
   margin: auto;
   padding: 20px 0;
-  border-color: #D9D9D9;
+  border-color: var(--borderColor);
 }
 
 .table > .row {
@@ -31,15 +39,15 @@
 
 .table div[class*="col-"],
 .table.merch div[class*="col-"] {
-  border: 1px #d9d9d9 solid;
+  border: 1px var(--borderColor) solid;
 }
 
 /* highlight */
 .table .row-highlight .col-highlight {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
-  background-color: #F3D949;
-  border: 1px solid #F3D949;
+  background-color: var(--highlightBackground);
+  border: 1px solid var(--highlightBackground);
   padding: 10px 30px;
   text-transform: capitalize;
   border-top-right-radius: 15px;
@@ -81,7 +89,7 @@
 }
 
 .table .row-heading .col.col-heading {
-  background-color: white;
+  background-color: var(--color-white);
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -130,7 +138,7 @@
 }
 
 .table .section-head .col {
-  background-color: #E6E6E6;
+  background-color: var(--sectionHeadBackground);
   padding: 28px 24px;
 }
 
@@ -184,11 +192,11 @@
 
 .table .icon-milo-info:hover path,
 .table .active .icon-milo-info path {
-  color: #357BEB;
+  color: var(--hoverBorderColor);
 }
 
 .table .icon-milo-checkmark {
-  color: #268E6C;
+  color: var(--checkmarkColor);
   width: 23px;
   height: 100%;
 }
@@ -212,11 +220,15 @@
   background-image: url('../../ui/img/collapse2.svg');
 }
 
+.table .row-highlight .col-highlight.transparent-border {
+  border-color: transparent;
+}
+
 /* hover */
 @media (min-width: 900px) {
   .table .col.hover {
-    border-left-color: #357BEB;
-    border-right-color: #357BEB;
+    border-left-color: var(--hoverBorderColor);
+    border-right-color: var(--hoverBorderColor);
   }
 
   .table .row-highlight .col-highlight {
@@ -226,27 +238,27 @@
   }
 
   .table .row-highlight .col-highlight.hover {
-    border-top-color: #357BEB !important;
-    border-left-color: #357BEB !important;
-    border-right-color: #357BEB !important;
+    border-top-color: var(--hoverBorderColor);
+    border-left-color: var(--hoverBorderColor);
+    border-right-color: var(--hoverBorderColor);
   }
 
   .table .row-heading .col-heading.hover {
-    border-top-color: #357BEB;
+    border-top-color: var(--hoverBorderColor);
   }
 
   .table .row:last-child .col.hover,
   .table .col.hover.hover-border-bottom {
-    border-bottom-color: #357BEB;
+    border-bottom-color: var(--hoverBorderColor);
   }
 
   .table .col.no-top-border.hover {
-    border-top-color: #D9D9D9;
+    border-top-color: var(--borderColor);
   }
 
   .table .section-head .col.hover {
-    border-right: 1px solid #357BEB;
-    border-left: 1px solid #357BEB;
+    border-right: 1px solid var(--hoverBorderColor);
+    border-left: 1px solid var(--hoverBorderColor);
   }
 
   .table .row:not(.section-head) .col:not(.col-highlight):not(.hidden).hover {
@@ -254,12 +266,12 @@
   }
 
   .table.merch .col.hover {
-    border-left-color: #357BEB;
-    border-right-color: #357BEB;
+    border-left-color: var(--hoverBorderColor);
+    border-right-color: var(--hoverBorderColor);
   }
 
   .table.merch .col.border-bottom.hover {
-    border-bottom-color: #357BEB;
+    border-bottom-color: var(--hoverBorderColor);
   }
 }
 
@@ -272,7 +284,7 @@ header.global-navigation {
 .table .row-heading {
   position: sticky;
   z-index: 1;
-  background-color: white;
+  background-color: var(--color-white);
   transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -280,6 +292,10 @@ header.global-navigation {
 .table.merch .row-heading.active .col-heading {
   transition-duration: 400ms;
   box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);
+}
+
+.top-border-transparent {
+  border-top: 1px solid transparent;
 }
 
 /* Start tablet styles */
