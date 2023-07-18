@@ -253,7 +253,7 @@ export function getCountryAndLang(
   miloConfig = pageConfig,
 ) {
   if (autoCountryLang) {
-    const htmlLang = miloConfig.locale?.ietf;
+    const htmlLang = miloConfig?.locale?.ietf?.toLowerCase() || 'en-us';
     const [lang, cntry] = htmlLang.split('-');
     return {
       country: cntry,

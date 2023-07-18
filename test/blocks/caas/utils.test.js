@@ -334,6 +334,7 @@ describe('getConfig', () => {
       language: 'caas:laguange/es',
     };
     const locale = { locale: { ietf: 'en-GB' } };
+
     it('should use country and lang from CaaS Config', () => {
       const expected = getCountryAndLang({
         ...caasCfg,
@@ -344,13 +345,35 @@ describe('getConfig', () => {
         language: 'es',
       });
     });
+
+    it('should use default country and lang from CaaS Config', () => {
+      const expected = getCountryAndLang({
+        autoCountryLang: false,
+      }, locale);
+      expect(expected).to.deep.eq({
+        country: 'us',
+        language: 'en',
+      });
+    });
+
     it('should use country and lang from locale in Milo Config', () => {
       const expected = getCountryAndLang({
         ...caasCfg,
         autoCountryLang: true,
       }, locale);
       expect(expected).to.deep.eq({
-        country: 'GB',
+        country: 'gb',
+        language: 'en',
+      });
+    });
+
+    it('should use default country and lang from locale in Milo Config', () => {
+      const expected = getCountryAndLang({
+        ...caasCfg,
+        autoCountryLang: true,
+      }, null);
+      expect(expected).to.deep.eq({
+        country: 'us',
         language: 'en',
       });
     });
