@@ -248,12 +248,9 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-export function getCountryAndLang(
-  { autoCountryLang, country, language },
-  miloConfig = pageConfig,
-) {
+export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const htmlLang = miloConfig?.locale?.ietf?.toLowerCase() || 'en-us';
+    const htmlLang = pageConfigHelper()?.locale?.ietf?.toLowerCase() || 'en-us';
     const [lang, cntry] = htmlLang.split('-');
     return {
       country: cntry,

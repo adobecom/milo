@@ -1,6 +1,14 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { defaultState, getConfig, loadStrings, arrayToObj, getPageLocale, getCountryAndLang } from '../../../libs/blocks/caas/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
+import {
+  defaultState,
+  getConfig,
+  loadStrings,
+  arrayToObj,
+  getPageLocale,
+  getCountryAndLang,
+} from '../../../libs/blocks/caas/utils.js';
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
   'cy_en', 'dk', 'de', 'ee', 'es', 'fr', 'gr_en', 'ie', 'il_en', 'it', 'lv', 'lt', 'lu_de', 'lu_en', 'lu_fr', 'hu',
@@ -333,13 +341,20 @@ describe('getConfig', () => {
       country: 'caas:country/ec',
       language: 'caas:laguange/es',
     };
-    const locale = { locale: { ietf: 'en-GB' } };
+    const cfg = {
+      pathname: '/be_fr/blah.html',
+      locales: {
+        '': { ietf: 'en-US' },
+        be_fr: { ietf: 'fr-BE' },
+      },
+    };
 
     it('should use country and lang from CaaS Config', () => {
+      setConfig(cfg);
       const expected = getCountryAndLang({
         ...caasCfg,
         autoCountryLang: false,
-      }, locale);
+      });
       expect(expected).to.deep.eq({
         country: 'ec',
         language: 'es',
@@ -347,9 +362,8 @@ describe('getConfig', () => {
     });
 
     it('should use default country and lang from CaaS Config', () => {
-      const expected = getCountryAndLang({
-        autoCountryLang: false,
-      }, locale);
+      setConfig(cfg);
+      const expected = getCountryAndLang({ autoCountryLang: false });
       expect(expected).to.deep.eq({
         country: 'us',
         language: 'en',
@@ -357,21 +371,26 @@ describe('getConfig', () => {
     });
 
     it('should use country and lang from locale in Milo Config', () => {
+      setConfig(cfg);
       const expected = getCountryAndLang({
         ...caasCfg,
         autoCountryLang: true,
-      }, locale);
+      });
       expect(expected).to.deep.eq({
-        country: 'gb',
-        language: 'en',
+        country: 'be',
+        language: 'fr',
       });
     });
 
     it('should use default country and lang from locale in Milo Config', () => {
+      setConfig({
+        ...cfg,
+        pathname: '/whatever/blah.html',
+      });
       const expected = getCountryAndLang({
         ...caasCfg,
         autoCountryLang: true,
-      }, null);
+      });
       expect(expected).to.deep.eq({
         country: 'us',
         language: 'en',
