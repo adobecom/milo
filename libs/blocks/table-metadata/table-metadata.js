@@ -39,7 +39,7 @@ const handleColumnBgColor = (text, table, columnType) => {
       const col = table.querySelector(`.col-${bgColorIndex}.col-${columnType}`);
       if (col?.innerText) {
         col.style.background = bgColorValue;
-        if (columnType === 'highlight') col.style.borderColor = bgColorValue;
+        if (columnType === 'highlight') col.classList.add('transparent-border');
       }
     });
   }

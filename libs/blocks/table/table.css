@@ -220,6 +220,10 @@
   background-image: url('../../ui/img/collapse2.svg');
 }
 
+.table .row-highlight .col-highlight.transparent-border {
+  border-color: transparent;
+}
+
 /* hover */
 @media (min-width: 900px) {
   .table .col.hover {
@@ -234,9 +238,9 @@
   }
 
   .table .row-highlight .col-highlight.hover {
-    border-top-color: var(--hoverBorderColor) !important;
-    border-left-color: var(--hoverBorderColor) !important;
-    border-right-color: var(--hoverBorderColor) !important;
+    border-top-color: var(--hoverBorderColor);
+    border-left-color: var(--hoverBorderColor);
+    border-right-color: var(--hoverBorderColor);
   }
 
   .table .row-heading .col-heading.hover {
