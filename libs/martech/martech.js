@@ -86,7 +86,6 @@ const getTargetPersonalization = async () => {
   return manifests;
 };
 
-
 const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
