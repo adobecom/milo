@@ -844,8 +844,7 @@ export async function loadArea(area = document) {
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
-      const { default: titleAppend } = await import('../features/title-append/title-append.js');
-      titleAppend(appendage);
+      import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../helpers/waitfor.js';
+import { delay, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
 
 const utils = {};
@@ -380,6 +380,7 @@ describe('Utils', () => {
     });
     it('should append to title using string from metadata', async () => {
       await utils.loadArea();
+      await delay(100);
       expect(document.title).to.equal('Document Title NOODLE');
     });
   });
