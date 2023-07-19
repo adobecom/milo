@@ -270,27 +270,9 @@ const findMatchForSelections = (results, selections) => {
   if (userSelectionLen < 1) {
     return defaultResult;
   }
-
-  let singleProductResults;
-
-  // Case 2 - when exactly one product is matched and it is not grouped with '&' in between.
-  if (userSelectionLen === 1) {
-    // eslint-disable-next-line max-len
-    singleProductResults = results.find((destination) => {
-      if (destination.result.indexOf('&') === -1 && destination.result.includes(selections.primary[0])) {
-        return destination;
-      }
-    });
-  }
-
-  if (singleProductResults) {
-    recommendations.push(singleProductResults);
-    return recommendations;
-  }
-
-  // Case 3 - when two or more products are matched and they are grouped with '&' in between.
+  // Case 2 - when you have clauses grouped with parenthesis.
   const compoundResults = results.find((destination) => {
-    if (destination.result.indexOf('&') !== -1 && destination.result.split('&').length === userSelectionLen) {
+    if (destination.result.indexOf('(') !== -1 && destination.result.split('&').length === userSelectionLen) {
       return destination;
     }
   });
