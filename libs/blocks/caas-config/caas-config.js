@@ -191,6 +191,10 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
+  detailsTextOption: {
+    default: 'Default',
+    modifiedDate: 'Modified Date',
+  },
 };
 
 const getTagList = (root) =>
@@ -339,6 +343,7 @@ const UiPanel = () => html`
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
