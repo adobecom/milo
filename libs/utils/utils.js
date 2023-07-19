@@ -842,6 +842,11 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
+    const appendage = getMetadata('title-append');
+    if (appendage) {
+      const { default: titleAppend } = await import('../features/title-append/title-append.js');
+      titleAppend(appendage);
+    }
     const richResults = getMetadata('richresults');
     if (richResults) {
       const { default: addRichResults } = await import('../features/richresults.js');
