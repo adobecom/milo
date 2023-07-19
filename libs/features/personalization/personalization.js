@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
-import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
+} from '../../utils/utils.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
@@ -17,6 +19,11 @@ export const PERSONALIZATION_TAGS = {
   lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
 /* c8 ignore stop */
+
+export const ENTITLEMENT_TAGS = {
+  photoshop: (ents) => ents.photoshopcc,
+  lightroom: (ents) => ents.lightroomcc,
+};
 
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
@@ -45,7 +52,8 @@ const createFrag = (url, manifestId) => {
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
     .insertAdjacentElement('afterend', createFrag(target, manifestId)),
-  insertcontentbefore: (el, target, manifestId) => el.insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+  insertcontentbefore: (el, target, manifestId) => el
+    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -135,17 +143,6 @@ export async function replaceInner(path, element) {
   element.innerHTML = html;
   return true;
 }
-
-const checkForParamMatch = (paramStr) => {
-  const [name, val] = paramStr.split('param-')[1].split('=');
-  if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name);
-  if (searchParamVal !== null) {
-    if (val) return val === searchParamVal;
-    return true; // if no val is set, just check for existence of param
-  }
-  return false;
-};
 
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
@@ -271,30 +268,89 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   return config;
 }
 
-function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+export const loadEntitlements = (() => {
+  let entitlements;
+  return (async () => {
+    if (!entitlements) {
+      const { default: getUserEntitlements } = await import('../../blocks/global-navigation/utilities/getUserEntitlements.js');
+      await loadIms();
+      entitlements = getUserEntitlements();
+    }
+    return entitlements;
+  });
+})();
+
+// remove underscores from entitlement names
+const rmUs = (obj) => Object.entries(obj).reduce((newObj, [key, val]) => {
+  newObj[key.replaceAll('_', '')] = val;
+  return newObj;
+}, {});
+
+const getFlatEntitlements = async () => {
+  const ents = await loadEntitlements();
+  return { ...rmUs(ents.arrangment_codes), ...rmUs(ents.clouds), ...rmUs(ents.fulfilled_codes) };
+};
+
+const checkForParamMatch = (paramStr) => {
+  const [name, val] = paramStr.split('param-')[1].split('=');
+  if (!name) return false;
+  const searchParamVal = PAGE_URL.searchParams.get(name);
+  if (searchParamVal !== null) {
+    if (val) return val === searchParamVal;
+    return true; // if no val is set, just check for existence of param
+  }
+  return false;
+};
+
+const checkForEntitlementMatch = (name, entitlements) => {
+  const entName = name.split('ent-')[1];
+  if (!entName) return false;
+  return entitlements[entName];
+};
+
+async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  let manifestFound = false;
   if (config.mep?.override !== '') {
-    config.mep?.override.split(',').forEach((item) => {
+    let manifest;
+    config.mep?.override.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
-        // eslint-disable-next-line prefer-destructuring
-        manifestFound = pair[1];
+        [, manifest] = pair;
+        return true;
       }
+      return false;
     });
-    if (manifestFound) return manifestFound;
+    if (manifest) return manifest;
   }
 
-  const tagNames = Object.keys(PERSONALIZATION_TAGS);
-  const matchingVariant = variantNames.find((variant) => {
-    // handle multiple variants that are space / comma delimited
-    const names = variant.split(',').map((v) => v.trim()).filter(Boolean);
-    return names.some((name) => {
-      if (name === variantLabel) return true;
-      if (name.startsWith('param-')) return checkForParamMatch(name);
-      return tagNames.includes(name) && PERSONALIZATION_TAGS[name]();
-    });
-  });
+  const personalizationTags = Object.keys(PERSONALIZATION_TAGS);
+  const entitlementTags = Object.keys(ENTITLEMENT_TAGS);
+  const variantInfo = variantNames.reduce((acc, name) => {
+    const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
+    acc[name] = vNames;
+    acc.allNames = [...acc.allNames, ...vNames];
+    return acc;
+  }, { allNames: [] });
+
+  const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
+  const hasEntitlementTag = entitlementTags.some((tag) => variantInfo.allNames.includes(tag));
+
+  let entitlements = [];
+  if (hasEntitlementPrefix || hasEntitlementTag) {
+    entitlements = await getFlatEntitlements();
+    // TODO: remove this
+    console.log(entitlements);
+  }
+
+  const matchingVariant = variantNames.find((variant) => variantInfo[variant].some((name) => {
+    if (name === variantLabel) return true;
+    if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
+    if (entitlementTags.includes(name)) {
+      return ENTITLEMENT_TAGS[name](entitlements);
+    }
+    return personalizationTags.includes(name) && PERSONALIZATION_TAGS[name]();
+  }));
   return matchingVariant;
 }
 
@@ -319,7 +375,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     return null;
   }
 
-  const selectedVariantName = getPersonalizationVariant(
+  const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
     config.variantNames,
     variantLabel,
@@ -434,6 +490,8 @@ export async function applyPers(manifests) {
     decoratePreviewCheck(config, []);
     return;
   }
+
+  loadEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];
