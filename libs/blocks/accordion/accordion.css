@@ -149,20 +149,18 @@ dl.accordion {
 .accordion-media > div {
   position: relative;
   display: none;
-  animation-duration: .1s;
-  animation-name: slide-left;
+  animation-duration: 1s;
+  animation-name: fade-in;
 }
 
-/***** Slide to the Left *****/
-.slide-left {
-  animation: 1s slide-left;
-}
-@keyframes slide-left {
-  from {
-    margin-right: -100%;
+
+@keyframes fade-in { 
+  0% { 
+    opacity: 0;
   }
-  to {
-    margin-right: 0%;
+
+  100% { 
+    opacity: 1; 
   }
 }
 
@@ -171,10 +169,8 @@ dl.accordion {
   display: inline;
   position: relative;
   max-height: 525px;
-  width: auto;
   max-width: 700px;
-  animation-duration: .1s;
-  animation-name: slide-left;
+  width: auto;
 }
 
 .accordion-media > div.expanded > img {

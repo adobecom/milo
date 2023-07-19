@@ -121,14 +121,14 @@ export default function init(el) {
     const editorialMedia = el.querySelectorAll(':scope > div:nth-child(3n)');
     [...editorialMedia].map(
       (media, idx, collection) => 
-      populateMedia(accordionMedia, id, idx, collection),
+      populateMedia(accordionMedia, id, idx, collection)
     );
   };
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map(
     (heading, idx) => 
-    createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
+    createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia)
   );
 
   if (isSeo) { setSEO(items); }
