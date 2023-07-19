@@ -110,15 +110,15 @@ function handleExpand(e) {
   }
 }
 
+/**
+ * @param {*} sectionParams that is from init()
+ * @returns {boolean expandSection} that is the only variable get updated from sectionParams
+ */
 function handleSection(sectionParams) {
-  const row = sectionParams.row;
-  const index = sectionParams.index;
-  const allRows = sectionParams.allRows;
-  const rowCols = sectionParams.rowCols;
-  const isMerch = sectionParams.isMerch;
-  const isCollapseTable = sectionParams.isCollapseTable;
-  const isHighlightTable = sectionParams.isHighlightTable;
-  let defaultExpandRow = sectionParams.defaultExpandRow;
+  const {
+    row, index, allRows, rowCols, isMerch, isCollapseTable, isHighlightTable,
+  } = sectionParams;
+  let { expandSection } = sectionParams;
 
   const previousRow = allRows[index - 1];
   const nextRow = allRows[index + 1];
@@ -140,9 +140,9 @@ function handleSection(sectionParams) {
       const iconTag = createTag('span', { class: 'icon expand' });
       sectionHeadTitle.appendChild(iconTag);
 
-      if (defaultExpandRow) {
+      if (expandSection) {
         iconTag.setAttribute('aria-expanded', 'true');
-        defaultExpandRow = false;
+        expandSection = false;
       } else {
         iconTag.setAttribute('aria-expanded', 'false');
         let nextElement = row.nextElementSibling;
@@ -184,6 +184,7 @@ function handleSection(sectionParams) {
       sectionRowTitle.classList.add('section-row-title');
     }
   }
+  return expandSection;
 }
 
 function formatMerchTable(table) {
@@ -342,12 +343,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const filter1 = createTag('div', { class: 'filter-wrapper' });
       const filter2 = createTag('div', { class: 'filter-wrapper' });
       const colSelect0 = createTag('select', { class: 'filter' });
-      const headings = originTable.querySelectorAll('.col-heading');
-      headings.forEach((heading, index) => {
+      const headingsFromOrigin = originTable.querySelectorAll('.col-heading');
+      headingsFromOrigin.forEach((heading, index) => {
         const title = heading.querySelector('.heading-title');
         if (!title || (!isMerch && title.closest('.col-1'))) return;
 
-        const option = createTag('option', {value: index}, title.innerText);
+        const option = createTag('option', { value: index }, title.innerText);
         colSelect0.append(option);
       });
       const colSelect1 = colSelect0.cloneNode(true);
@@ -397,21 +398,21 @@ export default function init(el) {
   const isMerch = el.classList.contains('merch');
   const isCollapseTable = el.classList.contains('collapse') && !isMerch;
   const isHighlightTable = el.classList.contains('highlight');
-  let defaultExpandRow = true;
+  let expandSection = true;
 
   rows.forEach((row, rdx) => {
     row.classList.add('row', `row-${rdx + 1}`);
     row.setAttribute('role', 'row');
     const cols = Array.from(row.children);
     const sectionParams = {
-      row: row,
+      row,
       index: rdx,
       allRows: rows,
       rowCols: cols,
-      isMerch: isMerch,
-      isCollapseTable: isCollapseTable,
-      defaultExpandRow: defaultExpandRow,
-      isHighlightTable: isHighlightTable
+      isMerch,
+      isCollapseTable,
+      expandSection,
+      isHighlightTable,
     };
 
     cols.forEach((col, cdx) => {
@@ -423,7 +424,7 @@ export default function init(el) {
       }
     });
 
-    handleSection(sectionParams);
+    expandSection = handleSection(sectionParams);
   });
 
   const isStickyHeader = el.classList.contains('sticky');
