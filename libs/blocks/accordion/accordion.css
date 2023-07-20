@@ -168,17 +168,9 @@ dl.accordion {
 .accordion-media > div.expanded > img {
   display: inline;
   position: relative;
+  height: 525px;
   max-height: 525px;
   max-width: 700px;
-  width: auto;
-}
-
-.accordion-media > div.expanded > img {
-  height: 525px;
-}
-
-.accordion-media > div.expanded img {
-  max-height: 525px;
   width: auto;
 }
 

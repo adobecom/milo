@@ -3,6 +3,7 @@ import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/att
 import { decorateButtons } from '../../utils/decorate.js';
 
 const faq = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
+const mediaCollection = {};
 
 function setSEO(questions) {
   faq.mainEntity.push(questions.map(({ name, text }) => (
@@ -11,32 +12,36 @@ function setSEO(questions) {
   document.head.append(script);
 }
 
-function displayMedia(displayArea, el, dd, i, id, expanded) {
-  const theID = el.getAttribute('aria-controls').split('-')[1];
-  [...mediaCollection[theID]].map(
+function toggleMedia(con, trig, status) {
+  if (status === 'open') {
+    trig.setAttribute('hidden', '');
+    trig.setAttribute('aria-expanded', 'false');  
+    con.setAttribute('hidden', '');
+    con.setAttribute('aria-expanded', 'false');
+  } else {
+    trig.setAttribute('aria-expanded', 'true');
+    trig.removeAttribute('hidden');
+    con.setAttribute('aria-expanded', 'true');
+    con.removeAttribute('hidden');
+  }
+}
+
+function displayMedia(displayArea, el, dd, i, expanded) {
+  const id = el.getAttribute('aria-controls').split('-')[1];
+  [...mediaCollection[id]].map(
     (mediaCollectionItem, idx, total) => {
       mediaCollectionItem.classList.remove('expanded');
 
       for (let index = 0; index < total.length; index++) {
-        const trigger = document.querySelector(`#accordion-${theID}-trigger-${index + 1}`);
-        const content = document.querySelector(`#accordion-${theID}-content-${index + 1}`);
-        trigger.setAttribute('hidden', '');
-        trigger.setAttribute('aria-expanded', 'false');  
-        content.setAttribute('hidden', '');
-        content.setAttribute('aria-expanded', 'false');
+        const trigger = document.querySelector(`#accordion-${id}-trigger-${index + 1}`);
+        const content = document.querySelector(`#accordion-${id}-content-${index + 1}`);
+        toggleMedia(content, trigger, 'open');
       }
-      el.setAttribute('aria-expanded', 'true');
-      el.removeAttribute('hidden');
-      dd.setAttribute('aria-expanded', 'true');
-      dd.removeAttribute('hidden');
+      toggleMedia(dd, el);
       displayArea.childNodes[i - 1].classList.add('expanded');
 
-      // toggle
       if (expanded) {
-        el.setAttribute('hidden', '');
-        el.setAttribute('aria-expanded', 'false');  
-        dd.setAttribute('hidden', '');
-        dd.setAttribute('aria-expanded', 'false');
+        toggleMedia(dd, el, 'open');
         displayArea.childNodes[i - 1]?.classList.remove('expanded');
       } 
     }
@@ -54,7 +59,7 @@ function handleClick(el, dd, num, id) {
   }
 
   const closestEditorial = el.closest('.editorial');
-  if (closestEditorial) displayMedia(closestEditorial.querySelector('.accordion-media'), el, dd, num, id, expanded);
+  if (closestEditorial) displayMedia(closestEditorial.querySelector('.accordion-media'), el, dd, num, expanded);
 }
 
 function defalutOpen(accordion) {
@@ -101,8 +106,6 @@ function getUniqueId(el) {
   const accordions = document.querySelectorAll('.accordion');
   return [...accordions].indexOf(el) + 1;
 }
-
-const mediaCollection = {};
 
 function populateMedia(accordion, id, num, collection) {
   mediaCollection[id] = collection;
