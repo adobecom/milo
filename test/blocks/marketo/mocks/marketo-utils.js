@@ -23,7 +23,18 @@ export const parseEncodedConfig = stub().returns({
     "description": "New Description"
 });
 
-export const loadScript = stub().resolves();
+export const loadScript = stub().returns(new Promise((resolve) => {
+  const forms2Mock = {
+    getFormElem: () => ({ get: () => document.querySelector('form') }),
+    onValidate: stub(),
+    onSuccess: stub(),
+    loadForm: stub(),
+    whenReady: stub().callsFake((fn) => fn(forms2Mock)),
+  };
+
+  window.MktoForms2 = forms2Mock;
+  resolve();
+}));
 
 export function createTag(tag, attributes, html) {
   const el = document.createElement(tag);

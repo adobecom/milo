@@ -58,7 +58,7 @@
     import { stub } from 'sinon';
     import { waitForElement } from '../../helpers/waitfor.js';
     import { loadScript, parseEncodedConfig } from '../../../libs/utils/utils.js';
-    import init, { setPreferences } from '../../../libs/blocks/marketo/marketo.js';
+    import init, { setPreferences, formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
 
     runTests(() => {
       describe('marketo', () => {
@@ -68,27 +68,37 @@
           init(marketoElement);
         });
 
-        it('initializes form', async () => {
-          expect(loadScript.calledOnce).to.be.true;
-          expect(loadScript.calledWith('https://engage.adobe.com/js/forms2/js/forms2.min.js')).to.be.true;
-
+        it('initializes block', async () => {
           const wrapper = await waitForElement('.marketo-form-wrapper');
-          expect(wrapper).to.exist;
-
           const title = document.querySelector('.marketo-title');
+          const desc = document.querySelector('.marketo-description');
+
+          expect(wrapper).to.exist;
           expect(title).to.exist;
+          expect(desc).to.exist;
         });
 
-        // it('formValidate adds class', async () => {
-        //   const marketoElement = document.querySelector('.marketo');
-        //   init(marketoElement);
+        it('loads Marketo script', async () => {
+          expect(loadScript.calledOnce).to.be.true;
+          expect(loadScript.calledWith('https://engage.adobe.com/js/forms2/js/forms2.min.js')).to.be.true;
+        });
 
-        //   expect(window.MktoForms2).to.exist;
+        it('loads form', () => {
+          expect(window.MktoForms2.loadForm.calledOnce).to.be.true;
+        });
 
-        //   formValidate(window.MktoForms2);
-        //   const formElem = window.MktoForms2.getFormElem().get(0);
-        //   expect(formElem.classList.contains('show-warnings')).to.be.true;
-        // });
+        it('validates form', () => {
+          expect(window.MktoForms2.onValidate.calledOnce).to.be.true;
+
+          formValidate(window.MktoForms2);
+          const form = document.querySelector('form');
+          expect(form.classList.contains('show-warnings')).to.be.true;
+        });
+
+        it('submits successfully', async () => {
+          formSuccess(window.MktoForms2);
+          expect(window.mktoSubmitted).to.be.true;
+        });
       });
     });
   </script>
