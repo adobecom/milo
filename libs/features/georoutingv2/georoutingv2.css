@@ -20,6 +20,13 @@
   opacity: 1;
   padding-inline-start: 0;
   min-width: 176px;
+  margin-bottom: 8px;
+  z-index: 10;
+}
+
+.dialog-modal.locale-modal-v2 .picker.top {
+  bottom: 41px;
+  position: absolute;
 }
 
 .dialog-modal.locale-modal-v2 a:first-child {
@@ -57,6 +64,7 @@
 
 .dialog-modal.locale-modal-v2 .link-wrapper {
   line-height: 48px;
+  position: relative;
 }
 
 .dialog-modal.locale-modal-v2 span.icon {
