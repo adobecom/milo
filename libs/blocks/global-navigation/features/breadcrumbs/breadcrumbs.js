@@ -5,7 +5,7 @@ const metadata = {
   seo: 'breadcrumbs-seo',
   seoLegacy: 'breadcrumb-seo',
   fromFile: 'breadcrumbs-from-file',
-  hideCurrent: 'breadcrumbs-hide-current-page',
+  showCurrent: 'breadcrumbs-show-current-page',
   hiddenEntries: 'breadcrumbs-hidden-entries',
   pageTitle: 'breadcrumbs-page-title',
   base: 'breadcrumbs-base',
@@ -52,7 +52,7 @@ const createBreadcrumbs = (element) => {
   if (!element) return null;
   const ul = element.querySelector('ul');
 
-  if (getMetadata(metadata.hideCurrent) !== 'on') {
+  if (getMetadata(metadata.showCurrent) === 'on') {
     ul.append(toFragment`
       <li>
         ${getMetadata(metadata.pageTitle) || document.title}
@@ -90,7 +90,7 @@ const fromUrl = () => {
   for (let i = 0; i < paths.length; i += 1) {
     list.append(toFragment`
       <li>
-        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i]}</a>
+        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i].replaceAll('-', ' ')}</a>
       </li>
     `);
   }
