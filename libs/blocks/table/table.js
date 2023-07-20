@@ -132,9 +132,13 @@ function handleSection(sectionParams) {
     const sectionHeadTitle = nextRowCols?.[0];
 
     if (isMerch && nextRowCols.length) {
-      nextRowCols.forEach((merchCol) => merchCol.classList.add('section-head-title'));
+      nextRowCols.forEach((merchCol) => {
+        merchCol.classList.add('section-head-title');
+        merchCol.setAttribute('role', 'rowheader');
+      });
     } else {
       sectionHeadTitle.classList.add('section-head-title');
+      sectionHeadTitle.setAttribute('role', 'rowheader');
     }
 
     if (isCollapseTable) {
