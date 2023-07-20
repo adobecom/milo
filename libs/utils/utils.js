@@ -56,6 +56,8 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'table',
+  'table-metadata',
   'tags',
   'tiktok',
   'twitter',
@@ -839,6 +841,10 @@ export async function loadArea(area = document) {
     if (georouting === 'on') {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    }
+    const appendage = getMetadata('title-append');
+    if (appendage) {
+      import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
