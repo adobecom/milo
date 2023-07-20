@@ -22,7 +22,7 @@ const defaultConfig = {
       titleHeadingLevel: 'h3',
       lastModified: 'Last modified {date}',
     },
-    detailsTextOption: "modifiedDate",
+    detailsTextOption: "default",
     setCardBorders: false,
     useOverlayLinks: false,
     banner: {
