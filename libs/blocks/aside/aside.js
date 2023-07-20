@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, decorateImageLinks } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
 const variants = ['split', 'inline', 'notification'];
@@ -52,13 +52,14 @@ function decorateStaticLinks(el) {
 }
 
 function decorateModalImage(el) {
-  const modalLink = el.querySelector('a');
-  modalLink.closest('p').classList.add('play-container');
-  modalLink.classList.add('play-btn');
-  modalLink.innerHTML = '';
+  const playContainer = createTag('p', { class: 'play-container', 'aria-label': 'play' });
+  el.parentNode.appendChild(playContainer);
+  el.parentNode.appendChild(el.querySelector('picture'));
+  playContainer.appendChild(el);
+  el.classList.add('play-btn');
   const playIconContainer = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
   const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIconContainer);
-  modalLink.appendChild(playCircle);
+  el.appendChild(playCircle);
 }
 
 function decorateIconStack(el) {
@@ -142,8 +143,9 @@ function decorateLayout(el) {
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(asideMedia);
     }
-    if (image && image.querySelector('a')?.dataset?.modalHash) {
-      decorateModalImage(image);
+    const linkedImage = el.querySelector('.foreground .image a');
+    if (image && linkedImage?.dataset?.modalHash) {
+      decorateModalImage(linkedImage);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
@@ -159,6 +161,7 @@ function decorateLayout(el) {
 
 export default function init(el) {
   const blockData = getBlockData(el);
+  decorateImageLinks(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
