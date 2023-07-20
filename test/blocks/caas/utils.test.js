@@ -31,23 +31,23 @@ const strings = {
   sortType3: 'titleAsc',
 };
 
-function fileNotFoundResponse(){
-  return new Promise(function(resolve, reject){
+function fileNotFoundResponse() {
+  return new Promise((resolve) => {
     resolve({
       ok: false,
       statusCode: 404,
-      text: () => {}
+      text: () => {},
     });
-  })
+  });
 }
 
-function htmlResponse(){
-  return new Promise(function(resolve){
+function htmlResponse() {
+  return new Promise((resolve) => {
     resolve({
       ok: true,
       text: () => {
-        let fetchCalledWith = fetch.args[0].toString();
-        let fetchLocale = fetchCalledWith.split('/')[3];
+        const fetchCalledWith = fetch.args[0].toString();
+        const fetchLocale = fetchCalledWith.split('/')[3];
         return `
             <div class="string-mappings">
               <div>
@@ -57,16 +57,18 @@ function htmlResponse(){
                 <div></div>
                 <div></div>
               </div>
-            </div>`
+            </div>`;
       },
     });
-  })
+  });
 }
 
-describe('additionalQueryParams', () => {
-  expect(arrayToObj([{key: 'a', value: 1}, {key: 'b', value: 2}])).to.be.eql({a: 1, b: 2})
-  expect(arrayToObj({})).to.be.eql({});
-})
+describe('arrayToObj', () => {
+  it('should convert array to object', () => {
+    expect(arrayToObj([{ key: 'a', value: 1 }, { key: 'b', value: 2 }])).to.be.eql({ a: 1, b: 2 });
+    expect(arrayToObj({})).to.be.eql({});
+  });
+});
 describe('loadStrings', () => {
   const ogFetch = window.fetch;
 
@@ -81,39 +83,35 @@ describe('loadStrings', () => {
   it('should fetch mappings for en_US', async () => {
     const pathname = '/tools/caas';
     const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
-    let expected = {
-      collectionTitle: ' collection title',
-    };
+    const expected = { collectionTitle: ' collection title' };
     expect(loadedStrings).to.eql(expected);
   });
 
   it('should be able to get correct page locale for en_US', () => {
-    let locale = getPageLocale('/tools/caas', mockLocales);
+    const locale = getPageLocale('/tools/caas', mockLocales);
     expect(locale).to.eql('');
   });
 
-  for(let locale of mockLocales){
+  for (const locale of mockLocales) {
     it('should be able to fetch mappings all other mockLocales ', async () => {
-      let expected = {
-        collectionTitle: `${locale} collection title`
-      };
+      const expected = { collectionTitle: `${locale} collection title` };
       const pathname = `/${locale}/tools/caas`;
-      const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
+      const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
       expect(loadedStrings).to.eql(expected);
     });
   }
 
-  for(let locale of mockLocales) {
+  for (const locale of mockLocales) {
     it('should be able to get correct page locale', () => {
-      let pageLocale = getPageLocale(`/${locale}/tools/caas`, mockLocales);
+      const pageLocale = getPageLocale(`/${locale}/tools/caas`, mockLocales);
       expect(locale).to.eql(pageLocale);
     });
   }
 
   it('should be able to handle multiple 404s', async () => {
-    const pathname = `/fr/tools/caas`;
+    const pathname = '/fr/tools/caas';
     window.fetch = stub().returns(fileNotFoundResponse());
-    const loadedStrings = await loadStrings(`https://milo.adobe.com/drafts/caas/mappings`, pathname, mockLocales);
+    const loadedStrings = await loadStrings('https://milo.adobe.com/drafts/caas/mappings', pathname, mockLocales);
     expect(loadedStrings).to.eql({});
   });
 });
@@ -134,7 +132,7 @@ describe('getConfig', () => {
   state.filters = [
     {
       filterTag: [
-        'caas:business-unit/creative-cloud',
+        'caas:industry/life-sciences',
       ],
       openedOnLoad: true,
       icon: '',
@@ -142,12 +140,13 @@ describe('getConfig', () => {
     },
     {
       filterTag: [
-        'caas:product-categories',
+        'caas:journey-phase',
       ],
       openedOnLoad: '',
       icon: '/path/to/icon.svg',
       excludeTags: [
-        'caas:product-categories/video',
+        'caas:journey-phase/use-re-invest',
+        'caas:journey-phase/expansion',
       ],
     },
   ];
@@ -166,7 +165,7 @@ describe('getConfig', () => {
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
-        ctaAction: "_blank",
+        ctaAction: '_blank',
         showTotalResults: false,
         i18n: {
           cardTitleAccessibilityLevel: 6,
@@ -175,7 +174,7 @@ describe('getConfig', () => {
           title: '',
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
-          titleHeadingLevel: 'h3'
+          titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
         useOverlayLinks: false,
@@ -199,43 +198,39 @@ describe('getConfig', () => {
         showEmptyFilters: false,
         filters: [
           {
-            group: 'Creative Cloud',
-            id: 'caas:business-unit/creative-cloud',
+            group: 'Life Sciences',
+            id: 'caas:industry/life-sciences',
             items: [],
             openedOnLoad: true,
           },
           {
-            group: 'Product Categories',
+            group: 'Journey Phase',
             icon: '/path/to/icon.svg',
-            id: 'caas:product-categories',
+            id: 'caas:journey-phase',
             items: [
               {
-                id: 'caas:product-categories/3d-and-ar',
-                label: '3D and AR',
+                id: 'caas:journey-phase/acceleration',
+                label: 'Acceleration',
               },
               {
-                id: 'caas:product-categories/acrobat-and-pdf',
-                label: 'Acrobat and PDF',
+                id: 'caas:journey-phase/acquisition',
+                label: 'Acquisition',
               },
               {
-                id: 'caas:product-categories/graphic-design',
-                label: 'Graphic Design',
+                id: 'caas:journey-phase/discover',
+                label: 'Discover',
               },
               {
-                id: 'caas:product-categories/illustration',
-                label: 'Illustration',
+                id: 'caas:journey-phase/evaluate',
+                label: 'Evaluate',
               },
               {
-                id: 'caas:product-categories/photo',
-                label: 'Photo',
+                id: 'caas:journey-phase/explore',
+                label: 'Explore',
               },
               {
-                id: 'caas:product-categories/social-media',
-                label: 'Social Media',
-              },
-              {
-                id: 'caas:product-categories/ui-and-ux',
-                label: 'UI and UX',
+                id: 'caas:journey-phase/retention',
+                label: 'Retention',
               },
             ],
             openedOnLoad: false,
@@ -324,23 +319,19 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
-      "customCard": [
-        "card",
-        "return ``"
+      customCard: [
+        'card',
+        'return ``',
       ],
-    analytics: { trackImpressions: '', collectionIdentifier: '' },
+      analytics: { trackImpressions: '', collectionIdentifier: '' },
       target: {
         enabled: true,
-        lastViewedSession: "",
+        lastViewedSession: '',
       },
     });
   });
 
-  describe('getCountryAndLang', () => {
-    const caasCfg = {
-      country: 'caas:country/ec',
-      language: 'caas:laguange/es',
-    };
+  it('should return localized filters', async () => {
     const cfg = {
       pathname: '/be_fr/blah.html',
       locales: {
@@ -348,53 +339,248 @@ describe('getConfig', () => {
         be_fr: { ietf: 'fr-BE' },
       },
     };
-
-    it('should use country and lang from CaaS Config', () => {
-      setConfig(cfg);
-      const expected = getCountryAndLang({
-        ...caasCfg,
-        autoCountryLang: false,
-      });
-      expect(expected).to.deep.eq({
-        country: 'ec',
-        language: 'es',
-      });
+    setConfig(cfg);
+    const myState = JSON.parse(JSON.stringify(state));
+    myState.language = 'fr';
+    myState.country = 'be';
+    const config = await getConfig(myState, strings);
+    expect(config).to.be.eql({
+      collection: {
+        mode: 'lightest',
+        layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
+        button: { style: 'primary' },
+        collectionButtonStyle: 'primary',
+        resultsPerPage: 5,
+        endpoint:
+          'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=a%2Cb&environment=&draft=false&size=10&flatFile=false',
+        fallbackEndpoint: '',
+        totalCardsToShow: 10,
+        cardStyle: 'half-height',
+        ctaAction: '_blank',
+        showTotalResults: false,
+        i18n: {
+          cardTitleAccessibilityLevel: 6,
+          prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
+          totalResultsText: '{total} Results',
+          title: '',
+          onErrorTitle: 'Error Loading Title',
+          onErrorDescription: 'Error Desc',
+          titleHeadingLevel: 'h3',
+        },
+        setCardBorders: false,
+        useOverlayLinks: false,
+        additionalRequestParams: {},
+        banner: {
+          register: { description: 'Sign Up', url: '#registration' },
+          upcoming: { description: 'Upcoming' },
+          live: { description: 'Live' },
+          onDemand: { description: 'On Demand' },
+        },
+        useLightText: false,
+        disableBanners: false,
+        reservoir: { sample: 3, pool: 1000 },
+      },
+      featuredCards: ['a', 'b'],
+      hideCtaIds: [''],
+      filterPanel: {
+        enabled: true,
+        eventFilter: '',
+        type: 'left',
+        showEmptyFilters: false,
+        filters: [
+          {
+            group: 'Sciences de la vie',
+            id: 'caas:industry/life-sciences',
+            items: [],
+            openedOnLoad: true,
+          },
+          {
+            group: 'Journey Phase',
+            icon: '/path/to/icon.svg',
+            id: 'caas:journey-phase',
+            items: [
+              {
+                id: 'caas:journey-phase/acceleration',
+                label: 'Accélération',
+              },
+              {
+                id: 'caas:journey-phase/acquisition',
+                label: 'Acquisition',
+              },
+              {
+                id: 'caas:journey-phase/discover',
+                label: 'Découvrir',
+              },
+              {
+                id: 'caas:journey-phase/explore',
+                label: 'Explorer',
+              },
+              {
+                id: 'caas:journey-phase/retention',
+                label: 'Fidélisation',
+              },
+              {
+                id: 'caas:journey-phase/evaluate',
+                label: 'Évaluation',
+              },
+            ],
+            openedOnLoad: false,
+          },
+        ],
+        filterLogic: 'or',
+        i18n: {
+          leftPanel: {
+            header: 'Refine Your Results',
+            clearAllFiltersText: 'Clear All',
+            mobile: {
+              filtersBtnLabel: 'Filters',
+              panel: {
+                header: 'Filter by',
+                totalResultsText: '{total} Results',
+                applyBtnText: 'Apply',
+                clearFilterText: 'Clear',
+                doneBtnText: 'Done',
+              },
+              group: {
+                totalResultsText: '{total} Results',
+                applyBtnText: 'Apply',
+                clearFilterText: 'Clear',
+                doneBtnText: 'Done',
+              },
+            },
+          },
+          topPanel: {
+            groupLabel: 'Filters:',
+            clearAllFiltersText: 'Clear All',
+            moreFiltersBtnText: 'More Filters +',
+            mobile: {
+              group: {
+                totalResultsText: '{total} Results',
+                applyBtnText: 'Apply',
+                clearFilterText: 'Clear',
+                doneBtnText: 'Done',
+              },
+            },
+          },
+        },
+      },
+      sort: {
+        enabled: false,
+        defaultSort: 'dateDesc',
+        options: [],
+      },
+      pagination: {
+        animationStyle: 'paged',
+        enabled: false,
+        resultsQuantityShown: false,
+        loadMoreButton: { style: 'primary', useThemeThree: false },
+        type: 'paginator',
+        i18n: {
+          loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
+          paginator: {
+            resultsQuantityText: '{start} - {end} of {total} results',
+            prevLabel: 'Prev',
+            nextLabel: 'Next',
+          },
+        },
+      },
+      bookmarks: {
+        showOnCards: false,
+        leftFilterPanel: {
+          bookmarkOnlyCollection: false,
+          showBookmarksFilter: false,
+          selectBookmarksIcon: '',
+          unselectBookmarksIcon: '',
+        },
+        i18n: {
+          leftFilterPanel: { filterTitle: 'My favorites' },
+          card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
+        },
+      },
+      search: {
+        enabled: false,
+        searchFields: [],
+        i18n: {
+          noResultsTitle: 'No Results Found',
+          noResultsDescription: 'Try checking your spelling or broadening your search.',
+          leftFilterPanel: { searchTitle: 'Search', searchPlaceholderText: 'Search Here' },
+          topFilterPanel: { searchPlaceholderText: 'Search Here' },
+          filterInfo: { searchPlaceholderText: 'Search Here' },
+        },
+      },
+      language: 'fr',
+      country: 'be',
+      customCard: [
+        'card',
+        'return ``',
+      ],
+      analytics: { trackImpressions: '', collectionIdentifier: '' },
+      target: {
+        enabled: true,
+        lastViewedSession: '',
+      },
     });
+  });
+});
 
-    it('should use default country and lang from CaaS Config', () => {
-      setConfig(cfg);
-      const expected = getCountryAndLang({ autoCountryLang: false });
-      expect(expected).to.deep.eq({
-        country: 'us',
-        language: 'en',
-      });
+describe('getCountryAndLang', () => {
+  const caasCfg = {
+    country: 'caas:country/ec',
+    language: 'caas:laguange/es',
+  };
+  const cfg = {
+    pathname: '/be_fr/blah.html',
+    locales: {
+      '': { ietf: 'en-US' },
+      be_fr: { ietf: 'fr-BE' },
+    },
+  };
+
+  it('should use country and lang from CaaS Config', () => {
+    setConfig(cfg);
+    const expected = getCountryAndLang({
+      ...caasCfg,
+      autoCountryLang: false,
     });
-
-    it('should use country and lang from locale in Milo Config', () => {
-      setConfig(cfg);
-      const expected = getCountryAndLang({
-        ...caasCfg,
-        autoCountryLang: true,
-      });
-      expect(expected).to.deep.eq({
-        country: 'be',
-        language: 'fr',
-      });
+    expect(expected).to.deep.eq({
+      country: 'ec',
+      language: 'es',
     });
+  });
 
-    it('should use default country and lang from locale in Milo Config', () => {
-      setConfig({
-        ...cfg,
-        pathname: '/whatever/blah.html',
-      });
-      const expected = getCountryAndLang({
-        ...caasCfg,
-        autoCountryLang: true,
-      });
-      expect(expected).to.deep.eq({
-        country: 'us',
-        language: 'en',
-      });
+  it('should use default country and lang from CaaS Config', () => {
+    setConfig(cfg);
+    const expected = getCountryAndLang({ autoCountryLang: false });
+    expect(expected).to.deep.eq({
+      country: 'us',
+      language: 'en',
+    });
+  });
+
+  it('should use country and lang from locale in Milo Config', () => {
+    setConfig(cfg);
+    const expected = getCountryAndLang({
+      ...caasCfg,
+      autoCountryLang: true,
+    });
+    expect(expected).to.deep.eq({
+      country: 'be',
+      language: 'fr',
+    });
+  });
+
+  it('should use default country and lang from locale in Milo Config', () => {
+    setConfig({
+      ...cfg,
+      pathname: '/whatever/blah.html',
+    });
+    const expected = getCountryAndLang({
+      ...caasCfg,
+      autoCountryLang: true,
+    });
+    expect(expected).to.deep.eq({
+      country: 'us',
+      language: 'en',
     });
   });
 });
