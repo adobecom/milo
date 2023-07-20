@@ -53,14 +53,15 @@ describe('Quiz', () => {
   });
 
   it('returns a function that concatenates quizConfigPath and filepath', () => {
-    const getConfigPath = initConfigPath(document.body);
-    expect(getConfigPath('config.json')).to.equal('https://main--milo--adobecom.hlx.page/drafts/sabya/quiz-2/config.json');
+    const result = initConfigPath({ quizurl: { text: 'https://adobe.com.com/' } });
+    const innerResult = result('questions.json');
+    expect(innerResult).to.equal('https://adobe.com.com/questions.json');
   });
 
   it('returns a function that concatenates stringsPath and filepath if stringsPath is present', () => {
     const urlSearchParams = sinon.stub(URLSearchParams.prototype, 'get');
     urlSearchParams.returns('alternate-data');
-    const getConfigPath = initConfigPath(document);
+    const getConfigPath = initConfigPath({ quizurl: { text: 'https://adobe.com/' } });
     expect(getConfigPath('config.json')).to.equal('alternate-data/config.json');
     urlSearchParams.restore();
   });

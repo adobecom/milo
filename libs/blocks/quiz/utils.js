@@ -9,9 +9,8 @@ const RESULTS_EP_NAME = 'results.json';
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 const { locale } = getConfig();
 
-export const initConfigPath = (rootElm) => {
-  const link = rootElm.querySelector('.quiz > div > div > a');
-  const quizConfigPath = link?.text?.toLowerCase() || '';
+export const initConfigPath = (quizMetaData) => {
+  const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
   const urlParams = new URLSearchParams(window.location.search);
   const stringsPath = urlParams.get('quiz-data');
   if (stringsPath) {
@@ -36,7 +35,7 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
-  configPath = initConfigPath(rootElement);
+  configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
