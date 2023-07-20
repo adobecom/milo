@@ -41,6 +41,10 @@ dl.accordion {
   color: var(--color-black);
 }
 
+.accordion dt .accordion-heading {
+  margin: 0;
+}
+
 .accordion-icon {
   position: absolute;
   right: var(--spacing-xs);

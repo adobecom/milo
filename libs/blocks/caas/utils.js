@@ -248,9 +248,9 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
-const getCountryAndLang = ({ autoCountryLang, country, language }) => {
+export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const htmlLang = document.documentElement.getAttribute('lang')?.toLowerCase() || 'en-us';
+    const htmlLang = pageConfigHelper()?.locale?.ietf?.toLowerCase() || 'en-us';
     const [lang, cntry] = htmlLang.split('-');
     return {
       country: cntry,
@@ -261,7 +261,7 @@ const getCountryAndLang = ({ autoCountryLang, country, language }) => {
     country: country ? country.split('/').pop() : 'us',
     language: language ? language.split('/').pop() : 'en',
   };
-};
+}
 
 export function arrayToObj(input = []) {
   const obj = {};
