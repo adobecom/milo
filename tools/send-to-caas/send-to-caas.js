@@ -113,6 +113,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
   let okToContinue = false;
   let draftOnly = false;
   let caasEnv;
+  window.useHTML = false;
 
   const seeAllPropsBtn = {
     text: 'See all properties',
@@ -132,6 +133,12 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       <div id="caas-draft-cb">
         <input type="checkbox" id="draftcb" name="draftcb">
         <label for="draftcb">Publish to Draft only</label>
+      </div>
+      <div id="caas-use-html-cb" class="field checkbox">
+        <input type="checkbox" id="caasusehtml" name="caasusehtml" onclick="function toggleUseHtml(){
+            window.useHTML = !window.useHTML;
+        }; toggleUseHtml();">
+        <label for="usehtml">Use .html extension</label>
       </div>
     </div>`;
 
@@ -184,9 +191,19 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
 };
 
 const validateProps = async (prodHost, publishingModal) => {
-  const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: `${prodHost}${window.location.pathname}` });
+  let caasMetadata, errors, tags, tagErrors = null;
+  await setCardMetadata();
 
-  const showAllPropertiesAlert = () => {
+  async function setCardMetadata(){
+    let card = await getCardMetadata({ prodUrl: `${prodHost}${window.location.pathname}` });
+    caasMetadata = card.caasMetadata
+    errors = card.errors;
+    tags = card.tags;
+    tagErrors = card.tagErrors;
+  }
+
+  const showAllPropertiesAlert = async () => {
+    await setCardMetadata();
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${JSON.stringify(caasMetadata, undefined, 4)}</pre>`);
   };
 
@@ -195,6 +212,11 @@ const validateProps = async (prodHost, publishingModal) => {
     tagErrors,
     showAllPropertiesAlert,
   );
+
+  if (window.useHTML) {
+    await setCardMetadata();
+    window.useHTML = false;
+  }
 
   if (!okToContinue) {
     setPublishingFalse();

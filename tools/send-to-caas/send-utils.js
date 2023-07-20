@@ -584,6 +584,9 @@ const getCaaSMetadata = async (pageMd, options) => {
 
 const getCardMetadata = async (options) => {
   const pageMd = parseCardMetadata();
+  if(window.useHTML){
+    options.prodUrl = options.prodUrl + ".html";
+  }
   return getCaaSMetadata(pageMd, options);
 };
 
