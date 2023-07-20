@@ -19,13 +19,14 @@ function defineDeviceByScreenSize() {
 
 function handleHeading(headingCols) {
   headingCols.forEach((col, i) => {
+    col.classList.add('col-heading');
+
     if (!col.innerHTML) {
       col.classList.add('hidden');
       return;
     }
 
-    col.classList.add('col-heading');
-    if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+    if (!col.classList.contains('no-rounded') && headingCols[i - 1] && !headingCols[i - 1].innerText) {
       col.classList.add('top-left-rounded');
     }
 
@@ -73,7 +74,7 @@ function handleHighlight(table) {
 
     firstRowCols.forEach((col, i) => {
       col.classList.add('col-highlight');
-      const hasText = headingCols[i]?.innerText && col.innerText;
+      const hasText = col.innerText;
       if (hasText) {
         headingCols[i].classList.add('no-rounded');
       } else if (!headingCols[i]?.innerText) {
@@ -363,6 +364,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter1.addEventListener('change', filterChangeEvent);
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
+      table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
     }
   };
 
