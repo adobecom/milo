@@ -53,31 +53,13 @@ export const loadStrings = async (
   }
 };
 
-// export const loadCaasFiles = async () => {
-//   const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
-
-//   loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
-//   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
-//   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
-//   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
-// };
-
 export const loadCaasFiles = async () => {
-  let version = new URL(document.location.href)?.searchParams?.get('caasver') || 'latest';
-  let cssFile = `https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.css`;
-  let jsFile = `https://www.adobe.com/special/chimera/${version}/dist/dexter/app.min.js`;
+  const version = new URL(document.location.href)?.searchParams?.get('caasver') || 'stable';
 
-  const server = (version !== 'latest' && version === 'local') ? 'localhost' : version;
-  if (version !== 'latest' && server.length > 0) {
-    version = 'latest';
-    cssFile = `http://${server}.corp.adobe.com:5000/dist/app.css`;
-    jsFile = `http://${server}.corp.adobe.com:5000/dist/main.js`;
-  }
-
-  loadStyle(cssFile);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/${version}/dist/dexter/react.dom.umd.js`);
-  await loadScript(jsFile);
+  loadStyle(`https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
+  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`);
 };
 
 export const loadCaasTags = async (tagsUrl) => {

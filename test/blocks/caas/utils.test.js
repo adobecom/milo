@@ -166,10 +166,12 @@ describe('getConfig', () => {
         fallbackEndpoint: '',
         totalCardsToShow: 10,
         cardStyle: 'half-height',
-        ctaAction: "_blank",
+        ctaAction: '_blank',
+        detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
           cardTitleAccessibilityLevel: 6,
+          lastModified: 'Last modified {date}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
