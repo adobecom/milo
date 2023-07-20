@@ -69,3 +69,13 @@ export const stubLogin = stub().returns('Logged in')
 export const restoreFetch = () => {
   window.fetch = ogFetch;
 };
+
+export const stubGetconfig = () => {
+  window.fetch.withArgs(`http://localhost:2000/.milo/config.json`).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: false,
+      });
+    }),
+  );
+};

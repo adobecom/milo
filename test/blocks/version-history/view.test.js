@@ -2,15 +2,17 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { stubLogin, stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions } from './mockFetch.js';
+import { stubLogin, stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig } from './mockFetch.js';
 import { createHistoryTag } from '../../../libs/blocks/version-history/index.js';
 import View from '../../../libs/blocks/version-history/view.js';
+import { setStatus } from '../../../libs/tools/sharepoint/state.js';
 
 describe('View', () => {
   before(() => {
     stubFetch();
     stubFetchVersions();
     stubCreateVersions();
+    stubGetconfig();
   })
 
   after(() => {
@@ -25,6 +27,7 @@ describe('View', () => {
   it('should display text area', async () => {
     const commentElem = await waitForElement('.comment-container');
     const textAreaElem = commentElem.querySelector('textarea');
+    setStatus('config', 'info', 'displayed', '', 1000);
     expect(textAreaElem).to.exist;
   });
 
