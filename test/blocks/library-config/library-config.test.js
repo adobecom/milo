@@ -158,12 +158,10 @@ describe('Library Config: containers', () => {
     const singleBlockWithoutMetadataSearchTags = getSearchTags(containers[0]);
     const singleBlockWithMetadataSearchTags = getSearchTags(containers[1]);
     const containerWithH2TitleAndSearchTags = getSearchTags(containers[2]);
-    const containerWithMetadataTitleAndSearchTags = getSearchTags(containers[3]);
     const containerWithBlockTitleAndSearchTags = getSearchTags(containers[4]);
     expect(singleBlockWithoutMetadataSearchTags).to.equal('carousel (container0)');
     expect(singleBlockWithMetadataSearchTags).to.equal('tag1 carousel (container1)');
     expect(containerWithH2TitleAndSearchTags).to.equal('tag2 Carousel (container2)');
-    expect(containerWithMetadataTitleAndSearchTags).to.equal('tag3 container3-title-from-metadata');
     expect(containerWithBlockTitleAndSearchTags).to.equal('tag4 carousel (lightbox4)');
   });
 

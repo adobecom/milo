@@ -38,15 +38,9 @@ function getBlockName(block) {
   return classes.length > 0 ? `${name} (${classes.join(', ')})` : name;
 }
 
-function getMetadataName(container) {
-  if (!container[LIBRARY_METADATA]) return null;
-  const libraryMetadata = getMetadata(container[LIBRARY_METADATA]);
-  return libraryMetadata?.title?.text || null;
-}
-
 function getContainerName(container) {
   const firstBlock = container.elements?.[0];
-  return getAuthorName(container) || getMetadataName(container) || getBlockName(firstBlock);
+  return getAuthorName(container) || getBlockName(firstBlock);
 }
 
 function getTable(block) {
