@@ -76,7 +76,7 @@ function handleHighlight(table) {
       col.classList.add('col-highlight');
       const hasText = col.innerText;
       if (hasText) {
-        headingCols[i].classList.add('no-rounded');
+        headingCols[i]?.classList.add('no-rounded');
       } else if (!headingCols[i]?.innerText) {
         col.classList.add('hidden');
         headingCols[i]?.classList.add('hidden');
