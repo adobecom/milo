@@ -17,6 +17,10 @@
   color: rgb(34 34 34);
 }
 
+.section.static-links a:not([class]) {
+  color: inherit;
+}
+
 .section.has-background {
   background-color: unset;
 }

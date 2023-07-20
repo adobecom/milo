@@ -32,10 +32,10 @@ const blockConfig = {
     [large]: ['l', 'm'],
   },
 };
-const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="play-icon">
-                      <path d="M8 5v14l11-7z"></path> 
-                      <path d="M0 0h24v24H0z" fill="none"></path>
-                  </svg>`;
+const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
+                    <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
+                  </svg>
+                  `;
 const ASPECT_RATIO = /^format:/i;
 
 function getBlockData(el) {
@@ -56,7 +56,8 @@ function decorateModalImage(el) {
   modalLink.closest('p').classList.add('play-container');
   modalLink.classList.add('play-btn');
   modalLink.innerHTML = '';
-  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, PLAY_ICON);
+  const playIconContainer = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
+  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIconContainer);
   modalLink.appendChild(playCircle);
 }
 
