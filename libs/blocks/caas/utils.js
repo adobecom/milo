@@ -366,7 +366,7 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state, strs, country, language),
+      filters: await getFilterArray(state, country, language),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
