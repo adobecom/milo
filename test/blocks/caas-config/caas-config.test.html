@@ -195,7 +195,7 @@
       });
 
       it('Details text option should be modified date', async () => {
-        const detailsSelectEl = findByLabel('detailsTextOption', configPanelEl);
+        const detailsSelectEl = findByLabel('Details Text', configPanelEl);
         detailsSelectEl.value = 'modifiedDate';
         detailsSelectEl.dispatchEvent(new Event('change'));
 
