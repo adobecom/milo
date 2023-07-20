@@ -62,10 +62,9 @@ function decorateModalImage(el) {
 }
 
 function decorateIconStack(el) {
-  const ulElems = el.querySelectorAll('ul');
-  if (el.classList.contains('icon-stack') && ulElems.length) {
-    const iconStackArea = ulElems[ulElems.length - 1];
-    iconStackArea.classList.add('icon-stack-area', 'body-s');
+  const ulEl = el.querySelector('ul');
+  if (ulEl) {
+    ulEl.classList.add('icon-stack-area', 'body-s');
   }
 }
 
