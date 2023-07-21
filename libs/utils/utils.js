@@ -681,7 +681,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     persEnabled,
     persManifests,
     utils: {
-      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
+      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig, getPageSearchParams,
     },
   });
 
