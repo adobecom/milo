@@ -16,8 +16,8 @@ jobs:
         with:
           node-version: 18
 
-      # - name: Install dependencies
-      #   run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run eslint on changed files
         uses: tj-actions/eslint-changed-files@v20
