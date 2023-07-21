@@ -87,7 +87,7 @@ jobs:
           }
 
           end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
-          release_details=${{ github.event.pull_request.body }} | sed ':a;N;$!ba;s/\n//g'
+          release_details="${{ github.event.pull_request.body }}" | sed ':a;N;$!ba;s/\n//g'
           echo $release_details
           echo $start_date
           echo $end_date
