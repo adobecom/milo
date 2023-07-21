@@ -19,13 +19,14 @@ function defineDeviceByScreenSize() {
 
 function handleHeading(headingCols) {
   headingCols.forEach((col, i) => {
+    col.classList.add('col-heading');
+
     if (!col.innerHTML) {
       col.classList.add('hidden');
       return;
     }
 
-    col.classList.add('col-heading');
-    if (headingCols[i - 1] && !headingCols[i - 1].innerText) {
+    if (!col.classList.contains('no-rounded') && headingCols[i - 1] && !headingCols[i - 1].innerText) {
       col.classList.add('top-left-rounded');
     }
 
@@ -73,9 +74,9 @@ function handleHighlight(table) {
 
     firstRowCols.forEach((col, i) => {
       col.classList.add('col-highlight');
-      const hasText = headingCols[i]?.innerText && col.innerText;
+      const hasText = col.innerText;
       if (hasText) {
-        headingCols[i].classList.add('no-rounded');
+        headingCols[i]?.classList.add('no-rounded');
       } else if (!headingCols[i]?.innerText) {
         col.classList.add('hidden');
         headingCols[i]?.classList.add('hidden');
@@ -102,8 +103,10 @@ function handleExpand(e) {
   e.setAttribute('aria-expanded', expanded.toString());
   while (nextElement && !nextElement.classList.contains('divider')) {
     if (expanded) {
+      sectionHead.classList.remove('section-head-collaped');
       nextElement.classList.remove('hidden');
     } else {
+      sectionHead.classList.add('section-head-collaped');
       nextElement.classList.add('hidden');
     }
     nextElement = nextElement.nextElementSibling;
@@ -131,9 +134,13 @@ function handleSection(sectionParams) {
     const sectionHeadTitle = nextRowCols?.[0];
 
     if (isMerch && nextRowCols.length) {
-      nextRowCols.forEach((merchCol) => merchCol.classList.add('section-head-title'));
+      nextRowCols.forEach((merchCol) => {
+        merchCol.classList.add('section-head-title');
+        merchCol.setAttribute('role', 'rowheader');
+      });
     } else {
       sectionHeadTitle.classList.add('section-head-title');
+      sectionHeadTitle.setAttribute('role', 'rowheader');
     }
 
     if (isCollapseTable) {
@@ -145,6 +152,7 @@ function handleSection(sectionParams) {
         expandSection = false;
       } else {
         iconTag.setAttribute('aria-expanded', 'false');
+        nextRow.classList.add('section-head-collaped');
         let nextElement = row.nextElementSibling;
         while (nextElement && !nextElement.classList.contains('divider')) {
           nextElement.classList.add('hidden');
@@ -363,6 +371,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter1.addEventListener('change', filterChangeEvent);
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
+      table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
     }
   };
 
