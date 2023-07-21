@@ -243,11 +243,11 @@ describe('Utils', () => {
     describe('rtlSupport', () => {
       before(async () => {
         config.locales = {
-          '': { ietf: 'en-US', lang: 'en', reg: 'US', tk: 'hah7vzn.css' },
-          africa: { ietf: 'en', lang: 'en', reg: '002', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', lang: 'he', reg: 'IL', tk: 'nwq1mna.css', dir: 'rtl' },
-          langstore: { ietf: 'en-US', lang: 'en', reg: 'US', tk: 'hah7vzn.css' },
-          mena_ar: { ietf: 'ar', lang: 'ar', reg: '', tk: 'dis2dpj.css', dir: 'rtl' },
+          '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+          africa: { ietf: 'en', tk: 'pps7abe.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
