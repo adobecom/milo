@@ -63,26 +63,37 @@ function decorateModalImage(el) {
 }
 
 function decorateIconStack(el) {
-  const ulEl = el.querySelector('ul');
-  if (ulEl) {
-    ulEl.classList.add('icon-stack-area', 'body-s');
+  if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
+  const stackEl = el.querySelector('ul img');
+  if (stackEl) {
+    stackEl.closest('ul').classList.add('icon-stack-area', 'body-s');
   }
 }
 
-function decorateImage(el) {
-  const mediaPtags = el.querySelectorAll(':scope > div.image > p');
-  const ptag = (mediaPtags.length > 1)
-  && [...mediaPtags].filter((mediaPtag) => mediaPtag.textContent.match(ASPECT_RATIO)?.index >= 0);
-  if (ptag.length) {
-    const formats = ptag[0].textContent.split(': ')[1]?.split(/\s+/);
+function decorateMedia(el) {
+  if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
+  const allMedia = el.querySelectorAll('div > p video, div > p picture');
+  let processed = false;
+  allMedia.forEach((media) => {
+    if (processed) return;
+    const parentP = media.closest('p');
+    const siblingP = parentP?.nextElementSibling;
+    if (!siblingP || siblingP.nodeName.toLowerCase() !== 'p') return;
+    const siblingText = siblingP.textContent;
+    const hasFormats = siblingText.match(ASPECT_RATIO)?.index;
+    if (!(hasFormats === 0)) return;
+    processed = true;
+    const formats = siblingText.split(': ')[1]?.split(/\s+/);
     const formatClasses = formats ? ['format',
       `mobile-${formats[0]}`,
       `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
       `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
     ] : [];
-    el.querySelector(':scope > div.image').classList.add(...formatClasses);
-    ptag[0].remove();
-  }
+    media.closest('div').classList.add(...formatClasses);
+    siblingP.remove();
+    media.closest('div').insertBefore(media, parentP);
+    parentP.remove();
+  });
 }
 
 function decorateVideo(container) {
@@ -122,6 +133,7 @@ function decorateLayout(el) {
   if (elems.length > 1) decorateBlockBg(el, elems[0]);
   const foreground = elems[elems.length - 1];
   foreground.classList.add('foreground', 'container');
+  if (el.classList.contains('split')) decorateMedia(el);
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
@@ -150,12 +162,7 @@ function decorateLayout(el) {
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
   }
-  if (el.classList.contains('split')
-  && (el.classList.contains('medium')
-  || el.classList.contains('large'))) {
-    decorateIconStack(el);
-    decorateImage(el);
-  }
+  if (el.classList.contains('split')) decorateIconStack(el);
   return foreground;
 }
 

@@ -45,6 +45,16 @@
   height: 100%;
 }
 
+.aside .split-image img,
+.aside .background img,
+.aside .split-image video,
+.aside .background video,
+.aside .split-image .play-container {
+  object-fit: cover;
+  min-height: 700px;
+  width: 100%;
+  height: 100%;
+}
 
 .aside .background video {
   display: block;
@@ -65,17 +75,6 @@
   top: 0;
 }
 
-.aside .split-image img,
-.aside .background img,
-.aside .split-image video,
-.aside .background video,
-.aside .split-image .play-container {
-  object-fit: cover;
-  min-height: 700px;
-  width: 100%;
-  height: 100%;
-}
-
 .aside.notification .background img {
   min-height: unset;
 }
@@ -87,10 +86,6 @@
   justify-content: center;
   flex-direction: column;
   gap: var(--spacing-xl);
-}
-
-.aside .foreground.container .image {
-  position: relative;
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :first-child {
@@ -107,6 +102,10 @@
   align-content: center;
 }
 
+.aside .foreground.container .image {
+  position: relative;
+}
+
 .aside.notification .foreground.container .text {
   max-width: none;
   padding-top: 0;
@@ -115,6 +114,11 @@
 
 .aside.notification .foreground.container .text a {
   white-space: nowrap;
+}
+
+.aside .foreground.container .text .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0;
 }
 
 .aside:not(.notification) .foreground.container .text > * {
@@ -133,14 +137,14 @@
 
 .aside .foreground.container .text .action-area {
   margin-bottom: 0;
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
 }
 
-.aside .foreground.container .text .supplemental-text {
-  padding-top: var(--spacing-s);
-  margin-bottom: 0;
+.aside .foreground.container .text .action-area > a {
+  margin-right: var(--spacing-s);
+}
+
+.aside .foreground.container .text .action-area > a:last-child {
+  margin-right: 0;
 }
 
 .aside .foreground.container > div {
@@ -164,16 +168,6 @@
   margin-bottom: var(--spacing-s);
 }
 
-.aside.simple .foreground.container .text {
-  margin-bottom: 80px;
-}
-
-.aside.split .foreground.container .text {
-  padding: var(--spacing-l) 0;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-}
-
 .aside .foreground.container .icon-area .icon {
   color: transparent;
 }
@@ -185,13 +179,18 @@
   min-height: 270px;
 }
 
-.aside.split .image.format img,
-.aside.split .image.format video {
+.aside.split .icon-stack-area li img {
+  height: 40px;
+  width: 40px;
+}
+
+.aside.split .format img,
+.aside.split .format video {
   height: auto;
 }
 
-.aside.split .image.format picture,
-.aside.split .image.format video {
+.aside.split .format picture,
+.aside.split .format video {
   display: flex;
   height: 100%;
   align-items: center;
@@ -205,9 +204,8 @@
   object-position: left top;
 }
 
-.aside.split .icon-stack-area li img {
-  height: 40px;
-  width: 40px;
+.aside.simple .foreground.container .text {
+  margin-bottom: 80px;
 }
 
 .aside.simple .foreground.container .image {
@@ -229,10 +227,20 @@
   z-index: 1;
 }
 
+.aside.split .foreground.container .text {
+  padding: var(--spacing-l) 0;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
 .aside.inline .foreground.container .image,
 .aside.inline .foreground.container div:has(.milo-video),
 .aside.inline .foreground.container .text {
   padding: 0;
+}
+
+.aside.split .background {
+  position: relative;
 }
 
 .aside.split.large .background {
@@ -523,18 +531,18 @@
     height: 83px;
   }
 
-  .aside.split .image.mobile-square img,
-  .aside.split .image.mobile-square video {
+  .aside.split .mobile-square img,
+  .aside.split .mobile-square video {
     aspect-ratio: 1/1;
   }
 
-  .aside.split .image.mobile-wide img,
-  .aside.split .image.mobile-wide video {
+  .aside.split .mobile-wide img,
+  .aside.split .mobile-wide video {
     aspect-ratio: 16/9;
   }
 
-  .aside.split .image.mobile-standard img,
-  .aside.split .image.mobile-standard video {
+  .aside.split .mobile-standard img,
+  .aside.split .mobile-standard video {
     aspect-ratio: 4/3;
   }
 
@@ -547,17 +555,25 @@
   .aside.split .split-image {
     position: relative;
   }
+  
+  .aside.split .foreground.container .text .icon-stack-area {
+    flex-direction: column;
+  }
 }
 
 @media screen and (min-width:600px) and (max-width:1200px) {
-  .aside.split .image.tablet-wide img,
-  .aside.split .image.tablet-wide video {
+  .aside.split .tablet-wide img,
+  .aside.split .tablet-wide video {
     aspect-ratio: 16/9;
   }
 
-  .aside.split .image.tablet-standard img,
-  .aside.split .image.tablet-standard video {
+  .aside.split .tablet-standard img,
+  .aside.split .tablet-standard video {
     aspect-ratio: 4/3;
+  }
+  
+  .aside.split .foreground.container .text .icon-stack-area {
+    flex-direction: column;
   }
 }
 
@@ -630,25 +646,25 @@
     flex-direction: column;
   }
 
-  .aside.split .split-image .play-container,
   .aside.split .split-image img,
-  .aside.split .split-image video {
+  .aside.split .split-image .play-container,
+  .aside.split .split-image video  {
     width: 60.5vw;
     max-width: 56%;
     position: absolute;
     right: 0;
     object-fit: cover;
     object-position: center top;
-  }  
+  }
 
-  .aside.split.half .split-image .play-container,
   .aside.split.half .split-image img,
+  .aside.split.half .split-image .play-container,
   .aside.split.half .split-image video {
     width: 50vw;
     max-width: 1396px;
     object-position: left top;
   }
-  
+
   .aside.split.split-left .split-image .play-container,
   .aside.split.split-left .split-image img,
   .aside.split.split-left .split-image video {
@@ -779,7 +795,7 @@
     width: 40px;
     height: 40px;
   }
-
+  
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 80px;
   }
@@ -795,18 +811,12 @@
     height: 80px;
     margin-bottom: var(--spacing-xs);
   }
-  
+
   .aside.medium.split.bio .foreground.container .text .icon-area img,
   .aside.large.split.bio .foreground.container .text .icon-area img {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-  }
-}
-
-@media screen and (max-width: 1200px) { 
-  .aside.split .foreground.container .text .icon-stack-area {
-    flex-direction: column;
   }
 }
 
@@ -874,6 +884,46 @@
     flex: 0 0 calc(36% - var(--spacing-s));
   }
 
+  .aside.medium.split .foreground.container .text,
+  .aside.large.split .foreground.container .text,
+  .aside.medium.split.bio .foreground.container .text,
+  .aside.large.split.bio .foreground.container .text {
+    margin: 80px 0;
+  }
+
+  .aside.split .foreground.container .text .icon-stack-area li {
+    max-width: calc(50% - 6px);
+    min-width: calc(50% - 6px);
+  }
+
+  .aside.split .foreground.container .text .icon-stack-area {
+    flex-direction: row;
+  }
+
+  .aside.split .desktop-wide img,
+  .aside.split .desktop-wide video {
+    aspect-ratio: 16/9;
+  }
+
+  .aside.split .desktop-standard img,
+  .aside.split .desktop-standard video {
+    aspect-ratio: 4/3;
+  }
+
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
+    height: 83px;
+  }
+
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
+    height: 83px;
+    max-width: 400px;
+    width: auto;
+  }
+
+  .aside.center:not(.notification):not(.split) .foreground.container .text {
+    max-width: 50%;
+  }
+
   .aside.notification .foreground.container {
     min-height: 0;
   }
@@ -904,10 +954,6 @@
     justify-content: flex-start;
   }
 
-  .aside.center:not(.notification):not(.split) .foreground.container .text {
-    max-width: 50%;
-  }
-
   .aside.notification.center.small .foreground.container .text,
   .aside.notification.center.small .foreground.container .text>* {
     justify-content: center;
@@ -927,39 +973,5 @@
 
   .aside.notification.medium .foreground.container .text+.image {
     margin-right: 0;
-  }
-
-  .aside.medium.split .foreground.container .text,
-  .aside.large.split .foreground.container .text,
-  .aside.medium.split.bio .foreground.container .text,
-  .aside.large.split.bio .foreground.container .text {
-    margin: 80px 0;
-  }
-
-  .aside.split .foreground.container .text .icon-stack-area li {
-    max-width: calc(50% - 6px);
-    min-width: calc(50% - 6px);
-  }
-
-  .aside.split .foreground.container .text .icon-stack-area {
-    flex-direction: row;
-  }
-
-  .aside.split .image.desktop-wide img {
-    aspect-ratio: 16/9;
-  }
-
-  .aside.split .image.desktop-standard img {
-    aspect-ratio: 4/3;
-  }
-
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
-    height: 83px;
-  }
-
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
-    height: 83px;
-    max-width: 400px;
-    width: auto;
   }
 }
