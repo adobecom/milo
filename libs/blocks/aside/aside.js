@@ -138,7 +138,7 @@ function decorateLayout(el) {
   text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
   if (!el.classList.contains('notification')) media?.classList.add('image');
-  const picture = text?.querySelector('picture');
+  const picture = text?.querySelector('p picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');

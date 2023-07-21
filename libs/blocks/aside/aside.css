@@ -888,7 +888,7 @@
   .aside.large.split .foreground.container .text,
   .aside.medium.split.bio .foreground.container .text,
   .aside.large.split.bio .foreground.container .text {
-    margin: 80px 0;
+    padding: 80px 0;
   }
 
   .aside.split .foreground.container .text .icon-stack-area li {
