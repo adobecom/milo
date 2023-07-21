@@ -15,7 +15,7 @@ function setSEO(questions) {
 function toggleMedia(con, trig, status) {
   if (status === 'open') {
     trig.setAttribute('hidden', '');
-    trig.setAttribute('aria-expanded', 'false');  
+    trig.setAttribute('aria-expanded', 'false');
     con.setAttribute('hidden', '');
     con.setAttribute('aria-expanded', 'false');
   } else {
@@ -43,8 +43,8 @@ function displayMedia(displayArea, el, dd, i, expanded) {
       if (expanded) {
         toggleMedia(dd, el, 'open');
         displayArea.childNodes[i - 1]?.classList.remove('expanded');
-      } 
-    }
+      }
+    },
   );
 }
 
@@ -94,7 +94,7 @@ function createItem(accordion, id, heading, num, edit) {
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
     const mediaCopy = ogMedia.cloneNode(true);
-    dm.append(mediaCopy)
+    dm.append(mediaCopy);
     dd.prepend(dm);
   }
 
@@ -117,7 +117,7 @@ function populateMedia(accordion, id, num, collection) {
 export default function init(el) {
   const id = getUniqueId(el);
   const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
-  const accordionMedia = createTag('div', { class: 'accordion-media', id: `accordion-media-${id}`});
+  const accordionMedia = createTag('div', { class: 'accordion-media', id: `accordion-media-${id}` });
   const isSeo = el.classList.contains('seo');
   const isEditorial = el.classList.contains('editorial');
   decorateButtons(el);
@@ -125,15 +125,13 @@ export default function init(el) {
   if (isEditorial) {
     const editorialMedia = el.querySelectorAll(':scope > div:nth-child(3n)');
     [...editorialMedia].map(
-      (media, idx, collection) => 
-      populateMedia(accordionMedia, id, idx, collection)
+      (media, idx, collection) => populateMedia(accordionMedia, id, idx, collection),
     );
-  };
+  }
 
   const headings = el.querySelectorAll(':scope > div:nth-child(odd)');
   const items = [...headings].map(
-    (heading, idx) => 
-    createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia)
+    (heading, idx) => createItem(accordion, id, heading, idx + 1, isEditorial, accordionMedia),
   );
 
   if (isSeo) { setSEO(items); }
@@ -145,9 +143,9 @@ export default function init(el) {
   accordion.classList.add('foreground');
   decorateBlockAnalytics(el);
   decorateLinkAnalytics(accordion, headings);
-  el.append(accordion)
+  el.append(accordion);
   if (isEditorial) {
     el.append(accordionMedia);
     defalutOpen(el);
-    };
+  }
 }
