@@ -67,6 +67,7 @@ function decorateIconStack(el) {
   const stackEl = el.querySelector('ul img');
   if (stackEl) {
     stackEl.closest('ul').classList.add('icon-stack-area', 'body-s');
+    el.classList.add('icon-stack');
   }
 }
 
