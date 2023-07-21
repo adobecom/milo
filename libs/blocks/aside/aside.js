@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText } from '../../utils/decorate.js';
-import { createTag, decorateImageLinks } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
 const variants = ['split', 'inline', 'notification'];
@@ -167,7 +167,6 @@ function decorateLayout(el) {
 }
 
 export default function init(el) {
-  decorateImageLinks(el);
   const blockData = getBlockData(el);
   const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
