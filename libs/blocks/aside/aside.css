@@ -536,10 +536,11 @@
   fill: var(--play-icon-fill);
 }
 
+.aside.split.bio .foreground.container .text .icon-area {
+  display: none;
+}
+
 @media screen and (max-width: 600px) {
-  .aside.split.bio .foreground.container .text .icon-area {
-    display: none;
-  }
 
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 83px;
@@ -809,6 +810,10 @@
   .aside.notification.small .foreground.container .text .action-area {
     width: auto;
     margin-top: 0;
+  }
+
+  .aside.split.bio .foreground.container .text .icon-area {
+    display: block;
   }
 
   .aside.notification.small .foreground.container .text .icon-area {
