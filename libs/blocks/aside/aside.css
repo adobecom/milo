@@ -116,11 +116,6 @@
   white-space: nowrap;
 }
 
-.aside .foreground.container .text .supplemental-text {
-  padding-top: var(--spacing-s);
-  margin-bottom: 0;
-}
-
 .aside:not(.notification) .foreground.container .text > * {
   width: 100%;
 }
@@ -133,6 +128,11 @@
 .aside .foreground.container .text .body-m,
 .aside .foreground.container .text .body-s {
   margin-bottom: var(--spacing-s);
+}
+
+.aside .foreground.container .text .supplemental-text {
+  padding-top: var(--spacing-s);
+  margin-bottom: 0;
 }
 
 .aside .foreground.container .text .action-area {
