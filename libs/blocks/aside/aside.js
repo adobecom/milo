@@ -86,9 +86,9 @@ function decorateMedia(el) {
     processed = true;
     const formats = siblingText.split(': ')[1]?.split(/\s+/);
     const formatClasses = formats ? ['format',
-      `mobile-${formats[0]}`,
-      `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
       `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
+      `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
+      `mobile-${formats[0]}`,
     ] : [];
     media.closest('div').classList.add(...formatClasses);
     siblingP.remove();
