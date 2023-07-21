@@ -573,6 +573,17 @@
   width: auto;
 }
 
+@media screen and (max-width: 600px) {
+  .aside.split .has-modal {
+    position: relative;
+  }
+
+  .aside.split .has-modal .play-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {

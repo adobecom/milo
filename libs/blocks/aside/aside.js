@@ -51,15 +51,16 @@ function decorateStaticLinks(el) {
   textLinks.forEach((link) => { link.classList.add('static'); });
 }
 
-function decorateModalImage(el) {
-  el.classList.add('play-btn');
+function decorateModalImage(el, lnkImg) {
+  if (el.classList.contains('split')) lnkImg.closest('div').classList.add('has-modal');
+  lnkImg.classList.add('play-btn');
   const playIconContainer = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
   const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIconContainer);
   const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' });
-  el.parentNode.appendChild(el.querySelector('picture'));
-  el.parentNode.appendChild(playContainer);
-  el.appendChild(playCircle);
-  playContainer.appendChild(el);
+  lnkImg.parentNode.appendChild(lnkImg.querySelector('picture'));
+  lnkImg.parentNode.appendChild(playContainer);
+  lnkImg.appendChild(playCircle);
+  playContainer.appendChild(lnkImg);
 }
 
 function decorateIconStack(el) {
@@ -156,9 +157,9 @@ function decorateLayout(el) {
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(asideMedia);
     }
-    const linkedImage = el.querySelector('.image a');
-    if (image && linkedImage?.dataset?.modalHash) {
-      decorateModalImage(linkedImage);
+    const lnkImg = el.querySelector('.image a');
+    if (image && lnkImg?.dataset?.modalHash) {
+      decorateModalImage(el, lnkImg);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
