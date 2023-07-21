@@ -103,13 +103,82 @@ div[class*="-up"] .media .foreground > .media-row {
   padding: 0 0 var(--spacing-m);
 }
 
+.media .default-list {
+  padding-left: 20px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+li:before {
+  content: "";
+  display: inline-block;
+  margin-left: 3px;
+}
+
+.media.checklist li {
+  background: url("/img/checklist.svg") no-repeat 5px 5px transparent;
+  list-style-type: none;
+  margin-left: -25px;
+  padding: 0 0 1px 29px;
+  vertical-align: middle;
+}
+
+.media .subcopy {
+  font-size: 16px;
+  line-height: 24px;
+  margin-top: 16px;
+  color: #2C2C2C;
+}
+
+.media .action-area {
+  margin-bottom: 0;
+}
+
+.media h3 {
+  font-size: 16px;
+  margin-top: 24px !important;
+  margin-bottom: 16px;
+}
+
+.media p.subcopy-link {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.media a.subcopy-link {
+  font-size: 14px;
+  color: #1473E6;
+  line-height: 21px;
+}
+
+.media.qr-code img.qr-code {
+  display: none;
+}
+
+.media.qr-code .qr-button{
+  display: inline;
+  margin-right: 24px;
+}
+
+.media.qr-code .con-button {
+  width: 113px;
+  max-width: 140px;
+  height: 50px;
+  font-size: 19px;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0;
+  padding-top: 0;
+  display: inline-flex;
+}
+
 @media screen and (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
     max-width: 1000px;
   }
-  
+
   .media[class*="-up"] .foreground > .media-row .image,
   div[class*="-up"] .media .foreground > .media-row .image {
       margin-bottom: var(--spacing-s);
@@ -132,14 +201,14 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.large > .foreground .media-row .image {
     width: 50%;
   }
-  
+
   .media[class*="-up"].large > .foreground .media-row .text,
   .media[class*="-up"].large > .foreground .media-row .image,
   div[class*="-up"] .media.large > .foreground .media-row .text,
   div[class*="-up"] .media.large > .foreground .media-row .image {
     width: 100%;
   }
-  
+
   .media.media-reversed .foreground .media-row > div:first-child {
     order: 2;
   }
@@ -147,13 +216,13 @@ div[class*="-up"] .media .foreground > .media-row {
   .media .text .icon-area {
     grid-template-columns: 1fr 1fr;
   }
-  
-  .media[class*="-up"] .foreground > div.media-row, 
+
+  .media[class*="-up"] .foreground > div.media-row,
   div[class*="-up"] .media .foreground > div.media-row {
     padding: 0 0 var(--spacing-s);
     display: block;
   }
-  
+
   .media.two-up .foreground,
   .media.three-up .foreground,
   .media.four-up .foreground,
@@ -186,4 +255,21 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.three-up .foreground { grid-template-columns: repeat(3, 1fr); }
   .media.four-up .foreground { grid-template-columns: repeat(4, 1fr); }
   .media.five-up .foreground { grid-template-columns: repeat(5, 1fr); }
+
+  .media .subcopy {
+    font-size: 12px;
+    line-height: 18px;
+    margin-top: 8px;
+  }
+
+  .media.qr-code img.qr-code {
+    display: flex;
+    width: 150px;
+    height: 170px;
+  }
+
+  .media.qr-code .qr-button{
+    display: none;
+  }
+
 }

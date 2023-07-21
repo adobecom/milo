@@ -49,10 +49,55 @@ export default function init(el) {
     if (image) image.classList.add('image');
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
+
+    //lists
+    if(row.querySelector("ul")) {
+      el.querySelector("ul").classList.add("default-list");
+    }
+
+    //subcopy
+    const actionArea = row.querySelector("p.action-area");
+    if(actionArea && actionArea.nextElementSibling?.tagName === "P") {
+      actionArea.nextElementSibling.className="";
+      updateInnerHtml(actionArea.nextElementSibling, "strong", "");
+      actionArea.nextElementSibling.classList.add('subcopy');
+    }
+
+    //subcopy with links
+    if(actionArea && actionArea.nextElementSibling?.tagName === "H3") {
+      let links = document.querySelectorAll("h3 ~ p.body-s a");
+      links.forEach(link => {
+        link.parentElement.classList.add("subcopy-link");
+
+        link.className = "";
+        link.classList.add("subcopy-link");
+      })
+    }
+
+    //qr code
+    if(row.parentNode.classList.contains("qr-code")) {
+      const imgQRCode = row.querySelector(".text > p.body-s > picture > img");
+      if(imgQRCode) {
+        imgQRCode.classList.add("qr-code");
+      }
+
+      const qrCodeLinks = row.querySelectorAll("a");
+      qrCodeLinks.forEach(qrCodeLink => {
+        qrCodeLink.classList.add("con-button");
+        qrCodeLink.parentNode.classList.add("qr-button");
+      })
+    }
+
     container.append(row);
   });
   el.append(container);
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
   decorateTextOverrides(el);
+}
+
+function updateInnerHtml(el, tag, replaceValue) {
+  let innerHtml = el.innerHTML;
+  innerHtml = innerHtml.replace(`<${tag}>`,replaceValue).replace(`</${tag}>`, replaceValue);
+  el.innerHTML = innerHtml;
 }
