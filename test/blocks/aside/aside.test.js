@@ -44,33 +44,35 @@ describe('aside', () => {
           }
         });
 
-        it('Has video modal', () => {
-          if (aside.classList.contains('aside-with-modal')) {
+        if (aside.classList.contains('aside-with-modal')) {
+          it('Has video modal', () => {
             const playButton = aside.querySelector('.play-btn');
             expect(playButton).to.exist;
-          }
-        });
+          });
+        }
 
-        it('Has icon stack area', () => {
-          if (aside.classList.contains('icon-stack')) {
+        if (aside.classList.contains('icon-stack')) {
+          it('Has icon stack area', () => {
             const iconStack = aside.querySelector('ul.icon-stack-area');
             expect(iconStack).to.exist;
-          }
-        });
+          });
+        }
 
-        it('Has aspect ratio set', () => {
-          let aspectRatios = '';
-          if (aside.classList.contains('aspect-ratio-three')) {
-            aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
-            expect(aspectRatios).to.exist;
-          } else if (aside.classList.contains('aspect-ratio-two')) {
-            aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-wide');
-            expect(aspectRatios).to.exist;
-          } else if (aside.classList.contains('aspect-ratio-one')) {
-            aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-standard');
-            expect(aspectRatios).to.exist;
-          }
-        });
+        if (aside.classList.contains('aspect-ratio')) {
+          it('Has aspect ratio set', () => {
+            let aspectRatios = '';
+            if (aside.classList.contains('aspect-ratio-three')) {
+              aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
+              expect(aspectRatios).to.exist;
+            } else if (aside.classList.contains('aspect-ratio-two')) {
+              aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-wide');
+              expect(aspectRatios).to.exist;
+            } else if (aside.classList.contains('aspect-ratio-one')) {
+              aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-standard');
+              expect(aspectRatios).to.exist;
+            }
+          });
+        }
       }
 
       if (type === 'default' || type === isInline) {
