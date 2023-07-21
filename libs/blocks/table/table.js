@@ -103,8 +103,10 @@ function handleExpand(e) {
   e.setAttribute('aria-expanded', expanded.toString());
   while (nextElement && !nextElement.classList.contains('divider')) {
     if (expanded) {
+      sectionHead.classList.remove('section-head-collaped');
       nextElement.classList.remove('hidden');
     } else {
+      sectionHead.classList.add('section-head-collaped');
       nextElement.classList.add('hidden');
     }
     nextElement = nextElement.nextElementSibling;
@@ -150,6 +152,7 @@ function handleSection(sectionParams) {
         expandSection = false;
       } else {
         iconTag.setAttribute('aria-expanded', 'false');
+        nextRow.classList.add('section-head-collaped');
         let nextElement = row.nextElementSibling;
         while (nextElement && !nextElement.classList.contains('divider')) {
           nextElement.classList.add('hidden');
