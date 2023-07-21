@@ -90,7 +90,7 @@ const fromUrl = () => {
   for (let i = 0; i < paths.length; i += 1) {
     list.append(toFragment`
       <li>
-        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i]}</a>
+        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i].replaceAll('-', ' ')}</a>
       </li>
     `);
   }
