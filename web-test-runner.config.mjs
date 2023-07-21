@@ -1,5 +1,5 @@
 import { importMapsPlugin } from '@web/dev-server-import-maps';
-import { defaultReporter } from '@web/test-runner';
+import { defaultReporter, summaryReporter } from '@web/test-runner';
 
 function customReporter() {
   return {
@@ -38,6 +38,7 @@ export default {
   reporters: [
     defaultReporter({ reportTestResults: true, reportTestProgress: true }),
     customReporter(),
+    summaryReporter(),
   ],
   testRunnerHtml: (testFramework) => `
     <html>
@@ -53,7 +54,7 @@ export default {
             }
             return oldFetch.call(window, resource, options);
           };
-          
+
           const oldXHROpen = XMLHttpRequest.prototype.open;
           XMLHttpRequest.prototype.open = async function (...args) {
             let [method, url, asyn] = args;
