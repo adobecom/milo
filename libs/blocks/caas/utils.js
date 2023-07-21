@@ -1,20 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { loadScript, loadStyle, getConfig as pageConfigHelper } from '../../utils/utils.js';
+import { fetchWithTimeout } from '../utils/utils.js';
 
 const URL_ENCODED_COMMA = '%2C';
-
-const fetchWithTimeout = async (resource, options = {}) => {
-  const { timeout = 5000 } = options;
-
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(resource, {
-    ...options,
-    signal: controller.signal,
-  });
-  clearTimeout(id);
-  return response;
-};
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -232,6 +220,21 @@ const getFilterArray = async (state) => {
   return filters;
 };
 
+const getCountryAndLang = ({ autoCountryLang, country, language }) => {
+  if (autoCountryLang) {
+    const htmlLang = document.documentElement.getAttribute('lang')?.toLowerCase() || 'en-us';
+    const [lang, cntry] = htmlLang.split('-');
+    return {
+      country: cntry,
+      language: lang,
+    };
+  }
+  return {
+    country: country ? country.split('/').pop() : 'us',
+    language: language ? language.split('/').pop() : 'en',
+  };
+};
+
 export function arrayToObj(input = []) {
   const obj = {};
   if (!Array.isArray(input)) {
@@ -248,8 +251,7 @@ export function arrayToObj(input = []) {
 
 export const getConfig = async (state, strs = {}) => {
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
-  const language = state.language ? state.language.split('/').pop() : 'en';
-  const country = state.country ? state.country.split('/').pop() : 'us';
+  const { country, language } = getCountryAndLang(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const targetActivity = state.targetEnabled
@@ -454,6 +456,7 @@ export const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
+  autoCountryLang: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

@@ -3,7 +3,7 @@ import { useEffect, useState, html } from '../../../../deps/htm-preact.js';
 import {
   getLocalStorage,
   setLocalStorage,
-} from '../../utils/localStorageUtils.js';
+} from '../../../utils/utils.js';
 import sendHelixData from '../../utils/sendHelixData.js';
 import setJsonLdProductInfo from '../../utils/setJsonLdProductInfo.js';
 import Review from '../review/Review.js';

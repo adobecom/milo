@@ -176,13 +176,18 @@ function buildContent(currentPage, locale, geoData, locales) {
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
   const title = createTag('h3', { lang }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang }, locale.text);
-  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag_${locale.geo}.svg`;
+  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag-${locale.geo}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
-    src: `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/${flagFile}`,
     width: 15,
     height: 15,
   });
+  img.addEventListener(
+    'error',
+    () => (img.src = `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/globe-grid.png`),
+    { once: true },
+  );
+  img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
   const span = createTag('span', { class: 'icon margin-right' }, img);
   const mainAction = createTag('a', {
     class: 'con-button blue button-l', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false, href: '#',

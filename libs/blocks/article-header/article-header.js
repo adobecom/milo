@@ -8,7 +8,7 @@ import { buildFigure } from '../figure/figure.js';
 async function validateAuthorUrl(url) {
   if (!url) return null;
 
-  const resp = await fetch(`${url}.plain.html`);
+  const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
     console.log(`Could not retrieve metadata for ${url}`);
     return null;

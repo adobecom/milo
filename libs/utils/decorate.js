@@ -38,7 +38,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
         decorateIconArea(el);
       }
     }
-    const emptyPs = el.querySelectorAll(':scope div > p:not([class])');
+    const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
@@ -69,4 +69,24 @@ export function getBlockSize(el, defaultSize = 1) {
   const sizes = ['small', 'medium', 'large', 'xlarge'];
   if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+}
+
+function applyTextOverrides(el, override) {
+  const parts = override.split("-");
+  const type = parts[1];
+  const els = el.querySelectorAll(`[class^="${type}"]`);
+  if (!els.length) return;
+  els.forEach(elem => {
+    const replace = [...elem.classList].find(i => i.startsWith(type));
+    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+  });
+}
+
+export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
+  const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
+  if (!overrides.length) return;
+  overrides.forEach(override => {
+    applyTextOverrides(el, override);
+    el.classList.remove(override);
+  });
 }

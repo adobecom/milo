@@ -42,7 +42,7 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-header {
+header:not(.global-navigation) {
   height: 57px;
   position: fixed;
   top: 0;
@@ -54,12 +54,29 @@ header {
   box-sizing: border-box;
 }
 
-header nav {
+header:not(.global-navigation) nav {
   display: none;
 }
 
-header ~ main {
+header:not(.global-navigation) ~ main {
   margin-top: 57px;
+}
+
+/*
+  After switching from the Milo nav to the FEDS one,
+  only the styles with 'header.global-navigation' need to be kept;
+  the 'global-navigation' class should also be removed from the 'header' selector
+  all of the ':not(.global-navigation)' rules can be entirely removed.
+ */
+header.global-navigation {
+  height: 64px; /* TODO better approach for value? */
+  visibility: hidden;
+}
+
+@media (min-width: 900px) {
+  header.global-navigation.has-breadcrumbs {
+    padding-bottom: 33px; /* TODO better approach for value? */
+  }
 }
 
 .breadcrumbs {
@@ -136,7 +153,7 @@ img {
 }
 
 /* Not blocks */
-div:not([class]) > div > div img[src^="./media_"] {
+div:not([class]) > div > div > img[src^="./media_"] {
   width: 100%;
 }
 
@@ -219,29 +236,29 @@ picture.bg-img img {
 }
 
 @media (min-width: 900px) {
-  header {
+  header:not(.global-navigation) {
     min-height: 64px;
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
 
-  header ~ main {
+  header:not(.global-navigation) ~ main {
     margin-top: 64px;
   }
 
-  header.has-breadcrumbs {
+  header:not(.global-navigation).has-breadcrumbs {
     min-height: 97px;
   }
 
-  header nav {
+  header:not(.global-navigation) nav {
     display: unset;
   }
 
-  header.has-breadcrumbs + main {
+  header:not(.global-navigation).has-breadcrumbs + main {
     margin-top: 97px;
   }
 }
 
-.gnav-hide {
-  opacity: 0;
+.gnav-hide {	
+  opacity: 0;	
 }

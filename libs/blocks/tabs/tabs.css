@@ -7,7 +7,7 @@
   --tabs-active-text-color: #2C2C2C;
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
-  --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / .8%));
+  --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
 }
 
 :root .dark {
@@ -16,7 +16,7 @@
   --tabs-active-text-color: #fff;
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #111;
-  --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / .8%));
+  --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
 }
 
 .tabs {

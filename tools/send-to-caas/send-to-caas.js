@@ -3,9 +3,12 @@
 /* eslint-disable no-alert */
 
 import {
+  getImsToken,
+} from '../utils/utils.js';
+
+import {
   getCardMetadata,
   getCaasProps,
-  getImsToken,
   isPagePublished,
   loadCaasTags,
   postDataToCaaS,

@@ -1,4 +1,4 @@
-span[data-wcs-osi],
+span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 
 }
@@ -12,7 +12,7 @@ span[data-wcs-osi] {
 }
 
 .placeholder-resolved[data-wcs-osi] {
-  visibility: unset;
+  visibility: inherit;
 }
 
 .price-unit-type:not(.disabled)::before,

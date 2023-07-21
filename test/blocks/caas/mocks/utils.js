@@ -17,6 +17,7 @@ export const parseEncodedConfig = stub().returns({
   analyticsTrackImpression: false,
   analyticsCollectionName: '',
   andLogicTags: [],
+  autoCountryLang: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

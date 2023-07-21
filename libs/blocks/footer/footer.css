@@ -167,6 +167,10 @@ footer a:not(:any-link) {
   margin-right: 18px;
 }
 
+[dir="rtl"] .footer-social-icon:not(:first-of-type) {
+  margin-right: 18px;
+}
+
 footer .footer-social a {
   display: block;
   height: 20px;
@@ -325,6 +329,11 @@ footer .footer-region-button.inline-dialog-active svg.icon-chevron-down {
   height: 9px;
   width: 9px;
   margin-right: 3px;
+}
+
+[dir="rtl"] .footer-privacy-link img {
+  margin-right: 0;
+  margin-left: 3px;
 }
 
 .footer-privacy-link:not(:last-child)::after {

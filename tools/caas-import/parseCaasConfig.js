@@ -2,6 +2,7 @@ const defaultState = {
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
+  autoCountryLang: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
