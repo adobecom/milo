@@ -40,6 +40,8 @@ Tips:
 * Rebase and rerun checks to ensure your PR is up-to-date
 * Use the `do not merge` label to prevent maintainers from merging your approved PR
 
+Also see [Submitting PRs](https://github.com/adobecom/milo/wiki/Submitting-PRs).
+
 ## Coding Styleguides
 
 We enforce a coding styleguide using `eslint`. As part of your build, run `npm run lint` to check if your code is conforming to the style guide.
@@ -53,7 +55,4 @@ Not having a green check will result in indeterminate review delays.
 
 ## Release Management
 
-The project's committers will release to the [Adobe organization on npmjs.org](https://www.npmjs.com/org/adobe).
-Please contact the [Adobe Open Source Advisory Board](https://git.corp.adobe.com/OpenSourceAdvisoryBoard/discuss/issues) to get access to the npmjs organization.
-
-The release process is fully automated using `semantic-release`, increasing the version numbers, etc. based on the contents of the commit messages found.
+Milo is a hot repo, meaning all changes on main are immediately available in production.
