@@ -2,8 +2,7 @@
 import {
   getConfig,
   getMetadata,
-  loadIms as utilsLoadIms,
-  loadScript,
+  loadIms,
   localizeLink,
   decorateSVG,
 } from '../../utils/utils.js';
@@ -22,13 +21,14 @@ import {
   loadBaseStyles,
   yieldToMain,
   isDesktop,
+  isTangentToViewport,
   setCurtainState,
   selectors,
   logErrorFor,
   lanaLog,
 } from './utilities/utilities.js';
 
-import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+import { replaceKey, replaceKeyArray, replaceText } from '../../features/placeholders.js';
 
 const CONFIG = {
   icons: {
@@ -175,6 +175,7 @@ class Gnav {
         decoratedElem: toFragment`<div class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
+      breadcrumbs: { wrapper: '' },
     };
 
     this.el = el;
@@ -192,8 +193,8 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      this.addChangeEventListener,
-      this.loadIMS,
+      this.ims,
+      this.addChangeEventListeners,
     ];
     this.el.addEventListener('click', this.loadDelayed);
     this.el.addEventListener('keydown', setupKeyboardNav);
@@ -207,6 +208,12 @@ class Gnav {
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init');
+
+  ims = async () => loadIms()
+    .then(() => this.imsReady())
+    .catch((e) => {
+      lanaLog({ message: 'GNAV: Error with IMS', e });
+    });
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
@@ -223,16 +230,17 @@ class Gnav {
     `;
   };
 
-  decorateTopnavWrapper = () => {
+  decorateTopnavWrapper = async () => {
+    const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
         ${this.elements.topnav}
-        ${isDesktop.matches ? this.decorateBreadcrumbs() : ''}
+        ${breadcrumbs}
       </div>`;
 
     this.el.append(this.elements.curtain, this.elements.topnavWrapper);
   };
 
-  addChangeEventListener = () => {
+  addChangeEventListeners = () => {
     // Ensure correct DOM order for elements between mobile and desktop
     isDesktop.addEventListener('change', () => {
       if (isDesktop.matches) {
@@ -261,6 +269,18 @@ class Gnav {
         }
       }
     });
+
+    // Add a modifier when the nav is tangent to the viewport and content is partly hidden
+    const toggleContraction = () => {
+      const isOverflowing = isTangentToViewport.matches
+        && this.elements.topnav?.scrollWidth
+        && this.elements.topnav.scrollWidth > document.body.clientWidth;
+
+      this.elements.topnav.classList.toggle(selectors.overflowingTopNav.slice(1), isOverflowing);
+    };
+
+    toggleContraction();
+    isTangentToViewport.addEventListener('change', toggleContraction);
   };
 
   loadDelayed = async () => {
@@ -292,24 +312,19 @@ class Gnav {
     return this.ready;
   };
 
-  loadIMS = () => {
-    const onReady = async () => {
-      const tasks = [
-        this.decorateProfile,
-        this.decorateAppLauncher,
-      ];
-      try {
-        for await (const task of tasks) {
-          await yieldToMain();
-          await task();
-        }
-      } catch (e) {
-        lanaLog({ message: 'GNAV: issues within onReady', e });
+  imsReady = async () => {
+    const tasks = [
+      this.decorateProfile,
+      this.decorateAppLauncher,
+    ];
+    try {
+      for await (const task of tasks) {
+        await yieldToMain();
+        await task();
       }
-    };
-
-    utilsLoadIms(onReady);
-    return null;
+    } catch (e) {
+      lanaLog({ message: 'GNAV: issues within onReady', e });
+    }
   };
 
   decorateProfile = async () => {
@@ -439,52 +454,68 @@ class Gnav {
     const rawBlock = this.body.querySelector(selector);
     if (!rawBlock) return '';
 
+    // Get all non-image links
     const imgRegex = /(\.png|\.svg|\.jpg|\.jpeg)/;
     const blockLinks = [...rawBlock.querySelectorAll('a')];
-    const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
-      || imgRegex.test(blockLink.textContent));
     const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
       && !imgRegex.test(blockLink.textContent));
 
     if (!link) return '';
 
-    const imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    // Check which elements should be rendered
+    const renderImage = !rawBlock.matches('.no-logo');
     const renderLabel = includeLabel && !rawBlock.matches('.image-only');
-    const labelEl = renderLabel ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>` : '';
 
+    if (!renderImage && !renderLabel) return '';
+
+    // Create image element
+    let imageEl = '';
+
+    if (renderImage) {
+      const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+      imageEl = toFragment`<span class="${classPrefix}-image">${getBrandImage(image)}</span>`;
+    }
+
+    // Create label element
+    let labelEl = '';
+
+    if (renderLabel) {
+      labelEl = toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`;
+    }
+
+    // Create final template
     const decoratedElem = toFragment`
       <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
 
+    // Add accessibility attributes if just an image is rendered
     if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
 
     return decoratedElem;
   };
 
-  decorateBrand = () => this.decorateGenericLogo(
-    {
-      selector: '.gnav-brand',
-      classPrefix: 'feds-brand',
-      analyticsValue: 'Brand',
-    },
-  );
+  decorateBrand = () => this.decorateGenericLogo({
+    selector: '.gnav-brand',
+    classPrefix: 'feds-brand',
+    analyticsValue: 'Brand',
+  });
 
-  decorateLogo = () => this.decorateGenericLogo(
-    {
-      selector: '.adobe-logo',
-      classPrefix: 'feds-logo',
-      includeLabel: false,
-      analyticsValue: 'Logo',
-    },
-  );
+  decorateLogo = () => this.decorateGenericLogo({
+    selector: '.adobe-logo',
+    classPrefix: 'feds-logo',
+    includeLabel: false,
+    analyticsValue: 'Logo',
+  });
 
   decorateMainNav = async () => {
+    const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
-        ${isDesktop.matches ? '' : this.decorateBreadcrumbs()}
+      <div class="feds-nav-wrapper id="feds-nav-wrapper"">
+        ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
@@ -620,6 +651,14 @@ class Gnav {
     }
   };
 
+  decorateBreadcrumbs = async () => {
+    if (!this.el.classList.contains('has-breadcrumbs')) return null;
+    if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
+    const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
+    this.elements.breadcrumbsWrapper = await createBreadcrumbs(this.el.querySelector('.breadcrumbs'));
+    return this.elements.breadcrumbsWrapper;
+  };
+
   decorateSearch = () => {
     const searchBlock = this.body.querySelector('.search');
 
@@ -649,45 +688,6 @@ class Gnav {
 
     return this.elements.search;
   };
-
-  setBreadcrumbSEO = () => {
-    const seoEnabled = getMetadata('breadcrumb-seo') !== 'off';
-    if (!seoEnabled) return;
-    const breadcrumb = this.el.querySelector('.breadcrumbs');
-    if (!breadcrumb) return;
-    const breadcrumbSEO = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [] };
-    const items = breadcrumb.querySelectorAll('ul > li');
-    items.forEach((item, idx) => {
-      const link = item.querySelector('a');
-      breadcrumbSEO.itemListElement.push({
-        '@type': 'ListItem',
-        position: idx + 1,
-        name: link ? link.innerHTML : item.innerHTML,
-        item: link?.href,
-      });
-    });
-    const script = toFragment`<script type="application/ld+json">${JSON.stringify(breadcrumbSEO)}</script>`;
-    document.head.append(script);
-  };
-
-  decorateBreadcrumbs = () => {
-    this.setBreadcrumbSEO();
-    const parent = this.el.querySelector('.breadcrumbs');
-    if (parent) {
-      const ul = parent.querySelector('ul');
-      if (ul) {
-        ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');
-        this.elements.breadcrumbsWrapper = toFragment`<div class="feds-breadcrumbs-wrapper">
-            <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>
-          </div>`;
-        parent.remove();
-        return this.elements.breadcrumbsWrapper;
-      }
-    }
-
-    return null;
-  };
-  /* c8 ignore stop */
 }
 
 export default async function init(header) {
@@ -697,8 +697,10 @@ export default async function init(header) {
   const resp = await fetch(`${url}.plain.html`);
   const html = await resp.text();
   if (!html) return null;
+  const parsedHTML = await replaceText(html, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
+
   try {
-    const gnav = new Gnav(new DOMParser().parseFromString(html, 'text/html').body, header);
+    const gnav = new Gnav(new DOMParser().parseFromString(parsedHTML, 'text/html').body, header);
     gnav.init();
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav|${getExperienceName()}`);

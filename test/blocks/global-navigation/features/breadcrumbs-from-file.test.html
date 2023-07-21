@@ -1,0 +1,29 @@
+<html>
+  <head></head>
+  <body></body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import breadcrumbs from '../../../../libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js';
+
+    runTests(() => {
+      describe('breadcrumbs', () => {
+        it('should create a breadcrumb from the url', async () => {
+          document.head.innerHTML = '<meta name="breadcrumbs-from-url" content="on">';
+          const breadcrumb = await breadcrumbs();
+          expect(breadcrumb.querySelectorAll('li').length).to.equal(5);
+          // The 'global-navigation' parent folder has a hyphen, it should be removed
+          const gnavBreadcrumb = breadcrumb.querySelector('a[href $= "/global-navigation"]');
+          expect(gnavBreadcrumb.textContent).to.equal('global navigation');
+        });
+
+        it('should not create a breadcrumb from the url if the config isn\'t on', async () => {
+          document.head.innerHTML = ''
+          const breadcrumb = await breadcrumbs();
+          expect(breadcrumb).to.equal(null);
+        });
+      });
+    });
+  </script>
+</html>

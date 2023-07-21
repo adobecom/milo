@@ -107,10 +107,34 @@ const validateState = (state, panelsData) => {
   return validatedState;
 };
 
-const getPanels = (panelsData) => Object.entries(panelsData).map(([panelName, panelConfig]) => ({
-  title: panelName.charAt(0).toUpperCase() + panelName.slice(1),
-  content: html`<${Fields} fieldsData=${panelConfig} />`,
-}));
+const AdvancedPanel = (lsKey) => {
+  const { dispatch } = useContext(ConfiguratorContext);
+  const onClick = () => {
+    const firstPanel = document.querySelector('.accordion-item button[aria-label=Expand]');
+
+    localStorage.removeItem(lsKey);
+    dispatch({ type: 'RESET_STATE' });
+    firstPanel.click();
+  };
+
+  return html`
+    <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+  `;
+};
+
+const getPanels = (panelsData, lsKey) => {
+  const panels = Object.entries(panelsData).map(([panelName, panelConfig]) => ({
+    title: panelName.substring(0, 1).toUpperCase() + panelName.substring(1),
+    content: html`<${Fields} fieldsData=${panelConfig} />`,
+  }));
+
+  panels.push({
+    title: 'Advanced',
+    content: html`<${AdvancedPanel} lskey=${lsKey}/>`,
+  });
+
+  return panels;
+};
 
 const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
   const { state } = useContext(ConfiguratorContext);
@@ -140,10 +164,19 @@ const Configurator = ({ title, blockClass, panelsData, lsKey }) => {
 
   const getContent = () => {
     const url = getUrl();
+    const dateStr = new Date().toLocaleString('us-EN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    });
 
     return {
       content: url,
-      contentHtml: `<a href=${url}>${title} Configurator</a>`,
+      contentHtml: `<a href=${url}>${title} Configurator ${dateStr}</a>`,
     };
   };
 
