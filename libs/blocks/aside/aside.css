@@ -1,3 +1,13 @@
+:root {
+  --play-btn-hover: #095ABA;
+  --play-btn-focus: #095ABA;
+  --play-btn-focus-out: #378EF0;
+  --play-btn-active: #0D66D0;
+  --play-btn-focus-ring: #1473E6;
+  --play-btn-border: #fff;
+  --play-icon-fill: #fff;
+}
+
 .aside {
   display: flex;
   width: 100%;
@@ -476,7 +486,7 @@
   width: 77px;
   left: calc(50% - 38.5px);
   top: calc(50% - 38.5px);
-  background-color: #378EF0;
+  background-color: var(--play-btn-focus-out);
   border: none;
   border-radius: 50%;
   outline: none;
@@ -484,18 +494,18 @@
 }
 
 .aside .play-btn:hover {
-  background-color: #095ABA;
+  background-color: var(--play-btn-hover);
 }
 
 .aside .play-btn:focus,
 .aside .play-btn:focus-visible {
-  outline: 2.5px solid #1473E6;
+  outline: 2.5px solid var(--play-btn-focus-ring);
   outline-offset: 0;
-  background-color: #095ABA;
+  background-color: var(--play-btn-focus);
 }
 
 .aside .play-btn:active {
-  background-color: #0D66D0;
+  background-color: var(--play-btn-active);
   outline: none
 }
 
@@ -508,7 +518,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2.5px solid #FFF;
+  border: 2.5px solid var(--play-btn-border);
 }
 
 .aside .play-icon-container {
@@ -523,7 +533,7 @@
   width: 24px;
   height: 32px;
   flex-shrink: 0;
-  fill: #fff;
+  fill: var(--play-icon-fill);
 }
 
 @media screen and (max-width: 600px) {
