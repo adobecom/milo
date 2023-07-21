@@ -8,9 +8,13 @@ const RESULTS_EP_NAME = 'results.json';
 
 let configPath; let quizKey; let analyticsType; let analyticsQuiz; let metaData;
 
-const initConfigPath = (roolElm) => {
-  const link = roolElm.querySelector('.quiz > div > div > a');
-  const quizConfigPath = link?.text.toLowerCase();
+export const initConfigPath = (quizMetaData) => {
+  const quizConfigPath = quizMetaData.quizurl.text.toLowerCase();
+  const urlParams = new URLSearchParams(window.location.search);
+  const stringsPath = urlParams.get('quiz-data');
+  if (stringsPath) {
+    return (filepath) => `${stringsPath}/${filepath}`;
+  }
   return (filepath) => `${quizConfigPath}${filepath}`;
 };
 
@@ -31,7 +35,7 @@ async function fetchContentOfFile(path) {
 
 export const initConfigPathGlob = (rootElement) => {
   metaData = getMetadata(rootElement);
-  configPath = initConfigPath(rootElement);
+  configPath = initConfigPath(metaData);
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
@@ -47,6 +51,15 @@ export const getQuizData = async () => {
     console.log('Error while fetching data : ', ex);
   }
 };
+
+export const getUrlParams = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const params = {};
+  urlParams.forEach((value, key) => {
+    params[key] = value.split(',');
+  });
+  return params;
+}
 
 /**
  * Handling the result flow from here. Will need to make sure we capture all
@@ -222,7 +235,6 @@ const parseResultData = async (answers) => {
   );
 
   filteredResults.matchedResults = matchedResults;
-
   const rObj = {};
   rObj.filteredResults = filteredResults;
   rObj.resultResources = results['result-fragments'];
@@ -299,6 +311,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
   const allcards = Object.keys(userInputSelections);
   let nextQuizViews = [];
   let hasResultTigger = false;
+  let lastStopValue;
 
   allcards.forEach((selection) => {
     // for each elem in current selection, find its coresponding
@@ -330,11 +343,11 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
             nextQuizViews = nextQuizViews.filter((val) => val !== skip);
           });
         }
-
         // RESET the queue and add only the next question.
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
           userFlow = []; // Resetting the userFlow as well
+          lastStopValue = 'RESET';
         }
 
         if (!hasResultTigger) {
@@ -348,7 +361,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
     });
   });
 
-  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])] };
+  return { nextQuizViews: [...new Set([...userFlow, ...nextQuizViews])], lastStopValue };
 };
 
 export const transformToFlowData = (userSelection) => {

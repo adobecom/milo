@@ -1,6 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
+const { initConfigPath } = await import('../../../libs/blocks/quiz/utils.js');
 const { default: init } = await import('../../../libs/blocks/quiz/quiz.js');
 
 describe('Quiz', () => {
@@ -48,5 +50,19 @@ describe('Quiz', () => {
     await new Promise((resolve) => setTimeout(resolve, 100)); // Allow time for the transition
 
     expect(document.querySelectorAll('.dot')[1].classList.contains('current')).to.be.true;
+  });
+
+  it('returns a function that concatenates quizConfigPath and filepath', () => {
+    const result = initConfigPath({ quizurl: { text: 'https://adobe.com.com/' } });
+    const innerResult = result('questions.json');
+    expect(innerResult).to.equal('https://adobe.com.com/questions.json');
+  });
+
+  it('returns a function that concatenates stringsPath and filepath if stringsPath is present', () => {
+    const urlSearchParams = sinon.stub(URLSearchParams.prototype, 'get');
+    urlSearchParams.returns('alternate-data');
+    const getConfigPath = initConfigPath({ quizurl: { text: 'https://adobe.com/' } });
+    expect(getConfigPath('config.json')).to.equal('alternate-data/config.json');
+    urlSearchParams.restore();
   });
 });

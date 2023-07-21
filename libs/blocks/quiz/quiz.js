@@ -1,19 +1,19 @@
-import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
+import { render, html, useEffect, useState, useLayoutEffect } from '../../deps/htm-preact.js';
 import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn } from './utils.js';
+import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn, getUrlParams } from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
 loadStyle(`${codeRoot}/deps/caas-uar.css`);
 
 async function loadFragments(fragmentURL) {
-    const quizSections = document.querySelector('.quiz-footer');
-    const a = createTag('a', { href: fragmentURL });
-    quizSections.append(a);
-    const { default: createFragment } = await import('../fragment/fragment.js');
-    await createFragment(a); 
+  const quizSections = document.querySelector('.quiz-footer');
+  const a = createTag('a', { href: fragmentURL });
+  quizSections.append(a);
+  const { default: createFragment } = await import('../fragment/fragment.js');
+  await createFragment(a);
 }
 
 const App = () => {
@@ -31,7 +31,7 @@ const App = () => {
   const [totalSteps, setTotalSteps] = useState(3);
   const [prevStepIndicator, setPrevStepIndicator] = useState([]);
   const [nextQuizViewsExist, setNextQuizViewsExist] = useState(true);
-  const [urlParam, setUrlParam] = useState({});
+  const [urlParam, setUrlParam] = useState(getUrlParams());
   const [btnAnalytics, setBtnAnalytics] = useState(null);
 
   useEffect(() => {
@@ -119,7 +119,7 @@ const App = () => {
   /**
    * Updates the url when the url param is updated as part of the option click.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Object.keys(urlParam).length > 0) {
       const urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];
@@ -141,7 +141,7 @@ const App = () => {
       setPrevStepIndicator(userSelection.map((_, index) => index));
     }
   }, [userSelection]);
-  
+
   /**
    * Handler of the next button click. Checks whether any next view exists or not.
    * Takes care of the user flow and updates the state accordingly.
@@ -149,7 +149,12 @@ const App = () => {
    * @returns {void}
    */
   const handleOnNextClick = (selCards) => {
-    const { nextQuizViews } = handleNext(questionData, selectedQuestion, selCards, userFlow);
+    const { nextQuizViews, lastStopValue } = handleNext(
+      questionData,
+      selectedQuestion,
+      selCards,
+      userFlow,
+    );
     const nextQuizViewsLen = nextQuizViews.length;
 
     setNextQuizViewsExist(!!nextQuizViewsLen);
@@ -167,6 +172,9 @@ const App = () => {
       } else {
         setTotalSteps(totalSteps);
       }
+    }
+    if (lastStopValue && lastStopValue === 'RESET') {
+      setTotalSteps(totalSteps - 1);
     }
   };
 
