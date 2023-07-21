@@ -277,6 +277,12 @@
   display: none;
 }
 
+.aside.split.icon-stack .foreground.container .text,
+.aside.split.bio .foreground.container .text {
+  padding: var(--spacing-l) 0;
+  margin: 0;
+}
+
 .aside.notification .foreground.container img {
   display: block;
 }
@@ -567,14 +573,6 @@
   width: auto;
 }
 
-@media screen and (max-width: 600px) {
-
-  .aside.split.icon-stack .foreground.container .text,
-  .aside.split.bio .foreground.container .text {
-    padding: var(--spacing-l) 0;
-    margin: 0;
-  }
-}
 
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
@@ -892,7 +890,7 @@
   .aside.split .desktop-standard video {
     aspect-ratio: 4/3;
   }
-  
+
   .aside.split.half .foreground.container .text {
     max-width: 500px;
   }
