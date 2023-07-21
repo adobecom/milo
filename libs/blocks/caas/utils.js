@@ -175,13 +175,17 @@ const getLocalTitle = (tag, country, lang) => tag[`title.${lang}_${country}`]
   || tag[`title.${lang}`]
   || tag.title;
 
-const getFilterObj = ({ excludeTags, filterTag, icon, openedOnLoad }, tags, state) => {
+const getFilterObj = (
+  { excludeTags, filterTag, icon, openedOnLoad },
+  tags,
+  state,
+  country,
+  lang,
+) => {
   if (!filterTag?.[0]) return null;
   const tagId = filterTag[0];
   const tag = findTagById(tagId, tags);
   if (!tag) return null;
-  const country = state.country.split('/')[1];
-  const lang = state.language.split('/')[1];
   const items = Object.values(tag.tags)
     .map((itemTag) => {
       if (excludeTags?.includes(itemTag.tagID)) return null;
@@ -226,7 +230,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }) => {
   return filterObj;
 };
 
-const getFilterArray = async (state) => {
+const getFilterArray = async (state, country, lang) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
@@ -237,7 +241,7 @@ const getFilterArray = async (state) => {
   let filters = [];
   if (!useCustomFilters) {
     filters = state.filters
-      .map((filter) => getFilterObj(filter, tags, state))
+      .map((filter) => getFilterObj(filter, tags, state, country, lang))
       .filter((filter) => filter !== null);
   } else {
     filters = state.filtersCustom.length > 0
@@ -362,7 +366,7 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state, strs),
+      filters: await getFilterArray(state, country, language),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {
