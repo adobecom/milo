@@ -82,6 +82,32 @@ async function persist(srcPath, mdast, dstPath) {
   }
 }
 
+// TODO: remove after franklin fix for bold issue
+ export const getLeaf = (node, type, parent=null) => {
+  if (node?.type === type || !node.children) return {parent, node};
+
+  if (node.children) {
+    for (let i = 0; i < node.children.length; i++) {
+      const leaf = getLeaf(node.children[i], type, node);
+      if (leaf) return leaf;
+    }
+  }
+  return undefined;
+};
+
+// TODO: remove after franklin fix for bold issue
+export const addBoldHeaders = (mdast) => {
+  const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
+  const tableMap = tables.forEach((table) => {
+    var {node, parent} = getLeaf(table, 'text'); // gets first text node i.e. header
+    if(parent.type !== 'strong') {
+      let idx = parent.children.indexOf(node);
+      parent.children[idx] = { type: 'strong', children:[node]}
+    }
+  });
+  return tableMap;
+};
+
 function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   const mergedMdast = { type: 'root', children: [] };
 
@@ -221,6 +247,8 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
         // get MDAST of the livecopy file
         const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
         // get processed data Map for the livecopy file
+        // TODO: remove after franklin fix for bold issue
+        addBoldHeaders(livecopy);
         const livecopyProcessedMdast = await getProcessedMdast(livecopy);
         // get merged mdast
         const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
