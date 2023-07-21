@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
-const { default: initModal } = await import('../../../libs/blocks/modal/modal.js');
+
 const types = ['simple', 'split', 'inline', 'notification'];
 
 describe('aside', () => {
@@ -45,8 +45,8 @@ describe('aside', () => {
         });
 
         it('Has video modal', () => {
-          if (aside.classList.contains('asideWithVideoModal')) {
-            const playButton = aside.querySelector('.play-btn-circle');
+          if (aside.classList.contains('aside-with-modal')) {
+            const playButton = aside.querySelector('.play-btn');
             expect(playButton).to.exist;
           }
         });
@@ -55,6 +55,20 @@ describe('aside', () => {
           if (aside.classList.contains('icon-stack')) {
             const iconStack = aside.querySelector('ul.icon-stack-area');
             expect(iconStack).to.exist;
+          }
+        });
+
+        it('Has aspect ratio set', () => {
+          let aspectRatios = '';
+          if (aside.classList.contains('aspect-ratio-three')) {
+            aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
+            expect(aspectRatios).to.exist;
+          } else if (aside.classList.contains('aspect-ratio-two')) {
+            aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-wide');
+            expect(aspectRatios).to.exist;
+          } else if (aside.classList.contains('aspect-ratio-one')) {
+            aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-standard');
+            expect(aspectRatios).to.exist;
           }
         });
       }
@@ -67,7 +81,7 @@ describe('aside', () => {
       }
 
       if (type === types[1]) {
-        it('has a background image', () => {
+        it('has a background image or video', () => {
           const body = aside.querySelector('.split-image');
           expect(body).to.exist;
         });
