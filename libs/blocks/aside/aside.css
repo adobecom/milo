@@ -179,12 +179,6 @@
   min-height: 270px;
 }
 
-.aside.split.icon-stack .foreground.container .text,
-.aside.split.bio .foreground.container .text {
-  padding: var(--spacing-l) 0;
-  margin: 0;
-}
-
 .aside.split .icon-stack-area li img {
   height: 40px;
   width: 40px;
@@ -533,6 +527,10 @@
 }
 
 @media screen and (max-width: 600px) {
+  .aside.split.bio .foreground.container .text .icon-area {
+    display: none;
+  }
+
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
     height: 83px;
   }
@@ -564,6 +562,12 @@
   
   .aside.split .foreground.container .text .icon-stack-area {
     flex-direction: column;
+  }
+
+  .aside.split.icon-stack .foreground.container .text,
+  .aside.split.bio .foreground.container .text {
+    padding: var(--spacing-l) 0;
+    margin: 0;
   }
 }
 
