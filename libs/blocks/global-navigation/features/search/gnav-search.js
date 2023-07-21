@@ -1,12 +1,15 @@
 import {
   toFragment,
   getFedsPlaceholderConfig,
+  isDesktop,
+  setCurtainState,
   trigger,
   closeAllDropdowns,
   logErrorFor,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
+import { debounce } from "../../../../utils/action.js";
 
 const CONFIG = {
   suggestions: {
@@ -19,17 +22,6 @@ const CONFIG = {
   },
 };
 
-function debounceCallback(callback, time = 150) {
-  if (typeof callback !== 'function') return undefined;
-
-  let timeout = null;
-
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => callback(...args), time);
-  };
-}
-
 const { locale } = getConfig();
 const [, country = 'US'] = locale.ietf.split('-');
 
@@ -38,8 +30,6 @@ class Search {
     this.icon = config.icon;
     this.trigger = config.trigger;
     this.parent = this.trigger.closest('.feds-nav-wrapper');
-    this.curtain = config.curtain;
-    this.isDesktop = window.matchMedia('(min-width: 900px)');
     const observer = new MutationObserver(() => {
       this.clearSearchForm();
     });
@@ -100,7 +90,7 @@ class Search {
         // Pressing ESC when input has value resets the results
         if (this.input.value.length) {
           this.clearSearchForm();
-        } else if (this.isDesktop.matches) {
+        } else if (isDesktop.matches) {
           closeAllDropdowns();
           this.trigger.focus();
         }
@@ -127,7 +117,7 @@ class Search {
 
     // Switching between a mobile and a desktop view
     // should close the search dropdown
-    this.isDesktop.addEventListener('change', () => {
+    isDesktop.addEventListener('change', () => {
       closeAllDropdowns();
     });
   }
@@ -144,7 +134,7 @@ class Search {
       });
   }
 
-  onSearchInput = debounceCallback(() => {
+  onSearchInput = debounce(() => {
     const query = this.getQuery();
 
     if (!query.length) {
@@ -184,7 +174,7 @@ class Search {
           this.parent.classList.remove(CONFIG.selectors.hasResults);
         }
       });
-  });
+  }, 150);
 
   getQuery() {
     const query = this.input.value.trim();
@@ -273,15 +263,17 @@ class Search {
   }
 
   focusInput() {
-    if (this.isDesktop.matches) {
+    if (isDesktop.matches) {
       this.input.focus();
     }
   }
 
   toggleDropdown() {
+    if (!isDesktop.matches) return;
+
     const hasBeenOpened = trigger({ element: this.trigger });
     if (hasBeenOpened) {
-      this.curtain.classList.add('is-open');
+      setCurtainState(true);
       this.focusInput();
     } else {
       this.clearSearchForm();

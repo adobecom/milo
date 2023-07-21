@@ -3,16 +3,23 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
+import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
+import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
+import longNav from './mocks/global-navigation-long.plain.js';
+import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
 
 const ogFetch = window.fetch;
 
 // TODO
 // - test localization
-// - test breadcrumbs SEO
 
 describe('global navigation', () => {
+  before(() => {
+    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+  });
+
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
@@ -33,7 +40,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
-      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
@@ -86,6 +93,19 @@ describe('global navigation', () => {
         expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(false);
         expect(document.querySelectorAll(selectors.navItem).length).to.equal(0);
       });
+
+      it('should add an alt text if one is set', async () => {
+        await createFullGlobalNavigation({ globalNavigation: nonSvgBrandOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage} img`);
+        expect(isElementVisible(brandImage)).to.equal(true);
+        expect(brandImage.getAttribute('alt')).to.equal('Alternative text');
+      });
+
+      it('should not render an image if the "no-logo" modifier is used', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(false);
+      });
     });
 
     describe('small desktop', () => {
@@ -135,6 +155,19 @@ describe('global navigation', () => {
     });
 
     describe('mobile', () => {
+      let clock;
+
+      beforeEach(async () => {
+        clock = sinon.useFakeTimers({
+          toFake: ['setTimeout'],
+          shouldAdvanceTime: true,
+        });
+      });
+
+      afterEach(() => {
+        clock.restore();
+      });
+
       it('should be visible', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
 
@@ -144,19 +177,43 @@ describe('global navigation', () => {
       it('should open navigation on click', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
 
-        const header = document.querySelector(selectors.globalNav);
+        const navWrapper = document.querySelector(selectors.navWrapper);
         const toggle = document.querySelector(selectors.mainNavToggle);
         const curtain = document.querySelector(selectors.curtain);
 
-        expect(header.classList.contains('is-open')).to.equal(false);
-        expect(curtain.classList.contains('is-open')).to.equal(false);
+        expect(navWrapper.classList.contains('feds-nav-wrapper--expanded')).to.equal(false);
+        expect(curtain.classList.contains('feds-curtain--open')).to.equal(false);
         expect(isElementVisible(document.querySelector(selectors.navWrapper))).to.equal(false);
 
         toggle.click();
+        await clock.runAllAsync();
 
-        expect(header.classList.contains('is-open')).to.equal(true);
-        expect(curtain.classList.contains('is-open')).to.equal(true);
+        expect(navWrapper.classList.contains('feds-nav-wrapper--expanded')).to.equal(true);
         expect(isElementVisible(document.querySelector(selectors.navWrapper))).to.equal(true);
+      });
+
+      it('should clear search results when closed', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile' });
+        const toggle = document.querySelector(selectors.mainNavToggle);
+        // Clicking the toggle will load the search logic
+        toggle.click();
+        await clock.runAllAsync();
+        // Expect the search input to be visible; focus on it and type
+        const searchField = document.querySelector(selectors.searchField);
+        expect(isElementVisible(searchField)).to.equal(true);
+
+        window.fetch = sinon.stub().callsFake(() => mockRes({
+          payload:
+          { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
+        }));
+
+        searchField.focus();
+        await sendKeys({ type: 'f' });
+        await clock.runAllAsync();
+        expect(searchField.value).to.equal('f');
+        // Clicking the toggle again should clear the search field
+        toggle.click();
+        expect(searchField.value).to.equal('');
       });
     });
   });
@@ -172,6 +229,11 @@ describe('global navigation', () => {
       });
 
       it('should open a popup on click', async () => {
+        const clock = sinon.useFakeTimers({
+          toFake: ['setTimeout'],
+          shouldAdvanceTime: true,
+        });
+
         await createFullGlobalNavigation();
 
         const navItem = document.querySelector(selectors.navItem);
@@ -183,8 +245,10 @@ describe('global navigation', () => {
         expect(isElementVisible(popup)).to.equal(false);
 
         navLink.click();
+        await clock.runAllAsync();
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('true');
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(true);
         expect(isElementVisible(popup)).to.equal(true);
         expect(navLink.getAttribute('daa-lh')).to.equal('header|Close');
       });
@@ -200,11 +264,13 @@ describe('global navigation', () => {
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('true');
         expect(isElementVisible(popup)).to.equal(true);
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(true);
 
         navLink.click();
 
         expect(navLink.getAttribute('aria-expanded')).to.equal('false');
         expect(isElementVisible(popup)).to.equal(false);
+        expect(navItem.classList.contains('feds-dropdown--active')).to.equal(false);
       });
 
       it(
@@ -296,6 +362,9 @@ describe('global navigation', () => {
         [...navLinks].forEach((link) => {
           expect(isElementVisible(link)).to.equal(true);
         });
+
+        const hasLinkgroupModifier = document.querySelector(`${selectors.navLink}--blue`) instanceof HTMLElement;
+        expect(hasLinkgroupModifier).to.equal(true);
       });
 
       it('should render the promo', async () => {
@@ -330,6 +399,9 @@ describe('global navigation', () => {
         [...navLinks].forEach((link) => {
           expect(isElementVisible(link)).to.equal(true);
         });
+
+        const hasLinkgroupModifier = document.querySelector(`${selectors.navLink}--blue`) instanceof HTMLElement;
+        expect(hasLinkgroupModifier).to.equal(true);
       });
 
       it('should render the promo', async () => {
@@ -343,6 +415,19 @@ describe('global navigation', () => {
     });
 
     describe('mobile', () => {
+      let clock;
+
+      beforeEach(async () => {
+        clock = sinon.useFakeTimers({
+          toFake: ['setTimeout'],
+          shouldAdvanceTime: true,
+        });
+      });
+
+      afterEach(() => {
+        clock.restore();
+      });
+
       it('should open a popup and headline on click', async () => {
         await createFullGlobalNavigation({ viewport: 'mobile' });
 
@@ -362,6 +447,7 @@ describe('global navigation', () => {
         expect(isElementVisible(headlinePopupItems)).to.equal(false);
 
         navLink.click();
+        await clock.runAllAsync();
 
         expect(isElementVisible(popup.querySelector(selectors.navLink))).to.equal(true);
         expect(navLink.getAttribute('aria-expanded')).to.equal('true');
@@ -613,7 +699,6 @@ describe('global navigation', () => {
 
       it('renders the sign in button and dropdown on click', async () => {
         await createFullGlobalNavigation({ signedIn: false });
-
         const signIn = document.querySelector(selectors.signIn);
         expect(isElementVisible(signIn)).to.equal(true);
         expect(signIn.getAttribute('aria-haspopup')).to.equal('true');
@@ -734,13 +819,11 @@ describe('global navigation', () => {
     });
 
     describe('small desktop', () => {
-      it('renders the logo', async () => {
+      it('hides the logo', async () => {
         await createFullGlobalNavigation({ viewport: 'smallDesktop' });
 
         const logo = document.querySelector(selectors.logo);
-        expect(isElementVisible(logo)).to.equal(true);
-        expect(logo.getAttribute('daa-ll')).to.equal('Logo');
-        expect(logo.getAttribute('aria-label')).to.equal('Adobe');
+        expect(isElementVisible(logo)).to.equal(false);
       });
     });
 
@@ -776,7 +859,7 @@ describe('global navigation', () => {
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
-      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
       expect(document.querySelectorAll(selectors.navItem).length).to.equal(8);
@@ -793,28 +876,53 @@ describe('global navigation', () => {
     });
 
     it('should change the DOM order to ensure correct TAB behaviour for mobile|desktop', async () => {
-      const nav = await createFullGlobalNavigation();
+      await createFullGlobalNavigation();
 
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.mobile);
-      nav.isDesktop.dispatchEvent(new Event('change'));
+      isDesktop.dispatchEvent(new Event('change'));
 
       expect(document.querySelector(selectors.mainNav).previousElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.navWrapper).firstElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.smallDesktop);
-      nav.isDesktop.dispatchEvent(new Event('change'));
+      isDesktop.dispatchEvent(new Event('change'));
 
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
+    });
+
+    it('should add a modifier class when nav content overflows', async () => {
+      const getOverflowingTopnav = () => document.querySelector(selectors.overflowingTopNav);
+
+      await createFullGlobalNavigation();
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await createFullGlobalNavigation({ globalNavigation: longNav });
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.wide);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await setViewport(viewports.smallDesktop);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.mobile);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
     });
   });
 });

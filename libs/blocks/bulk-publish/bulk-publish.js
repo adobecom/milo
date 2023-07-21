@@ -17,8 +17,8 @@ import {
   storeOperation,
 } from './bulk-publish-utils.js';
 
-// eslint-disable-next-line max-len
 const URLS_ENTRY_LIMIT = 1000;
+let urlLimit;
 
 function User({ user }) {
   return html`
@@ -36,7 +36,7 @@ function User({ user }) {
 
 function UrlInput({ urlsElt }) {
   return html`
-    <span class="max-urls">Maximum number of URLS processed: ${URLS_ENTRY_LIMIT} </span>
+    <span class="max-urls">Maximum number of URLS processed: ${urlLimit} </span>
     <textarea class="bulk-urls-input" placeholder="Ex: https://main--milo--adobecom.hlx.page/my/sample/page" ref="${urlsElt}">${getStoredUrlInput()}</textarea>
   `;
 }
@@ -159,6 +159,7 @@ function StatusCompletion({ completion }) {
   `;
 }
 
+// eslint-disable-next-line max-len
 function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion }) {
   return valid && html`
     <div class="bulk-status">
@@ -187,8 +188,8 @@ function ErrorMessage({ valid, authorized, urlNumber }) {
     message = 'You are not authorized to perform bulk operations';
   } else if (urlNumber < 1) {
     message = 'There are no URLS to process. Add URLS to the text area to start bulk publishing.';
-  } else if (urlNumber > URLS_ENTRY_LIMIT) {
-    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${URLS_ENTRY_LIMIT}`;
+  } else if (urlNumber > urlLimit) {
+    message = `There are too many URLS. You entered ${urlNumber} URLS. The max allowed number is ${urlLimit}`;
   }
   return !!message && html`
       <div class="bulk-error">
@@ -247,7 +248,7 @@ function BulkPublish({ user, storedOperation }) {
     const { urls } = getStoredOperation();
     const urlNumberValue = urls.length;
     setUrlNumber(urlNumberValue);
-    if (urlNumberValue < 1 || urlNumberValue > URLS_ENTRY_LIMIT) {
+    if (urlNumberValue < 1 || urlNumberValue > urlLimit) {
       setValid(false);
       return;
     }
@@ -331,6 +332,13 @@ function BulkPublish({ user, storedOperation }) {
   `;
 }
 
+function initUrlLimit() {
+  if (urlLimit) return;
+  const { searchParams } = new URL(window.location.href);
+  const limit = searchParams.get('limit');
+  urlLimit = limit ? Number(limit) || URLS_ENTRY_LIMIT : URLS_ENTRY_LIMIT;
+}
+
 export default async function init(el) {
   const imsSignIn = getMetadata('ims-sign-in');
   if (imsSignIn === 'on' || imsSignIn === 'true') {
@@ -338,6 +346,7 @@ export default async function init(el) {
     if (!signedIn) return;
   }
 
+  initUrlLimit();
   const user = await getUser();
   const storedOperation = getStoredOperation();
   render(html`<${BulkPublish} user="${user}" storedOperation="${storedOperation}" />`, el);

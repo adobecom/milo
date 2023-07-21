@@ -13,25 +13,15 @@
 /*
  * Marketo Form
  */
-import { loadScript, createTag, getConfig } from '../../utils/utils.js';
+import { parseEncodedConfig, loadScript, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
-const DESTINATION_URL = 'destination url';
-const HIDDEN_FIELDS = 'hidden fields';
-const BASE_URL = 'base url';
 const FORM_ID = 'form id';
-const MUNCHKIN_ID = 'munchkin id';
-
-const loadForm = (form, formData) => {
-  if (!form) return;
-
-  if (formData[HIDDEN_FIELDS]) {
-    const hiddenFields = {};
-    formData[HIDDEN_FIELDS].split(',').forEach((field) => {
-      const [key, value] = field.trim().split('=');
-      hiddenFields[key] = value;
-    });
-    form.addHiddenFields(hiddenFields);
-  }
+const BASE_URL = 'marketo host';
+const MUNCHKIN_ID = 'marketo munckin';
+const FORM_MAP = {
+  'destination-url': 'form.success.content',
+  'co-partner-names': 'program.copartnernames',
+  'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
 
 export const formValidate = (form) => {
@@ -40,7 +30,32 @@ export const formValidate = (form) => {
   formEl.classList.add('show-warnings');
 };
 
-export const formSuccess = (form, redirectUrl) => {
+export const decorateURL = (destination, baseURL = window.location) => {
+  try {
+    let destinationUrl = new URL(destination, baseURL.origin);
+    const { hostname, pathname, search, hash } = destinationUrl;
+
+    if (!hostname) {
+      throw new Error('URL does not have a valid host');
+    }
+
+    if (destinationUrl.hostname.includes('.hlx.')) {
+      destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
+    }
+
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html')) {
+      destinationUrl.pathname = `${pathname}.html`;
+    }
+
+    return destinationUrl;
+  } catch (e) {
+    window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`);
+  }
+
+  return null;
+};
+
+export const formSuccess = (form) => {
   const formEl = form.getFormElem().get(0);
   const parentModal = formEl.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
@@ -49,85 +64,56 @@ export const formSuccess = (form, redirectUrl) => {
   window.mktoSubmitted = true;
 
   /* c8 ignore next 5 */
-  if (parentModal && !redirectUrl) {
+  if (parentModal) {
     const closeButton = parentModal.querySelector('.dialog-close');
     closeButton.click();
-    return false;
-  }
-  /* c8 ignore next 4 */
-  if (redirectUrl) {
-    window.location.href = redirectUrl;
     return false;
   }
 
   return true;
 };
 
-const readyForm = (form, formData) => {
+const readyForm = (form) => {
   const formEl = form.getFormElem().get(0);
-  const redirectUrl = formData[DESTINATION_URL];
 
   formEl.addEventListener('focus', (e) => {
+    /* c8 ignore next 5 */
     if (e.target.type === 'submit' || e.target.type === 'button') return;
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
     const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
-    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight /2 ;
+    const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
     window.scrollTo(0, offsetPosition);
   }, true);
   form.onValidate(() => formValidate(form));
-  form.onSuccess(() => formSuccess(form, redirectUrl));
+  form.onSuccess(() => formSuccess(form));
 };
 
-const init = (el) => {
-  const { marketoBaseURL, marketoMunchkinID, marketoFormID } = getConfig();
-  const children = Array.from(el.querySelectorAll(':scope > div'));
-  const formData = {
-    [FORM_ID]: marketoFormID,
-    [BASE_URL]: marketoBaseURL,
-    [MUNCHKIN_ID]: marketoMunchkinID,
-  };
-
-  children.forEach((element) => {
-    const key = element.children[0]?.textContent.toLowerCase();
-    const value = element.children[1]?.textContent;
-    if (key && value) { formData[key] = value; }
-  });
-
-  const formID = formData[FORM_ID];
-  const baseURL = formData[BASE_URL];
-  const munchkinID = formData[MUNCHKIN_ID];
-
-  if (!formID || !baseURL) {
-    el.style.display = 'none';
-    return;
+const setPreference = (key, value) => {
+  if (key && key.includes('.')) {
+    const keyParts = key.split('.');
+    const lastKey = keyParts.pop();
+    const formDataObject = keyParts.reduce((obj, part) => {
+      obj[part] = obj[part] || {};
+      return obj[part];
+    }, window.mcz_marketoForm_pref);
+    formDataObject[lastKey] = value;
   }
+};
 
-  loadScript(`https:${baseURL}/js/forms2/js/forms2.min.js`)
+export const setPreferences = (formData) => {
+  window.mcz_marketoForm_pref = window.mcz_marketoForm_pref || {};
+  Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
+};
+
+export const loadMarketo = (el, formData) => {
+  const baseURL = formData[BASE_URL];
+
+  loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      const fragment = new DocumentFragment();
-      const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
-
-      if (formData.title) {
-        const title = createTag('h3', { class: 'marketo-title' }, formData.title);
-        formWrapper.append(title);
-      }
-      if (formData.description) {
-        const description = createTag('p', { class: 'marketo-description' }, formData.description);
-        formWrapper.append(description);
-      }
-
-      const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });
-      const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
-      const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
-      formWrapper.append(span1, span2, marketoForm);
-
-      fragment.append(formWrapper);
-      el.replaceChildren(fragment);
-
-      MktoForms2.loadForm(baseURL, munchkinID, formID, (form) => { loadForm(form, formData); });
+      MktoForms2.loadForm(`//${baseURL}`, formData[MUNCHKIN_ID], formData[FORM_ID]);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
     })
     .catch(() => {
@@ -136,4 +122,74 @@ const init = (el) => {
     });
 };
 
-export default init;
+export default function init(el) {
+  const children = Array.from(el.querySelectorAll(':scope > div'));
+  const encodedConfigDiv = children.shift();
+  const link = encodedConfigDiv.querySelector('a');
+  let formData = {};
+
+  if (!link?.href) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const encodedConfig = link.href.split('#')[1];
+
+  formData = parseEncodedConfig(encodedConfig);
+
+  children.forEach((element) => {
+    const key = element.children[0]?.textContent.trim().toLowerCase().replaceAll(' ', '-');
+    const value = element.children[1]?.href ?? element.children[1]?.textContent;
+    if (!key || !value) return;
+    if (key in FORM_MAP) {
+      formData[FORM_MAP[key]] = value;
+    } else {
+      formData[key] = value;
+    }
+  });
+
+  const formID = formData[FORM_ID];
+  const baseURL = formData[BASE_URL];
+  const munchkinID = formData[MUNCHKIN_ID];
+
+  if (!formID || !baseURL || !munchkinID) {
+    el.style.display = 'none';
+    return;
+  }
+
+  if (formData['form.success.content']) {
+    const destinationUrl = decorateURL(formData['form.success.content']);
+
+    if (destinationUrl) {
+      formData['form.success.type'] = 'redirect';
+      formData['form.success.content'] = destinationUrl.href;
+    }
+  }
+
+  setPreferences(formData);
+
+  const fragment = new DocumentFragment();
+  const formWrapper = createTag('section', { class: 'marketo-form-wrapper' });
+
+  if (formData.title) {
+    const title = createTag('h3', { class: 'marketo-title' }, formData.title);
+    formWrapper.append(title);
+  }
+
+  if (formData.description) {
+    const description = createTag('p', { class: 'marketo-description' }, formData.description);
+    formWrapper.append(description);
+  }
+
+  const marketoForm = createTag('form', { ID: `mktoForm_${formID}`, class: 'hide-errors', style: 'opacity:0;visibility:hidden;' });
+  const span1 = createTag('span', { id: 'mktoForms2BaseStyle', style: 'display:none;' });
+  const span2 = createTag('span', { id: 'mktoForms2ThemeStyle', style: 'display:none;' });
+  formWrapper.append(span1, span2, marketoForm);
+
+  fragment.append(formWrapper);
+  el.replaceChildren(fragment);
+
+  createIntersectionObserver({ el, callback: (el) => {
+    loadMarketo(el, formData);
+  }});
+}
