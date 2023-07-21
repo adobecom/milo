@@ -87,5 +87,10 @@ jobs:
           }
 
           end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
+          release_details=${{ github.event.pull_request.body }} | sed ':a;N;$!ba;s/\n//g'
+          echo $release_details
+          echo $start_date
+          echo $end_date
 
-          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_STAGE_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${end_date}","maintenance_window_start_time":"${start_date}","preapproved_change_model_id":"847787","summary":"Release Title:${{ github.event.pull_request.title }}::Release Details:Here are the test details::Pull Request #${{ github.event.pull_request.number }}::Pull Request Created at:${{ github.event.pull_request.created_at }}::Pull Request Merged at:${{ github.event.pull_request.merged_at }}"}'
+          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_STAGE_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${end_date}","maintenance_window_start_time":"${start_date}","preapproved_change_model_id":"847787","summary":"Release Title:${{ github.event.pull_request.title }}::${release_details}::Pull Request #${{ github.event.pull_request.number }}::Pull Request Created at:${{ github.event.pull_request.created_at }}::Pull Request Merged at:${{ github.event.pull_request.merged_at }}"}'
+
