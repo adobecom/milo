@@ -9,7 +9,7 @@
 .marketo .marketo-form-wrapper {
   box-sizing: border-box;
   max-width: 600px;
-  min-height: 200px;
+  min-height: 400px;
   margin: 0 auto;
   padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
@@ -435,8 +435,8 @@
 
 @media screen and (min-width: 600px) {
   .resource-form .marketo {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
