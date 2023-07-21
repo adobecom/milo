@@ -1,8 +1,9 @@
 @import url("../section-metadata/section-metadata.css");
-.uar-results {
+
+.quiz-results {
   visibility: hidden;
 }
 
-.uar-results.show {
+.quiz-results.show {
   visibility: unset;
 }

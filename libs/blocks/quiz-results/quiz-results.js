@@ -16,7 +16,7 @@ function redirectPage(quizUrl, debug, message) {
   const url = (quizUrl) ? quizUrl.text : 'https://adobe.com';
   window.lana.log(message);
 
-  if (debug === 'uar') {
+  if (debug === 'quiz-results') {
     // eslint-disable-next-line no-console
     console.log(`${message}, redirecting to: ${url}`);
   } else {
@@ -35,13 +35,13 @@ function setAnalytics(hashValue, debug) {
   window.alloy_all.data._adobe_corpnew.digitalData.page ??= {};
   window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo ??= {};
   window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.customHash = hashValue;
-  if (debug === 'uar') {
+  if (debug === 'quiz-results') {
     // eslint-disable-next-line no-console
     console.log(`Setting a custom hash for pageload to: ${window.alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.customHash}`);
   }
 }
 
-export const loadingErrorText = 'Could not load UAR results:';
+export const loadingErrorText = 'Could not load quiz results:';
 
 export default async function init(el, debug = null, localStoreKey = null) {
   const data = getMetadata(el);
