@@ -12,22 +12,21 @@ const CONTAINER_INSIDE_BLOCK = 2;
 const CONTAINER_OUTSIDE_BLOCK = 3;
 const CONTAINER_OUTSIDE_AUTO_BLOCK = 4;
 
-function getPreviousBlock(container) {
+function getPreviousElement(container) {
   const firstBlock = container.elements?.[0];
-  const previousBlock = firstBlock?.previousElementSibling;
-  if (!previousBlock) return null;
-  if (previousBlock.classList.contains('library-container-start')) {
-    return previousBlock.previousElementSibling;
+  const previousElement = firstBlock?.previousElementSibling;
+  if (!previousElement) return null;
+  if (previousElement.classList.contains('library-container-start')) {
+    return previousElement.previousElementSibling;
   }
-  return previousBlock;
+  return previousElement;
 }
 
 function getAuthorName(container) {
-  const block = getPreviousBlock(container);
-  const blockSib = block?.previousElementSibling;
-  if (!blockSib) return null;
-  if (['H2', 'H3'].includes(blockSib.nodeName)) {
-    return blockSib.textContent;
+  const previousElement = getPreviousElement(container);
+  if (!previousElement) return null;
+  if (['H2', 'H3'].includes(previousElement.nodeName)) {
+    return previousElement.textContent;
   }
   return null;
 }
