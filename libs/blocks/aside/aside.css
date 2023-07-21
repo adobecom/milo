@@ -179,6 +179,12 @@
   min-height: 270px;
 }
 
+.aside.split.icon-stack .foreground.container .text,
+.aside.split.bio .foreground.container .text {
+  padding: var(--spacing-l) 0;
+  margin: 0;
+}
+
 .aside.split .icon-stack-area li img {
   height: 40px;
   width: 40px;
@@ -267,12 +273,6 @@
 .aside.split .foreground.container .split-image video {
   object-fit: cover;
   height: 270px;
-}
-
-.aside.split.icon-stack .foreground.container .text,
-.aside.split.bio .foreground.container .text {
-  padding: var(--spacing-l) 0;
-  margin: 0;
 }
 
 .aside.inline {
