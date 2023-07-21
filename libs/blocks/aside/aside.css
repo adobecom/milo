@@ -1,13 +1,3 @@
-:root {
-  --play-btn-hover: #095ABA;
-  --play-btn-focus: #095ABA;
-  --play-btn-focus-out: #378EF0;
-  --play-btn-active: #0D66D0;
-  --play-btn-focus-ring: #1473E6;
-  --play-btn-border: #fff;
-  --play-icon-fill: #fff;
-}
-
 .aside {
   display: flex;
   width: 100%;
@@ -508,7 +498,7 @@
   width: 77px;
   left: calc(50% - 38.5px);
   top: calc(50% - 38.5px);
-  background-color: var(--play-btn-focus-out);
+  background-color: var(--color-accent-focus-ring);
   border: none;
   border-radius: 50%;
   outline: none;
@@ -516,18 +506,18 @@
 }
 
 .aside .play-btn:hover {
-  background-color: var(--play-btn-hover);
+  background-color: var(--color-accent-down);
 }
 
 .aside .play-btn:focus,
 .aside .play-btn:focus-visible {
-  outline: 2.5px solid var(--play-btn-focus-ring);
+  outline: 2.5px solid var(--color-accent);
   outline-offset: 0;
-  background-color: var(--play-btn-focus);
+  background-color: var(--color-accent-down);
 }
 
 .aside .play-btn:active {
-  background-color: var(--play-btn-active);
+  background-color: var(--color-accent-hover);
   outline: none
 }
 
@@ -540,7 +530,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2.5px solid var(--play-btn-border);
+  border: 2.5px solid var(--color-white);
 }
 
 .aside .play-icon-container {
@@ -555,7 +545,7 @@
   width: 24px;
   height: 32px;
   flex-shrink: 0;
-  fill: var(--play-icon-fill);
+  fill: var(--color-white);
 }
 
 .aside.split.bio .foreground.container .text .icon-area {
