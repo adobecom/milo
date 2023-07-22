@@ -1,9 +1,9 @@
 :root {
-  --borderColor: #D9D9D9;
-  --highlightBackground: #F3D949;
-  --hoverBorderColor: #357BEB;
-  --sectionHeadBackground: #E6E6E6;
-  --checkmarkColor: #268E6C;
+  --border-color: #D9D9D9;
+  --highlight-background: #F3D949;
+  --hover-border-color: #357BEB;
+  --section-head-background: #E6E6E6;
+  --checkmark-color: #268E6C;
 }
 
 .table,
@@ -11,7 +11,7 @@
   max-width: 1200px;
   margin: auto;
   padding: 20px 0;
-  border-color: var(--borderColor);
+  border-color: var(--border-color);
 }
 
 .table > .row {
@@ -37,17 +37,35 @@
   margin-right: 8px;
 }
 
-.table div[class*="col-"],
 .table.merch div[class*="col-"] {
-  border: 1px var(--borderColor) solid;
+  border-top: 1px var(--border-color) solid;
+  border-left: 1px var(--border-color) solid;
+  border-right: 1px var(--border-color) solid;
+}
+
+.table div[class*="col-"] {
+  border-left: 1px var(--border-color) solid;
+  border-top: 1px var(--border-color) solid;
+}
+
+.table .col:last-child {
+  border-right: 1px var(--border-color) solid;
+}
+
+.table .row:last-child .col {
+  border-bottom: 1px var(--border-color) solid;
+}
+
+.table.collapse .section-head-collaped .col {
+  border-bottom: 1px var(--border-color) solid;
 }
 
 /* highlight */
 .table .row-highlight .col-highlight {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
-  background-color: var(--highlightBackground);
-  border: 1px solid var(--highlightBackground);
+  background-color: var(--highlight-background);
+  border: 1px solid var(--highlight-background);
   padding: 10px 30px;
   text-transform: capitalize;
   border-top-right-radius: 15px;
@@ -138,7 +156,7 @@
 }
 
 .table .section-head .col {
-  background-color: var(--sectionHeadBackground);
+  background-color: var(--section-head-background);
   padding: 28px 24px;
 }
 
@@ -192,11 +210,11 @@
 
 .table .icon-milo-info:hover path,
 .table .active .icon-milo-info path {
-  color: var(--hoverBorderColor);
+  color: var(--hover-border-color);
 }
 
 .table .icon-milo-checkmark {
-  color: var(--checkmarkColor);
+  color: var(--checkmark-color);
   width: 23px;
   height: 100%;
 }
@@ -227,8 +245,8 @@
 /* hover */
 @media (min-width: 900px) {
   .table .col.hover {
-    border-left-color: var(--hoverBorderColor);
-    border-right-color: var(--hoverBorderColor);
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
   }
 
   .table .row-highlight .col-highlight {
@@ -238,27 +256,27 @@
   }
 
   .table .row-highlight .col-highlight.hover {
-    border-top-color: var(--hoverBorderColor);
-    border-left-color: var(--hoverBorderColor);
-    border-right-color: var(--hoverBorderColor);
+    border-top: 1px solid var(--hover-border-color);
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
   }
 
   .table .row-heading .col-heading.hover {
-    border-top-color: var(--hoverBorderColor);
+    border-top: 1px solid var(--hover-border-color);
   }
 
   .table .row:last-child .col.hover,
   .table .col.hover.hover-border-bottom {
-    border-bottom-color: var(--hoverBorderColor);
+    border-bottom: 1px solid var(--hover-border-color);
   }
 
   .table .col.no-top-border.hover {
-    border-top-color: var(--borderColor);
+    border-top-color: var(--border-color);
   }
 
   .table .section-head .col.hover {
-    border-right: 1px solid var(--hoverBorderColor);
-    border-left: 1px solid var(--hoverBorderColor);
+    border-right: 1px solid var(--hover-border-color);
+    border-left: 1px solid var(--hover-border-color);
   }
 
   .table .row:not(.section-head) .col:not(.col-highlight):not(.hidden).hover {
@@ -266,12 +284,12 @@
   }
 
   .table.merch .col.hover {
-    border-left-color: var(--hoverBorderColor);
-    border-right-color: var(--hoverBorderColor);
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
   }
 
   .table.merch .col.border-bottom.hover {
-    border-bottom-color: var(--hoverBorderColor);
+    border-bottom: 1px solid var(--hover-border-color);
   }
 }
 
