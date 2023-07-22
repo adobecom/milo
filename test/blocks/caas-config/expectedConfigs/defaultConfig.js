@@ -20,9 +20,7 @@ const defaultConfig = {
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
       titleHeadingLevel: 'h3',
-      lastModified: 'Last modified {date}',
     },
-    detailsTextOption: 'default',
     setCardBorders: false,
     useOverlayLinks: false,
     banner: {
