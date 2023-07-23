@@ -453,7 +453,8 @@
   flex-direction: column;
 }
 
-.aside.split .foreground.container .text .icon-stack-area li {
+.aside.split .foreground.container .text .icon-stack-area li,
+.aside.split .foreground.container .text .icon-stack-area li a {
   display: flex;
   align-items: center;
   gap: 12px;

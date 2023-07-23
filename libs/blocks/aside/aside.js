@@ -70,6 +70,14 @@ function decorateIconStack(el) {
     stackEl.closest('ul').classList.add('icon-stack-area', 'body-s');
     el.classList.add('icon-stack');
   }
+  const stackItems = el.querySelectorAll('ul li');
+  [...stackItems].forEach((stackItem) => {
+    if (stackItem.querySelectorAll('a').length <= 1) return;
+    const linkImg = stackItem.querySelector('a:has(picture)');
+    const linkText = stackItem.querySelector('a:not(:has(picture))');
+    linkText.prepend(linkImg.querySelector('picture'));
+    linkImg.remove();
+  });
 }
 
 function decorateMedia(el) {
