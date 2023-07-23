@@ -72,9 +72,10 @@ function decorateIconStack(el) {
   }
   const stackItems = el.querySelectorAll('ul li');
   [...stackItems].forEach((stackItem) => {
+    const links = stackItem.querySelectorAll('a');
     if (stackItem.querySelectorAll('a').length <= 1) return;
-    const linkImg = stackItem.querySelector('a:has(picture)');
-    const linkText = stackItem.querySelector('a:not(:has(picture))');
+    const linkImg = links[0].querySelector('a picture') ? links[0] : links[1];
+    const linkText = links[0].querySelector('a picture') ? links[1] : links[0];
     linkText.prepend(linkImg.querySelector('picture'));
     linkImg.remove();
   });
