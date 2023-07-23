@@ -76,7 +76,7 @@ function decorateIconStack(el) {
     if (stackItem.querySelectorAll('a').length <= 1) return;
     const picIndex = links[0].querySelector('a picture') ? 0 : 1;
     const linkImg = links[picIndex];
-    const linkText = picIndex === 0 ? links[1] : links[0];
+    const linkText = links[1 - picIndex];
     linkText.prepend(linkImg.querySelector('picture'));
     linkImg.remove();
   });
