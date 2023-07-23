@@ -54,8 +54,8 @@ function decorateStaticLinks(el) {
 function decorateModalImage(el, lnkImg) {
   if (el.classList.contains('split')) lnkImg.closest('div').classList.add('has-modal');
   lnkImg.classList.add('play-btn');
-  const playIconContainer = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
-  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIconContainer);
+  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
+  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIcon);
   const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' });
   lnkImg.parentNode.appendChild(lnkImg.querySelector('picture'));
   lnkImg.parentNode.appendChild(playContainer);
