@@ -512,7 +512,6 @@
 
 .aside .play-btn:focus,
 .aside .play-btn:focus-visible {
-  outline: none;
   outline: 2.5px solid var(--color-accent);
   background-color: var(--color-accent-down);
 }
