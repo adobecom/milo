@@ -512,8 +512,9 @@
 
 .aside .play-btn:focus,
 .aside .play-btn:focus-visible {
-  outline: 2.5px solid var(--color-accent);
-  outline-offset: 0;
+  outline: none;
+  border: 2.5px solid var(--color-accent);
+  transform: translate(-2.5px, -2.5px);
   background-color: var(--color-accent-down);
 }
 

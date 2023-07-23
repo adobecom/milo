@@ -74,8 +74,9 @@ function decorateIconStack(el) {
   [...stackItems].forEach((stackItem) => {
     const links = stackItem.querySelectorAll('a');
     if (stackItem.querySelectorAll('a').length <= 1) return;
-    const linkImg = links[0].querySelector('a picture') ? links[0] : links[1];
-    const linkText = links[0].querySelector('a picture') ? links[1] : links[0];
+    const picIndex = links[0].querySelector('a picture') ? 0 : 1;
+    const linkImg = links[picIndex];
+    const linkText = picIndex === 0 ? links[1] : links[0];
     linkText.prepend(linkImg.querySelector('picture'));
     linkImg.remove();
   });
