@@ -166,6 +166,12 @@ function openPicker(button, locales, country, event, dir) {
     list.appendChild(li);
   });
   button.parentNode.insertBefore(list, button.nextSibling);
+  const buttonRect = button.getBoundingClientRect();
+  const spaceBelowButton = window.innerHeight - buttonRect.bottom;
+  if (spaceBelowButton <= list.offsetHeight) {
+    list.classList.add('top');
+  }
+  
   button.setAttribute('aria-expanded', true);
   removeOnClickOutsideElement(list, event, button);
 }
@@ -178,7 +184,7 @@ function buildContent(currentPage, locale, geoData, locales) {
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
   const title = createTag('h3', { lang, dir }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
-  const flagFile = getCodes(locale).length > 1 ? 'globe-grid.png' : `flag-${locale.geo}.svg`;
+  const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     width: 15,

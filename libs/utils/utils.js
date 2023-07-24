@@ -56,6 +56,8 @@ const MILO_BLOCKS = [
   'table-of-contents',
   'text',
   'walls-io',
+  'table',
+  'table-metadata',
   'tags',
   'tiktok',
   'twitter',
@@ -164,7 +166,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
-      document.documentElement.setAttribute('lang', config.locale.ietf);
+      const lang = getMetadata('content-language') || config.locale.lang || config.locale.ietf;
+      document.documentElement.setAttribute('lang', lang);
       try {
         const dir = getMetadata('content-direction')
           || config.locale.dir
@@ -558,11 +561,13 @@ function decorateHeader() {
   }
   const headerQuery = new URLSearchParams(window.location.search).get('headerqa');
   header.className = headerQuery || headerMeta || 'gnav';
+  const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
+  || getConfig().breadcrumbs;
+  if (metadataConfig === 'off') return;
   const breadcrumbs = document.querySelector('.breadcrumbs');
-  if (breadcrumbs) {
-    header.classList.add('has-breadcrumbs');
-    header.append(breadcrumbs);
-  }
+  const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
+  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  if (breadcrumbs) header.append(breadcrumbs);
 }
 
 async function decorateIcons(area, config) {
@@ -619,22 +624,31 @@ function decorateFooterPromo(config) {
   document.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
 }
 
-export function loadIms(onReadyFn) {
-  if (window.adobeIMS) return;
-
-  const { locale, imsClientId, imsScope, env, onReady } = getConfig();
-  if (!imsClientId) return null;
-
-  window.adobeid = {
-    client_id: imsClientId,
-    scope: imsScope || 'AdobeID,openid,gnav',
-    locale: locale?.ietf?.replace('-', '_') || 'en_US',
-    autoValidateToken: true,
-    environment: env.ims,
-    useLocalStorage: false,
-    onReady: onReadyFn || onReady,
-  };
-  loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+let imsLoaded;
+export async function loadIms() {
+  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
+    const { locale, imsClientId, imsScope, env } = getConfig();
+    if (!imsClientId) {
+      reject(new Error('Missing IMS Client ID'));
+      return;
+    }
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
+    window.adobeid = {
+      client_id: imsClientId,
+      scope: imsScope || 'AdobeID,openid,gnav',
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      autoValidateToken: true,
+      environment: env.ims,
+      useLocalStorage: false,
+      onReady: () => {
+        resolve();
+        clearTimeout(timeout);
+      },
+      onError: reject,
+    };
+    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+  });
+  return imsLoaded;
 }
 
 async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
@@ -649,7 +663,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   }
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
-  loadIms();
+  loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({
@@ -829,6 +843,10 @@ export async function loadArea(area = document) {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
+    const appendage = getMetadata('title-append');
+    if (appendage) {
+      import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
     const richResults = getMetadata('richresults');
     if (richResults) {
       const { default: addRichResults } = await import('../features/richresults.js');
@@ -899,12 +917,4 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
-}
-
-export function debounce(func, timeout = 300) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => { func.apply(this, args); }, timeout);
-  };
 }
