@@ -254,11 +254,10 @@ const getFilterArray = async (state, country, lang) => {
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   if (autoCountryLang) {
-    const htmlLang = pageConfigHelper()?.locale?.ietf?.toLowerCase() || 'en-us';
-    const [lang, cntry] = htmlLang.split('-');
+    const locale = pageConfigHelper()?.locale;
     return {
-      country: cntry,
-      language: lang,
+      country: locale.region?.toLowerCase() || 'us',
+      language: locale.ietf?.toLowerCase() || 'en-us',
     };
   }
   return {

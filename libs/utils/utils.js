@@ -146,6 +146,7 @@ export function getLocale(locales, pathname = window.location.pathname) {
     return locale;
   }
   locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  [locale.region] = localeString.split('_');
   return locale;
 }
 
