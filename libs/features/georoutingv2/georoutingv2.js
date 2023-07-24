@@ -171,7 +171,7 @@ function openPicker(button, locales, country, event, dir) {
   if (spaceBelowButton <= list.offsetHeight) {
     list.classList.add('top');
   }
-  
+
   button.setAttribute('aria-expanded', true);
   removeOnClickOutsideElement(list, event, button);
 }
