@@ -200,7 +200,7 @@ function addMarkerData(manifests) {
 // eslint-disable-next-line import/prefer-default-export
 export async function decoratePreviewMode(manifests, utils) {
   utils.loadStyle('/libs/features/personalization/preview.css');
-  const overlay = utils.createTag('div', { class: 'hlx-preview-overlay' });
+  const overlay = utils.createTag('div', { class: 'hlx-preview-overlay', style: 'diplay: none;' });
   document.body.append(overlay);
   createPreviewPill(manifests, overlay, utils);
   addMarkerData(manifests);
