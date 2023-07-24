@@ -166,7 +166,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
-      document.documentElement.setAttribute('lang', config.locale.lang || config.locale.ietf);
+      const lang = getMetadata('content-language') || config.locale.lang || config.locale.ietf;
+      document.documentElement.setAttribute('lang', lang);
       try {
         const dir = getMetadata('content-direction')
           || config.locale.dir
