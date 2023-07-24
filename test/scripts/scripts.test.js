@@ -2,7 +2,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { delay, waitForElement } from '../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../helpers/waitfor.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -38,7 +38,7 @@ describe('Decorating', async () => {
   });
 
   it('Loads lana.js upon calling lana.log the first time', async () => {
-    await delay(200); // wait for non-blocking imports in loadArea()
+    await waitFor(() => window.lana?.loaded);
 
     expect(window.lana.log).to.exist;
 

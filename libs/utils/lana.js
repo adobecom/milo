@@ -111,6 +111,7 @@
     debug: false,
     log,
     options: mergeOptions(w.lana && w.lana.options),
+    loaded: true,
   };
 
   /* c8 ignore next */
