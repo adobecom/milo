@@ -36,16 +36,16 @@ export const fetchVersions = async () => {
 }
 
 export const createHistoryTag = async (comment = '') => {
-
   const callOptions = getReqOptions({
     method: 'POST',
     accept,
     contentType
   });
   const res = await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
+
   if (!res.ok) {
     const error = await res.json();
-    const message = error['odata.error']?.message.value;
+    const message = error['odata.error']?.message.value || 'error';
     throw new Error(message);
   }
 }

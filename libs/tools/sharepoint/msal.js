@@ -35,18 +35,18 @@ export function getMSALConfig() {
       
       try {
         await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
-        msalConfig = {
-          login,
-          auth,
-          cache,
-          telemetry,
-          site,
-          baseUri: `${site}/drive/root:/${root}`
-        };
-        resolve(msalConfig);
       } catch(err) {
         console.log(err);
       }
+      msalConfig = {
+        login,
+        auth,
+        cache,
+        telemetry,
+        site,
+        baseUri: `${site}/drive/root:/${root}`
+      };
+      resolve(msalConfig);
     }
     resolve(msalConfig);
   });
