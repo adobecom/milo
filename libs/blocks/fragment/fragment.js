@@ -57,17 +57,7 @@ export default async function init(a) {
       updateFragMap(fragment, a, relHref);
 
       if (a.dataset.manifestId) {
-        fragment.dataset.manifestId = a.dataset.manifestId;
-        const manifestPrefix = a.dataset.manifestId.split(' ')[0];
-        if (!manifestPrefix.includes('.json')) {
-          let daaLh = a.getAttribute('daa-lh');
-          if (daaLh) {
-            daaLh = `${manifestPrefix} ${daaLh}`;
-          } else {
-            daaLh = manifestPrefix;
-          }
-          fragment.setAttribute('daa-lh', daaLh);
-        }
+        import('../../features/personalization/add-fragment-link-headers.js').then(({ default: addFragmentLinkHeaders }) => addFragmentLinkHeaders(fragment, a));
       }
       a.parentElement.replaceChild(fragment, a);
 

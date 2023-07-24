@@ -33,6 +33,7 @@
   border-radius: 100px;
   margin-left: 16px;
 }
+
 .hlx-badge .hlx-open::after {
   content: '';
   display: block;
@@ -47,17 +48,20 @@
   bottom: 5px;
   transition-duration: 0.2s;
 }
+
 .hlx-hidden .hlx-badge .hlx-open::after {
   transform: rotate(-135deg);
   left: 7px;
   bottom: 6px;
 }
+
 .hlx-popup-header .hlx-close {
   position: absolute;
   right: 15px;
   cursor: pointer;
   top: 15px;
 }
+
 .hlx-popup-header .hlx-close::after {
   content: 'x';
   display: block;
@@ -94,7 +98,6 @@
   padding: 0 16px;
   background-color: #222;
   border-radius: 16px 16px 0 0;
-  padding: 12px 16px;
   position: relative;
 }
 
@@ -155,33 +158,41 @@
   font-size: 14px;
   font-weight: 500;
 }
+
 .hlx-popup .dark {
   display: flex;
   justify-content: flex-end;
   padding: 15px;
 }
+
 .hlx-popup label {
   font-weight: 500;
 }
+
 label.hlx-manifest-selected-variant::after {
   content: ' *';
 }
+
 .hlx-manifest-title,
 .hlx-popup label {
   line-height: 18px;
   position: relative;
 }
+
 .hlx-manifest-title {
   padding-right: 20px;
 }
+
 .hlx-manifest-title::before {
   counter-increment: preview;
   content: counter(preview) '. ';
 }
+
 .hlx-manifest-list {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
 }
+
 input#new-manifest {
   height: 28px;
   width: 100%;
@@ -192,12 +203,15 @@ input#new-manifest {
 .hlx-manifest-list::-webkit-scrollbar {
   width: 10px;
 }
+
 .hlx-manifest-list::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+
 .hlx-manifest-list::-webkit-scrollbar-thumb {
   background: #888;
 }
+
 .hlx-manifest-list::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
@@ -207,7 +221,6 @@ body[data-mep-marker='true'] [data-manifest-id],
 body[data-mep-marker='true'] [data-code-manifest-id],
 body[data-mep-marker='true'] [data-removed-manifest-id] {
   outline: 3px #26ceef dashed !important;
-  -webkit-box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   box-shadow: 3px 3px 13px 0 #8f8f8f !important;
   position: relative;
 }
@@ -238,9 +251,7 @@ body[data-mep-marker='true'] [data-removed-manifest-id]::before {
   color: #000 !important;
   opacity: 0.7 !important;
   border: 1px solid #1ad8ff;
-  -webkit-border-radius: 5px;
   border-radius: 5px;
-  -webkit-box-shadow: 0 3px 8px 1px #808080;
   box-shadow: 0 3px 8px 1px #808080;
 }
 
