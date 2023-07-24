@@ -109,7 +109,7 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: 16px;
 }
 
-li:before {
+.media li:before {
   content: "";
   display: inline-block;
   margin-left: 3px;
@@ -134,9 +134,9 @@ li:before {
   margin-bottom: 0;
 }
 
-.media h3 {
+.media h3.subcopy-heading {
   font-size: 16px;
-  margin-top: 24px !important;
+  margin-top: 24px;
   margin-bottom: 16px;
 }
 
@@ -147,7 +147,7 @@ li:before {
 
 .media a.subcopy-link {
   font-size: 14px;
-  color: #1473E6;
+  color: var(--link-color-dark);
   line-height: 21px;
 }
 
