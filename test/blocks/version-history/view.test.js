@@ -2,9 +2,10 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig } from './mockFetch.js';
+import { stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig, configJson } from './mockFetch.js';
 import View from '../../../libs/blocks/version-history/view.js';
 import { setStatus } from '../../../libs/tools/sharepoint/state.js';
+import { siteConfig } from '../../../libs/tools/sharepoint/state.js'
 
 describe('View', () => {
   before(() => {
@@ -12,6 +13,7 @@ describe('View', () => {
     stubFetchVersions();
     stubCreateVersions();
     stubGetconfig();
+    siteConfig.value = configJson;
     window.msal = {
       PublicClientApplication: function () {
         return {

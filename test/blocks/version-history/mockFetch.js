@@ -29,7 +29,7 @@ const list = {
   value: versions
 }
 
-const configJson = {
+export const configJson = {
   data: [
     {
       key: 'prod.sharepoint.clientId',

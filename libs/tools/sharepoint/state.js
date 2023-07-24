@@ -31,6 +31,7 @@ export function getSiteConfig() {
       resolve(siteConfig.value);
       return;
     }
+
     const resp = await fetch(`${origin}${CONFIG}`);
 
     if (!resp.ok) {
