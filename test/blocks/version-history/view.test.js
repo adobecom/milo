@@ -14,6 +14,14 @@ describe('View', () => {
     stubCreateVersions();
     stubGetconfig();
     siteConfig.value = configJson;
+  })
+
+  after(() => {
+    restoreFetch();
+    delete window.msal;
+  });
+
+  beforeEach(async () => {
     window.msal = {
       PublicClientApplication: function () {
         return {
@@ -23,14 +31,6 @@ describe('View', () => {
         };
       },
     };
-  })
-
-  after(() => {
-    restoreFetch();
-    delete window.msal;
-  });
-
-  beforeEach(async () => {
     const review = html`<${View} />`;
     render(review, document.body);
   });
@@ -43,6 +43,15 @@ describe('View', () => {
   });
 
   it('should set the comment when textarea onchange event', async () => {
+    window.msal = {
+      PublicClientApplication: function () {
+        return {
+          getAllAccounts: () => [],
+          loginPopup: sinon.stub().rejects(),
+          acquireTokenSilent: sinon.stub().rejects({ accessToken: 'fake-access-token' }),
+        };
+      },
+    };
     const element = await waitForElement('.container');
     const textAreaElem = element.querySelector('#comment');
     const onInputChange = new Event('keyup', { currentTarget: { value: 'New value' } });
