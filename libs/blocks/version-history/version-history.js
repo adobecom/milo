@@ -1,6 +1,4 @@
 import { html, render } from '../../deps/htm-preact.js';
-import loginToSharePoint from '../../tools/sharepoint/login.js';
-import { createHistoryTag } from './index.js';
 import View from './view.js';
 
 export default async function init(el) {
@@ -9,5 +7,5 @@ export default async function init(el) {
   }
 
   render(
-    html`<${View} loginToSharePoint=${loginToSharePoint} createHistoryTag=${createHistoryTag}/>`, el);
+    html`<${View} />`, el);
 }

@@ -32,41 +32,21 @@ export function getMSALConfig() {
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
-
-      await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
-      msalConfig = {
-        login,
-        auth,
-        cache,
-        telemetry,
-        site,
-        baseUri: `${site}/drive/root:/${root}`,
-        system: {
-          loggerOptions: {
-            logLevel: msal.LogLevel.Error,
-            loggerCallback: (level, message, containsPii) => {
-              if (containsPii) { return; }
-              switch (level) {
-                case msal.LogLevel.Error:
-                  console.error(message);
-                  return;
-                case msal.LogLevel.Info:
-                  console.info(message);
-                  return;
-                case msal.LogLevel.Verbose:
-                  console.debug(message);
-                  return;
-                case msal.LogLevel.Warning:
-                  console.warn(message);
-                  return;
-                default:
-                  console.log(message);
-              }
-            },
-          },
-        },
-      };
-      resolve(msalConfig);
+      
+      try {
+        await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
+        msalConfig = {
+          login,
+          auth,
+          cache,
+          telemetry,
+          site,
+          baseUri: `${site}/drive/root:/${root}`
+        };
+        resolve(msalConfig);
+      } catch(err) {
+        console.log(err);
+      }
     }
     resolve(msalConfig);
   });

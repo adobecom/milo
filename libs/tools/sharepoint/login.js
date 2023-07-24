@@ -7,6 +7,7 @@ export default async function loginToSharePoint(scope = []) {
   const pca = new msal.PublicClientApplication(msalConfig);
 
   let account = pca.getAllAccounts()[0];
+
   if (!account) {
     await pca.loginPopup(msalConfig.login);
     [account] = pca.getAllAccounts();

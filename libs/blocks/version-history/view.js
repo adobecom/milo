@@ -1,10 +1,11 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
-import { fetchVersions } from './index.js';
+import { fetchVersions, createHistoryTag } from './index.js';
+import loginToSharePoint from '../../tools/sharepoint/login.js';
 
 const baseUrl = 'https://adobe.sharepoint.com'
 const scope = [`${baseUrl}/.default`];
 
-export default function View({ loginToSharePoint, createHistoryTag }) {
+export default function View() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [versions, setVersions] = useState([]);
   const [comment, setComment] = useState('');

@@ -2,8 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { stubLogin, stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig } from './mockFetch.js';
-import { createHistoryTag } from '../../../libs/blocks/version-history/index.js';
+import { stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig } from './mockFetch.js';
 import View from '../../../libs/blocks/version-history/view.js';
 import { setStatus } from '../../../libs/tools/sharepoint/state.js';
 
@@ -13,14 +12,24 @@ describe('View', () => {
     stubFetchVersions();
     stubCreateVersions();
     stubGetconfig();
+    window.msal = {
+      PublicClientApplication: function () {
+        return {
+          getAllAccounts: () => [{ username: 'test'}],
+          loginPopup: sinon.stub().resolves(),
+          acquireTokenSilent: sinon.stub().resolves({ accessToken: 'fake-access-token' }),
+        };
+      },
+    };
   })
 
   after(() => {
     restoreFetch();
+    delete window.msal;
   });
 
   beforeEach(async () => {
-    const review = html`<${View} loginToSharePoint=${stubLogin} createHistoryTag=${createHistoryTag}/>`;
+    const review = html`<${View} />`;
     render(review, document.body);
   });
 
@@ -39,15 +48,20 @@ describe('View', () => {
     expect(textAreaElem.value).to.be.empty;
   });
 
-  it('should display text area', async () => {
+  it('should call create version api with comment value', async () => {
     const element = await waitForElement('.container');
     const createBtn = element.querySelector('#create');
+    stubCreateVersions('New comment', false);
     createBtn.dispatchEvent(new Event('click'));
-    stubCreateVersions();
+  });
+
+  it('should call create version api with empty comment', async () => {
+    const element = await waitForElement('.container');
+    const createBtn = element.querySelector('#create');
+    stubCreateVersions('', true);
     createBtn.dispatchEvent(new Event('click'));
   });
  
-
   it('downloadVersionFile: should call anchor tag click on click of download button', async () => {
     const element = await waitForElement('.container');
     const tdElem = element.querySelector('.download');

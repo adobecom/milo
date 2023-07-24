@@ -32,6 +32,7 @@ export function getSiteConfig() {
       return;
     }
     const resp = await fetch(`${origin}${CONFIG}`);
+
     if (!resp.ok) {
       setStatus('siteConfig', 'error', 'Error getting site settings.');
       return;

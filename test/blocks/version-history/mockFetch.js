@@ -28,6 +28,27 @@ const versions = [{
 const list = {
   value: versions
 }
+
+const configJson = {
+  data: [
+    {
+      key: 'prod.sharepoint.clientId',
+      value: ''
+    },
+    {
+      key: 'prod.sharepoint.authority',
+      value: ''
+    },
+    {
+      key: 'prod.sharepoint.site',
+      value: ''
+    },
+    {
+      key: 'prod.sharepoint.root',
+      value: '/libs'
+    }]
+}
+
 const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('undefined')`
 const ogFetch = window.fetch;
 window.fetch = stub();
@@ -54,17 +75,25 @@ export const stubFetchVersions = () => {
   );
 };
 
-export const stubCreateVersions = (comment = '') => {
+export const stubCreateVersions = (comment = '', fail) => {
+  const error = {
+    odata: {error: { message: {value: 'empty comment'}}}
+  }
   window.fetch.withArgs(`${url}/Publish('Through API: ${comment}')`).returns(
     new Promise((resolve) => {
-      resolve({
-        ok: false,
-      });
+      if (fail) {
+        resolve({
+          ok: false,
+          json: () => error,
+        });
+      } else {
+        resolve({
+          ok: true
+        });
+      }
     }),
   );
 };
-
-export const stubLogin = stub().returns('Logged in')
 
 export const restoreFetch = () => {
   window.fetch = ogFetch;
@@ -74,8 +103,11 @@ export const stubGetconfig = () => {
   window.fetch.withArgs(`http://localhost:2000/.milo/config.json`).returns(
     new Promise((resolve) => {
       resolve({
-        ok: false,
+        ok: true,
+        json: () => configJson
       });
     }),
   );
 };
+
+
