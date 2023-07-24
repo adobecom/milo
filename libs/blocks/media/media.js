@@ -71,7 +71,7 @@ export default function init(el) {
     // subcopy with links
     if (actionArea?.nextElementSibling?.tagName === 'H3') {
       actionArea.nextElementSibling.classList.add('subcopy-heading');
-      const links = document.querySelectorAll('h3 ~ p.body-s a');
+      const links = document.querySelectorAll('h3.subcopy-heading ~ p.body-s a');
       links.forEach((link) => {
         link.parentElement.classList.add('subcopy-link');
 
@@ -80,7 +80,7 @@ export default function init(el) {
     }
 
     // qr code
-    if (row.parentNode.classList.contains('qr-code')) {
+    if (row.closest('.qr-code')) {
       const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
       if (imgQRCode) {
         imgQRCode.classList.add('qr-code');

@@ -86,5 +86,11 @@ export default function init(el) {
   const mediaItems = el.querySelectorAll(':scope > .media');
   mediaItems.forEach((i) => {
     initMedia(i, false);
+    if(el.classList.contains("checklist")) {
+      i.classList.add("checklist");
+    }
+    if(el.classList.contains("qr-code")) {
+      i.classList.add("qr-code");
+    }
   });
 }
