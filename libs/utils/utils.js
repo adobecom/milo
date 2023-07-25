@@ -768,7 +768,7 @@ async function checkForPageMods() {
 
     await applyPers(manifests, utils);
   } else if (config.mep.forcedPreview) {
-    const { decoratePreviewMode } = await import('../features/personalization/preview.js');
+    const { default: decoratePreviewMode } = await import('../features/personalization/preview.js');
     await decoratePreviewMode([], utils);
   }
 }

@@ -216,11 +216,12 @@ function addMarkerData(manifests) {
   });
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export async function decoratePreviewMode(manifests, utils) {
-  utils.loadStyle('/libs/features/personalization/preview.css');
-  const overlay = utils.createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
-  document.body.append(overlay);
-  createPreviewPill(manifests, overlay, utils);
-  addMarkerData(manifests);
+export default async function decoratePreviewMode(manifests, utils) {
+  document.addEventListener('milo:deferred', () => {
+    utils.loadStyle('/libs/features/personalization/preview.css');
+    const overlay = utils.createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+    document.body.append(overlay);
+    createPreviewPill(manifests, overlay, utils);
+    addMarkerData(manifests);
+  }, { once: true });
 }

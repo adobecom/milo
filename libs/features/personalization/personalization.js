@@ -505,7 +505,7 @@ export async function applyPers(
   });
 
   if (config.mep.preview) {
-    const { decoratePreviewMode } = await import('./preview.js');
+    const { default: decoratePreviewMode } = await import('./preview.js');
     decoratePreviewMode(experiments, utils);
   }
 }
