@@ -27,7 +27,7 @@
 }
 
 .action-slider .nested.section .action-item {
-  min-width: var(--action-slider-column-width);
+  width: var(--action-slider-column-width);
 }
 
 .action-slider .nav-grad {
