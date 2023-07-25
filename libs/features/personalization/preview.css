@@ -45,7 +45,16 @@
   }
 }
 
-.mep-badge .mep-open::after {
+.mep-toggle-advanced {
+  position: relative;
+  font-size: 16px;
+  padding-left: 26px;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.mep-badge .mep-open::after,
+.mep-toggle-advanced::before {
   content: '';
   display: block;
   box-sizing: border-box;
@@ -64,6 +73,25 @@
   transform: rotate(-135deg);
   left: 7px;
   bottom: 6px;
+}
+
+.mep-toggle-advanced::before {
+  transform: rotate(45deg);
+  left: 10px;
+  bottom: 10px;
+}
+
+.mep-advanced-container.mep-advanced-open .mep-toggle-advanced::before {
+  transform: rotate(135deg);
+  bottom: 12px;
+}
+
+.mep-advanced-container .mep-advanced-options {
+  display: none;
+}
+
+.mep-advanced-container.mep-advanced-open .mep-advanced-options {
+  display: block;
 }
 
 .mep-popup-header .mep-close {
@@ -177,6 +205,10 @@
   padding: 12px 12px 0;
   font-size: 14px;
   font-weight: 500;
+}
+
+.mep-advanced-container .mep-manifest-info {
+  padding: 0 12px 0 26px;
 }
 
 .mep-popup .dark {

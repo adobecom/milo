@@ -94,6 +94,12 @@ function addPillEventListeners(div) {
   close.addEventListener('click', () => {
     document.body.removeChild(document.querySelector('.mep-preview-overlay'));
   });
+
+  const advancedToggle = div.querySelector('.mep-toggle-advanced');
+  advancedToggle.addEventListener('click', () => {
+    const container = document.querySelector('.mep-advanced-container');
+    container.classList.toggle('mep-advanced-open');
+  });
 }
 
 function createPreviewPill(manifests, utils) {
@@ -179,20 +185,23 @@ function createPreviewPill(manifests, utils) {
         </div>
       </div>
       ${manifestList}
-      <div class="mep-manifest-info">
-        <div>
-          Optional: new manifest location or path
-        </div>
-        <div class="mep-manifest-variants">
+      <div class="mep-advanced-container">
+        <div class="mep-toggle-advanced">Advanced options</div>
+        <div class="mep-manifest-info mep-advanced-options">
           <div>
-            <input type="text" name="new-manifest" id="new-manifest">
+            Optional: new manifest location or path
+          </div>
+          <div class="mep-manifest-variants">
+            <div>
+              <input type="text" name="new-manifest" id="new-manifest">
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="mep-manifest-info">
-      <div class="mep-manifest-variants">
-        <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
+        <div class="mep-manifest-info">
+          <div class="mep-manifest-variants mep-advanced-options">
+            <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
+          </div>
+        </div>
       </div>
     </div>
     <div class="dark">
