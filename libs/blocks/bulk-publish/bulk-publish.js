@@ -49,6 +49,7 @@ function SelectBtn({ actionElt, onSelectChange, storedOperationName }) {
           <option value="preview&publish" selected="${storedOperationName === 'preview&publish'}">Preview & Publish</option>
           <option value="unpublish" selected="${storedOperationName === 'unpublish'}">Unpublish</option>
           <option value="unpublish&delete" selected="${storedOperationName === 'unpublish&delete'}">Delete</option>
+          <option value="index" selected="${storedOperationName === 'index'}">Index</option>
       </select>
   `;
 }
@@ -61,8 +62,7 @@ function SubmitBtn({ submit }) {
   `;
 }
 
-function prettyDate() {
-  const date = new Date();
+function prettyDate(date = new Date()) {
   const localeDate = date.toLocaleString();
   const splitDate = localeDate.split(', ');
   return html`
@@ -107,6 +107,15 @@ function bulkUnpublishStatus(row) {
   `;
 }
 
+function bulkIndexStatus(row) {
+  const status = !(row.status.index === 200 || row.status.index === 202)
+    ? `Error - Status: ${row.status.index}`
+    : '';
+  return !(row.status.index === 200 || row.status.index === 202) && row.status.index !== undefined && html`
+    <span class=page-status>${status}</span>
+  `;
+}
+
 function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
   const name = getActionName(submittedAction, true);
   const URLS = (urlNumber > 1) ? 'URLS' : 'URL';
@@ -120,7 +129,7 @@ function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
 }
 
 function StatusRow({ row }) {
-  const timeStamp = prettyDate();
+  const timeStamp = prettyDate(row?.timestamp);
   const errorStyle = 'status-error';
   const del = !!row.status.delete || !!row.status.unpublish;
   const expectedStatus = del ? 204 : 200;
@@ -131,6 +140,8 @@ function StatusRow({ row }) {
 
   const previewStatusError = previewStatus === expectedStatus ? '' : errorStyle;
   const publishStatusError = publishStatus === expectedStatus ? '' : errorStyle;
+  const indexStatusError = (row.status.index === 200 || row.status.index === 202) ? '' : errorStyle;
+
 
   return html`
     <tr class="bulk-status-row">
@@ -141,6 +152,9 @@ function StatusRow({ row }) {
       <td class="bulk-status-publish ${publishStatusError}">
         ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
       </td>
+      <td class="bulk-status-index ${indexStatusError}">
+        ${(row.status.index === 200 || row.status.index === 202) && timeStamp} ${bulkIndexStatus(row)}
+      </td>
     </tr>
   `;
 }
@@ -150,6 +164,8 @@ function StatusContent({ resultsElt, result, submittedAction }) {
   const displayClass = 'did-bulk';
   const bulkPreviewed = name.includes('preview') || name === 'delete' ? displayClass : '';
   const bulkPublished = name.includes('publish') || name === 'delete' ? displayClass : '';
+  const bulkIndexed = name.includes('index') ? displayClass : '';
+
   const del = name === 'delete' || name === 'unpublish';
   const headings = {
     pre: del ? 'Deleted' : 'Previewed',
@@ -162,6 +178,7 @@ function StatusContent({ resultsElt, result, submittedAction }) {
           <th>URL</th>
           <th class="${bulkPreviewed}">${headings.pre}</th>
           <th class="${bulkPublished}">${headings.pub}</th>
+          <th class="${bulkIndexed}">Indexed</th>
         </tr>
         ${result.reverse().map((row) => html`<${StatusRow} row=${row} />`)}
       `}
@@ -196,6 +213,12 @@ function StatusCompletion({ completion }) {
         <ul class="bulk-job-publish">
           <li><span>Unpublish Job Complete:</span> ${timeStamp}</li>
           <li><span>Successful:</span> ${completion.unpublish.success} / ${completion.unpublish.total}</li>
+        </ul>
+        `}
+        ${completion.index.total > 0 && html`
+        <ul class="bulk-job-index">
+          <li><span>Index Job Complete:</span> ${timeStamp}</li>
+          <li><span>Successful:</span> ${completion.index.success} / ${completion.index.total}</li>
         </ul>
         `}
       </div>
