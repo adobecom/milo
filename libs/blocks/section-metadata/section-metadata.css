@@ -272,7 +272,7 @@ main>.section[class*='-up']>.content {
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@media screen and (min-width: 600px) {
   .section.auto-up-tablet {
     grid-template-columns: repeat(var(--section-grid-columns), 1fr);
   }
