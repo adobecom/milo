@@ -705,6 +705,7 @@ function addPreviewToConfig() {
     ...getConfig(),
     mep: {
       preview: ((mepOverride !== null || mepMarker !== null || previewPage) && mepButton !== 'off'),
+      forcedPreview: ((mepOverride !== null || mepMarker !== null) && mepButton !== 'off'),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       marker: (mepMarker !== null && mepMarker !== 'false'),
     },
@@ -721,7 +722,7 @@ async function checkForPageMods() {
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
   const config = addPreviewToConfig();
 
-  if (persEnabled || targetEnabled || config.mep.preview) {
+  if (persEnabled || targetEnabled || config.mep.forcedPreview) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -739,11 +740,22 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  if (config.mep.preview && config.mep.override !== '') {
+  if (config.mep.override !== '') {
     config.mep.override.split(',').forEach((manifestPair) => {
       persManifests.push(manifestPair.trim().toLowerCase().split('--')[0]);
     });
   }
+
+  const utils = {
+    createTag,
+    getConfig,
+    loadScript,
+    loadLink,
+    updateConfig,
+    getPageSearchParams,
+    loadStyle,
+    getMetadata,
+  };
 
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
@@ -754,22 +766,10 @@ async function checkForPageMods() {
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(
-      manifests,
-      {
-        createTag,
-        getConfig,
-        loadScript,
-        loadLink,
-        updateConfig,
-        getPageSearchParams,
-        loadStyle,
-        getMetadata,
-      },
-    );
-  } else if (config.mep.preview) {
+    await applyPers(manifests, utils);
+  } else if (config.mep.forcedPreview) {
     const { decoratePreviewMode } = await import('../features/personalization/preview.js');
-    await decoratePreviewMode([]);
+    await decoratePreviewMode([], utils);
   }
 }
 
