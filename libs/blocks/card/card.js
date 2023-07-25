@@ -35,9 +35,9 @@ const addWrapper = (el, section, cardType) => {
   let upClass = getUpFromSectionMetadata(section);
   // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
   const list = ['two-up', 'three-up', 'four-up', 'five-up'];
-  const ixd = list.findIndex(i => i.includes(upClass));
+  const ixd = list.findIndex((i) => i.includes(upClass));
   if (ixd > -1) {
-    upClass = `${ixd+2}-up`;
+    upClass = `${ixd + 2}-up`;
     section.classList.remove(list[ixd]);
   }
   const up = upClass?.replace('-', '') || '3up';
