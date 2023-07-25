@@ -69,7 +69,8 @@ const createBreadcrumbs = (element) => {
   return breadcrumbs;
 };
 
-const createWithBase = async (element = toFragment`<div><ul></ul></div>`) => {
+const createWithBase = async (el) => {
+  const element = el || toFragment`<div><ul></ul></div>`;
   const url = getMetadata(metadata.base);
   if (!url) return null;
   try {
@@ -100,9 +101,7 @@ const fromUrl = () => {
 
 export default async function init(el) {
   try {
-    const breadcrumbsEl = (await createWithBase(el || undefined))
-      || createBreadcrumbs(el)
-      || fromUrl();
+    const breadcrumbsEl = await createWithBase(el) || createBreadcrumbs(el) || fromUrl();
     setBreadcrumbSEO(breadcrumbsEl);
     return breadcrumbsEl;
   } catch (e) {
