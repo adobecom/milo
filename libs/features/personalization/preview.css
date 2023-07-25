@@ -1,4 +1,4 @@
-.hlx-preview-overlay {
+.mep-preview-overlay {
   z-index: 101;
   position: fixed;
   bottom: 32px;
@@ -10,7 +10,7 @@
   display: block !important;
 }
 
-.hlx-badge {
+.mep-badge {
   border: 2px solid white;
   border-radius: 32px;
   background-color: #280;
@@ -23,8 +23,8 @@
   position: relative;
 }
 
-.hlx-badge .hlx-open,
-.hlx-popup-header .hlx-close {
+.mep-badge .mep-open,
+.mep-popup-header .mep-close {
   box-sizing: border-box;
   position: relative;
   display: block;
@@ -35,7 +35,17 @@
   margin-left: 16px;
 }
 
-.hlx-badge .hlx-open::after {
+@media screen and (max-width: 599px) {
+  .mep-hidden .mep-badge .mep-open {
+    margin-left: 0;
+  }
+
+  .mep-hidden .mep-badge .mep-manifest-count {
+    display: none;
+  }
+}
+
+.mep-badge .mep-open::after {
   content: '';
   display: block;
   box-sizing: border-box;
@@ -50,20 +60,20 @@
   transition-duration: 0.2s;
 }
 
-.hlx-hidden .hlx-badge .hlx-open::after {
+.mep-hidden .mep-badge .mep-open::after {
   transform: rotate(-135deg);
   left: 7px;
   bottom: 6px;
 }
 
-.hlx-popup-header .hlx-close {
+.mep-popup-header .mep-close {
   position: absolute;
   right: 15px;
   cursor: pointer;
   top: 15px;
 }
 
-.hlx-popup-header .hlx-close::after {
+.mep-popup-header .mep-close::after {
   content: 'x';
   display: block;
   box-sizing: border-box;
@@ -75,7 +85,7 @@
   font-size: 18px;
 }
 
-.hlx-popup {
+.mep-popup {
   position: absolute;
   bottom: 64px;
   right: -8px;
@@ -86,14 +96,14 @@
   font-size: 12px;
 }
 
-.hlx-popup a.hlx-edit-manifest {
+.mep-popup a.mep-edit-manifest {
   position: absolute;
   display: block;
   right: 0;
   top: 0;
 }
 
-.hlx-popup .hlx-popup-header {
+.mep-popup .mep-popup-header {
   display: flex;
   justify-content: space-between;
   padding: 0 16px;
@@ -102,32 +112,33 @@
   position: relative;
 }
 
-.hlx-popup .hlx-popup-header > div {
+.mep-popup .mep-popup-header > div {
   margin: 8px 0;
 }
 
-.hlx-popup .hlx-popup-header > div > div {
+.mep-popup .mep-popup-header > div > div {
   line-height: 18px;
 }
 
-.hlx-popup h4,
-.hlx-popup h5 {
+.mep-popup h4,
+.mep-popup h5 {
   margin: 0;
 }
 
-.hlx-popup h4 {
+.mep-popup h4 {
   font-size: 16px;
+  margin-bottom: 6px;
 }
 
-.hlx-popup h5 {
+.mep-popup h5 {
   font-size: 14px;
 }
 
-.hlx-popup p {
+.mep-popup p {
   margin: 0;
 }
 
-.hlx-popup::before {
+.mep-popup::before {
   content: '';
   width: 0;
   height: 0;
@@ -139,65 +150,65 @@
   right: 30px;
 }
 
-.hlx-hidden .hlx-popup {
+.mep-hidden .mep-popup {
   display: none;
 }
 
-.hlx-variant {
+.mep-variant {
   margin: 16px;
   display: flex;
   padding: 16px;
   border-radius: 16px;
 }
 
-.hlx-variant-selected {
+.mep-variant-selected {
   background-color: #666;
 }
 
-.hlx-variant > div {
+.mep-variant > div {
   flex: 1 1 auto;
 }
 
-.hlx-variant > div.hlx-button {
+.mep-variant > div.mep-button {
   flex: 0 0 auto;
 }
 
-.hlx-manifest-info {
+.mep-manifest-info {
   padding: 12px 12px 0;
   font-size: 14px;
   font-weight: 500;
 }
 
-.hlx-popup .dark {
+.mep-popup .dark {
   display: flex;
   justify-content: flex-end;
   padding: 15px;
 }
 
-.hlx-popup label {
+.mep-popup label {
   font-weight: 500;
 }
 
-label.hlx-manifest-selected-variant::after {
+label.mep-manifest-selected-variant::after {
   content: ' *';
 }
 
-.hlx-manifest-title,
-.hlx-popup label {
+.mep-manifest-title,
+.mep-popup label {
   line-height: 18px;
   position: relative;
 }
 
-.hlx-manifest-title {
+.mep-manifest-title {
   padding-right: 20px;
 }
 
-.hlx-manifest-title::before {
+.mep-manifest-title::before {
   counter-increment: preview;
   content: counter(preview) '. ';
 }
 
-.hlx-manifest-list {
+.mep-manifest-list {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
 }
@@ -209,19 +220,19 @@ input#new-manifest {
 }
 
 /* scrollbar */
-.hlx-manifest-list::-webkit-scrollbar {
+.mep-manifest-list::-webkit-scrollbar {
   width: 10px;
 }
 
-.hlx-manifest-list::-webkit-scrollbar-track {
+.mep-manifest-list::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-.hlx-manifest-list::-webkit-scrollbar-thumb {
+.mep-manifest-list::-webkit-scrollbar-thumb {
   background: #888;
 }
 
-.hlx-manifest-list::-webkit-scrollbar-thumb:hover {
+.mep-manifest-list::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
