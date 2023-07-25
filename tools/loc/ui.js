@@ -223,7 +223,9 @@ async function displayProjectDetail() {
   if (!config) {
     return;
   }
-  const skipDocMerge = (config.sp?.skipDocMerge === 'true' || config.sp?.skipDocMerge === undefined);
+  // Default to true for all scenarios except when explicitly set to false
+  const skipDocMerge = config.sp?.skipDocMerge === 'false' ? false : true;
+
   const container = getProjectDetailContainer();
   const subprojects = new Map([
     ...projectDetail.englishCopyProjects,
