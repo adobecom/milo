@@ -35,6 +35,7 @@ function handleTopHeight(section) {
   const headerHeight = document.querySelector('header').offsetHeight;
   section.style.top = `${headerHeight}px`;
 }
+
 async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
@@ -51,11 +52,19 @@ async function handleStickySection(sticky, section) {
   }
 }
 
+function handleAutoUps(section) {
+  const nonColumns = ['fullwidth', 'full-width', 'section-metadata'];
+  const columns = [...section.children].filter(({ classList }) => !nonColumns.some(name => classList.contains(name)));
+  section.style.setProperty('--section-grid-columns', columns.length);
+}
+
 export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) await handleStickySection(sticky, section);
+  const autoups = styles.findIndex(style => style.includes('auto-up')) !== -1;
+  if (autoups) handleAutoUps(section);
   section.classList.add(...styles);
 }
 

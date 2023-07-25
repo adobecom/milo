@@ -1,0 +1,109 @@
+.action-slider {
+  --action-slider-mobile-padding: 50px;
+  --action-slider-button-color: white;
+  --action-slider-button-size: 32px;
+  --action-slider-button-border-color: #646364;
+  --action-slider-button-border-color-hover: #333;
+  --action-slider-column-width: calc(var(--action-slider-item-width) * 1px);
+
+  display: block;
+  position: relative;
+}
+
+.action-slider .nested.section {
+  display: grid;
+  grid-template-columns: repeat(var(--action-slider-columns), 1fr);
+  grid-auto-columns: minmax(var(--action-slider-column-width), 1fr);
+  grid-auto-flow: column;
+  padding: 0 var(--action-slider-mobile-padding);
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.action-slider .nested.section::-webkit-scrollbar {
+  display: none;
+}
+
+.action-slider .nested.section .action-item {
+  min-width: var(--action-slider-column-width);
+}
+
+.action-slider .nav-grad {
+  position: absolute;
+  height: 100%;
+  width: 54px;
+  top: 0;
+}
+
+.action-slider .nav-grad.next {
+  right: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--action-slider-background) 100%);
+}
+
+.action-slider .nav-grad.previous {
+  left: 0;
+  background: linear-gradient(270deg, transparent 0%, var(--action-slider-background) 100%);
+}
+
+.action-slider .nav-grad[hide-btn='true'] {
+  display: none;
+}
+
+.action-slider .previous-button,
+.action-slider .next-button {
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: 0;
+  border-radius: 100%;
+  border-style: solid;
+  border-width: 1px;
+  background-color: var(--action-slider-button-color);
+  border-color: var(--action-slider-button-border-color);
+  height: var(--action-slider-button-size);
+  width: var(--action-slider-button-size);
+  top: calc(55% - var(--action-slider-button-size) / 2);
+  z-index: 2;
+}
+
+.action-slider .next-button {
+  right: 10px;
+}
+
+.action-slider .previous-button {
+  left: 10px;
+}
+
+.action-slider .nav-button:hover,
+.action-slider .nav-button:focus,
+.action-slider .nav-button:active {
+  background-color: var(--action-slider-button-color);
+  border-color: var(--action-slider-button-border-color-hover);
+  outline: none;
+}
+
+.action-slider .nav-button img {
+  height: 16px;
+  width: 10px;
+  margin-left: 2px;
+}
+
+.action-slider .previous-button img {
+  margin-right: 3px;
+  transform: rotate(180deg);
+}
+
+@media screen and (min-width: 1200px) {
+  .action-slider {
+    width: var(--grid-container-width);
+    margin: 0 auto;
+  }
+
+  .action-slider .nested.section {
+    padding: 0;
+  }
+}
