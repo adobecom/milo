@@ -68,7 +68,7 @@ async function createPreviewPill(manifests, overlay, utils) {
         attribute: '',
         class: '',
       };
-      if (variant === manifest.selectedVariantName) {
+      if (variant === manifest.selVarName) {
         checked.attribute = 'checked="checked"';
         checked.class = 'class="hlx-manifest-selected-variant"';
         manifestParameter.push(`${manifest.manifest}--${variant}`);
@@ -82,7 +82,7 @@ async function createPreviewPill(manifests, overlay, utils) {
       attribute: '',
       class: '',
     };
-    if (!manifest.variantNames.includes(manifest.selectedVariantName)) {
+    if (!manifest.variantNames.includes(manifest.selVarName)) {
       checked.attribute = 'checked="checked"';
       checked.class = 'class="hlx-manifest-selected-variant"';
       manifestParameter.push(`${manifest.manifest}--NoChanges`);
