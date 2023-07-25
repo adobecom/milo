@@ -3,7 +3,7 @@ import { decorateLinkAnalytics } from '../martech/attributes.js';
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = {'STRONG': 'blue', 'EM': 'outline', 'A': 'blue'};
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
     const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
@@ -54,7 +54,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
 export function decorateBlockBg(block, node) {
   node.classList.add('background');
   if (node.childElementCount > 1) {
-    const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+    const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
     if (node.childElementCount === 2) {
       node.children[0].classList.add(viewports[0], viewports[1]);
       node.children[1].classList.add(viewports[2]);
@@ -78,20 +78,20 @@ export function getBlockSize(el, defaultSize = 1) {
 }
 
 function applyTextOverrides(el, override) {
-  const parts = override.split("-");
+  const parts = override.split('-');
   const type = parts[1];
   const els = el.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
-  els.forEach(elem => {
-    const replace = [...elem.classList].find(i => i.startsWith(type));
+  els.forEach((elem) => {
+    const replace = [...elem.classList].find((i) => i.startsWith(type));
     elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
   });
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter(elClass => options.findIndex(ovClass => elClass.endsWith(ovClass)) >= 0);
+  const overrides = [...el.classList].filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
-  overrides.forEach(override => {
+  overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
   });

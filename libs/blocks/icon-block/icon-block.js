@@ -67,8 +67,8 @@ function decorateContent(el) {
     const textSize = upAndInline(el) ? ['xs', 's'] : iconBlocks[size][variant];
     decorateBlockText(el, textSize);
     if (el.classList.contains('inline')) {
-     const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
-      const secondColumn = createTag('div', {class:'second-column'});
+      const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
+      const secondColumn = createTag('div', { class: 'second-column' });
       textContent.forEach((el) => {
         secondColumn.append(el);
       });

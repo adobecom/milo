@@ -35,6 +35,7 @@ header.global-navigation {
   background-color: var(--feds-background-nav--light);
   visibility: visible;
   box-sizing: content-box;
+  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -106,6 +107,7 @@ header.global-navigation {
 /* Brand and Logo blocks */
 .feds-brand-container {
   display: flex;
+  flex-shrink: 0;
 }
 
 .feds-brand,
@@ -173,6 +175,10 @@ header.global-navigation {
   white-space: nowrap;
 }
 
+.feds-topnav--overflowing .feds-navItem {
+  font-size: 13px;
+}
+
 .feds-navItem--centered {
   padding: 12px;
 }
@@ -228,8 +234,16 @@ header.global-navigation {
   justify-content: center;
   overflow: visible;
   white-space: nowrap;
-  transition: all 130ms ease-out;
+  transition-property: color, border-color, background-color;
+  transition-duration: 130ms;
+  transition-timing-function: ease-out;
   cursor: pointer;
+}
+
+.feds-topnav--overflowing .feds-cta {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 14px;
 }
 
 .feds-cta--primary {
@@ -289,8 +303,9 @@ header.global-navigation {
 }
 
 .feds-breadcrumbs {
-  padding: 0 12px;
+  padding: 6px 12px;
   font-size: 12px;
+  overflow-y: auto;
 }
 
 .feds-breadcrumbs ul {
@@ -302,11 +317,28 @@ header.global-navigation {
 .feds-breadcrumbs li {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+/* Hide all breadcrumbs except the first and last two */
+.feds-breadcrumbs li:nth-last-child(n+3):not(:first-child) {
+  display: none;
+}
+
+/* If first breadcrumb is not third to last, add ellipsis after it */
+.feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after {
+  content: '/\2003...';
+  padding: 0 0 0 12px;
+}
+
+[dir = "rtl"] .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after {
+  padding: 0 12px 0 0;
 }
 
 .feds-breadcrumbs a,
 .feds-breadcrumbs [aria-current] {
   line-height: var(--feds-height-breadcrumbs);
+  text-transform: capitalize;
 }
 
 .feds-breadcrumbs a {
@@ -429,6 +461,10 @@ header.global-navigation {
     display: flex;
   }
 
+  .feds-topnav--overflowing .feds-brand-label:nth-child(2) {
+    display: none;
+  }
+
   /* Item with active dropdown */
   .feds-dropdown--active::before {
     content: none;
@@ -473,6 +509,10 @@ header.global-navigation {
     align-items: center;
   }
 
+  .feds-topnav--overflowing .feds-navItem--centered {
+    padding: 0 8px;
+  }
+
   .feds-navItem--section {
     border-left: 1px solid var(--feds-borderColor--light);
     border-right: 1px solid var(--feds-borderColor--light);
@@ -480,6 +520,10 @@ header.global-navigation {
 
   .feds-navItem--section > .feds-navLink {
     padding: 0 20px;
+  }
+
+  .feds-topnav--overflowing .feds-navItem--section > .feds-navLink {
+    padding: 0 12px;
   }
 
   .feds-navItem:not(:last-child) > .feds-navLink {
@@ -541,6 +585,14 @@ header.global-navigation {
     box-sizing: border-box;
   }
 
+  .feds-breadcrumbs li:nth-last-child(n+3):not(:first-child) {
+    display: flex;
+  }
+
+  .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after {
+    content: none;
+  }
+
   .feds-breadcrumbs a:hover {
     text-decoration: underline;
   }
@@ -558,9 +610,8 @@ header.global-navigation {
   .feds-logo {
     display: flex;
   }
-}
 
-/* TODO: Old styles, to be refactored */
-.last-link-blue ul li:last-of-type a {
-  color: #1473E6;
+  .feds-topnav--overflowing .feds-logo {
+    display: none;
+  }
 }

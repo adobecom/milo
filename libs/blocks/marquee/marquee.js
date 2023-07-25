@@ -27,7 +27,7 @@ const decorateVideo = (container) => {
 };
 
 const decorateBlockBg = (block, node) => {
-  const viewports = ['mobileOnly', 'tabletOnly', 'desktopOnly'];
+  const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
   const childCount = node.childElementCount;
   const { children } = node;
 
@@ -38,13 +38,19 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach((child, index) => {
+  [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
 
     if (child.querySelector('a[href$=".mp4"]')) {
       decorateVideo(child);
+    }
+
+    const pic = child.querySelector('picture');
+    if (pic && (child.childElementCount == 2 || child.textContent)) {
+      const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
+      handleFocalpoint(pic, child, true);
     }
   });
 
@@ -54,19 +60,31 @@ const decorateBlockBg = (block, node) => {
   }
 };
 
+// [headingSize, bodySize, detailSize]
+const blockTypeSizes = {
+  marquee: {
+    small: ['xl', 'm', 'm'],
+    medium: ['xl', 'm', 'm'],
+    large: ['xxl', 'xl', 'l'],
+    xlarge: ['xxl', 'xl', 'l'],
+  },
+};
+
 function decorateText(el, size) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings[headings.length - 1];
-  const decorate = (headingEl, headingSize, bodySize, detailSize) => {
-    headingEl.classList.add(`heading-${headingSize}`);
-    headingEl.nextElementSibling?.classList.add(`body-${bodySize}`);
+  const config = blockTypeSizes.marquee[size];
+  const decorate = (headingEl, typeSize) => {
+    headingEl.classList.add(`heading-${typeSize[0]}`);
+    headingEl.nextElementSibling?.classList.add(`body-${typeSize[1]}`);
     const sib = headingEl.previousElementSibling;
     if (sib) {
-      sib.querySelector('img, .icon') ? sib.classList.add('icon-area') : sib.classList.add(`detail-${detailSize}`);
+      const className = sib.querySelector('img, .icon') ? 'icon-area' : `detail-${typeSize[2]}`;
+      sib.classList.add(className);
       sib.previousElementSibling?.classList.add('icon-area');
     }
   };
-  size === 'large' ? decorate(heading, 'xxl', 'xl', 'l') : decorate(heading, 'xl', 'm', 'm');
+  decorate(heading, config);
 }
 
 function decorateMultipleIconArea(iconArea) {
@@ -74,7 +92,6 @@ function decorateMultipleIconArea(iconArea) {
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
-    
     if (!a.querySelector('img')) {
       a.innerHTML = '';
       a.className = '';
@@ -87,7 +104,7 @@ function decorateMultipleIconArea(iconArea) {
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
-  buttons.forEach((button) => { button.classList.add('button-justified-mobile') });
+  buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
 const decorateImage = (media) => {
