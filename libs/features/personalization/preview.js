@@ -131,7 +131,7 @@ async function createPreviewPill(manifests, overlay, utils) {
     </div>
     <div class="mep-manifest-list">
       <div class="mep-manifest-info">
-        <div class="mep-manifest-variants"><div>
+        <div class="mep-manifest-variants">
           <input type="checkbox" name="mepMarker" id="mepMarkerCheckbox" ${mepMarkerChecked} value="true"> <label for="mepMarkerCheckbox">Highlight changes</label>
         </div>
       </div>
@@ -140,11 +140,12 @@ async function createPreviewPill(manifests, overlay, utils) {
         <div>
           Optional: new manifest location or path
         </div>
-        <div class="mep-manifest-variants"><div>
-          <input type="text" name="new-manifest" id="new-manifest">
+        <div class="mep-manifest-variants">
+          <div>
+            <input type="text" name="new-manifest" id="new-manifest">
+          </div>
         </div>
       </div>
-    </div>
     </div>
     <div class="dark">
       <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
