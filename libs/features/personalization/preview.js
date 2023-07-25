@@ -192,7 +192,7 @@ function createPreviewPill(manifests, utils) {
     </div>
     <div class="mep-manifest-info">
       <div class="mep-manifest-variants">
-        <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">No preview button</label>
+        <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
       </div>
     </div>
     <div class="dark">
