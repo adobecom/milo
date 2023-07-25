@@ -39,12 +39,21 @@ function updatePreviewButton() {
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join(','));
 
-  const checkbox = document.querySelector(
+  const mepMarkerCheckbox = document.querySelector(
     '.mep-popup input[type="checkbox"]#mepMarkerCheckbox',
   );
-  document.body.dataset.mepMarker = checkbox.checked;
-  if (checkbox.checked) {
+  document.body.dataset.mepMarker = mepMarkerCheckbox.checked;
+  if (mepMarkerCheckbox.checked) {
     simulateHref.searchParams.set('mepMarker', true);
+  } else {
+    simulateHref.searchParams.delete('mepMarker');
+  }
+
+  const mepPreviewButtonCheckbox = document.querySelector(
+    '.mep-popup input[type="checkbox"]#mepPreviewButtonCheckbox',
+  );
+  if (mepPreviewButtonCheckbox.checked) {
+    simulateHref.searchParams.set('mepButton', 'off');
   } else {
     simulateHref.searchParams.delete('mepMarker');
   }
@@ -147,9 +156,15 @@ async function createPreviewPill(manifests, overlay, utils) {
         </div>
       </div>
     </div>
+    <div class="mep-manifest-info">
+      <div class="mep-manifest-variants">
+        <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">No preview button</label>
+      </div>
+    </div>
     <div class="dark">
       <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
-    </div>`;
+    </div>
+`;
 
   const radioInputs = div.querySelectorAll('.mep-popup input[type="radio"]');
   radioInputs.forEach((input) => {
