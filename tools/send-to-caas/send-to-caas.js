@@ -312,7 +312,7 @@ const sendToCaaS = async ({ host = '', project = '', branch = '', repo = '', own
     host: host || window.location.host, project, branch, repo, owner, doc: document,
   });
 
-  loadStyle('/tools/send-to-caas/send-to-caas.css');
+  loadStyle('https://milo.adobe.com/tools/send-to-caas/send-to-caas.css');
 
   setPublishingTrue();
 
