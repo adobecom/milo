@@ -1,74 +1,58 @@
-# Contributing to Project Helix
+# Contributing to Milo
 
-This project (like almost all of Project Helix) is an Open Development project and welcomes contributions from everyone who finds it useful or lacking.
+This project is an Open Development project and welcomes contributions from everyone who finds it useful or lacking.
 
 ## Code Of Conduct
 
-This project adheres to the Adobe [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to cstaub at adobe dot com.
+This project adheres to the Adobe [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to cstaub at adobe dot com.
 
-## Contributor License Agreement
+## Contributor License Agreement (CLA)
 
 All third-party contributions to this project must be accompanied by a signed contributor license. This gives Adobe permission to redistribute your contributions as part of the project. [Sign our CLA](http://opensource.adobe.com/cla.html)! You only need to submit an Adobe CLA one time, so if you have submitted one previously, you are good to go!
 
-## Things to Keep in Mind
+## How to Contribute
 
-This project uses a **commit then review** process, which means that for approved maintainers, changes can be merged immediately, but will be reviewed by others.
+First check if there is an existing issue in GitHub Issues (public) or JIRA (private).
+Also check if there are other pull requests that might overlap or conflict with your intended contribution.
 
-For other contributors, a maintainer of the project has to approve the pull request.
+Fork the repository, make some changes on a branch on your fork, and create a pull request from your branch against `main`.
 
-# Before You Contribute
+Ensure that your PR follows the [pull request template](.github/pull_request_template.md):
 
-* Check that there is an existing issue in GitHub issues
-* Check if there are other pull requests that might overlap or conflict with your intended contribution
+* description contains Issue or Ticket
+* description _always_ contains at least one Milo-specific testing URL
+  * `https://<branch>--milo--<user>.hlx.page/?martech=off`
 
-# How to Contribute
+Ensure your PR passes all checks:
 
-1. Fork the repository
-2. Make some changes on a branch on your fork
-3. Create a pull request from your branch
+* prerequesite labels are applied
+  * `trivial` or `needs-verification`
+* unit tests pass
+* helix-psi-check pass
+* 100% test coverage (patch)
+* etc.
 
-In your pull request, outline:
+Tips:
 
-* What the changes intend
-* How they change the existing code
-* If (and what) they breaks
-* Start the pull request with the GitHub issue ID, e.g. #123
+* Run `npm run lint` if your editor is not already doing so
+* Please check that unit test pass!
+  * In the case of an occasional flakey test, please rerun the job
+* Rebase and rerun checks to ensure your PR is up-to-date
+* Use the `do not merge` label to prevent maintainers from merging your approved PR
 
-Lastly, please follow the [pull request template](.github/pull_request_template.md) when submitting a pull request!
-
-Each commit message that is not part of a pull request:
-
-* Should contain the issue ID like `#123`
-* Can contain the tag `[trivial]` for trivial changes that don't relate to an issue
-
-
+Also see [Submitting PRs](https://github.com/adobecom/milo/wiki/Submitting-PRs).
 
 ## Coding Styleguides
 
-We enforce a coding styleguide using `eslint`. As part of your build, run `npm run lint` to check if your code is conforming to the style guide. We do the same for every PR in our CI, so PRs will get rejected if they don't follow the style guide.
+We enforce a coding styleguide using `eslint`. As part of your build, run `npm run lint` to check if your code is conforming to the style guide.
 
 You can fix some of the issues automatically by running `npx eslint . --fix`.
 
-## Commit Message Format
-
-This project uses a structured commit changelog format that should be used for every commit. Use `npm run commit` instead of your usual `git commit` to generate commit messages using a wizard.
-
-```bash
-# either add all changed files
-$ git add -A
-# or selectively add files
-$ git add package.json
-# then commit using the wizard
-$ npm run commit
-```
-
-# How Contributions get Reviewed
+## How Contributions get Reviewed
 
 One of the maintainers will look at the pull request within one week. Feedback on the pull request will be given in writing, in GitHub.
+Not having a green check will result in indeterminate review delays.
 
-# Release Management
+## Release Management
 
-The project's committers will release to the [Adobe organization on npmjs.org](https://www.npmjs.com/org/adobe).
-Please contact the [Adobe Open Source Advisory Board](https://git.corp.adobe.com/OpenSourceAdvisoryBoard/discuss/issues) to get access to the npmjs organization.
-
-The release process is fully automated using `semantic-release`, increasing the version numbers, etc. based on the contents of the commit messages found.
+Milo is a hot repo, meaning all changes on main are immediately available in production.

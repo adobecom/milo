@@ -54,9 +54,9 @@ export default function init(el) {
   if (el.classList.contains('link-farm')) {
     const foregroundDiv = el.querySelectorAll('.foreground')[1];
     const count = foregroundDiv.querySelectorAll('h3').length;
-    foregroundDiv.querySelectorAll('div').forEach(divElem => {
+    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
       if (!divElem.querySelector('h3') && count) {
-        const headingElem = createTag('h3', { class: 'no-heading'});
+        const headingElem = createTag('h3', { class: 'no-heading' });
         divElem.insertBefore(headingElem, divElem.firstChild);
       }
     });

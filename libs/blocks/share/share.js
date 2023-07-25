@@ -16,7 +16,7 @@ export async function getSVGsfromFile(path, selectors) {
     if (svg) return [{ svg }];
     /* c8 ignore next 4 */
     return null;
-  } else if (!(selectors instanceof Array)) {
+  } if (!(selectors instanceof Array)) {
     selectors = [selectors];
   }
 
@@ -49,12 +49,12 @@ export default async function decorate(block) {
   const base = config.miloLibs || config.codeRoot;
   const platforms = getPlatforms(block) || ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
   block.innerHTML = '';
-  const clipboardSupport = !!(navigator.clipboard)
+  const clipboardSupport = !!(navigator.clipboard);
   if (clipboardSupport) platforms.push('clipboard');
   const svgs = await getSVGsfromFile(`${base}/blocks/share/share.svg`, platforms);
   if (!svgs) return;
 
-  const toSentenceCase = (str) => (str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '';
+  const toSentenceCase = (str) => ((str && typeof str === 'string') ? str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase()) : '');
   const shareToText = toSentenceCase(await replaceKey('share-to', config));
   const url = encodeURIComponent(window.location.href);
   const title = document.title ?? url;
@@ -80,14 +80,14 @@ export default async function decorate(block) {
   const container = createTag('p', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
-    
+
     const obj = getDetails(svg.name, url);
     if (!obj) return;
 
-    const shareLink = createTag('a', { 
+    const shareLink = createTag('a', {
       title: `${shareToText} ${obj.title}`,
       target: '_blank',
-      href: obj.href 
+      href: obj.href,
     }, svg.svg);
     container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
@@ -100,12 +100,12 @@ export default async function decorate(block) {
   if (clipboardSvg && clipboardSupport) {
     const clipboardToolTip = toSentenceCase(await replaceKey('copy-to-clipboard', config));
     const copiedTooltip = toSentenceCase(await replaceKey('copied', config));
-    const copyButton = createTag('button', { 
-      type:'button', 
-      class:'copy-to-clipboard', 
-      'aria-label': clipboardToolTip, 
-      'data-copy-to-clipboard': clipboardToolTip, 
-      'data-copied': `${copiedTooltip}!` 
+    const copyButton = createTag('button', {
+      type: 'button',
+      class: 'copy-to-clipboard',
+      'aria-label': clipboardToolTip,
+      'data-copy-to-clipboard': clipboardToolTip,
+      'data-copied': `${copiedTooltip}!`,
     }, clipboardSvg.svg);
     container.append(copyButton);
     copyButton.addEventListener('click', (e) => {
