@@ -287,7 +287,7 @@ function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel
     // handle multiple variants that are space / comma delimited
     const names = variant.split(',').map((v) => v.trim()).filter(Boolean);
     return names.some((name) => {
-      if (name === variantLabel || `target-${name}` === variantLabel) return true;
+      if (name === variantLabel) return true;
       if (name.startsWith('param-')) return checkForParamMatch(name);
       return tagNames.includes(name) && PERSONALIZATION_TAGS[name]();
     });

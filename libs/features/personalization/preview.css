@@ -102,6 +102,14 @@
   position: relative;
 }
 
+.hlx-popup .hlx-popup-header > div {
+  margin: 8px 0;
+}
+
+.hlx-popup .hlx-popup-header > div > div {
+  line-height: 18px;
+}
+
 .hlx-popup h4,
 .hlx-popup h5 {
   margin: 0;

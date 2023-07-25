@@ -699,10 +699,11 @@ function addPreviewToConfig() {
   const searchParams = getPageSearchParams();
   const mepOverride = searchParams.get('mep');
   const mepMarker = searchParams.get('mepMarker');
+  const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
   const config = updateConfig({
     ...getConfig(),
     mep: {
-      preview: (mepOverride !== null || mepMarker !== null),
+      preview: (mepOverride !== null || mepMarker !== null || previewPage),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       marker: (mepMarker !== null && mepMarker !== 'false'),
     },
