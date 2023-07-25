@@ -12,7 +12,7 @@ describe('Accordion', () => {
     const accordions = document.body.querySelectorAll('.accordion');
     accordions.forEach((accordion) => {
       module.default(accordion);
-    })
+    });
   });
 
   it('Load editorial body', async () => {

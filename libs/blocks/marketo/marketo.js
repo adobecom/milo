@@ -189,7 +189,10 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
 
-  createIntersectionObserver({ el, callback: (el) => {
-    loadMarketo(el, formData);
-  }});
+  createIntersectionObserver({
+    el,
+    callback: (el) => {
+      loadMarketo(el, formData);
+    },
+  });
 }

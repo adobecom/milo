@@ -1,6 +1,6 @@
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import { getTacocatEnv, runTacocat, buildCheckoutButton, getCheckoutContext, omitNullValues } from '../merch/merch.js';
-import { debounce } from "../../utils/action.js";
+import { debounce } from '../../utils/action.js';
 
 window.tacocat.loadPromise = new Promise((resolve) => {
   const { env, locale } = getConfig();
@@ -141,8 +141,7 @@ export const handleSearch = async (event, el) => {
     window.tacocat.wcs.resolveOfferSelector(osi).then(([offerDetails]) => {
       decorateOfferDetails(el, offerDetails, url.searchParams);
     }).catch(displaySearchError);
-  }
-  catch (e) {
+  } catch (e) {
     displaySearchError();
   }
 };
