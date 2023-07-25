@@ -59,7 +59,7 @@
 
 .icon-block .foreground .icon-area {
   margin: 0 auto;
-  max-height: 80px;
+  max-height: var(--icon-size-xxl);
   max-width: 234px;
   overflow: hidden;
 }
@@ -69,18 +69,18 @@
 }
 
 .icon-block .foreground .icon-area img {
-  height: 80px;
+  height: var(--icon-size-xxl);
   width: auto;
 }
 
 .icon-block.inline .icon-area,
 .icon-block.inline .icon-area picture img {
-  min-width:80px;
+  min-width: var(--icon-size-xxl);
 }
 
 .icon-block.inline.bio .icon-area,
 .icon-block.inline.bio .icon-area picture img {
-  min-width:60px;
+  min-width: var(--icon-size-xl);
 }
 
 .icon-block.vertical .foreground .icon-area {
@@ -94,8 +94,8 @@
 }
 
 .icon-block.bio .foreground .icon-area {
-  width: 60px;
-  height: 60px;
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
   position: relative;
   overflow: hidden;
   border-radius: 50%;
@@ -108,20 +108,20 @@
 
 .icon-block.bio .foreground .icon-area img {
   object-fit: cover;
-  height: 60px;
-  width: 60px;
+  height: var(--icon-size-xl);
+  width: var(--icon-size-xl);
 }
 
 .icon-block.inline.m-icon .icon-area,
 .icon-block.inline.m-icon .icon-area picture img {
-  min-width:var(--m-icon);
-  height: var(--m-icon);
+  min-width:var(--icon-size-m);
+  height: var(--icon-size-m);
 }
 
 .icon-block.inline.l-icon .icon-area,
 .icon-block.inline.l-icon .icon-area picture img {
-  min-width: var(--l-icon);
-  height: var(--l-icon);
+  min-width: var(--icon-size-l);
+  height: var(--icon-size-l);
 }
 
 .icon-block.bio.center .foreground .icon-area {
@@ -158,18 +158,18 @@
 .five-up .icon-block.inline .foreground .icon-area,
 .five-up .icon-block.inline .foreground .icon-area img {
   max-height: unset;
-  max-width: 80px;
+  max-width: var(--icon-size-xxl);
 }
 
 .five-up .icon-block.inline.m-icon .foreground .icon-area,
 .five-up .icon-block.inline.m-icon .foreground .icon-area img {
-  max-width: var(--m-icon);
+  max-width: var(--icon-size-m);
 }
 
 .five-up .icon-block.inline.l-icon .foreground .icon-area,
 .five-up .icon-block.inline.l-icon .foreground .icon-area img {
   max-height: unset;
-  max-width: var(--l-icon);
+  max-width: var(--icon-size-l);
 }
 
 .section.five-up  {
@@ -250,14 +250,14 @@
 
 .icon-block.inline.m-icon.bio .icon-area,
 .icon-block.inline.m-icon.bio .icon-area picture img {
-  height: var(--m-icon);
-  width: var(--m-icon);
+  height: var(--icon-size-m);
+  width: var(--icon-size-m);
 }
 
 .icon-block.inline.l-icon.bio .icon-area,
 .icon-block.inline.l-icon.bio .icon-area picture img {
-  height: var(--l-icon);
-  width: var(--l-icon);
+  height: var(--icon-size-l);
+  width: var(--icon-size-l);
 }
 
 .icon-block.vertical.center .foreground .text-content .icon-area {
@@ -307,23 +307,23 @@
 
   .icon-block.bio .foreground .icon-area,
   .icon-block.bio .foreground .icon-area img {
-    width: 80px;
-    height: 80px;
+    width: var(--icon-size-xxl);
+    height: var(--icon-size-xxl);
   }
 
   .icon-block.inline.bio .icon-area,
   .icon-block.inline.bio .icon-area picture img {
-    min-width:80px;
+    min-width:var(--icon-size-xxl);
   }
 
   .icon-block.inline.bio.m-icon .icon-area,
   .icon-block.inline.bio.m-icon .icon-area picture img {
-    min-width: var(--m-icon);
+    min-width: var(--icon-size-m);
   }
 
   .icon-block.inline.bio.l-icon .icon-area,
   .icon-block.inline.bio.l-icon .icon-area picture img {
-    min-width: var(--l-icon);
+    min-width: var(--icon-size-l);
   }
 
   .five-up .icon-block .foreground .text-content,
@@ -349,28 +349,28 @@
 
   .icon-block.bio .foreground .icon-area,
   .icon-block.bio .foreground .icon-area img {
-    width: 80px;
-    height: 80px;
+    width: var(--icon-size-xxl);
+    height: var(--icon-size-xxl);
   }
 
   .icon-block.inline.bio .icon-area,
   .icon-block.inline.bio .icon-area picture img {
-    min-width:80px;
+    min-width:var(--icon-size-xxl);
   }
 
   .icon-block.inline.bio.m-icon .icon-area,
   .icon-block.inline.bio.m-icon .icon-area picture img {
-    min-width: var(--m-icon);
+    min-width: var(--icon-size-m);
   }
 
   .icon-block.inline.bio.l-icon .icon-area,
   .icon-block.inline.bio.l-icon .icon-area picture img {
-    min-width: var(--l-icon);
+    min-width: var(--icon-size-l);
   }
 
   .five-up .icon-block.inline.m-icon .foreground .icon-area,
   .five-up .icon-block.inline.m-icon .foreground .icon-area img {
-    max-width: var(--m-icon);
+    max-width: var(--icon-size-m);
   }
 
   .five-up .icon-block.inline:not(.m-icon) .foreground .icon-area,
