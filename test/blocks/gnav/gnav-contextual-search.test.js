@@ -10,7 +10,7 @@ async function loadDefaultHtml() {
 await loadDefaultHtml();
 
 const gnavMod = await import('../../../libs/blocks/gnav/gnav.js');
-const contextualMod = await import('../../../libs/blocks/gnav/gnav-contextual-search.js')
+const contextualMod = await import('../../../libs/blocks/gnav/gnav-contextual-search.js');
 let gnav;
 
 const conf = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };

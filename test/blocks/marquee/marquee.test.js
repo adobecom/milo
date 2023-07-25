@@ -78,7 +78,7 @@ describe('marquee', () => {
       init(marquee);
       expect(marquee.querySelector('.icon-area-multiple')).to.exist;
     });
-    
+
     it('using svg', () => {
       const marquee = document.getElementById('using-svgs');
       init(marquee);
