@@ -702,9 +702,9 @@ function addPreviewToConfig() {
   const config = updateConfig({
     ...getConfig(),
     mep: {
-      override: mepOverride ? decodeURIComponent(mepOverride) : '',
-      marker: (mepMarker !== undefined && mepMarker !== 'false'),
       preview: (mepOverride !== null || mepMarker !== null),
+      override: mepOverride ? decodeURIComponent(mepOverride) : '',
+      marker: (mepMarker !== null && mepMarker !== 'false'),
     },
   });
   return config;
