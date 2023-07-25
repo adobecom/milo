@@ -55,7 +55,7 @@ function updatePreviewButton() {
   if (mepPreviewButtonCheckbox.checked) {
     simulateHref.searchParams.set('mepButton', 'off');
   } else {
-    simulateHref.searchParams.delete('mepMarker');
+    simulateHref.searchParams.delete('mepButton');
   }
 
   document
@@ -63,8 +63,42 @@ function updatePreviewButton() {
     .setAttribute('href', simulateHref.href);
 }
 
-async function createPreviewPill(manifests, overlay, utils) {
-  // eslint-disable-next-line no-undef
+function addPillEventListeners(div) {
+  const radioInputs = div.querySelectorAll('.mep-popup input[type="radio"]');
+  radioInputs.forEach((input) => {
+    input.addEventListener('change', () => {
+      updatePreviewButton();
+    });
+  });
+
+  const checkbox = div.querySelectorAll('.mep-popup input[type="checkbox"]');
+  checkbox.forEach((input) => {
+    input.addEventListener('change', () => {
+      updatePreviewButton();
+    });
+  });
+
+  const textInput = div.querySelectorAll('.mep-popup input[type="text"]');
+  textInput.forEach((input) => {
+    input.addEventListener('keyup', () => {
+      updatePreviewButton();
+    });
+  });
+
+  const toggle = div.querySelector('.mep-manifest.mep-badge');
+  toggle.addEventListener('click', () => {
+    div.classList.toggle('mep-hidden');
+  });
+
+  const close = div.querySelector('.mep-close');
+  close.addEventListener('click', () => {
+    document.body.removeChild(document.querySelector('.mep-preview-overlay'));
+  });
+}
+
+function createPreviewPill(manifests, utils) {
+  const overlay = utils.createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+  document.body.append(overlay);
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
   let manifestList = '';
@@ -163,40 +197,9 @@ async function createPreviewPill(manifests, overlay, utils) {
     </div>
     <div class="dark">
       <a class="con-button outline button-l" href="${simulateHref.href}" title="Preview above choices">Preview</a>
-    </div>
-`;
-
-  const radioInputs = div.querySelectorAll('.mep-popup input[type="radio"]');
-  radioInputs.forEach((input) => {
-    input.addEventListener('change', () => {
-      updatePreviewButton();
-    });
-  });
-
-  const checkbox = div.querySelectorAll('.mep-popup input[type="checkbox"]');
-  checkbox.forEach((input) => {
-    input.addEventListener('change', () => {
-      updatePreviewButton();
-    });
-  });
-
-  const textInput = div.querySelectorAll('.mep-popup input[type="text"]');
-  textInput.forEach((input) => {
-    input.addEventListener('keyup', () => {
-      updatePreviewButton();
-    });
-  });
-
-  const toggle = div.querySelector('.mep-manifest.mep-badge');
-  toggle.addEventListener('click', () => {
-    div.classList.toggle('mep-hidden');
-  });
-
-  const close = div.querySelector('.mep-close');
-  close.addEventListener('click', () => {
-    document.body.removeChild(document.querySelector('.mep-preview-overlay'));
-  });
+    </div>`;
   overlay.append(div);
+  addPillEventListeners(div);
 }
 
 function addMarkerData(manifests) {
@@ -217,11 +220,9 @@ function addMarkerData(manifests) {
 }
 
 export default async function decoratePreviewMode(manifests, utils) {
+  utils.loadStyle('/libs/features/personalization/preview.css');
+  addMarkerData(manifests);
   document.addEventListener('milo:deferred', () => {
-    utils.loadStyle('/libs/features/personalization/preview.css');
-    const overlay = utils.createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
-    document.body.append(overlay);
-    createPreviewPill(manifests, overlay, utils);
-    addMarkerData(manifests);
+    createPreviewPill(manifests, utils);
   }, { once: true });
 }
