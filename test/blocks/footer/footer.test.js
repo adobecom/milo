@@ -52,7 +52,7 @@ describe('Footer', () => {
     it('adds li', () => {
       expect(privacy.querySelector('li.footer-privacy-link')).not.to.be.null;
     });
-    
+
     it('supports second line of text', () => {
       expect(privacy.querySelector('p:nth-of-type(2)')).not.to.be.null;
     });
