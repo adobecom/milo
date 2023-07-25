@@ -443,3 +443,17 @@ header.global-navigation {
   width: 30px;
   margin-right: 16px;
 }
+@media (max-width: 400px) {
+  .section{
+    min-width: 395px;
+  }
+
+  .table,
+  .table.merch {
+    margin: 0 2px;
+  }
+
+  .table.merch .col-merch .col-merch-content {
+    flex-direction: column;
+  }
+}
