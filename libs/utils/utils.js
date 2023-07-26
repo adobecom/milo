@@ -705,7 +705,7 @@ function addPreviewToConfig() {
       preview: ((mepOverride !== null || mepMarker !== null || previewPage) && mepButton !== 'off'),
       forcedPreview: ((mepOverride !== null || mepMarker !== null) && mepButton !== 'off'),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
-      marker: (mepMarker !== null && mepMarker !== 'false'),
+      marker: (mepMarker !== null && mepMarker !== undefined && mepMarker !== 'false'),
     },
   });
   return config;
