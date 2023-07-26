@@ -14,7 +14,6 @@
 * Action Carousel - v1.0
 */
 
-import { delay } from '../../../test/helpers/waitfor.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -80,6 +79,6 @@ export default function init(el) {
   el.replaceChildren(items, ...navBtns);
   if (hasNav) {
     items.addEventListener('scroll', () => handleBtnState(items, navBtns));
-    delay(200, () => handleBtnState(items, navBtns));
+    setTimeout(() => handleBtnState(items, navBtns), 200);
   }
 }
