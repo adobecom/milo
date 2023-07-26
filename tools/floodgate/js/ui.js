@@ -12,6 +12,7 @@ import {
 
 const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles', 'updateFragments'];
 
+
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
   let hasSourceFile = false;
