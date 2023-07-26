@@ -336,7 +336,9 @@ export const getConfig = async (originalState, strs = {}) => {
         onErrorTitle: strs.onErrorTitle || 'Sorry there was a system error.',
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
+        lastModified: strs.lastModified || 'Last modified {date}',
       },
+      detailsTextOption: state.detailsTextOption,
       setCardBorders: state.setCardBorders,
       useOverlayLinks: state.useOverlayLinks,
       collectionButtonStyle: state.collectionBtnStyle,
@@ -572,6 +574,7 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useLightText: false,
