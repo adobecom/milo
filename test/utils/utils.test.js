@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { delay, waitForElement } from '../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
 
 const utils = {};
@@ -41,6 +41,7 @@ describe('Utils', () => {
 
     afterEach(() => {
       window.fetch = ogFetch;
+      // eslint-disable-next-line no-console
       console.log.restore();
     });
 
@@ -159,6 +160,7 @@ describe('Utils', () => {
 
     it('Successfully dies parsing a bad config', () => {
       utils.parseEncodedConfig('error');
+      // eslint-disable-next-line no-console
       expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
     });
 
@@ -379,11 +381,10 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-title-append.html' });
     });
     it('should append to title using string from metadata', async () => {
+      const expected = 'Document Title NOODLE';
       await utils.loadArea();
-      await delay(100);
-      expect(document.title).to.equal('Document Title NOODLE');
+      await waitFor(() => document.title === expected);
+      expect(document.title).to.equal(expected);
     });
   });
 });
-
-// This comment was left here intentionally
