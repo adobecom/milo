@@ -386,7 +386,7 @@ async function handleEnglishCopyProjects(langstoreEnFiles) {
     }
     statusValues.push(
       [projectInfo.language, projectInfo.status, projectInfo.status, projectInfo.status,
-      projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
+        projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
     );
     loadingON(`Updated status for project ${projectInfo.language}...`);
   });
@@ -631,7 +631,7 @@ async function copyFilesToLangstoreEn() {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments();
+  const status = await updateFragments(initProject);
   loadingON(status);
 }
 
