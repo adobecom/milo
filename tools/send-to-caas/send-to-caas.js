@@ -191,7 +191,11 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
 };
 
 const validateProps = async (prodHost, publishingModal) => {
-  let caasMetadata, errors, tags, tagErrors = null;
+  let caasMetadata = null;
+  let errors = null;
+  let tags = null;
+  let tagErrors = null;
+  // eslint-disable-next-line no-use-before-define
   await setCardMetadata();
 
   async function setCardMetadata(){
