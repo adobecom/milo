@@ -41,6 +41,7 @@ describe('Utils', () => {
 
     afterEach(() => {
       window.fetch = ogFetch;
+      // eslint-disable-next-line no-console
       console.log.restore();
     });
 
@@ -159,6 +160,7 @@ describe('Utils', () => {
 
     it('Successfully dies parsing a bad config', () => {
       utils.parseEncodedConfig('error');
+      // eslint-disable-next-line no-console
       expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
     });
 
