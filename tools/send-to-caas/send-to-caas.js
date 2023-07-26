@@ -78,10 +78,13 @@ const showConfirm = (msg, {
   if (footerContent) {
     modal.setFooterContent(footerContent);
   }
-  modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
-    ok = true;
-    modal.close();
-  });
+
+  if (ctaText) {
+    modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
+      ok = true;
+      modal.close();
+    });
+  }
   modal.addFooterBtn(cancelText, `tingle-btn tingle-btn--${cancelBtnType} tingle-btn--pull-right`, () => {
     ok = false;
     modal.close();
@@ -138,7 +141,18 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
     caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
   };
 
-  if (tagErrors.length) {
+  if (!tags.length) {
+    const msg = '<div><p><b>No Tags found on page</b></p><p>Please add at least one tag to the Card Metadata</p></div>';
+    okToContinue = await showConfirm(msg, {
+      cssClass: ['verify-info-modal'],
+      ctaText: '',
+      cancelBtnType: 'danger',
+      cancelText: 'Cancel Registration',
+      footerContent: footerOptions,
+      leftButton: seeAllPropsBtn,
+      onClose,
+    });
+  } else if (tagErrors.length) {
     const msg = [
       '<div class="">',
       '<p><b>The following tags were not found:</b></p>',

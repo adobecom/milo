@@ -222,15 +222,9 @@ const getTags = (s) => {
   let rawTags = [];
   if (s) {
     rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
-  } else {
-    rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
-      (metaEl) => metaEl.content,
-    );
   }
 
   const errors = [];
-
-  if (!rawTags.length) rawTags = ['Article']; // default if no tags found
 
   const tagIds = rawTags.map((tag) => getTag(tag, errors))
     .filter((tag) => tag !== undefined)
@@ -421,7 +415,7 @@ const props = {
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
   contentid: (_, options) => getUuid(options.prodUrl),
-  contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
+  contenttype: (s) => s || getMetaContent('property', 'og:type'),
   country: async (s, options) => {
     if (s) return s;
     const { country } = await getCountryAndLang(options);

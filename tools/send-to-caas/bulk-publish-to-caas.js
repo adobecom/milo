@@ -144,6 +144,11 @@ const processData = async (data, accessToken) => {
         caasMetadata.tags = updatedTags;
       }
 
+      if (!caasMetadata.tags.length) {
+        errorArr.push([pageUrl, 'No tags on page']);
+        return;
+      }
+
       const caasProps = getCaasProps(caasMetadata);
 
       const response = await postDataToCaaS({
