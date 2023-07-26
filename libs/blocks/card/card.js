@@ -1,6 +1,7 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
+import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
@@ -115,6 +116,9 @@ const addFooter = (links, container, merch) => {
 };
 
 const init = (el) => {
+  decorateBlockAnalytics(el);
+  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  decorateLinkAnalytics(el, headings);
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
