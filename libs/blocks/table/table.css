@@ -446,13 +446,10 @@ header.global-navigation {
 
 /* Start mobile styles */
 @media (max-width: 400px) {
-  .section{
-    min-width: 395px;
-  }
-
   .table,
   .table.merch {
     margin: 0 2px;
+    min-width: 395px;
   }
 
   .table.merch .col-merch .col-merch-content {
