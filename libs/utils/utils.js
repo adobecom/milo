@@ -564,9 +564,10 @@ function decorateHeader() {
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
+  const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
   const breadcrumbs = document.querySelector('.breadcrumbs');
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
 }
 
