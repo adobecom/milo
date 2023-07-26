@@ -1,7 +1,6 @@
 /* eslint-disable new-cap */
 /* global tingle */
 /* eslint-disable no-alert */
-/* eslint-disable import/no-cycle */
 
 import {
   getImsToken,
