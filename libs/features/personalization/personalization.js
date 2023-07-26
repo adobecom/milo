@@ -327,13 +327,13 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     config.selVarName = selVar;
     config.selectedVariant = config.variants[selVar];
   } else {
-    config.selectedVariantName = 'no changes';
+    config.selVarName = 'no changes';
     config.selectedVariant = 'no changes';
   }
 
   if (placeholders) {
     utils.updateConfig(
-      parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName),
+      parsePlaceholders(placeholders, utils.getConfig(), config.selVarName),
     );
   }
 
