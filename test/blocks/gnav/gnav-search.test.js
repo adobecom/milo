@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import sinon from 'sinon';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
 async function loadDefaultHtml() {
   document.head.innerHTML = await readFile({ path: './mocks/head.html' });
@@ -20,21 +20,15 @@ const config = getConfig();
 
 async function mockAutoComplete(value) {
   sinon.stub(window, 'fetch');
-  const fetchText = await readFile({
-    path: `./mocks/autocomplete.${value}.json`,
-  });
-  var res = new window.Response(fetchText, {
-    status: 200,
-  });
+  const fetchText = await readFile({ path: `./mocks/autocomplete.${value}.json` });
+  const res = new window.Response(fetchText, { status: 200 });
   window.fetch.returns(Promise.resolve(res));
 }
 
 describe('contextual search', () => {
   before(async () => {
     gnav = await gnavMod.default(document.querySelector('header'));
-    window.adobeid = {
-      locale: 'en_US'
-    }
+    window.adobeid = { locale: 'en_US' };
   });
 
   afterEach(() => {
@@ -72,7 +66,7 @@ describe('contextual search', () => {
     expect(resultsEl.classList.contains('no-results')).to.be.false;
     expect(helpxUrl).to.contains(`https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${value}&start_index=0`);
   });
-  
+
   it('no results is shown when the input is empty', async () => {
     config.locale.contentRoot = '/test/blocks/gnav/mocks';
 
@@ -115,7 +109,7 @@ describe('contextual search', () => {
     });
 
     const liEl = resultsEl.querySelector('li a');
-    const [ariaLabel, helpxUrl] = ['aria-label', 'href'].map(x  => liEl.getAttribute(x));
+    const [ariaLabel, helpxUrl] = ['aria-label', 'href'].map((x) => liEl.getAttribute(x));
 
     expect(ariaLabel).to.eq('Try our advanced search');
     expect(helpxUrl).to.contains(`https://helpx.adobe.com${locale.prefix}/globalsearch.html?q=${value}&start_index=0`);
