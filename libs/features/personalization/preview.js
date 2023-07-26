@@ -71,16 +71,11 @@ function addPillEventListeners(div) {
 
   const checkbox = div.querySelectorAll('.mep-popup input[type="checkbox"]');
   checkbox.forEach((input) => {
-    input.addEventListener('change', () => {
-      updatePreviewButton();
-    });
-  });
+    input.addEventListener('change',updatePreviewButton);
 
   const textInput = div.querySelectorAll('.mep-popup input[type="text"]');
   textInput.forEach((input) => {
-    input.addEventListener('keyup', () => {
-      updatePreviewButton();
-    });
+    input.addEventListener('keyup', updatePreviewButton);
   });
 
   const toggle = div.querySelector('.mep-manifest.mep-badge');
