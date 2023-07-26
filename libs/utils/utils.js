@@ -696,14 +696,13 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   return true;
 }
 
-function addPreviewToConfig() {
+function addPreviewToConfig(persEnabled, targetEnabled) {
   const { mep: mepOverride, mepMarker, mepButton } = Object.fromEntries(getPageSearchParams());
   const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
   const config = updateConfig({
     ...getConfig(),
     mep: {
-      preview: ((mepOverride !== null || mepMarker !== null || previewPage) && mepButton !== 'off'),
-      forcedPreview: ((mepOverride !== null || mepMarker !== null) && mepButton !== 'off'),
+      preview: (mepButton !== 'off' && (mepOverride !== null || mepMarker !== null || (previewPage && (persEnabled || targetEnabled)))),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
       marker: (mepMarker !== null && mepMarker !== undefined && mepMarker !== 'false'),
     },
@@ -718,9 +717,9 @@ async function checkForPageMods() {
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const config = addPreviewToConfig();
+  const config = addPreviewToConfig(persEnabled, targetEnabled);
 
-  if (persEnabled || targetEnabled || config.mep.forcedPreview) {
+  if (config.mep.preview) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -765,7 +764,7 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests, utils);
-  } else if (config.mep.forcedPreview) {
+  } else if (config.mep.preview) {
     const { default: decoratePreviewMode } = await import('../features/personalization/preview.js');
     await decoratePreviewMode([], utils);
   }
