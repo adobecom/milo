@@ -42,6 +42,11 @@ describe('marquee', () => {
       expect(mediaCredit).to.exist;
       expect(mediaCredit.textContent.trim()).to.have.lengthOf.above(0);
     });
+
+    it('has a media credit with element content', () => {
+      const mediaCredit = marquees[9].querySelector('.media-credit .body-s');
+      expect(mediaCredit).to.exist;
+    });
   });
 
   describe('supports videos', () => {
