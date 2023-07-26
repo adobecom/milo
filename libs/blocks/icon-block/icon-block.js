@@ -59,8 +59,8 @@ function decorateContent(el) {
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
     decorateBlockText(el, iconBlocks[size][variant]);
     if (el.classList.contains('inline')) {
-     const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
-      const secondColumn = createTag('div', {class:'second-column'});
+      const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
+      const secondColumn = createTag('div', { class: 'second-column' });
       textContent.forEach((el) => {
         secondColumn.append(el);
       });

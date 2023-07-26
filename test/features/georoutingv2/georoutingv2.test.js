@@ -1,5 +1,6 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
@@ -198,6 +199,7 @@ const setHideGeorouting = (setting) => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('hideGeorouting').returns(setting);
 };
 
+const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
@@ -545,6 +547,17 @@ describe('GeoRouting', () => {
     expect(pickersOptions[2].textContent).to.be.equal('Schweiz - Italiano');
     modal.click();
     expect(document.querySelector('.picker')).to.be.null;
+  });
+
+  it('Add class .top to picker when there is no space to render below the trigger button', async () => {
+    await setViewport({ width: 600, height: 100 });
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
+    const modal = document.querySelector('.dialog-modal');
+    const links = modal.querySelectorAll('a');
+    links[0].click();
+    const picker = document.querySelector('.locale-modal-v2 .picker.top');
+    expect(picker).to.not.be.null;
+    await setViewport({ width: 600, height: ogInnerHeight });
   });
 
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
