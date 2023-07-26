@@ -612,11 +612,7 @@ async function copyFilesToLangstoreEn() {
       .filter((status) => status.success)
       .map((status) => {
         let { dstPath } = status;
-        if (dstPath.endsWith('.xlsx')) {
-          dstPath = `${dstPath.slice(0, -5)}.json`;
-        } else {
-          dstPath = stripExtension(dstPath);
-        }
+        dstPath = dstPath.endsWith('.xlsx') ? dstPath.replace(/\.xlsx$/, '.json') : stripExtension(dstPath);
         return simulatePreview(dstPath);
       }),
   );
