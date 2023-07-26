@@ -90,10 +90,3 @@
     height: auto;
   }
 }
-
-/* desktop up */
-@media screen and (min-width: 1200px) {
-  .how-to.large-image .foreground {
-    grid-template-columns: 1fr 2fr;
-  }
-}
