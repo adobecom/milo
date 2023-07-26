@@ -39,11 +39,11 @@ const iconBlocks = {
   },
 };
 
-//checking if block is part of xx-up and is inline variant
+// checking if block is part of xx-up and is inline variant
 function upAndInline(el) {
-  const isInlineAndSectionMetadata = el.classList.contains('inline') && el.parentElement?.querySelector('.section-metadata')
+  const isInlineAndSectionMetadata = el.classList.contains('inline') && el.parentElement?.querySelector('.section-metadata');
   if (!isInlineAndSectionMetadata) return false;
-  return /(two|three|four|five)[- ]?up/i.test(el.parentElement.querySelector('.section-metadata').textContent);
+  return /(two|three|four|five)[- ]?up/i.test(el.parentElement.className);
 }
 
 function decorateContent(el) {
@@ -69,8 +69,8 @@ function decorateContent(el) {
     if (el.classList.contains('inline')) {
       const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
       const secondColumn = createTag('div', { class: 'second-column' });
-      textContent.forEach((el) => {
-        secondColumn.append(el);
+      textContent.forEach((content) => {
+        secondColumn.append(content);
       });
       el.querySelector('.foreground .text-content').append(secondColumn);
     }

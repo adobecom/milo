@@ -132,6 +132,7 @@
   margin-top: var(--spacing-s);
 }
 
+.icon-block.fullwidth.small .foreground .icon-area,
 .icon-block.vertical.small .foreground .icon-area {
   margin-bottom: var(--spacing-s);
 }
@@ -201,7 +202,7 @@
   margin-bottom: 0;
 }
 
-.icon-block .foreground .text-content .action-area {
+.icon-block:not(.small.fullwidth) .foreground .text-content .action-area {
   white-space: nowrap;
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +211,7 @@
   row-gap: var(--spacing-xs);
 }
 
-.icon-block.full-width .foreground .text-content .action-area {
+.icon-block.fullwidth .foreground .text-content .action-area {
   justify-content: center;
 }
 
