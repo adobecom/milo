@@ -42,7 +42,7 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
-}
+};
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -64,7 +64,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
-    'custom-card': 'Custom Card'
+    'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -80,8 +80,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    '_blank': 'New Tab',
-    '_self': 'Same Tab',
+    _blank: 'New Tab',
+    _self: 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -191,13 +191,16 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
+  detailsTextOption: {
+    default: 'Default',
+    modifiedDate: 'Modified Date',
+  },
 };
 
-const getTagList = (root) =>
-  Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = tag.title;
-    return options;
-  }, {});
+const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
+  options[tag.tagID] = tag.title;
+  return options;
+}, {});
 
 const getTagTree = (root) => {
   const options = Object.entries(root).reduce((opts, [, tag]) => {
@@ -238,7 +241,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -340,6 +343,7 @@ const UiPanel = () => html`
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
@@ -515,7 +519,7 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
   `;
-  
+
   const FilterBuildPanel = html`
     <${FilterOptions}>
     <${MultiField}
@@ -609,15 +613,13 @@ const PaginationPanel = () => {
   `;
 };
 
-const TargetPanel = () =>
-  html`
+const TargetPanel = () => html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
     <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
-const AnalyticsPanel = () =>
-  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+const AnalyticsPanel = () => html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
   <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
@@ -688,7 +690,7 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    // For backwards compatibilty: Check that localStorage state exists 
+    // For backwards compatibilty: Check that localStorage state exists
     // and it contains the new filtersCustom attribute before using it
     if (lsState?.includes('filtersCustom')) {
       try {
@@ -793,8 +795,8 @@ const CopyBtn = () => {
   return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
-        ? 'is-success'
-        : ''}"
+  ? 'is-success'
+  : ''}"
       onClick=${copyConfig}
     >
       ${btnText}
