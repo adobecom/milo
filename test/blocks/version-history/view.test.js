@@ -38,7 +38,13 @@ describe('View', () => {
   it('should display text area', async () => {
     const commentElem = await waitForElement('.comment-container');
     const textAreaElem = commentElem.querySelector('textarea');
-    setStatus('config', 'info', 'displayed', '', 1000);
+    setStatus('config', 'info', 'displayed', '', 100);
+    const clock = sinon.useFakeTimers({
+      toFake: ['setTimeout'],
+      shouldAdvanceTime: true,
+    });
+    clock.tick(100);
+    clock.restore();
     expect(textAreaElem).to.exist;
   });
 
