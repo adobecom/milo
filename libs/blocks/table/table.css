@@ -443,6 +443,8 @@ header.global-navigation {
   width: 30px;
   margin-right: 16px;
 }
+
+/* Start mobile styles */
 @media (max-width: 400px) {
   .section{
     min-width: 395px;
