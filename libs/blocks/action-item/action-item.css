@@ -19,15 +19,15 @@
 }
 
 .action-item.rounded img,
-.action-item.rounded .main-image picture:not(.float-pic),
+.action-item.rounded .main-image picture:not(.floated-icon),
 .action-item.rounded.float-button .main-image picture::after {
   border-radius: 4px;
   overflow: hidden;
 }
 
-.action-item.more-rounded img,
-.action-item.more-rounded .main-image picture:not(.float-pic),
-.action-item.more-rounded.float-button .main-image picture::after {
+.action-item.rounded-l img,
+.action-item.rounded-l .main-image picture:not(.floated-icon),
+.action-item.rounded-l.float-button .main-image picture::after {
   border-radius: 16px;
   overflow: hidden;
 }
@@ -76,7 +76,7 @@
   max-height: 80px;
 }
 
-.action-item.float-icon .float-pic img {
+.action-item.float-icon .floated-icon img {
   width: 24px;
   height: 24px;
   align-self: center;
@@ -91,7 +91,7 @@
   position: relative;
 }
 
-.action-item.zoom .main-image picture:not(.float-pic) {
+.action-item.zoom .main-image picture:not(.floated-icon) {
   display: block;
   overflow: hidden;
 }
@@ -100,7 +100,7 @@
   min-width: 100%;
 }
 
-.action-item.zoom .main-image picture:not(.float-pic) img {
+.action-item.zoom .main-image picture:not(.floated-icon) img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -108,7 +108,7 @@
   transition: transform .2s ease;
 }
 
-a.action-item.zoom:focus picture:not(.float-pic) {
+a.action-item.zoom:focus picture:not(.floated-icon) {
   border: 2px solid var(--link-color);
 }
 
@@ -116,12 +116,12 @@ a.action-item.zoom:focus  {
   text-decoration: underline;
 }
 
-.action-item.zoom .main-image picture:not(.float-pic) img:focus,
-.action-item.zoom .main-image picture:not(.float-pic) img:hover {
+.action-item.zoom .main-image picture:not(.floated-icon) img:focus,
+.action-item.zoom .main-image picture:not(.floated-icon) img:hover {
   transform: scale(1.05);
 }
 
-.action-item.float-icon .float-pic {
+.action-item.float-icon .floated-icon {
   display: flex;
   position: absolute;
   bottom: -6px;

@@ -14,20 +14,18 @@
 * Action Item - v1.0
 */
 
-import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
+import { decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function getLayout(elems) {
-  const background = elems.length === 3 ? elems[0] : null;
-  const foreground = background ? elems[1] : elems[0];
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
   const href = link ? link.innerText.trim() : null;
-  return { background, foreground, href };
+  return { foreground: elems[0], href };
 }
 
 function handleFloatIcon(picture, icon) {
   if (!icon) return;
-  icon.classList.add('float-pic');
+  icon.classList.add('floated-icon');
   picture.appendChild(icon);
 }
 
@@ -45,21 +43,20 @@ function getContent(el, variants, href) {
   const pictures = el.querySelectorAll('picture');
   const text = el.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   const mainPic = pictures[0];
-  const picture = mainPic.parentElement;
-  picture.classList.add('main-image');
+  const picture = mainPic?.parentElement;
+  picture?.classList?.add('main-image');
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
-  const classes = { class: [...variants].join(' ') };
   const attrs = href ? { href } : {};
-  return createTag(tag, { ...classes, ...attrs }, text ?? picture);
+  const content = createTag(tag, { ...attrs }, text ?? picture);
+  return content;
 }
 
 export default function init(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (!elems.length) return;
-  const { background, foreground, href } = getLayout(elems);
+  const { foreground, href } = getLayout(elems);
   const content = getContent(foreground, el.classList, href);
-  el.replaceWith(content);
-  if (background) decorateBlockBg(content, background);
+  el.replaceChildren(content);
 }
