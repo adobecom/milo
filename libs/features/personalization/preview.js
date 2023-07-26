@@ -66,9 +66,7 @@ function updatePreviewButton() {
 function addPillEventListeners(div) {
   const radioInputs = div.querySelectorAll('.mep-popup input[type="radio"]');
   radioInputs.forEach((input) => {
-    input.addEventListener('change', () => {
-      updatePreviewButton();
-    });
+    input.addEventListener('change', updatePreviewButton);
   });
 
   const checkbox = div.querySelectorAll('.mep-popup input[type="checkbox"]');

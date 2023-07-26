@@ -40,7 +40,8 @@ const createFrag = (url, manifestId) => {
 };
 
 const COMMANDS = {
-  insertcontentafter: (el, target, manifestId) => el.insertAdjacentElement('afterend', createFrag(target, manifestId)),
+  insertcontentafter: (el, target, manifestId) => el
+    .insertAdjacentElement('afterend', createFrag(target, manifestId)),
   insertcontentbefore: (el, target, manifestId) => el.insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
@@ -239,29 +240,21 @@ export function parseConfig(data) {
 }
 
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+  if (!placeholders?.length) return config;
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
   ];
-  let val = false;
-  const results = {};
-  if (placeholders.length) {
-    Object.entries(placeholders[0]).forEach(([key]) => {
-      if (!val && valueNames.includes(key.toLowerCase())) val = key;
-    });
-    if (val !== false) {
-      placeholders.forEach((item) => {
-        results[item.key] = item[val];
-      });
-      if (config.placeholders) {
-        config.placeholders = { ...config.placeholders, ...results };
-      } else {
-        config.placeholders = results;
-      }
-      return config;
-    }
+  const [val] = Object.entries(placeholders[0])
+    .find(([key]) => valueNames.includes(key.toLowerCase()));
+  if (val) {
+    const results = placeholders.reduce((res, item) => {
+      res[item.key] = item[val];
+      return res;
+    }, {});
+    config.placeholders = { ...(config.placeholders || {}), ...results };
   }
   return config;
 }
@@ -272,14 +265,12 @@ function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel
   if (config.mep.override !== '') {
     config.mep.override.split(',').forEach((item) => {
       const pair = item.trim().split('--');
-      if (pair[0] === manifestPath) {
-        if (pair.length > 1) {
-          // eslint-disable-next-line prefer-destructuring
-          manifestFound = pair[1];
-        }
+      if (pair[0] === manifestPath && pair.length > 1) {
+        // eslint-disable-next-line prefer-destructuring
+        manifestFound = pair[1];
       }
     });
-    if (typeof manifestFound === 'string') return manifestFound;
+    if (manifestFound) return manifestFound;
   }
 
   const tagNames = Object.keys(PERSONALIZATION_TAGS);
@@ -305,35 +296,34 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   if (data?.placeholders?.data) {
     placeholders = data.placeholders.data;
   }
-  if (data?.data) {
-    data = data.data;
-  } else if (data?.experiences?.data) {
-    data = data.experiences.data;
-  } else if (data?.experiments?.data) {
-    data = data.experiments.data;
-  }
-  if (!data) return {};
-  const config = parseConfig(data);
+
+  const persData = data?.data || data?.experiences?.data || data?.experiments?.data;
+  if (!persData) return {};
+  const config = parseConfig(persData);
 
   if (!config) {
     console.log('Error loading personalization config: ', name || manifestPath);
     return {};
   }
 
-  const selVar = getPersonalizationVariant(manifestPath, config.variantNames, variantLabel);
+  const selectedVariantName = getPersonalizationVariant(
+    manifestPath,
+    config.variantNames,
+    variantLabel,
+  );
 
-  if (selVar && config.variantNames.includes(selVar)) {
+  if (selectedVariantName && config.variantNames.includes(selectedVariantName)) {
     config.run = true;
-    config.selVarName = selVar;
-    config.selectedVariant = config.variants[selVar];
+    config.selectedVariantName = selectedVariantName;
+    config.selectedVariant = config.variants[selectedVariantName];
   } else {
-    config.selVarName = 'no changes';
+    config.selectedVariantName = 'no changes';
     config.selectedVariant = 'no changes';
   }
 
   if (placeholders) {
     utils.updateConfig(
-      parsePlaceholders(placeholders, utils.getConfig(), config.selVarName),
+      parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName),
     );
   }
 

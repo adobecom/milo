@@ -596,7 +596,7 @@ async function decoratePlaceholders(area, config) {
   const found = regex.test(el.innerHTML);
   if (!found) return;
   const updatedConfig = getConfig();
-  if (updatedConfig.placeholders) config.config = updatedConfig.placeholders;
+  if (updatedConfig.placeholders) config.placeholders = updatedConfig.placeholders;
   const { replaceText } = await import('../features/placeholders.js');
   el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
@@ -697,10 +697,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 function addPreviewToConfig() {
-  const searchParams = getPageSearchParams();
-  const mepOverride = searchParams.get('mep');
-  const mepMarker = searchParams.get('mepMarker');
-  const mepButton = searchParams.get('mepButton');
+  const { mep: mepOverride, mepMarker, mepButton } = Object.fromEntries(getPageSearchParams());
   const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
   const config = updateConfig({
     ...getConfig(),
