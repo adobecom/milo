@@ -451,7 +451,7 @@ export async function runPersonalization(info, config) {
 function cleanManifestList(manifests) {
   const manifestPaths = [];
   const cleanedList = [];
-  manifests.forEach((manifest, index) => {
+  manifests.forEach((manifest) => {
     try {
       const url = new URL(manifest.manifestPath);
       manifest.manifestPath = url.pathname;
