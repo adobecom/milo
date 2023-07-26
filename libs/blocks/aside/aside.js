@@ -36,7 +36,7 @@ const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32
                     <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
                   </svg>
                   `;
-const ASPECT_RATIO = /^format:/i;
+const FORMAT_REGEX = /^format:/i;
 
 function getBlockData(el) {
   const variant = variants.find((variantClass) => el.classList.contains(variantClass));
@@ -92,7 +92,7 @@ function decorateMedia(el) {
     const siblingP = parentP?.nextElementSibling;
     if (!siblingP || siblingP.nodeName.toLowerCase() !== 'p') return;
     const siblingText = siblingP.textContent;
-    const hasFormats = siblingText.match(ASPECT_RATIO)?.index;
+    const hasFormats = siblingText.match(FORMAT_REGEX)?.index;
     if (!(hasFormats === 0)) return;
     processed = true;
     const formats = siblingText.split(': ')[1]?.split(/\s+/);
