@@ -5,8 +5,6 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
 jobs:
   run-tests:
     name: Running tests
