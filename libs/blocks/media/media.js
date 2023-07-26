@@ -70,8 +70,9 @@ export default function init(el) {
 
     // subcopy with links
     if (actionArea?.nextElementSibling?.tagName === 'H3') {
-      actionArea.nextElementSibling.classList.add('subcopy-heading');
-      const links = document.querySelectorAll('h3.subcopy-heading ~ p.body-s a');
+      actionArea.nextElementSibling.classList.remove("heading-m", "body-xl");
+      actionArea.nextElementSibling.classList.add("heading-xs");
+      const links = document.querySelectorAll('h3.heading-xs ~ p.body-s a');
       links.forEach((link) => {
         link.parentElement.classList.add('subcopy-link');
 
@@ -87,10 +88,16 @@ export default function init(el) {
       }
 
       const qrCodeLinks = row.querySelectorAll('a');
-      qrCodeLinks.forEach((link) => {
-        link.classList.add('con-button');
-        link.parentNode.classList.add('qr-button');
-      });
+      const googleBtn = qrCodeLinks[0];
+      const appleBtn = qrCodeLinks[1];
+
+      googleBtn.classList.add("google-button", "qr-button");
+      googleBtn.textContent = "";
+      googleBtn.parentNode.classList.add("qr-button-container");
+
+      appleBtn.classList.add("apple-button", "qr-button");
+      appleBtn.textContent = "";
+      appleBtn.parentNode.classList.add("qr-button-container");
     }
 
     container.append(row);

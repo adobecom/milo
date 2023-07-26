@@ -105,8 +105,8 @@ div[class*="-up"] .media .foreground > .media-row {
 
 .media .default-list {
   padding-left: 20px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
 }
 
 .media li:before {
@@ -124,9 +124,9 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media .subcopy {
-  font-size: 16px;
-  line-height: 24px;
-  margin-top: 16px;
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-body-s-lh);
+  margin-top: var(--spacing-xs);
   color: #2C2C2C;
 }
 
@@ -134,10 +134,9 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: 0;
 }
 
-.media h3.subcopy-heading {
-  font-size: 16px;
-  margin-top: 24px;
-  margin-bottom: 16px;
+.media h3.heading-xs {
+  margin-top: var(--spacing-s);
+  margin-bottom: var(--spacing-xs);
 }
 
 .media p.subcopy-link {
@@ -146,22 +145,22 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media a.subcopy-link {
-  font-size: 14px;
+  font-size: var(--type-heading-xxs-size);
   color: var(--link-color-dark);
-  line-height: 21px;
+  line-height: var(--type-body-xs-lh);
 }
 
 .media.qr-code img.qr-code {
   display: none;
 }
 
-.media.qr-code .qr-button{
+.media.qr-code .qr-button-container {
   display: inline;
-  margin-right: 24px;
+  margin-right: var(--spacing-s);
 }
 
-.media.qr-code .con-button {
-  width: 113px;
+.media.qr-code a.qr-button {
+  width: 135px;
   max-width: 140px;
   height: 50px;
   font-size: 19px;
@@ -170,6 +169,14 @@ div[class*="-up"] .media .foreground > .media-row {
   padding-bottom: 0;
   padding-top: 0;
   display: inline-flex;
+}
+
+.media.qr-code a.google-button {
+  background: url("/img/google-play.svg") no-repeat transparent;
+}
+
+.media.qr-code a.apple-button {
+  background: url("/img/app-store.svg") no-repeat transparent;;
 }
 
 @media screen and (min-width: 600px) {
@@ -257,8 +264,8 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.five-up .foreground { grid-template-columns: repeat(5, 1fr); }
 
   .media .subcopy {
-    font-size: 12px;
-    line-height: 18px;
+    font-size: var(--type-body-xxs-size);
+    line-height: var(--type-body-xxs-lh);
     margin-top: 8px;
   }
 
@@ -268,7 +275,7 @@ div[class*="-up"] .media .foreground > .media-row {
     height: 170px;
   }
 
-  .media.qr-code .qr-button{
+  .media.qr-code .qr-button-container {
     display: none;
   }
 
