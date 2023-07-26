@@ -240,15 +240,19 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       } else {
         // get MDAST of the current langstore file that needs to be rolled out
         const langstoreNow = await getMdast(filePathWithoutExtension);
+        // force block name to be bold in langstore doc mdast
+        // TODO: remove after franklin adds a fix for the bold issue
+        addBoldHeaders(langstoreNow);
         // get processed data Map for the current langstore file that needs to be rolled out
         const langstoreNowProcessedMdast = await getProcessedMdast(langstoreNow);
 
         const liveCopyPath = `${targetFolder}/${fileName}`;
         // get MDAST of the livecopy file
         const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
-        // get processed data Map for the livecopy file
-        // TODO: remove after franklin fix for bold issue
+        // force block name to be bold in livecopy doc mdast
+        // TODO: remove after franklin adds a fix for the bold issue
         addBoldHeaders(livecopy);
+        // get processed data Map for the livecopy file
         const livecopyProcessedMdast = await getProcessedMdast(livecopy);
         // get merged mdast
         const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
