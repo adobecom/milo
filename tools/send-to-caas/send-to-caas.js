@@ -1,6 +1,7 @@
 /* eslint-disable new-cap */
 /* global tingle */
 /* eslint-disable no-alert */
+/* eslint-disable import/no-cycle */
 
 import {
   getImsToken,
@@ -198,9 +199,9 @@ const validateProps = async (prodHost, publishingModal) => {
   // eslint-disable-next-line no-use-before-define
   await setCardMetadata();
 
-  async function setCardMetadata(){
-    let card = await getCardMetadata({ prodUrl: `${prodHost}${window.location.pathname}` });
-    caasMetadata = card.caasMetadata
+  async function setCardMetadata() {
+    const card = await getCardMetadata({ prodUrl: `${prodHost}${window.location.pathname}` });
+    caasMetadata = card.caasMetadata;
     errors = card.errors;
     tags = card.tags;
     tagErrors = card.tagErrors;
