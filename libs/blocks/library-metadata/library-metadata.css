@@ -21,7 +21,7 @@
   border-radius: 6px;
 }
 
-.library-meta-row:nth-child(odd) {
+.library-meta-row {
   background-color: #EFEFEF;
   padding: 6px 12px;
 }
