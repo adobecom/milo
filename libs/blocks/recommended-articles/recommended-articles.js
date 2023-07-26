@@ -1,6 +1,6 @@
 import { createTag, getMetadata, getConfig } from '../../utils/utils.js';
 import fetchTaxonomy from '../../scripts/taxonomy.js';
-import { replaceKey } from '../../features/placeholders.js'
+import { replaceKey } from '../../features/placeholders.js';
 
 async function getArticleDetails(article) {
   const path = new URL(article.href).pathname;
