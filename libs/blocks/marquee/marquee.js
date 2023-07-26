@@ -166,7 +166,7 @@ export default function init(el) {
     const txtContent = media?.lastChild.textContent.trim();
     if (txtContent) {
       mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
-    } else if (media.lastElementChild && media.lastElementChild.tagName !== 'PICTURE') {
+    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
       mediaCreditInner = media.lastElementChild;
     }
 
