@@ -36,7 +36,7 @@ const getCarouselAttrs = el => [...el.childNodes].reduce((attr, row) => {
 
 function handleGridAttrs(el, columns) {
   const attrs = getCarouselAttrs(el);
-  const itemWidth = attrs['item width override'] ?? '106.5';
+  const itemWidth = attrs['item width'] ?? '106.5';
   const overrides = attrs.style ? attrs.style.split(', ').map((style) => style.replaceAll(' ', '-')).join(' ') : '';
   const gridAlign = [...el.classList].filter(cls => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
   el.style.setProperty('--action-scroller-background', el.parentElement?.style?.background ?? 'white');
