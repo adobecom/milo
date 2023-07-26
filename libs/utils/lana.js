@@ -1,4 +1,5 @@
-(function () {
+/* eslint no-console: 0 */
+(function lanaiife() {
   const MSG_LIMIT = 2000;
 
   const defaultOptions = {
@@ -24,15 +25,7 @@
     return false;
   }
 
-  function mergeOptions(op1, op2) {
-    if (!op1) {
-      op1 = {};
-    }
-
-    if (!op2) {
-      op2 = {};
-    }
-
+  function mergeOptions(op1 = {}, op2 = {}) {
     function getOpt(key) {
       if (op1[key] !== undefined) {
         return op1[key];
@@ -49,12 +42,8 @@
     }, {});
   }
 
-  function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i' });
-  }
-
-  function log(msg, options) {
-    msg = msg && msg.stack ? msg.stack : (msg || '');
+  function log(m, options) {
+    let msg = m && m.stack ? m.stack : (m || '');
     if (msg.length > MSG_LIMIT) {
       msg = `${msg.slice(0, MSG_LIMIT)}<trunc>`;
     }
@@ -62,12 +51,12 @@
     const o = mergeOptions(options, w.lana.options);
     if (!o.clientId) {
       console.warn('LANA ClientID is not set in options.');
-      return;
+      return undefined;
     }
 
     const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
 
-    if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
+    if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return undefined;
 
     const isProdDomain = isProd();
 
@@ -97,6 +86,12 @@
       xhr.send();
       return xhr;
     }
+
+    return undefined;
+  }
+
+  function sendUnhandledError(e) {
+    log(e.reason || e.error || e.message, { errorType: 'i' });
   }
 
   function hasDebugParam() {
