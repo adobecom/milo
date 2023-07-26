@@ -2,9 +2,7 @@
 /* global tingle */
 /* eslint-disable no-alert */
 
-import {
-  getImsToken,
-} from '../utils/utils.js';
+import { getImsToken } from '../utils/utils.js';
 
 import {
   getCardMetadata,

@@ -1,4 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
+import { getMetadata } from '../../libs/utils/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -420,7 +421,10 @@ const props = {
   cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => getUuid(options.prodUrl),
+  contentid: (_, options) => {
+    const floodGateColor = getMetadata('floodGateColor') || '';
+    return getUuid(`${options.prodUrl}${floodGateColor}`);
+  },
   contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
   country: async (s, options) => {
     if (s) return s;
@@ -461,7 +465,7 @@ const props = {
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
-  floodgatecolor: (s) => s || 'default',
+  floodgatecolor: (s) => s || getMetadata('floodGateColor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
     const { lang } = await getCountryAndLang(options);

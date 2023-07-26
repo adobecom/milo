@@ -84,23 +84,19 @@ function parseTaxonomyJson(data, root) {
         : LEVEL_INDEX.level1);
 
     const name = level3 || level2 || level1;
-
     const category = row[TAXONOMY_FIELDS.type]?.trim().toLowerCase() || INTERNALS;
 
     // skip duplicates
     if (!isProduct(category) && taxonomy.topics[name]) return taxonomy;
     if (isProduct(category) && taxonomy.products[name]) return taxonomy;
 
-    const link = [row[TAXONOMY_FIELDS.link]].reduce((_url) => {
-      if (_url) {
-        const u = new URL(_url);
-        const current = new URL(window.location.href);
-        return `${current.origin}${u.pathname}`;
-      }
-
-      return `${root}/${generateUri(name)}`;
-    }, null);
-
+    const taxLink = row[TAXONOMY_FIELDS.link]
+      ? new URL([row[TAXONOMY_FIELDS.link]])
+      : generateUri(name);
+    const path = taxLink.pathname
+      ? taxLink.pathname?.replace('.html', '').split('/topics/').pop()
+      : taxLink;
+    const link = `${root}/${path}`;
     const hidden = !!row[TAXONOMY_FIELDS.hidden]?.trim();
     const skipMeta = !!row[TAXONOMY_FIELDS.excludeFromMetadata]?.trim();
 
@@ -178,16 +174,9 @@ export default async (config, route, target) => {
         NO_INTERLINKS,
 
         lookup(topic) {
-          // might be a product (product would have priori)
-          let t = this.get(topic, PRODUCTS);
-          if (!t) {
-            // might be a product without the leading Adobe
-            t = this.get(topic.replace('Adobe ', ''), PRODUCTS);
-            if (!t) {
-              t = this.get(topic);
-            }
-          }
-          return t;
+          return this.get(topic, PRODUCTS)
+            || this.get(topic.replace('Adobe ', ''), PRODUCTS)
+            || this.get(topic);
         },
 
         get(topic, cat) {
