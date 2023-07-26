@@ -85,7 +85,7 @@ async function refreshProjectJson(projectFile, fragments, attempts = 0) {
   const maxAttempts = 2;
   await projectFile.purge();
   const projectJson = await fetchUrl(projectFile.path, 'json');
-  const urls = projectJson?.value?.urls?.data
+  const urls = projectJson?.value?.urls?.data;
   if (!urls || !urls.map((url) => url.URL).includes(...fragments)) {
     if (attempts < maxAttempts) {
       loadingON(`Failed to reload Project JSON... Trying until max attempts ${maxAttempts}`);

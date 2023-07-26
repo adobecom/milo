@@ -3,7 +3,6 @@ import { loadingOFF, loadingON } from '../../loc/utils.js';
 import { getParams, postData } from './utils.js';
 import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
 import updateFragments from '../../loc/fragments.js';
-import { initProject as getProjectFile } from './project.js';
 import {
   initProject,
   updateProjectWithDocs,
@@ -29,7 +28,7 @@ async function floodgateContentAction(project, config) {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments(getProjectFile);
+  const status = await updateFragments(initProject);
   loadingON(status);
 }
 
