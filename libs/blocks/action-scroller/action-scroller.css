@@ -1,0 +1,109 @@
+.action-scroller {
+  --action-scroller-mobile-padding: 50px;
+  --action-scroller-button-color: white;
+  --action-scroller-button-size: 32px;
+  --action-scroller-button-border-color: #646364;
+  --action-scroller-button-border-color-hover: #333;
+  --action-scroller-column-width: calc(var(--action-scroller-item-width) * 1px);
+
+  display: block;
+  position: relative;
+}
+
+.action-scroller .nested.section {
+  display: grid;
+  grid-template-columns: repeat(var(--action-scroller-columns), 1fr);
+  grid-auto-columns: minmax(var(--action-scroller-column-width), 1fr);
+  grid-auto-flow: column;
+  padding: 0 var(--action-scroller-mobile-padding);
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.action-scroller .nested.section::-webkit-scrollbar {
+  display: none;
+}
+
+.action-scroller .nested.section .action-item {
+  width: var(--action-scroller-column-width);
+}
+
+.action-scroller .nav-grad {
+  position: absolute;
+  height: 100%;
+  width: 54px;
+  top: 0;
+}
+
+.action-scroller .nav-grad.next {
+  right: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--action-scroller-background) 100%);
+}
+
+.action-scroller .nav-grad.previous {
+  left: 0;
+  background: linear-gradient(270deg, transparent 0%, var(--action-scroller-background) 100%);
+}
+
+.action-scroller .nav-grad[hide-btn='true'] {
+  display: none;
+}
+
+.action-scroller .previous-button,
+.action-scroller .next-button {
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: 0;
+  border-radius: 100%;
+  border-style: solid;
+  border-width: 1px;
+  background-color: var(--action-scroller-button-color);
+  border-color: var(--action-scroller-button-border-color);
+  height: var(--action-scroller-button-size);
+  width: var(--action-scroller-button-size);
+  top: calc(55% - var(--action-scroller-button-size) / 2);
+  z-index: 2;
+}
+
+.action-scroller .next-button {
+  right: 10px;
+}
+
+.action-scroller .previous-button {
+  left: 10px;
+}
+
+.action-scroller .nav-button:hover,
+.action-scroller .nav-button:focus,
+.action-scroller .nav-button:active {
+  background-color: var(--action-scroller-button-color);
+  border-color: var(--action-scroller-button-border-color-hover);
+  outline: none;
+}
+
+.action-scroller .nav-button img {
+  height: 16px;
+  width: 10px;
+  margin-left: 2px;
+}
+
+.action-scroller .previous-button img {
+  margin-right: 3px;
+  transform: rotate(180deg);
+}
+
+@media screen and (min-width: 1200px) {
+  .action-scroller {
+    width: var(--grid-container-width);
+    margin: 0 auto;
+  }
+
+  .action-scroller .nested.section {
+    padding: 0;
+  }
+}

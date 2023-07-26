@@ -14,6 +14,7 @@
 * Action Carousel - v1.0
 */
 
+import { delay } from '../../../test/helpers/waitfor.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -38,9 +39,9 @@ function handleGridAttrs(el, columns) {
   const itemWidth = attrs['item width override'] ?? '106.5';
   const overrides = attrs.style ? attrs.style.split(', ').map((style) => style.replaceAll(' ', '-')).join(' ') : '';
   const gridAlign = [...el.classList].filter(cls => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
-  el.style.setProperty('--action-slider-background', el.parentElement?.style?.background ?? 'white');
-  el.style.setProperty('--action-slider-columns', columns);
-  el.style.setProperty('--action-slider-item-width', itemWidth);
+  el.style.setProperty('--action-scroller-background', el.parentElement?.style?.background ?? 'white');
+  el.style.setProperty('--action-scroller-columns', columns);
+  el.style.setProperty('--action-scroller-item-width', itemWidth);
   el.setAttribute('item-width', itemWidth);
   return `${gridStyle} ${gridAlign} ${overrides}`;
 }
@@ -53,9 +54,9 @@ function handleNavigate(el, btn) {
   el.scrollLeft = nextClick ? (el.scrollLeft + distance) : (el.scrollLeft - distance);
 }
 
-function handleBtnState(el, [prev, next]) {
-  prev.setAttribute('hide-btn', el.scrollLeft === 0);
-  next.setAttribute('hide-btn', el.scrollLeft === (el.scrollWidth - el.clientWidth));
+function handleBtnState({ scrollLeft, scrollWidth, clientWidth }, [prev, next]) {
+  prev.setAttribute('hide-btn', scrollLeft === 0);
+  next.setAttribute('hide-btn', Math.ceil(scrollLeft) === Math.ceil((scrollWidth - clientWidth)));
 }
 
 function handleNavigation(el) {
@@ -79,7 +80,6 @@ export default function init(el) {
   el.replaceChildren(items, ...navBtns);
   if (hasNav) {
     items.addEventListener('scroll', () => handleBtnState(items, navBtns));
-    // wait for dom then set initial nav button state
-    setTimeout(() => handleBtnState(items, navBtns), 200);
+    delay(200, () => handleBtnState(items, navBtns));
   }
 }

@@ -17,7 +17,7 @@
 import { decorateBlockBg, decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-function getElems(elems) {
+function getLayout(elems) {
   const background = elems.length === 3 ? elems[0] : null;
   const foreground = background ? elems[1] : elems[0];
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
@@ -25,10 +25,10 @@ function getElems(elems) {
   return { background, foreground, href };
 }
 
-function handleFloatPic(picture, image) {
-  if (!image) return;
-  image.classList.add('float-pic');
-  picture.appendChild(image);
+function handleFloatIcon(picture, icon) {
+  if (!icon) return;
+  icon.classList.add('float-pic');
+  picture.appendChild(icon);
 }
 
 function handleFloatBtn(picture, content) {
@@ -47,10 +47,8 @@ function getContent(el, variants, href) {
   const mainPic = pictures[0];
   const picture = mainPic.parentElement;
   picture.classList.add('main-image');
-  if (columns.length > 1) {
-    if (variants.contains('float-icon')) handleFloatPic(picture, pictures[1]);
-    if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
-  }
+  if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
+  if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
   const classes = { class: [...variants].join(' ') };
   const attrs = href ? { href } : {};
@@ -60,8 +58,8 @@ function getContent(el, variants, href) {
 export default function init(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (!elems.length) return;
-  const { background, foreground, href } = getElems(elems);
-  let content = getContent(foreground, el.classList, href);
+  const { background, foreground, href } = getLayout(elems);
+  const content = getContent(foreground, el.classList, href);
   el.replaceWith(content);
   if (background) decorateBlockBg(content, background);
 }
