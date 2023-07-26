@@ -37,7 +37,7 @@ describe('text block', () => {
       const element = document.querySelector('.link-farm');
       expect(element).to.exist;
     });
-  
+
     it('adds h3 elements when necessary', () => {
       const headingElements = document.querySelectorAll('.link-farm .foreground h3');
       expect(headingElements.length).to.equal(4);
@@ -48,9 +48,9 @@ describe('text block', () => {
     });
     it('adds h3 as the first element in the div', () => {
       const divElements = document.querySelectorAll('.link-farm .foreground:nth-child(2) div');
-      divElements.forEach(div => {
+      divElements.forEach((div) => {
         expect(div.children[0].tagName).to.equal('H3');
       });
-    })
+    });
   });
 });

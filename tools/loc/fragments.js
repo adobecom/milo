@@ -1,4 +1,3 @@
-import { init as getProjectFile } from './project.js';
 import { connect as connectToSp, updateExcelTable } from './sharepoint.js';
 import { loadingON } from './utils.js';
 
@@ -86,7 +85,7 @@ async function refreshProjectJson(projectFile, fragments, attempts = 0) {
   const maxAttempts = 2;
   await projectFile.purge();
   const projectJson = await fetchUrl(projectFile.path, 'json');
-  const urls = projectJson?.value?.translation?.data;
+  const urls = projectJson?.value?.urls?.data;
   if (!urls || !urls.map((url) => url.URL).includes(...fragments)) {
     if (attempts < maxAttempts) {
       loadingON(`Failed to reload Project JSON... Trying until max attempts ${maxAttempts}`);
@@ -104,7 +103,7 @@ async function refreshProjectJson(projectFile, fragments, attempts = 0) {
   return isJsonUpdated;
 }
 
-async function updateFragments() {
+async function updateFragments(getProjectFile) {
   let status = 'No Fragments found';
   const projectFile = await getProjectFile();
   const projectDetail = await projectFile.detail();
