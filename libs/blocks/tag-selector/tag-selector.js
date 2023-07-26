@@ -9,9 +9,9 @@ const TagPreview = ({ selectedTags = [] }) => {
   const handleClick = () => {
     navigator.clipboard?.writeText(selectedTags.join(',')).then(
       () => setCopyText('Copied!'),
-      () => setCopyText('Copy Failed')
+      () => setCopyText('Copy Failed'),
     );
-      
+
     setTimeout(() => {
       setCopyText('Copy');
     }, 2000);
@@ -25,7 +25,7 @@ const TagPreview = ({ selectedTags = [] }) => {
       </div>
     </section>
   `;
-}
+};
 
 const TagSelector = () => {
   const [options, setOptions] = useState();
@@ -36,14 +36,14 @@ const TagSelector = () => {
   const getTagTree = (root) => {
     const options = Object.entries(root).reduce((opts, [, tag]) => {
       opts[tag.tagID] = {};
-  
+
       if (Object.keys(tag.tags).length) {
         opts[tag.tagID].children = getTagTree(tag.tags);
       }
-  
+
       opts[tag.tagID].label = tag.title;
       opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
-  
+
       return opts;
     }, {});
     return options;
@@ -85,9 +85,8 @@ const TagSelector = () => {
     setSelectedTags((tags) => {
       if (tags.includes(value)) {
         return tags.filter((tag) => tag !== value);
-      } else {
-        return [...tags, value];
       }
+      return [...tags, value];
     });
   };
 
@@ -99,18 +98,18 @@ const TagSelector = () => {
         </div>
       </div>
     </section>
-    ${options &&
-      optionMap &&
-      html`<${Picker}
+    ${options
+      && optionMap
+      && html`<${Picker}
         toggleTag=${toggleTag}
         options=${options}
         optionMap=${optionMap}
         selectedTags=${selectedTags}
       />`
-    }
+}
     <${TagPreview} selectedTags=${selectedTags} />
   `;
-}
+};
 
 export default async function init(el) {
   render(html`<${TagSelector} />`, el);

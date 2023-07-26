@@ -1,10 +1,10 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
+import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
 const { createTag, loadStyle, loadBlock, setConfig } = await import('../../../libs/utils/utils.js');
-import { setViewport } from '@web/test-runner-commands';
 
 const mockConfig = {
   locales: {

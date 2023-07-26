@@ -145,7 +145,9 @@ export function getLocale(locales, pathname = window.location.pathname) {
     locale.prefix = `/${localeString}/${split[2]}`;
     return locale;
   }
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  const isUS = locale.ietf === 'en-US';
+  locale.prefix = isUS ? '' : `/${localeString}`;
+  locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
 
@@ -166,7 +168,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
-      document.documentElement.setAttribute('lang', config.locale.lang || config.locale.ietf);
+      const lang = getMetadata('content-language') || config.locale.ietf;
+      document.documentElement.setAttribute('lang', lang);
       try {
         const dir = getMetadata('content-direction')
           || config.locale.dir
@@ -563,9 +566,10 @@ function decorateHeader() {
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
+  const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
   const breadcrumbs = document.querySelector('.breadcrumbs');
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
 }
 

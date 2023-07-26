@@ -9,7 +9,7 @@ import {
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
-import { debounce } from "../../../../utils/action.js";
+import { debounce } from '../../../../utils/action.js';
 
 const CONFIG = {
   suggestions: {

@@ -565,7 +565,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'be',
-      language: 'fr',
+      language: 'fr-be',
     });
   });
 
@@ -580,7 +580,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'us',
-      language: 'en',
+      language: 'en-us',
     });
   });
 });

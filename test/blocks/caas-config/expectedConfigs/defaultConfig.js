@@ -34,7 +34,7 @@ const defaultConfig = {
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
     ctaAction: '_blank',
-    additionalRequestParams: {}
+    additionalRequestParams: {},
   },
   hideCtaIds: [
     '',
@@ -130,9 +130,9 @@ const defaultConfig = {
   analytics: { trackImpressions: '', collectionIdentifier: '' },
   target: {
     enabled: '',
-    lastViewedSession: ''
+    lastViewedSession: '',
   },
-  customCard: ["card","return ``"]
+  customCard: ['card', 'return ``'],
 };
 
 export default defaultConfig;

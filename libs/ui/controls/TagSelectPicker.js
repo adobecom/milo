@@ -9,8 +9,7 @@ const Tag = ({
   isExpanded,
   onCheck,
   onExpand,
-}) => {
-  return html`
+}) => html`
     <div
       class="tagselect-item${isExpanded ? ' expanded' : ''}"
       key=${id}
@@ -22,7 +21,6 @@ const Tag = ({
       ${hasChildren ? html`<span class="has-children"></span>` : ''}
     </div>
   `;
-};
 
 const Picker = ({
   close,
