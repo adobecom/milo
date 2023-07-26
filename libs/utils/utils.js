@@ -134,16 +134,6 @@ function getEnv(conf) {
   /* c8 ignore stop */
 }
 
-export const getPageSearchParams = (() => {
-  let psParams;
-  return () => {
-    if (!psParams) {
-      psParams = new URL(window.location).searchParams;
-    }
-    return psParams;
-  };
-})();
-
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
     return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
@@ -689,7 +679,6 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
       loadScript,
       loadStyle,
       updateConfig,
-      getPageSearchParams,
     },
   });
 
@@ -697,7 +686,11 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 function addPreviewToConfig(persEnabled, targetEnabled) {
-  const { mep: mepOverride, mepMarker, mepButton } = Object.fromEntries(getPageSearchParams());
+  const { mepOverride, mepMarker, mepButton } = {
+    mepOverride: PAGE_URL.searchParams.get('mep'),
+    mepMarker: PAGE_URL.searchParams.get('mepMarker'),
+    mepButton: PAGE_URL.searchParams.get('mepButton'),
+  };
   const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
   const config = updateConfig({
     ...getConfig(),
@@ -749,7 +742,6 @@ async function checkForPageMods() {
     loadScript,
     loadLink,
     updateConfig,
-    getPageSearchParams,
     loadStyle,
     getMetadata,
   };

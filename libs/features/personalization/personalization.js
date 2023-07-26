@@ -3,6 +3,7 @@ let utils;
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
+const PAGE_URL = new URL(window.location.href);
 
 export const PERSONALIZATION_TAGS = {
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
@@ -129,8 +130,7 @@ export async function replaceInner(path, element) {
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
   if (!name) return false;
-  const searchParams = utils.getPageSearchParams();
-  const searchParamVal = searchParams.get(name);
+  const searchParamVal = PAGE_URL.searchParams.get(name);
   if (searchParamVal !== null) {
     if (val) return val === searchParamVal;
     return true; // if no val is set, just check for existence of param

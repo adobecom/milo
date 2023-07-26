@@ -125,7 +125,7 @@ function createPreviewPill(manifests, utils) {
         attribute: '',
         class: '',
       };
-      if (variant === manifest.selVarName) {
+      if (variant === manifest.selectedVariantName) {
         checked.attribute = 'checked="checked"';
         checked.class = 'class="mep-manifest-selected-variant"';
         manifestParameter.push(`${manifest.manifest}--${variant}`);
@@ -139,7 +139,7 @@ function createPreviewPill(manifests, utils) {
       attribute: '',
       class: '',
     };
-    if (!manifest.variantNames.includes(manifest.selVarName)) {
+    if (!manifest.variantNames.includes(manifest.selectedVariantName)) {
       checked.attribute = 'checked="checked"';
       checked.class = 'class="mep-manifest-selected-variant"';
       manifestParameter.push(`${manifest.manifest}--NoChanges`);
