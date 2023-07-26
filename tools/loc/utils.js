@@ -51,6 +51,10 @@ export function getDocPathFromUrl(url) {
   if (!path) {
     return undefined;
   }
+  if (path.endsWith('.json')) {
+    path = path.slice(0, -5);
+    return `${path}.xlsx`;
+  }
   if (path.endsWith('/')) {
     path += 'index';
   } else if (path.endsWith('.html')) {
