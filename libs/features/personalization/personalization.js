@@ -406,7 +406,7 @@ const normalizeFragPaths = ({ selector, val }) => ({
   val: normalizePath(val),
 });
 
-export async function runPersonalization(info, utils, config) {
+export async function runPersonalization(info, config) {
   const {
     name,
     manifestData,
@@ -481,7 +481,7 @@ export async function applyPers(
 
   let results = [];
   for (const manifest of cleanedManifests) {
-    results.push(await runPersonalization(manifest, utils, config));
+    results.push(await runPersonalization(manifest, config));
   }
   results = results.filter(Boolean);
   deleteMarkedEls();
