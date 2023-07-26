@@ -610,7 +610,15 @@ async function copyFilesToLangstoreEn() {
   const previewStatuses = await Promise.all(
     copyStatuses
       .filter((status) => status.success)
-      .map((status) => simulatePreview(stripExtension(status.dstPath))),
+      .map((status) => {
+        let { dstPath } = status;
+        if (dstPath.endsWith('.xlsx')) {
+          dstPath = `${dstPath.slice(0, -5)}.json`;
+        } else {
+          dstPath = stripExtension(dstPath);
+        }
+        return simulatePreview(dstPath);
+      }),
   );
   loadingON('Completed Preview for copied files... ');
   const failedCopies = copyStatuses
