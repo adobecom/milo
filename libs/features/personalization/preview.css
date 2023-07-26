@@ -129,6 +129,7 @@
   display: block;
   right: 0;
   top: 0;
+  cursor: pointer;
 }
 
 .mep-popup .mep-popup-header {
