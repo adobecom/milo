@@ -4,7 +4,7 @@ import {
   decorateLinks,
   getConfig,
   getMetadata,
-  loadScript,
+  loadIms,
   localizeLink,
 } from '../../utils/utils.js';
 
@@ -20,20 +20,12 @@ const SEARCH_DEBOUNCE_MS = 300;
 export const IS_OPEN = 'is-open';
 const SEARCH_TYPE_CONTEXTUAL = 'contextual';
 
-const getLocale = () => document.documentElement.getAttribute('lang') || 'en-US';
+const getLocale = () => getConfig()?.locale?.ietf || 'en-US';
 const getCountry = () => getLocale()?.split('-').pop() || 'US';
 const isHeading = (el) => el?.nodeName.startsWith('H');
 const childIndexOf = (el) => [...el.parentElement.children]
   .filter((e) => (e.nodeName === 'DIV' || e.nodeName === 'P'))
   .indexOf(el);
-
-const debounce = (func, timeout = 300) => {
-  let timer;
-  return async (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(async () => func.apply(this, args), timeout);
-  };
-};
 
 function getBlockClasses(className) {
   const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
@@ -106,6 +98,7 @@ class Gnav {
     const { onSearchInput, getHelpxLink } = await import('./gnav-search.js');
     this.getHelpxLink = getHelpxLink;
 
+    const { debounce } = await import('../../utils/action.js');
     if (this.searchType === SEARCH_TYPE_CONTEXTUAL) {
       const { default: onContextualSearchInput } = await import('./gnav-contextual-search.js');
       this.onSearchInput = debounce(onContextualSearchInput, SEARCH_DEBOUNCE_MS);
@@ -454,22 +447,15 @@ class Gnav {
     const profileEl = createTag('div', { class: 'gnav-profile' });
     if (blockEl.children.length > 1) profileEl.classList.add('has-menu');
 
-    const defaultOnReady = () => {
-      this.imsReady(blockEl, profileEl);
-    };
-
-    const { locale, imsClientId, env, onReady } = getConfig();
+    const { imsClientId } = getConfig();
     if (!imsClientId) return null;
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: onReady || defaultOnReady,
-    };
-    loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
+
+    loadIms()
+      .then(() => {
+        this.imsReady(blockEl, profileEl);
+      })
+      .catch(() => {});
+
     return profileEl;
   };
 

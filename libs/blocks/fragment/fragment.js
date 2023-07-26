@@ -1,9 +1,11 @@
-import { createTag, loadArea, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
-const removeHash = (url) => url?.endsWith('#_dnt') ? url : url?.split('#')[0];
+const removeHash = (url) => (url?.endsWith('#_dnt') ? url : url?.split('#')[0]);
+
+// TODO: Can we just use a simple list of loaded fragments?
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
@@ -29,7 +31,12 @@ const updateFragMap = (fragment, a, href) => {
 };
 
 export default async function init(a) {
-  const relHref = localizeLink(a.href);
+  const { expFragments } = getConfig();
+  let relHref = localizeLink(a.href);
+  if (expFragments?.[relHref]) {
+    a.href = expFragments[relHref];
+    relHref = expFragments[relHref];
+  }
   if (isCircularRef(relHref)) {
     window.lana?.log(`ERROR: Fragment Circular Reference loading ${a.href}`);
     return;
@@ -37,8 +44,11 @@ export default async function init(a) {
   const resp = await fetch(`${a.href}.plain.html`);
   if (resp.ok) {
     const html = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    let doc = (new DOMParser()).parseFromString(html, 'text/html');
+    if (doc.querySelector('.fragment-personalization')) {
+      const { fragmentPersonalization } = await import('../../features/personalization/personalization.js');
+      doc = await fragmentPersonalization(doc);
+    }
     const sections = doc.querySelectorAll('body > div');
     if (sections.length > 0) {
       const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });

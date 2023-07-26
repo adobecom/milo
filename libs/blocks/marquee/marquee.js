@@ -38,13 +38,19 @@ const decorateBlockBg = (block, node) => {
     children[1].classList.add(viewports[2]);
   }
 
-  Array.from(children).forEach((child, index) => {
+  [...children].forEach(async (child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
 
     if (child.querySelector('a[href$=".mp4"]')) {
       decorateVideo(child);
+    }
+
+    const pic = child.querySelector('picture');
+    if (pic && (child.childElementCount == 2 || child.textContent)) {
+      const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
+      handleFocalpoint(pic, child, true);
     }
   });
 
@@ -155,8 +161,16 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
-    if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
+
+    let mediaCreditInner;
+    const txtContent = media?.lastChild.textContent.trim();
+    if (txtContent) {
+      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+      mediaCreditInner = media.lastElementChild;
+    }
+
+    if (mediaCreditInner) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');

@@ -25,7 +25,7 @@ const populateFieldValues = (fields, value) => fields.map((field) => {
 });
 
 // MultiField assumes that Fields have `name || id`, `onChange`, and `value` props.
-const MultiField = ({ 
+const MultiField = ({
   children,
   className = '',
   values,
@@ -36,10 +36,11 @@ const MultiField = ({
   parentIndex,
   name,
   addBtnLabel = 'Add',
-  addBtnTitle }) => {
+  addBtnTitle,
+}) => {
   const [fieldValues, setFieldValues] = useState(
     (values && [...values])
-    || [...(parentValues[parentIndex][name] ?? [])]
+    || [...(parentValues[parentIndex][name] ?? [])],
   );
   const [fieldSets, setFieldSets] = useState([]);
   const [keys] = useState(getFieldNameOrId(Array.isArray(children) ? children : [children]));
