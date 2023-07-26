@@ -12,6 +12,7 @@ module.exports = {
   rules: {
     'chai-friendly/no-unused-expressions': 2,
     'import/extensions': ['error', { js: 'always' }],
+    'import/no-cycle': 1,
     'linebreak-style': ['error', 'unix'],
     'no-await-in-loop': 0,
     'no-param-reassign': [2, { props: false }],
@@ -40,7 +41,10 @@ module.exports = {
     }],
   },
   overrides: [
-    { files: ['test/**/*.js'] },
+    {
+      files: ['test/**/*.js'],
+      rules: { 'no-console': 0 },
+    },
   ],
   ignorePatterns: [
     '/libs/deps/*',
