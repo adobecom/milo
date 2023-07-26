@@ -63,6 +63,14 @@ function updatePreviewButton() {
     .setAttribute('href', simulateHref.href);
 }
 
+async function getEditManifestUrl(button) {
+  const url = new URL(button.href);
+  const response = await fetch(`https://admin.hlx.page/status/adobecom/milo/main${url.pathname}?editUrl=auto`);
+  const body = await response.json();
+  const editUrl = body?.edit?.url;
+  if (editUrl) button.href = editUrl;
+}
+
 function addPillEventListeners(div) {
   const radioInputs = div.querySelectorAll('.mep-popup input[type="radio"]');
   radioInputs.forEach((input) => {
@@ -82,6 +90,11 @@ function addPillEventListeners(div) {
   const toggle = div.querySelector('.mep-manifest.mep-badge');
   toggle.addEventListener('click', () => {
     div.classList.toggle('mep-hidden');
+    if (!div.classList.contains('opened')) {
+      div.classList.add('opened');
+      div.querySelectorAll('.mep-edit-manifest')
+        .forEach((button) => getEditManifestUrl(button));
+    }
   });
 
   const close = div.querySelector('.mep-close');
