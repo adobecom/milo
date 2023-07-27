@@ -46,7 +46,7 @@
 }
 
 .action-item.small img {
-  min-height: 40px;
+  min-height: var(--spacing-xl);
 }
 
 .action-item.medium {
@@ -54,7 +54,7 @@
 }
 
 .action-item.medium img {
-  min-height: 60px;
+  min-height: var(--spacing-xxl);
 }
 
 .action-item.large {
@@ -62,19 +62,19 @@
 }
 
 .action-item.large img {
-  min-height: 80px;
+  min-height: var(--spacing-xxxl);
 }
 
 .action-item.image-size-small img {
-  max-height: 40px;
+  max-height: var(--spacing-xl);
 }
 
 .action-item.image-size-medium img {
-  max-height: 60px;
+  max-height: var(--spacing-xxl);
 }
 
 .action-item.image-size-large img {
-  max-height: 80px;
+  max-height: var(--spacing-xxxl);
 }
 
 .action-item.float-icon .floated-icon img {
@@ -129,8 +129,8 @@ a.action-item.zoom:focus  {
   right: -15px;
   background-color: black;
   border-radius: 50%;
-  height: 50px;
-  width: 50px;
+  height: 48px;
+  width: 48px;
 }
 
 .action-item.float-button .main-image {
