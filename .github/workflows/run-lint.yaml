@@ -1,0 +1,27 @@
+name: Lint
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '**.js'
+
+jobs:
+  run-lint:
+    name: Running eslint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run eslint on changed files
+        uses: tj-actions/eslint-changed-files@v20
+        with:
+          config_path: ".eslintrc.js"
+          # ignore_path: "/path/to/.eslintignore"
+          # extra_args: "--max-warnings=0"

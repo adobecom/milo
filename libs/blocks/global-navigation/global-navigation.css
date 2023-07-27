@@ -320,6 +320,15 @@ header.global-navigation {
   flex-shrink: 0;
 }
 
+.feds-breadcrumbs li:last-child:not(:first-child) {
+  padding-right: 12px;
+}
+
+[dir = "rtl"] .feds-breadcrumbs li:last-child:not(:first-child) {
+  padding-right: 0;
+  padding-left: 12px;
+}
+
 /* Hide all breadcrumbs except the first and last two */
 .feds-breadcrumbs li:nth-last-child(n+3):not(:first-child) {
   display: none;
@@ -327,7 +336,7 @@ header.global-navigation {
 
 /* If first breadcrumb is not third to last, add ellipsis after it */
 .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after {
-  content: '/\2003...';
+  content: '/\3000…';
   padding: 0 0 0 12px;
 }
 

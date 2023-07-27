@@ -86,6 +86,8 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         e.preventDefault();
         signIn();
       });
+    } else {
+      lanaLog({ message: 'Sign in link not found in dropdown.' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -377,17 +379,6 @@ class Gnav {
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
-  decorateAppLauncher = () => {
-    // const appLauncherBlock = this.body.querySelector('.app-launcher');
-    // if (appLauncherBlock) {
-    //   await this.loadDelayed();
-    //   this.appLauncher(
-    //     decoratedElem,
-    //     appLauncherBlock,
-    //   );
-    // }
-  };
-
   loadSearch = () => {
     if (this.blocks?.search?.instance) return null;
 
@@ -486,7 +477,7 @@ class Gnav {
 
     // Create final template
     const decoratedElem = toFragment`
-      <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
+      <a href="${localizeLink(link.getAttribute('href'))}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
@@ -514,7 +505,7 @@ class Gnav {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper id="feds-nav-wrapper"">
+      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
         ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
