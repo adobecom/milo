@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { decorateImageLinks } from '../../../libs/utils/utils.js';
+import { decorateImageLinks } from '../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/image-links.html' });
 
