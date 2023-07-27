@@ -54,7 +54,7 @@ async function handleStickySection(sticky, section) {
 
 function handleAutoUps(section) {
   const nonColumns = ['fullwidth', 'full-width', 'section-metadata'];
-  const columns = [...section.children].filter(({ classList }) => !nonColumns.some(name => classList.contains(name)));
+  const columns = [...section.children].filter(({ classList }) => !nonColumns.some((name) => classList.contains(name)));
   section.style.setProperty('--section-grid-columns', columns.length);
 }
 
