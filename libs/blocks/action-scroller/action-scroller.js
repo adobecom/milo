@@ -63,7 +63,7 @@ function handleNavigation(el) {
   const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
   const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
   const buttons = [prev, next];
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     const button = btn.childNodes[0];
     button.addEventListener('click', () => handleScroll(el, button.classList));
   });
