@@ -81,7 +81,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
   text-align: right;
 }
 
-html[dir='rtl'] .quote.inline figure {
+html[dir="rtl"] .quote.inline figure {
   text-align: right;
 }
 
