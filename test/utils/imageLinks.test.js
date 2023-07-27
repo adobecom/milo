@@ -22,6 +22,12 @@ describe('Image Link', () => {
     expect(links[0].nodeName).to.equal('A');
   });
 
+  it('Replaces the image in-place', () => {
+    const i = document.querySelector('#inline-image');
+    expect(i.children[1].nodeName).to.equal('A');
+    expect(i.querySelector('a picture')).to.exist;
+  });
+
   it('Fails gracefully', () => {
     const i = document.querySelector('.bad-url');
     expect(i.alt).to.equal('img/badurl#_blank | image link bad url');
