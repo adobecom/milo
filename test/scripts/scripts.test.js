@@ -5,18 +5,24 @@ import { waitForElement } from '../helpers/waitfor.js';
 document.head.innerHTML = await readFile({ path: './mocks/head.html' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-describe('Decorating', () => {
+describe('Decorating', async () => {
   before(async () => {
     await import('../../libs/scripts/scripts.js');
   });
 
-  it('Decorates auto blocks', async () => {
-    const autoBlock = document.querySelector('a[class]');
-    expect(autoBlock.className).to.equal('adobetv link-block');
+  it('Decorates adobetv autoblock', async () => {
+    const autoBlock = await waitForElement(
+      'iframe[class="adobetv"]',
+      { rootEl: document.body },
+    );
+    expect(autoBlock.className).to.equal('adobetv');
   });
 
   it('Decorates modal link', async () => {
-    const modalLink = document.querySelector('a[data-modal-path]');
+    const modalLink = await waitForElement(
+      'a[data-modal-path]',
+      { rootEl: document.body },
+    );
     expect(modalLink.dataset.modalPath).to.equal('/fragments/mock');
   });
 

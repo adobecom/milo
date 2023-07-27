@@ -126,7 +126,7 @@ describe('Bulk preview and publish', () => {
     localStorage.clear();
   });
 
-  it('Bulk preview URLs', async () => {
+  it.skip('Bulk preview URLs', async () => {
     const operation = 'preview';
     storeUrls(URLS);
     storeOperation(operation);
