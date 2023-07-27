@@ -486,7 +486,7 @@ class Gnav {
 
     // Create final template
     const decoratedElem = toFragment`
-      <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
+      <a href="${localizeLink(link.getAttribute('href'))}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
