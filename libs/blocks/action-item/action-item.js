@@ -19,7 +19,7 @@ import { createTag } from '../../utils/utils.js';
 
 function getLayout(elems) {
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
-  const href = link ? link.innerText.trim() : null;
+  const href = link?.innerText.trim() || null;
   return { foreground: elems[0], href };
 }
 
