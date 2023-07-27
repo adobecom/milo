@@ -109,6 +109,7 @@
   display: flex;
   gap: var(--spacing-s);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .aside .foreground.container > div {
