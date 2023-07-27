@@ -161,8 +161,16 @@ export default function init(el) {
       media.classList.add('bleed');
       foreground.insertAdjacentElement('beforebegin', media);
     }
-    if (media?.lastChild.textContent.trim()) {
-      const mediaCreditInner = createTag('p', { class: 'body-s' }, media.lastChild.textContent);
+
+    let mediaCreditInner;
+    const txtContent = media?.lastChild.textContent.trim();
+    if (txtContent) {
+      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+      mediaCreditInner = media.lastElementChild;
+    }
+
+    if (mediaCreditInner) {
       const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
       el.appendChild(mediaCredit);
       el.classList.add('has-credit');
