@@ -2,7 +2,7 @@ import { getReqOptions } from '../../tools/sharepoint/msal.js';
 
 const href = new URL(window.location.href);
 const urlParams = new URLSearchParams(href.search);
-const referrer = urlParams.get("referrer");
+const referrer = urlParams.get('referrer');
 const sourceCode = referrer?.match(/sourcedoc=([^&]+)/)[1];
 const sourceId = decodeURIComponent(sourceCode);
 
@@ -15,7 +15,7 @@ export const fetchVersions = async () => {
     accept,
     contentType,
   });
-  //Fetching current version details
+  // Fetching current version details
   const response = await fetch(url, options);
   const documentData = await response.json();
 
@@ -27,19 +27,19 @@ export const fetchVersions = async () => {
     IsCurrentVersion: true,
     Created: TimeLastModified,
     VersionLabel: UIVersionLabel,
-  }
+  };
 
   const versions = await fetch(`${url}/Versions`, options);
   const { value = [] } = await versions.json();
   const versionHistory = [...value, currentVersion];
   return versionHistory.reverse().filter((item) => item.VersionLabel.indexOf('.0') !== -1);
-}
+};
 
 export const createHistoryTag = async (comment = '') => {
   const callOptions = getReqOptions({
     method: 'POST',
     accept,
-    contentType
+    contentType,
   });
   const res = await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
 
@@ -48,7 +48,4 @@ export const createHistoryTag = async (comment = '') => {
     const message = error['odata.error']?.message.value || 'error';
     throw new Error(message);
   }
-}
-
-
-
+};

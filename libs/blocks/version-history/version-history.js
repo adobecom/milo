@@ -6,6 +6,5 @@ export default async function init(el) {
     document.body.classList.add('in-page');
   }
 
-  render(
-    html`<${View} />`, el);
+  render(html`<${View} />`, el);
 }

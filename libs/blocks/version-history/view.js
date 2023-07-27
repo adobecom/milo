@@ -2,7 +2,7 @@ import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { fetchVersions, createHistoryTag } from './index.js';
 import loginToSharePoint from '../../tools/sharepoint/login.js';
 
-const baseUrl = 'https://adobe.sharepoint.com'
+const baseUrl = 'https://adobe.sharepoint.com';
 const scope = [`${baseUrl}/.default`];
 
 export default function View() {
@@ -15,8 +15,8 @@ export default function View() {
     async function loginAndFetchVersion() {
       await loginToSharePoint(scope);
       setIsAuthenticated(true);
-      const versions = await fetchVersions();
-      setVersions(versions);
+      const savedVersions = await fetchVersions();
+      setVersions(savedVersions);
     }
 
     loginAndFetchVersion();
@@ -25,11 +25,11 @@ export default function View() {
   async function onClickCreate() {
     try {
       await createHistoryTag(comment);
-      const versions = await fetchVersions();
+      const savedVersions = await fetchVersions();
       setComment('');
-      setVersions(versions);
+      setVersions(savedVersions);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
   }
 
@@ -70,13 +70,13 @@ export default function View() {
   }
 
   function renderTableRows(details) {
-    const keys = ['VersionLabel', 'Created', 'CheckInComment']
-    return html`<tr>${keys.map(key => getTableData({ details, key }))}</tr>`;
+    const keys = ['VersionLabel', 'Created', 'CheckInComment'];
+    return html`<tr>${keys.map((key) => getTableData({ details, key }))}</tr>`;
   }
 
   function renderError() {
     if (error) {
-      return html`<div class="error">${error}</div>`
+      return html`<div class="error">${error}</div>`;
     }
     return null;
   }
@@ -94,11 +94,11 @@ export default function View() {
         <tbody id="addVersionHistory">
         ${versions.map((version) => renderTableRows(version))}
         </tbody>
-      </table>`
+      </table>`;
   }
 
   if (!isAuthenticated) {
-    return html`<div id="status" class="container sk-version"> Authenticating.... </div>`
+    return html`<div id="status" class="container sk-version"> Authenticating.... </div>`;
   }
 
   return html`

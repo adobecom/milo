@@ -2,10 +2,16 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { stubFetchVersions, stubFetch, restoreFetch, stubCreateVersions, stubGetconfig, configJson } from './mockFetch.js';
+import {
+  stubFetchVersions,
+  stubFetch,
+  restoreFetch,
+  stubCreateVersions,
+  stubGetconfig,
+  configJson,
+} from './mockFetch.js';
 import View from '../../../libs/blocks/version-history/view.js';
-import { setStatus } from '../../../libs/tools/sharepoint/state.js';
-import { siteConfig } from '../../../libs/tools/sharepoint/state.js'
+import { setStatus, siteConfig } from '../../../libs/tools/sharepoint/state.js';
 
 describe('View', () => {
   before(() => {
@@ -14,7 +20,7 @@ describe('View', () => {
     stubCreateVersions();
     stubGetconfig();
     siteConfig.value = configJson;
-  })
+  });
 
   after(() => {
     restoreFetch();
@@ -23,13 +29,11 @@ describe('View', () => {
 
   beforeEach(async () => {
     window.msal = {
-      PublicClientApplication: function () {
-        return {
-          getAllAccounts: () => [{ username: 'test'}],
-          loginPopup: sinon.stub().resolves(),
-          acquireTokenSilent: sinon.stub().resolves({ accessToken: 'fake-access-token' }),
-        };
-      },
+      PublicClientApplication: () => ({
+        getAllAccounts: () => [{ username: 'test' }],
+        loginPopup: sinon.stub().resolves(),
+        acquireTokenSilent: sinon.stub().resolves({ accessToken: 'fake-access-token' }),
+      }),
     };
     const review = html`<${View} />`;
     render(review, document.body);
@@ -50,13 +54,11 @@ describe('View', () => {
 
   it('should set the comment when textarea onchange event', async () => {
     window.msal = {
-      PublicClientApplication: function () {
-        return {
-          getAllAccounts: () => [],
-          loginPopup: sinon.stub().rejects(),
-          acquireTokenSilent: sinon.stub().rejects({ accessToken: 'fake-access-token' }),
-        };
-      },
+      PublicClientApplication: () => ({
+        getAllAccounts: () => [],
+        loginPopup: sinon.stub().rejects(),
+        acquireTokenSilent: sinon.stub().rejects({ accessToken: 'fake-access-token' }),
+      }),
     };
     const element = await waitForElement('.container');
     const textAreaElem = element.querySelector('#comment');
@@ -78,7 +80,7 @@ describe('View', () => {
     stubCreateVersions('', true);
     createBtn.dispatchEvent(new Event('click'));
   });
- 
+
   it('downloadVersionFile: should call anchor tag click on click of download button', async () => {
     const element = await waitForElement('.container');
     const tdElem = element.querySelector('.download');
@@ -87,5 +89,4 @@ describe('View', () => {
     expect(clickSpy.calledOnce).to.be.true;
     clickSpy.restore();
   });
-
 });

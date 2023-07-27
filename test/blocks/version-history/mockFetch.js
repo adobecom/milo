@@ -5,8 +5,8 @@ const currentVersion = {
   ServerRelativeUrl: 'ServerRelativeUrl',
   UIVersionLabel: '3.0',
   CheckInComment: 'Tag 3',
-  TimeLastModified: 'TimeLastModified'
-}
+  TimeLastModified: 'TimeLastModified',
+};
 
 const versions = [{
   ID: 1,
@@ -14,7 +14,7 @@ const versions = [{
   VersionLabel: '1.0',
   CheckInComment: 'Tag 1',
   Created: 'TimeLastModified',
-  IsCurrentVersion: true
+  IsCurrentVersion: true,
 },
 {
   ID: 2,
@@ -22,34 +22,32 @@ const versions = [{
   VersionLabel: '2.0',
   CheckInComment: 'Tag 2',
   Created: 'TimeLastModified',
-  IsCurrentVersion: false
+  IsCurrentVersion: false,
 }];
 
-const list = {
-  value: versions
-}
+const list = { value: versions };
 
 export const configJson = {
   data: [
     {
       key: 'prod.sharepoint.clientId',
-      value: ''
+      value: '',
     },
     {
       key: 'prod.sharepoint.authority',
-      value: ''
+      value: '',
     },
     {
       key: 'prod.sharepoint.site',
-      value: ''
+      value: '',
     },
     {
       key: 'prod.sharepoint.root',
-      value: '/libs'
-    }]
-}
+      value: '/libs',
+    }],
+};
 
-const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('undefined')`
+const url = "https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('undefined')";
 const ogFetch = window.fetch;
 window.fetch = stub();
 export const stubFetch = () => {
@@ -61,7 +59,6 @@ export const stubFetch = () => {
       });
     }),
   );
-
 };
 
 export const stubFetchVersions = () => {
@@ -75,10 +72,8 @@ export const stubFetchVersions = () => {
   );
 };
 
-export const stubCreateVersions = (comment = '', fail) => {
-  const error = {
-    odata: {error: { message: {value: 'empty comment'}}}
-  }
+export const stubCreateVersions = (comment, fail) => {
+  const error = { odata: { error: { message: { value: 'empty comment' } } } };
   window.fetch.withArgs(`${url}/Publish('Through API: ${comment}')`).returns(
     new Promise((resolve) => {
       if (fail) {
@@ -87,9 +82,7 @@ export const stubCreateVersions = (comment = '', fail) => {
           json: () => error,
         });
       } else {
-        resolve({
-          ok: true
-        });
+        resolve({ ok: true });
       }
     }),
   );
@@ -100,14 +93,12 @@ export const restoreFetch = () => {
 };
 
 export const stubGetconfig = () => {
-  window.fetch.withArgs(`http://localhost:2000/.milo/config.json`).returns(
+  window.fetch.withArgs('http://localhost:2000/.milo/config.json').returns(
     new Promise((resolve) => {
       resolve({
         ok: true,
-        json: () => configJson
+        json: () => configJson,
       });
     }),
   );
 };
-
-

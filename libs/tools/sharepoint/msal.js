@@ -5,7 +5,7 @@ import { getSiteConfig, spAccessToken } from './state.js';
 let msalConfig;
 
 const login = { redirectUri: '/tools/loc/spauth' };
-const siteKeys = ['clientId', 'authority', 'site', 'root' ];
+const siteKeys = ['clientId', 'authority', 'site', 'root'];
 const cache = {
   cacheLocation: 'sessionStorage',
   storeAuthStateInCookie: false,
@@ -23,19 +23,19 @@ export function getMSALConfig() {
   return new Promise(async (resolve) => {
     if (!msalConfig) {
       const { data } = await getSiteConfig();
-      let configValues = {};
-      siteKeys.forEach( function(key) {
-        const currentData = data.find(item=> item.key === `prod.sharepoint.${key}`);
+      const configValues = {};
+      siteKeys.forEach((key) => {
+        const currentData = data.find(item => (item.key === (`prod.sharepoint.${key}`)));
         configValues[key] = currentData?.value;
       });
       const { clientId, authority, site, root } = configValues;
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
-      
+
       try {
         await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
-      } catch(err) {
+      } catch (err) {
         console.log(err);
       }
       msalConfig = {
@@ -44,7 +44,7 @@ export function getMSALConfig() {
         cache,
         telemetry,
         site,
-        baseUri: `${site}/drive/root:/${root}`
+        baseUri: `${site}/drive/root:/${root}`,
       };
       resolve(msalConfig);
     }
@@ -54,9 +54,9 @@ export function getMSALConfig() {
 
 export function getReqOptions({ body = null, method = 'GET', contentType = 'application/json', accept = 'application/json' } = {}) {
   const bearer = `Bearer ${spAccessToken.value}`;
-  const headerOpts = { Authorization: bearer, 'Content-Type': contentType, 'Accept': accept };
+  const headerOpts = { Authorization: bearer, 'Content-Type': contentType, Accept: accept };
   const headers = new Headers(headerOpts);
   const options = { method, headers };
-  if (body) options.body = JSON.stringify(body); 
+  if (body) options.body = JSON.stringify(body);
   return options;
 }
