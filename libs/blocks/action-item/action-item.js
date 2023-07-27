@@ -44,7 +44,7 @@ function getContent(el, variants, href) {
   const text = el.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   const mainPic = pictures[0];
   const picture = mainPic?.parentElement;
-  picture?.classList?.add('main-image');
+  picture?.classList.add('main-image');
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
