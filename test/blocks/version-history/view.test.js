@@ -29,11 +29,13 @@ describe('View', () => {
 
   beforeEach(async () => {
     window.msal = {
-      PublicClientApplication: () => ({
-        getAllAccounts: () => [{ username: 'test' }],
-        loginPopup: sinon.stub().resolves(),
-        acquireTokenSilent: sinon.stub().resolves({ accessToken: 'fake-access-token' }),
-      }),
+      PublicClientApplication: function t() {
+        return {
+          getAllAccounts: () => [{ username: 'test' }],
+          loginPopup: sinon.stub().resolves(),
+          acquireTokenSilent: sinon.stub().resolves({ accessToken: 'fake-access-token' }),
+        };
+      },
     };
     const review = html`<${View} />`;
     render(review, document.body);
@@ -54,11 +56,13 @@ describe('View', () => {
 
   it('should set the comment when textarea onchange event', async () => {
     window.msal = {
-      PublicClientApplication: () => ({
-        getAllAccounts: () => [],
-        loginPopup: sinon.stub().rejects(),
-        acquireTokenSilent: sinon.stub().rejects({ accessToken: 'fake-access-token' }),
-      }),
+      PublicClientApplication: function t() {
+        return {
+          getAllAccounts: () => [],
+          loginPopup: sinon.stub().rejects(),
+          acquireTokenSilent: sinon.stub().rejects({ accessToken: 'fake-access-token' }),
+        };
+      },
     };
     const element = await waitForElement('.container');
     const textAreaElem = element.querySelector('#comment');

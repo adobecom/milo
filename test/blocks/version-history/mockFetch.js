@@ -74,7 +74,7 @@ export const stubFetchVersions = () => {
 
 export const stubCreateVersions = (comment, fail) => {
   const error = { odata: { error: { message: { value: 'empty comment' } } } };
-  window.fetch.withArgs(`${url}/Publish('Through API: ${comment}')`).returns(
+  window.fetch.withArgs(`${url}/Publish('Through API: ${comment || ''}')`).returns(
     new Promise((resolve) => {
       if (fail) {
         resolve({
