@@ -78,13 +78,24 @@ const showConfirm = (msg, {
   if (footerContent) {
     modal.setFooterContent(footerContent);
   }
-
+  
+  const caasEnvSelect = document.getElementById('caas-env-select');
+  const caasEnv = caasEnvSelect.value?.toLowerCase();
+  const useHtmlCb = document.getElementById('usehtml');
+  if (caasEnv === 'prod') {
+    useHtmlCb.checked = true;
+  }
+  caasEnvSelect.addEventListener('change', (e) => {
+    useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
+  });
+  
   if (ctaText) {
     modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
       ok = true;
       modal.close();
     });
   }
+  
   modal.addFooterBtn(cancelText, `tingle-btn tingle-btn--${cancelBtnType} tingle-btn--pull-right`, () => {
     ok = false;
     modal.close();
@@ -113,6 +124,7 @@ const displayPublishingModal = () => {
 const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
   let okToContinue = false;
   let draftOnly = false;
+  let useHtml = false;
   let caasEnv;
 
   const seeAllPropsBtn = {
@@ -134,10 +146,15 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
         <input type="checkbox" id="draftcb" name="draftcb">
         <label for="draftcb">Publish to Draft only</label>
       </div>
+      <div id="caas-use-html-cb" class="field checkbox">
+        <input type="checkbox" id="usehtml" name="usehtml">
+        <label for="usehtml">Use .html extension</label>
+      </div>
     </div>`;
 
   const onClose = () => {
     draftOnly = document.getElementById('draftcb')?.checked;
+    useHtml = document.getElementById('usehtml')?.checked;
     caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
   };
 
@@ -192,17 +209,26 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
     caasEnv,
     draftOnly,
     okToContinue,
+    useHtml,
   };
 };
 
-const validateProps = async (prodHost, publishingModal) => {
-  const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({ prodUrl: `${prodHost}${window.location.pathname}` });
+const isUseHtmlChecked = () => document.getElementById('usehtml')?.checked;
 
-  const showAllPropertiesAlert = () => {
-    showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${JSON.stringify(caasMetadata, undefined, 4)}</pre>`);
+const validateProps = async (prodHost, publishingModal) => {
+  const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
+    { prodUrl: `${prodHost}${window.location.pathname}` },
+  );
+
+  const showAllPropertiesAlert = async () => {
+    const { caasMetadata: cMetaData } = await getCardMetadata(
+      { prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}` },
+    );
+    const mdStr = JSON.stringify(cMetaData, undefined, 4);
+    showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${mdStr}</pre>`);
   };
 
-  const { draftOnly, caasEnv, okToContinue } = await verifyInfoModal(
+  const { draftOnly, caasEnv, okToContinue, useHtml } = await verifyInfoModal(
     tags,
     tagErrors,
     showAllPropertiesAlert,
@@ -224,9 +250,17 @@ const validateProps = async (prodHost, publishingModal) => {
     showAlert(msg, { error: true, onClose: setPublishingFalse });
     return false;
   }
+
+  let metaWithUseHtml;
+  if (useHtml) {
+    ({ caasMetadata: metaWithUseHtml } = await getCardMetadata(
+      { prodUrl: `${prodHost}${window.location.pathname}.html` },
+    ));
+  }
+
   return {
     caasEnv,
-    caasMetadata,
+    caasMetadata: metaWithUseHtml || caasMetadata,
     draftOnly,
   };
 };
