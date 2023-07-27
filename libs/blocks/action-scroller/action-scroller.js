@@ -27,7 +27,7 @@ const defaultGridGap = 32;
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16"></button>`;
 const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16"></button>`;
 
-const getBlockProps = el => [...el.childNodes].reduce((attr, row) => {
+const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   if (row.children) {
     const [key, value] = row.children;
     if (key && value) attr[key.textContent.trim().toLowerCase()] = value.textContent.trim().toLowerCase();
