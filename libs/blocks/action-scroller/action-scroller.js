@@ -39,7 +39,7 @@ function setBlockProps(el, columns) {
   const attrs = getBlockProps(el);
   const itemWidth = attrs['item width'] ?? defaultItemWidth;
   const overrides = attrs.style ? attrs.style.split(', ').map((style) => style.replaceAll(' ', '-')).join(' ') : '';
-  const gridAlign = [...el.classList].filter(cls => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
+  const gridAlign = [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
   el.style.setProperty('--action-scroller-background', el.parentElement?.style?.background ?? 'white');
   el.style.setProperty('--action-scroller-columns', columns);
   el.style.setProperty('--action-scroller-item-width', itemWidth);
