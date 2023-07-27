@@ -588,8 +588,6 @@ async function decoratePlaceholders(area, config) {
   const regex = /{{(.*?)}}/g;
   const found = regex.test(el.innerHTML);
   if (!found) return;
-  const updatedConfig = getConfig();
-  if (updatedConfig.placeholders) config.placeholders = updatedConfig.placeholders;
   const { replaceText } = await import('../features/placeholders.js');
   el.innerHTML = await replaceText(el.innerHTML, config, regex);
 }
