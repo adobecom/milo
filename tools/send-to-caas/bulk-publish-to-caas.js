@@ -164,6 +164,7 @@ const processData = async (data, accessToken) => {
         errorArr.push([pageUrl, response]);
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(`ERROR: ${e.message}`);
     }
   }
