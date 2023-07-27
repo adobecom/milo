@@ -78,7 +78,7 @@ const showConfirm = (msg, {
   if (footerContent) {
     modal.setFooterContent(footerContent);
   }
-  
+
   const caasEnvSelect = document.getElementById('caas-env-select');
   const caasEnv = caasEnvSelect.value?.toLowerCase();
   const useHtmlCb = document.getElementById('usehtml');
@@ -88,14 +88,14 @@ const showConfirm = (msg, {
   caasEnvSelect.addEventListener('change', (e) => {
     useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
   });
-  
+
   if (ctaText) {
     modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
       ok = true;
       modal.close();
     });
   }
-  
+
   modal.addFooterBtn(cancelText, `tingle-btn tingle-btn--${cancelBtnType} tingle-btn--pull-right`, () => {
     ok = false;
     modal.close();
