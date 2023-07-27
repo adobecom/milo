@@ -70,13 +70,13 @@ export default function init(el) {
 
     // subcopy with links
     if (actionArea?.nextElementSibling?.tagName === 'H3') {
-      actionArea.nextElementSibling.classList.remove("heading-m", "body-xl");
-      actionArea.nextElementSibling.classList.add("heading-xs");
-      const links = document.querySelectorAll('h3.heading-xs ~ p.body-s a');
+      actionArea.nextElementSibling.classList.remove('heading-m', 'body-xl');
+      actionArea.nextElementSibling.classList.add('heading-xs');
+      const links = row.querySelectorAll('h3.heading-xs ~ p.body-s a, h3.heading-xs ~ p.icon-area a');
       links.forEach((link) => {
-        link.parentElement.classList.add('subcopy-link');
-
+        link.parentElement.className = 'subcopy-link';
         link.className = 'subcopy-link';
+        updateInnerHtml(link, 'strong', '');
       });
     }
 
@@ -91,13 +91,13 @@ export default function init(el) {
       const googleBtn = qrCodeLinks[0];
       const appleBtn = qrCodeLinks[1];
 
-      googleBtn.classList.add("google-button", "qr-button");
-      googleBtn.textContent = "";
-      googleBtn.parentNode.classList.add("qr-button-container");
+      googleBtn.classList.add('google-button', 'qr-button');
+      googleBtn.textContent = '';
+      googleBtn.parentNode.classList.add('qr-button-container');
 
-      appleBtn.classList.add("apple-button", "qr-button");
-      appleBtn.textContent = "";
-      appleBtn.parentNode.classList.add("qr-button-container");
+      appleBtn.classList.add('apple-button', 'qr-button');
+      appleBtn.textContent = '';
+      appleBtn.parentNode.classList.add('qr-button-container');
     }
 
     container.append(row);

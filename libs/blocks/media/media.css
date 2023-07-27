@@ -139,6 +139,10 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: var(--spacing-xs);
 }
 
+.media p.icon-area {
+  margin-bottom: 0;
+}
+
 .media p.subcopy-link {
   margin-top: 0;
   margin-bottom: 8px;
@@ -148,6 +152,10 @@ div[class*="-up"] .media .foreground > .media-row {
   font-size: var(--type-heading-xxs-size);
   color: var(--link-color-dark);
   line-height: var(--type-body-xs-lh);
+}
+
+.media svg.icon-milo, img.icon-milo {
+  top: .155em;
 }
 
 .media.qr-code img.qr-code {
