@@ -86,6 +86,8 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         e.preventDefault();
         signIn();
       });
+    } else {
+      lanaLog({ message: 'Sign in link not found in dropdown.' });
     }
 
     decoratedElem.append(dropdownElem);
