@@ -88,6 +88,7 @@ export default async function decorate(block) {
       title: `${shareToText} ${obj.title}`,
       target: '_blank',
       href: obj.href,
+      'daa-ll': `${obj.title}:click`,
     }, svg.svg);
     container.append(shareLink);
     shareLink.addEventListener('click', (e) => {
