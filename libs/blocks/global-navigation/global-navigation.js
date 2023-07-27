@@ -377,17 +377,6 @@ class Gnav {
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
-  decorateAppLauncher = () => {
-    // const appLauncherBlock = this.body.querySelector('.app-launcher');
-    // if (appLauncherBlock) {
-    //   await this.loadDelayed();
-    //   this.appLauncher(
-    //     decoratedElem,
-    //     appLauncherBlock,
-    //   );
-    // }
-  };
-
   loadSearch = () => {
     if (this.blocks?.search?.instance) return null;
 
