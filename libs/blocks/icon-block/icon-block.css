@@ -47,11 +47,6 @@
   padding-bottom: var(--spacing-xs);
 }
 
-
-html[dir='rtl'] .icon-block .foreground .text-content {
-  align-content: right;
-}
-
 .icon-block .foreground .text-content .action-area.supplemental-text {
   margin-top: var(--spacing-s);
   margin-bottom: 0;
@@ -176,10 +171,6 @@ html[dir='rtl'] .icon-block .foreground .text-content {
 .icon-block.bio .foreground .text-content p,
 .icon-block .foreground .text-content p[class*="body-m"]:not(:last-of-type) {
   margin-bottom: var(--spacing-s);
-}
-
-html:not([dir='rtl']).icon-block .foreground .text-content p[class*="body-m"]:last-of-type {
-  text-align: center;
 }
 
 .icon-block .foreground .text-content p.body-m.action-area {
