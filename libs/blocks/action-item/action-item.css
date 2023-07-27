@@ -125,8 +125,8 @@ a.action-item.zoom:focus  {
 .action-item.float-icon .floated-icon {
   display: flex;
   position: absolute;
-  bottom: -6px;
-  right: -15px;
+  bottom: -9px;
+  right: -19px;
   background-color: black;
   border-radius: 50%;
   height: 48px;
