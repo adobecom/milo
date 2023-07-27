@@ -38,9 +38,14 @@ describe('marquee', () => {
 
   describe('supports media credits', () => {
     it('has a media credit with text content', () => {
-      const mediaCredit = marquees[8].querySelector('.media-credit .body-s');
+      const mediaCredit = document.getElementById('media-credit-text').querySelector('.media-credit .body-s');
       expect(mediaCredit).to.exist;
       expect(mediaCredit.textContent.trim()).to.have.lengthOf.above(0);
+    });
+
+    it('has a media credit with element content', () => {
+      const mediaCredit = document.getElementById('media-credit-element').querySelector('.media-credit').firstElementChild;
+      expect(mediaCredit).to.exist;
     });
   });
 

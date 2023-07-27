@@ -386,7 +386,7 @@ async function handleEnglishCopyProjects(langstoreEnFiles) {
     }
     statusValues.push(
       [projectInfo.language, projectInfo.status, projectInfo.status, projectInfo.status,
-      projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
+        projectInfo.status, projectInfo.failureMessage, projectInfo.failedPages.join('\n')],
     );
     loadingON(`Updated status for project ${projectInfo.language}...`);
   });
@@ -610,7 +610,11 @@ async function copyFilesToLangstoreEn() {
   const previewStatuses = await Promise.all(
     copyStatuses
       .filter((status) => status.success)
-      .map((status) => simulatePreview(stripExtension(status.dstPath))),
+      .map((status) => {
+        let { dstPath } = status;
+        dstPath = dstPath.endsWith('.xlsx') ? dstPath.replace(/\.xlsx$/, '.json') : stripExtension(dstPath);
+        return simulatePreview(dstPath);
+      }),
   );
   loadingON('Completed Preview for copied files... ');
   const failedCopies = copyStatuses
@@ -631,7 +635,7 @@ async function copyFilesToLangstoreEn() {
 
 async function triggerUpdateFragments() {
   loadingON('Fetching and updating fragments..');
-  const status = await updateFragments();
+  const status = await updateFragments(initProject);
   loadingON(status);
 }
 
