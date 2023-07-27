@@ -144,6 +144,11 @@ const processData = async (data, accessToken) => {
         caasMetadata.tags = updatedTags;
       }
 
+      if (!caasMetadata.tags.length) {
+        errorArr.push([pageUrl, 'No tags on page']);
+        return;
+      }
+
       const caasProps = getCaasProps(caasMetadata);
 
       const response = await postDataToCaaS({
@@ -159,6 +164,7 @@ const processData = async (data, accessToken) => {
         errorArr.push([pageUrl, response]);
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(`ERROR: ${e.message}`);
     }
   }

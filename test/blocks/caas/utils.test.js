@@ -166,9 +166,11 @@ describe('getConfig', () => {
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_blank',
+        detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
           cardTitleAccessibilityLevel: 6,
+          lastModified: 'Last modified {date}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
@@ -357,9 +359,11 @@ describe('getConfig', () => {
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_blank',
+        detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
           cardTitleAccessibilityLevel: 6,
+          lastModified: 'Last modified {date}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
@@ -565,7 +569,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'be',
-      language: 'fr',
+      language: 'fr-be',
     });
   });
 
@@ -580,7 +584,7 @@ describe('getCountryAndLang', () => {
     });
     expect(expected).to.deep.eq({
       country: 'us',
-      language: 'en',
+      language: 'en-us',
     });
   });
 });
