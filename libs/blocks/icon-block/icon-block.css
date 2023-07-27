@@ -219,7 +219,6 @@
 }
 
 .five-up .foreground .text-content {
-  text-align: left;
   padding-bottom: var(--spacing-xs);
 }
 
@@ -270,7 +269,7 @@
 @media screen and (min-width: 1200px) {
   .icon-block.fullwidth .foreground,
   .icon-block.bio .foreground {
-    width: 800px;
+    max-width: 800px;
     margin: 0 auto;
   }
 

@@ -11,7 +11,7 @@
  */
 
 /*
-* Action Carousel - v1.0
+* Action Scroller - v1.0
 */
 
 import { createTag, getConfig } from '../../utils/utils.js';
@@ -20,12 +20,12 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 const [NAV, ALIGN] = ['navigation', 'grid-align'];
-const gridStyle = 'nested section auto-up no-row-gap';
+const gridStyle = 'section no-pad auto-up no-row-gap';
 
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16"></button>`;
 const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16"></button>`;
 
-const getCarouselAttrs = el => [...el.childNodes].reduce((attr, row) => {
+const getBlockProps = el => [...el.childNodes].reduce((attr, row) => {
   if (row.children) {
     const [key, value] = row.children;
     if (key && value) attr[key.textContent.trim().toLowerCase()] = value.textContent.trim().toLowerCase();
@@ -33,8 +33,8 @@ const getCarouselAttrs = el => [...el.childNodes].reduce((attr, row) => {
   return attr;
 }, {});
 
-function handleGridAttrs(el, columns) {
-  const attrs = getCarouselAttrs(el);
+function setBlockProps(el, columns) {
+  const attrs = getBlockProps(el);
   const itemWidth = attrs['item width'] ?? '106.5';
   const overrides = attrs.style ? attrs.style.split(', ').map((style) => style.replaceAll(' ', '-')).join(' ') : '';
   const gridAlign = [...el.classList].filter(cls => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
@@ -45,12 +45,10 @@ function handleGridAttrs(el, columns) {
   return `${gridStyle} ${gridAlign} ${overrides}`;
 }
 
-function handleNavigate(el, btn) {
-  const nextClick = btn[1].includes('next-button');
+function handleScroll(el, btn) {
   const itemWidth = el.parentElement.getAttribute('item-width');
-  // (itemwidth plus grid gap) for scrolling incriment
-  const distance = (parseInt(itemWidth) + 32);
-  el.scrollLeft = nextClick ? (el.scrollLeft + distance) : (el.scrollLeft - distance);
+  const scrollDistance = (parseInt(itemWidth) + 32); // itemwidth plus grid gap
+  el.scrollLeft = btn[1].includes('next-button') ? (el.scrollLeft + scrollDistance) : (el.scrollLeft - scrollDistance);
 }
 
 function handleBtnState({ scrollLeft, scrollWidth, clientWidth }, [prev, next]) {
@@ -61,24 +59,24 @@ function handleBtnState({ scrollLeft, scrollWidth, clientWidth }, [prev, next]) 
 function handleNavigation(el) {
   const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
   const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
-  const navBtns = [prev, next];
-  navBtns.forEach(btn => {
+  const buttons = [prev, next];
+  buttons.forEach(btn => {
     const button = btn.childNodes[0];
-    button.addEventListener('click', () => handleNavigate(el, button.classList));
+    button.addEventListener('click', () => handleScroll(el, button.classList));
   });
-  return navBtns;
+  return buttons;
 }
 
 export default function init(el) {
-  const actions = el.parentElement.querySelectorAll('.action-item');
-  const style = handleGridAttrs(el, actions.length);
-  const items = createTag('div', { class: style }, null);
   const hasNav = el.classList.contains(NAV);
-  const navBtns = hasNav ? handleNavigation(items) : [];
+  const actions = el.parentElement.querySelectorAll('.action-item');
+  const style = setBlockProps(el, actions.length);
+  const items = createTag('div', { class: style }, null);
+  const buttons = hasNav ? handleNavigation(items) : [];
   items.append(...actions);
-  el.replaceChildren(items, ...navBtns);
+  el.replaceChildren(items, ...buttons);
   if (hasNav) {
-    items.addEventListener('scroll', () => handleBtnState(items, navBtns));
-    setTimeout(() => handleBtnState(items, navBtns), 200);
+    items.addEventListener('scroll', () => handleBtnState(items, buttons));
+    setTimeout(() => handleBtnState(items, buttons), 200);
   }
 }
