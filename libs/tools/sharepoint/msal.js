@@ -1,4 +1,3 @@
-/* global msal */
 import { loadScript, getConfig } from '../../utils/utils.js';
 import { getSiteConfig, spAccessToken } from './state.js';
 
@@ -25,7 +24,7 @@ export function getMSALConfig() {
       const { data } = await getSiteConfig();
       const configValues = {};
       siteKeys.forEach((key) => {
-        const currentData = data.find(item => (item.key === (`prod.sharepoint.${key}`)));
+        const currentData = data.find((item) => (item.key === `prod.sharepoint.${key}`));
         configValues[key] = currentData?.value;
       });
       const { clientId, authority, site, root } = configValues;

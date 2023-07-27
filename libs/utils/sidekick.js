@@ -7,11 +7,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // manifest v3
   const sendToCaasListener = async (e) => {
     const { host, project, ref: branch, repo, owner } = e.detail.data.config;
-    const { sendToCaaS } = await import('https://milo.adobe.com/tools/send-to-caas/send-to-caas.js');
+    const caaSUrl = 'https://milo.adobe.com/tools/send-to-caas/send-to-caas.js';
+    const { sendToCaaS } = await import(caaSUrl);
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   };
 
-  const checkSchemaListener = async (e) => {
+  const checkSchemaListener = async () => {
     const schema = document.querySelector('script[type="application/ld+json"]');
     if (schema === null) return;
     const resultsUrl = 'https://search.google.com/test/rich-results?url=';
@@ -26,18 +27,18 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
-  const addVersion = async (event) => {
+  const addVersion = async () => {
     const sk = document.querySelector('helix-sidekick');
     const statusJson = JSON.parse(sk.getAttribute('status'));
     const sourceUrl = statusJson?.edit?.url;
     const sourceCode = sourceUrl?.match(/sourcedoc=([^&]+)/)[1];
     const sourceId = decodeURIComponent(sourceCode);
     const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
-    
+
     const options = getReqOptions({
       method: 'POST',
       accept: 'application/json; odata=nometadata',
-      contentType: 'application/json;odata=verbose'
+      contentType: 'application/json;odata=verbose',
     });
     await fetch(`${url}/Publish('Last Published version')`, { ...options, keepalive: true });
   };
@@ -50,7 +51,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   });
 
   // fetch sharepoint access token
-  loginToSharePoint(["https://adobe.sharepoint.com/.default"]);
+  loginToSharePoint(['https://adobe.sharepoint.com/.default']);
 
   const sk = document.querySelector('helix-sidekick');
 
