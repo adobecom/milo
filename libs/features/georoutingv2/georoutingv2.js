@@ -219,7 +219,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     decorateForOnLinkClick(mainAction, locale.prefix);
   }
 
-  const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
+  const altAction = createTag('a', { lang, href: currentPage.url, 'daa-lh': `Stay:${currentPage.prefix.split('_')[0]}-${locale.prefix.split('_')[0]}|Geo_Routing_Modal` }, currentPage.button);
   decorateForOnLinkClick(altAction, currentPage.prefix);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
