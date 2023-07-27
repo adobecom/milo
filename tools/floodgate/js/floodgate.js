@@ -2,6 +2,7 @@ import { getConfig } from './config.js';
 import { loadingOFF, loadingON } from '../../loc/utils.js';
 import { getParams, postData } from './utils.js';
 import { enableRetry, connect as connectToSP, getAccessToken } from '../../loc/sharepoint.js';
+import updateFragments from '../../loc/fragments.js';
 import {
   initProject,
   updateProjectWithDocs,
@@ -23,6 +24,12 @@ async function floodgateContentAction(project, config) {
   params.spToken = getAccessToken();
   const copyStatus = await postData(config.sp.aioCopyAction, params);
   updateProjectStatusUI({ copyStatus });
+}
+
+async function triggerUpdateFragments() {
+  loadingON('Fetching and updating fragments..');
+  const status = await updateFragments(initProject);
+  loadingON(status);
 }
 
 async function promoteContentAction(project, config) {
@@ -91,6 +98,7 @@ function setListeners(project, config) {
     modal.style.display = 'block';
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleFloodgateConfirm);
   });
+  document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
@@ -125,7 +133,7 @@ async function init() {
     updateProjectInfo(project);
 
     // Read the project excel file and parse the data
-    const projectDetail = await project.getDetails();
+    const projectDetail = await project.detail();
     loadingON('Project Details loaded...');
 
     // Set the listeners on the floodgate action buttons
