@@ -1,3 +1,5 @@
 {
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
 }

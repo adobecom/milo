@@ -49,8 +49,8 @@ function setBlockProps(el, columns) {
 function handleScroll(el, btn) {
   const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width') ?? defaultItemWidth;
   const gapStyle = window.getComputedStyle(el, null).getPropertyValue('column-gap');
-  const gridGap = gapStyle ? parseInt(gapStyle.replace('px', '')) : defaultGridGap;
-  const scrollDistance = (parseInt(itemWidth) + gridGap); // itemwidth plus grid gap
+  const gridGap = gapStyle ? parseInt(gapStyle.replace('px', ''), 10) : defaultGridGap;
+  const scrollDistance = (parseInt(itemWidth, 10) + gridGap); // itemwidth plus grid gap
   el.scrollLeft = btn[1].includes('next-button') ? (el.scrollLeft + scrollDistance) : (el.scrollLeft - scrollDistance);
 }
 
