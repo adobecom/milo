@@ -129,8 +129,8 @@ a.action-item.zoom:focus  {
   right: -19px;
   background-color: black;
   border-radius: 50%;
-  height: 48px;
-  width: 48px;
+  height: 40px;
+  width: 40px;
 }
 
 .action-item.float-button .main-image {
