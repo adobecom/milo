@@ -106,14 +106,10 @@
 
 .aside .foreground.container .text .action-area {
   margin-bottom: 0;
-}
-
-.aside .foreground.container .text .action-area > a {
-  margin-right: var(--spacing-s);
-}
-
-.aside .foreground.container .text .action-area > a:last-child {
-  margin-right: 0;
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .aside .foreground.container > div {
