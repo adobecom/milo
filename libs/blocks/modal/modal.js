@@ -8,6 +8,8 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
+const MOBILE_MAX = 599;
+const TABLET_MAX = 1199;
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -160,5 +162,17 @@ window.addEventListener('hashchange', (e) => {
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
+  }
+});
+
+function sendViewportDimensionsToiFrame(source) {
+  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
+}
+
+window.addEventListener('message', (t) => {
+  if (t.data === 'viewportWidth') {
+    sendViewportDimensionsToiFrame(t.source);
+    window.addEventListener('resize', () => sendViewportDimensionsToiFrame(t.source));
   }
 });
