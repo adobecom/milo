@@ -309,12 +309,12 @@ export default async function loadGeoRouting(
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
       const localeMatches = json.georouting.data.filter(
-        (d) => d.prefix === storedLocale
+        (d) => d.prefix === storedLocale,
       );
       const details = await getDetails(
         urlGeoData,
         localeMatches,
-        json.geos.data
+        json.geos.data,
       );
       if (details) {
         await showModal(details);
@@ -322,8 +322,8 @@ export default async function loadGeoRouting(
           new Event(
             `Load:${urlLocale.split('_')[0]}-${
               storedLocale.split('_')[0]
-            }|Geo_Routing_Modal`
-          )
+            }|Geo_Routing_Modal`,
+          ),
         );
       }
     }
@@ -339,7 +339,7 @@ export default async function loadGeoRouting(
       await showModal(details);
       const modUrlLocale = urlLocale || 'us';
       sendAnalytics(
-        new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`)
+        new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`),
       );
     }
   }
