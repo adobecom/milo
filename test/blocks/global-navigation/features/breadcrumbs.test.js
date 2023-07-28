@@ -58,6 +58,13 @@ describe('breadcrumbs', () => {
     expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
   });
 
+  it('should use a custom page title if its explicity set even without breadcrumbs-show-current-page:ON', async () => {
+    document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
+    const breadcrumb = await breadcrumbs(breadcrumbMock());
+    assertBreadcrumb({ breadcrumb, length: 5 });
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+  });
+
   it('should create a breadcrumb SEO element', async () => {
     await breadcrumbs(breadcrumbMock());
     const script = document.querySelector('script');
