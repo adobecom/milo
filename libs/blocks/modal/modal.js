@@ -16,10 +16,23 @@ export function findDetails(hash, el) {
   return { id, path, isHash: hash === window.location.hash };
 }
 
+export function sendAnalytics(event) {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track('event', {
+    xdm: {},
+    data: {
+      web: { webInteraction: { name: event.type } },
+      _adobe_corpnew: { digitalData: event.data },
+    },
+  });
+}
+
 function closeModal(modal) {
   const { id } = modal;
-  const closeEvent = new Event('milo:modal:closed');
+  const eventName = window.location.hash ? window.location.hash.replaceAll('#', '') : 'localeModal';
+  const closeEvent = new Event(`${eventName}:modalClose:buttonClose`);
   window.dispatchEvent(closeEvent);
+  sendAnalytics(closeEvent);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {

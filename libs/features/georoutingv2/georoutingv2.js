@@ -1,3 +1,5 @@
+import {sendAnalytics} from '../../blocks/modal/modal.js';
+
 let config;
 let createTag;
 let getMetadata;
@@ -110,14 +112,18 @@ function getGeoroutingOverride() {
   return hideGeorouting === 'on';
 }
 
-function decorateForOnLinkClick(link, prefix) {
+function decorateForOnLinkClick(link, prefix, currPrefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
+    const modCurrPrefix = currPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    if (currPrefix !== undefined) {
+      sendAnalytics(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
+    }
   });
 }
 
@@ -220,7 +226,7 @@ function buildContent(currentPage, locale, geoData, locales) {
   }
 
   const altAction = createTag('a', { lang, href: currentPage.url, 'daa-lh': `Stay:${currentPage.prefix.split('_')[0]}-${locale.prefix.split('_')[0]}|Geo_Routing_Modal` }, currentPage.button);
-  decorateForOnLinkClick(altAction, currentPage.prefix);
+  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   fragment.append(title, text, linkWrapper);
@@ -297,6 +303,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        sendAnalytics(new Event(`Load:${urlLocale.split('_')[0]}-${storedLocale.split('_')[0]}|Geo_Routing_Modal`));
       }
     }
     return;
@@ -309,6 +316,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
     const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
     if (details) {
       await showModal(details);
+      sendAnalytics(new Event(`Load:${urlLocale.split('_')[0]}-${akamaiCode}|Geo_Routing_Modal`));
     }
   }
 }
