@@ -61,6 +61,7 @@ const showConfirm = (msg, {
   cancelBtnType = 'default',
   cancelText = 'Cancel',
   footerContent = '',
+  initCode,
   leftButton,
 } = {}) => new Promise((resolve) => {
   let ok = false;
@@ -79,20 +80,13 @@ const showConfirm = (msg, {
     modal.setFooterContent(footerContent);
   }
 
-  const caasEnvSelect = document.getElementById('caas-env-select');
-  const caasEnv = caasEnvSelect.value?.toLowerCase();
-  const useHtmlCb = document.getElementById('usehtml');
-  if (caasEnv === 'prod') {
-    useHtmlCb.checked = true;
+  if (ctaText) {
+    modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
+      ok = true;
+      modal.close();
+    });
   }
-  caasEnvSelect.addEventListener('change', (e) => {
-    useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
-  });
 
-  modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
-    ok = true;
-    modal.close();
-  });
   modal.addFooterBtn(cancelText, `tingle-btn tingle-btn--${cancelBtnType} tingle-btn--pull-right`, () => {
     ok = false;
     modal.close();
@@ -102,6 +96,9 @@ const showConfirm = (msg, {
       leftButton.callback?.();
     });
   }
+
+  if (initCode) initCode(modal.modal);
+
   modal.open();
 });
 
@@ -150,12 +147,35 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
     </div>`;
 
   const onClose = () => {
+    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
     draftOnly = document.getElementById('draftcb')?.checked;
     useHtml = document.getElementById('usehtml')?.checked;
-    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
   };
 
-  if (tagErrors.length) {
+  const modalInit = (modal) => {
+    const caasEnvSelect = modal.querySelector('#caas-env-select');
+    const caasEnvVal = caasEnvSelect.value?.toLowerCase();
+    const useHtmlCb = modal.querySelector('#usehtml');
+    if (caasEnvVal === 'prod') {
+      useHtmlCb.checked = true;
+    }
+    caasEnvSelect.addEventListener('change', (e) => {
+      useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
+    });
+  };
+
+  if (!tags.length) {
+    const msg = '<div><p><b>No Tags found on page</b></p><p>Please add at least one tag to the Card Metadata</p></div>';
+    okToContinue = await showConfirm(msg, {
+      cssClass: ['verify-info-modal'],
+      ctaText: '',
+      cancelBtnType: 'danger',
+      cancelText: 'Cancel Registration',
+      footerContent: footerOptions,
+      leftButton: seeAllPropsBtn,
+      onClose,
+    });
+  } else if (tagErrors.length) {
     const msg = [
       '<div class="">',
       '<p><b>The following tags were not found:</b></p>',
@@ -172,6 +192,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaBtnType: 'danger',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });
@@ -187,6 +208,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaText: 'Continue with these tags',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });
