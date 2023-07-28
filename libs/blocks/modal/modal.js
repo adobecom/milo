@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
@@ -29,7 +30,8 @@ export function sendAnalytics(event) {
 
 function closeModal(modal) {
   const { id } = modal;
-  const eventName = window.location.hash ? window.location.hash.replaceAll('#', '') : 'localeModal';
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const eventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
   const closeEvent = new Event(`${eventName}:modalClose:buttonClose`);
   window.dispatchEvent(closeEvent);
   sendAnalytics(closeEvent);
