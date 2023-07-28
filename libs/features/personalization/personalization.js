@@ -240,7 +240,7 @@ export function parseConfig(data) {
 }
 
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
-  if (!placeholders?.length) return config;
+  if (!placeholders?.length || selectedVariantName === 'no changes') return config;
   const valueNames = [
     'value',
     selectedVariantName.toLowerCase(),
