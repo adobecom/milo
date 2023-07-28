@@ -288,6 +288,7 @@ export default async function loadGeoRouting(
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
+    // eslint-disable-next-line import/no-cycle
     const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
     loadGeoRoutingOld(config, createTag, getMetadata);
     return;
