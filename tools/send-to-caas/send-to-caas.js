@@ -102,8 +102,6 @@ const showConfirm = (msg, {
   modal.open();
 });
 
-
-
 const displayPublishingModal = () => {
   const publishingModal = new tingle.modal({
     closeMethods: [],
