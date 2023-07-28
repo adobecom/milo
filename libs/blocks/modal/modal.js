@@ -70,6 +70,17 @@ async function getPathModal(path, dialog) {
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
 }
+function sendViewportDimensionsToiFrame(source) {
+  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
+}
+
+function sendViewportDimensionsOnRequest(messageInfo) {
+  if (messageInfo.data === 'viewportWidth') {
+    sendViewportDimensionsToiFrame(messageInfo.source);
+    window.addEventListener('resize', () => sendViewportDimensionsToiFrame(messageInfo.source));
+  }
+}
 
 export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
@@ -139,7 +150,12 @@ export async function getModal(details, custom) {
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
-
+  if (dialog.classList.toString().includes('commerce-frame')) {
+    const { debounce } = await import('../../utils/action.js');
+    window.addEventListener('message', (messageInfo) => {
+      debounce(sendViewportDimensionsOnRequest(messageInfo));
+    });
+  }
   return dialog;
 }
 
@@ -162,17 +178,5 @@ window.addEventListener('hashchange', (e) => {
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
-  }
-});
-
-function sendViewportDimensionsToiFrame(source) {
-  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
-}
-
-window.addEventListener('message', (t) => {
-  if (t.data === 'viewportWidth') {
-    sendViewportDimensionsToiFrame(t.source);
-    window.addEventListener('resize', () => sendViewportDimensionsToiFrame(t.source));
   }
 });
