@@ -30,11 +30,12 @@ export function sendAnalytics(event) {
 
 function closeModal(modal) {
   const { id } = modal;
-  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
-  const eventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
-  const closeEvent = new Event(`${eventName}:modalClose:buttonClose`);
+  const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
-  sendAnalytics(closeEvent);
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
+  const closeEventAnalytics = new Event(`${analyticsEventName}:modalClose:buttonClose`);
+  sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
