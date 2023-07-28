@@ -196,20 +196,18 @@ const bulkPublish = async () => {
 
 const loadFromLS = () => {
   const ls = localStorage.getItem(LS_KEY);
-  if (ls) {
-    try {
-      setConfig(JSON.parse(ls));
-      /* c8 ignore next */
-    } catch (e) { /* do nothing */ }
-  }
-
-  const config = getConfig();
-  FIELDS.forEach((field) => {
-    document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
-  });
-  FIELDS_CB.forEach((field) => {
-    document.getElementById(field).checked = config[field] ?? DEFAULT_VALUES_CB[field];
-  });
+  if (!ls) return;
+  try {
+    setConfig(JSON.parse(ls));
+    const config = getConfig();
+    FIELDS.forEach((field) => {
+      document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
+    });
+    FIELDS_CB.forEach((field) => {
+      document.getElementById(field).checked = config[field] ?? DEFAULT_VALUES_CB[field];
+    });
+    /* c8 ignore next */
+  } catch (e) { /* do nothing */ }
 };
 
 const init = async () => {
