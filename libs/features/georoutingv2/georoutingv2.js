@@ -116,13 +116,13 @@ function getGeoroutingOverride() {
 function decorateForOnLinkClick(link, prefix, currPrefix) {
   link.addEventListener('click', () => {
     const modPrefix = prefix || 'us';
-    const modCurrPrefix = currPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     if (currPrefix !== undefined) {
+      const modCurrPrefix = currPrefix || 'us';
       sendAnalytics(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
     }
   });
@@ -288,9 +288,7 @@ export default async function loadGeoRouting(
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
-    const { default: loadGeoRoutingOld } = await import(
-      '../georouting/georouting.js'
-    );
+    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
     loadGeoRoutingOld(config, createTag, getMetadata);
     return;
   }
@@ -306,24 +304,20 @@ export default async function loadGeoRouting(
   if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
+    const urlLocaleGeo = urlLocale.split('_')[0];
+    const storedLocaleGeo = storedLocale.split('_')[0];
     // Show modal when url and cookie disagree
-    if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
+    if (urlLocaleGeo !== storedLocaleGeo) {
       const localeMatches = json.georouting.data.filter(
         (d) => d.prefix === storedLocale,
       );
-      const details = await getDetails(
-        urlGeoData,
-        localeMatches,
-        json.geos.data,
-      );
+      const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        const modUrlLocaleGeo = urlLocaleGeo || 'us';
+        const modStoredLocaleGeo = storedLocaleGeo || 'us';
         sendAnalytics(
-          new Event(
-            `Load:${urlLocale.split('_')[0]}-${
-              storedLocale.split('_')[0]
-            }|Geo_Routing_Modal`,
-          ),
+          new Event(`Load:${modUrlLocaleGeo}-${modStoredLocaleGeo}|Geo_Routing_Modal`),
         );
       }
     }
