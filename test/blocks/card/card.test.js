@@ -76,6 +76,23 @@ describe('Card', () => {
     });
   });
 
+  describe('Short Card', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/short.html' });
+    });
+
+    it('is supported', () => {
+      init(document.querySelector('.card'));
+      expect(document.querySelector('.consonant-ShortCard')).to.exist;
+    });
+
+    it('does not display undefined if no content', async () => {
+      const el = document.querySelector('.card.empty');
+      init(el);
+      expect(el.outerHTML.includes('undefined')).to.be.false;
+    });
+  });
+
   describe('Two-Up Cards', () => {
     before(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });

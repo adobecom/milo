@@ -10,3 +10,112 @@
   width: 100%;
   margin-bottom: var(--spacing-xs);
 }
+
+.consonant-ShortCard,
+.consonant-ShortCard:hover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 225px;
+  width: 100vw;
+  min-height: 200px;
+  height: 330px;
+  font-size: 0;
+  line-height: 0;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: box-shadow 0.3s ease;
+}
+
+.consonant-CardsGrid > .card.short-card.border {
+  display: flex;
+  justify-content: center;
+}
+
+.consonant-ShortCard:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.consonant-ShortCard-img {
+  flex-grow: 1;
+  position: relative;
+  width: 100%;
+  min-height: 213px;
+  max-height: 213px;
+  background-color: #eaeaea;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.consonant-ShortCard-img::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+  transition: background-color 0.3s ease;
+}
+
+.consonant-ShortCard:hover .consonant-ShortCard-img::before {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.consonant-ShortCard-inner,
+.consonant-ShortCard-inner:hover {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 200px;
+  padding: 20px 24px 24px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  background-color: #fff;
+  text-decoration: none;
+  max-width: 100%;
+}
+
+.consonant-ShortCard-title {
+  margin: 0 0 5px;
+  padding: 0;
+  font-family: adobe-clean, Segoe UI, Roboto, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.375rem;
+  font-weight: 700;
+  color: #323232;
+  font-style: normal;
+  word-break: break-word;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.consonant-ShortCard-text {
+  margin: 0;
+  padding: 0;
+  font-family: adobe-clean, Segoe UI, Roboto, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.3125rem;
+  font-weight: 400;
+  color: #747474;
+  font-style: normal;
+  word-break: break-word;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.milo-card-wrapper.consonant-Wrapper {
+  margin-top: 0;
+}

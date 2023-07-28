@@ -7,6 +7,7 @@ const HALF = 'OneHalfCard';
 const HALF_HEIGHT = 'HalfHeightCard';
 const PRODUCT = 'ProductCard';
 const DOUBLE_WIDE = 'DoubleWideCard';
+const SHORT = 'ShortCard';
 
 const getCardType = (styles) => {
   const cardTypes = {
@@ -14,6 +15,7 @@ const getCardType = (styles) => {
     'half-height-card': HALF_HEIGHT,
     'product-card': PRODUCT,
     'double-width-card': DOUBLE_WIDE,
+    'short-card': SHORT,
   };
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || HALF;
@@ -73,7 +75,7 @@ const addInner = (el, cardType, card) => {
   const text = Array.from(el.querySelectorAll('p'))?.find((p) => !p.querySelector('picture, a'));
   let inner = el.querySelector(':scope > div:not([class])');
 
-  if (cardType === DOUBLE_WIDE) {
+  if (cardType === DOUBLE_WIDE || cardType === SHORT) {
     inner = document.createElement('a');
     inner.href = el.querySelector('a')?.href || '';
     inner.rel = 'noopener noreferrer';
@@ -135,7 +137,7 @@ const init = (el) => {
 
   addWrapper(el, section, cardType);
 
-  if (cardType === HALF_HEIGHT) {
+  if (cardType === HALF_HEIGHT || cardType === SHORT) {
     const [link] = links;
 
     if (link) {
