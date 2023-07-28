@@ -9,7 +9,6 @@ const {
   VERSION,
   getTacocatEnv,
   getTacocatLocale,
-  getTacocatMetadata,
   imsCountryPromise,
   runTacocat,
 } = await import('../../../libs/blocks/merch/merch.js');
@@ -307,24 +306,42 @@ describe('Merch Block', () => {
 
   describe('Tacocat config', () => {
     it('falls back to en for unsupported languages', async () => {
-      const { literalScriptUrl, language, tacocatEnv } = getTacocatEnv('local', { ietf: 'xx-US' });
+      const { literalScriptUrl, language } = getTacocatEnv('local', { ietf: 'xx-US' });
       expect(literalScriptUrl).to.equal(
         'https://www.stage.adobe.com/special/tacocat/literals/en.js',
       );
       expect(language).to.equal('en');
-      expect(tacocatEnv).to.equal('PRODUCTION');
     });
 
     it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
         'prod',
         { ietf: 'fr-CA' },
       );
+      expect(tacocatEnv).to.equal('PRODUCTION');
       expect(scriptUrl).to.equal(
         `https://www.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
       );
       expect(literalScriptUrl).to.equal(
         'https://www.adobe.com/special/tacocat/literals/fr.js',
+      );
+      expect(country).to.equal('CA');
+      expect(language).to.equal('fr');
+    });
+
+    it('returns stage values', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'STAGE' });
+      document.head.appendChild(metadata);
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
+        'stage',
+        { ietf: 'fr-CA' },
+      );
+      expect(tacocatEnv).to.equal('STAGE');
+      expect(scriptUrl).to.equal(
+        `https://www.stage.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
+      );
+      expect(literalScriptUrl).to.equal(
+        'https://www.stage.adobe.com/special/tacocat/literals/fr.js',
       );
       expect(country).to.equal('CA');
       expect(language).to.equal('fr');
