@@ -17,10 +17,11 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls'];
-const FIELDS_CB = ['draftOnly', 'usepreview', 'usehtml'];
+const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType'];
+const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   caasEnv: 'Prod',
+  contentType: 'caas:content-type/article',
   excelFile: '',
   host: 'business.adobe.com',
   owner: 'adobecom',
@@ -29,8 +30,8 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
-  usepreview: false,
-  usehtml: true,
+  usePreview: false,
+  useHtml: true,
 };
 
 const fetchExcelJson = async (url) => {
@@ -100,11 +101,11 @@ const processData = async (data, accessToken) => {
     host,
     owner,
     repo,
-    usehtml,
-    usepreview,
+    useHtml,
+    usePreview,
   } = getConfig();
 
-  const domain = usepreview
+  const domain = usePreview
     ? `https://main--${repo}--${owner}.hlx.page`
     : `https://${host}`;
 
@@ -116,8 +117,8 @@ const processData = async (data, accessToken) => {
 
       const { pathname } = new URL(rawUrl);
       const pathnameNoHtml = pathname.replace('.html', '');
-      const pageUrl = usepreview ? `${domain}${pathnameNoHtml}` : `${domain}${pathname}`;
-      const prodUrl = `${host}${pathnameNoHtml}${usehtml ? '.html' : ''}`;
+      const pageUrl = usePreview ? `${domain}${pathnameNoHtml}` : `${domain}${pathname}`;
+      const prodUrl = `${host}${pathnameNoHtml}${useHtml ? '.html' : ''}`;
 
       index += 1;
       statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
@@ -146,7 +147,7 @@ const processData = async (data, accessToken) => {
 
       if (!caasMetadata.tags.length) {
         errorArr.push([pageUrl, 'No tags on page']);
-        return;
+        continue;
       }
 
       const caasProps = getCaasProps(caasMetadata);
@@ -204,10 +205,10 @@ const loadFromLS = () => {
 
   const config = getConfig();
   FIELDS.forEach((field) => {
-    document.getElementById(field).value = config[field] || DEFAULT_VALUES[field];
+    document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
   });
   FIELDS_CB.forEach((field) => {
-    document.getElementById(field).checked = config[field] || DEFAULT_VALUES_CB[field];
+    document.getElementById(field).checked = config[field] ?? DEFAULT_VALUES_CB[field];
   });
 };
 
@@ -233,12 +234,13 @@ const init = async () => {
       project: '',
       branch: 'main',
       caasEnv: document.getElementById('caasEnv').value,
+      contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       draftOnly: document.getElementById('draftOnly').checked,
-      usehtml: document.getElementById('usehtml').checked,
-      usepreview: document.getElementById('usepreview').checked,
+      useHtml: document.getElementById('useHtml').checked,
+      usePreview: document.getElementById('usePreview').checked,
     });
     bulkPublish();
   });
