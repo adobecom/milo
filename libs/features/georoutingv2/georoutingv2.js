@@ -317,8 +317,8 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
     const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
     if (details) {
       await showModal(details);
-      const modAkamaiCode = akamaiCode || 'us';
-      sendAnalytics(new Event(`Load:${urlLocale.split('_')[0]}-${modAkamaiCode}|Geo_Routing_Modal`));
+      const modUrlLocale = urlLocale || 'us';
+      sendAnalytics(new Event(`Load:${modUrlLocale}-${urlLocale.split('_')[0]}|Geo_Routing_Modal`));
     }
   }
 }
