@@ -419,7 +419,7 @@ const props = {
     const floodGateColor = getMetadata('floodGateColor') || '';
     return getUuid(`${options.prodUrl}${floodGateColor}`);
   },
-  contenttype: (s) => s || getMetaContent('property', 'og:type'),
+  contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
     const { country } = await getCountryAndLang(options);

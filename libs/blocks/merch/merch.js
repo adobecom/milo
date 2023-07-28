@@ -40,7 +40,7 @@ export function getTacocatEnv(envName, locale) {
 
   const literalScriptUrl = `${host}/special/tacocat/literals/${language}.js`;
   const scriptUrl = `${host}/special/tacocat/lib/${VERSION}/tacocat.js`;
-  const tacocatEnv = envName === ENV_PROD ? 'PRODUCTION' : 'STAGE';
+  const tacocatEnv = getMetadata('tacocat-env') ?? 'PRODUCTION';
   return { country, language, literalScriptUrl, scriptUrl, tacocatEnv };
 }
 
@@ -120,7 +120,7 @@ window.tacocat.loadPromise = new Promise((resolve) => {
       resolve(false);
     })
     .catch((error) => {
-      console.error('Failed to load tacocat', error);
+      window.lana.log(`Failed to load tacocat. ${error?.message}`);
       resolve(true);
     });
 });
