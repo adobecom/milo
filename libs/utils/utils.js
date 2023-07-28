@@ -831,8 +831,7 @@ export async function loadArea(area = document) {
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    const lcpLoadedEvent = new Event('milo:LCP:loaded');
-    window.dispatchEvent(lcpLoadedEvent);
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
