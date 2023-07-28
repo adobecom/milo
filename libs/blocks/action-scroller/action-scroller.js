@@ -20,8 +20,8 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 const [NAV, ALIGN] = ['navigation', 'grid-align'];
-const gridStyle = 'section no-pad auto-up no-row-gap';
-const defaultItemWidth = 106.5;
+const gridStyle = 'section scrolling no-padding auto-up no-row-gap';
+const defaultItemWidth = 106;
 const defaultGridGap = 32;
 
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg" height="10" width="16"></button>`;
@@ -30,7 +30,9 @@ const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon
 const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   if (row.children) {
     const [key, value] = row.children;
-    if (key && value) attr[key.textContent.trim().toLowerCase()] = value.textContent.trim().toLowerCase();
+    if (key && value) {
+      attr[key.textContent.trim().toLowerCase()] = value.textContent.trim().toLowerCase();
+    }
   }
   return attr;
 }, {});
@@ -40,7 +42,6 @@ function setBlockProps(el, columns) {
   const itemWidth = attrs['item width'] ?? defaultItemWidth;
   const overrides = attrs.style ? attrs.style.split(', ').map((style) => style.replaceAll(' ', '-')).join(' ') : '';
   const gridAlign = [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN)) ?? 'grid-align-start';
-  el.style.setProperty('--action-scroller-background', el.parentElement?.style?.background ?? 'white');
   el.style.setProperty('--action-scroller-columns', columns);
   el.style.setProperty('--action-scroller-item-width', itemWidth);
   return `${gridStyle} ${gridAlign} ${overrides}`;

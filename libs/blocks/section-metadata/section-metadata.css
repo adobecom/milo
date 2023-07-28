@@ -210,7 +210,7 @@ main > .section[class*='-up'] > .content {
   grid-template-columns: repeat(var(--section-grid-columns), 1fr);
 }
 
-.section.no-pad {
+.section.no-padding {
   padding-left: 0;
   padding-right: 0;
 }

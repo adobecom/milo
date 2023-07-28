@@ -10,7 +10,7 @@
   position: relative;
 }
 
-.action-scroller .section.no-pad {
+.action-scroller .section.scrolling {
   display: grid;
   grid-template-columns: repeat(var(--action-scroller-columns), 1fr);
   grid-auto-columns: minmax(var(--action-scroller-column-width), 1fr);
@@ -20,7 +20,36 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   scroll-behavior: smooth;
+
+  --mask-width: 60px;
+  --mask-image-content: linear-gradient(
+      to right,
+      transparent,
+      black var(--mask-width),
+      black calc(100% - var(--mask-width)),
+      transparent
+  );
+  --mask-size-content: 100% 100%;
+  --mask-image-scrollbar: linear-gradient(black, black);
+  --mask-size-scrollbar: 0 100%;
+
+  /* stylelint-disable property-no-vendor-prefix */
+  -webkit-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  -webkit-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  -webkit-mask-position: 0 0, 100% 0;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  -moz-mask-position: 0 0, 100% 0;
+  -moz-mask-repeat: no-repeat, no-repeat;
+  /* stylelint-enable property-no-vendor-prefix */
+
+  mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  mask-position: 0 0, 100% 0;
+  mask-repeat: no-repeat, no-repeat;
 }
+
 
 .action-scroller .section::-webkit-scrollbar {
   display: none;
@@ -39,12 +68,10 @@
 
 .action-scroller .nav-grad.next {
   right: 0;
-  background: linear-gradient(90deg, transparent 0%, var(--action-scroller-background) 100%);
 }
 
 .action-scroller .nav-grad.previous {
   left: 0;
-  background: linear-gradient(270deg, transparent 0%, var(--action-scroller-background) 100%);
 }
 
 .action-scroller .nav-grad[hide-btn='true'] {
