@@ -377,6 +377,15 @@ describe('Merch Block', () => {
       el = await merch(el);
       expect(el).to.be.undefined;
     });
+
+    it('does not initialize the block when tacocat fails to load', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'invalidvalue' });
+      document.head.appendChild(metadata);
+      window.tacocat.loadPromise = Promise.resolve(true);
+      let el = document.querySelector('.merch.cta.notacocat');
+      el = await merch(el);
+      expect(el).to.be.undefined;
+    });
   });
 
   describe('Tacocat trigger', () => {
