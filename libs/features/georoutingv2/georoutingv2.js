@@ -1,4 +1,5 @@
-import {sendAnalytics} from '../../blocks/modal/modal.js';
+/* eslint-disable import/no-cycle */
+import { sendAnalytics } from '../../blocks/modal/modal.js';
 
 let config;
 let createTag;
@@ -225,7 +226,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     decorateForOnLinkClick(mainAction, locale.prefix);
   }
 
-  const altAction = createTag('a', { lang, href: currentPage.url, 'daa-lh': `Stay:${currentPage.prefix.split('_')[0]}-${locale.prefix.split('_')[0]}|Geo_Routing_Modal` }, currentPage.button);
+  const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
   decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
