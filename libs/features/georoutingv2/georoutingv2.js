@@ -266,6 +266,7 @@ async function showModal(details) {
     loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
   ];
   await Promise.all(promises);
+  // eslint-disable-next-line import/no-cycle
   const { getModal, sendAnalytics } = await import('../../blocks/modal/modal.js');
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
