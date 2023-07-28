@@ -272,7 +272,13 @@ async function showModal(details) {
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
-export default async function loadGeoRouting(conf, createTagFunc, getMetadataFunc, loadBlockFunc, loadStyleFunc) {
+export default async function loadGeoRouting(
+  conf,
+  createTagFunc,
+  getMetadataFunc,
+  loadBlockFunc,
+  loadStyleFunc,
+) {
   if (getGeoroutingOverride()) return;
   config = conf;
   createTag = createTagFunc;
@@ -282,7 +288,9 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
-    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+    const { default: loadGeoRoutingOld } = await import(
+      '../georouting/georouting.js'
+    );
     loadGeoRoutingOld(config, createTag, getMetadata);
     return;
   }
@@ -300,11 +308,23 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
   if (storedLocale || storedLocale === '') {
     // Show modal when url and cookie disagree
     if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
-      const localeMatches = json.georouting.data.filter((d) => d.prefix === storedLocale);
-      const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
+      const localeMatches = json.georouting.data.filter(
+        (d) => d.prefix === storedLocale
+      );
+      const details = await getDetails(
+        urlGeoData,
+        localeMatches,
+        json.geos.data
+      );
       if (details) {
         await showModal(details);
-        sendAnalytics(new Event(`Load:${urlLocale.split('_')[0]}-${storedLocale.split('_')[0]}|Geo_Routing_Modal`));
+        sendAnalytics(
+          new Event(
+            `Load:${urlLocale.split('_')[0]}-${
+              storedLocale.split('_')[0]
+            }|Geo_Routing_Modal`
+          )
+        );
       }
     }
     return;
@@ -318,7 +338,9 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
     if (details) {
       await showModal(details);
       const modUrlLocale = urlLocale || 'us';
-      sendAnalytics(new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`));
+      sendAnalytics(
+        new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`)
+      );
     }
   }
 }
