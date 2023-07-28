@@ -94,7 +94,6 @@
 
 .action-item.zoom .main-image picture:not(.floated-icon) {
   display: block;
-  overflow: hidden;
 }
 
 .action-item.float-button .main-image picture img {
@@ -102,19 +101,22 @@
 }
 
 .action-item.zoom .main-image picture:not(.floated-icon) img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   will-change: transform;
   transition: transform .2s ease;
 }
 
-a.action-item.zoom:focus picture:not(.floated-icon) {
+.action-item:not(.zoom) a:focus picture:not(.floated-icon) img {
   border: 2px solid var(--link-color);
 }
 
-a.action-item.zoom:focus  {
+.action-item.zoom a:focus picture:not(.floated-icon) {
+  border: 2px solid var(--link-color);
+}
+
+.action-item a:focus  {
   text-decoration: underline;
+  outline: none;
 }
 
 .action-item.zoom .main-image picture:not(.floated-icon) img:focus,
