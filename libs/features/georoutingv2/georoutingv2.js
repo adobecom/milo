@@ -1,11 +1,9 @@
-/* eslint-disable import/no-cycle */
-import { sendAnalytics } from '../../blocks/modal/modal.js';
-
 let config;
 let createTag;
 let getMetadata;
 let loadBlock;
 let loadStyle;
+let sendAnalyticsFunc;
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -123,7 +121,7 @@ function decorateForOnLinkClick(link, prefix, currPrefix) {
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
     if (currPrefix !== undefined) {
       const modCurrPrefix = currPrefix || 'us';
-      sendAnalytics(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
+      sendAnalyticsFunc(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
     }
   });
 }
@@ -268,7 +266,8 @@ async function showModal(details) {
     loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
   ];
   await Promise.all(promises);
-  const { getModal } = await import('../../blocks/modal/modal.js');
+  const { getModal, sendAnalytics } = await import('../../blocks/modal/modal.js');
+  sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
@@ -316,7 +315,7 @@ export default async function loadGeoRouting(
         await showModal(details);
         const modUrlLocaleGeo = urlLocaleGeo || 'us';
         const modStoredLocaleGeo = storedLocaleGeo || 'us';
-        sendAnalytics(
+        sendAnalyticsFunc(
           new Event(`Load:${modUrlLocaleGeo}-${modStoredLocaleGeo}|Geo_Routing_Modal`),
         );
       }
@@ -332,7 +331,7 @@ export default async function loadGeoRouting(
     if (details) {
       await showModal(details);
       const modUrlLocale = urlLocale || 'us';
-      sendAnalytics(
+      sendAnalyticsFunc(
         new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`),
       );
     }
