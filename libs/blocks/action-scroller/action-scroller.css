@@ -51,11 +51,11 @@
 }
 
 
-.action-scroller .section::-webkit-scrollbar {
+.action-scroller .section.scrolling::-webkit-scrollbar {
   display: none;
 }
 
-.action-scroller .section .action-item {
+.action-scroller .section.scrolling .action-item {
   width: var(--action-scroller-column-width);
 }
 
@@ -139,9 +139,5 @@
   .action-scroller {
     width: var(--grid-container-width);
     margin: 0 auto;
-  }
-
-  .action-scroller .section {
-    padding: 0;
   }
 }
