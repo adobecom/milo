@@ -315,10 +315,8 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
-        const modUrlLocaleGeo = urlLocaleGeo || 'us';
-        const modStoredLocaleGeo = storedLocaleGeo || 'us';
         sendAnalyticsFunc(
-          new Event(`Load:${modUrlLocaleGeo}-${modStoredLocaleGeo}|Geo_Routing_Modal`),
+          new Event(`Load:${urlLocaleGeo || 'us'}-${storedLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
       }
     }
@@ -332,9 +330,8 @@ export default async function loadGeoRouting(
     const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
     if (details) {
       await showModal(details);
-      const modUrlLocale = urlLocale || 'us';
       sendAnalyticsFunc(
-        new Event(`Load:${akamaiCode}-${modUrlLocale}|Geo_Routing_Modal`),
+        new Event(`Load:${akamaiCode || 'us'}-${urlLocale || 'us'}|Geo_Routing_Modal`),
       );
     }
   }
