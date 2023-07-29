@@ -339,13 +339,13 @@
   }
 
   html[dir="rtl"] .marquee.split .media.bleed {
-    left:0;
-    right:auto;
+    left: 0;
+    right: auto;
   }
 
   html[dir="rtl"] .marquee.split.row-reversed .media.bleed {
-    right:0;
-    left:auto;
+    right: 0;
+    left: auto;
   }
 
   .marquee.split:not(.row-reversed) .media-credit {
