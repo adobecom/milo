@@ -184,6 +184,7 @@ function createPreviewPill(manifests, utils) {
         <span class="mep-close"></span>
         <div>Target integration feature is ${targetOnText}</div>
         <div>Personalization feature is ${personalizationOnText}</div>
+        <div>Page's Locale is ${config.locale.ietf}</div>
       </div>
     </div>
     <div class="mep-manifest-list">
