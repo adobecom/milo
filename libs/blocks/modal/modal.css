@@ -141,6 +141,7 @@
   margin: 0;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .region-selector .content {
   column-count: 1;
 }

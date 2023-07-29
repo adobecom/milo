@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
@@ -67,6 +68,7 @@ async function getPathModal(path, dialog) {
   const block = createTag('a', { href: path });
   dialog.append(block);
 
+  // eslint-disable-next-line import/no-cycle
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
 }
@@ -150,7 +152,7 @@ export async function getModal(details, custom) {
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
-  if (dialog.classList.toString().includes('commerce-frame')) {
+  if (dialog.classList.contains('commerce-frame')) {
     const { debounce } = await import('../../utils/action.js');
     window.addEventListener('message', (messageInfo) => {
       debounce(sendViewportDimensionsOnRequest(messageInfo));
