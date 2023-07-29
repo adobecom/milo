@@ -316,7 +316,7 @@ export default async function loadGeoRouting(
       if (details) {
         await showModal(details);
         sendAnalyticsFunc(
-          new Event(`Load:${urlLocaleGeo || 'us'}-${storedLocaleGeo || 'us'}|Geo_Routing_Modal`),
+          new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
       }
     }
@@ -331,7 +331,7 @@ export default async function loadGeoRouting(
     if (details) {
       await showModal(details);
       sendAnalyticsFunc(
-        new Event(`Load:${akamaiCode || 'us'}-${urlLocale || 'us'}|Geo_Routing_Modal`),
+        new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
       );
     }
   }
