@@ -75,7 +75,7 @@ function sendViewportDimensionsToiFrame(source) {
   source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
 }
 
-function sendViewportDimensionsOnRequest(messageInfo) {
+export function sendViewportDimensionsOnRequest(messageInfo) {
   if (messageInfo.data === 'viewportWidth') {
     sendViewportDimensionsToiFrame(messageInfo.source);
     window.addEventListener('resize', () => sendViewportDimensionsToiFrame(messageInfo.source));
