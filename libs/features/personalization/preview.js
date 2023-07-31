@@ -63,8 +63,29 @@ function updatePreviewButton() {
     .setAttribute('href', simulateHref.href);
 }
 
+function getRepo() {
+  const [, repo] = new URL(window.location.href).hostname.split('--');
+  if (repo) return repo;
+  try {
+    const sidekick = document.querySelector('helix-sidekick');
+    if (sidekick) {
+      const [, sidekickRepo] = new URL(JSON.parse(sidekick.getAttribute('status'))?.live.url).hostname.split('--');
+      return sidekickRepo;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log('Error getting repo from sidekick', e);
+  }
+  return false;
+}
+
 async function getEditManifestUrl(a, w) {
-  const response = await fetch(`https://admin.hlx.page/status/adobecom/milo/main${a.dataset.manifestPath}?editUrl=auto`);
+  const repo = getRepo();
+  if (!repo) {
+    w.location = a.dataset.manifestPath;
+    return false;
+  }
+  const response = await fetch(`https://admin.hlx.page/status/adobecom/${repo}/main${a.dataset.manifestPath}?editUrl=auto`);
   const body = await response.json();
   const editUrl = body?.edit?.url;
   if (editUrl) {
