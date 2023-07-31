@@ -361,6 +361,10 @@
   justify-content: center;
 }
 
+.aside.notification.center .foreground.container .action-area {
+  justify-content: center;
+}
+
 .aside.notification.center.small .foreground.container .text,
 .aside.notification.center.small .foreground.container .text > * {
   justify-content: flex-start;
