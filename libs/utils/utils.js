@@ -686,20 +686,6 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   return true;
 }
 
-function addPreviewToConfig(persEnabled, targetEnabled) {
-  const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
-  const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
-  const config = updateConfig({
-    ...getConfig(),
-    mep: {
-      preview: (mepButton !== 'off' && (mepOverride !== null || mepHighlight !== null || (previewPage && (persEnabled || targetEnabled)))),
-      override: mepOverride ? decodeURIComponent(mepOverride) : '',
-      marker: (mepHighlight !== null && mepHighlight !== undefined && mepHighlight !== 'false'),
-    },
-  });
-  return config;
-}
-
 async function checkForPageMods() {
   const persMd = getMetadata('personalization');
   const targetMd = getMetadata('target');
@@ -707,9 +693,8 @@ async function checkForPageMods() {
   const search = new URLSearchParams(window.location.search);
   const persEnabled = persMd && persMd !== 'off' && search.get('personalization') !== 'off';
   const targetEnabled = targetMd && targetMd !== 'off' && search.get('target') !== 'off';
-  const config = addPreviewToConfig(persEnabled, targetEnabled);
 
-  if (config.mep.preview) {
+  if (persEnabled || targetEnabled) {
     const { base } = getConfig();
     loadLink(
       `${base}/features/personalization/personalization.js`,
@@ -727,12 +712,6 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  if (config.mep.override !== '') {
-    config.mep.override.split(',').forEach((manifestPair) => {
-      persManifests.push(manifestPair.trim().toLowerCase().split('--')[0]);
-    });
-  }
-
   const utils = {
     createTag,
     getConfig,
@@ -742,6 +721,20 @@ async function checkForPageMods() {
     loadStyle,
     getMetadata,
   };
+
+  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
+  const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
+  if (mepOverride || previewPage) {
+    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
+    persManifests = await addPreviewToConfig(
+      PAGE_URL,
+      utils,
+      persManifests,
+      persEnabled,
+      targetEnabled,
+      previewPage,
+    );
+  }
 
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
@@ -753,9 +746,6 @@ async function checkForPageMods() {
     const { applyPers } = await import('../features/personalization/personalization.js');
 
     await applyPers(manifests, utils);
-  } else if (config.mep.preview) {
-    const { default: decoratePreviewMode } = await import('../features/personalization/preview.js');
-    await decoratePreviewMode([], utils);
   }
 }
 

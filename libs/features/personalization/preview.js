@@ -167,7 +167,7 @@ function createPreviewPill(manifests, utils) {
 
   const config = utils.getConfig();
   let mepHighlightChecked = '';
-  if (config.mep.marker) {
+  if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }

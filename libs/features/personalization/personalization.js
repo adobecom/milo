@@ -262,8 +262,8 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
 function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = utils.getConfig();
   let manifestFound = false;
-  if (config.mep.override !== '') {
-    config.mep.override.split(',').forEach((item) => {
+  if (config.mep?.override !== '') {
+    config.mep?.override.split(',').forEach((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
         // eslint-disable-next-line prefer-destructuring
@@ -432,7 +432,7 @@ export async function runPersonalization(info, config) {
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   let manifestId = experiment.manifest;
-  if (!config.mep.preview) {
+  if (!config.mep?.preview) {
     manifestId = false;
   } else if (experiment.name) {
     manifestId = `${experiment.name}: ${manifestId}`;
@@ -494,7 +494,7 @@ export async function applyPers(
     expFragments: consolidateObjects(results, 'fragments'),
   });
 
-  if (config.mep.preview) {
+  if (config.mep?.preview) {
     const { default: decoratePreviewMode } = await import('./preview.js');
     decoratePreviewMode(experiments, utils);
   }
