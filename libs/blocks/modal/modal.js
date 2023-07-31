@@ -22,8 +22,8 @@ export function sendAnalytics(event) {
   window._satellite?.track('event', {
     xdm: {},
     data: {
-      web: { webInteraction: { name: event.type } },
-      _adobe_corpnew: { digitalData: event.data },
+      web: { webInteraction: { name: event?.type } },
+      _adobe_corpnew: { digitalData: event?.data },
     },
   });
 }
