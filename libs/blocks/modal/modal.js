@@ -9,7 +9,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
-let isInitailPageLoad = true;
+let isInitialPageLoad = true;
 const MOBILE_MAX = 599;
 const TABLET_MAX = 1199;
 
@@ -78,10 +78,15 @@ function sendViewportDimensionsToiFrame(source) {
   source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
 }
 
-export function sendViewportDimensionsOnRequest(messageInfo) {
+let resizeListenerAdded = false;
+export async function sendViewportDimensionsOnRequest(messageInfo) {
   if (messageInfo.data === 'viewportWidth') {
     sendViewportDimensionsToiFrame(messageInfo.source);
-    window.addEventListener('resize', () => sendViewportDimensionsToiFrame(messageInfo.source));
+    const { debounce } = await import('../../utils/action.js');
+    if (!resizeListenerAdded) {
+      window.addEventListener('resize', debounce(() => sendViewportDimensionsToiFrame(messageInfo.source), 50));
+      resizeListenerAdded = true;
+    }
   }
 }
 
@@ -154,12 +159,11 @@ export async function getModal(details, custom) {
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
   if (dialog.classList.contains('commerce-frame')) {
-    if (isInitailPageLoad) {
-      const { debounce } = await import('../../utils/action.js');
+    if (isInitialPageLoad) {
       window.addEventListener('message', (messageInfo) => {
-        debounce(sendViewportDimensionsOnRequest(messageInfo));
+        sendViewportDimensionsOnRequest(messageInfo);
       });
-      isInitailPageLoad = false;
+      isInitialPageLoad = false;
     }
   }
   return dialog;
