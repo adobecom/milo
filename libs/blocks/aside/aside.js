@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockText, decorateIconStack } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -61,25 +61,6 @@ function decorateModalImage(el, lnkImg) {
   lnkImg.parentNode.appendChild(playContainer);
   lnkImg.appendChild(playCircle);
   playContainer.appendChild(lnkImg);
-}
-
-function decorateIconStack(el) {
-  if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
-  const stackEl = el.querySelector('ul img');
-  if (stackEl) {
-    stackEl.closest('ul').classList.add('icon-stack-area', 'body-s');
-    el.classList.add('icon-stack');
-  }
-  const stackItems = el.querySelectorAll('ul li');
-  [...stackItems].forEach((stackItem) => {
-    const links = stackItem.querySelectorAll('a');
-    if (stackItem.querySelectorAll('a').length <= 1) return;
-    const picIndex = links[0].querySelector('a picture') ? 0 : 1;
-    const linkImg = links[picIndex];
-    const linkText = links[1 - picIndex];
-    linkText.prepend(linkImg.querySelector('picture'));
-    linkImg.remove();
-  });
 }
 
 function decorateMedia(el) {
@@ -174,7 +155,11 @@ function decorateLayout(el) {
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
   }
-  if (el.classList.contains('split')) decorateIconStack(el);
+  if (el.classList.contains('split')
+      && (el.classList.contains('medium')
+      || el.classList.contains('large'))) {
+    decorateIconStack(el);
+  }
   return foreground;
 }
 

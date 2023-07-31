@@ -96,3 +96,22 @@ export function decorateTextOverrides(el, options = ['-heading', '-body', '-deta
     el.classList.remove(override);
   });
 }
+
+export function decorateIconStack(el) {
+  const ulElems = el.querySelectorAll('ul');
+  if (ulElems.length) {
+    const stackEl = ulElems[ulElems.length - 1];
+    stackEl.classList.add('icon-stack-area', 'body-s');
+    el.classList.add('icon-stack');
+    const items = stackEl.querySelectorAll('li');
+    [...items].forEach((i) => {
+      const links = i.querySelectorAll('a');
+      if (i.querySelectorAll('a').length <= 1) return;
+      const picIndex = links[0].querySelector('a picture') ? 0 : 1;
+      const linkImg = links[picIndex];
+      const linkText = links[1 - picIndex];
+      linkText.prepend(linkImg.querySelector('picture'));
+      linkImg.remove();
+    });
+  }
+}
