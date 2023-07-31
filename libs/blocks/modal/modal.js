@@ -9,6 +9,9 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
+let isInitialPageLoad = true;
+const MOBILE_MAX = 599;
+const TABLET_MAX = 1199;
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -81,8 +84,25 @@ async function getPathModal(path, dialog) {
   const block = createTag('a', { href: path });
   dialog.append(block);
 
+  // eslint-disable-next-line import/no-cycle
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
+}
+function sendViewportDimensionsToiFrame(source) {
+  const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  source.postMessage({ mobileMax: MOBILE_MAX, tabletMax: TABLET_MAX, viewportWidth }, '*');
+}
+
+let resizeListenerAdded = false;
+export async function sendViewportDimensionsOnRequest(messageInfo) {
+  if (messageInfo.data === 'viewportWidth') {
+    sendViewportDimensionsToiFrame(messageInfo.source);
+    const { debounce } = await import('../../utils/action.js');
+    if (!resizeListenerAdded) {
+      window.addEventListener('resize', debounce(() => sendViewportDimensionsToiFrame(messageInfo.source), 50));
+      resizeListenerAdded = true;
+    }
+  }
 }
 
 export async function getModal(details, custom) {
@@ -153,7 +173,14 @@ export async function getModal(details, custom) {
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
-
+  if (dialog.classList.contains('commerce-frame')) {
+    if (isInitialPageLoad) {
+      window.addEventListener('message', (messageInfo) => {
+        sendViewportDimensionsOnRequest(messageInfo);
+      });
+      isInitialPageLoad = false;
+    }
+  }
   return dialog;
 }
 
