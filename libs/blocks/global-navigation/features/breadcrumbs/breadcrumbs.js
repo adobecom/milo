@@ -1,4 +1,4 @@
-import { getMetadata } from '../../../../utils/utils.js';
+import { getMetadata, localizeLink } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 
 const metadata = {
@@ -35,17 +35,11 @@ const setBreadcrumbSEO = (breadcrumbs) => {
   document.head.append(script);
 };
 
-const getHiddenEntries = (str) => str
-  ?.toLowerCase()
-  .split(',')
-  .map((item) => item.trim()) || [];
-
-const removeHiddenEntries = ({ ul }) => {
-  const hidden = getHiddenEntries(getMetadata(metadata.hiddenEntries));
-  if (!hidden.length) return;
-  ul.querySelectorAll('li').forEach(
-    (li) => hidden.includes(li.innerText?.toLowerCase().trim()) && li.remove(),
-  );
+const localizeEntries = (anchor) => {
+  if (!anchor) return null;
+  const href = anchor.getAttribute('href');
+  anchor.setAttribute('href', localizeLink(href));
+  return null;
 };
 
 const createBreadcrumbs = (element) => {
@@ -59,7 +53,18 @@ const createBreadcrumbs = (element) => {
       </li>
     `);
   }
-  removeHiddenEntries({ ul });
+
+  const hiddenEntries = getMetadata(metadata.hiddenEntries)
+    ?.toLowerCase()
+    .split(',')
+    .map((item) => item.trim()) || [];
+
+  ul.querySelectorAll('li').forEach(
+    (li) => {
+      if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) return li.remove();
+      return localizeEntries(li.querySelector('a'));
+    },
+  );
   const breadcrumbs = toFragment`
     <div class="feds-breadcrumbs-wrapper">
       <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>
