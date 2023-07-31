@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 
 const FOCUSABLES = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
@@ -16,10 +17,25 @@ export function findDetails(hash, el) {
   return { id, path, isHash: hash === window.location.hash };
 }
 
+export function sendAnalytics(event) {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track('event', {
+    xdm: {},
+    data: {
+      web: { webInteraction: { name: event?.type } },
+      _adobe_corpnew: { digitalData: event?.data },
+    },
+  });
+}
+
 function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
+  const localeModal = id?.includes('locale-modal') ? 'localeModal' : 'milo';
+  const analyticsEventName = window.location.hash ? window.location.hash.replace('#', '') : localeModal;
+  const closeEventAnalytics = new Event(`${analyticsEventName}:modalClose:buttonClose`);
+  sendAnalytics(closeEventAnalytics);
 
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.nextElementSibling?.classList.contains('modal-curtain')) {
