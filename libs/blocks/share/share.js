@@ -148,6 +148,7 @@ export default async function decorate(block) {
         'aria-label': clipboardToolTip,
         'data-copy-to-clipboard': clipboardToolTip,
         'data-copied': `${copiedTooltip}!`,
+        'daa-ll': 'copy:click',
       },
       clipboardSvg.svg,
     );
