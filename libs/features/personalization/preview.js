@@ -39,14 +39,14 @@ function updatePreviewButton() {
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join(','));
 
-  const mepMarkerCheckbox = document.querySelector(
-    '.mep-popup input[type="checkbox"]#mepMarkerCheckbox',
+  const mepHighlightCheckbox = document.querySelector(
+    '.mep-popup input[type="checkbox"]#mepHighlightCheckbox',
   );
-  document.body.dataset.mepMarker = mepMarkerCheckbox.checked;
-  if (mepMarkerCheckbox.checked) {
-    simulateHref.searchParams.set('mepMarker', true);
+  document.body.dataset.mepHighlight = mepHighlightCheckbox.checked;
+  if (mepHighlightCheckbox.checked) {
+    simulateHref.searchParams.set('mepHighlight', true);
   } else {
-    simulateHref.searchParams.delete('mepMarker');
+    simulateHref.searchParams.delete('mepHighlight');
   }
 
   const mepPreviewButtonCheckbox = document.querySelector(
@@ -166,10 +166,10 @@ function createPreviewPill(manifests, utils) {
   simulateHref.searchParams.set('manifest', manifestParameter.join(','));
 
   const config = utils.getConfig();
-  let mepMarkerChecked = '';
+  let mepHighlightChecked = '';
   if (config.mep.marker) {
-    mepMarkerChecked = 'checked="checked"';
-    document.body.dataset.mepMarker = true;
+    mepHighlightChecked = 'checked="checked"';
+    document.body.dataset.mepHighlight = true;
   }
 
   div.innerHTML = `
@@ -190,7 +190,7 @@ function createPreviewPill(manifests, utils) {
     <div class="mep-manifest-list">
       <div class="mep-manifest-info">
         <div class="mep-manifest-variants">
-          <input type="checkbox" name="mepMarker" id="mepMarkerCheckbox" ${mepMarkerChecked} value="true"> <label for="mepMarkerCheckbox">Highlight changes</label>
+          <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
         </div>
       </div>
       ${manifestList}

@@ -687,14 +687,14 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
 }
 
 function addPreviewToConfig(persEnabled, targetEnabled) {
-  const { mep: mepOverride, mepMarker, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
+  const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
   const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
   const config = updateConfig({
     ...getConfig(),
     mep: {
-      preview: (mepButton !== 'off' && (mepOverride !== null || mepMarker !== null || (previewPage && (persEnabled || targetEnabled)))),
+      preview: (mepButton !== 'off' && (mepOverride !== null || mepHighlight !== null || (previewPage && (persEnabled || targetEnabled)))),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
-      marker: (mepMarker !== null && mepMarker !== undefined && mepMarker !== 'false'),
+      marker: (mepHighlight !== null && mepHighlight !== undefined && mepHighlight !== 'false'),
     },
   });
   return config;
