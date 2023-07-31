@@ -27,7 +27,7 @@
 }
 
 @media (max-width: 1200px) {
-  .milo-iframe{
+  .dialog-modal.commerce-frame .milo-iframe{
     padding-bottom:100vh;
   }
 }
