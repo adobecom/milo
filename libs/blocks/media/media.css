@@ -16,7 +16,10 @@
 
 .media [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
 
-.media .action-area { margin-top: var(--spacing-s); }
+.media .action-area {
+  margin-top: var(--spacing-s);
+  margin-bottom: 0;
+}
 
 .media div > *:last-child { margin-bottom: 0; }
 
@@ -109,7 +112,7 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: var(--spacing-xs);
 }
 
-.media li:before {
+.media li::before {
   content: "";
   display: inline-block;
   margin-left: 3px;
@@ -128,10 +131,6 @@ div[class*="-up"] .media .foreground > .media-row {
   line-height: var(--type-body-s-lh);
   margin-top: var(--spacing-xs);
   color: #2C2C2C;
-}
-
-.media .action-area {
-  margin-bottom: 0;
 }
 
 .media h3.heading-xs {

@@ -84,13 +84,11 @@ export default function init(el) {
     });
   }
   const mediaItems = el.querySelectorAll(':scope > .media');
+  const variants = ['checklist', 'qr-code'];
   mediaItems.forEach((i) => {
+    variants.forEach((v) => {
+      if (el.classList.contains(v)) i.classList.add(v);
+    });
     initMedia(i, false);
-    if(el.classList.contains("checklist")) {
-      i.classList.add("checklist");
-    }
-    if(el.classList.contains("qr-code")) {
-      i.classList.add("qr-code");
-    }
   });
 }
