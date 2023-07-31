@@ -20,6 +20,19 @@ jobs:
       - name: Run a one-line script
         run: echo Starting CMR Action...
 
+      # Validate dependencies before continuing CMR creation
+      - name: Check Dependencies
+        run: |
+          if ! type "jq" >/dev/null; then
+            echo "jq is required but not installed"
+            exit 1
+          fi
+
+          if ! type "curl" >/dev/null; then
+            echo "curl is required but not installed"
+            exit 1
+          fi
+
       # Run command for creating CMR in SKMS system
       - run: |
           start_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
@@ -59,14 +72,6 @@ jobs:
 
             if [ -z "$url" ]; then
               url=$DEFAULT_SKMS_URL
-            fi
-
-            if ! type "jq" >/dev/null; then
-              echo "jq is required but not installed"
-            fi
-
-            if ! type "curl" >/dev/null; then
-              echo "curl is required but not installed"
             fi
 
             local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
