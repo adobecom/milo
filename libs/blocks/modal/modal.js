@@ -9,6 +9,7 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
     <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
   </g>
 </svg>`;
+let isInitailPageLoad = true;
 const MOBILE_MAX = 599;
 const TABLET_MAX = 1199;
 
@@ -153,10 +154,13 @@ export async function getModal(details, custom) {
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
   if (dialog.classList.contains('commerce-frame')) {
-    const { debounce } = await import('../../utils/action.js');
-    window.addEventListener('message', (messageInfo) => {
-      debounce(sendViewportDimensionsOnRequest(messageInfo));
-    });
+    if (isInitailPageLoad) {
+      const { debounce } = await import('../../utils/action.js');
+      window.addEventListener('message', (messageInfo) => {
+        debounce(sendViewportDimensionsOnRequest(messageInfo));
+      });
+      isInitailPageLoad = false;
+    }
   }
   return dialog;
 }
