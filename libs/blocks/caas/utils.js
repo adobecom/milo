@@ -219,8 +219,8 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
 
   const items = filtersCustomItems.map((item) => ({
     id: item.customFilterTag[0],
-    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE) 
-      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')] 
+    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE)
+      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')]
       : item.filtersCustomLabel || '',
   }));
 
@@ -229,7 +229,7 @@ const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = 
     openedOnLoad: !!openedOnLoad,
     items,
     group: group?.match(IN_BRACKETS_RE)
-      ? strs[group.replace(/{|}/g, '')] 
+      ? strs[group.replace(/{|}/g, '')]
       : group || '',
   };
 
