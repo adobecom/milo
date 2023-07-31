@@ -1,10 +1,10 @@
 export function debounce(callback, time = 300) {
-    if (typeof callback !== 'function') return undefined;
+  if (typeof callback !== 'function') return undefined;
 
-    let timer = null;
+  let timer = null;
 
-    return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => callback(...args), time);
-    };
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => callback(...args), time);
+  };
 }

@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 
 const ogDoc = document.body.innerHTML;
-const { default: init } = await import('../../../libs/blocks/read-more/read-more.js')
+const { default: init } = await import('../../../libs/blocks/read-more/read-more.js');
 
 describe('init', () => {
   afterEach(() => {

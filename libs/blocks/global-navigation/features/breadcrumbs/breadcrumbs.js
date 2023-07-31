@@ -51,11 +51,11 @@ const removeHiddenEntries = ({ ul }) => {
 const createBreadcrumbs = (element) => {
   if (!element) return null;
   const ul = element.querySelector('ul');
-
-  if (getMetadata(metadata.showCurrent) === 'on') {
+  const pageTitle = getMetadata(metadata.pageTitle);
+  if (pageTitle || getMetadata(metadata.showCurrent) === 'on') {
     ul.append(toFragment`
       <li>
-        ${getMetadata(metadata.pageTitle) || document.title}
+        ${pageTitle || document.title}
       </li>
     `);
   }
@@ -69,7 +69,8 @@ const createBreadcrumbs = (element) => {
   return breadcrumbs;
 };
 
-const createWithBase = async (element = toFragment`<div><ul></ul></div>`) => {
+const createWithBase = async (el) => {
+  const element = el || toFragment`<div><ul></ul></div>`;
   const url = getMetadata(metadata.base);
   if (!url) return null;
   try {
@@ -78,7 +79,8 @@ const createWithBase = async (element = toFragment`<div><ul></ul></div>`) => {
     const base = new DOMParser().parseFromString(text, 'text/html').body;
     element.querySelector('ul')?.prepend(...base.querySelectorAll('li'));
     return createBreadcrumbs(element);
-  } catch (error) {
+  } catch (e) {
+    lanaLog({ e, message: 'Breadcrumbs failed fetching base' });
     return null;
   }
 };
@@ -90,7 +92,7 @@ const fromUrl = () => {
   for (let i = 0; i < paths.length; i += 1) {
     list.append(toFragment`
       <li>
-        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i]}</a>
+        <a href="/${paths.slice(0, i + 1).join('/')}">${paths[i].replaceAll('-', ' ')}</a>
       </li>
     `);
   }
@@ -99,7 +101,7 @@ const fromUrl = () => {
 
 export default async function init(el) {
   try {
-    const breadcrumbsEl = (await createWithBase(el)) || createBreadcrumbs(el) || fromUrl();
+    const breadcrumbsEl = await createWithBase(el) || createBreadcrumbs(el) || fromUrl();
     setBreadcrumbSEO(breadcrumbsEl);
     return breadcrumbsEl;
   } catch (e) {
