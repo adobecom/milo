@@ -111,16 +111,16 @@ function getGeoroutingOverride() {
   return hideGeorouting === 'on';
 }
 
-function decorateForOnLinkClick(link, prefix, currPrefix) {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
   link.addEventListener('click', () => {
-    const modPrefix = prefix || 'us';
+    const modPrefix = urlPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
-    if (currPrefix !== undefined) {
-      const modCurrPrefix = currPrefix || 'us';
+    if (localePrefix !== undefined) {
+      const modCurrPrefix = localePrefix || 'us';
       sendAnalyticsFunc(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
     }
   });
