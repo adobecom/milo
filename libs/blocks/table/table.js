@@ -308,7 +308,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
     }
 
-    if (!table.querySelector('.col-2')) return;
+    if ((!isMerch && !table.querySelector('.col-3'))
+    || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
