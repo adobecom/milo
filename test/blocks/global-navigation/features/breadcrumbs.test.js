@@ -4,7 +4,6 @@ import breadcrumbs from '../../../../libs/blocks/global-navigation/features/brea
 import { toFragment } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { mockRes } from '../test-utilities.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
-import { getConfig } from '../../../../tools/send-to-caas/send-utils.js';
 
 export const breadcrumbMock = () => toFragment`
   <div class="breadcrumbs">
