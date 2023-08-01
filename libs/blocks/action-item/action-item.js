@@ -48,7 +48,8 @@ function getContent(el, variants, href) {
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
-  const attrs = href ? { href } : {};
+  let attrs = href ? { href } : {};
+  if (variants.contains('static')) attrs = { ...attrs, class: 'static' };
   const content = createTag(tag, { ...attrs }, text ?? picture);
   return content;
 }
