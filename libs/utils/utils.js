@@ -723,7 +723,8 @@ async function checkForPageMods() {
   };
 
   const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
-  const previewPage = window.location.host.includes('.hlx.page') || window.location.host.includes('localhost');
+  const { env } = getConfig();
+  const previewPage = env.name === 'stage' || env.name === 'local';
   if (mepOverride || previewPage) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig(
