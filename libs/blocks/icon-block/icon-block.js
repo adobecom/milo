@@ -39,6 +39,13 @@ const iconBlocks = {
   },
 };
 
+// checking if block is part of xx-up and is inline variant
+function upAndInline(el) {
+  const isInlineAndSectionMetadata = el.classList.contains('inline') && el.parentElement?.querySelector('.section-metadata');
+  if (!isInlineAndSectionMetadata) return false;
+  return /(two|three|four|five)[- ]?up/i.test(el.parentElement.className);
+}
+
 function decorateContent(el) {
   const block = el.querySelector(':scope > div:not([class])');
   block.classList.add('foreground');
@@ -57,12 +64,13 @@ function decorateContent(el) {
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? 'fullwidth';
-    decorateBlockText(el, iconBlocks[size][variant]);
+    const textSize = upAndInline(el) ? ['xs', 's'] : iconBlocks[size][variant];
+    decorateBlockText(el, textSize);
     if (el.classList.contains('inline')) {
       const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
       const secondColumn = createTag('div', { class: 'second-column' });
-      textContent.forEach((el) => {
-        secondColumn.append(el);
+      textContent.forEach((content) => {
+        secondColumn.append(content);
       });
       el.querySelector('.foreground .text-content').append(secondColumn);
     }
