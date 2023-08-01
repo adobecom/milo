@@ -81,12 +81,12 @@ jobs:
 
             local response=$(curl -o /dev/null -s -w "%{http_code}\n" https://${url}/web_api --data-urlencode "_parameters=${params}")
 
-            if ["${response}" -ne 200]; then
-              echo "SKMS API returned HTTP status $response"
+            if [ $response != "200" ]; then
+              echo "SKMS API returned HTTP status: $response"
               exit 1
+            else
+              echo "CMR Creation was successful"
             fi
-
-            echo ''
           }
 
           end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
