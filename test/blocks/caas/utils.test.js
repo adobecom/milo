@@ -394,6 +394,7 @@ describe('getConfig', () => {
       featuredCards: ['a', 'b'],
       headers: [],
       hideCtaIds: [''],
+      hideCtaTags: [],
       filterPanel: {
         enabled: true,
         eventFilter: '',
