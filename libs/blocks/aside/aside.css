@@ -85,15 +85,15 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-l);
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :first-child {
-  padding: var(--spacing-xxxl) 0 0;
+  padding: var(--spacing-l) 0 0;
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :last-child {
-  margin-bottom: var(--spacing-xxxl);
+  margin-bottom: var(--spacing-l);
 }
 
 .aside .foreground.container .text {
