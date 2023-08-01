@@ -106,15 +106,15 @@
   transition: transform .2s ease;
 }
 
-.action-item:not(.zoom) a:focus picture:not(.floated-icon) img {
+.action-item:not(.zoom) a:focus-visible picture:not(.floated-icon) img {
   border: 2px solid var(--link-color);
 }
 
-.action-item.zoom a:focus picture:not(.floated-icon) {
+.action-item.zoom a:focus-visible picture:not(.floated-icon) {
   border: 2px solid var(--link-color);
 }
 
-.action-item a:focus  {
+.action-item a:focus-visible  {
   text-decoration: underline;
   outline: none;
 }
