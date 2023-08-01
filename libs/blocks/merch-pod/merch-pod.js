@@ -5,13 +5,13 @@ import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const SEGMENT = 'SegmentCard';
-const SPECIAL_OFFER = 'SpecialOffer';
+const SPECIAL_OFFERS = 'SpecialOffers';
 const PLANS = 'Plans';
 
 const getPodType = (styles) => {
   const podTypes = {
     'segment-card': SEGMENT,
-    'special-offer': SPECIAL_OFFER,
+    'special-offers': SPECIAL_OFFERS,
     'plans': PLANS,
   };
   const authoredType = styles?.find((style) => style in podTypes);
