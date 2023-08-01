@@ -61,6 +61,7 @@ const showConfirm = (msg, {
   cancelBtnType = 'default',
   cancelText = 'Cancel',
   footerContent = '',
+  initCode,
   leftButton,
 } = {}) => new Promise((resolve) => {
   let ok = false;
@@ -79,16 +80,6 @@ const showConfirm = (msg, {
     modal.setFooterContent(footerContent);
   }
 
-  const caasEnvSelect = document.getElementById('caas-env-select');
-  const caasEnv = caasEnvSelect.value?.toLowerCase();
-  const useHtmlCb = document.getElementById('usehtml');
-  if (caasEnv === 'prod') {
-    useHtmlCb.checked = true;
-  }
-  caasEnvSelect.addEventListener('change', (e) => {
-    useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
-  });
-
   if (ctaText) {
     modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
       ok = true;
@@ -105,6 +96,9 @@ const showConfirm = (msg, {
       leftButton.callback?.();
     });
   }
+
+  if (initCode) initCode(modal.modal);
+
   modal.open();
 });
 
@@ -153,9 +147,21 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
     </div>`;
 
   const onClose = () => {
+    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
     draftOnly = document.getElementById('draftcb')?.checked;
     useHtml = document.getElementById('usehtml')?.checked;
-    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
+  };
+
+  const modalInit = (modal) => {
+    const caasEnvSelect = modal.querySelector('#caas-env-select');
+    const caasEnvVal = caasEnvSelect.value?.toLowerCase();
+    const useHtmlCb = modal.querySelector('#usehtml');
+    if (caasEnvVal === 'prod') {
+      useHtmlCb.checked = true;
+    }
+    caasEnvSelect.addEventListener('change', (e) => {
+      useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
+    });
   };
 
   if (!tags.length) {
@@ -186,6 +192,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaBtnType: 'danger',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });
@@ -201,6 +208,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaText: 'Continue with these tags',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });

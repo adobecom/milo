@@ -51,11 +51,11 @@ const removeHiddenEntries = ({ ul }) => {
 const createBreadcrumbs = (element) => {
   if (!element) return null;
   const ul = element.querySelector('ul');
-
-  if (getMetadata(metadata.showCurrent) === 'on') {
+  const pageTitle = getMetadata(metadata.pageTitle);
+  if (pageTitle || getMetadata(metadata.showCurrent) === 'on') {
     ul.append(toFragment`
       <li>
-        ${getMetadata(metadata.pageTitle) || document.title}
+        ${pageTitle || document.title}
       </li>
     `);
   }
