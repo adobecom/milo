@@ -1,0 +1,178 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable-next-line selector-class-pattern */
+@media only screen and (min-width: 680px) {
+  .consonant-CardsGrid--2up {
+      grid-template-columns: repeat(auto-fit,minmax(380px,max-content)) !important;
+  }
+}
+.merch-pod.consonant-Card {
+  border-radius: 16px;
+}
+.merch-pod .consonant-ProductCard-title {
+  line-height: 1.375rem;
+}
+
+.consonant-CardsGrid--2up .merch-pod {
+  width: 378px;
+}
+.merch-pod .consonant-CardFooter-row {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: inherit;
+  height: 32px;
+}
+
+.merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
+  max-width: fit-content;
+  display: flex;
+  margin-left: 16px;
+}
+
+.consonant-CardsGrid--4up .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
+  margin-left: 14px;
+}
+
+.merch-pod.special-offer,
+.merch-pod.product-card,
+.merch-pod.segment-card {
+  border-radius: 16px;
+}
+
+.merch-pod .consonant-ProductCard-inner,
+.merch-pod .consonant-SegmentCard-inner,
+.merch-pod .consonant-SpecialOffer-inner {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 16px 16px 20px;
+  border-radius: 4px;
+  background-color: #fff;
+  text-decoration: none;
+}
+
+
+.merch-pod hr {
+  background-color: #E1E1E1;
+  border: none;
+  height: 1px;
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}
+
+.merch-pod .consonant-ProductCard-title,
+.merch-pod .consonant-SegmentCard-title,
+.merch-pod .consonant-SpecialOffer-title {
+  font-size: 20px;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.merch-pod .consonant-ProductCard-prices,
+.merch-pod .consonant-SegmentCard-prices,
+.merch-pod .consonant-SpecialOffer-prices {
+  font-size: 16px;
+  line-height: 24px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.merch-pod .consonant-ProductCard-description,
+.merch-pod .consonant-SegmentCard-description,
+.merch-pod .consonant-SpecialOffer-description {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.merch-pod.consonant-SpecialOffer-Card {
+  border-radius: 16px;
+}
+
+.merch-pod .consonant-SpecialOffer-img {
+  flex-grow: 1;
+  position: relative;
+  width: 100%;
+  min-height: 213px;
+  max-height: 213px;
+  background-color: #eaeaea;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.merch-pod .consonant-SpecialOffer-ribbon {
+  position: absolute;
+  top: 16px;
+  right: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 32px;
+  text-align: center;
+  padding: 0 15px 0 15px;
+  border-radius: 5px 0 0 5px;
+  text-transform: uppercase;
+}
+
+.merch-pod .consonant-ProductCard-cell,
+.merch-pod .consonant-SegmentCard-cell,
+.merch-pod .consonant-SpecialOffer-cell {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+{
+  justify-content: center;
+  align-items: center;
+}
+
+p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 0;
+}
+
+h2 {
+  font-size: 28px;
+  margin-bottom: 7px;
+}
+
+h3, h4 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+h5 {
+  font-size: 18px;
+  margin-bottom: 4.5px;
+}
+
+.merch-pod .consonant-SpecialOffer-inner {
+  justify-content: center;
+}
+.merch-pod.special-offer .consonant-SpecialOffer-description p {
+  font-size: 14px;
+}
+.merch-pod.special-offer .consonant-CardFooter {
+  margin-top: 0;
+  padding-top: 0;
+  justify-content: center;
+}
+.merch-pod.special-offer h4 {
+  font-size: 18px;
+}
+.merch-pod.special-offer h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
