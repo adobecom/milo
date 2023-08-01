@@ -6,11 +6,13 @@ import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const SEGMENT = 'SegmentCard';
 const SPECIAL_OFFER = 'SpecialOffer';
+const PLANS = 'Plans';
 
 const getPodType = (styles) => {
   const podTypes = {
     'segment-card': SEGMENT,
     'special-offer': SPECIAL_OFFER,
+    'plans': PLANS,
   };
   const authoredType = styles?.find((style) => style in podTypes);
   return podTypes[authoredType] || SEGMENT;
