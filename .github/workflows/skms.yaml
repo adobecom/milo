@@ -82,12 +82,13 @@ jobs:
             local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
 
             if [ $response != "200" ]; then
-              echo "SKMS API returned HTTP status code: $response"
-              cat response.txt
+              echo "CURL call returned HTTP status code: $response"
               exit 1
-            else
-              echo "CMR Creation was successful with returned response: "
+            elif grep -q "\"status\":\"error\"" response.txt; then
+              echo "CMR creation failed with response: "
               cat response.txt
+            eles
+              echo "CMR creation was successful"
             fi
           }
 
