@@ -87,7 +87,8 @@ jobs:
             elif grep -q "\"status\":\"error\"" response.txt; then
               echo "CMR creation failed with response: "
               cat response.txt
-            eles
+              exit 1
+            else
               echo "CMR creation was successful"
             fi
           }
