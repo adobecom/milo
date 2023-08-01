@@ -1,5 +1,5 @@
-export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net/api/v1/web/seotechio';
-export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotechio';
+export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net/api/v1/web/seotech';
+export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech';
 
 // TODO: Fix how API URL is selected
 export async function getVideoObject(url, seotechApiUrl = SEOTECH_API_URL_PROD) {
