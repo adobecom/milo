@@ -143,9 +143,15 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const locale = locales[localeString] || locales[''];
   if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
+    if (
+      Object.values(locales)
+        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
+    ) locale.dir = 'rtl';
     return locale;
   }
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  const isUS = locale.ietf === 'en-US';
+  locale.prefix = isUS ? '' : `/${localeString}`;
+  locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
 
