@@ -282,6 +282,8 @@
   top: 15px;
   width: 30%;
   height: 32px;
+  appearance: none;
+  border: 1px solid grey;
 }
 
 .tagselect-picker-table .search-item:hover {
