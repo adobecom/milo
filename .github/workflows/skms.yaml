@@ -77,7 +77,13 @@ jobs:
             local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
             params=$(echo "$params $method_params" | jq -s add)
 
-            curl https://${url}/web_api --data-urlencode "_parameters=${params}"
+            response=$(curl --write-out "%{http_code}" --silent --output /dev/null https://${url}/web_api --data-urlencode "_parameters=${params}")
+
+            if ["$response" -ne 200]; then
+              echo "SKMS API returned HTTP status $response"
+              exit 1
+            fi
+
             echo ''
           }
 
