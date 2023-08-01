@@ -22,13 +22,11 @@
   scroll-behavior: smooth;
 
   --mask-width: 60px;
-  --mask-image-content: linear-gradient(
-      to right,
+  --mask-image-content: linear-gradient(to right,
       transparent,
       black var(--mask-width),
       black calc(100% - var(--mask-width)),
-      transparent
-  );
+      transparent);
   --mask-size-content: 100% 100%;
   --mask-image-scrollbar: linear-gradient(black, black);
   --mask-size-scrollbar: 0 100%;
@@ -105,9 +103,15 @@
   left: 10px;
 }
 
+
 .action-scroller.grid-align-end .previous-button,
 .action-scroller.grid-align-end .next-button {
   top: calc(55% - var(--action-scroller-button-size) / 2);
+}
+
+.action-scroller .nav-grad .next-button:focus,
+.action-scroller .nav-grad .previous-button:focus {
+  outline: 2px solid var(--link-color);
 }
 
 .action-scroller .nav-button:hover,
