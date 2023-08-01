@@ -103,7 +103,6 @@
   left: 10px;
 }
 
-
 .action-scroller.grid-align-end .previous-button,
 .action-scroller.grid-align-end .next-button {
   top: calc(55% - var(--action-scroller-button-size) / 2);
