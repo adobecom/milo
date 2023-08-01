@@ -41,7 +41,7 @@
 
 .merch-pod .consonant-ProductCard-inner,
 .merch-pod .consonant-SegmentCard-inner,
-.merch-pod .consonant-SpecialOffer-inner {
+.merch-pod .consonant-SpecialOffers-inner {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -62,7 +62,7 @@
 
 .merch-pod .consonant-ProductCard-title,
 .merch-pod .consonant-SegmentCard-title,
-.merch-pod .consonant-SpecialOffer-title {
+.merch-pod .consonant-SpecialOffers-title {
   font-size: 20px;
   margin-bottom: 5px;
   font-weight: 700;
@@ -70,7 +70,7 @@
 
 .merch-pod .consonant-ProductCard-prices,
 .merch-pod .consonant-SegmentCard-prices,
-.merch-pod .consonant-SpecialOffer-prices {
+.merch-pod .consonant-SpecialOffers-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -79,7 +79,7 @@
 
 .merch-pod .consonant-ProductCard-description,
 .merch-pod .consonant-SegmentCard-description,
-.merch-pod .consonant-SpecialOffer-description {
+.merch-pod .consonant-SpecialOffers-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -87,11 +87,11 @@
   margin-top: 0;
 }
 
-.merch-pod.consonant-SpecialOffer-Card {
+.merch-pod.consonant-SpecialOffers-Card {
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffer-img {
+.merch-pod .consonant-SpecialOffers-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
@@ -103,7 +103,7 @@
   background-size: cover;
 }
 
-.merch-pod .consonant-SpecialOffer-ribbon {
+.merch-pod .consonant-SpecialOffers-ribbon {
   position: absolute;
   top: 16px;
   right: 0;
@@ -118,7 +118,7 @@
 
 .merch-pod .consonant-ProductCard-cell,
 .merch-pod .consonant-SegmentCard-cell,
-.merch-pod .consonant-SpecialOffer-cell {
+.merch-pod .consonant-SpecialOffers-cell {
   justify-content: flex-end;
   align-items: center;
 }
@@ -157,10 +157,10 @@ h5 {
   margin-bottom: 4.5px;
 }
 
-.merch-pod .consonant-SpecialOffer-inner {
+.merch-pod .consonant-SpecialOffers-inner {
   justify-content: center;
 }
-.merch-pod.special-offer .consonant-SpecialOffer-description p {
+.merch-pod.special-offer .consonant-SpecialOffers-description p {
   font-size: 14px;
 }
 .merch-pod.special-offer .consonant-CardFooter {
