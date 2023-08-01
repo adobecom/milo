@@ -579,7 +579,7 @@
     padding: var(--spacing-m) 0;
     gap: var(--spacing-xl);
   }
-  
+
   .aside:not(.notification):not(.inline) .foreground.container> :first-child {
     padding: 0;
   }
