@@ -3,6 +3,7 @@ let createTag;
 let getMetadata;
 let loadBlock;
 let loadStyle;
+let sendAnalyticsFunc;
 
 const createTabsContainer = (tabNames) => {
   const ol = createTag('ol');
@@ -110,14 +111,18 @@ function getGeoroutingOverride() {
   return hideGeorouting === 'on';
 }
 
-function decorateForOnLinkClick(link, prefix) {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix) {
   link.addEventListener('click', () => {
-    const modPrefix = prefix || 'us';
+    const modPrefix = urlPrefix || 'us';
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    if (localePrefix !== undefined) {
+      const modCurrPrefix = localePrefix || 'us';
+      sendAnalyticsFunc(new Event(`Stay:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`));
+    }
   });
 }
 
@@ -220,7 +225,7 @@ function buildContent(currentPage, locale, geoData, locales) {
   }
 
   const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
-  decorateForOnLinkClick(altAction, currentPage.prefix);
+  decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix);
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   fragment.append(title, text, linkWrapper);
@@ -261,11 +266,19 @@ async function showModal(details) {
     loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`),
   ];
   await Promise.all(promises);
-  const { getModal } = await import('../../blocks/modal/modal.js');
+  // eslint-disable-next-line import/no-cycle
+  const { getModal, sendAnalytics } = await import('../../blocks/modal/modal.js');
+  sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
-export default async function loadGeoRouting(conf, createTagFunc, getMetadataFunc, loadBlockFunc, loadStyleFunc) {
+export default async function loadGeoRouting(
+  conf,
+  createTagFunc,
+  getMetadataFunc,
+  loadBlockFunc,
+  loadStyleFunc,
+) {
   if (getGeoroutingOverride()) return;
   config = conf;
   createTag = createTagFunc;
@@ -275,6 +288,7 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
 
   const resp = await fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
   if (!resp.ok) {
+    // eslint-disable-next-line import/no-cycle
     const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
     loadGeoRoutingOld(config, createTag, getMetadata);
     return;
@@ -291,12 +305,19 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
   if (!urlGeoData) return;
 
   if (storedLocale || storedLocale === '') {
+    const urlLocaleGeo = urlLocale.split('_')[0];
+    const storedLocaleGeo = storedLocale.split('_')[0];
     // Show modal when url and cookie disagree
-    if (urlLocale.split('_')[0] !== storedLocale.split('_')[0]) {
-      const localeMatches = json.georouting.data.filter((d) => d.prefix === storedLocale);
+    if (urlLocaleGeo !== storedLocaleGeo) {
+      const localeMatches = json.georouting.data.filter(
+        (d) => d.prefix === storedLocale,
+      );
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        sendAnalyticsFunc(
+          new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
+        );
       }
     }
     return;
@@ -309,6 +330,9 @@ export default async function loadGeoRouting(conf, createTagFunc, getMetadataFun
     const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
     if (details) {
       await showModal(details);
+      sendAnalyticsFunc(
+        new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
+      );
     }
   }
 }
