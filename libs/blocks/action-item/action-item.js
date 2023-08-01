@@ -49,7 +49,7 @@ function getContent(el, variants, href) {
   if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
   let attrs = href ? { href } : {};
-  if (variants.contains('static')) attrs = { ...attrs, class: 'static' };
+  if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
   const content = createTag(tag, { ...attrs }, text ?? picture);
   return content;
 }
