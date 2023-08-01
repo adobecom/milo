@@ -5,12 +5,12 @@ import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
 const SEGMENT = 'SegmentCard';
-const SPECIAL_OFFER = 'SpecialOffer';
+const SPECIAL_OFFERS = 'SpecialOffers';
 
 const getPodType = (styles) => {
   const podTypes = {
     'segment-card': SEGMENT,
-    'special-offer': SPECIAL_OFFER,
+    'special-offer': SPECIAL_OFFERS,
   };
   const authoredType = styles?.find((style) => style in podTypes);
   return podTypes[authoredType] || SEGMENT;
@@ -56,7 +56,7 @@ const addInner = (el, podType, merchPod) => {
   merchPod.append(inner);
 };
 
-const decorateRibbon = (el) => {
+const decorateRibbon = (el, podType) => {
   const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
 
   if (ribbonMetadata.length === 2) {
@@ -66,10 +66,10 @@ const decorateRibbon = (el) => {
     const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
     const ribbonWrapper = ribbonMetadata[0].parentNode;
     const ribbon = ribbonMetadata[1];
-    ribbon.classList.add('consonant-SpecialOffer-ribbon');
+    ribbon.classList.add(`consonant-${podType}-ribbon`);
     ribbon.style.backgroundColor = ribbonBgColor;
     ribbon.style.color = ribbonTextColor;
-    const picture = el.querySelector('.consonant-SpecialOffer-img');
+    const picture = el.querySelector(`.consonant-${podType}-img`);
     if (picture) {
       picture.insertAdjacentElement('afterend', ribbon);
     } else {
@@ -105,7 +105,7 @@ const init = (el) => {
   if (picture) {
     addBackgroundImg(picture, podType, merchPod);
   }
-  decorateRibbon(el);
+  decorateRibbon(el, podType);
   picture?.parentElement.remove();
   addInner(el, podType, merchPod);
   decorateButtons(ctas);
