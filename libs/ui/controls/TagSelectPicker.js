@@ -38,19 +38,18 @@ const Picker = ({
 
   useEffect(() => {
     const cols = [];
-    const addColumn = (option, expandedPath) => {
-      const expandedId = expandedPath ? `caas:${expandedPath}` : null;
+    const addColumn = (option, expandedPath = null) => {
       if (!option) {
-        cols.unshift(getCol(options, expandedId));
+        cols.unshift(getCol(options, expandedPath));
       } else {
-        cols.unshift(getCol(option, expandedId));
+        cols.unshift(getCol(option, expandedPath));
         addColumn(option.parent, option.path);
       }
     };
 
     addColumn(optionMap[selectedCol]);
     setColumns(cols);
-  }, [selectedCol, isSearching]);
+  }, [selectedCol, isSearching, options]);
 
   useEffect(() => {
     setIsSearching(debouncedSearchTerm?.length > 2);
@@ -111,7 +110,7 @@ const Picker = ({
         label=${option.label}
         hasChildren=${!!option.children}
         isChecked=${isChecked}
-        isExpanded=${expandedId === id}
+        isExpanded=${expandedId === id || `caas:${expandedId}` === id}
         onCheck=${onCheck}
         onExpand=${onExpand}
       />`;
