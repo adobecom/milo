@@ -1,8 +1,8 @@
-export const SEOTECH_API_UR_PROD = 'https://14257-seotech.adobeioruntime.net/api/v1/web/seotechio';
+export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net/api/v1/web/seotechio';
 export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotechio';
 
 // TODO: Fix how API URL is selected
-export async function getVideoObject(url, seotechApiUrl = SEOTECH_API_URL_STAGE) {
+export async function getVideoObject(url, seotechApiUrl = SEOTECH_API_URL_PROD) {
   const videosUrl = `${seotechApiUrl}/getVideoObject?url=${url}`;
   const resp = await fetch(videosUrl, { headers: { 'Content-Type': 'application/json' } });
   if (!resp) {
