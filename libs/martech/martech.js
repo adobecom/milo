@@ -132,11 +132,13 @@ export default async function init({ persEnabled = false, persManifests }) {
   // eslint-disable-next-line no-underscore-dangle
   window._satellite.track('pageload');
 
-  const targetManifests = await getTargetPersonalization();
-  if (targetManifests || persManifests?.length) {
-    const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
-    const manifests = preloadManifests({ targetManifests, persManifests });
-    const { applyPers } = await import('../features/personalization/personalization.js');
-    await applyPers(manifests);
+  if (persEnabled) {
+    const targetManifests = await getTargetPersonalization();
+    if (targetManifests || persManifests?.length || config.mep.override !== undefined) {
+      const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
+      const manifests = preloadManifests({ targetManifests, persManifests });
+      const { applyPers } = await import('../features/personalization/personalization.js');
+      await applyPers(manifests);
+    }
   }
 }
