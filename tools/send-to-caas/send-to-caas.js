@@ -223,6 +223,10 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
 
 const isUseHtmlChecked = () => document.getElementById('usehtml')?.checked;
 
+const sortObjByPropName = (obj) => Object.keys(obj)
+  // eslint-disable-next-line no-return-assign, no-sequences
+  .sort().reduce((c, d) => (c[d] = obj[d], c), {});
+
 const validateProps = async (prodHost, publishingModal) => {
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
     { prodUrl: `${prodHost}${window.location.pathname}` },
@@ -232,7 +236,7 @@ const validateProps = async (prodHost, publishingModal) => {
     const { caasMetadata: cMetaData } = await getCardMetadata(
       { prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}` },
     );
-    const mdStr = JSON.stringify(cMetaData, undefined, 4);
+    const mdStr = JSON.stringify(sortObjByPropName(cMetaData), undefined, 4);
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${mdStr}</pre>`);
   };
 

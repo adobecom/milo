@@ -122,7 +122,7 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
-  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
+  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
     || host.includes('hlx.live')
@@ -143,6 +143,10 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const locale = locales[localeString] || locales[''];
   if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
+    if (
+      Object.values(locales)
+        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
+    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
@@ -673,7 +677,13 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
     persEnabled,
     persManifests,
     utils: {
-      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
+      createTag,
+      getConfig,
+      getMetadata,
+      loadLink,
+      loadScript,
+      loadStyle,
+      updateConfig,
     },
   });
 
@@ -706,22 +716,41 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  let martechLoaded = false;
-  if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  const utils = {
+    createTag,
+    getConfig,
+    loadScript,
+    loadLink,
+    updateConfig,
+    loadStyle,
+    getMetadata,
+  };
+
+  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
+  const { env } = getConfig();
+  const previewPage = env?.name === 'stage' || env?.name === 'local';
+  if (mepOverride || previewPage) {
+    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
+    persManifests = await addPreviewToConfig(
+      PAGE_URL,
+      utils,
+      persManifests,
+      persEnabled,
+      targetEnabled,
+      previewPage,
+    );
   }
 
-  if (persMd && persMd !== 'off' && !martechLoaded) {
+  if (targetEnabled) {
+    await loadMartech({ persEnabled: true, persManifests, targetMd });
+  } else if (persManifests.length) {
     // load the personalization only
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(
-      manifests,
-      { createTag, getConfig, loadScript, loadLink, updateConfig },
-    );
+    await applyPers(manifests, utils);
   }
 }
 
