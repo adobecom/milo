@@ -73,11 +73,14 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(url);
     if (!resp.ok) {
-      throw new Error('Invalid response', resp);
+      if (resp.status === 404) {
+        throw new Error('File not found');
+      }
+      throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
     }
     return await resp[type]();
   } catch (e) {
-    console.log(`Error loading content: ${url}`, e);
+    console.log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -298,12 +301,12 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   }
 
   const persData = data?.data || data?.experiences?.data || data?.experiments?.data;
-  if (!persData) return {};
+  if (!persData) return null;
   const config = parseConfig(persData);
 
   if (!config) {
     console.log('Error loading personalization config: ', name || manifestPath);
-    return {};
+    return null;
   }
 
   const selectedVariantName = getPersonalizationVariant(
@@ -415,6 +418,8 @@ export async function runPersonalization(info, config) {
   } = info;
 
   const experiment = await getPersConfig(name, variantLabel, manifestData, manifestPath);
+
+  if (!experiment) return null;
 
   const { selectedVariant } = experiment;
   if (!selectedVariant) return {};
