@@ -93,7 +93,7 @@
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :last-child {
-  margin-bottom: var(--spacing-xxxl);
+  margin-bottom: var(--spacing-l);
 }
 
 .aside .foreground.container .text {
