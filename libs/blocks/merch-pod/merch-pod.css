@@ -9,6 +9,9 @@
   border-radius: 16px;
 }
 
+.consonant-CardsGrid--oneup .merch-pod.consonant-Card {
+  max-width: 100%;
+}
 .merch-pod.consonant-Card .consonant-CardFooter {
   padding-top: 0;
 }
@@ -35,7 +38,7 @@
 }
 
 .consonant-CardsGrid--4up .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
-  margin-left: 14px;
+  margin-left: 9px;
 }
 
 .merch-pod.special-offer,
