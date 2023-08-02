@@ -89,11 +89,11 @@
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :first-child {
-  padding: var(--spacing-l) 0 0;
+  padding: var(--spacing-xxxl) 0 0;
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :last-child {
-  margin-bottom: var(--spacing-l);
+  margin-bottom: var(--spacing-xxxl);
 }
 
 .aside .foreground.container .text {
@@ -809,7 +809,7 @@
     height: 80px;
   }
 
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
     height: 80px;
     max-width: 234px;
     width: auto;
@@ -921,7 +921,7 @@
     height: 83px;
   }
 
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img{
+  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
     height: 83px;
     max-width: 400px;
     width: auto;
