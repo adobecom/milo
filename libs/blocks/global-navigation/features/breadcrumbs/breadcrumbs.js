@@ -36,10 +36,9 @@ const setBreadcrumbSEO = (breadcrumbs) => {
 };
 
 const localizeEntries = (anchor) => {
-  if (!anchor) return null;
+  if (!anchor) return;
   const href = anchor.getAttribute('href');
   anchor.setAttribute('href', localizeLink(href));
-  return null;
 };
 
 const createBreadcrumbs = (element) => {
