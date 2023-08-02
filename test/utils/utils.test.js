@@ -400,4 +400,13 @@ describe('Utils', () => {
       expect(document.title).to.equal(expected);
     });
   });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    it('should import and call default with falsey value', async () => {
+      await utils.loadArea();
+    });
+  });
 });
