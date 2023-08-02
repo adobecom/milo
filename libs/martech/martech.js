@@ -107,7 +107,7 @@ export default async function init({ persEnabled = false, persManifests }) {
       { as: 'script', rel: 'modulepreload' },
     );
     loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/manifest-js`,
+      `${config.miloLibs || config.codeRoot}/features/personalization/manifest-utils.js`,
       { as: 'script', rel: 'modulepreload' },
     );
   }
