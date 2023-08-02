@@ -75,4 +75,11 @@ describe('Share', () => {
     await init(shareEl);
     expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.false;
   });
+  it('Tracking attribute is added to the links in DOM', async () => {
+    const shareEl = document.querySelector('.share');
+    const links = shareEl.querySelectorAll('a');
+    links.forEach((link) => {
+      expect(link.hasAttribute('daa-ll'));
+    });
+  });
 });

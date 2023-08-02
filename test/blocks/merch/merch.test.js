@@ -9,7 +9,6 @@ const {
   VERSION,
   getTacocatEnv,
   getTacocatLocale,
-  getTacocatMetadata,
   imsCountryPromise,
   runTacocat,
 } = await import('../../../libs/blocks/merch/merch.js');
@@ -24,7 +23,7 @@ describe('Merch Block', () => {
       price: { optionProviders: [] },
       defaults: {
         apiKey: 'wcms-commerce-ims-ro-user-milo',
-        baseUrl: 'https://wcs.stage.adobe.com',
+        baseUrl: 'https://wcs.adobe.com',
         landscape: null,
         env: 'STAGE',
         environment: 'STAGE',
@@ -315,15 +314,34 @@ describe('Merch Block', () => {
     });
 
     it('returns production values', async () => {
-      const { scriptUrl, literalScriptUrl, country, language } = getTacocatEnv(
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
         'prod',
         { ietf: 'fr-CA' },
       );
+      expect(tacocatEnv).to.equal('PRODUCTION');
       expect(scriptUrl).to.equal(
         `https://www.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
       );
       expect(literalScriptUrl).to.equal(
         'https://www.adobe.com/special/tacocat/literals/fr.js',
+      );
+      expect(country).to.equal('CA');
+      expect(language).to.equal('fr');
+    });
+
+    it('returns stage values', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'STAGE' });
+      document.head.appendChild(metadata);
+      const { scriptUrl, literalScriptUrl, country, language, tacocatEnv } = getTacocatEnv(
+        'stage',
+        { ietf: 'fr-CA' },
+      );
+      expect(tacocatEnv).to.equal('STAGE');
+      expect(scriptUrl).to.equal(
+        `https://www.stage.adobe.com/special/tacocat/lib/${VERSION}/tacocat.js`,
+      );
+      expect(literalScriptUrl).to.equal(
+        'https://www.stage.adobe.com/special/tacocat/literals/fr.js',
       );
       expect(country).to.equal('CA');
       expect(language).to.equal('fr');
@@ -354,6 +372,15 @@ describe('Merch Block', () => {
     });
 
     it('does not initialize the block when tacocat fails to load', async () => {
+      window.tacocat.loadPromise = Promise.resolve(true);
+      let el = document.querySelector('.merch.cta.notacocat');
+      el = await merch(el);
+      expect(el).to.be.undefined;
+    });
+
+    it('does not initialize the block when tacocat fails to load', async () => {
+      const metadata = createTag('meta', { name: 'tacocat-env', content: 'invalidvalue' });
+      document.head.appendChild(metadata);
       window.tacocat.loadPromise = Promise.resolve(true);
       let el = document.querySelector('.merch.cta.notacocat');
       el = await merch(el);
