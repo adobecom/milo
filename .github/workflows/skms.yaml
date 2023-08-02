@@ -93,14 +93,24 @@ jobs:
             fi
           }
 
+          function sanitizeStr() {
+            local str=$1
+
+            if [ -z "$str" ]; then
+              echo "First parameter missing, must be a valid string"
+              return 1
+            fi
+
+            str="${str//\"/""}"
+            str="${str//\'/""}"
+            str="${str//$'\r\n'/ }"
+
+            echo "$str"
+          }
+
           end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
-          release_title="${{ github.event.pull_request.title }}"
-          release_details="${{ github.event.pull_request.body }}"
-          release_title="${release_title//\"/""}"
-          release_details="${release_details//\"/""}"
-          release_title="${release_title//\'/""}"
-          release_details="${release_details//\'/""}"
-          release_details="${release_details//$'\r\n'/ }"
+          release_title=$(sanitizeStr "${{ github.event.pull_request.title }}")
+          release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
 
           echo "${release_title}"
           echo "${release_details}"
