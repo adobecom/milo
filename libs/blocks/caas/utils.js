@@ -212,25 +212,31 @@ const getFilterObj = (
   return filterObj;
 };
 
-const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }) => {
+const getCustomFilterObj = ({ group, filtersCustomItems, openedOnLoad }, strs = {}) => {
   if (!group) return null;
+
+  const IN_BRACKETS_RE = /^{.*}$/;
 
   const items = filtersCustomItems.map((item) => ({
     id: item.customFilterTag[0],
-    label: item.filtersCustomLabel,
+    label: item.filtersCustomLabel?.match(IN_BRACKETS_RE)
+      ? strs[item.filtersCustomLabel.replace(/{|}/g, '')]
+      : item.filtersCustomLabel || '',
   }));
 
   const filterObj = {
     id: group,
     openedOnLoad: !!openedOnLoad,
     items,
-    group,
+    group: group?.match(IN_BRACKETS_RE)
+      ? strs[group.replace(/{|}/g, '')]
+      : group || '',
   };
 
   return filterObj;
 };
 
-const getFilterArray = async (state, country, lang) => {
+const getFilterArray = async (state, country, lang, strs) => {
   if ((!state.showFilters || state.filters.length === 0) && state.filtersCustom?.length === 0) {
     return [];
   }
@@ -245,7 +251,7 @@ const getFilterArray = async (state, country, lang) => {
       .filter((filter) => filter !== null);
   } else {
     filters = state.filtersCustom.length > 0
-      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter))
+      ? state.filtersCustom.map((filter) => getCustomFilterObj(filter, strs))
       : [];
   }
 
@@ -367,7 +373,7 @@ export const getConfig = async (originalState, strs = {}) => {
       eventFilter: state.filterEvent,
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
-      filters: await getFilterArray(state, country, language),
+      filters: await getFilterArray(state, country, language, strs),
       filterLogic: state.filterLogic,
       i18n: {
         leftPanel: {

@@ -56,6 +56,10 @@ export default async function init(a) {
 
       updateFragMap(fragment, a, relHref);
 
+      if (a.dataset.manifestId) {
+        import('../../features/personalization/add-fragment-link-headers.js')
+          .then(({ default: addFragmentLinkHeaders }) => addFragmentLinkHeaders(fragment, a));
+      }
       a.parentElement.replaceChild(fragment, a);
 
       await loadArea(fragment);
