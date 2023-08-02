@@ -38,7 +38,7 @@ jobs:
       # Run command for creating CMR in SKMS system
       - run: |
           start_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
-          DEFAULT_SKMS_URL='api.skms.adobe.com'
+          DEFAULT_SKMS_URL='stage.api.skms.adobe.com'
 
           function skms_request() {
             local username=$1
@@ -94,8 +94,8 @@ jobs:
           }
 
           end_date=$(TZ=":America/Los_Angeles" date '+%Y-%m-%d %H:%M')
-          release_title=`s/"//g' <<<"${{ github.event.pull_request.title }}"`
-          release_details=`s/"//g' <<<"${{ github.event.pull_request.body }}"`
+          release_title=$("${{ github.event.pull_request.title }}" | tr -d \")
+          release_details=$("${{ github.event.pull_request.body }}" | tr -d \")
           release_details="${release_details//$'\r\n'/ }"
 
-          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${end_date}","maintenance_window_start_time":"${start_date}","preapproved_change_model_id":847787,"summary":"Release Title:${release_title}::${release_details}::Pull Request #${{ github.event.pull_request.number }}::Pull Request Created at:${{ github.event.pull_request.created_at }}::Pull Request Merged at:${{ github.event.pull_request.merged_at }}"}'
+          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ github.actor }}","maintenance_window_end_time":"${end_date}","maintenance_window_start_time":"${start_date}","preapproved_change_model_id":"847787","summary":"Release Title:${release_title}::${release_details}::Pull Request Number:${{ github.event.pull_request.number }}::Pull Request Created at:${{ github.event.pull_request.created_at }}::Pull Request Merged at:${{ github.event.pull_request.merged_at }}"}'
