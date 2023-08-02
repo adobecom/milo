@@ -103,7 +103,7 @@ jobs:
 
             str="${str//\"/""}"
             str="${str//\'/""}"
-            str="${str//$'\r\n'/ }"
+            str="${str//$'\r\n\t'/ }"
 
             echo "$str"
           }
