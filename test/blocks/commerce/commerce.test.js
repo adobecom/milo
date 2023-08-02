@@ -89,12 +89,8 @@ describe('decorateSearch', () => {
     const searchWrapper = el.querySelector('.offer-search-wrapper');
     const offerDetailsWrapper = el.querySelector('.offer-details-wrapper');
     const input = searchWrapper.querySelector('.offer-search');
-    const e = new KeyboardEvent("keyup", {bubbles : false, cancelable : true, key : "Q", shiftKey : false});
-    Object.defineProperty(e, 'target', {
-      value: {
-        value: 'Q',
-      }
-    });
+    const e = new KeyboardEvent('keyup', { bubbles: false, cancelable: true, key: 'Q', shiftKey: false });
+    Object.defineProperty(e, 'target', { value: { value: 'Q' } });
     input.dispatchEvent(e);
     let h4 = el.querySelector('h4');
     expect(h4).to.equal(null);

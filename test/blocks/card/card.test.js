@@ -75,7 +75,7 @@ describe('Card', () => {
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
   });
-  
+
   describe('Two-Up Cards', () => {
     before(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });
@@ -84,6 +84,25 @@ describe('Card', () => {
     it('are supported when authored with a two-up refernce in section-metadata', () => {
       init(document.querySelector('.card'));
       expect(document.querySelector('.consonant-CardsGrid--2up')).to.exist;
+    });
+  });
+
+  describe('Analytics', () => {
+    before(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/two-up-cards.html' });
+    });
+
+    it('Analytics attribute are added to the links and headings in the card', () => {
+      const card = document.querySelector('.card');
+      init(card);
+      const links = card.querySelectorAll('a');
+      const headings = card.querySelectorAll('h1, h2, h3, h4, h5, h6');
+      links.forEach((link) => {
+        expect(link.hasAttribute('daa-ll'));
+      });
+      headings.forEach((heading) => {
+        expect(heading.hasAttribute('daa-lh'));
+      });
     });
   });
 });

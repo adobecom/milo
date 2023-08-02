@@ -14,6 +14,4 @@ const getImsToken = async (loadScript) => {
   return window.adobeIMS?.getAccessToken()?.token;
 };
 
-export {
-  getImsToken,
-};
+export { getImsToken };

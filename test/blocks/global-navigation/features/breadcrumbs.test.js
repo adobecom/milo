@@ -3,6 +3,7 @@ import { stub } from 'sinon';
 import breadcrumbs from '../../../../libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js';
 import { toFragment } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { mockRes } from '../test-utilities.js';
+import { setConfig } from '../../../../libs/utils/utils.js';
 
 export const breadcrumbMock = () => toFragment`
   <div class="breadcrumbs">
@@ -10,7 +11,7 @@ export const breadcrumbMock = () => toFragment`
       <div>
         <ul>
           <li><a href="http://www.google.com/">1-from-page</a></li>
-          <li><a href="http://www.future-releases.com/">Future Releases</a></li>
+          <li><a href="http://localhost:2000/">Future Releases</a></li>
           <li><a href="http://www.adobe.com/">Actors</a></li>
           <li>Players</li>
         </ul>
@@ -58,6 +59,13 @@ describe('breadcrumbs', () => {
     expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
   });
 
+  it('should use a custom page title if its explicity set even without breadcrumbs-show-current-page:ON', async () => {
+    document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
+    const breadcrumb = await breadcrumbs(breadcrumbMock());
+    assertBreadcrumb({ breadcrumb, length: 5 });
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+  });
+
   it('should create a breadcrumb SEO element', async () => {
     await breadcrumbs(breadcrumbMock());
     const script = document.querySelector('script');
@@ -78,7 +86,7 @@ describe('breadcrumbs', () => {
             '@type': 'ListItem',
             position: 2,
             name: 'Future Releases',
-            item: 'http://www.future-releases.com/',
+            item: 'http://localhost:2000/',
           },
           {
             '@type': 'ListItem',
@@ -120,5 +128,48 @@ describe('breadcrumbs', () => {
         .querySelector('ul li:last-of-type')
         .getAttribute('aria-current'),
     ).to.equal('page');
+  });
+
+  it('should localize breadcrumb links', async () => {
+    setConfig({
+      locales: {
+        '': { ietf: 'en-US' },
+        fi: { ietf: 'fi-FI' },
+      },
+      pathname: '/fi/',
+      prodDomains: 'http://localhost:2000',
+    });
+
+    await breadcrumbs(breadcrumbMock());
+    const script = document.querySelector('script');
+    expect(script).to.exist;
+    expect(script.type).to.equal('application/ld+json');
+    expect(JSON.parse(script.innerHTML)).to.deep.equal(
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: '1-from-page',
+            item: 'http://www.google.com/',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Future Releases',
+            item: 'http://localhost:2000/fi/', // <-- localised prod domain
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: 'Actors',
+            item: 'http://www.adobe.com/',
+          },
+          { '@type': 'ListItem', position: 4, name: 'Players' },
+        ],
+      },
+    );
   });
 });

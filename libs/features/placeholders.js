@@ -62,6 +62,8 @@ async function getPlaceholder(key, config, sheet) {
     return defaultPlaceholders;
   };
 
+  if (config.placeholders?.[key]) return config.placeholders[key];
+
   const placeholders = await fetchPlaceholders(config, sheet).catch(async () => {
     const defaultPlaceholders = await getDefaultPlaceholders();
     return defaultPlaceholders;

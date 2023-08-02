@@ -160,7 +160,9 @@ function StatusCompletion({ completion }) {
 }
 
 // eslint-disable-next-line max-len
-function Status({ valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion }) {
+function Status({
+  valid, urlNumber, bulkTriggered, submittedAction, result, resultsElt, completion,
+}) {
   return valid && html`
     <div class="bulk-status">
       <div class="bulk-status-info">
