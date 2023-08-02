@@ -8,3 +8,4 @@ export function debounce(callback, time = 300) {
     timer = setTimeout(() => callback(...args), time);
   };
 }
+export default { debounce };
