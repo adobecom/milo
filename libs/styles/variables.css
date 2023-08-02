@@ -116,6 +116,15 @@
   --aspect-ratio-square: 1/1;
   --aspect-ratio-standard: 4/3;
   --aspect-ratio-wide: 16/9;
+
+  /* icon sizes */
+  --icon-size-xxl: 80px;
+  --icon-size-xl: 64px;
+  --icon-size-l: 56px;
+  --icon-size-m: 40px;
+  --icon-size-s: 32px;
+  --icon-size-xs: 24px;
+  --icon-size-xxs: 16px;
 }
 
 :root:lang(ko-KR) {
