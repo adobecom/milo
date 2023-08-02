@@ -93,7 +93,7 @@
 }
 
 .aside:not(.notification):not(.inline) .foreground.container> :last-child {
-  margin-bottom: var(--spacing-l);
+  margin-bottom: var(--spacing-xxxl);
 }
 
 .aside .foreground.container .text {
@@ -560,6 +560,14 @@
 }
 
 @media screen and (max-width: 600px) {
+  .aside.split:not(.large) .foreground.container > :last-child {
+    margin-bottom: var(--spacing-l);
+  }  
+  
+  .aside.split.large .foreground.container > :last-child {
+    padding: var(--spacing-l) 0 0;
+  }  
+
   .aside.split .has-modal {
     position: relative;
   }
@@ -570,7 +578,6 @@
     left: 0;
   }
 }
-
 @media screen and (min-width: 600px) {
   .aside .foreground.container {
     align-items: center;
