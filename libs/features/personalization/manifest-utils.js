@@ -1,13 +1,15 @@
+import { getConfig, loadLink } from '../../utils/utils.js';
+
 export const appendJsonExt = (path) => (path.endsWith('.json') ? path : `${path}.json`);
 
-export const normalizePath = (p, utils) => {
+export const normalizePath = (p) => {
   let path = p;
 
   if (!path.includes('/')) {
     return path;
   }
 
-  const config = utils.getConfig();
+  const config = getConfig();
 
   if (path.startsWith(config.codeRoot) || path.startsWith(`https://${config.productionDomain}`)) {
     try {
@@ -19,7 +21,7 @@ export const normalizePath = (p, utils) => {
   return path;
 };
 
-export const preloadManifests = ({ targetManifests = [], persManifests = [] }, utils) => {
+export const preloadManifests = ({ targetManifests = [], persManifests = [] }) => {
   let manifests = targetManifests;
 
   manifests = manifests.concat(
@@ -28,8 +30,8 @@ export const preloadManifests = ({ targetManifests = [], persManifests = [] }, u
 
   for (const manifest of manifests) {
     if (!manifest.manifestData && manifest.manifestPath) {
-      manifest.manifestPath = normalizePath(manifest.manifestPath, utils);
-      utils.loadLink(
+      manifest.manifestPath = normalizePath(manifest.manifestPath);
+      loadLink(
         manifest.manifestPath,
         { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
       );

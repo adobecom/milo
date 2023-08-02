@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-let utils;
+import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
@@ -33,10 +33,10 @@ const DATA_TYPE = {
 };
 
 const createFrag = (url, manifestId) => {
-  const a = utils.createTag('a', { href: url }, url);
+  const a = createTag('a', { href: url }, url);
   if (manifestId) a.dataset.manifestId = manifestId;
-  const p = utils.createTag('p', undefined, a);
-  utils.loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  const p = createTag('p', undefined, a);
+  loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   return p;
 };
 
@@ -47,7 +47,7 @@ const COMMANDS = {
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
-      const div = utils.createTag('div', { 'data-removed-manifest-id': manifestId });
+      const div = createTag('div', { 'data-removed-manifest-id': manifestId });
       el.insertAdjacentElement('beforebegin', div);
     }
     el.classList.add(CLASS_EL_DELETE);
@@ -96,7 +96,7 @@ function normalizePath(p) {
     return path;
   }
 
-  const config = utils.getConfig();
+  const config = getConfig();
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
@@ -260,7 +260,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
 }
 
 function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
-  const config = utils.getConfig();
+  const config = getConfig();
   let manifestFound = false;
   if (config.mep?.override !== '') {
     config.mep?.override.split(',').forEach((item) => {
@@ -322,8 +322,8 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   }
 
   if (placeholders) {
-    utils.updateConfig(
-      parsePlaceholders(placeholders, utils.getConfig(), config.selectedVariantName),
+    updateConfig(
+      parsePlaceholders(placeholders, getConfig(), config.selectedVariantName),
     );
   }
 
@@ -367,7 +367,7 @@ const modifyFragment = (selectedEl, action, htmlFragment, manifestId) => {
       selectedEl.insertAdjacentElement('afterend', htmlFragment);
       break;
     case 'remove': case 'removecontent':
-      selectedEl.insertAdjacentElement('beforebegin', utils.createTag('div', { 'data-remove-manifest-id': manifestId }));
+      selectedEl.insertAdjacentElement('beforebegin', createTag('div', { 'data-remove-manifest-id': manifestId }));
       selectedEl.remove();
       break;
     default:
@@ -428,7 +428,7 @@ export async function runPersonalization(info, config) {
     document.querySelector('main').dataset.manifestId = manifestPath;
   }
 
-  selectedVariant.insertscript?.map((script) => utils.loadScript(script.val));
+  selectedVariant.insertscript?.map((script) => loadScript(script.val));
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   let manifestId = experiment.manifest;
@@ -469,15 +469,11 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-export async function applyPers(
-  manifests,
-  utilities,
-) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   const cleanedManifests = cleanManifestList(manifests);
 
-  utils = utilities;
-  const config = utils.getConfig();
+  const config = getConfig();
 
   let results = [];
   for (const manifest of cleanedManifests) {
@@ -487,7 +483,7 @@ export async function applyPers(
   deleteMarkedEls();
 
   const experiments = results.map((r) => r.experiment);
-  utils.updateConfig({
+  updateConfig({
     ...config,
     experiments,
     expBlocks: consolidateObjects(results, 'blocks'),
@@ -496,6 +492,6 @@ export async function applyPers(
 
   if (config.mep?.preview) {
     const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments, utils);
+    decoratePreviewMode(experiments);
   }
 }
