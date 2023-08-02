@@ -141,4 +141,9 @@ export default async function init({ persEnabled = false, persManifests }) {
       await applyPers(manifests);
     }
   }
+  if (config.mep.override || config.mep.override === '' || config.env.name === 'stage') {
+    import('../features/personalization/preview.js').then(({ default: decoratePreviewMode }) => {
+      decoratePreviewMode();
+    });
+  }
 }
