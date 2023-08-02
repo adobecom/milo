@@ -39,6 +39,7 @@ export const initConfigPathGlob = (rootElement) => {
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
+  return { configPath, quizKey, analyticsType, analyticsQuiz };
 };
 
 export const getQuizData = async () => {
@@ -56,10 +57,10 @@ export const getUrlParams = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const params = {};
   urlParams.forEach((value, key) => {
-    params[key] = value.split(',');
+    params[key] = value?.split(',');
   });
   return params;
-}
+};
 
 /**
  * Handling the result flow from here. Will need to make sure we capture all
@@ -92,7 +93,7 @@ export const handleResultFlow = async (answers = []) => {
   window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
 };
 
-const storeResultInLocalStorage = (
+export const storeResultInLocalStorage = (
   answers,
   resultData,
   resultResources,
@@ -100,12 +101,13 @@ const storeResultInLocalStorage = (
   secondaryProductCodes,
   umbrellaProduct,
 ) => {
-  const nestedFrags = resultData.matchedResults[0]['nested-fragments'];
+  const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
+  const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
   const structureFrags = resultData.matchedResults[0]['basic-fragments'];
 
   const structureFragsArray = structureFrags?.split(',');
-  const nestedFragsArray = nestedFrags?.split(',');
-
+  const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
+  const nestedFragsSecondaryArray = nestedFragsSecondary?.split(',');
   const resultToDelegate = {
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
@@ -117,7 +119,8 @@ const storeResultInLocalStorage = (
       umbrellaProduct,
     ),
     nestedFragments: nestedFragments(
-      nestedFragsArray,
+      nestedFragsPrimaryArray,
+      nestedFragsSecondaryArray,
       resultResources,
       primaryProducts,
       secondaryProductCodes,
@@ -126,9 +129,10 @@ const storeResultInLocalStorage = (
     pageloadHash: getAnalyticsDataForLocalStorage(answers),
   };
   localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+  return resultToDelegate;
 };
 
-const structuredFragments = (
+export const structuredFragments = (
   structureFragsArray,
   resultResources,
   primaryProducts,
@@ -152,41 +156,73 @@ const structuredFragments = (
   return structureFragments;
 };
 
-const nestedFragments = (
-  nestedFragsArray,
+export const nestedFragments = (
+  nestedFragsPrimaryArray,
+  nestedFragsSecondaryArray,
   resultResources,
   primaryProducts,
-  secondaryProductCodes,
+  secondaryProducts,
   isUmbrella,
 ) => {
   const nestedObject = {};
-  nestedFragsArray.forEach((frag) => {
+  nestedFragsPrimaryArray?.forEach((frag) => {
+    if (!frag) return;
     const fragKey = frag.trim();
-    const fragArray = [];
-    resultResources.data.forEach((row) => {
-      if (isUmbrella) {
-        // Get nested frags for all the primary products.
-        if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
-          if (row[fragKey]) {
-            fragArray.push(row[fragKey]);
-          }
-        }
-      } else if (secondaryProductCodes.length > 0 && secondaryProductCodes.includes(row.product)) {
-        // Get nested frags for all the secondary products.
-        if (row[fragKey]) {
-          fragArray.push(row[fragKey]);
-        }
-      }
-    });
-    nestedObject[fragKey] = fragArray;
+    // eslint-disable-next-line max-len
+    nestedObject[fragKey] = getNestedFragments(resultResources, isUmbrella, primaryProducts, secondaryProducts, fragKey, true);
   });
-
+  nestedFragsSecondaryArray?.forEach((frag) => {
+    if (!frag) return;
+    const fragKey = frag.trim();
+    // eslint-disable-next-line max-len
+    nestedObject[fragKey] = getNestedFragments(resultResources, isUmbrella, primaryProducts, secondaryProducts, fragKey, false);
+  });
   return nestedObject;
 };
 
-const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+const getNestedFragments = (
+  resultResources,
+  isUmbrella,
+  primaryProducts,
+  secondaryProducts,
+  fragKey,
+  fetchForPrimaryProducts,
+) => {
+  const fragArray = [];
+  resultResources.data.forEach((row) => {
+    if (isUmbrella) {
+      // Get nested frags for all the primary products.
+      if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
+        insertFragment();
+      }
+    } else if (isMatchingProductForFrag()) {
+      // Get nested frags for all the primary and secondary products.
+      insertFragment();
+    }
 
-const parseResultData = async (answers) => {
+    function insertFragment() {
+      if (row[fragKey]) {
+        row[fragKey].split(',').forEach((val) => {
+          fragArray.push(val.trim());
+        });
+      }
+    }
+
+    function isMatchingProductForFrag() {
+      return (!fetchForPrimaryProducts
+              && secondaryProducts.length > 0
+              && secondaryProducts.includes(row.product))
+            || (fetchForPrimaryProducts
+              && primaryProducts.length > 0
+              && primaryProducts.includes(row.product));
+    }
+  });
+  return fragArray;
+};
+
+export const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+
+export const parseResultData = async (answers) => {
   const results = await fetchContentOfFile(RESULTS_EP_NAME);
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
@@ -242,11 +278,11 @@ const parseResultData = async (answers) => {
   return rObj;
 };
 
-const getRecomandationResults = (selectedDestination, deafult) =>
-  (selectedDestination.length ? selectedDestination : deafult);
+// eslint-disable-next-line max-len
+const getRecomandationResults = (selectedDestination, deafult) => (selectedDestination.length ? selectedDestination : deafult);
 
 // TODO: needs refactoring - can split to smaller functions
-const findMatchForSelections = (results, selections) => {
+export const findMatchForSelections = (results, selections) => {
   const recommendations = [];
   const matchResults = [];
   const defaultResult = [];
@@ -378,7 +414,7 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   }
 };
 
-const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (answers) => {
   let formattedAnswerString = '';
   answers.forEach((answer) => {
     const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
