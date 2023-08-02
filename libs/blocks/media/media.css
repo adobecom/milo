@@ -157,7 +157,7 @@ div[class*="-up"] .media .foreground > .media-row {
   top: .155em;
 }
 
-.media.qr-code img.qr-code {
+.media.qr-code img.qr-code-img {
   display: none;
 }
 
@@ -166,7 +166,7 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-right: var(--spacing-s);
 }
 
-.media.qr-code a.qr-button {
+.media.qr-code a {
   width: 135px;
   max-width: 140px;
   height: 50px;
@@ -276,7 +276,7 @@ div[class*="-up"] .media .foreground > .media-row {
     margin-top: 8px;
   }
 
-  .media.qr-code img.qr-code {
+  .media.qr-code img.qr-code-img {
     display: flex;
     width: 150px;
     height: 170px;

@@ -84,18 +84,18 @@ export default function init(el) {
     if (row.closest('.qr-code')) {
       const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
       if (imgQRCode) {
-        imgQRCode.classList.add('qr-code');
+        imgQRCode.classList.add('qr-code-img');
       }
 
       const qrCodeLinks = row.querySelectorAll('a');
       const googleBtn = qrCodeLinks[0];
       const appleBtn = qrCodeLinks[1];
 
-      googleBtn.classList.add('google-button', 'qr-button');
+      googleBtn.classList.add('google-button');
       googleBtn.textContent = '';
       googleBtn.parentNode.classList.add('qr-button-container');
 
-      appleBtn.classList.add('apple-button', 'qr-button');
+      appleBtn.classList.add('apple-button');
       appleBtn.textContent = '';
       appleBtn.parentNode.classList.add('qr-button-container');
     }
