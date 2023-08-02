@@ -83,7 +83,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  outline: 0;
+  outline: none;
   border-radius: 100%;
   border-style: solid;
   border-width: 1px;
@@ -110,7 +110,8 @@
 
 .action-scroller .nav-grad .next-button:focus,
 .action-scroller .nav-grad .previous-button:focus {
-  outline: 2px solid var(--link-color);
+  outline-color: -webkit-focus-ring-color;
+  outline-style: auto;
 }
 
 .action-scroller .nav-button:hover,
