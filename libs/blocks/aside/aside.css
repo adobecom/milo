@@ -177,17 +177,17 @@
 
 .aside.split .mobile-square img,
 .aside.split .mobile-square video {
-  aspect-ratio: 1/1;
+  aspect-ratio: var(--aspect-ratio-square);
 }
 
 .aside.split .mobile-wide img,
 .aside.split .mobile-wide video {
-  aspect-ratio: 16/9;
+  aspect-ratio: var(--aspect-ratio-wide);
 }
 
 .aside.split .mobile-standard img,
 .aside.split .mobile-standard video {
-  aspect-ratio: 4/3;
+  aspect-ratio: var(--aspect-ratio-standard);
 }
 
 .aside.split .icon-stack-area li img {
@@ -495,7 +495,7 @@
   width: 77px;
   left: calc(50% - 38.5px);
   top: calc(50% - 38.5px);
-  background-color: var(--color-accent-focus-ring);
+  background-color: var(--play-btn-default);
   border: none;
   border-radius: 50%;
   outline: none;
@@ -503,17 +503,17 @@
 }
 
 .aside .play-btn:hover {
-  background-color: var(--color-accent-down);
+  background-color: var(--play-btn-hover);
 }
 
 .aside .play-btn:focus,
 .aside .play-btn:focus-visible {
-  outline: 2.5px solid var(--color-accent);
-  background-color: var(--color-accent-down);
+  outline: 2.5px solid var(--play-btn-focus-ring);
+  background-color: var(--play-btn-focus);
 }
 
 .aside .play-btn:active {
-  background-color: var(--color-accent-hover);
+  background-color: var(--play-btn-down);
   outline: none
 }
 
@@ -640,12 +640,12 @@
 
   .aside.split .tablet-wide img,
   .aside.split .tablet-wide video {
-    aspect-ratio: 16/9;
+    aspect-ratio: var(--aspect-ratio-wide);
   }
   
   .aside.split .tablet-standard img,
   .aside.split .tablet-standard video {
-    aspect-ratio: 4/3;
+    aspect-ratio: var(--aspect-ratio-standard);
   }
 
   .aside.split-right .split-image img,
@@ -888,12 +888,12 @@
 
   .aside.split .desktop-wide img,
   .aside.split .desktop-wide video {
-    aspect-ratio: 16/9;
+    aspect-ratio: var(--aspect-ratio-wide);
   }
   
   .aside.split .desktop-standard img,
   .aside.split .desktop-standard video {
-    aspect-ratio: 4/3;
+    aspect-ratio: var(--aspect-ratio-standard);
   }
 
   .aside.split.half .foreground.container .text {
