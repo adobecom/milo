@@ -859,7 +859,7 @@ export async function loadArea(area = document) {
     }
     const seotechVideoUrl = getMetadata('seotech-video-url');
     if (seotechVideoUrl) {
-      import('../features/seotech/video.js').then((module) => module.default(seotechVideoUrl, { createTag }));
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
