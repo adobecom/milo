@@ -61,6 +61,7 @@ const showConfirm = (msg, {
   cancelBtnType = 'default',
   cancelText = 'Cancel',
   footerContent = '',
+  initCode,
   leftButton,
 } = {}) => new Promise((resolve) => {
   let ok = false;
@@ -79,16 +80,6 @@ const showConfirm = (msg, {
     modal.setFooterContent(footerContent);
   }
 
-  const caasEnvSelect = document.getElementById('caas-env-select');
-  const caasEnv = caasEnvSelect.value?.toLowerCase();
-  const useHtmlCb = document.getElementById('usehtml');
-  if (caasEnv === 'prod') {
-    useHtmlCb.checked = true;
-  }
-  caasEnvSelect.addEventListener('change', (e) => {
-    useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
-  });
-
   if (ctaText) {
     modal.addFooterBtn(ctaText, `tingle-btn tingle-btn--${ctaBtnType} tingle-btn--pull-right`, () => {
       ok = true;
@@ -105,6 +96,9 @@ const showConfirm = (msg, {
       leftButton.callback?.();
     });
   }
+
+  if (initCode) initCode(modal.modal);
+
   modal.open();
 });
 
@@ -153,9 +147,21 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
     </div>`;
 
   const onClose = () => {
+    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
     draftOnly = document.getElementById('draftcb')?.checked;
     useHtml = document.getElementById('usehtml')?.checked;
-    caasEnv = document.getElementById('caas-env-select')?.value?.toLowerCase();
+  };
+
+  const modalInit = (modal) => {
+    const caasEnvSelect = modal.querySelector('#caas-env-select');
+    const caasEnvVal = caasEnvSelect.value?.toLowerCase();
+    const useHtmlCb = modal.querySelector('#usehtml');
+    if (caasEnvVal === 'prod') {
+      useHtmlCb.checked = true;
+    }
+    caasEnvSelect.addEventListener('change', (e) => {
+      useHtmlCb.checked = e.target.value?.toLowerCase() === 'prod';
+    });
   };
 
   if (!tags.length) {
@@ -186,6 +192,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaBtnType: 'danger',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });
@@ -201,6 +208,7 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
       cancelText: 'Cancel Registration',
       ctaText: 'Continue with these tags',
       footerContent: footerOptions,
+      initCode: modalInit,
       leftButton: seeAllPropsBtn,
       onClose,
     });
@@ -215,6 +223,10 @@ const verifyInfoModal = async (tags, tagErrors, showAllPropertiesAlert) => {
 
 const isUseHtmlChecked = () => document.getElementById('usehtml')?.checked;
 
+const sortObjByPropName = (obj) => Object.keys(obj)
+  // eslint-disable-next-line no-return-assign, no-sequences
+  .sort().reduce((c, d) => (c[d] = obj[d], c), {});
+
 const validateProps = async (prodHost, publishingModal) => {
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
     { prodUrl: `${prodHost}${window.location.pathname}` },
@@ -224,7 +236,7 @@ const validateProps = async (prodHost, publishingModal) => {
     const { caasMetadata: cMetaData } = await getCardMetadata(
       { prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}` },
     );
-    const mdStr = JSON.stringify(cMetaData, undefined, 4);
+    const mdStr = JSON.stringify(sortObjByPropName(cMetaData), undefined, 4);
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${mdStr}</pre>`);
   };
 

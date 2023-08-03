@@ -419,7 +419,7 @@ const props = {
     const floodGateColor = getMetadata('floodGateColor') || '';
     return getUuid(`${options.prodUrl}${floodGateColor}`);
   },
-  contenttype: (s) => s || getMetaContent('property', 'og:type'),
+  contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
     const { country } = await getCountryAndLang(options);
@@ -575,6 +575,9 @@ const getCaaSMetadata = async (pageMd, options) => {
     } else if (val !== undefined) {
       md[key] = val;
     }
+  }
+  if (!md.contenttype && tags.length) {
+    md.contenttype = tags.find((tag) => tag.startsWith('caas:content-type'));
   }
 
   return { caasMetadata: md, errors, tags, tagErrors };
