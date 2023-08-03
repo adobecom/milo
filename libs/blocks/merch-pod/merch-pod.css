@@ -160,7 +160,12 @@ p {
   color: #000;
 }
 
-.merch-pod h1, h2, h3, h4, h5, h6 {
+.merch-pod h1, 
+.merch-pod h2, 
+.merch-pod h3,
+.merch-pod h4,
+.merch-pod h5,
+.merch-pod h6 {
   font-weight: 700;
   line-height: 1.25;
   margin-top: 0;
