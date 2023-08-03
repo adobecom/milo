@@ -157,12 +157,14 @@ p {
   line-height: 1.5;
   margin-bottom: 8px;
   margin-top: 0;
+  color: #000;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.25;
   margin-top: 0;
+  color: #000;
 }
 
 h2 {
