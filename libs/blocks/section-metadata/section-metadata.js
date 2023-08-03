@@ -16,14 +16,14 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 function handleBackground(div, section) {
-  const pic = div.background.content.querySelector('picture');
+  const pic = div.background.content?.querySelector('picture');
   if (pic) {
     section.classList.add('has-background');
     pic.classList.add('section-background');
     handleFocalpoint(pic, div.background.content);
     section.insertAdjacentElement('afterbegin', pic);
   } else {
-    const color = div.background.content.textContent;
+    const color = div.background.content?.textContent;
     if (color) {
       section.style.background = color;
     }
@@ -45,12 +45,10 @@ async function handleStickySection(sticky, section) {
       break;
     }
     case 'sticky-bottom':
-    {
       main.append(section);
       break;
-    }
     default:
-    { break; }
+      break;
   }
 }
 
