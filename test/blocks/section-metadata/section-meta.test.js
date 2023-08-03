@@ -54,7 +54,7 @@ describe('Section Metdata', () => {
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
   });
 
-  it('gets section metadata', () => {
+  it('gets section to bottom', () => {
     const sec = document.querySelector('.section.sticky-bottom');
     const sm = sec.querySelector('.section-metadata');
     const main = document.querySelector('main');
@@ -82,5 +82,15 @@ describe('Section Metdata', () => {
 
     await delay(700);
     expect(sec.style.top).to.be.eql('77px');
+  });
+
+  it('adds section auto up attributes', async () => {
+    const sec = document.querySelector('.section.auto-up');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    const styles = getComputedStyle(sec);
+    const variable = styles.getPropertyValue('--section-grid-columns')
+    expect(sec.classList.contains('auto-up')).to.be.true;
+    expect(variable).to.be.equal('2');
   });
 });
