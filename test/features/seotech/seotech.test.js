@@ -15,22 +15,22 @@ describe('seotech', () => {
       window.lana?.restore?.();
     });
 
-    it('should not append JSON-LD if url is falsey', async () => {
+    it('should not append JSON-LD if url is invalid', async () => {
       const lanaStub = stub(window.lana, 'log');
       await appendVideoObjectScriptTag('', { getConfig, createTag });
-      expect(lanaStub.calledOnceWith('SEOTECH: URL undefined')).to.be.true;
+      expect(lanaStub.calledOnceWith('SEOTECH: Failed to construct \'URL\': Invalid URL')).to.be.true;
     });
 
     it('should not append JSON-LD if url not found', async () => {
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
-      fetchStub.returns(Promise.resolve(new Response(
-        JSON.stringify({ error: 'ERROR!' }),
+      fetchStub.returns(Promise.resolve(Response.json(
+        { error: 'ERROR!' },
         { status: 400 },
       )));
-      await appendVideoObjectScriptTag('FAKE', { getConfig, createTag });
+      await appendVideoObjectScriptTag('http://fake', { getConfig, createTag });
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=FAKE',
+        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
     });
@@ -40,15 +40,15 @@ describe('seotech', () => {
       const expectedVideoObject = {
         '@context': 'http://schema.org',
         '@type': 'VideoObject',
-        name: 'FAKE',
+        name: 'fake',
       };
-      fetchStub.returns(Promise.resolve(new Response(JSON.stringify(
+      fetchStub.returns(Promise.resolve(Response.json(
         { videoObject: expectedVideoObject },
         { status: 200 },
-      ))));
-      await appendVideoObjectScriptTag('FAKE', { getConfig, createTag });
+      )));
+      await appendVideoObjectScriptTag('http://fake', { getConfig, createTag });
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=FAKE',
+        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
