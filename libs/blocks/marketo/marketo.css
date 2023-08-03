@@ -378,7 +378,7 @@
     width: 47.7%;
   }
 
-  [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
+  .marketo [class*="adobe-privacy"] fieldset.mktoFormCol.mktoVisible {
     width: 100%;
   }
 
