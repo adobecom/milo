@@ -89,7 +89,7 @@ describe('Section Metdata', () => {
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     const styles = getComputedStyle(sec);
-    const variable = styles.getPropertyValue('--section-grid-columns')
+    const variable = styles.getPropertyValue('--section-grid-columns');
     expect(sec.classList.contains('auto-up')).to.be.true;
     expect(variable).to.be.equal('2');
   });
