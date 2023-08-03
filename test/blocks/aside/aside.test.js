@@ -65,10 +65,10 @@ describe('aside', () => {
               aspectRatios = aside.querySelector('.mobile-square.tablet-standard.desktop-wide');
               expect(aspectRatios).to.exist;
             } else if (aside.classList.contains('aspect-ratio-two')) {
-              aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-wide');
+              aspectRatios = aside.querySelector('.mobile-standard.tablet-wide');
               expect(aspectRatios).to.exist;
             } else if (aside.classList.contains('aspect-ratio-one')) {
-              aspectRatios = aside.querySelector('.mobile-standard.tablet-standard.desktop-standard');
+              aspectRatios = aside.querySelector('.mobile-standard');
               expect(aspectRatios).to.exist;
             }
           });
