@@ -12,7 +12,7 @@ module.exports = {
   rules: {
     'chai-friendly/no-unused-expressions': 2,
     'import/extensions': ['error', { js: 'always' }],
-    'import/no-cycle': 1,
+    'import/no-cycle': 0,
     'linebreak-style': ['error', 'unix'],
     'no-await-in-loop': 0,
     'no-param-reassign': [2, { props: false }],
