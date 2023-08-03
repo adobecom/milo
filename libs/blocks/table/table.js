@@ -258,7 +258,9 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table, gnavHeight) {
+function handleScrollEffect(table) {
+  const gnav = document.querySelector('header');
+  const gnavHeight = gnav ? gnav.offsetHeight : 0;
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
@@ -446,8 +448,6 @@ export default function init(el) {
   });
 
   const isStickyHeader = el.classList.contains('sticky');
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
@@ -466,7 +466,7 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
-      if (isStickyHeader) handleScrollEffect(el, gnavHeight);
+      if (isStickyHeader) handleScrollEffect(el);
     };
     handleResize();
 
