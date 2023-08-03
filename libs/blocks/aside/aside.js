@@ -77,11 +77,13 @@ function decorateMedia(el) {
     if (!(hasFormats === 0)) return;
     processed = true;
     const formats = siblingText.split(': ')[1]?.split(/\s+/);
-    const formatClasses = formats ? ['format',
-      `desktop-${formats[((formats.length - 1) > 0) ? (formats.length - 1) : 0]}`,
-      `tablet-${formats[((formats.length - 2) > 0) ? (formats.length - 2) : 0]}`,
-      `mobile-${formats[0]}`,
-    ] : [];
+    const formatClasses = [];
+    if (formats) {
+      formatClasses.push('format');
+      if (formats.length === 3) formatClasses.push(`desktop-${formats[2]}`);
+      if (formats.length >= 2) formatClasses.push(`tablet-${formats[1]}`);
+      formatClasses.push(`mobile-${formats[0]}`);
+    }
     media.closest('div').classList.add(...formatClasses);
     siblingP.remove();
     media.closest('div').insertBefore(media, parentP);
