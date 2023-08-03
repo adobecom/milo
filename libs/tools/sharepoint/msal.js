@@ -21,7 +21,8 @@ export function getMSALConfig() {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     if (!msalConfig) {
-      const { data } = await getSiteConfig();
+      const { configs } = await getSiteConfig();
+      const { data } = configs;
       const configValues = {};
       siteKeys.forEach((key) => {
         const currentData = data.find((item) => (item.key === `prod.sharepoint.${key}`));
