@@ -96,7 +96,7 @@ const handleDeferredImages = (block) => {
 		  });
   };
   document.addEventListener('milo:deferred', loadLazyImages, { once: true, capture: true });
-}
+};
 
 const init = (block) => {
   const rootElem = block.closest('.fragment') || document;
@@ -135,7 +135,7 @@ const init = (block) => {
   if (tabListItems) {
     const btnClass = [...block.classList].includes('quiet') ? 'heading-xs' : 'heading-xs';
     tabListItems.forEach((item, i) => {
-      const tabName = config.id ? i+1 : getStringKeyName(item.textContent);
+      const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const tabBtnAttributes = {
         role: 'tab',
         class: btnClass,
@@ -180,7 +180,7 @@ const init = (block) => {
         const values = row.children[1].textContent.split(',');
         id = values[0];
         val = getStringKeyName(String(values[1]));
-        assocTabItem = rootElem.getElementById(`tab-panel-${id}-${val}`);
+        assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       }
       if (assocTabItem) {
         const section = sectionMetadata.closest('.section');

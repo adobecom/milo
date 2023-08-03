@@ -1,21 +1,25 @@
-import { loadScript, loadStyle } from '../../utils/utils.js';
+import ctaTextOption from './ctaTextOption.js';
+import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import { ENV_PROD, getTacocatEnv } from '../merch/merch.js';
 
 const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_SCRIPT_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.js';
-const OST_STYLE_URL = 'https://www.stage.adobe.com/special/tacocat/ost/lib/1.10.0/index.css';
+const OST_VERSION = '1.12.0';
+const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
+const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
+const OST_STYLE_URL = `${OST_BASE}/index.css`;
 
-const ENVIRONMENT = 'PROD';
-const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
-const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
-const CHECKOUT_CLIENT_ID = 'creative';
+export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
+export const CHECKOUT_CLIENT_ID = 'creative';
+export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
 
-const searchParameters = new URLSearchParams(window.location.search);
-// this is only for testing PRs where test URLs are not supported by IMS.
-const token = searchParameters.get('token');
-if (token) {
-  searchParameters.delete('token');
-}
+/**
+ * Maps Franklin page metadata to OST properties.
+ * Only values present in this object will be provided to OST.
+ * Each key of the object is metadata key.
+ * Each value - OST property name.
+ */
+const METADATA_MAPPINGS = { 'checkout-type': 'checkoutType' };
 
 document.body.classList.add('tool', 'tool-ost');
 
@@ -26,11 +30,11 @@ export function createLinkMarkup(
   placeholderOptions,
   location = window.location,
 ) {
-  const ctaText = 'buy-now';
+  const { ctaText = 'buy-now' } = placeholderOptions;
   const isCheckoutPlaceholder = !!type && type.startsWith('checkout');
   const createText = () => (isCheckoutPlaceholder
     ? `CTA {{${ctaText}}}`
-    : `{{PRICE - ${planType} - ${offerName}}}`);
+    : `PRICE - ${planType} - ${offerName}`);
 
   const createHref = () => {
     const url = new URL(location.protocol + location.host);
@@ -75,46 +79,89 @@ export function createLinkMarkup(
   return link;
 }
 
-let rootElement;
+export async function loadOstEnv() {
+  const searchParameters = new URLSearchParams(window.location.search);
+  const aosAccessToken = searchParameters.get('token');
+  searchParameters.delete('token');
+  const owner = searchParameters.get('owner');
+  const referrer = searchParameters.get('referrer');
+  const repo = searchParameters.get('repo');
 
-function initOST({ token: aosAccessToken }) {
-  const country = 'US';
-  const language = 'en';
+  let country;
+  let language;
+  let locale;
+  const { locales } = getConfig();
+  const metadata = {};
+  let url;
 
-  const options = {
-    rootMargin: '0px',
-    threshold: 1.0,
+  if (owner && referrer && repo) {
+    try {
+      const res = await fetch(`//admin.hlx.page/status/${owner}/${repo}/main?editUrl=${referrer}`);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const json = await res.json();
+      url = new URL(json.preview.url);
+      locale = getLocale(locales, url.pathname);
+      ({ country, language } = getTacocatEnv(ENV_PROD, locale));
+    } catch (e) {
+      console.error('OST, failed to get env:', e.message);
+      ({ country, language } = getTacocatEnv());
+    }
+
+    if (url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(await res.text(), 'text/html');
+        Object.entries(METADATA_MAPPINGS).forEach(
+          ([key, value]) => {
+            const content = getMetadata(key, doc);
+            if (content) metadata[value] = content;
+          },
+        );
+      } catch (e) {
+        console.error('OST, failed to get metadata:', e.message);
+      }
+    }
+  }
+
+  ({ country, language } = getTacocatEnv(ENV_PROD, locale));
+
+  return {
+    ...metadata,
+    aosAccessToken,
+    aosApiKey: AOS_API_KEY,
+    checkoutClientId: CHECKOUT_CLIENT_ID,
+    country,
+    environment: ENV_PROD.toUpperCase(),
+    language,
+    searchParameters,
+    wcsApiKey: WCS_API_KEY,
+    ctaTextOption,
   };
-
-  const main = document.querySelector('main');
-  const observer = new IntersectionObserver(() => {
-    observer.unobserve(main);
-    window.ost.openOfferSelectorTool({
-      country,
-      language,
-      environment: ENVIRONMENT,
-      wcsApiKey: WCS_API_KEY,
-      aosApiKey: AOS_API_KEY,
-      aosAccessToken,
-      checkoutClientId: CHECKOUT_CLIENT_ID,
-      searchParameters,
-      createLinkMarkup,
-      rootElement,
-    });
-  }, options);
-  observer.observe(main);
 }
 
 export default async function init(el) {
-  if (rootElement) return; // only one OST is supported per page
   el.innerHTML = '<div />';
-  rootElement = el.firstElementChild;
 
   loadStyle(OST_STYLE_URL);
-  await loadScript(OST_SCRIPT_URL);
-  await loadStyle('https://use.typekit.net/pps7abe.css');
-  if (token) {
-    initOST({ token });
+  loadStyle('https://use.typekit.net/pps7abe.css');
+
+  const [ostEnv] = await Promise.all([
+    loadOstEnv(),
+    loadScript(OST_SCRIPT_URL),
+  ]);
+
+  function openOst() {
+    window.ost.openOfferSelectorTool({
+      ...ostEnv,
+      createLinkMarkup,
+      rootElement: el.firstElementChild,
+    });
+  }
+
+  if (ostEnv.aosAccessToken) {
+    openOst();
   } else {
     window.adobeid = {
       client_id: IMS_COMMERCE_CLIENT_ID,
@@ -122,7 +169,10 @@ export default async function init(el) {
       optimizations: { fastEvents: true },
       autoValidateToken: true,
       scope: 'AdobeID,openid',
-      onAccessToken: initOST,
+      onAccessToken: ({ token }) => {
+        ostEnv.aosAccessToken = token;
+        openOst();
+      },
       onReady: () => {
         if (!window.adobeIMS.isSignedInUser()) {
           window.adobeIMS.signIn();

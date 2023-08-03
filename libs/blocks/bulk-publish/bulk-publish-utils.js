@@ -3,7 +3,7 @@ import { loadScript } from '../../utils/utils.js';
 import { getImsToken } from '../../../tools/utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
-const THROTTLING_DELAY_MS = 100;
+const THROTTLING_DELAY_MS = 300;
 export const BULK_CONFIG_FILE_PATH = '/tools/bulk-publish/config.json';
 export const BULK_REPORT_FILE_PATH = '/tools/bulk-publish/report';
 const BULK_AUTHORIZED_USERS = 'bulkAuthorizedUsers';
@@ -103,11 +103,9 @@ const siteIsSupported = async (url) => {
   }
 };
 
-export const getUrls = (element) => {
-  return element.current?.value.split('\n')
-    .filter((url) => url.length > 0)
-    .map((e) => e.trim());
-};
+export const getUrls = (element) => element.current?.value.split('\n')
+  .filter((url) => url.length > 0)
+  .map((e) => e.trim());
 
 export const getActionName = (action, useGerund) => {
   let name;
@@ -170,9 +168,7 @@ export const executeActions = async (resume, setResult) => {
       if (isProcessed(url, results)) {
         status[action] = DUPLICATE_STATUS;
       } else {
-        // eslint-disable-next-line no-await-in-loop
         status[action] = await executeAction(action, url);
-        // eslint-disable-next-line no-await-in-loop
         await delay(THROTTLING_DELAY_MS);
       }
     }

@@ -1,0 +1,72 @@
+.copy-config {
+  cursor: pointer;
+}
+
+.copy-message {
+  position: absolute;
+  right: 0;
+  font-size: 12px;
+  color: white;
+}
+
+.message {
+  right: 15px;
+  bottom: -10px;
+  padding: 5px 15px;
+  transition: opacity .3s ease-in-out;
+  width: 150px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: #278b27;
+}
+
+.error-message {
+  background-color: #ff3636;
+}
+
+.copy-button .hide {
+  display: none;
+}
+
+button.copy-config {
+  margin: 0 16px 16px;
+  outline: transparent solid 0;
+  transition:outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: adobe-clean, sans-serif;
+  color: #FFF;
+  background: #FF1593;
+  background-image: url("../../../img/ui/icon-copy.svg");
+  background-repeat: no-repeat;
+  background-size: 18px;
+  background-position: 12px center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px 0 36px;
+  clip-path:
+    polygon(0% 0%,
+    var(--notch-size) 0%,
+    calc(100% - var(--notch-size)) 0%,
+    100% var(--notch-size),
+    100% calc(100% - var(--notch-size)),
+    100% 100%,
+    0% 100%,
+    0% 100%);
+}
+
+button.copy-config:hover {
+  background-color: #ff1563;
+}
+
+button.copy-config.is-error {
+  transition: background-color .5s;
+  background-color: red;
+}
+
+button.copy-config.is-success {
+  transition: background-color .5s;
+  background-color: green;
+}

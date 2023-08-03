@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import { createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
+
+const { createLinkMarkup } = await import('../../../libs/blocks/ost/ost.js');
 
 const data = await readFile({ path: './mocks/wcs-artifacts-mock.json' });
 const { stockOffer } = JSON.parse(data);
@@ -16,6 +17,7 @@ const placeholderOptions = {
   displayTax: true, // tax
   isPerpetual: true,
 };
+
 describe('test createLinkMarkup', () => {
   const WINDOW_LOCATION = 'https://main--milo--adobecom.hlx.page';
   const location = {
@@ -39,7 +41,25 @@ describe('test createLinkMarkup', () => {
     expect(EXPECTED_CTA_URL).to.equal(link.href);
   });
 
+  it('create custom "cta" link', async () => {
+    placeholderOptions.ctaText = 'free-trial';
+    const EXPECTED_CTA_TEXT = 'CTA {{free-trial}}';
+    const EXPECTED_CTA_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=checkoutUrl&perp=true&text=free-trial`;
+
+    const type = 'checkoutUrl';
+    const link = createLinkMarkup(
+      osi,
+      type,
+      stockOffer,
+      placeholderOptions,
+      location,
+    );
+    expect(EXPECTED_CTA_TEXT).to.equal(link.text);
+    expect(EXPECTED_CTA_URL).to.equal(link.href);
+  });
+
   it('create a "cta" link with overwrites', async () => {
+    placeholderOptions.ctaText = 'buy-now';
     placeholderOptions.workflowStep = 'email_checkout';
     placeholderOptions.workflow = 'UCv2';
     const EXPECTED_CTA_TEXT = 'CTA {{buy-now}}';
@@ -58,7 +78,7 @@ describe('test createLinkMarkup', () => {
   });
 
   it('create a "price" link', async () => {
-    const EXPECTED_PRICE_TEXT = `{{PRICE - ${offerType} - Stock}}`;
+    const EXPECTED_PRICE_TEXT = `PRICE - ${offerType} - Stock`;
     const EXPECTED_PRICE_URL = `${WINDOW_LOCATION}/tools/ost?osi=${osi}&offerId=${offerId}&type=price&perp=true&term=false&seat=true&tax=true`;
 
     const type = 'price';

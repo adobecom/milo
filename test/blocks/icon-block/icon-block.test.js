@@ -10,7 +10,7 @@ describe('icon blocks', () => {
     init(block);
     const isColumn = block.classList.contains('vertical') || block.classList.contains('centered');
     describe(`icon block ${isColumn ? 'column' : 'full-width'}`, () => {
-      const children = block.querySelectorAll('.text');
+      const children = block.querySelectorAll('.text-content');
       if (children.length) {
         children.forEach((blk) => {
           it('has an icon', () => {
@@ -19,6 +19,28 @@ describe('icon blocks', () => {
           });
         });
       }
+    });
+    if (block.classList.contains('inline')) {
+      describe('icon block inline has 2 columns', () => {
+        it('has 2 columns', () => {
+          const firstColumn = block.querySelector('.text-content .icon-area');
+          const secondColumn = block.querySelector('.text-content .second-column');
+          expect(firstColumn).to.exist;
+          expect(secondColumn).to.exist;
+        });
+      });
+    }
+  });
+  describe('icon block inline heading', () => {
+    it('has xs heading', () => {
+      const block = document.querySelector('#xx-up');
+      const heading = block.querySelector('.heading-xs');
+      expect(heading).to.exist;
+    });
+    it('no xs heading', () => {
+      const block = document.querySelector('#not-xx-up');
+      const heading = block.querySelector('.heading-xs');
+      expect(heading).to.not.exist;
     });
   });
 });

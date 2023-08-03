@@ -66,6 +66,9 @@
   --type-heading-xxs-size: 14px;
   --type-heading-xxs-lh: 18px;
 
+  /* Headings (General) */
+  --type-heading-base-lh: 1.2;
+
   /* Body (Consonant) */
   --type-body-xxl-size: 28px;
   --type-body-xxl-lh: 42px;
@@ -101,13 +104,23 @@
   --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
+
+  /* icon sizes */
+  --icon-size-xxl: 80px;
+  --icon-size-xl: 64px;
+  --icon-size-l: 56px;
+  --icon-size-m: 40px;
+  --icon-size-s: 32px;
+  --icon-size-xs: 24px;
+  --icon-size-xxs: 16px;
 }
 
 :root:lang(ko-KR) {
   --body-font-family: adobe-clean-han-korean, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
-:root:lang(ja-JP) {
+:root:lang(ja-JP),
+:root:lang(ja){
   --body-font-family: adobe-clean-han-japanese, 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 

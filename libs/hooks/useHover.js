@@ -35,7 +35,7 @@ const useHover = ({ refToAttachTo = null, useMouseLeave = false } = {}) => {
       }
       return undefined;
     },
-    [ref.current] // Recall only if ref changes
+    [ref.current], // Recall only if ref changes
   );
 
   return [ref, hoverState];

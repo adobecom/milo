@@ -1,9 +1,16 @@
-import { getConfig, getMetadata, loadStyle } from '../../../utils/utils.js';
+import { getConfig, getMetadata, loadStyle, loadLana } from '../../../utils/utils.js';
+
+loadLana();
 
 export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  overflowingTopNav: '.feds-topnav--overflowing',
+  navItem: '.feds-navItem',
+  activeDropdown: '.feds-dropdown--active',
+  menuSection: '.feds-menu-section',
+  menuColumn: '.feds-menu-column',
 };
 
 export function toFragment(htmlStrings, ...values) {
@@ -27,17 +34,10 @@ export function toFragment(htmlStrings, ...values) {
 export const getFedsPlaceholderConfig = () => {
   const { locale } = getConfig();
   let libOrigin = 'https://milo.adobe.com';
+  const { origin } = window.location;
 
-  if (window.location.origin.includes('localhost')) {
-    libOrigin = `${window.location.origin}`;
-  }
-
-  if (window.location.origin.includes('.hlx.page')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.page';
-  }
-
-  if (window.location.origin.includes('.hlx.live')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.live';
+  if (origin.includes('localhost') || origin.includes('.hlx.')) {
+    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
   return {
@@ -59,8 +59,13 @@ export function getAnalyticsValue(str, index) {
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
+  const explicitExperience = experiencePath?.split('/').pop();
+  if (explicitExperience?.length) return explicitExperience;
 
-  return experiencePath?.split('/').pop() || '';
+  const { imsClientId } = getConfig();
+  if (imsClientId?.length) return imsClientId;
+
+  return '';
 }
 
 export function loadStyles(path) {
@@ -83,19 +88,22 @@ export function loadBlock(path) {
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
-  // eslint-disable-next-line no-async-promise-executor
-  cachedDecorateMenu = cachedDecorateMenu || new Promise(async (resolve) => {
-    const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
-      loadBlock('./menu/menu.js'),
-      loadStyles('utilities/menu/menu.css'),
-    ]);
+  if (cachedDecorateMenu) return cachedDecorateMenu;
 
-    resolve({
-      decorateMenu,
-      decorateLinkGroup,
-    });
+  let resolve;
+  cachedDecorateMenu = new Promise((_resolve) => {
+    resolve = _resolve;
   });
 
+  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
+    loadBlock('./menu/menu.js'),
+    loadStyles('utilities/menu/menu.css'),
+  ]);
+
+  resolve({
+    decorateMenu,
+    decorateLinkGroup,
+  });
   return cachedDecorateMenu;
 }
 
@@ -113,43 +121,82 @@ export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-export function closeAllDropdowns({ e } = {}) {
-  const openElements = document.querySelectorAll(`${selectors.globalNav} [aria-expanded='true']`);
-  if (!openElements) return;
-  if (e) e.preventDefault();
-  [...openElements].forEach((el) => {
-    el.setAttribute('aria-expanded', 'false');
-    if (el.closest(selectors.navLink)) {
-      el.setAttribute('daa-lh', 'header|Open');
-    }
-  });
+let curtainElem;
+export function setCurtainState(state) {
+  if (typeof state !== 'boolean') return;
 
-  document.querySelector(selectors.curtain)?.classList.remove('is-open');
+  curtainElem = curtainElem || document.querySelector(selectors.curtain);
+  if (curtainElem) curtainElem.classList.toggle('feds-curtain--open', state);
 }
 
-/**
- * @param {*} param0
- * @param {*} param0.element - the DOM element of the trigger to expand
- * @returns true if the element has been expanded, false if it was already expanded
- */
-export function trigger({ element } = {}) {
+export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
+
+export function setActiveDropdown(elem) {
+  const activeClass = selectors.activeDropdown.replace('.', '');
+
+  // We always need to reset all active dropdowns at first
+  const resetActiveDropdown = () => {
+    [...document.querySelectorAll(selectors.activeDropdown)]
+      .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
+  };
+  resetActiveDropdown();
+
+  // If no elem is provided, de-activating all dropdowns is enough
+  if (!(elem instanceof HTMLElement)) return;
+
+  // Compose an array of parents that could be active dropdowns
+  const selectorArr = [selectors.menuSection, selectors.menuColumn, selectors.navItem];
+
+  // Look for the first parent that fits the active dropdown criteria
+  selectorArr.some((selector) => {
+    const closestSection = elem.closest(selector);
+
+    if (closestSection && closestSection.querySelector('[aria-expanded = "true"]')) {
+      closestSection.classList.add(activeClass);
+      return true;
+    }
+
+    return false;
+  });
+}
+
+export function closeAllDropdowns({ type } = {}) {
+  const selector = type === 'headline'
+    ? '.feds-menu-headline[aria-expanded="true"]'
+    : `${selectors.globalNav} [aria-expanded='true']`;
+  const openElements = document.querySelectorAll(selector);
+  if (!openElements) return;
+  [...openElements].forEach((el) => {
+    if ('fedsPreventautoclose' in el.dataset) return;
+    el.setAttribute('aria-expanded', 'false');
+  });
+
+  setActiveDropdown();
+
+  if (isDesktop.matches) setCurtainState(false);
+}
+
+export function trigger({ element, event, type } = {}) {
+  if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
-  closeAllDropdowns();
+  closeAllDropdowns({ type });
   if (isOpen) return false;
-  if (element.closest(selectors.navLink)) {
-    element.setAttribute('daa-lh', 'header|Close');
-  }
   element.setAttribute('aria-expanded', 'true');
   return true;
 }
 
-export function expandTrigger({ element } = {}) {
-  if (!element) return;
-  closeAllDropdowns();
-  if (element.closest(selectors.navLink)) {
-    element.setAttribute('daa-lh', 'header|Close');
-  }
-  element.setAttribute('aria-expanded', 'true');
-}
-
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
+
+export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
+  clientId: 'feds-milo',
+  sampleRate: 1,
+});
+
+export const logErrorFor = async (fn, message) => {
+  try {
+    await fn();
+  } catch (e) {
+    lanaLog({ message, e });
+  }
+};
