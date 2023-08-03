@@ -16,7 +16,7 @@ describe('action scrollers', () => {
     await Promise.all([
       loadStyles('../../../libs/styles/styles.css'),
       loadStyles('../../../libs/blocks/action-scroller/action-scroller.css'),
-      loadStyles('../../../libs/blocks/section-metadata/section-metadata.css')
+      loadStyles('../../../libs/blocks/section-metadata/section-metadata.css'),
     ]);
   });
 
