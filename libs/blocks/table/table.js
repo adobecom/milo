@@ -308,12 +308,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
     }
 
-    if (!isMerch && !table.querySelector('.row-heading .col-2')) {
-      table.querySelector('.row-heading').style.display = 'block';
-      table.querySelector('.row-heading .col-1').style.display = 'flex';
-      return;
-    }
-
     if ((!isMerch && !table.querySelector('.col-3'))
     || (isMerch && !table.querySelector('.col-2'))) return;
 
@@ -385,6 +379,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   // For Mobile (else: tablet / desktop)
+  if (!isMerch && !table.querySelector('.row-heading .col-2')) {
+    table.querySelector('.row-heading').style.display = 'block';
+    table.querySelector('.row-heading .col-1').style.display = 'flex';
+  }
+
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
