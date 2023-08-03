@@ -248,6 +248,7 @@ describe('Utils', () => {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
           il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
           mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
@@ -264,10 +265,22 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
 
+      it('LTR Languages have dir as ltr for langstore path', () => {
+        setConfigWithPath('/langstore/en/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+      });
+
       it('RTL Languages have dir as rtl', () => {
         setConfigWithPath('/il_he/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
         setConfigWithPath('/mena_ar/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      });
+
+      it('RTL Languages have dir as rtl for langstore path', () => {
+        setConfigWithPath('/langstore/he/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+        setConfigWithPath('/langstore/ar/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
