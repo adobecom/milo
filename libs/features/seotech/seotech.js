@@ -16,7 +16,7 @@ export async function getVideoObject(url, seotechAPIUrl) {
   const resp = await fetch(videosUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
   if (!resp.ok) {
-    throw new Error(body?.error);
+    throw new Error(`Failed to fetch video: ${body?.error}`);
   }
   return body.videoObject;
 }

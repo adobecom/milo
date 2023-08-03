@@ -32,7 +32,7 @@ describe('seotech', () => {
       expect(fetchStub.calledOnceWith(
         'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=FAKE',
       )).to.be.true;
-      expect(lanaStub.calledOnceWith('SEOTECH: ERROR!')).to.be.true;
+      expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
     });
 
     it('should append JSON-LD', async () => {
