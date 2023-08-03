@@ -475,10 +475,16 @@ function cleanManifestList(manifests) {
 }
 
 export async function applyPers(manifests) {
-  if (!manifests?.length) return;
-  const cleanedManifests = cleanManifestList(manifests);
-
   const config = getConfig();
+
+  if (!manifests?.length) {
+    if (config.mep?.preview) {
+      const { default: decoratePreviewMode } = await import('./preview.js');
+      decoratePreviewMode([]);
+    }
+    return;
+  }
+  const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];
   for (const manifest of cleanedManifests) {

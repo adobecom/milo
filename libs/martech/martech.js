@@ -139,9 +139,6 @@ export default async function init({ persEnabled = false, persManifests }) {
       const manifests = preloadManifests({ targetManifests, persManifests });
       const { applyPers } = await import('../features/personalization/personalization.js');
       await applyPers(manifests);
-    } else if (config.mep.override !== undefined) {
-      import('../features/personalization/preview.js')
-        .then(({ default: decoratePreviewMode }) => decoratePreviewMode([]));
     }
   }
 }
