@@ -16,7 +16,7 @@
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
@@ -32,6 +32,10 @@ function updateInnerHtml(el, tag, replaceValue) {
 }
 
 export default function init(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  let base = miloLibs || codeRoot;
+  if (!base) base = 'https://milo.adobe.com/libs';
+  const iconList = ['google-play', 'app-store', 'checkmark-green'];
   decorateBlockAnalytics(el);
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -61,6 +65,13 @@ export default function init(el) {
       el.querySelector('ul').classList.add('default-list');
     }
 
+    // checklists
+    if (row.closest('.checklist')) {
+      document.querySelectorAll('.checklist li').forEach((checklistItem) => {
+        checklistItem.style.background = `url(${base}/img/ui/${iconList[2]}.svg) no-repeat 5px 5px transparent`;
+      });
+    }
+
     // subcopy
     const actionArea = row.querySelector('p.action-area');
     if (actionArea?.nextElementSibling?.tagName === 'P') {
@@ -88,14 +99,13 @@ export default function init(el) {
       }
 
       const qrCodeLinks = row.querySelectorAll('a');
+
       const googleBtn = qrCodeLinks[0];
       const appleBtn = qrCodeLinks[1];
-
-      googleBtn.classList.add('google-button');
+      googleBtn.style.background = `url('${base}/img/ui/${iconList[0]}.svg') no-repeat transparent`;
+      appleBtn.style.background = `url('${base}/img/ui/${iconList[1]}.svg') no-repeat transparent`;
       googleBtn.textContent = '';
       googleBtn.parentNode.classList.add('qr-button-container');
-
-      appleBtn.classList.add('apple-button');
       appleBtn.textContent = '';
       appleBtn.parentNode.classList.add('qr-button-container');
     }

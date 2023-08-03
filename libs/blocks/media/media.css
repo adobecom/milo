@@ -119,7 +119,6 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media.checklist li {
-  background: url("/img/checklist.svg") no-repeat 5px 5px transparent;
   list-style-type: none;
   margin-left: -25px;
   padding: 0 0 1px 29px;
@@ -176,14 +175,6 @@ div[class*="-up"] .media .foreground > .media-row {
   padding-bottom: 0;
   padding-top: 0;
   display: inline-flex;
-}
-
-.media.qr-code a.google-button {
-  background: url("/img/google-play.svg") no-repeat transparent;
-}
-
-.media.qr-code a.apple-button {
-  background: url("/img/app-store.svg") no-repeat transparent;;
 }
 
 @media screen and (min-width: 600px) {
