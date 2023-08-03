@@ -21,16 +21,26 @@
 
 .table .col {
   min-height: 27px;
+  border-left: 1px var(--border-color) solid;
+  border-top: 1px var(--border-color) solid;
 }
 
-.table .col p {
-  margin: 0;
+.table .col:last-child {
+  border-right: 1px var(--border-color) solid;
+}
+
+.table .row:last-child .col {
+  border-bottom: 1px var(--border-color) solid;
 }
 
 .table .col,
 .table .col p {
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
+}
+
+.table .col p {
+  margin: 0;
 }
 
 .table .col p picture {
@@ -47,21 +57,8 @@
   border-right: 1px var(--border-color) solid;
 }
 
-.table:not(.merch) .col {
-  border-left: 1px var(--border-color) solid;
-  border-top: 1px var(--border-color) solid;
-}
-
 .table .row-highlight .col.col-highlight {
   border-color: transparent;
-}
-
-.table .col:last-child {
-  border-right: 1px var(--border-color) solid;
-}
-
-.table .row:last-child .col {
-  border-bottom: 1px var(--border-color) solid;
 }
 
 .table.collapse .section-head-collaped .col {
