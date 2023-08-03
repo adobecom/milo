@@ -482,8 +482,9 @@ export function decorateAutoBlock(a) {
         }
       }
 
-      // fragment url with mp4 - aka. previewing a fragment with video asset
+      // fragment url with mp4 - previewing a fragment page with mp4 video
       if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
         return false;
       }
 
