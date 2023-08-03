@@ -482,10 +482,9 @@ export function decorateAutoBlock(a) {
         }
       }
 
-      // slack uploaded mp4s in a fragment url
+      // fragment url with mp4 - aka. previewing a fragment with video asset
       if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
-        a.className = 'video fragment link-block';
-        return true;
+        return false;
       }
 
       // Modals
