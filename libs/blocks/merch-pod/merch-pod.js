@@ -4,18 +4,18 @@ import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
-const SEGMENT = 'SegmentCard';
+const SEGMENT_BLADE = 'SegmentBlade';
 const SPECIAL_OFFERS = 'SpecialOffers';
 const PLANS_CARD = 'PlansCard';
 
 const getPodType = (styles) => {
   const podTypes = {
-    'segment-card': SEGMENT,
+    'segment-blade': SEGMENT_BLADE,
     'special-offers': SPECIAL_OFFERS,
     'plans-card': PLANS_CARD,
   };
   const authoredType = styles?.find((style) => style in podTypes);
-  return podTypes[authoredType] || SEGMENT;
+  return podTypes[authoredType] || SEGMENT_BLADE;
 };
 
 const createDescription = (rows, podType) => {

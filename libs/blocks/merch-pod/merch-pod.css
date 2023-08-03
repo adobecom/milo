@@ -48,7 +48,7 @@
 }
 
 .merch-pod .consonant-ProductCard-inner,
-.merch-pod .consonant-SegmentCard-inner,
+.merch-pod .consonant-SegmentBlade-inner,
 .merch-pod .consonant-SpecialOffers-inner {
   display: flex;
   flex-direction: column;
@@ -69,7 +69,7 @@
 }
 
 .merch-pod .consonant-ProductCard-title,
-.merch-pod .consonant-SegmentCard-title,
+.merch-pod .consonant-SegmentBlade-title,
 .merch-pod .consonant-SpecialOffers-title {
   font-size: 20px;
   font-weight: 700;
@@ -86,7 +86,7 @@
 }
 
 .merch-pod .consonant-ProductCard-prices,
-.merch-pod .consonant-SegmentCard-prices,
+.merch-pod .consonant-SegmentBlade-prices,
 .merch-pod .consonant-SpecialOffers-prices {
   font-size: 16px;
   line-height: 24px;
@@ -95,7 +95,7 @@
 }
 
 .merch-pod .consonant-ProductCard-description,
-.merch-pod .consonant-SegmentCard-description,
+.merch-pod .consonant-SegmentBlade-description,
 .merch-pod .consonant-SpecialOffers-description {
   font-size: 16px;
   font-weight: 400;
@@ -103,12 +103,12 @@
   margin-top: 0;
 }
 
-.merch-pod .consonant-SegmentCard-description span.placeholder-resolved,
+.merch-pod .consonant-SegmentBlade-description span.placeholder-resolved,
 .merch-pod .consonant-SpecialOffers-description span.placeholder-resolved {
   font-size: 18px;
   font-weight: 700;
 }
-.merch-pod .consonant-SegmentCard-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-pod .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
 .merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"] {
   font-size: 14px;
   font-weight: 700;
@@ -131,7 +131,7 @@
 }
 
 .merch-pod .consonant-SpecialOffers-ribbon,
-.merch-pod .consonant-SegmentCard-ribbon {
+.merch-pod .consonant-SegmentBlade-ribbon {
   position: absolute;
   top: 16px;
   right: 0;
@@ -145,7 +145,7 @@
 }
 
 .merch-pod .consonant-ProductCard-cell,
-.merch-pod .consonant-SegmentCard-cell,
+.merch-pod .consonant-SegmentBlade-cell,
 .merch-pod .consonant-SpecialOffers-cell {
   justify-content: flex-end;
   align-items: center;
