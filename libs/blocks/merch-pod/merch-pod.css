@@ -9,6 +9,25 @@
   border-radius: 16px;
 }
 
+.merch-pod.segment-blade {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 222px;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  min-width: 378px;
+  max-width: 378px;
+}
+
+@media only screen and (max-width: 1400px) {
+  .merch-pod.segment-blade {
+    min-width: 317px;
+    max-width: 317px;
+  }  
+}
+
 .consonant-CardsGrid--oneup .merch-pod.consonant-Card {
   max-width: 100%;
 }
