@@ -1,4 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
+import { getMetadata } from '../../libs/utils/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -222,15 +223,9 @@ const getTags = (s) => {
   let rawTags = [];
   if (s) {
     rawTags = s.toLowerCase().split(/,|(\s+)|(\\n)/g).filter((t) => t && t.trim() && t !== '\n');
-  } else {
-    rawTags = [...getConfig().doc.querySelectorAll("meta[property='article:tag']")].map(
-      (metaEl) => metaEl.content,
-    );
   }
 
   const errors = [];
-
-  if (!rawTags.length) rawTags = ['Article']; // default if no tags found
 
   const tagIds = rawTags.map((tag) => getTag(tag, errors))
     .filter((tag) => tag !== undefined)
@@ -416,10 +411,15 @@ const props = {
     return undefined;
   },
   bookmarkicon: 0,
+  carddescription: 0,
+  cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => getUuid(options.prodUrl),
-  contenttype: (s) => s || getMetaContent('property', 'og:type') || 'Article',
+  contentid: (_, options) => {
+    const floodGateColor = getMetadata('floodGateColor') || '';
+    return getUuid(`${options.prodUrl}${floodGateColor}`);
+  },
+  contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
     const { country } = await getCountryAndLang(options);
@@ -459,7 +459,7 @@ const props = {
   eventduration: 0,
   eventend: (s) => getDateProp(s, `Invalid Event End Date: ${s}`),
   eventstart: (s) => getDateProp(s, `Invalid Event Start Date: ${s}`),
-  floodgatecolor: (s) => s || 'default',
+  floodgatecolor: (s) => s || getMetadata('floodGateColor') || 'default',
   lang: async (s, options) => {
     if (s) return s;
     const { lang } = await getCountryAndLang(options);
@@ -497,8 +497,8 @@ const getCaasProps = (p) => {
     url: p.url,
     floodGateColor: p.floodgatecolor,
     universalContentIdentifier: p.uci,
-    title: p.title,
-    description: p.description,
+    title: p.cardtitle || p.title,
+    description: p.carddescription || p.description,
     createdDate: p.created,
     modifiedDate: p.modified,
     tags: p.tags,
@@ -513,7 +513,7 @@ const getCaasProps = (p) => {
     language: p.lang,
     cardData: {
       style: p.style,
-      headline: p.title,
+      headline: p.cardtitle || p.title,
       ...(p.details && { details: p.details }),
       ...((p.bookmarkenabled || p.bookmarkicon || p.bookmarkaction) && {
         bookmark: {
@@ -564,9 +564,7 @@ const getCaaSMetadata = async (pageMd, options) => {
   let tagErrors = [];
   let tags = [];
   // for-of required to await any async computeVal's
-  // eslint-disable-next-line no-restricted-syntax
   for (const [key, computeFn] of Object.entries(props)) {
-    // eslint-disable-next-line no-await-in-loop
     const val = computeFn ? await computeFn(pageMd[key], options) : pageMd[key];
     if (val?.error) {
       errors.push(val.error);
@@ -577,6 +575,9 @@ const getCaaSMetadata = async (pageMd, options) => {
     } else if (val !== undefined) {
       md[key] = val;
     }
+  }
+  if (!md.contenttype && tags.length) {
+    md.contenttype = tags.find((tag) => tag.startsWith('caas:content-type'));
   }
 
   return { caasMetadata: md, errors, tags, tagErrors };

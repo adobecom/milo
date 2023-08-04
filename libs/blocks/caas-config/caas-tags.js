@@ -8118,7 +8118,7 @@ const caasTags = {
                 id: 'caas:events',
                 title: 'Events',
               },
-             path: '/content/cq:tags/caas/events/eml',
+              path: '/content/cq:tags/caas/events/eml',
               tagID: 'caas:events/eml',
               name: 'eml',
               tagImage: '',

@@ -1,4 +1,5 @@
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
 const blockTypeSizes = {
@@ -49,6 +50,16 @@ export default function init(el) {
   if (el.classList.contains('vertical')) {
     const elAction = el.querySelector('.action-area');
     if (elAction) elAction.classList.add('body-s');
+  }
+  if (el.classList.contains('link-farm')) {
+    const foregroundDiv = el.querySelectorAll('.foreground')[1];
+    const count = foregroundDiv.querySelectorAll('h3').length;
+    foregroundDiv.querySelectorAll('div').forEach((divElem) => {
+      if (!divElem.querySelector('h3') && count) {
+        const headingElem = createTag('h3', { class: 'no-heading' });
+        divElem.insertBefore(headingElem, divElem.firstChild);
+      }
+    });
   }
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);

@@ -21,6 +21,12 @@ describe('media', () => {
       const iconArea = medias[0].querySelector('.icon-area');
       expect(iconArea).to.exist;
     });
+    it('has an icon area with blue button', () => {
+      const actionArea = medias[3].querySelector('.action-area');
+      expect(actionArea).to.exist;
+      const blueButton = actionArea.querySelector('.con-button.blue');
+      expect(blueButton).to.exist;
+    });
   });
   describe('dark media large', () => {
     it('has a heading-xl', () => {

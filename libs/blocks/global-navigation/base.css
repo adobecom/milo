@@ -48,9 +48,18 @@
   column-gap: 15px;
 }
 
+.feds-navLink--blue {
+  color: var(--feds-color-link--hover--light);
+}
+
 .feds-navLink--hoverCaret {
   position: relative;
   padding-right: 32px;
+}
+
+.feds-navLink--hoverCaret:hover,
+.feds-navLink--hoverCaret:focus {
+  color: var(--feds-color-link--light);
 }
 
 .feds-navLink--hoverCaret:after {
@@ -68,6 +77,7 @@
   transform: rotateZ(45deg);
   transition: transform 0.1s ease;
   content: "";
+  box-sizing: content-box;
 }
 
 [dir = "rtl"] .feds-navLink--hoverCaret {
@@ -93,20 +103,41 @@
     padding: 0 12px;
   }
 
+  .feds-topnav--overflowing .feds-navLink,
+  .feds-topnav--overflowing .feds-navLink--hoverCaret,
+  [dir = "rtl"] .feds-topnav--overflowing .feds-navLink--hoverCaret {
+    padding: 0 8px;
+  }
+
   .feds-navLink--hoverCaret {
     position: static;
   }
-  
+
+  .feds-navLink--hoverCaret:hover,
+  .feds-navLink--hoverCaret:focus {
+    background-color: var(--feds-background-popup--light);
+  }
+
   .feds-navLink--hoverCaret:after {
     position: static;
     margin-top: 0;
     margin-left: 5px;
   }
 
+  .feds-topnav--overflowing .feds-navLink--hoverCaret:after {
+    margin-left: 3px;
+  }
+
   [dir = "rtl"] .feds-navLink--hoverCaret:after {
     margin-left: 0;
     /* Margin different than LTR due to transform origin effect */
     margin-right: 7px;
+  }
+
+  [dir = "rtl"] .feds-topnav--overflowing .feds-navLink--hoverCaret:after {
+    margin-left: 0;
+    /* Margin different than LTR due to transform origin effect */
+    margin-right: 5px;
   }
 
   .feds-navLink-image {
