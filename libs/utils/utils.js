@@ -502,7 +502,7 @@ export function decorateAutoBlock(a) {
       return false;
     });
   } catch (e) {
-    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a}: ${e.toString()}`);
+    window.lana?.log(`Error in decorateAutoBlock - href: ${a?.href} - ${e.toString()}`);
   }
   return false;
 }
