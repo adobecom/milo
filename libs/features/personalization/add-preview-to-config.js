@@ -1,14 +1,15 @@
-export default async function addPreviewToConfig(
-  PAGE_URL,
-  utils,
-  persManifests,
+import { getConfig, updateConfig } from '../../utils/utils.js';
+
+export default async function addPreviewToConfig({
+  pageUrl,
   persEnabled,
-  targetEnabled,
+  persManifests,
   previewPage,
-) {
-  const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(PAGE_URL.searchParams);
-  const config = utils.updateConfig({
-    ...utils.getConfig(),
+  targetEnabled,
+}) {
+  const { mep: mepOverride, mepHighlight, mepButton } = Object.fromEntries(pageUrl.searchParams);
+  const config = updateConfig({
+    ...getConfig(),
     mep: {
       preview: (mepButton !== 'off' && (mepOverride !== undefined || (previewPage && (persEnabled || targetEnabled)))),
       override: mepOverride ? decodeURIComponent(mepOverride) : '',
@@ -24,7 +25,7 @@ export default async function addPreviewToConfig(
 
   if (config.mep.preview && !targetEnabled && !persManifests.length) {
     import('./preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode([], utils));
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode([]));
   }
   return persManifests;
 }
