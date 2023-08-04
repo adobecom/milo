@@ -142,11 +142,15 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
       mergedMdast.children.push(content);
     } else {
       const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
-      mergedMdast.children.push(langstoreContent);
-      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]);
-      addTrackChangesInfo('Regional Version', 'added', livecopyContent);
-      mergedMdast.children.push(livecopyContent);
+      // Creating new object of langstoreContent to avoid mutation of original object
+      const newLangstoreContent = JSON.parse(JSON.stringify(langstoreContent));
+      addTrackChangesInfo('Langstore Version', 'deleted', newLangstoreContent);
+      mergedMdast.children.push(newLangstoreContent);
+      const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]); 
+      // Creating new object of livecopyContent to avoid mutation of original object
+      const newLivecopyContent = JSON.parse(JSON.stringify(livecopyContent));
+      addTrackChangesInfo('Regional Version', 'added', newLivecopyContent);
+      mergedMdast.children.push(newLivecopyContent);
     }
   }
 
