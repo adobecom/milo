@@ -77,7 +77,7 @@ async function handleStickySection(sticky, section) {
       break;
     }
     case 'sticky-bottom':
-      section.querySelector('.promobar') && await handleStickyPromobar(section);
+      if (section.querySelector('.promobar')) await handleStickyPromobar(section);
       main.append(section);
       break;
     default:
