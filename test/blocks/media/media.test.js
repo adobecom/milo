@@ -55,13 +55,16 @@ describe('media', () => {
     });
   });
   describe('media with qr-code', () => {
-    it('does have qr-code image and CTAs for google-play and app-store', () => {
-      console.log("Hi", medias[5]);
+    it('does have qr-code image', () => {
       const qrCodeImg = medias[5].querySelector('img.qr-code-img');
-      const googlePlayCta = medias[5].querySelector('a.google-play');
-      const appStoreCta = medias[5].querySelector('a.app-store');
       expect(qrCodeImg).to.exist;
+    });
+    it('does have CTA for google-play', () => {
+      const googlePlayCta = medias[5].querySelector('a.google-play');
       expect(googlePlayCta).to.exist;
+    })
+    it('does have CTA for app-store', () => {
+      const appStoreCta = medias[5].querySelector('a.app-store');
       expect(appStoreCta).to.exist;
     });
   });
