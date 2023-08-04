@@ -1,3 +1,5 @@
+import { createTag } from '../../utils/utils.js';
+
 function handleBackground(div, section) {
   const pic = div.background.content.querySelector('picture');
   if (pic) {
@@ -35,6 +37,36 @@ function handleTopHeight(section) {
   const headerHeight = document.querySelector('header').offsetHeight;
   section.style.top = `${headerHeight}px`;
 }
+
+export function promoIntersectObserve(el, options = {}) {
+  const promoBar = el.querySelector('.promobar');
+  let abovePromoStart = false;
+  const io = new IntersectionObserver((entries, observer) => {
+    entries.forEach(async (entry) => {
+      if (promoBar.classList.contains('close-promobar')) return observer.unobserve(entry.target);
+      const isPromoStart = entry.target.classList.contains('show-promobar');
+      abovePromoStart = isPromoStart 
+                        ? (entry.isIntersecting || entry.boundingClientRect.y > 0) 
+                        : abovePromoStart;
+      if (entry.isIntersecting || (!entry.isIntersecting && isPromoStart && abovePromoStart)) el.style.display = 'none';
+      else if (!entry.isIntersecting && !abovePromoStart) el.style.display = 'block';
+    });
+  }, options);
+  return io;
+}
+
+async function handleStickyPromobar(section) {
+  const main = document.querySelector('main');
+  section.style.display = 'none';
+  const io = promoIntersectObserve(section);
+  if (main.children[0] !== section) {
+    const node = createTag('div', { class: 'section show-promobar' });
+    main.insertBefore(node, section);
+    io.observe(node);
+  }
+  io.observe(document.querySelector('footer'));
+}
+
 async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
@@ -44,6 +76,7 @@ async function handleStickySection(sticky, section) {
       main.prepend(section);
       break;
     case 'sticky-bottom':
+      section.querySelector('.promobar') && await handleStickyPromobar(section);
       main.append(section);
       break;
     default:
