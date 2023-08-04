@@ -460,46 +460,51 @@ export function decorateImageLinks(el) {
 }
 
 export function decorateAutoBlock(a) {
-  const config = getConfig();
-  const { hostname } = window.location;
-  const url = new URL(a.href);
-  const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
-  return config.autoBlocks.find((candidate) => {
-    const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
-    if (match) {
-      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
-        a.target = '_blank';
-        return false;
-      }
-      if (key === 'fragment' && url.hash === '') {
-        const { parentElement } = a;
-        const { nodeName, innerHTML } = parentElement;
-        const noText = innerHTML === a.outerHTML;
-        if (noText && nodeName === 'P') {
-          const div = createTag('div', null, a);
-          parentElement.parentElement.replaceChild(div, parentElement);
+  try {
+    const config = getConfig();
+    const { hostname } = window.location;
+    const url = new URL(a.href);
+    const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
+    return config.autoBlocks.find((candidate) => {
+      const key = Object.keys(candidate)[0];
+      const match = href.includes(candidate[key]);
+      if (match) {
+        if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
+          a.target = '_blank';
+          return false;
         }
-      }
-      // Modals
-      if (key === 'fragment' && url.hash !== '') {
-        a.dataset.modalPath = url.pathname;
-        a.dataset.modalHash = url.hash;
-        a.href = url.hash;
-        a.className = 'modal link-block';
+        if (key === 'fragment' && url.hash === '') {
+          const { parentElement } = a;
+          const { nodeName, innerHTML } = parentElement;
+          const noText = innerHTML === a.outerHTML;
+          if (noText && nodeName === 'P') {
+            const div = createTag('div', null, a);
+            parentElement.parentElement.replaceChild(div, parentElement);
+          }
+        }
+        // Modals
+        if (key === 'fragment' && url.hash !== '') {
+          a.dataset.modalPath = url.pathname;
+          a.dataset.modalHash = url.hash;
+          a.href = url.hash;
+          a.className = 'modal link-block';
+          return true;
+        }
+
+        // slack uploaded mp4s
+        if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+          return false;
+        }
+
+        a.className = `${key} link-block`;
         return true;
       }
-
-      // slack uploaded mp4s
-      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
-        return false;
-      }
-
-      a.className = `${key} link-block`;
-      return true;
-    }
-    return false;
-  });
+      return false;
+    });
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a}: ${e.toString()}`);
+  }
+  return false;
 }
 
 export function decorateLinks(el) {
