@@ -25,7 +25,7 @@ export function decorateButtons(el, size) {
     const parent = foreground.parentElement;
     if (parent.classList.contains('marquee', 'large')
     && actionArea.childElementCount === 3
-    && actionArea.nextElementSibling.classList.contains('supplemental-text')) {
+    && actionArea.nextElementSibling?.classList.contains('supplemental-text')) {
       actionArea.nextElementSibling.remove();
     }
   }
