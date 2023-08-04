@@ -48,4 +48,21 @@ describe('media', () => {
       expect(isDark).to.equal(false);
     });
   });
+  describe('subcopy with links media', () => {
+    it('does have subcopy with links', () => {
+      const links = medias[4].querySelectorAll('h3.heading-xs ~ p.subcopy-link > a');
+      expect(links.length).to.greaterThanOrEqual(2);
+    });
+  });
+  describe('media with qr-code', () => {
+    it('does have qr-code image and CTAs for google-play and app-store', () => {
+      console.log("Hi", medias[5]);
+      const qrCodeImg = medias[5].querySelector('img.qr-code-img');
+      const googlePlayCta = medias[5].querySelector('a.google-play');
+      const appStoreCta = medias[5].querySelector('a.app-store');
+      expect(qrCodeImg).to.exist;
+      expect(googlePlayCta).to.exist;
+      expect(appStoreCta).to.exist;
+    });
+  });
 });
