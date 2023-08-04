@@ -119,6 +119,7 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media.checklist li {
+  background: url("/libs/img/ui/checkmark-green.svg") no-repeat 5px 5px transparent;
   list-style-type: none;
   margin-left: -25px;
   padding: 0 0 1px 29px;
@@ -175,6 +176,14 @@ div[class*="-up"] .media .foreground > .media-row {
   padding-bottom: 0;
   padding-top: 0;
   display: inline-flex;
+}
+
+.media.qr-code .google-play {
+  background: url('/libs/img/ui/google-play.svg') no-repeat transparent;
+}
+
+.media.qr-code .app-store {
+  background: url('/libs/img/ui/app-store.svg') no-repeat transparent;
 }
 
 @media screen and (min-width: 600px) {
