@@ -122,7 +122,7 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
-  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
+  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
     || host.includes('hlx.live')
@@ -143,6 +143,10 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const locale = locales[localeString] || locales[''];
   if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
+    if (
+      Object.values(locales)
+        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
+    ) locale.dir = 'rtl';
     return locale;
   }
   const isUS = locale.ietf === 'en-US';
@@ -669,13 +673,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({
-    persEnabled,
-    persManifests,
-    utils: {
-      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
-    },
-  });
+  await initMartech({ persEnabled, persManifests });
 
   return true;
 }
@@ -706,22 +704,30 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  let martechLoaded = false;
-  if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
+  const { env } = getConfig();
+  const previewPage = env?.name === 'stage' || env?.name === 'local';
+  if (mepOverride || mepOverride === '' || previewPage) {
+    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
+    persManifests = await addPreviewToConfig({
+      pageUrl: PAGE_URL,
+      persEnabled,
+      persManifests,
+      previewPage,
+      targetEnabled,
+    });
   }
 
-  if (persMd && persMd !== 'off' && !martechLoaded) {
+  if (targetEnabled) {
+    await loadMartech({ persEnabled: true, persManifests, targetMd });
+  } else if (persManifests.length) {
     // load the personalization only
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(
-      manifests,
-      { createTag, getConfig, loadScript, loadLink, updateConfig },
-    );
+    await applyPers(manifests);
   }
 }
 
@@ -843,12 +849,17 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    const seotechVideoUrl = getMetadata('seotech-video-url');
+    if (seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
