@@ -37,23 +37,22 @@ const Picker = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    const cols = [];
-    const addColumn = (option, expandedPath = null) => {
-      if (!option) {
-        cols.unshift(getCol(options, expandedPath));
-      } else {
-        cols.unshift(getCol(option, expandedPath));
-        addColumn(option.parent, option.path);
-      }
-    };
-
-    addColumn(optionMap[selectedCol]);
-    setColumns(cols);
-  }, [selectedCol, isSearching, options]);
-
-  useEffect(() => {
     setIsSearching(debouncedSearchTerm?.length > 2);
   }, [debouncedSearchTerm]);
+
+  const onCheck = (e) => {
+    e.preventDefault();
+    const inputEl = e.currentTarget.firstChild;
+
+    if (singleSelect) {
+      toggleTag(inputEl.id);
+      close();
+      return;
+    }
+
+    inputEl.classList.toggle('checked');
+    toggleTag(inputEl.id);
+  };
 
   const getSearchResults = () => {
     const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
@@ -73,20 +72,6 @@ const Picker = ({
       });
   };
 
-  const onCheck = (e) => {
-    e.preventDefault();
-    const inputEl = e.currentTarget.firstChild;
-
-    if (singleSelect) {
-      toggleTag(inputEl.id);
-      close();
-      return;
-    }
-
-    inputEl.classList.toggle('checked');
-    toggleTag(inputEl.id);
-  };
-
   const onExpand = (e) => {
     if (e.target.type === 'checkbox') {
       onCheck(e);
@@ -101,7 +86,7 @@ const Picker = ({
   };
 
   const getCol = (root, expandedId) => {
-    if (!root) return;
+    if (!root) return '';
 
     const items = Object.entries(root.children || root).map(([id, option]) => {
       const isChecked = selectedTags.includes(id);
@@ -117,6 +102,22 @@ const Picker = ({
     });
     return html`<div class="col">${items}</div>`;
   };
+
+  useEffect(() => {
+    const cols = [];
+    const addColumn = (option, expandedPath = null) => {
+      if (!option) {
+        cols.unshift(getCol(options, expandedPath));
+      } else {
+        cols.unshift(getCol(option, expandedPath));
+        addColumn(option.parent, option.path);
+      }
+    };
+
+    addColumn(optionMap[selectedCol]);
+    setColumns(cols);
+  // eslint-disable-next-line
+  }, [selectedCol, isSearching, options]);
 
   return html`
     <section class="tagselect-picker">

@@ -47,39 +47,6 @@ const TagSelector = ({ consumerUrls = [] }) => {
   const [selected, setSelected] = useState(CAAS_LABEL);
   const caasTagUrl = 'https://www.adobe.com/chimera-api/tags';
 
-  const getTagTree = (root) => {
-    const caasOptions = Object.entries(root).reduce((opts, [, tag]) => {
-      opts[tag.tagID] = {};
-
-      if (Object.keys(tag.tags).length) {
-        opts[tag.tagID].children = getTagTree(tag.tags);
-      }
-
-      opts[tag.tagID].label = tag.title;
-      opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
-
-      return opts;
-    }, {});
-    return caasOptions;
-  };
-
-  const createOptionMap = (root) => {
-    const newOptionMap = {};
-    const parseNode = (nodes, parent) => {
-      Object.entries(nodes).forEach(([key, val]) => {
-        newOptionMap[key] = { ...val };
-        if (parent) {
-          newOptionMap[key].parent = parent;
-        }
-        if (val.children) {
-          parseNode(val.children, newOptionMap[key]);
-        }
-      });
-    };
-    parseNode(root);
-    return newOptionMap;
-  };
-
   const splitChildren = (tag, path) => {
     const parts = path.split(' | ');
     parts.reduce((curr, value, i) => {
@@ -98,69 +65,102 @@ const TagSelector = ({ consumerUrls = [] }) => {
     }, tag.children);
   };
 
-  const getConsumerTags = (data) => {
-    const tags = {};
-
-    data.forEach((item) => {
-      if (!item.Name || !item.Type) return;
-      const id = item.Type.toLowerCase();
-      if (!tags[id]) {
-        tags[id] = {
-          label: item.Type.trim(),
-          path: id.trim(),
-          children: {},
-        };
-      }
-      splitChildren(tags[id], item.Name);
-    });
-    return tags;
-  };
-
-  const fetchCasS = async () => {
-    const { tags, errorMsg } = await loadCaasTags(caasTagUrl);
-    if (errorMsg) window.lana.log(`Tag Selector. Error fetching caas tags: ${errorMsg}`);
-
-    setTagSelectorTags((prevConsumerTags) => ({ CaaS: tags, ...prevConsumerTags }));
-  };
-
-  const fetchConsumer = () => {
-    consumerUrls.forEach(({ title, url }) => {
-      fetchData(url).then((json) => {
-        const tags = getConsumerTags(json.data);
-        setTagSelectorTags((prevConsumerTags) => ({ [title]: tags, ...prevConsumerTags }));
-      });
-    });
-  };
-
-  const loadCaaS = () => {
-    const opts = getTagTree(tagSelectorTags.CaaS);
-    setOptions(opts);
-    if (opts && Object.values(opts).some((value) => typeof value !== 'string')) {
-      setOptionMap(createOptionMap(opts));
-    } else {
-      /* c8 ignore next 2 */
-      setOptionMap(opts);
-    }
-  };
-
-  const loadConsumer = () => {
-    if (!tagSelectorTags[selected]) return;
-    const opts = tagSelectorTags[selected];
-    setOptions(opts);
-    if (opts && Object.values(opts).some((value) => typeof value !== 'string')) {
-      setOptionMap(createOptionMap(opts));
-    } else {
-      /* c8 ignore next 2 */
-      setOptionMap(opts);
-    }
-  };
-
   useEffect(() => {
+    const getConsumerTags = (data) => {
+      const tags = {};
+
+      data.forEach((item) => {
+        if (!item.Name || !item.Type) return;
+        const id = item.Type.toLowerCase();
+        if (!tags[id]) {
+          tags[id] = {
+            label: item.Type.trim(),
+            path: id.trim(),
+            children: {},
+          };
+        }
+        splitChildren(tags[id], item.Name);
+      });
+      return tags;
+    };
+
+    const fetchCasS = async () => {
+      const { tags, errorMsg } = await loadCaasTags(caasTagUrl);
+      if (errorMsg) window.lana.log(`Tag Selector. Error fetching caas tags: ${errorMsg}`);
+
+      setTagSelectorTags((prevConsumerTags) => ({ CaaS: tags, ...prevConsumerTags }));
+    };
+
+    const fetchConsumer = () => {
+      consumerUrls.forEach(({ title, url }) => {
+        fetchData(url).then((json) => {
+          const tags = getConsumerTags(json.data);
+          setTagSelectorTags((prevConsumerTags) => ({ [title]: tags, ...prevConsumerTags }));
+        });
+      });
+    };
+
     fetchCasS();
     fetchConsumer();
-  }, []);
+  }, [consumerUrls]);
 
   useEffect(() => {
+    const getTagTree = (root) => {
+      const caasOptions = Object.entries(root).reduce((opts, [, tag]) => {
+        opts[tag.tagID] = {};
+
+        if (Object.keys(tag.tags).length) {
+          opts[tag.tagID].children = getTagTree(tag.tags);
+        }
+
+        opts[tag.tagID].label = tag.title;
+        opts[tag.tagID].path = tag.path.replace('/content/cq:tags/caas/', '');
+
+        return opts;
+      }, {});
+      return caasOptions;
+    };
+
+    const createOptionMap = (root) => {
+      const newOptionMap = {};
+      const parseNode = (nodes, parent) => {
+        Object.entries(nodes).forEach(([key, val]) => {
+          newOptionMap[key] = { ...val };
+          if (parent) {
+            newOptionMap[key].parent = parent;
+          }
+          if (val.children) {
+            parseNode(val.children, newOptionMap[key]);
+          }
+        });
+      };
+      parseNode(root);
+      return newOptionMap;
+    };
+
+    const loadCaaS = () => {
+      const opts = getTagTree(tagSelectorTags.CaaS);
+      setOptions(opts);
+      if (opts && Object.values(opts).some((value) => typeof value !== 'string')) {
+        setOptionMap(createOptionMap(opts));
+      } else {
+        /* c8 ignore next 2 */
+        setOptionMap(opts);
+      }
+    };
+
+    const loadConsumer = () => {
+      if (!tagSelectorTags[selected]) return;
+      const opts = tagSelectorTags[selected];
+      setOptions(opts);
+      if (opts && Object.values(opts).some((value) => typeof value !== 'string')) {
+        setOptionMap(createOptionMap(opts));
+      } else {
+        /* c8 ignore next 2 */
+        setOptionMap(opts);
+      }
+    };
+
     if (selected === CAAS_LABEL && tagSelectorTags.CaaS) {
       loadCaaS();
     } else if (tagSelectorTags[selected]) {
