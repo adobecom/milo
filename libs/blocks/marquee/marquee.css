@@ -1,3 +1,31 @@
+.marquee.large:not(.split, .compact) .foreground.container .text {
+  margin: var(--spacing-m) auto;
+  width: var(--grid-container-width);
+}
+
+.marquee.large:not(.split) .container {
+  width: 100%;
+  padding: 0;
+  gap:0;
+}
+
+.marquee.large:not(.split) .icon-area.icon-area-multiple img {
+  max-height: none;
+  margin: 0 var(--spacing-s) 0 0;
+}
+
+.marquee.large:not(.split) .text .heading-xxl {
+  margin-bottom: var(--spacing-s);
+}
+
+.marquee.large:not(.split) .text .body-xl:not(.supplemental-text){
+  margin-bottom: 0;
+}
+
+.marquee.large:not(.split) .body-xl .icon {
+  margin: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) 0;
+}
+
 .marquee {
   position: relative;
   color: #FFF;
@@ -139,11 +167,6 @@
   height: 64px;
 }
 
-.marquee.large .foreground {
-  padding: var(--spacing-m) 0;
-  gap: 0;
-}
-
 .marquee.large .background img {
   max-height: 259px;
 }
@@ -267,7 +290,7 @@
 
 .marquee.large .text .supplemental-text {
   order: 2;
-  margin-bottom: var(--spacing-s);
+  margin-bottom: var(--spacing-xs);
   font-weight: 700;
 }
 
@@ -381,6 +404,13 @@
     max-height: 80px;
   }
 
+  .marquee.large:not(.split) .media {
+    width: 100%;
+  }
+
+  .marquee.large:not(.split) .text .supplemental-text {
+    margin-bottom: var(--spacing-xs);
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -481,6 +511,47 @@
     display: flex;
   }
 
+  /* standard = 560px height 
+     compact = 360px height */
+
+  .marquee.large:not(.split, .compact) .foreground.container .text {
+      margin: var(--spacing-xl) 0;
+  }
+
+  .marquee.large:not(.split) .container {
+    width: var(--grid-container-width);
+    padding: 0;
+    gap: 100px;
+  }
+
+  .marquee.large:not(.split) .text .heading-xxl {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .marquee.large:not(.split) .text .body-xl:not(.supplemental-text){
+    margin-bottom: var(--spacing-s);
+  }
+
+  .marquee.large:not(.split) .foreground.container .text :last-child {
+    margin-bottom: 0;
+  }
+
+  .marquee.large:not(.split) .foreground.container .action-area :last-child:not(.button-xl){
+    font-size: var(--type-body-l-size);
+    line-height: var(--type-body-l-lh);
+}
+
+  .marquee.large.standard:not(.split) {
+    min-height: 560px;
+  }
+
+  .marquee.large.compact:not(.split) {
+    min-height: 360px;
+  }
+
+  .marquee.large.compact:not(.split) .text {
+    margin: 48px 0;
+  }
 
   .marquee.large .background img {
     max-height: unset;
