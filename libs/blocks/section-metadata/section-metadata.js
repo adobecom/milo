@@ -48,6 +48,7 @@ export function promoIntersectObserve(el, startPoint, options = {}) {
         : abovePromoStart;
       if (entry.isIntersecting || (!entry.isIntersecting && isPromoStart && abovePromoStart)) el.classList.add('hide-sticky-section');
       else if (!entry.isIntersecting && !abovePromoStart) el.classList.remove('hide-sticky-section');
+      return el;
     });
   }, options);
   return io;
