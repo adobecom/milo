@@ -37,18 +37,17 @@ function handleTopHeight(section) {
   section.style.top = `${headerHeight}px`;
 }
 
-export function promoIntersectObserve(el, options = {}) {
-  const promoBar = el.querySelector('.promobar');
+export function promoIntersectObserve(el, startPoint, options = {}) {
   let abovePromoStart = false;
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach(async (entry) => {
-      if (promoBar.classList.contains('close-promobar')) return observer.unobserve(entry.target);
-      const isPromoStart = entry.target.classList.contains('show-promobar');
+      if (el.classList.contains('close-sticky-section')) return observer.unobserve(entry.target);
+      const isPromoStart = startPoint ? entry.target === startPoint : null;
       abovePromoStart = isPromoStart
         ? (entry.isIntersecting || entry.boundingClientRect.y > 0)
         : abovePromoStart;
-      if (entry.isIntersecting || (!entry.isIntersecting && isPromoStart && abovePromoStart)) el.style.display = 'none';
-      else if (!entry.isIntersecting && !abovePromoStart) el.style.display = 'block';
+      if (entry.isIntersecting || (!entry.isIntersecting && isPromoStart && abovePromoStart)) el.classList.add('hide-sticky-section');
+      else if (!entry.isIntersecting && !abovePromoStart) el.classList.remove('hide-sticky-section');
     });
   }, options);
   return io;
@@ -56,13 +55,14 @@ export function promoIntersectObserve(el, options = {}) {
 
 async function handleStickyPromobar(section) {
   const main = document.querySelector('main');
-  section.style.display = 'none';
-  const io = promoIntersectObserve(section);
+  section.classList.add('hide-sticky-section');
+  let startPoint = null;
   if (main.children[0] !== section) {
-    const node = createTag('div', { class: 'section show-promobar' });
-    main.insertBefore(node, section);
-    io.observe(node);
+    startPoint = createTag('div', { class: 'section show-sticky-section' });
+    main.insertBefore(startPoint, section);
   }
+  const io = promoIntersectObserve(section, startPoint);
+  if (startPoint) io.observe(startPoint);
   io.observe(document.querySelector('footer'));
 }
 

@@ -70,6 +70,16 @@ describe('Section Metdata', () => {
     expect(main.firstElementChild).to.be.eql(sec);
   });
 
+  it('add promobar behaviour to section', async () => {
+    const main = document.querySelector('main');
+    const sec = document.querySelector('.section.sticky-bottom .promobar').closest('.section');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    console.log(main.lastElementChild);
+    expect(main.lastElementChild).to.be.eql(sec);
+    expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
+  });
+
   it('should calculate the top position based on header height', async () => {
     const sec = document.querySelector('.section.sticky-top');
     const header = document.createElement('header');
