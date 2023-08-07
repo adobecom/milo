@@ -81,6 +81,20 @@ const decorateRibbon = (el, podType) => {
   }
 };
 
+const decorateIcon = (el, icons, podType) => {
+  const inner = el.querySelector(`.consonant-${podType}-inner`);
+  const iconWrapper = document.createElement('div');
+  icons.forEach((icon) => {
+    const url = icon.querySelector('img').src;
+    const iconDiv = document.createElement('div');
+    iconDiv.style.backgroundImage = `url(${url})`;
+    iconDiv.classList.add('consonant-MerchCard-ProductIcon');
+    iconWrapper.appendChild(iconDiv);
+    icon.parentNode?.remove();
+  });
+  inner.prepend(iconWrapper);
+};
+
 const init = (el) => {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
@@ -90,14 +104,8 @@ const init = (el) => {
   const section = el.closest('.section');
   section.classList.add('milo-card-section');
   const images = el.querySelectorAll('picture');
-  let icon;
-  let picture;
-  if (images.length > 1) {
-    icon = images[1];
-  } else {
-    picture = el.querySelector('picture');
-  }
-  console.log(icon);
+  let image;
+  const icons = [];
   let row = el.querySelector(':scope > div');
   if (row.children.length === 2) {
     row = el.querySelectorAll(':scope > *')[1];
@@ -110,14 +118,28 @@ const init = (el) => {
   const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
     .querySelectorAll('a') : el.querySelectorAll('a');
   const merchPod = el;
+  images.forEach((img) => {
+    const imgNode = img.querySelector('img');
+    const width = imgNode.width;
+    const height = imgNode.height;
+    const isSquare = Math.abs(width - height) <= 10;
+    if (img) {
+      if (isSquare) {
+        icons.push(img);
+      } else {
+        image = img;
+      }
+    }
+  });
   addWrapper(el, section, podType);
   merchPod.classList.add('consonant-Card', 'consonant-ProductCard');
-  if (picture) {
-    addBackgroundImg(picture, podType, merchPod);
+  if (image) {
+    addBackgroundImg(image, podType, merchPod);
   }
   decorateRibbon(el, podType);
-  picture?.parentElement.remove();
+  image?.parentElement.remove();
   addInner(el, podType, merchPod);
+  decorateIcon(el, icons, podType);
   decorateButtons(ctas);
   addFooter(links, row, merchPod);
   decorateFooter(el, podType);

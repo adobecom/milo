@@ -50,6 +50,11 @@
   height: 32px;
 }
 
+.merch-pod .consonant-CardFooter-row .consonant-CardFooter-cell .con-button.outline {
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+}
+
 .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
   max-width: fit-content;
   display: flex;
@@ -58,6 +63,18 @@
 
 .consonant-CardsGrid--4up .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
   margin-left: 9px;
+}
+
+.merch-pod .consonant-MerchCard-ProductIcon {
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: relative;
+  margin-right: 8px;
+  margin-bottom: 8px;;
+  display: block;
+  float: left;
+  width: 40px;
+  height: 40px;
 }
 
 .merch-pod.special-offer,
