@@ -59,8 +59,8 @@
 }
 
 .merch-pod .consonant-CardFooter-row .consonant-CardFooter-cell .con-button.outline {
-  border: 2px solid var(--text-color);
-  color: var(--text-color);
+  border: 2px solid #000;
+  color: #000;
 }
 
 .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
@@ -83,6 +83,8 @@
   float: left;
   width: 40px;
   height: 40px;
+}
+
 .merch-pod .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
   display: none;
 }
