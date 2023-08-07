@@ -84,6 +84,7 @@ const decorateRibbon = (el, podType) => {
 const decorateIcon = (el, icons, podType) => {
   const inner = el.querySelector(`.consonant-${podType}-inner`);
   const iconWrapper = document.createElement('div');
+  iconWrapper.classList.add(`consonant-${podType}-iconWrapper`);
   icons.forEach((icon) => {
     const url = icon.querySelector('img').src;
     const iconDiv = document.createElement('div');
