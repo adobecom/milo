@@ -9,6 +9,25 @@
   border-radius: 16px;
 }
 
+.merch-pod.segment-blade {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 222px;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  min-width: 378px;
+  max-width: 378px;
+}
+
+@media only screen and (max-width: 1400px) {
+  .merch-pod.segment-blade {
+    min-width: 317px;
+    max-width: 317px;
+  }
+}
+
 .consonant-CardsGrid--oneup .merch-pod.consonant-Card {
   max-width: 100%;
 }
@@ -23,16 +42,13 @@
 .consonant-CardsGrid--2up .merch-pod {
   width: 378px;
 }
-.merch-pod .consonant-CardFooter .consonant-CardFooter-row,
+.merch-pod .consonant-CardFooter-row,
 .merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
   display: flex;
   width: 100%;
+  justify-content: flex-end;
   align-items: inherit;
   height: 32px;
-}
-.merch-pod .consonant-CardFooter .standard-wrapper .consonant-CardFooter-row
-.merch-pod .consonant-CardFooter .consonant-CardFooter-row{
-  justify-content: flex-end;
 }
 
 .merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
@@ -53,7 +69,7 @@
   display: none;
 }
 
-.merch-pod .consonant-CardFooter-row .secure-transaction-wrapper {
+.merch-pod .consonant-CardFooter-row .standard-wrapper .secure-transaction-wrapper {
   display: flex;
   width: 100%;
   justify-content: flex-start;
@@ -121,8 +137,8 @@
 }
 
 .merch-pod .consonant-ProductCard-prices,
-.merch-pod .consonant-SegmentCard-prices,
-.merch-pod .consonant-SpecialOffer-prices {
+.merch-pod .consonant-SegmentBlade-prices,
+.merch-pod .consonant-SpecialOffers-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -130,8 +146,8 @@
 }
 
 .merch-pod .consonant-ProductCard-description,
-.merch-pod .consonant-SegmentCard-description,
-.merch-pod .consonant-SpecialOffer-description {
+.merch-pod .consonant-SegmentBlade-description,
+.merch-pod .consonant-SpecialOffers-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -153,7 +169,8 @@
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffers-img {
+.merch-pod .consonant-SpecialOffers-img,
+.merch-pod .consonant-PlansCard-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
