@@ -526,7 +526,7 @@
     margin-bottom: 0;
   }
 
-  .marquee.large:not(.split) .foreground.container .action-area :last-child:not(.button-xl){
+  .marquee.large:not(.split) .foreground.container .action-area :last-child:not(.con-button){
     font-size: var(--type-body-l-size);
     line-height: var(--type-body-l-lh);
   }
