@@ -5,6 +5,7 @@ body.tool-ost .ost {
   left: 0;
   bottom: 0;
   right: 0;
+  margin-top: 50px;
   justify-content: center;
   align-items: center;
   background-color: var(--color-gray-75);
