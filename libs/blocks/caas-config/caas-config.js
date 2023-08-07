@@ -325,7 +325,6 @@ const BasicsPanel = ({ tagsData }) => {
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
-    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
 
   `;
@@ -647,6 +646,7 @@ const AdvancedPanel = () => {
 
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
     <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
@@ -717,12 +717,7 @@ const saveStateToLocalStorage = (state) => {
  * @param {*} value jsonValue
  * @returns replacedJson
  */
-const fgKeyReplacer = (key, value) => {
-  if (key === 'fetchCardsFromFloodgateTree') {
-    return undefined;
-  }
-  return value;
-};
+const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
 /* c8 ignore start */
 const CopyBtn = () => {
@@ -741,7 +736,6 @@ const CopyBtn = () => {
 
   const getUrl = () => {
     const url = window.location.href.split('#')[0];
-    state.fetchCardsFromFloodgateTree = 'default';
     return `${url}#${utf8ToB64(JSON.stringify(state, fgKeyReplacer))}`;
   };
 

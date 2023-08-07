@@ -6,6 +6,7 @@ const URL_ENCODED_COMMA = '%2C';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
+const requestHeaders = [];
 
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
@@ -272,7 +273,34 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
   };
 }
 
-const getfloodGateColor = ({ fetchCardsFromFloodgateTree }) => (fetchCardsFromFloodgateTree ? 'pink' : 'default');
+/**
+ * Finds the matching tuple and returns its index.
+ * Looks for 'X-Adobe-Floodgate' in [['X-Adobe-Floodgate', 'pink'], ['a','b']]
+ * @param {*} fgHeader fgHeader
+ * @returns tupleIndex
+ */
+const findTupleIndex = (fgHeader) => {
+  const matchingTupleIndex = requestHeaders.findIndex((element) => element[0] === fgHeader);
+  return matchingTupleIndex;
+};
+
+/**
+ * Adds the floodgate header to the Config of ConsonantCardCollection
+ * headers: [['X-Adobe-Floodgate', 'pink'], ['OtherHeader', 'Value']]
+ * @param {*} state state
+ * @returns requestHeaders
+ */
+const addFloodgateHeader = (state) => {
+  const fgHeader = 'X-Adobe-Floodgate';
+  const fgHeaderValue = 'pink';
+
+  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
+  requestHeaders.splice(findTupleIndex(fgHeader, 1));
+  if (state.fetchCardsFromFloodgateTree) {
+    requestHeaders.push([fgHeader, fgHeaderValue]);
+  }
+  return requestHeaders;
+};
 
 export function arrayToObj(input = []) {
   const obj = {};
@@ -302,7 +330,6 @@ export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language } = getCountryAndLang(state);
-  const floodGateColor = getfloodGateColor(state);
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
@@ -314,8 +341,9 @@ export const getConfig = async (originalState, strs = {}) => {
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
 
+  const caasRequestHeaders = addFloodgateHeader(state);
+
   const config = {
-    floodGateColor,
     collection: {
       mode: state.theme,
       layout: {
@@ -331,7 +359,7 @@ export const getConfig = async (originalState, strs = {}) => {
         ',',
       )}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
         state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}&floodGateColor=${floodGateColor}`,
+      }&size=${state.collectionSize || state.totalCardsToShow}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       cardStyle: state.cardStyle,
@@ -483,6 +511,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    headers: caasRequestHeaders,
   };
   return config;
 };
@@ -544,6 +573,7 @@ export const defaultState = {
   filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  headers: [],
   hideCtaIds: [],
   includeTags: [],
   language: 'caas:language/en',
