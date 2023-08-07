@@ -1,4 +1,4 @@
-.marquee.large:not(.split, .compact) .foreground.container .text {
+.marquee.large:not(.split) .foreground.container .text {
   margin: var(--spacing-m) auto;
   width: var(--grid-container-width);
 }
@@ -9,8 +9,7 @@
   gap:0;
 }
 
-.marquee.large .icon-area.icon-area-multiple img {
-  max-height: none;
+.marquee .icon-area.icon-area-multiple > :not(:last-child) img {
   margin: 0 var(--spacing-s) 0 0;
 }
 
@@ -269,10 +268,6 @@
   height: 40px;
   max-height: 40px;
   max-width: 114px;
-}
-
-.marquee:not(.split) .icon-area.icon-area-multiple > :not(:first-child) img {
-  margin-left: var(--spacing-xxs);
 }
 
 .marquee.large .text .action-area {
@@ -534,7 +529,7 @@
   .marquee.large:not(.split) .foreground.container .action-area :last-child:not(.button-xl){
     font-size: var(--type-body-l-size);
     line-height: var(--type-body-l-lh);
-}
+  }
 
   .marquee.large.standard {
     min-height: 560px;
@@ -544,10 +539,10 @@
     min-height: 360px;
   }
 
-  .marquee.large.compact .text {
+  .marquee.large.compact .foreground.container .text {
     margin: 48px 0;
   }
-
+  
   .marquee.large .background img {
     max-height: unset;
   }
