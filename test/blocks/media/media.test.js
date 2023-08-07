@@ -62,7 +62,7 @@ describe('media', () => {
     it('does have CTA for google-play', () => {
       const googlePlayCta = medias[5].querySelector('a.google-play');
       expect(googlePlayCta).to.exist;
-    })
+    });
     it('does have CTA for app-store', () => {
       const appStoreCta = medias[5].querySelector('a.app-store');
       expect(appStoreCta).to.exist;

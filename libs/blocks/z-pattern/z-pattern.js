@@ -38,8 +38,11 @@ function getReversedRowCount(rows) {
 
 function getChildSingleRowCount(children) {
   return [...children].reduce((length, child) => {
-    if (child.children.length === 1) length += 1;
-    return length;
+    let el = length;
+    if (child.children.length === 1) {
+      el += 1;
+    }
+    return el;
   }, 0);
 }
 
