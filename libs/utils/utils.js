@@ -450,8 +450,9 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
-      picParent.append(aTag);
+      const aTag = createTag('a', { href: url, class: 'image-link' });
+      picParent.insertBefore(aTag, pic);
+      aTag.append(pic);
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
