@@ -78,7 +78,7 @@ function decorateMedia(el) {
 function decorateVideo(container) {
   const link = container.querySelector('a[href*=".mp4"]');
   if (!link) return;
-  const isNotLooped = !!(link.hash?.includes('autoplay1'));
+  const isNotLooped = link.hash?.includes('autoplay1');
   const attrs = `playsinline autoplay ${isNotLooped ? '' : 'loop'} muted`;
   container.innerHTML = `<video preload="metadata" ${attrs}>
     <source src="${link.href}" type="video/mp4" />
