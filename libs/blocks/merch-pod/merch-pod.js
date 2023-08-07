@@ -89,7 +89,15 @@ const init = (el) => {
   loadStyle(`${base}/deps/caas.css`);
   const section = el.closest('.section');
   section.classList.add('milo-card-section');
-  const picture = el.querySelector('picture');
+  const images = el.querySelectorAll('picture');
+  let icon;
+  let picture;
+  if (images.length > 1) {
+    icon = images[1];
+  } else {
+    picture = el.querySelector('picture');
+  }
+  console.log(icon);
   let row = el.querySelector(':scope > div');
   if (row.children.length === 2) {
     row = el.querySelectorAll(':scope > *')[1];

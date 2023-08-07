@@ -62,13 +62,15 @@
 
 .merch-pod.special-offer,
 .merch-pod.product-card,
-.merch-pod.segment-card {
+.merch-pod.segment-card,
+.merch-pod.plans-card {
   border-radius: 16px;
 }
 
 .merch-pod .consonant-ProductCard-inner,
 .merch-pod .consonant-SegmentBlade-inner,
-.merch-pod .consonant-SpecialOffers-inner {
+.merch-pod .consonant-SpecialOffers-inner,
+.merch-pod .consonant-PlansCard-inner {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -89,16 +91,19 @@
 
 .merch-pod .consonant-ProductCard-title,
 .merch-pod .consonant-SegmentBlade-title,
-.merch-pod .consonant-SpecialOffers-title {
+.merch-pod .consonant-SpecialOffers-title,
+.merch-pod .consonant-PlansCard-title {
   font-size: 20px;
   font-weight: 700;
 }
 
-.merch-pod .consonant-SpecialOffers-title h4 {
+.merch-pod .consonant-SpecialOffers-title h4,
+.merch-pod .consonant-PlansCard-title h4 {
   font-size: 12px;
   font-weight: 700;
 }
-.merch-pod .consonant-SpecialOffers-title h3 {
+.merch-pod .consonant-SpecialOffers-title h3,
+.merch-pod .consonant-PlansCard-title h3 {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 0;
@@ -106,7 +111,8 @@
 
 .merch-pod .consonant-ProductCard-prices,
 .merch-pod .consonant-SegmentBlade-prices,
-.merch-pod .consonant-SpecialOffers-prices {
+.merch-pod .consonant-SpecialOffers-prices,
+.merch-pod .consonant-PlansCard-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -115,7 +121,8 @@
 
 .merch-pod .consonant-ProductCard-description,
 .merch-pod .consonant-SegmentBlade-description,
-.merch-pod .consonant-SpecialOffers-description {
+.merch-pod .consonant-SpecialOffers-description,
+.merch-pod .consonant-PlansCard-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -123,12 +130,14 @@
 }
 
 .merch-pod .consonant-SegmentBlade-description span.placeholder-resolved,
-.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved {
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved,
+.merch-pod .consonant-PlansCard-description span.placeholder-resolved {
   font-size: 18px;
   font-weight: 700;
 }
 .merch-pod .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"] {
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-pod .consonant-PlansCard-description span.placeholder-resolved[data-template="priceStrikethrough"] {
   font-size: 14px;
   font-weight: 700;
 }
@@ -137,7 +146,8 @@
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffers-img {
+.merch-pod .consonant-SpecialOffers-img,
+.merch-pod .consonant-PlansCard-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
@@ -150,7 +160,8 @@
 }
 
 .merch-pod .consonant-SpecialOffers-ribbon,
-.merch-pod .consonant-SegmentBlade-ribbon {
+.merch-pod .consonant-SegmentBlade-ribbon,
+.merch-pod .consonant-PlansCard-ribbon {
   position: absolute;
   top: 16px;
   right: 0;
@@ -165,7 +176,8 @@
 
 .merch-pod .consonant-ProductCard-cell,
 .merch-pod .consonant-SegmentBlade-cell,
-.merch-pod .consonant-SpecialOffers-cell {
+.merch-pod .consonant-SpecialOffers-cell,
+.merch-pod .consonant-PlansCard-cell {
   justify-content: flex-end;
   align-items: center;
 }
@@ -206,10 +218,12 @@ h5 {
   margin-bottom: 4.5px;
 }
 
-.merch-pod .consonant-SpecialOffers-inner {
+.merch-pod .consonant-SpecialOffers-inner,
+.merch-pod .consonant-PlansCard-inner {
   justify-content: center;
 }
-.merch-pod.special-offer .consonant-SpecialOffers-description p {
+.merch-pod.special-offer .consonant-SpecialOffers-description p,
+.merch-pod.special-offer .consonant-PlansCard-description p {
   font-size: 14px;
 }
 .merch-pod.special-offer .consonant-CardFooter {
