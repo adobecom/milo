@@ -44,13 +44,6 @@ describe('aside', () => {
           }
         });
 
-        if (aside.classList.contains('aside-with-modal')) {
-          it('Has video modal', () => {
-            const playButton = aside.querySelector('.play-btn');
-            expect(playButton).to.exist;
-          });
-        }
-
         if (aside.classList.contains('icon-stack')) {
           it('Has icon stack area', () => {
             const iconStack = aside.querySelector('ul.icon-stack-area');

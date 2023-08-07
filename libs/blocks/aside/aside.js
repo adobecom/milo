@@ -51,18 +51,6 @@ function decorateStaticLinks(el) {
   textLinks.forEach((link) => { link.classList.add('static'); });
 }
 
-function decorateModalImage(el, lnkImg) {
-  if (el.classList.contains('split')) lnkImg.closest('div').classList.add('has-modal');
-  lnkImg.classList.add('play-btn');
-  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
-  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIcon);
-  const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' });
-  lnkImg.parentNode.appendChild(lnkImg.querySelector('picture'));
-  lnkImg.parentNode.appendChild(playContainer);
-  lnkImg.appendChild(playCircle);
-  playContainer.appendChild(lnkImg);
-}
-
 function decorateMedia(el) {
   if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
   const allMedia = el.querySelectorAll('div > p video, div > p picture');
@@ -149,10 +137,6 @@ function decorateLayout(el) {
       const position = Array.from(asideMedia.parentNode.children).indexOf(asideMedia);
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(asideMedia);
-    }
-    const lnkImg = el.querySelector('.image a');
-    if (image && lnkImg?.dataset?.modalHash) {
-      decorateModalImage(el, lnkImg);
     }
   } else if (!iconArea) {
     foreground?.classList.add('no-image');
