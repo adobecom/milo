@@ -42,12 +42,20 @@
 .consonant-CardsGrid--2up .merch-pod {
   width: 378px;
 }
-.merch-pod .consonant-CardFooter-row {
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row,
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
   display: flex;
   width: 100%;
-  justify-content: flex-end;
   align-items: inherit;
   height: 32px;
+}
+.merch-pod .consonant-CardFooter .standard-wrapper .consonant-CardFooter-row
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row{
+  justify-content: flex-end;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
+  justify-content: flex-start;
 }
 
 .merch-pod .consonant-CardFooter-row .consonant-CardFooter-cell .con-button.outline {
@@ -75,6 +83,31 @@
   float: left;
   width: 40px;
   height: 40px;
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
+  display: none;
+}
+
+.merch-pod .consonant-CardFooter-row .secure-transaction-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  height: 32px;
+}
+
+
+.merch-pod .consonant-CardFooter .standard-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .footer-text {
+  font-size: 14px;
+  margin-left: 12px;
+  line-height: 16px;
+  color: #757575;
 }
 
 .merch-pod.special-offer,
@@ -208,8 +241,8 @@ p {
   color: #000;
 }
 
-.merch-pod h1, 
-.merch-pod h2, 
+.merch-pod h1,
+.merch-pod h2,
 .merch-pod h3,
 .merch-pod h4,
 .merch-pod h5,
@@ -255,4 +288,37 @@ h5 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.merch-pod .consonant-CardFooter .checkmark {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .checkbox-text {
+  font-size: 14px;
+  margin-left: 12px;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .alt-cta {
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border: 2px solid #ddd;
 }
