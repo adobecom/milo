@@ -105,13 +105,6 @@
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
 
-  /* video play button */
-  --play-btn-default: #378EF0;
-  --play-btn-hover: #095ABA;
-  --play-btn-down: #0D66D0;
-  --play-btn-focus: #095ABA;
-  --play-btn-focus-ring: #1473E6;
-
   /* aspect ratios */
   --aspect-ratio-square: 1/1;
   --aspect-ratio-standard: 4/3;
