@@ -21,13 +21,6 @@ export function decorateButtons(el, size) {
   if (actionArea) {
     actionArea.classList.add('action-area');
     actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
-    const foreground = el.parentElement;
-    const parent = foreground.parentElement;
-    if (parent.classList.contains('marquee', 'large')
-    && actionArea.childElementCount === 3
-    && actionArea.nextElementSibling?.classList.contains('supplemental-text')) {
-      actionArea.nextElementSibling.remove();
-    }
   }
 }
 
