@@ -14,6 +14,7 @@ import {
   loadArea,
   loadLana,
   setConfig,
+  scrollToHashedElement,
 } from '../utils/utils.js';
 
 // Production Domain
@@ -149,7 +150,11 @@ const eagerLoad = (img) => {
 
 (async function loadPage() {
   performance.mark('loadpage');
+  window.addEventListener('load', (e) => {
+    e.preventDefault();
+  });
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
+  scrollToHashedElement();
 }());

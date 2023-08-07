@@ -417,4 +417,31 @@ describe('Utils', () => {
       expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });
+
+  describe('scrollToHashedElement', () => {
+    let querySelectorStub;
+    let scrollIntoViewStub;
+  
+    beforeEach(() => {
+      querySelectorStub = sinon.stub(document, 'querySelector');
+      scrollIntoViewStub = sinon.stub();
+      querySelectorStub.withArgs('.global-navigation').returns({ offsetHeight: 50 });
+      querySelectorStub.withArgs('#element1:not(.dialog-modal)').returns({
+        scrollIntoView: scrollIntoViewStub,
+        style: {},
+      });
+    });
+  
+    it('should scroll to the hashed element when a valid hash is provided', () => {
+      window.location.hash = '#element1';
+      utils.scrollToHashedElement();
+      expect(scrollIntoViewStub).to.be.true;
+    });
+  
+    it('should not scroll when an invalid hash is provided', () => {
+      window.location.hash = '#invalidElement';
+      utils.scrollToHashedElement();
+      expect(scrollIntoViewStub).to.not.be.true;
+    });
+  });
 });

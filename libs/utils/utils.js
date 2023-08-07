@@ -932,3 +932,22 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
+
+export function scrollToHashedElement() {
+  const hash = window.location.hash;
+  const gnavElement = document.querySelector('.global-navigation');
+  if (hash) {
+    const elementId = hash.slice(1);
+    const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+    if (targetElement) {
+      if (gnavElement) {
+        let bufferHeight = gnavElement.offsetHeight;
+        targetElement.style.paddingTop = `${bufferHeight}px`;
+        targetElement.style.marginTop = `-${bufferHeight}px`;
+      }
+      targetElement.scrollIntoView({
+          behavior: 'smooth'
+      });
+    }
+  }
+}
