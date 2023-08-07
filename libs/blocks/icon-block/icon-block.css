@@ -84,7 +84,7 @@
 }
 
 .icon-block.bio .foreground {
-  text-align: left;
+  text-align: start;
   border-top: 1px solid #D5D5D5;
   border-bottom: 1px solid #D5D5D5;
 }
@@ -187,7 +187,7 @@
 }
 
 .icon-block.vertical .foreground {
-  text-align: left;
+  text-align: start;
   margin-bottom: var(--spacing-s);
 }
 
@@ -195,10 +195,6 @@
 .icon-block.bio .foreground {
   width: var(--grid-container-width);
   margin: 0 auto;
-}
-
-[dir="rtl"] .icon-block.vertical .foreground {
-  text-align: right;
 }
 
 .icon-block.bio.center .foreground,
@@ -342,13 +338,10 @@
 
 .icon-block.inline .foreground .text-content {
   flex-flow: row nowrap;
-  text-align: left;
+  text-align: start;
   gap: 16px;
 }
 
-html[dir="rtl"] .icon-block.inline .foreground .text-content {
-  text-align: right;
-}
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;

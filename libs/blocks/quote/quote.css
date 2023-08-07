@@ -73,15 +73,11 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 
 /* inline */
 .quote.inline figure {
-  text-align: left;
+  text-align: start;
   padding: var(--spacing-m);
 }
 
 .quote.inline.align-right figure {
-  text-align: right;
-}
-
-html[dir="rtl"] .quote.inline figure {
   text-align: right;
 }
 
