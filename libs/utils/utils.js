@@ -467,8 +467,8 @@ export function decorateAutoBlock(a) {
     url = new URL(a.href);
   } catch (e) {
     window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    return false;
   }
-  if (!url) return false;
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
