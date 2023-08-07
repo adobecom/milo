@@ -4,6 +4,13 @@ import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
 
+const {
+  miloLibs,
+  codeRoot,
+} = getConfig();
+const base = miloLibs || codeRoot;
+const PADLOCK_IMG = `<img class="Padlock-img" loading="lazy" alt="Padlock icon" src="${base}/blocks/merch-pod/img/padlock.svg" height="13" width="15">`;
+
 const SEGMENT = 'SegmentCard';
 const SPECIAL_OFFER = 'SpecialOffer';
 const PLANS = 'Plans';
@@ -12,7 +19,7 @@ const getPodType = (styles) => {
   const podTypes = {
     'segment-card': SEGMENT,
     'special-offer': SPECIAL_OFFER,
-    'plans': PLANS,
+    'standard-plans': PLANS,
   };
   const authoredType = styles?.find((style) => style in podTypes);
   return podTypes[authoredType] || SEGMENT;
@@ -38,7 +45,59 @@ const createTitle = (titles, podType) => {
 };
 
 const decorateFooter = (el, podType) => {
-  el.querySelectorAll('.consonant-CardFooter-cell')
+  const cardFooter = el.querySelector('.consonant-CardFooter');
+
+  const decorateWithSecureTransactionSign = () => {
+    const secureTransactionWrapper = createTag('span', { class: 'secure-transaction-wrapper' });
+    const text = createTag('span', { class: 'footer-text' }, '{{secure-transaction}}');
+    const secureElement = createTag('span', { class: 'padlock' }, PADLOCK_IMG);
+    secureTransactionWrapper.append(secureElement, text);
+    return secureTransactionWrapper;
+  };
+
+  const createCheckbox = (checkBoxText) => {
+    cardFooter.querySelector('hr')?.remove();
+    const checkboxText = createTag('span', { class: 'checkbox-text' }, checkBoxText.innerHTML);
+    const checkBox = createTag('label', { class: 'checkbox-container' }, '<input type="checkbox" id="alt-cta"><span class="checkmark"></span>');
+    const checkboxWrapper = createTag('div', { class: 'checkbox-wrapper' });
+    checkboxWrapper.append(checkBox, checkboxText);
+    return checkboxWrapper;
+  };
+
+  const decorateAlternativeCta = () => {
+    const altCta = Array.from(el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]')).filter((data) => data.textContent?.trim() === 'alt-cta');
+    const altCtaMetaData = altCta[0]?.parentElement?.nextElementSibling?.querySelectorAll('div > div');
+    const altCtaRegex = /href="([^"]*)"/g;
+    if (altCtaMetaData?.length === 2 && altCtaMetaData[1]?.innerHTML?.match(altCtaRegex)) {
+      const standardWrapper = createTag('div', { class: 'standard-wrapper' });
+      const secureTransactionWrapper = decorateWithSecureTransactionSign();
+      const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
+      const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+      const altCtaButton = originalCtaButton.cloneNode(true);
+      const checkboxWrapper = createCheckbox(altCtaMetaData[0]);
+
+      altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
+      altCtaButton.classList.add('alt-cta-button--inactive');
+      checkboxWrapper.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
+        if (event.target.checked) {
+          originalCtaButton.classList.add('alt-cta-button--inactive');
+          altCtaButton.classList.remove('alt-cta-button--inactive');
+        } else {
+          altCtaButton.classList.add('alt-cta-button--inactive');
+          originalCtaButton.classList.remove('alt-cta-button--inactive');
+        }
+      });
+      cardFooterRow.append(altCtaButton);
+      cardFooter.prepend(checkboxWrapper);
+      standardWrapper.append(secureTransactionWrapper, cardFooterRow);
+      cardFooter?.append(standardWrapper);
+      altCta[0].parentNode.remove();
+      altCtaMetaData[0].parentNode.remove();
+    }
+  };
+
+  decorateAlternativeCta();
+  cardFooter.querySelectorAll('.consonant-CardFooter-cell')
     .forEach((cell) => {
       cell.classList.add(`consonant-${podType}-cell`);
     });
@@ -47,21 +106,26 @@ const decorateFooter = (el, podType) => {
 const addInner = (el, podType, merchPod) => {
   const titles = Array.from(el.querySelectorAll('h1, h2, h3, h4, h5, h6'));
   const rows = Array.from(el.querySelectorAll('p'));
+  const styles = Array.from(el.classList);
+  const merch = styles.includes('merch-pod');
+  const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
+    .querySelectorAll('a') : el.querySelectorAll('a');
 
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${podType}-inner`);
   const title = createTitle(titles, podType);
   const description = createDescription(rows, podType, inner);
-
   inner.prepend(title);
   inner.append(description);
+  addFooter(links, inner, merchPod);
+  decorateFooter(el, podType);
   merchPod.append(inner);
 };
 
 const decorateRibbon = (el) => {
   const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
 
-  if (ribbonMetadata.length === 2) {
+  if (ribbonMetadata.length >= 2) {
     const ribbonStyle = ribbonMetadata[0].outerText;
     const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
     if (!ribbonStyleRegex.test(ribbonStyle)) return;
@@ -84,35 +148,29 @@ const decorateRibbon = (el) => {
 const init = (el) => {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(el, headings);
-  const { miloLibs, codeRoot } = getConfig();
-  const base = miloLibs || codeRoot;
   loadStyle(`${base}/deps/caas.css`);
   const section = el.closest('.section');
   section.classList.add('milo-card-section');
   const picture = el.querySelector('picture');
   let row = el.querySelector(':scope > div');
-  if (row.children.length === 2) {
+  if (row.children.length >= 2) {
     row = el.querySelectorAll(':scope > *')[1];
   }
   const allPElems = row.querySelectorAll('p');
   const ctas = allPElems[allPElems.length - 1];
   const styles = Array.from(el.classList);
   const podType = getPodType(styles);
-  const merch = styles.includes('merch-pod');
-  const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
   const merchPod = el;
   addWrapper(el, section, podType);
   merchPod.classList.add('consonant-Card', 'consonant-ProductCard');
   if (picture) {
     addBackgroundImg(picture, podType, merchPod);
   }
+  decorateButtons(ctas);
   decorateRibbon(el);
   picture?.parentElement.remove();
   addInner(el, podType, merchPod);
-  decorateButtons(ctas);
-  addFooter(links, row, merchPod);
-  decorateFooter(el, podType);
+
   const inner = el.querySelector(`.consonant-${podType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
   if (innerCleanup.classList.length === 0) {

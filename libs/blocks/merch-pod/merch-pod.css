@@ -15,12 +15,24 @@
 .consonant-CardsGrid--2up .merch-pod {
   width: 378px;
 }
-.merch-pod .consonant-CardFooter-row {
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row,
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
   display: flex;
   width: 100%;
-  justify-content: flex-end;
   align-items: inherit;
   height: 32px;
+}
+.merch-pod .consonant-CardFooter .standard-wrapper .consonant-CardFooter-row
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row{
+  justify-content: flex-end;
+}
+
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row {
+  justify-content: flex-end;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
+  justify-content: flex-start;
 }
 
 .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
@@ -33,6 +45,33 @@
   margin-left: 14px;
 }
 
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
+  display: none;
+}
+
+.merch-pod .consonant-CardFooter-row .secure-transaction-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  height: 32px;
+}
+
+
+.merch-pod .consonant-CardFooter .standard-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .footer-text {
+  font-size: 14px;
+  margin-left: 12px;
+  line-height: 16px;
+  color: #757575;
+}
+
 .merch-pod.special-offer,
 .merch-pod.product-card,
 .merch-pod.segment-card {
@@ -41,7 +80,8 @@
 
 .merch-pod .consonant-ProductCard-inner,
 .merch-pod .consonant-SegmentCard-inner,
-.merch-pod .consonant-SpecialOffer-inner {
+.merch-pod .consonant-SpecialOffer-inner,
+.merch-pod .consonant-Plans-inner {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -62,7 +102,8 @@
 
 .merch-pod .consonant-ProductCard-title,
 .merch-pod .consonant-SegmentCard-title,
-.merch-pod .consonant-SpecialOffer-title {
+.merch-pod .consonant-SpecialOffer-title,
+.merch-pod .consonant-Plans-title {
   font-size: 20px;
   margin-bottom: 5px;
   font-weight: 700;
@@ -70,7 +111,8 @@
 
 .merch-pod .consonant-ProductCard-prices,
 .merch-pod .consonant-SegmentCard-prices,
-.merch-pod .consonant-SpecialOffer-prices {
+.merch-pod .consonant-SpecialOffer-prices ,
+.merch-pod .consonant-Plans-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -79,7 +121,8 @@
 
 .merch-pod .consonant-ProductCard-description,
 .merch-pod .consonant-SegmentCard-description,
-.merch-pod .consonant-SpecialOffer-description {
+.merch-pod .consonant-SpecialOffer-description,
+.merch-pod .consonant-Plans-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -87,11 +130,13 @@
   margin-top: 0;
 }
 
-.merch-pod.consonant-SpecialOffer-Card {
+.merch-pod.consonant-SpecialOffer-Card,
+.merch-pod .consonant-Plans-description{
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffer-img {
+.merch-pod .consonant-SpecialOffer-img,
+.merch-pod .consonant-Plans-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
@@ -175,4 +220,37 @@ h5 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.merch-pod .consonant-CardFooter .checkmark {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .checkbox-text {
+  font-size: 14px;
+  margin-left: 12px;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .alt-cta {
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border: 2px solid #ddd;
 }
