@@ -505,11 +505,11 @@
 }
 
 @media screen and (max-width: 600px) {
-  .aside.split:not(.large) .foreground.container > :last-child {
+  .aside.split:not(.large):not(.icon-stack):not(.bio) .foreground.container > :last-child {
     margin-bottom: var(--spacing-l);
   }  
 
-  .aside.split.large .foreground.container > :last-child {
+  .aside.split.large:not(.icon-stack):not(.bio) .foreground.container > :last-child {
     padding: var(--spacing-l) 0 0;
   }  
 }
