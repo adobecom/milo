@@ -122,7 +122,7 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
-  if (host.includes('localhost:')) return { ...ENVS.local, consumer: conf.local };
+  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes('hlx.page')
     || host.includes('hlx.live')
@@ -143,9 +143,15 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const locale = locales[localeString] || locales[''];
   if (localeString === LANGSTORE) {
     locale.prefix = `/${localeString}/${split[2]}`;
+    if (
+      Object.values(locales)
+        .find((loc) => loc.ietf?.startsWith(split[2]))?.dir === 'rtl'
+    ) locale.dir = 'rtl';
     return locale;
   }
-  locale.prefix = locale.ietf === 'en-US' ? '' : `/${localeString}`;
+  const isUS = locale.ietf === 'en-US';
+  locale.prefix = isUS ? '' : `/${localeString}`;
+  locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
 }
 
@@ -166,7 +172,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
-      const lang = getMetadata('content-language') || config.locale.lang || config.locale.ietf;
+      const lang = getMetadata('content-language') || config.locale.ietf;
       document.documentElement.setAttribute('lang', lang);
       try {
         const dir = getMetadata('content-direction')
@@ -444,8 +450,9 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
-      picParent.append(aTag);
+      const aTag = createTag('a', { href: url, class: 'image-link' });
+      picParent.insertBefore(aTag, pic);
+      aTag.append(pic);
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
@@ -564,9 +571,10 @@ function decorateHeader() {
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
+  const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
   const breadcrumbs = document.querySelector('.breadcrumbs');
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  if (breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
+  if (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (breadcrumbs) header.append(breadcrumbs);
 }
 
@@ -666,13 +674,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({
-    persEnabled,
-    persManifests,
-    utils: {
-      createTag, getConfig, getMetadata, loadLink, loadScript, updateConfig,
-    },
-  });
+  await initMartech({ persEnabled, persManifests });
 
   return true;
 }
@@ -703,22 +705,30 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  let martechLoaded = false;
-  if (targetEnabled) {
-    martechLoaded = await loadMartech({ persEnabled: true, persManifests, targetMd });
+  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
+  const { env } = getConfig();
+  const previewPage = env?.name === 'stage' || env?.name === 'local';
+  if (mepOverride || mepOverride === '' || previewPage) {
+    const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
+    persManifests = await addPreviewToConfig({
+      pageUrl: PAGE_URL,
+      persEnabled,
+      persManifests,
+      previewPage,
+      targetEnabled,
+    });
   }
 
-  if (persMd && persMd !== 'off' && !martechLoaded) {
+  if (targetEnabled) {
+    await loadMartech({ persEnabled: true, persManifests, targetMd });
+  } else if (persManifests.length) {
     // load the personalization only
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(
-      manifests,
-      { createTag, getConfig, loadScript, loadLink, updateConfig },
-    );
+    await applyPers(manifests);
   }
 }
 
@@ -840,12 +850,17 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    const seotechVideoUrl = getMetadata('seotech-video-url');
+    if (seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
