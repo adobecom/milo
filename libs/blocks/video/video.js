@@ -8,6 +8,8 @@ export default function init(a) {
   const video = `<video ${attrs}>
         <source src=".${pathname}" type="video/mp4" />
       </video>`;
-  a.insertAdjacentHTML('afterend', video);
-  a.remove();
+  if (a.parentNode) {
+    a.insertAdjacentHTML('afterend', video);
+    a.remove();
+  }
 }
