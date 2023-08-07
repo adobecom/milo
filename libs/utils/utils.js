@@ -478,6 +478,7 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
+
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -487,6 +488,13 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+
+      // previewing a fragment page with mp4 video
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
+        return false;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
