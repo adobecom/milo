@@ -179,9 +179,6 @@ const init = (el) => {
   const ctas = allPElems[allPElems.length - 1];
   const styles = Array.from(el.classList);
   const podType = getPodType(styles);
-  const merch = styles.includes('merch-pod');
-  const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
   const merchPod = el;
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
@@ -206,8 +203,6 @@ const init = (el) => {
   addInner(el, podType, merchPod);
   decorateIcon(el, icons, podType);
   decorateButtons(ctas);
-  addFooter(links, row, merchPod);
-  decorateFooter(el, podType);
   const inner = el.querySelector(`.consonant-${podType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
   if (innerCleanup.classList.length === 0) {
