@@ -8,6 +8,14 @@
 .merch-pod.consonant-Card {
   border-radius: 16px;
 }
+
+.consonant-CardsGrid--oneup .merch-pod.consonant-Card {
+  max-width: 100%;
+}
+.merch-pod.consonant-Card .consonant-CardFooter {
+  padding-top: 0;
+}
+
 .merch-pod .consonant-ProductCard-title {
   line-height: 1.375rem;
 }
@@ -27,10 +35,6 @@
   justify-content: flex-end;
 }
 
-.merch-pod .consonant-CardFooter .consonant-CardFooter-row {
-  justify-content: flex-end;
-}
-
 .merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
   justify-content: flex-start;
 }
@@ -42,7 +46,7 @@
 }
 
 .consonant-CardsGrid--4up .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
-  margin-left: 14px;
+  margin-left: 9px;
 }
 
 .merch-pod .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
@@ -79,9 +83,8 @@
 }
 
 .merch-pod .consonant-ProductCard-inner,
-.merch-pod .consonant-SegmentCard-inner,
-.merch-pod .consonant-SpecialOffer-inner,
-.merch-pod .consonant-Plans-inner {
+.merch-pod .consonant-SegmentBlade-inner,
+.merch-pod .consonant-SpecialOffers-inner {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -101,18 +104,25 @@
 }
 
 .merch-pod .consonant-ProductCard-title,
-.merch-pod .consonant-SegmentCard-title,
-.merch-pod .consonant-SpecialOffer-title,
-.merch-pod .consonant-Plans-title {
+.merch-pod .consonant-SegmentBlade-title,
+.merch-pod .consonant-SpecialOffers-title {
   font-size: 20px;
-  margin-bottom: 5px;
   font-weight: 700;
+}
+
+.merch-pod .consonant-SpecialOffers-title h4 {
+  font-size: 12px;
+  font-weight: 700;
+}
+.merch-pod .consonant-SpecialOffers-title h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 0;
 }
 
 .merch-pod .consonant-ProductCard-prices,
 .merch-pod .consonant-SegmentCard-prices,
-.merch-pod .consonant-SpecialOffer-prices ,
-.merch-pod .consonant-Plans-prices {
+.merch-pod .consonant-SpecialOffer-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -121,22 +131,29 @@
 
 .merch-pod .consonant-ProductCard-description,
 .merch-pod .consonant-SegmentCard-description,
-.merch-pod .consonant-SpecialOffer-description,
-.merch-pod .consonant-Plans-description {
+.merch-pod .consonant-SpecialOffer-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
-  margin-bottom: 8px;
   margin-top: 0;
 }
 
-.merch-pod.consonant-SpecialOffer-Card,
-.merch-pod .consonant-Plans-description{
+.merch-pod .consonant-SegmentBlade-description span.placeholder-resolved,
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved {
+  font-size: 18px;
+  font-weight: 700;
+}
+.merch-pod .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"] {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.merch-pod.consonant-SpecialOffers-Card {
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffer-img,
-.merch-pod .consonant-Plans-img {
+.merch-pod .consonant-SpecialOffers-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
@@ -148,7 +165,8 @@
   background-size: cover;
 }
 
-.merch-pod .consonant-SpecialOffer-ribbon {
+.merch-pod .consonant-SpecialOffers-ribbon,
+.merch-pod .consonant-SegmentBlade-ribbon {
   position: absolute;
   top: 16px;
   right: 0;
@@ -162,14 +180,9 @@
 }
 
 .merch-pod .consonant-ProductCard-cell,
-.merch-pod .consonant-SegmentCard-cell,
-.merch-pod .consonant-SpecialOffer-cell {
+.merch-pod .consonant-SegmentBlade-cell,
+.merch-pod .consonant-SpecialOffers-cell {
   justify-content: flex-end;
-  align-items: center;
-}
-
-{
-  justify-content: center;
   align-items: center;
 }
 
@@ -179,12 +192,19 @@ p {
   line-height: 1.5;
   margin-bottom: 8px;
   margin-top: 0;
+  color: #000;
 }
 
-h1, h2, h3, h4, h5, h6 {
+.merch-pod h1,
+.merch-pod h2,
+.merch-pod h3,
+.merch-pod h4,
+.merch-pod h5,
+.merch-pod h6 {
   font-weight: 700;
   line-height: 1.25;
   margin-top: 0;
+  color: #000;
 }
 
 h2 {
@@ -194,7 +214,7 @@ h2 {
 
 h3, h4 {
   font-size: 20px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 h5 {
@@ -202,10 +222,10 @@ h5 {
   margin-bottom: 4.5px;
 }
 
-.merch-pod .consonant-SpecialOffer-inner {
+.merch-pod .consonant-SpecialOffers-inner {
   justify-content: center;
 }
-.merch-pod.special-offer .consonant-SpecialOffer-description p {
+.merch-pod.special-offer .consonant-SpecialOffers-description p {
   font-size: 14px;
 }
 .merch-pod.special-offer .consonant-CardFooter {

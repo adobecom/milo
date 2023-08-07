@@ -11,18 +11,18 @@ const {
 const base = miloLibs || codeRoot;
 const PADLOCK_IMG = `<img class="Padlock-img" loading="lazy" alt="Padlock icon" src="${base}/blocks/merch-pod/img/padlock.svg" height="13" width="15">`;
 
-const SEGMENT = 'SegmentCard';
-const SPECIAL_OFFER = 'SpecialOffer';
-const PLANS = 'Plans';
+const SEGMENT_BLADE = 'SegmentBlade';
+const SPECIAL_OFFERS = 'SpecialOffers';
+const PLANS_CARD = 'PlansCard';
 
 const getPodType = (styles) => {
   const podTypes = {
-    'segment-card': SEGMENT,
-    'special-offer': SPECIAL_OFFER,
-    'standard-plans': PLANS,
+    'segment-blade': SEGMENT_BLADE,
+    'special-offers': SPECIAL_OFFERS,
+    'plans-card': PLANS_CARD,
   };
   const authoredType = styles?.find((style) => style in podTypes);
-  return podTypes[authoredType] || SEGMENT;
+  return podTypes[authoredType] || SEGMENT_BLADE;
 };
 
 const createDescription = (rows, podType) => {
@@ -115,6 +115,7 @@ const addInner = (el, podType, merchPod) => {
   inner.classList.add(`consonant-${podType}-inner`);
   const title = createTitle(titles, podType);
   const description = createDescription(rows, podType, inner);
+
   inner.prepend(title);
   inner.append(description);
   addFooter(links, inner, merchPod);
@@ -122,7 +123,7 @@ const addInner = (el, podType, merchPod) => {
   merchPod.append(inner);
 };
 
-const decorateRibbon = (el) => {
+const decorateRibbon = (el, podType) => {
   const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
 
   if (ribbonMetadata.length >= 2) {
@@ -132,10 +133,10 @@ const decorateRibbon = (el) => {
     const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
     const ribbonWrapper = ribbonMetadata[0].parentNode;
     const ribbon = ribbonMetadata[1];
-    ribbon.classList.add('consonant-SpecialOffer-ribbon');
+    ribbon.classList.add(`consonant-${podType}-ribbon`);
     ribbon.style.backgroundColor = ribbonBgColor;
     ribbon.style.color = ribbonTextColor;
-    const picture = el.querySelector('.consonant-SpecialOffer-img');
+    const picture = el.querySelector(`.consonant-${podType}-img`);
     if (picture) {
       picture.insertAdjacentElement('afterend', ribbon);
     } else {
@@ -166,10 +167,10 @@ const init = (el) => {
   if (picture) {
     addBackgroundImg(picture, podType, merchPod);
   }
-  decorateButtons(ctas);
-  decorateRibbon(el);
+  decorateRibbon(el, podType);
   picture?.parentElement.remove();
   addInner(el, podType, merchPod);
+  decorateButtons(ctas);
 
   const inner = el.querySelector(`.consonant-${podType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
