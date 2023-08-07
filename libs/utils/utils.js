@@ -673,19 +673,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({
-    persEnabled,
-    persManifests,
-    utils: {
-      createTag,
-      getConfig,
-      getMetadata,
-      loadLink,
-      loadScript,
-      loadStyle,
-      updateConfig,
-    },
-  });
+  await initMartech({ persEnabled, persManifests });
 
   return true;
 }
@@ -716,29 +704,18 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const utils = {
-    createTag,
-    getConfig,
-    loadScript,
-    loadLink,
-    updateConfig,
-    loadStyle,
-    getMetadata,
-  };
-
   const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
   const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || previewPage) {
+  if (mepOverride || mepOverride === '' || previewPage) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
-    persManifests = await addPreviewToConfig(
-      PAGE_URL,
-      utils,
-      persManifests,
+    persManifests = await addPreviewToConfig({
+      pageUrl: PAGE_URL,
       persEnabled,
-      targetEnabled,
+      persManifests,
       previewPage,
-    );
+      targetEnabled,
+    });
   }
 
   if (targetEnabled) {
@@ -750,7 +727,7 @@ async function checkForPageMods() {
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(manifests, utils);
+    await applyPers(manifests);
   }
 }
 
@@ -872,12 +849,17 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    const seotechVideoUrl = getMetadata('seotech-video-url');
+    if (seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

@@ -1,14 +1,4 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
+import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 
 function updatePreviewButton() {
   const selectedInputs = document.querySelectorAll(
@@ -131,8 +121,8 @@ function addPillEventListeners(div) {
   });
 }
 
-function createPreviewPill(manifests, utils) {
-  const overlay = utils.createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
+function createPreviewPill(manifests) {
+  const overlay = createTag('div', { class: 'mep-preview-overlay', style: 'display: none;' });
   document.body.append(overlay);
   const div = document.createElement('div');
   div.classList.add('mep-hidden');
@@ -180,13 +170,13 @@ function createPreviewPill(manifests, utils) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
-  const targetOnText = utils.getMetadata('target') === 'on' ? 'on' : 'off';
-  const personalizationOn = utils.getMetadata('personalization');
+  const targetOnText = getMetadata('target') === 'on' ? 'on' : 'off';
+  const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('manifest', manifestParameter.join(','));
 
-  const config = utils.getConfig();
+  const config = getConfig();
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
@@ -243,12 +233,12 @@ function createPreviewPill(manifests, utils) {
 
 function addMarkerData(manifests) {
   manifests.forEach((manifest) => {
-    manifest.selectedVariant.useblockcode?.forEach((item) => {
+    manifest?.selectedVariant.useblockcode?.forEach((item) => {
       document.querySelectorAll(`.${item.selector}`).forEach((el) => {
         el.dataset.codeManifestId = manifest.manifest;
       });
     });
-    manifest.selectedVariant.updatemetadata?.forEach((item) => {
+    manifest?.selectedVariant.updatemetadata?.forEach((item) => {
       if (item.selector === 'gnav-source') {
         document.querySelectorAll('header, footer').forEach((el) => {
           el.dataset.manifestId = manifest.manifest;
@@ -258,10 +248,11 @@ function addMarkerData(manifests) {
   });
 }
 
-export default async function decoratePreviewMode(manifests, utils) {
-  utils.loadStyle('/libs/features/personalization/preview.css');
+export default async function decoratePreviewMode(manifests) {
+  const { miloLibs, codeRoot } = getConfig();
+  loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   addMarkerData(manifests);
   document.addEventListener('milo:deferred', () => {
-    createPreviewPill(manifests, utils);
+    createPreviewPill(manifests);
   }, { once: true });
 }
