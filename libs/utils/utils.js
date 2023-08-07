@@ -599,7 +599,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  loadIcons(icons, config);
+  await loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -847,10 +847,12 @@ export async function loadArea(area = document) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
+    await decorateIcons(section.el, config);
+
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    await decorateIcons(section.el, config);
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
