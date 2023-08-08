@@ -7,4 +7,8 @@ export default function init(el) {
       col.className = `col col-${cdx + 1}`;
     });
   });
+  if (el.classList.contains('table')) {
+    el.classList.add('columns-table');
+    el.classList.remove('table');
+  }
 }

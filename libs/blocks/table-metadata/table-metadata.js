@@ -29,9 +29,6 @@ const handleColumnBgColor = (text, table, columnType) => {
     const allClassCols = Array.from(table.getElementsByClassName(`col-${columnType}`));
     allClassCols.forEach((element) => {
       element.style.backgroundColor = color;
-      if (columnType === 'highlight') {
-        element.style.borderColor = color;
-      }
     });
   } else {
     bgColors.forEach((color) => {

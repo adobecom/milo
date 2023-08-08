@@ -450,8 +450,9 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
-      picParent.append(aTag);
+      const aTag = createTag('a', { href: url, class: 'image-link' });
+      picParent.insertBefore(aTag, pic);
+      aTag.append(pic);
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
@@ -461,7 +462,13 @@ export function decorateImageLinks(el) {
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
-  const url = new URL(a.href);
+  let url;
+  try {
+    url = new URL(a.href);
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    return false;
+  }
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
@@ -471,6 +478,7 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
+
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -480,6 +488,13 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+
+      // previewing a fragment page with mp4 video
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
+        return false;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -584,7 +599,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  loadIcons(icons, config);
+  await loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -673,19 +688,7 @@ async function loadMartech({ persEnabled = false, persManifests = [] } = {}) {
   loadIms().catch(() => {});
 
   const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({
-    persEnabled,
-    persManifests,
-    utils: {
-      createTag,
-      getConfig,
-      getMetadata,
-      loadLink,
-      loadScript,
-      loadStyle,
-      updateConfig,
-    },
-  });
+  await initMartech({ persEnabled, persManifests });
 
   return true;
 }
@@ -716,29 +719,18 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const utils = {
-    createTag,
-    getConfig,
-    loadScript,
-    loadLink,
-    updateConfig,
-    loadStyle,
-    getMetadata,
-  };
-
   const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
   const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || previewPage) {
+  if (mepOverride || mepOverride === '' || previewPage) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
-    persManifests = await addPreviewToConfig(
-      PAGE_URL,
-      utils,
-      persManifests,
+    persManifests = await addPreviewToConfig({
+      pageUrl: PAGE_URL,
       persEnabled,
-      targetEnabled,
+      persManifests,
       previewPage,
-    );
+      targetEnabled,
+    });
   }
 
   if (targetEnabled) {
@@ -750,7 +742,7 @@ async function checkForPageMods() {
 
     const { applyPers } = await import('../features/personalization/personalization.js');
 
-    await applyPers(manifests, utils);
+    await applyPers(manifests);
   }
 }
 
@@ -855,10 +847,12 @@ export async function loadArea(area = document) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
+    await decorateIcons(section.el, config);
+
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    await decorateIcons(section.el, config);
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
@@ -872,12 +866,17 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    const seotechVideoUrl = getMetadata('seotech-video-url');
+    if (seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

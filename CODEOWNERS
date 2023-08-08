@@ -5,6 +5,8 @@
 # Milo Core (alphabetical order)
 /fstab.yaml @adobecom/admins
 /libs/features/ @adobecom/admins
+/libs/features/seotech/ @hparra
+/libs/features/title-append/ @hparra
 /libs/martech/ @adobecom/admins
 /libs/scripts/ @adobecom/admins
 /libs/utils/ @adobecom/admins
@@ -41,5 +43,3 @@
 # Milo Tools (alphabetical order)
 /tools/caas-import/ @chrischrischris
 /tools/send-to-caas/ @chrischrischris
-
-
