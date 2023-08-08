@@ -69,6 +69,4 @@ export default async function loadIcons(icons, config) {
     }
     icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
   });
-  const iconsLoadedEvent = new Event('milo:icons:loaded');
-  window.dispatchEvent(iconsLoadedEvent);
 }

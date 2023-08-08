@@ -17,11 +17,9 @@ import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container) => {
-  const link = container.querySelector('a[href$=".mp4"]');
-
+const decorateVideo = (container, src) => {
   container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-    <source src="${link.href}" type="video/mp4" />
+    <source src="${src}" type="video/mp4" />
   </video>`;
   container.classList.add('has-video');
 };
@@ -42,13 +40,13 @@ const decorateBlockBg = (block, node) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-
-    if (child.querySelector('a[href$=".mp4"]')) {
-      decorateVideo(child);
+    const videoElement = child.querySelector('a[href$=".mp4"], video source[src$=".mp4"]');
+    if (videoElement) {
+      decorateVideo(child, videoElement.href || videoElement.src);
     }
 
     const pic = child.querySelector('picture');
-    if (pic && (child.childElementCount == 2 || child.textContent)) {
+    if (pic && (child.childElementCount === 2 || child.textContent)) {
       const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
       handleFocalpoint(pic, child, true);
     }

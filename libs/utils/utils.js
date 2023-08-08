@@ -462,7 +462,13 @@ export function decorateImageLinks(el) {
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
-  const url = new URL(a.href);
+  let url;
+  try {
+    url = new URL(a.href);
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    return false;
+  }
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
@@ -472,6 +478,7 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
+
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -481,6 +488,13 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+
+      // previewing a fragment page with mp4 video
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
+        return false;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -585,7 +599,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  loadIcons(icons, config);
+  await loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -833,10 +847,12 @@ export async function loadArea(area = document) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
+    await decorateIcons(section.el, config);
+
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    await decorateIcons(section.el, config);
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
