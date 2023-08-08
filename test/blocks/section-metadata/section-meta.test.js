@@ -75,7 +75,6 @@ describe('Section Metdata', () => {
     const sec = document.querySelector('.section.sticky-bottom .promobar').closest('.section');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
-    console.log(main.lastElementChild);
     expect(main.lastElementChild).to.be.eql(sec);
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
   });
