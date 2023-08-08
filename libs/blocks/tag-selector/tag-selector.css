@@ -77,8 +77,8 @@
   border: none;
 }
 
-/* SPINNER */
-.spinner {
+.tag-selector .spinner {
+  margin-top: 10px;
   border: 2px dotted var(--color-gray-100);
   border-bottom: 2px dotted var(--color-gray-200);
   border-left: 2px dotted var(--color-gray-400);
