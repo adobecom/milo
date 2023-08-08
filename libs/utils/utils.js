@@ -849,12 +849,17 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    const seotechVideoUrl = getMetadata('seotech-video-url');
+    if (seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
