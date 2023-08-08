@@ -9,7 +9,7 @@ const {
   codeRoot,
 } = getConfig();
 const base = miloLibs || codeRoot;
-const PADLOCK_IMG = `<img class="Padlock-img" loading="lazy" alt="Padlock icon" src="${base}/blocks/merch-pod/img/padlock.svg" height="13" width="15">`;
+const SECURE_TRANSACTION_IMG = `<img class="secure-transaction-icon-img" loading="lazy" alt="secure-transaction-icon icon" src="${base}/blocks/merch-pod/img/secure-transaction-icon.svg" height="12" width="15">`;
 
 const SEGMENT_BLADE = 'SegmentBlade';
 const SPECIAL_OFFERS = 'SpecialOffers';
@@ -48,16 +48,16 @@ const decorateFooter = (el, podType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
 
   const decorateWithSecureTransactionSign = () => {
-    const secureTransactionWrapper = createTag('span', { class: 'secure-transaction-wrapper' });
-    const text = createTag('span', { class: 'footer-text' }, '{{secure-transaction}}');
-    const secureElement = createTag('span', { class: 'padlock' }, PADLOCK_IMG);
+    const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
+    const text = createTag('span', { class: 'secure-transaction-label' }, '{{secure-transaction}}');
+    const secureElement = createTag('span', { class: 'secure-transaction-icon' }, SECURE_TRANSACTION_IMG);
     secureTransactionWrapper.append(secureElement, text);
     return secureTransactionWrapper;
   };
 
   const createCheckbox = (checkBoxText) => {
     cardFooter.querySelector('hr')?.remove();
-    const checkboxText = createTag('span', { class: 'checkbox-text' }, checkBoxText.innerHTML);
+    const checkboxText = createTag('span', { class: 'checkbox-label' }, checkBoxText.innerHTML);
     const checkBox = createTag('label', { class: 'checkbox-container' }, '<input type="checkbox" id="alt-cta"><span class="checkmark"></span>');
     const checkboxWrapper = createTag('div', { class: 'checkbox-wrapper' });
     checkboxWrapper.append(checkBox, checkboxText);
@@ -65,6 +65,11 @@ const decorateFooter = (el, podType) => {
   };
 
   const decorateAlternativeCta = () => {
+    const toggleButtonActiveState = (buttonToAdd, buttonToRemove) => {
+      buttonToAdd.classList.add('button--inactive');
+      buttonToRemove.classList.remove('button--inactive');
+    };
+
     const altCta = Array.from(el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]')).filter((data) => data.textContent?.trim() === 'alt-cta');
     const altCtaMetaData = altCta[0]?.parentElement?.nextElementSibling?.querySelectorAll('div > div');
     const altCtaRegex = /href="([^"]*)"/g;
@@ -77,14 +82,12 @@ const decorateFooter = (el, podType) => {
       const checkboxWrapper = createCheckbox(altCtaMetaData[0]);
 
       altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
-      altCtaButton.classList.add('alt-cta-button--inactive');
+      altCtaButton.classList.add('button--inactive');
       checkboxWrapper.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
         if (event.target.checked) {
-          originalCtaButton.classList.add('alt-cta-button--inactive');
-          altCtaButton.classList.remove('alt-cta-button--inactive');
+          toggleButtonActiveState(originalCtaButton, altCtaButton);
         } else {
-          altCtaButton.classList.add('alt-cta-button--inactive');
-          originalCtaButton.classList.remove('alt-cta-button--inactive');
+          toggleButtonActiveState(altCtaButton, originalCtaButton);
         }
       });
       cardFooterRow.append(altCtaButton);
@@ -200,9 +203,9 @@ const init = (el) => {
   }
   decorateRibbon(el, podType);
   image?.parentElement.remove();
+  decorateButtons(ctas);
   addInner(el, podType, merchPod);
   decorateIcon(el, icons, podType);
-  decorateButtons(ctas);
   const inner = el.querySelector(`.consonant-${podType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
   if (innerCleanup.classList.length === 0) {

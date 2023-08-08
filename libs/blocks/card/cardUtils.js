@@ -34,7 +34,11 @@ export const addFooter = (links, container, merch) => {
   footer += '</div></div>';
 
   container.insertAdjacentHTML('beforeend', footer);
-  links[0]?.parentElement?.remove();
+  links.forEach((link) => {
+    if (link.parentElement && document.body.contains(link.parentElement)) {
+      link.parentElement.remove();
+    }
+  });
 };
 
 export const addWrapper = (el, section, cardType) => {
