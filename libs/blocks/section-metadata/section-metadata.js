@@ -37,7 +37,7 @@ function handleTopHeight(section) {
   section.style.top = `${headerHeight}px`;
 }
 
-export function promoIntersectObserve(el, startPoint, options = {}) {
+function promoIntersectObserve(el, startPoint, options = {}) {
   let abovePromoStart = false;
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
