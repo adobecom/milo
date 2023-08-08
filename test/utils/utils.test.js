@@ -419,29 +419,42 @@ describe('Utils', () => {
   });
 
   describe('scrollToHashedElement', () => {
-    let querySelectorStub;
-    let scrollIntoViewStub;
-  
-    beforeEach(() => {
-      querySelectorStub = sinon.stub(document, 'querySelector');
-      scrollIntoViewStub = sinon.stub();
-      querySelectorStub.withArgs('.global-navigation').returns({ offsetHeight: 50 });
-      querySelectorStub.withArgs('#element1:not(.dialog-modal)').returns({
-        scrollIntoView: scrollIntoViewStub,
-        style: {},
-      });
+    before(() => {
+      const div = document.createElement('div');
+      div.className = 'global-navigation';
+      document.body.appendChild(div);
+      window.location.hash = '#not-block';
+      window.scrollTo = () => {};
+      document.querySelector = () => ({ getBoundingClientRect: () => ({ top: 100 }) });
     });
-  
-    it('should scroll to the hashed element when a valid hash is provided', () => {
-      window.location.hash = '#element1';
+
+    it('should scroll to the hashed element', () => {
+      window.scrollTo = (options) => {
+        expect(options.behavior).to.equal('smooth');
+      };
+
       utils.scrollToHashedElement();
-      expect(scrollIntoViewStub).to.be.true;
+      expect(document.getElementById('not-block')).to.exist;
     });
-  
-    it('should not scroll when an invalid hash is provided', () => {
-      window.location.hash = '#invalidElement';
+
+    it('should not scroll if no hash is present', () => {
+      window.location.hash = '';
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
       utils.scrollToHashedElement();
-      expect(scrollIntoViewStub).to.not.be.true;
+      expect(scrollToCalled).to.be.false;
+    });
+
+    it('should not scroll if target element is not found', () => {
+      document.querySelector = () => null;
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+      utils.scrollToHashedElement();
+      expect(scrollToCalled).to.be.false;
     });
   });
 });

@@ -934,19 +934,20 @@ export function loadLana(options = {}) {
 }
 
 export function scrollToHashedElement() {
-  const hash = window.location.hash;
+  const { hash } = window.location;
   const gnavElement = document.querySelector('.global-navigation');
   if (hash) {
     const elementId = hash.slice(1);
     const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+    const position = targetElement.getBoundingClientRect();
+    let bufferHeight = 0;
     if (targetElement) {
       if (gnavElement) {
-        let bufferHeight = gnavElement.offsetHeight;
-        targetElement.style.paddingTop = `${bufferHeight}px`;
-        targetElement.style.marginTop = `-${bufferHeight}px`;
+        bufferHeight = gnavElement.offsetHeight;
       }
-      targetElement.scrollIntoView({
-          behavior: 'smooth'
+      window.scrollTo({
+        top: position.top - bufferHeight,
+        behavior: 'smooth',
       });
     }
   }
