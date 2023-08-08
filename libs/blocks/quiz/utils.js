@@ -138,10 +138,10 @@ export const structuredFragments = (
   primaryProducts,
   umbrellaProduct,
 ) => {
-  let structureFragments = [];
+  const structureFragments = [];
   structureFragsArray.forEach((frag) => {
     frag = frag.trim();
-    resultResources.data.forEach((row) => {
+    resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
           structureFragments.push(row[frag]);
@@ -168,14 +168,26 @@ export const nestedFragments = (
   nestedFragsPrimaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
-    // eslint-disable-next-line max-len
-    nestedObject[fragKey] = getNestedFragments(resultResources, isUmbrella, primaryProducts, secondaryProducts, fragKey, true);
+    nestedObject[fragKey] = getNestedFragments(
+      resultResources,
+      isUmbrella,
+      primaryProducts,
+      secondaryProducts,
+      fragKey,
+      true,
+    );
   });
   nestedFragsSecondaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
-    // eslint-disable-next-line max-len
-    nestedObject[fragKey] = getNestedFragments(resultResources, isUmbrella, primaryProducts, secondaryProducts, fragKey, false);
+    nestedObject[fragKey] = getNestedFragments(
+      resultResources,
+      isUmbrella,
+      primaryProducts,
+      secondaryProducts,
+      fragKey,
+      false,
+    );
   });
   return nestedObject;
 };
@@ -189,7 +201,7 @@ const getNestedFragments = (
   fetchForPrimaryProducts,
 ) => {
   const fragArray = [];
-  resultResources.data.forEach((row) => {
+  resultResources?.data?.forEach((row) => {
     if (isUmbrella) {
       // Get nested frags for all the primary products.
       if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
@@ -210,11 +222,11 @@ const getNestedFragments = (
 
     function isMatchingProductForFrag() {
       return (!fetchForPrimaryProducts
-              && secondaryProducts.length > 0
-              && secondaryProducts.includes(row.product))
-            || (fetchForPrimaryProducts
-              && primaryProducts.length > 0
-              && primaryProducts.includes(row.product));
+        && secondaryProducts.length > 0
+        && secondaryProducts.includes(row.product))
+        || (fetchForPrimaryProducts
+        && primaryProducts.length > 0
+        && primaryProducts.includes(row.product));
     }
   });
   return fragArray;
@@ -278,8 +290,8 @@ export const parseResultData = async (answers) => {
   return rObj;
 };
 
-// eslint-disable-next-line max-len
-const getRecomandationResults = (selectedDestination, deafult) => (selectedDestination.length ? selectedDestination : deafult);
+const getRecommendedResults = (selectedDestination, defaultValue) => (selectedDestination.length
+  ? selectedDestination : defaultValue);
 
 // TODO: needs refactoring - can split to smaller functions
 export const findMatchForSelections = (results, selections) => {
@@ -309,7 +321,7 @@ export const findMatchForSelections = (results, selections) => {
       });
     });
 
-    return getRecomandationResults(recommendations, defaultResult);
+    return getRecommendedResults(recommendations, defaultResult);
   }
 
   const userSelectionLen = selections.primary.length; // 1 - lr
