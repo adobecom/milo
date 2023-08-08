@@ -49,29 +49,27 @@ function decorateStaticLinks(el) {
 
 function decorateMedia(el) {
   if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
-  const allMedia = el.querySelectorAll('div > p video, div > p picture');
-  let processed = false;
-  allMedia.forEach((media) => {
-    if (processed) return;
+  const allMedia = Array.from(el.querySelectorAll('div > p video, div > p picture'));
+  allMedia.some((media) => {
     const parentP = media.closest('p');
     const siblingP = parentP?.nextElementSibling;
-    if (!siblingP || siblingP.nodeName.toLowerCase() !== 'p') return;
+    if (!siblingP || siblingP.nodeName !== 'P') return false;
     const siblingText = siblingP.textContent;
     const hasFormats = siblingText.match(FORMAT_REGEX)?.index;
-    if (!(hasFormats === 0)) return;
-    processed = true;
+    if (hasFormats !== 0) return false;
     const formats = siblingText.split(': ')[1]?.split(/\s+/);
-    const formatClasses = [];
     if (formats) {
+      const formatClasses = [];
       formatClasses.push('format');
       if (formats.length === 3) formatClasses.push(`desktop-${formats[2]}`);
       if (formats.length >= 2) formatClasses.push(`tablet-${formats[1]}`);
       formatClasses.push(`mobile-${formats[0]}`);
+      media.closest('div').classList.add(...formatClasses);
     }
-    media.closest('div').classList.add(...formatClasses);
     siblingP.remove();
     media.closest('div').insertBefore(media, parentP);
     parentP.remove();
+    return true;
   });
 }
 
@@ -95,7 +93,7 @@ function decorateBlockBg(block, node) {
     children[0].classList.add(viewports[0], viewports[1]);
     children[1].classList.add(viewports[2]);
   }
-  [...children].forEach(async (child, index) => {
+  [...children].forEach((child, index) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
@@ -138,8 +136,7 @@ function decorateLayout(el) {
     foreground?.classList.add('no-image');
   }
   if (el.classList.contains('split')
-      && (el.classList.contains('medium')
-      || el.classList.contains('large'))) {
+      && (el.classList.contains('medium') || el.classList.contains('large'))) {
     decorateIconStack(el);
   }
   return foreground;
