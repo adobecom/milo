@@ -935,20 +935,14 @@ export function loadLana(options = {}) {
 
 export function scrollToHashedElement() {
   const { hash } = window.location;
-  const gnavElement = document.querySelector('.global-navigation');
-  if (hash) {
-    const elementId = hash.slice(1);
-    const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
-    const position = targetElement.getBoundingClientRect();
-    let bufferHeight = 0;
-    if (targetElement) {
-      if (gnavElement) {
-        bufferHeight = gnavElement.offsetHeight;
-      }
-      window.scrollTo({
-        top: position.top - bufferHeight,
-        behavior: 'smooth',
-      });
-    }
-  }
+  if (!hash) return;
+  const elementId = hash.slice(1);
+  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  if (!targetElement) return;
+  const position = targetElement.getBoundingClientRect();
+  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  window.scrollTo({
+    top: position.top - bufferHeight,
+    behavior: 'smooth',
+  });
 }
