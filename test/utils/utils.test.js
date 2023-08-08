@@ -79,6 +79,11 @@ describe('Utils', () => {
         const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
     });
 
     describe('Fragments', () => {
@@ -398,6 +403,23 @@ describe('Utils', () => {
       await utils.loadArea();
       await waitFor(() => document.title === expected);
       expect(document.title).to.equal(expected);
+    });
+  });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should import feature when metadata is defined and error if invalid', async () => {
+      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      await utils.loadArea();
+      const lanaStub = sinon.stub(window.lana, 'log');
+      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });
 });
