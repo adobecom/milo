@@ -25,7 +25,7 @@
   .merch-pod.segment-blade {
     min-width: 317px;
     max-width: 317px;
-  }  
+  }
 }
 
 .consonant-CardsGrid--oneup .merch-pod.consonant-Card {
@@ -50,6 +50,10 @@
   height: 32px;
 }
 
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
+  justify-content: flex-start;
+}
+
 .merch-pod [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
   max-width: fit-content;
   display: flex;
@@ -60,15 +64,71 @@
   margin-left: 9px;
 }
 
+.merch-pod .consonant-MerchCard-ProductIcon {
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: relative;
+  margin-right: 8px;
+  margin-bottom: 8px;;
+  display: block;
+  float: left;
+  width: 40px;
+  height: 40px;
+}
+
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row .button--inactive {
+  display: none;
+}
+
+.merch-pod .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
+  display: none;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-label {
+  font-size: 12px;
+  margin-left: 12px;
+  color: #505050;
+  vertical-align: middle;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  height: 13px;
+  width: 15px;
+}
+
+.merch-pod .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+
 .merch-pod.special-offer,
 .merch-pod.product-card,
-.merch-pod.segment-card {
+.merch-pod.segment-card,
+.merch-pod.plans-card {
   border-radius: 16px;
 }
 
 .merch-pod .consonant-ProductCard-inner,
 .merch-pod .consonant-SegmentBlade-inner,
-.merch-pod .consonant-SpecialOffers-inner {
+.merch-pod .consonant-SpecialOffers-inner,
+.merch-pod .consonant-PlansCard-inner {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -89,16 +149,19 @@
 
 .merch-pod .consonant-ProductCard-title,
 .merch-pod .consonant-SegmentBlade-title,
-.merch-pod .consonant-SpecialOffers-title {
+.merch-pod .consonant-SpecialOffers-title,
+.merch-pod .consonant-PlansCard-title {
   font-size: 20px;
   font-weight: 700;
 }
 
-.merch-pod .consonant-SpecialOffers-title h4 {
+.merch-pod .consonant-SpecialOffers-title h4,
+.merch-pod .consonant-PlansCard-title h4 {
   font-size: 12px;
   font-weight: 700;
 }
-.merch-pod .consonant-SpecialOffers-title h3 {
+.merch-pod .consonant-SpecialOffers-title h3,
+.merch-pod .consonant-PlansCard-title h3 {
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 0;
@@ -106,7 +169,8 @@
 
 .merch-pod .consonant-ProductCard-prices,
 .merch-pod .consonant-SegmentBlade-prices,
-.merch-pod .consonant-SpecialOffers-prices {
+.merch-pod .consonant-SpecialOffers-prices,
+.merch-pod .consonant-PlansCard-prices {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 8px;
@@ -115,7 +179,8 @@
 
 .merch-pod .consonant-ProductCard-description,
 .merch-pod .consonant-SegmentBlade-description,
-.merch-pod .consonant-SpecialOffers-description {
+.merch-pod .consonant-SpecialOffers-description,
+.merch-pod .consonant-PlansCard-description {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -123,12 +188,14 @@
 }
 
 .merch-pod .consonant-SegmentBlade-description span.placeholder-resolved,
-.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved {
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved,
+.merch-pod .consonant-PlansCard-description span.placeholder-resolved {
   font-size: 18px;
   font-weight: 700;
 }
 .merch-pod .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
-.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"] {
+.merch-pod .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-pod .consonant-PlansCard-description span.placeholder-resolved[data-template="priceStrikethrough"] {
   font-size: 14px;
   font-weight: 700;
 }
@@ -137,7 +204,8 @@
   border-radius: 16px;
 }
 
-.merch-pod .consonant-SpecialOffers-img {
+.merch-pod .consonant-SpecialOffers-img,
+.merch-pod .consonant-PlansCard-img {
   flex-grow: 1;
   position: relative;
   width: 100%;
@@ -150,7 +218,8 @@
 }
 
 .merch-pod .consonant-SpecialOffers-ribbon,
-.merch-pod .consonant-SegmentBlade-ribbon {
+.merch-pod .consonant-SegmentBlade-ribbon,
+.merch-pod .consonant-PlansCard-ribbon {
   position: absolute;
   top: 16px;
   right: 0;
@@ -165,7 +234,8 @@
 
 .merch-pod .consonant-ProductCard-cell,
 .merch-pod .consonant-SegmentBlade-cell,
-.merch-pod .consonant-SpecialOffers-cell {
+.merch-pod .consonant-SpecialOffers-cell,
+.merch-pod .consonant-PlansCard-cell {
   justify-content: flex-end;
   align-items: center;
 }
@@ -179,8 +249,8 @@ p {
   color: #000;
 }
 
-.merch-pod h1, 
-.merch-pod h2, 
+.merch-pod h1,
+.merch-pod h2,
 .merch-pod h3,
 .merch-pod h4,
 .merch-pod h5,
@@ -206,10 +276,12 @@ h5 {
   margin-bottom: 4.5px;
 }
 
-.merch-pod .consonant-SpecialOffers-inner {
+.merch-pod .consonant-SpecialOffers-inner,
+.merch-pod .consonant-PlansCard-inner {
   justify-content: center;
 }
-.merch-pod.special-offer .consonant-SpecialOffers-description p {
+.merch-pod.special-offer .consonant-SpecialOffers-description p,
+.merch-pod.special-offer .consonant-PlansCard-description p {
   font-size: 14px;
 }
 .merch-pod.special-offer .consonant-CardFooter {
@@ -224,4 +296,54 @@ h5 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .checkbox-label {
+  font-size: 14px;
+  margin-left: 12px;
+  color: #505050;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper input[type="checkbox"] {
+  display: none;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper .checkmark {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #757575;
+  background: #fff;
+  border-radius: 2px;
+  cursor: pointer;
+
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper input[type="checkbox"]:checked + .checkmark {
+  background-color: #2680eb;
+  border-color: #2680eb;
+}
+
+.merch-pod .consonant-CardFooter .checkbox-wrapper input[type="checkbox"]:checked + .checkmark::after {
+  content: "\2714";
+  color: #FFFFFF;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
 }
