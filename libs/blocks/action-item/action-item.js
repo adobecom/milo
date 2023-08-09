@@ -15,7 +15,7 @@
 */
 
 import { decorateButtons } from '../../utils/decorate.js';
-import { createTag, decorateLinks } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 function getLayout(elems) {
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
@@ -38,6 +38,15 @@ function handleFloatBtn(picture, content) {
   picture.appendChild(btn);
 }
 
+function decorateLink(href) {
+  let attrs = { href };
+  if (href.includes('#_blank')) {
+    attrs.href = href.replace('#_blank', '');
+    attrs = { ...attrs, target: '_blank' };
+  }
+  return attrs;
+}
+
 function getContent(el, variants, href) {
   const columns = el.querySelectorAll(':scope > div');
   const pictures = el.querySelectorAll('picture');
@@ -48,7 +57,7 @@ function getContent(el, variants, href) {
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
   const tag = href ? 'a' : 'div';
-  let attrs = href ? { href } : {};
+  let attrs = href ? decorateLink(href) : {};
   if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
   const content = createTag(tag, { ...attrs }, text ?? picture);
   return content;
@@ -60,5 +69,4 @@ export default function init(el) {
   const { foreground, href } = getLayout(elems);
   const content = getContent(foreground, el.classList, href);
   el.replaceChildren(content);
-  decorateLinks(el);
 }
