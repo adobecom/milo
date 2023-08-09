@@ -744,6 +744,27 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
+export function scrollToHashedElement() {
+  const { hash } = window.location;
+  if (!hash) return;
+  const elementId = hash.slice(1);
+  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  if (!targetElement) return;
+  const position = targetElement.getBoundingClientRect();
+  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  if (position.top === 0) {
+    window.scrollTo({
+    top: position.top + bufferHeight,
+    behavior: 'smooth',
+  });
+  } else {
+    window.scrollTo({
+    top: position.top - bufferHeight,
+    behavior: 'smooth',
+  });
+  }
+}
+
 export async function loadDeferred(area, blocks, config) {
   const event = new Event('milo:deferred');
   area.dispatchEvent(event);
@@ -764,6 +785,7 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
+  scrollToHashedElement();
 }
 
 function initSidekick() {
@@ -804,24 +826,7 @@ function decorateMeta() {
   });
 }
 
-export function scrollToHashedElement() {
-  const { hash } = window.location;
-  if (!hash) return;
-  const elementId = hash.slice(1);
-  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
-  if (!targetElement) return;
-  const position = targetElement.getBoundingClientRect();
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  window.scrollTo({
-    top: position.top - bufferHeight,
-    behavior: 'smooth',
-  });
-}
-
 export async function loadArea(area = document) {
-  window.addEventListener('load', (e) => {
-    e.preventDefault();
-  });
   const isDoc = area === document;
 
   if (isDoc) {
@@ -897,7 +902,6 @@ export async function loadArea(area = document) {
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
-  scrollToHashedElement();
 }
 
 export function loadDelayed() {
