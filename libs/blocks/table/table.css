@@ -21,29 +21,6 @@
 
 .table .col {
   min-height: 27px;
-}
-
-.table .col p {
-  margin: 0;
-}
-
-.table .col,
-.table .col p {
-  font-size: var(--type-body-s-size);
-  line-height: var(--type-body-s-lh);
-}
-
-.table .col p picture {
-  margin-right: 8px;
-}
-
-.table.merch div[class*="col-"] {
-  border-top: 1px var(--border-color) solid;
-  border-left: 1px var(--border-color) solid;
-  border-right: 1px var(--border-color) solid;
-}
-
-.table div[class*="col-"] {
   border-left: 1px var(--border-color) solid;
   border-top: 1px var(--border-color) solid;
 }
@@ -54,6 +31,34 @@
 
 .table .row:last-child .col {
   border-bottom: 1px var(--border-color) solid;
+}
+
+.table .col,
+.table .col p {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.table .col p {
+  margin: 0;
+}
+
+.table .col p picture {
+  margin-right: 8px;
+}
+
+.table.merch .row-heading .col {
+  border-top: 1px var(--border-color) solid;
+}
+
+.table.merch [class*="col-"] {
+  border-bottom: 1px var(--border-color) solid;
+  border-left: 1px var(--border-color) solid;
+  border-right: 1px var(--border-color) solid;
+}
+
+.table .row-highlight .col.col-highlight {
+  border-color: transparent;
 }
 
 .table.collapse .section-head-collaped .col {
@@ -321,6 +326,11 @@ header.global-navigation {
   .table,
   .table.merch {
     margin: 0 30px;
+  }
+
+  .table:not(.merch) .row .section-head-title,
+  .table:not(.merch) .row .section-row-title {
+    border-right: 1px solid var(--border-color);
   }
 
   .table:not(.merch) .section-head {
