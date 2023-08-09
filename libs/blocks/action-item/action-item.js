@@ -15,7 +15,7 @@
 */
 
 import { decorateButtons } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, decorateLinks } from '../../utils/utils.js';
 
 function getLayout(elems) {
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
@@ -60,4 +60,5 @@ export default function init(el) {
   const { foreground, href } = getLayout(elems);
   const content = getContent(foreground, el.classList, href);
   el.replaceChildren(content);
+  decorateLinks(el);
 }
