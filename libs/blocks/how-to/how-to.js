@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { decorateTextOverrides } from '../../utils/decorate.js';
 
 const getSrc = (image) => image.src || image.querySelector('[src]')?.src || image.href;
 
@@ -52,6 +53,7 @@ const getHowToInfo = (el) => {
   if (!infoDiv) return {};
 
   const heading = infoDiv.firstElementChild;
+  heading.classList.add('heading-xl');
   if (!heading.id) {
     heading.id = heading.textContent.replace(/\s+/g, '-').toLowerCase();
   }
@@ -112,6 +114,7 @@ const getHowToSteps = (el) => {
 };
 
 export default function init(el) {
+  el.classList.add('con-block');
   const isSeo = el.classList.contains('seo');
   const isLargeImage = el.classList.contains('large-image');
 
@@ -130,6 +133,10 @@ export default function init(el) {
     const stepsLd = steps.map((step, idx) => getStepLd(idx + 1, heading.id, images[idx], step));
     setJsonLd(heading?.textContent, desc?.textContent, mainImage, stepsLd);
   }
-
-  el.appendChild(orderedList);
+  decorateTextOverrides(el);
+  const rows = el.querySelectorAll(':scope > div');
+  const foreground = createTag('div', { class: 'foreground' });
+  rows.forEach((row) => { foreground.appendChild(row); });
+  foreground.appendChild(orderedList);
+  el.appendChild(foreground);
 }
