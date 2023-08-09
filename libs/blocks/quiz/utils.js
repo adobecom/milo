@@ -51,6 +51,7 @@ export const getQuizData = async () => {
   } catch (ex) {
     console.log('Error while fetching data : ', ex);
   }
+  return [];
 };
 
 export const getUrlParams = () => {
@@ -140,15 +141,15 @@ export const structuredFragments = (
 ) => {
   const structureFragments = [];
   structureFragsArray.forEach((frag) => {
-    frag = frag.trim();
+    const fragment = frag.trim();
     resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
-          structureFragments.push(row[frag]);
+          structureFragments.push(row[fragment]);
         }
       } else if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
-        if (row[frag]) {
-          structureFragments.push(row[frag]);
+        if (row[fragment]) {
+          structureFragments.push(row[fragment]);
         }
       }
     });
@@ -156,59 +157,53 @@ export const structuredFragments = (
   return structureFragments;
 };
 
+/**
+ * Nested fragments are picked from primary and secondary products.
+ * If umbrella product is present, then umbrella product becomes the primary product
+ * and primary products becomes secondary products.
+ */
 export const nestedFragments = (
   nestedFragsPrimaryArray,
   nestedFragsSecondaryArray,
   resultResources,
   primaryProducts,
   secondaryProducts,
-  isUmbrella,
+  umbrellaProduct,
 ) => {
+  let primaryProductCodes = primaryProducts;
+  let secondaryProductCodes = secondaryProducts;
+  if (umbrellaProduct) {
+    secondaryProductCodes = primaryProductCodes;
+    primaryProductCodes = [umbrellaProduct];
+  }
   const nestedObject = {};
   nestedFragsPrimaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
     nestedObject[fragKey] = getNestedFragments(
       resultResources,
-      isUmbrella,
-      primaryProducts,
-      secondaryProducts,
+      primaryProductCodes,
       fragKey,
-      true,
     );
   });
+
   nestedFragsSecondaryArray?.forEach((frag) => {
     if (!frag) return;
     const fragKey = frag.trim();
     nestedObject[fragKey] = getNestedFragments(
       resultResources,
-      isUmbrella,
-      primaryProducts,
-      secondaryProducts,
+      secondaryProductCodes,
       fragKey,
-      false,
     );
   });
+
   return nestedObject;
 };
 
-const getNestedFragments = (
-  resultResources,
-  isUmbrella,
-  primaryProducts,
-  secondaryProducts,
-  fragKey,
-  fetchForPrimaryProducts,
-) => {
+const getNestedFragments = (resultResources, productCodes, fragKey) => {
   const fragArray = [];
   resultResources?.data?.forEach((row) => {
-    if (isUmbrella) {
-      // Get nested frags for all the primary products.
-      if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
-        insertFragment();
-      }
-    } else if (isMatchingProductForFrag()) {
-      // Get nested frags for all the primary and secondary products.
+    if (productCodes.length > 0 && productCodes.includes(row.product)) {
       insertFragment();
     }
 
@@ -218,15 +213,6 @@ const getNestedFragments = (
           fragArray.push(val.trim());
         });
       }
-    }
-
-    function isMatchingProductForFrag() {
-      return (!fetchForPrimaryProducts
-        && secondaryProducts.length > 0
-        && secondaryProducts.includes(row.product))
-        || (fetchForPrimaryProducts
-        && primaryProducts.length > 0
-        && primaryProducts.includes(row.product));
     }
   });
   return fragArray;
