@@ -422,4 +422,57 @@ describe('Utils', () => {
       expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });
+
+  describe('Browser data', () => {
+    describe('Name and version', () => {
+      it('checks Chrome browser and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36');
+        expect(browser.name).to.equal('Chrome');
+        expect(browser.version).to.equal('115.0.0.0');
+      });
+
+      it('checks Firefox browser and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0');
+        expect(browser.name).to.equal('Firefox');
+        expect(browser.version).to.equal('116.0');
+      });
+
+      it('checks Microsoft Edge browser and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.200');
+        expect(browser.name).to.equal('Microsoft Edge');
+        expect(browser.version).to.equal('115.0.1901.200');
+      });
+
+      it('checks Internet Explorer browser and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)');
+        expect(browser.name).to.equal('Internet Explorer');
+        expect(browser.version).to.equal('8.0');
+      });
+
+      it('checks Safari browser and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15');
+        expect(browser.name).to.equal('Safari');
+        expect(browser.version).to.equal('16.5');
+      });
+
+      it('checks Chrome browser on ios and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1');
+        expect(browser.name).to.equal('Chrome');
+        expect(browser.version).to.equal('56.0.2924.75');
+      });
+
+      it('checks Firefox browser on ios and its version', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (iPhone; CPU iPhone OS 13_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/116.0 Mobile/15E148 Safari/605.1.15');
+        expect(browser.name).to.equal('Firefox');
+        expect(browser.version).to.equal('116.0');
+      });
+    });
+
+    describe('Mobile device', () => {
+      it('checks if device is mobile', () => {
+        const browser = utils.getBrowserData('Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1');
+        expect(browser.isMobile).to.equal(true);
+      });
+    });
+  });
 });
