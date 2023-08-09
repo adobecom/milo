@@ -740,7 +740,7 @@
   }
   
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
-    height: 80px;
+    height: var(--icon-size-xxl);
   }
 
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
