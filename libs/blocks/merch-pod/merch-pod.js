@@ -49,7 +49,7 @@ const decorateFooter = (el, podType) => {
 
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const text = createTag('span', { class: 'secure-transaction-label' }, '{{secure-transaction}}');
+    const text = createTag('span', { class: 'secure-transaction-label' }, 'Secure transaction');
     const secureElement = createTag('span', { class: 'secure-transaction-icon' }, SECURE_TRANSACTION_IMG);
     secureTransactionWrapper.append(secureElement, text);
     return secureTransactionWrapper;

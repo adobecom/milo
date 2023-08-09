@@ -330,20 +330,10 @@ h5 {
   background: #fff;
   border-radius: 2px;
   cursor: pointer;
-
 }
 
 .merch-pod .consonant-CardFooter .checkbox-wrapper input[type="checkbox"]:checked + .checkmark {
   background-color: #2680eb;
+  background-image: url('./img/check-mark-small.svg');
   border-color: #2680eb;
-}
-
-.merch-pod .consonant-CardFooter .checkbox-wrapper input[type="checkbox"]:checked + .checkmark::after {
-  content: "\2714";
-  color: #FFFFFF;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 11px;
 }
