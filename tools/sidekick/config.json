@@ -77,14 +77,6 @@
     },
     {
       "containerId": "tools",
-      "id": "ost",
-      "title": "Use offer",
-      "environments": [ "edit" ],
-      "url": "/tools/ost",
-      "includePaths": [ "**.docx**" ]
-    },
-    {
-      "containerId": "tools",
       "id": "locales",
       "title": "Locales",
       "environments": [ "edit", "dev", "preview", "live" ],
