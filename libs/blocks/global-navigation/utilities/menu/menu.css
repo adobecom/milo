@@ -76,7 +76,6 @@
   display: none;
 }
 
-/* Start mobile styles */
 @media (min-width: 900px) {
   .feds-menu-content {
     display: flex;
@@ -87,6 +86,10 @@
 
   .feds-menu-column {
     padding: 12px 0;
+  }
+
+  .feds-menu-section + .feds-menu-section {
+    margin-top: 12px;
   }
 
   .feds-menu-headline {

@@ -79,6 +79,11 @@ describe('Utils', () => {
         const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
     });
 
     describe('Fragments', () => {
@@ -248,6 +253,7 @@ describe('Utils', () => {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
           il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
           mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
@@ -264,10 +270,22 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
 
+      it('LTR Languages have dir as ltr for langstore path', () => {
+        setConfigWithPath('/langstore/en/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+      });
+
       it('RTL Languages have dir as rtl', () => {
         setConfigWithPath('/il_he/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
         setConfigWithPath('/mena_ar/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      });
+
+      it('RTL Languages have dir as rtl for langstore path', () => {
+        setConfigWithPath('/langstore/he/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+        setConfigWithPath('/langstore/ar/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
@@ -385,6 +403,23 @@ describe('Utils', () => {
       await utils.loadArea();
       await waitFor(() => document.title === expected);
       expect(document.title).to.equal(expected);
+    });
+  });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should import feature when metadata is defined and error if invalid', async () => {
+      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      await utils.loadArea();
+      const lanaStub = sinon.stub(window.lana, 'log');
+      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });
 });
