@@ -190,7 +190,7 @@ export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 
 
 export const lanaLog = ({ message, e = '' }) => {
   const url = getMetadata('gnav-source');
-  window.lana.log(`${message} | gnav-source: ${url} | ${e.reason || e.error || e.message || e}`, {
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
     clientId: 'feds-milo',
     sampleRate: 1,
   });
