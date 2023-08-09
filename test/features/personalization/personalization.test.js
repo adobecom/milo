@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
-import { createTag, getConfig, loadBlock, updateConfig } from '../../../libs/utils/utils.js';
+import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 

@@ -380,7 +380,7 @@ function checkForExpBlock(name, expBlocks) {
   if (!expBlock) return null;
 
   const blockName = expBlock.split('/').pop();
-  return { blockPath: expBlock, blockName }
+  return { blockPath: expBlock, blockName };
 }
 
 export async function loadBlock(block) {
