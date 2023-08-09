@@ -474,11 +474,21 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-export async function applyPers(manifests) {
-  if (!manifests?.length) return;
-  const cleanedManifests = cleanManifestList(manifests);
+const decoratePreviewCheck = async (config, experiments) => {
+  if (config.mep?.preview) {
+    const { default: decoratePreviewMode } = await import('./preview.js');
+    decoratePreviewMode(experiments);
+  }
+};
 
+export async function applyPers(manifests) {
   const config = getConfig();
+
+  if (!manifests?.length) {
+    decoratePreviewCheck(config, []);
+    return;
+  }
+  const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];
   for (const manifest of cleanedManifests) {
@@ -495,8 +505,5 @@ export async function applyPers(manifests) {
     expFragments: consolidateObjects(results, 'fragments'),
   });
 
-  if (config.mep?.preview) {
-    const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
-  }
+  decoratePreviewCheck(config, experiments);
 }
