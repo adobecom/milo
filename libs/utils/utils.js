@@ -804,7 +804,24 @@ function decorateMeta() {
   });
 }
 
+export function scrollToHashedElement() {
+  const { hash } = window.location;
+  if (!hash) return;
+  const elementId = hash.slice(1);
+  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
+  if (!targetElement) return;
+  const position = targetElement.getBoundingClientRect();
+  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  window.scrollTo({
+    top: position.top - bufferHeight,
+    behavior: 'smooth',
+  });
+}
+
 export async function loadArea(area = document) {
+  window.addEventListener('load', (e) => {
+    e.preventDefault();
+  });
   const isDoc = area === document;
 
   if (isDoc) {
@@ -880,6 +897,7 @@ export async function loadArea(area = document) {
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
+  scrollToHashedElement();
 }
 
 export function loadDelayed() {
@@ -931,18 +949,4 @@ export function loadLana(options = {}) {
 
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
-}
-
-export function scrollToHashedElement() {
-  const { hash } = window.location;
-  if (!hash) return;
-  const elementId = hash.slice(1);
-  const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
-  if (!targetElement) return;
-  const position = targetElement.getBoundingClientRect();
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  window.scrollTo({
-    top: position.top - bufferHeight,
-    behavior: 'smooth',
-  });
 }
