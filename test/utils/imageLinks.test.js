@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { decorateImageLinks } from '../../../libs/utils/utils.js';
+import { decorateImageLinks } from '../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/image-links.html' });
 
@@ -20,6 +20,12 @@ describe('Image Link', () => {
     const links = document.querySelectorAll('a');
     expect(links[0]).to.exist;
     expect(links[0].nodeName).to.equal('A');
+  });
+
+  it('Replaces the image in-place', () => {
+    const i = document.querySelector('#inline-image');
+    expect(i.children[1].nodeName).to.equal('A');
+    expect(i.querySelector('a picture')).to.exist;
   });
 
   it('Fails gracefully', () => {

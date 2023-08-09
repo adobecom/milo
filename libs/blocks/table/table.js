@@ -228,7 +228,7 @@ function handleHovering(table) {
   const isCollapseTable = table.classList.contains('collapse');
   const sectionHeads = table.querySelectorAll('.section-head');
   const lastSectionHead = sectionHeads[sectionHeads.length - 1];
-  const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');
+  const lastExpandIcon = lastSectionHead?.querySelector('.icon.expand');
 
   for (let i = startValue; i <= colsInRowNum; i++) {
     const cols = table.querySelectorAll(`.col-${i}`);
@@ -258,7 +258,9 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table, gnavHeight) {
+function handleScrollEffect(table) {
+  const gnav = document.querySelector('header');
+  const gnavHeight = gnav ? gnav.offsetHeight : 0;
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
@@ -307,6 +309,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     } else if (headingsLength > 3) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
     }
+
+    if ((!isMerch && !table.querySelector('.col-3'))
+    || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
@@ -376,6 +381,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   };
 
   // For Mobile (else: tablet / desktop)
+  if (!isMerch && !table.querySelector('.row-heading .col-2')) {
+    table.querySelector('.row-heading').style.display = 'block';
+    table.querySelector('.row-heading .col-1').style.display = 'flex';
+  }
+
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
@@ -392,7 +402,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const percentage = 100 / colsForTablet;
     const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
     sectionRow.forEach((row) => {
-      if (!isMerch && deviceBySize === 'TABLET') {
+      if (isMerch) return;
+      if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
         row.style.gridTemplateColumns = templateColumnsValue;
       } else {
         row.style.gridTemplateColumns = '';
@@ -437,13 +448,11 @@ export default function init(el) {
   });
 
   const isStickyHeader = el.classList.contains('sticky');
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
 
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
-  window.addEventListener('milo:icons:loaded', () => {
+  window.addEventListener('milo:LCP:loaded', () => {
     let originTable;
     let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
     if (isMerch) {
@@ -457,7 +466,7 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
-      if (isStickyHeader) handleScrollEffect(el, gnavHeight);
+      if (isStickyHeader) handleScrollEffect(el);
     };
     handleResize();
 
@@ -467,5 +476,5 @@ export default function init(el) {
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
-  });
+  }, { once: true });
 }
