@@ -203,8 +203,8 @@
 }
 
 .aside.split .icon-stack-area li img {
-  height: 40px;
   width: 40px;
+  height: auto;
 }
 
 .aside.split .format img,
