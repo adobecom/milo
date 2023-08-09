@@ -79,6 +79,11 @@ describe('Utils', () => {
         const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
     });
 
     describe('Fragments', () => {
