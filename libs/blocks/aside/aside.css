@@ -203,7 +203,7 @@
 }
 
 .aside.split .icon-stack-area li img {
-  width: 40px;
+  width: var(--icon-size-m);
   height: auto;
 }
 
@@ -221,7 +221,7 @@
 
 .aside .foreground.container .icon-area img {
   max-width: 234px;
-  height: 56px;
+  height: var(--icon-size-l);
   width: auto;
   object-fit: cover;
   object-position: left top;
@@ -744,21 +744,21 @@
   }
 
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
-    height: 80px;
+    height: var(--icon-size-xxl);
     max-width: 234px;
     width: auto;
   }
 
   .aside.medium.split.bio .foreground.container .text .icon-area,
   .aside.large.split.bio .foreground.container .text .icon-area {
-    height: 80px;
+    height: var(--icon-size-xxl);
     margin-bottom: var(--spacing-xs);
   }
 
   .aside.medium.split.bio .foreground.container .text .icon-area img,
   .aside.large.split.bio .foreground.container .text .icon-area img {
-    width: 80px;
-    height: 80px;
+    width: var(--icon-size-xxl);
+    height: var(--icon-size-xxl);
     border-radius: 50%;
   }
 }
