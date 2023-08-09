@@ -31,7 +31,7 @@ describe('marquee-anchors', () => {
     expect(anchorLinks).to.exist;
   });
 
-  it('adds the correct classes for links', () => {
+  it('adds the external class for external links', () => {
     const links = marquees[1].querySelector('.external');
     expect(links).to.exist;
   });
