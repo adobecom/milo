@@ -68,6 +68,7 @@ export async function handleStyle(text, section) {
   if (sticky) await handleStickySection(sticky, section);
   const autoups = styles.findIndex((style) => style.includes('auto-up')) !== -1;
   if (autoups) handleAutoUps(section);
+  if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
 }
 
