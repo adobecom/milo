@@ -1,9 +1,9 @@
-import { readFile, sendKeys } from '@web/test-runner-commands';
+import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getModal } = await import('../../../libs/blocks/modal/modal.js');
+const { default: init, getModal, sendViewportDimensionsOnRequest } = await import('../../../libs/blocks/modal/modal.js');
 
 describe('Modals', () => {
   it('Doesnt load modals on page load with no hash', async () => {
@@ -152,5 +152,22 @@ describe('Modals', () => {
     expect(document.activeElement.getAttribute('id')).to.equal('test-title');
     window.location.hash = '';
     await waitForRemoval('#title');
+  });
+
+  it('checks if dialog modal has the 100% screen width when screen with is less than 1200', async () => {
+    await setViewport({ width: 600, height: 100 });
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await getModal({ id: 'animate', path: '/cc-shared/fragments/trial-modals/animate', isHash: true });
+    sendViewportDimensionsOnRequest({ data: 'viewportWidth', source: window });
+    const dialogmodal = document.getElementsByClassName('dialog-modal')[0];
+    dialogmodal.classList.add('commerce-frame');
+    expect(window.innerWidth).to.equal(dialogmodal.offsetWidth);
+  });
+
+  it('checks if dialog modal is less than screen size if it does not have commerce frame class and screen size is less than 1200', async () => {
+    const dialogmodal = document.getElementsByClassName('dialog-modal')[0];
+    dialogmodal.classList.remove('commerce-frame');
+    expect(window.innerWidth).not.equal(dialogmodal.offsetWidth);
   });
 });

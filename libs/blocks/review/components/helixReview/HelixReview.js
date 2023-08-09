@@ -41,11 +41,12 @@ const HelixReview = ({
       setTotalReviews(localData.totalReviews);
       localDataTotalReviews = localData.totalReviews;
     }
-    if (onReviewLoad)
+    if (onReviewLoad) {
       onReviewLoad({
         hasRated: !!localData,
         rating: localData ? localData.rating : undefined,
       });
+    }
 
     // eslint-disable-next-line no-use-before-define
     getHelixData(localDataTotalReviews, !!localData);
@@ -73,12 +74,13 @@ const HelixReview = ({
               if (total > localDataTotalReviews) setTotalReviews(total);
               setDisplayRatingSummary(true);
               setDisplayReviewComp(true);
-              if (!hasLocalData)
+              if (!hasLocalData) {
                 setInitialRating(
                   initialValue !== undefined
                     ? initialValue
-                    : Math.round(average)
+                    : Math.round(average),
                 );
+              }
 
               if (productJson) {
                 setJsonLdProductInfo(productJson, average, total);
