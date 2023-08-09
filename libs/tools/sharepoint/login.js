@@ -2,14 +2,14 @@
 import { user, spAccessToken } from './state.js';
 import { getMSALConfig } from './msal.js';
 
-export default async function loginToSharePoint(scope = []) {
-  const msalConfig = await getMSALConfig();
+export default async function loginToSharePoint(scope = [], telemetry = {}) {
+  const msalConfig = await getMSALConfig(telemetry);
   const pca = new msal.PublicClientApplication(msalConfig);
 
   let account = pca.getAllAccounts()[0];
 
   if (!account) {
-    await pca.loginPopup(msalConfig.login);
+    await pca.loginRedirect(msalConfig.login);
     [account] = pca.getAllAccounts();
   }
   user.value = account.username;

@@ -3,8 +3,8 @@ import { getReqOptions } from '../../tools/sharepoint/msal.js';
 const href = new URL(window.location.href);
 const urlParams = new URLSearchParams(href.search);
 const referrer = urlParams.get('referrer');
-const sourceCode = referrer?.match(/sourcedoc=([^&]+)/)[1];
-const sourceId = decodeURIComponent(sourceCode);
+const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
+const sourceId = decodeURIComponent(sourceDoc);
 
 const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
 const contentType = 'application/json;odata=verbose';

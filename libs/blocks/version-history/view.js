@@ -4,6 +4,11 @@ import loginToSharePoint from '../../tools/sharepoint/login.js';
 
 const baseUrl = 'https://adobe.sharepoint.com';
 const scope = [`${baseUrl}/.default`];
+const telemetry = {
+  application: {
+    appName: 'Adobe Version history'
+  },
+};
 
 export default function View() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,7 +18,7 @@ export default function View() {
 
   useEffect(() => {
     async function loginAndFetchVersion() {
-      await loginToSharePoint(scope);
+      await loginToSharePoint(scope, telemetry);
       setIsAuthenticated(true);
       const savedVersions = await fetchVersions();
       setVersions(savedVersions);

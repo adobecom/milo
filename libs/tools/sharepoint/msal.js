@@ -4,20 +4,13 @@ import { getSiteConfig, spAccessToken } from './state.js';
 let msalConfig;
 
 const login = { redirectUri: '/tools/loc/spauth' };
-const siteKeys = ['clientId', 'authority', 'site', 'root'];
+const siteKeys = ['clientId', 'authority', 'site', 'root', 'driveId'];
 const cache = {
   cacheLocation: 'sessionStorage',
   storeAuthStateInCookie: false,
 };
 
-const telemetry = {
-  application: {
-    appName: 'Adobe Franklin Localization',
-    appVersion: '0.0.1',
-  },
-};
-
-export function getMSALConfig() {
+export function getMSALConfig(telemetry) {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     if (!msalConfig) {
@@ -28,7 +21,7 @@ export function getMSALConfig() {
         const currentData = data.find((item) => (item.key === `prod.sharepoint.${key}`));
         configValues[key] = currentData?.value;
       });
-      const { clientId, authority, site, root } = configValues;
+      const { clientId, authority, site, root, driveId } = configValues;
       const auth = { clientId, authority };
       const config = getConfig();
       const base = config.miloLibs || config.codeRoot;
@@ -44,7 +37,8 @@ export function getMSALConfig() {
         cache,
         telemetry,
         site,
-        baseUri: `${site}/drive/root:/${root}`,
+        baseUri: driveId ? `${site}/drives/${driveId}/root:${root}` : `${site}/drive/root:${root}`,
+
       };
       resolve(msalConfig);
     }
