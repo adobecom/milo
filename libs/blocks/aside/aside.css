@@ -183,6 +183,10 @@
   min-height: 270px;
 }
 
+.aside.split .split-image video {
+  display: block;
+}
+
 .aside.split .mobile-square img,
 .aside.split .mobile-square video {
   aspect-ratio: var(--aspect-ratio-square);
