@@ -78,7 +78,6 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     dropdownElem.classList.add('feds-signIn-dropdown');
 
-    // TODO we don't have a good way of adding config properties to links
     const dropdownSignIn = dropdownElem.querySelector('[href$="?sign-in=true"]');
 
     if (dropdownSignIn) {
