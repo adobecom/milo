@@ -4,7 +4,7 @@ import { stub } from 'sinon';
 import { createTag, getConfig, updateConfig } from '../../../libs/utils/utils.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
-document.body.innerHTML = await readFile({ path: './mocks/test1.html' });
+document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
 const noop = () => {};
 

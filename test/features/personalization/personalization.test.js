@@ -6,7 +6,7 @@ import initFragments from '../../../libs/blocks/fragment/fragment.js';
 import { applyPers } from '../../../libs/features/personalization/personalization.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
-document.body.innerHTML = await readFile({ path: './mocks/test1.html' });
+document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
 const setFetchResponse = (data, type = 'json') => {
   window.fetch = stub().returns(
