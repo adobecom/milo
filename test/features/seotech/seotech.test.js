@@ -3,7 +3,7 @@ import { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 import { getConfig, createTag } from '../../../libs/utils/utils.js';
-import appendVideoObjectScriptTag from '../../../libs/features/seotech/seotech.js';
+import { appendScriptTag } from '../../../libs/features/seotech/seotech.js';
 
 describe('seotech', () => {
   describe('appendVideoObjectScriptTag', () => {
@@ -17,18 +17,20 @@ describe('seotech', () => {
 
     it('should not append JSON-LD if url is invalid', async () => {
       const lanaStub = stub(window.lana, 'log');
-      await appendVideoObjectScriptTag('', { getConfig, createTag });
+      const getMetadata = stub().withArgs('seotech-video-url').returns('fake');
+      await appendScriptTag({ getMetadata, getConfig, createTag });
       expect(lanaStub.calledOnceWith('SEOTECH: Failed to construct \'URL\': Invalid URL')).to.be.true;
     });
 
     it('should not append JSON-LD if url not found', async () => {
       const lanaStub = stub(window.lana, 'log');
+      const getMetadata = stub().withArgs('seotech-video-url').returns('http://fake');
       const fetchStub = stub(window, 'fetch');
       fetchStub.returns(Promise.resolve(Response.json(
         { error: 'ERROR!' },
         { status: 400 },
       )));
-      await appendVideoObjectScriptTag('http://fake', { getConfig, createTag });
+      await appendScriptTag({ getMetadata, getConfig, createTag });
       expect(fetchStub.calledOnceWith(
         'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;
@@ -37,6 +39,7 @@ describe('seotech', () => {
 
     it('should append JSON-LD', async () => {
       const fetchStub = stub(window, 'fetch');
+      const getMetadata = stub().withArgs('seotech-video-url').returns('http://fake');
       const expectedVideoObject = {
         '@context': 'http://schema.org',
         '@type': 'VideoObject',
@@ -46,7 +49,7 @@ describe('seotech', () => {
         { videoObject: expectedVideoObject },
         { status: 200 },
       )));
-      await appendVideoObjectScriptTag('http://fake', { getConfig, createTag });
+      await appendScriptTag({ getMetadata, getConfig, createTag });
       expect(fetchStub.calledOnceWith(
         'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
       )).to.be.true;

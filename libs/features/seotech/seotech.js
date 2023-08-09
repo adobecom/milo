@@ -21,14 +21,38 @@ export async function getVideoObject(url, seotechAPIUrl) {
   return body.videoObject;
 }
 
-export default async function appendVideoObjectScriptTag(url, { createTag, getConfig }) {
+export async function getStructuredData(url, seotechAPIUrl) {
+  const dataUrl = new URL(url)?.href;
+  const apiUrl = `${seotechAPIUrl}/api/v1/web/seotech/getStructuredData?url=${dataUrl}`;
+  const resp = await fetch(apiUrl, { headers: { 'Content-Type': 'application/json' } });
+  const body = await resp?.json();
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch structured data: ${body?.error}`);
+  }
+  return body.objects;
+}
+
+export async function appendScriptTag({ getMetadata, createTag, getConfig }) {
   const seotechAPIUrl = getConfig()?.env?.name === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
-  try {
-    const obj = await getVideoObject(url, seotechAPIUrl);
+
+  const append = (obj) => {
     const script = createTag('script', { type: 'application/ld+json' }, JSON.stringify(obj));
     document.head.append(script);
-  } catch (e) {
-    logError(e.message);
+  };
+
+  const prs = [];
+  if (getMetadata('seotech-structured-data') === 'on') {
+    prs.push(getStructuredData(window.location.href, seotechAPIUrl)
+      .then((r) => r.forEach((obj) => append(obj)))
+      .catch((e) => logError(e.message)));
   }
+  if (getMetadata('seotech-video-url')) {
+    prs.push(getVideoObject(getMetadata('seotech-video-url'), seotechAPIUrl)
+      .then((r) => append(r))
+      .catch((e) => logError(e.message)));
+  }
+  return Promise.all(prs);
 }
+
+export default appendScriptTag;

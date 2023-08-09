@@ -890,9 +890,10 @@ export async function loadArea(area = document) {
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
+    const seotechStructuredData = getMetadata('seotech-structured-data');
     const seotechVideoUrl = getMetadata('seotech-video-url');
-    if (seotechVideoUrl) {
-      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
+    if (seotechStructuredData === 'on' || seotechVideoUrl) {
+      import('../features/seotech/seotech.js').then((module) => module.default({ getMetadata, createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
