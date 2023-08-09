@@ -19,29 +19,33 @@ const setFetchResponse = (data, type = 'json') => {
   );
 };
 
-const noop = () => {};
-
+// Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional Test', () => {
-  it.skip('replaceContent should replace an element with a fragment', async () => {
-    const manifestData = [{ test: true }];
-    stubFetch(manifestData);
+  it('replaceContent should replace an element with a fragment', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestReplace.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
 
-    const loadedlinkParams = {};
-    const loadLink = (url, options) => {
-      loadedlinkParams.url = url;
-      loadedlinkParams.options = options;
-    };
+    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.not.be.null;
+    expect(document.querySelector('.how-to')).to.not.be.null;
+    const parentEl = document.querySelector('#features-of-milo-experimentation-platform')?.parentElement;
 
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      ['/path/to/manifest.json'],
-      { createTag, getConfig, updateConfig, loadLink, loadScript: () => {} },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.querySelector('#features-of-milo-experimentation-platform')).to.be.null;
+    expect(parentEl.firstElementChild.firstElementChild.href)
+      .to.equal('http://localhost:2000/fragments/milo-replace-content-chrome-howto-h2');
+    // .how-to should not be changed as it is targeted to firefox
+    expect(document.querySelector('.how-to')).to.not.be.null;
+  });
 
-    expect(loadedlinkParams).to.deep.equal({
-      url: '/path/to/manifest.json',
-      options: { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-    });
+  it('removeContent should remove z-pattern content from the page', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestRemove.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
+    expect(document.querySelector('.z-pattern')).to.be.null;
   });
 
   it('insertContentAfter should add fragment after target element', async () => {
@@ -49,23 +53,9 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    const loadedlinkParams = {};
-    const loadLink = (url, options) => {
-      loadedlinkParams.url = url;
-      loadedlinkParams.options = options;
-    };
-
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(loadedlinkParams).to.deep.equal({
-      url: '/fragments/insertafter.plain.html',
-      options: { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-    });
     const fragment = document.querySelector('a[href="/fragments/insertafter"]');
     expect(fragment).to.not.be.null;
 
@@ -77,23 +67,9 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    const loadedlinkParams = {};
-    const loadLink = (url, options) => {
-      loadedlinkParams.url = url;
-      loadedlinkParams.options = options;
-    };
-
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
-    expect(loadedlinkParams).to.deep.equal({
-      url: '/fragments/insertbefore.plain.html',
-      options: { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' },
-    });
     const fragment = document.querySelector('a[href="/fragments/insertbefore"]');
     expect(fragment).to.not.be.null;
 
@@ -106,11 +82,7 @@ describe('Functional Test', () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/replaceme"]')).to.not.be.null;
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink: noop, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     const fragmentResp = await readFile({ path: './mocks/fragmentReplaced.plain.html' });
     setFetchResponse(fragmentResp, 'text');
@@ -127,17 +99,7 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    const loadedlinkParams = {};
-    const loadLink = (url, options) => {
-      loadedlinkParams.url = url;
-      loadedlinkParams.options = options;
-    };
-
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(getConfig().expBlocks).to.deep.equal({ promo: '/test/features/personalization/mocks/newpromo' });
     const promoBlock = document.querySelector('.promo');
@@ -151,17 +113,7 @@ describe('Functional Test', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
 
-    const loadedlinkParams = {};
-    const loadLink = (url, options) => {
-      loadedlinkParams.url = url;
-      loadedlinkParams.options = options;
-    };
-
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(getConfig().expBlocks).to.deep.equal({ myblock: '/test/features/personalization/mocks/myblock' });
     const myBlock = document.querySelector('.myblock');
@@ -182,11 +134,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('milo');
     expect(document.querySelector('meta[property="og:image"]')).to.be.null;
 
-    await applyPers(
-      // Path doesn't matter as we stub fetch above
-      [{ manifestPath: '/path/to/manifest.json' }],
-      { createTag, getConfig, updateConfig, loadLink: noop, loadScript: noop },
-    );
+    await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
     expect(geoMetadata.content).to.equal('on');
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');

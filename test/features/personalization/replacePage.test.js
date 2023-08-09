@@ -6,8 +6,6 @@ import { applyPers } from '../../../libs/features/personalization/personalizatio
 
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 
-const noop = () => {};
-
 it('replacePage should replace all of the main block', async () => {
   let manifestJson = await readFile({ path: './mocks/manifestReplacePage.json' });
   manifestJson = JSON.parse(manifestJson);
@@ -34,11 +32,7 @@ it('replacePage should replace all of the main block', async () => {
   expect(document.querySelector('.marquee')).to.not.be.null;
   expect(document.querySelector('.newpage')).to.be.null;
 
-  await applyPers(
-    // Path doesn't matter as we stub fetch above
-    [{ manifestPath: '/path/to/manifest.json' }],
-    { createTag, getConfig, updateConfig, loadLink: noop, loadScript: noop },
-  );
+  await applyPers([{ manifestPath: '/path/to/manifest.json' }]);
 
   expect(document.querySelector('.marquee')).to.be.null;
   expect(document.querySelector('.newpage')).to.not.be.null;

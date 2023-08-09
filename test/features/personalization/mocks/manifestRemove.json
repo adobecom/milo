@@ -1,0 +1,18 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "removeContent",
+      "selector": ".z-pattern",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "yes",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}
