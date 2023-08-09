@@ -188,10 +188,13 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
-  clientId: 'feds-milo',
-  sampleRate: 1,
-});
+export const lanaLog = ({ message, e = '' }) => {
+  const url = getMetadata('gnav-source');
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
+    clientId: 'feds-milo',
+    sampleRate: 1,
+  });
+};
 
 export const logErrorFor = async (fn, message) => {
   try {
