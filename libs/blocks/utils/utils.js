@@ -1,3 +1,5 @@
+import { getMetadata } from '../../utils/utils.js';
+
 const getLocalStorage = (key) => {
   const data = window.localStorage.getItem(key);
   try {
@@ -26,4 +28,12 @@ const fetchWithTimeout = async (resource, options = {}) => {
   return response;
 };
 
-export { getLocalStorage, setLocalStorage, fetchWithTimeout };
+const updateLinkWithConfiguredLangRoot = (link) => {
+  const langRoot = getMetadata('lang-root');
+  if (!langRoot) return link;
+  const url = new URL(link);
+  url.pathname = `${langRoot}${url.pathname}`;
+  return url.href;
+};
+
+export { getLocalStorage, setLocalStorage, fetchWithTimeout, updateLinkWithConfiguredLangRoot };
