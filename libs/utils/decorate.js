@@ -89,7 +89,8 @@ function applyTextOverrides(el, override) {
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+  const overrides = [...el.classList]
+    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override);

@@ -503,11 +503,11 @@
 
 
 .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
-  height: 83px;
+  height: var(--icon-size-xxl);
 }
 
 .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
-  height: 83px;
+  height: var(--icon-size-xxl);
   max-width: 300px;
   width: auto;
 }
@@ -738,15 +738,9 @@
     width: 40px;
     height: 40px;
   }
-  
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
-    height: var(--icon-size-xxl);
-  }
 
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
-    height: var(--icon-size-xxl);
     max-width: 234px;
-    width: auto;
   }
 
   .aside.medium.split.bio .foreground.container .text .icon-area,
@@ -850,14 +844,8 @@
     flex-direction: row;
   }
 
-  .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area {
-    height: 83px;
-  }
-
   .aside.center:not(.notification):not(.split) .foreground.container .text .icon-area img {
-    height: 83px;
     max-width: 400px;
-    width: auto;
   }
 
   .aside.center:not(.notification):not(.split) .foreground.container .text {
