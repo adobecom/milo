@@ -584,10 +584,11 @@ class Gnav {
           </a>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+        const tag = isSectionMenu ? 'section' : 'div';
         const triggerTemplate = toFragment`
-          <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
+          <${tag} class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
-          </div>`;
+          </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
