@@ -48,8 +48,7 @@ function setBlockProps(el, columns) {
       .map((style) => style.replaceAll(' ', '-'))
       .join(' ')
     : '';
-  const gridAlign =
-    [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN)) ??
+  const gridAlign =    [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN)) ??
     'grid-align-start';
   el.style.setProperty('--action-scroller-columns', columns);
   el.style.setProperty('--action-scroller-item-width', itemWidth);
