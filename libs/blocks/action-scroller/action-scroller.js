@@ -32,7 +32,7 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
     const [key, value] = row.children;
     if (key && value) {
       attr[key.textContent.trim().toLowerCase()] = value.textContent
-          .trim()
+        .trim()
           .toLowerCase();
       }
   }
