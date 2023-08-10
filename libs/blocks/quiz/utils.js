@@ -39,6 +39,7 @@ export const initConfigPathGlob = (rootElement) => {
   quizKey = initQuizKey(rootElement);
   analyticsType = initAnalyticsType();
   analyticsQuiz = initAnalyticsQuiz();
+  return { configPath, quizKey, analyticsType, analyticsQuiz };
 };
 
 export const getQuizData = async () => {
@@ -50,16 +51,17 @@ export const getQuizData = async () => {
   } catch (ex) {
     console.log('Error while fetching data : ', ex);
   }
+  return [];
 };
 
 export const getUrlParams = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const params = {};
   urlParams.forEach((value, key) => {
-    params[key] = value.split(',');
+    params[key] = value?.split(',');
   });
   return params;
-}
+};
 
 /**
  * Handling the result flow from here. Will need to make sure we capture all
@@ -92,7 +94,7 @@ export const handleResultFlow = async (answers = []) => {
   window.location.href = getRedirectUrl(destinationPage, primaryProductCodes, answers);
 };
 
-const storeResultInLocalStorage = (
+export const storeResultInLocalStorage = (
   answers,
   resultData,
   resultResources,
@@ -100,12 +102,13 @@ const storeResultInLocalStorage = (
   secondaryProductCodes,
   umbrellaProduct,
 ) => {
-  const nestedFrags = resultData.matchedResults[0]['nested-fragments'];
+  const nestedFragsPrimary = resultData.matchedResults[0]['nested-fragments-primary'];
+  const nestedFragsSecondary = resultData.matchedResults[0]['nested-fragments-secondary'];
   const structureFrags = resultData.matchedResults[0]['basic-fragments'];
 
   const structureFragsArray = structureFrags?.split(',');
-  const nestedFragsArray = nestedFrags?.split(',');
-
+  const nestedFragsPrimaryArray = nestedFragsPrimary?.split(',');
+  const nestedFragsSecondaryArray = nestedFragsSecondary?.split(',');
   const resultToDelegate = {
     primaryProducts,
     secondaryProducts: secondaryProductCodes,
@@ -117,7 +120,8 @@ const storeResultInLocalStorage = (
       umbrellaProduct,
     ),
     nestedFragments: nestedFragments(
-      nestedFragsArray,
+      nestedFragsPrimaryArray,
+      nestedFragsSecondaryArray,
       resultResources,
       primaryProducts,
       secondaryProductCodes,
@@ -126,25 +130,26 @@ const storeResultInLocalStorage = (
     pageloadHash: getAnalyticsDataForLocalStorage(answers),
   };
   localStorage.setItem(quizKey, JSON.stringify(resultToDelegate));
+  return resultToDelegate;
 };
 
-const structuredFragments = (
+export const structuredFragments = (
   structureFragsArray,
   resultResources,
   primaryProducts,
   umbrellaProduct,
 ) => {
-  let structureFragments = [];
+  const structureFragments = [];
   structureFragsArray.forEach((frag) => {
-    frag = frag.trim();
-    resultResources.data.forEach((row) => {
+    const fragment = frag.trim();
+    resultResources?.data?.forEach((row) => {
       if (umbrellaProduct) {
         if (umbrellaProduct && row.product === umbrellaProduct) {
-          structureFragments.push(row[frag]);
+          structureFragments.push(row[fragment]);
         }
       } else if ((primaryProducts.length > 0 && primaryProducts.includes(row.product))) {
-        if (row[frag]) {
-          structureFragments.push(row[frag]);
+        if (row[fragment]) {
+          structureFragments.push(row[fragment]);
         }
       }
     });
@@ -152,41 +157,70 @@ const structuredFragments = (
   return structureFragments;
 };
 
-const nestedFragments = (
-  nestedFragsArray,
+/**
+ * Nested fragments are picked from primary and secondary products.
+ * If umbrella product is present, then umbrella product becomes the primary product
+ * and primary products becomes secondary products.
+ */
+export const nestedFragments = (
+  nestedFragsPrimaryArray,
+  nestedFragsSecondaryArray,
   resultResources,
   primaryProducts,
-  secondaryProductCodes,
-  isUmbrella,
+  secondaryProducts,
+  umbrellaProduct,
 ) => {
+  let primaryProductCodes = primaryProducts;
+  let secondaryProductCodes = secondaryProducts;
+  if (umbrellaProduct) {
+    secondaryProductCodes = primaryProductCodes;
+    primaryProductCodes = [umbrellaProduct];
+  }
   const nestedObject = {};
-  nestedFragsArray.forEach((frag) => {
+  nestedFragsPrimaryArray?.forEach((frag) => {
+    if (!frag) return;
     const fragKey = frag.trim();
-    const fragArray = [];
-    resultResources.data.forEach((row) => {
-      if (isUmbrella) {
-        // Get nested frags for all the primary products.
-        if (primaryProducts.length > 0 && primaryProducts.includes(row.product)) {
-          if (row[fragKey]) {
-            fragArray.push(row[fragKey]);
-          }
-        }
-      } else if (secondaryProductCodes.length > 0 && secondaryProductCodes.includes(row.product)) {
-        // Get nested frags for all the secondary products.
-        if (row[fragKey]) {
-          fragArray.push(row[fragKey]);
-        }
-      }
-    });
-    nestedObject[fragKey] = fragArray;
+    nestedObject[fragKey] = getNestedFragments(
+      resultResources,
+      primaryProductCodes,
+      fragKey,
+    );
+  });
+
+  nestedFragsSecondaryArray?.forEach((frag) => {
+    if (!frag) return;
+    const fragKey = frag.trim();
+    nestedObject[fragKey] = getNestedFragments(
+      resultResources,
+      secondaryProductCodes,
+      fragKey,
+    );
   });
 
   return nestedObject;
 };
 
-const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+const getNestedFragments = (resultResources, productCodes, fragKey) => {
+  const fragArray = [];
+  resultResources?.data?.forEach((row) => {
+    if (productCodes.length > 0 && productCodes.includes(row.product)) {
+      insertFragment();
+    }
 
-const parseResultData = async (answers) => {
+    function insertFragment() {
+      if (row[fragKey]) {
+        row[fragKey].split(',').forEach((val) => {
+          fragArray.push(val.trim());
+        });
+      }
+    }
+  });
+  return fragArray;
+};
+
+export const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+
+export const parseResultData = async (answers) => {
   const results = await fetchContentOfFile(RESULTS_EP_NAME);
   const filteredResults = results.result.data.reduce(
     (resultObj, resultMap) => {
@@ -242,11 +276,11 @@ const parseResultData = async (answers) => {
   return rObj;
 };
 
-const getRecomandationResults = (selectedDestination, deafult) =>
-  (selectedDestination.length ? selectedDestination : deafult);
+const getRecommendedResults = (selectedDestination, defaultValue) => (selectedDestination.length
+  ? selectedDestination : defaultValue);
 
 // TODO: needs refactoring - can split to smaller functions
-const findMatchForSelections = (results, selections) => {
+export const findMatchForSelections = (results, selections) => {
   const recommendations = [];
   const matchResults = [];
   const defaultResult = [];
@@ -273,7 +307,7 @@ const findMatchForSelections = (results, selections) => {
       });
     });
 
-    return getRecomandationResults(recommendations, defaultResult);
+    return getRecommendedResults(recommendations, defaultResult);
   }
 
   const userSelectionLen = selections.primary.length; // 1 - lr
@@ -378,7 +412,7 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   }
 };
 
-const getAnalyticsDataForLocalStorage = (answers) => {
+export const getAnalyticsDataForLocalStorage = (answers) => {
   let formattedAnswerString = '';
   answers.forEach((answer) => {
     const eachAnswer = `${answer[0]}/${answer[1].join('/')}`;
