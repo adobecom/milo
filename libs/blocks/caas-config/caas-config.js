@@ -699,9 +699,7 @@ const getInitialState = () => {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
-      } catch (e) {
-        // Do nothing
-      }
+      } catch (e) {}
     }
   }
 
