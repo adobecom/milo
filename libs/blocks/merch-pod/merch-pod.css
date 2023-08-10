@@ -1,10 +1,19 @@
+:root {
+  /* Merch Colors */
+  --color-cc: linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%);
+  --color-ps: linear-gradient(90deg, #31A8FF, #195784);
+  --color-ai: linear-gradient(90deg, #FF9A01, #9a5c00);
+  --color-id: linear-gradient(90deg, #FF3266, #b02346);
+  --color-xd: linear-gradient(90deg, #FF61F6, #8e3689);
+}
+
 /* stylelint-disable selector-class-pattern */
-/* stylelint-disable-next-line selector-class-pattern */
 @media only screen and (min-width: 680px) {
   .consonant-CardsGrid--2up {
       grid-template-columns: repeat(auto-fit,minmax(380px,max-content)) !important;
   }
 }
+
 .merch-pod.consonant-Card {
   border-radius: 16px;
 }
@@ -139,6 +148,47 @@
   text-decoration: none;
 }
 
+/* border colors */
+.merch-pod.cc hr {
+  background: var(--color-cc);
+}
+
+.merch-pod.xd hr {
+  background: var(--color-xd);
+}
+
+.merch-pod.ps hr {
+  background: var(--color-ps);
+}
+
+.merch-pod.ai hr {
+  background: var(--color-ai);
+}
+
+.merch-pod.id hr {
+  background: var(--color-id);
+}
+
+.merch-pod.uar .consonant-CardFooter hr {
+  display: none;
+}
+
+.merch-pod.uar.cc hr,
+.merch-pod.uar.xd hr,
+.merch-pod.uar.ps hr,
+.merch-pod.uar.ai hr,
+.merch-pod.uar.id hr {
+  height: 2px;
+}
+
+/* transparent bg */
+.merch-pod.transparent-bg {
+  background-color: rgba(255, 255, 255, 70%);
+}
+
+.merch-pod.transparent-bg div[class$="-inner"] {
+  background-color: transparent;
+}
 
 .merch-pod hr {
   background-color: #E1E1E1;
@@ -276,6 +326,7 @@ h5 {
   font-size: 18px;
   margin-bottom: 4.5px;
 }
+
 
 .merch-pod .consonant-SpecialOffers-inner,
 .merch-pod .consonant-PlansCard-inner {
