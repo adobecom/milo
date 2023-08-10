@@ -45,7 +45,7 @@ function setBlockProps(el, columns) {
   const overrides = attrs.style
     ? attrs.style
       .split(', ')
-        .map((style) => style.replaceAll(' ', '-'))
+      .map((style) => style.replaceAll(' ', '-'))
         .join(' ')
     : '';
   const gridAlign =
