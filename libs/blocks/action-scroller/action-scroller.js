@@ -44,7 +44,7 @@ function setBlockProps(el, columns) {
   const itemWidth = attrs['item width'] ?? defaultItemWidth;
   const overrides = attrs.style
     ? attrs.style
-        .split(', ')
+      .split(', ')
         .map((style) => style.replaceAll(' ', '-'))
         .join(' ')
     : '';
