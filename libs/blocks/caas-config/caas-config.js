@@ -699,6 +699,7 @@ const getInitialState = () => {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
+        /* eslint-disable-next-line */
       } catch (e) {}
     }
   }
