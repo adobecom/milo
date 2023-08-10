@@ -83,8 +83,7 @@ function handleLayout(text, section) {
   section.classList.add(layoutClass);
 }
 
-export const getMetadata = (el) =>
-  [...el.childNodes].reduce((rdx, row) => {
+export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
     if (row.children) {
       const key = row.children[0].textContent.trim().toLowerCase();
       const content = row.children[1];
