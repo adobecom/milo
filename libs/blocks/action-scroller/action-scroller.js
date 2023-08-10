@@ -37,7 +37,7 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
       }
   }
   return attr;
-  }, {});
+}, {});
 
 function setBlockProps(el, columns) {
   const attrs = getBlockProps(el);
