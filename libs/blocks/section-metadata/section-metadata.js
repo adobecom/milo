@@ -9,7 +9,8 @@ export function handleFocalpoint(pic, child, removeChild) {
   } else if (child.textContent) {
     text = child.textContent;
     const childData = child.childNodes;
-    if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
+    if (removeChild)
+      childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
   }
   const directions = text.trim().toLowerCase().split(',');
   const [x, y = ''] = directions;
@@ -38,10 +39,12 @@ function handleTopHeight(section) {
 async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
-    case 'sticky-top':
-    {
+    case 'sticky-top': {
       const { debounce } = await import('../../utils/action.js');
-      window.addEventListener('resize', debounce(() => handleTopHeight(section)));
+      window.addEventListener(
+        'resize',
+        debounce(() => handleTopHeight(section))
+      );
       main.prepend(section);
       break;
     }
@@ -56,7 +59,7 @@ async function handleStickySection(sticky, section) {
 function handleAutoUps(section) {
   const nonColumns = ['fullwidth', 'full-width', 'section-metadata'];
   const columns = [...section.children].filter(
-    ({ classList }) => !nonColumns.some((name) => classList.contains(name)),
+    ({ classList }) => !nonColumns.some((name) => classList.contains(name))
   );
   section.style.setProperty('--section-grid-columns', columns.length);
 }
@@ -64,7 +67,9 @@ function handleAutoUps(section) {
 export async function handleStyle(text, section) {
   if (!text || !section) return;
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
-  const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
+  const sticky = styles.find(
+    (style) => style === 'sticky-top' || style === 'sticky-bottom'
+  );
   if (sticky) await handleStickySection(sticky, section);
   const autoups = styles.some((str) => str.includes('auto-up'));
   if (autoups) handleAutoUps(section);
@@ -78,15 +83,16 @@ function handleLayout(text, section) {
   section.classList.add(layoutClass);
 }
 
-export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
-  if (row.children) {
-    const key = row.children[0].textContent.trim().toLowerCase();
-    const content = row.children[1];
-    const text = content.textContent.trim().toLowerCase();
-    if (key && content) rdx[key] = { content, text };
-  }
-  return rdx;
-}, {});
+export const getMetadata = (el) =>
+  [...el.childNodes].reduce((rdx, row) => {
+    if (row.children) {
+      const key = row.children[0].textContent.trim().toLowerCase();
+      const content = row.children[1];
+      const text = content.textContent.trim().toLowerCase();
+      if (key && content) rdx[key] = { content, text };
+    }
+    return rdx;
+  }, {});
 
 export default async function init(el) {
   const section = el.closest('.section');

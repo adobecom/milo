@@ -11,8 +11,8 @@
  */
 
 /*
-* Action Item - v1.0
-*/
+ * Action Item - v1.0
+ */
 
 import { decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
