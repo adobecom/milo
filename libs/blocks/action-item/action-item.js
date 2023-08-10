@@ -24,13 +24,13 @@ function getLayout(elems) {
 }
 
 function handleFloatIcon(picture, icon) {
-  if (!icon) return;
+  if (!picture || !icon) return;
   icon.classList.add('floated-icon');
   picture.appendChild(icon);
 }
 
 function handleFloatBtn(picture, content) {
-  if (!content) return;
+  if (!picture || !content) return;
   decorateButtons(content);
   const btn = content.querySelector('.con-button');
   if (!btn) return;
