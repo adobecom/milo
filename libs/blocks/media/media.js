@@ -75,7 +75,7 @@ export default function init(el) {
       const links = row.querySelectorAll('h3.heading-xs ~ p.body-s a, h3.heading-xs ~ p.icon-area a');
       links.forEach((link) => {
         link.parentElement.className = 'subcopy-link';
-        link.className = 'subcopy-link';
+        link.className = 'body-xxs';
         updateInnerHtml(link, 'strong', '');
       });
     }

@@ -147,12 +147,6 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: 8px;
 }
 
-.media a.subcopy-link {
-  font-size: var(--type-heading-xxs-size);
-  color: var(--link-color-dark);
-  line-height: var(--type-body-xs-lh);
-}
-
 .media svg.icon-milo, img.icon-milo {
   top: .155em;
 }
