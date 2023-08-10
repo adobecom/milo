@@ -72,7 +72,7 @@ function handleScroll(el, btn) {
 
 function handleBtnState(
   { scrollLeft, scrollWidth, clientWidth },
-  [prev, next]
+  [prev, next],
 ) {
   prev.setAttribute('hide-btn', scrollLeft === 0);
   next.setAttribute(
