@@ -66,7 +66,7 @@ export async function handleStyle(text, section) {
   const styles = text.split(', ').map((style) => style.replaceAll(' ', '-'));
   const sticky = styles.find((style) => style === 'sticky-top' || style === 'sticky-bottom');
   if (sticky) await handleStickySection(sticky, section);
-  const autoups = styles.findIndex((style) => style.includes('auto-up')) !== -1;
+  const autoups = styles.some(str => str.includes('auto-up'));
   if (autoups) handleAutoUps(section);
   if (styles.includes('masonry')) styles.push('masonry-up');
   section.classList.add(...styles);
