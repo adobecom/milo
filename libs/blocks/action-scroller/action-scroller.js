@@ -77,7 +77,7 @@ function handleBtnState(
   prev.setAttribute('hide-btn', scrollLeft === 0);
   next.setAttribute(
     'hide-btn',
-    Math.ceil(scrollLeft) === Math.ceil(scrollWidth - clientWidth)
+    Math.ceil(scrollLeft) === Math.ceil(scrollWidth - clientWidth),
   );
 }
 
