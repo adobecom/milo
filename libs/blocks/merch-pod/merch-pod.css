@@ -140,16 +140,12 @@
 }
 
 /* (uar) */
-.merch-pod.uar .consonant-CardFooter hr {
-  display: none;
+.merch-pod.uar hr{
+  height: 2px;
 }
 
-.merch-pod.uar.cc hr,
-.merch-pod.uar.xd hr,
-.merch-pod.uar.ps hr,
-.merch-pod.uar.ai hr,
-.merch-pod.uar.id hr {
-  height: 2px;
+.merch-pod.uar .consonant-CardFooter hr {
+  display: none;
 }
 
 /* transparent bg */
