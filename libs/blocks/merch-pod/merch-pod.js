@@ -126,6 +126,16 @@ const addInner = (el, podType, merchPod) => {
   merchPod.append(inner);
 };
 
+const decorateHrs = (els) => {
+  [...els].forEach((e) => {
+    if (!e.textContent.startsWith('---')) return;
+    const bgStyle = e.textContent.substring(3).trim();
+    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
+    e.textContent = '';
+    e.appendChild(hrElem);
+  });
+};
+
 const decorateRibbon = (el, podType) => {
   const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
 
@@ -183,6 +193,7 @@ const init = (el) => {
   const styles = Array.from(el.classList);
   const podType = getPodType(styles);
   const merchPod = el;
+  decorateHrs(allPElems);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const width = imgNode.width;
