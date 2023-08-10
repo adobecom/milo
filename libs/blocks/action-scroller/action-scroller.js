@@ -56,8 +56,8 @@ function setBlockProps(el, columns) {
 }
 
 function handleScroll(el, btn) {
-  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width') ??
-    defaultItemWidth;
+  const itemWidth = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width')
+    ?? defaultItemWidth;
   const gapStyle = window
     .getComputedStyle(el, null)
     .getPropertyValue('column-gap');
