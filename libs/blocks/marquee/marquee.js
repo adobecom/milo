@@ -147,9 +147,10 @@ export default function init(el) {
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
 
   const size = getBlockSize(el);
-  decorateButtons(text, (size === 'large')
+  const buttonClass = (size === 'large')
   && !(el.classList.contains('standard')
-  || el.classList.contains('compact')) ? 'button-xl' : 'button-l');
+  || el.classList.contains('compact')) ? 'button-xl' : 'button-l';
+  decorateButtons(text, buttonClass);
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);
   decorateText(text, size);
