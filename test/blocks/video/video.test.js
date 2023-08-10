@@ -41,4 +41,17 @@ describe('video uploaded using franklin bot', () => {
 
     expect(block.firstElementChild.hasAttribute('loop')).to.be.false;
   });
+
+  it('decorates video with autoplay, no loop and hover play', async () => {
+    const block = document.querySelector('.video.no-loop.hoverplay');
+    const a = block.querySelector('a');
+    const { href } = a;
+    a.textContent = href;
+    block.append(a);
+
+    init(a);
+
+    expect(block.firstElementChild.hasAttribute('loop')).to.be.false;
+    expect(block.firstElementChild.hasAttribute('data-hoverplay')).to.be.true;
+  });
 });
