@@ -36,7 +36,7 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
           .toLowerCase();
       }
   }
-    return attr;
+  return attr;
   }, {});
 
 function setBlockProps(el, columns) {
