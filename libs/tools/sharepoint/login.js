@@ -9,7 +9,7 @@ export default async function loginToSharePoint(scope = [], telemetry = {}) {
   let account = pca.getAllAccounts()[0];
 
   if (!account) {
-    await pca.loginRedirect(msalConfig.login);
+    await pca.loginPopup(msalConfig.login);
     [account] = pca.getAllAccounts();
   }
   user.value = account.username;
