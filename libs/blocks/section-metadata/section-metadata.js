@@ -90,7 +90,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
     if (key && content) rdx[key] = { content, text };
     }
   return rdx;
-  }, {});
+}, {});
 
 export default async function init(el) {
   const section = el.closest('.section');
