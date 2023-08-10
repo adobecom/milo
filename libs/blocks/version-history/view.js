@@ -10,6 +10,18 @@ const telemetry = {
   },
 };
 
+
+function formatTime(inputTime) {
+  const [hours, minutes] = inputTime.split(':');
+  let formattedHours = String(Number(hours) % 12);
+  if (formattedHours === '0') {
+    formattedHours = '12';
+  }
+  const period = Number(hours) < 12 ? 'AM' : 'PM';
+
+  return `${formattedHours}:${minutes} ${period}`;
+}
+
 export default function View() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [versions, setVersions] = useState([]);
@@ -55,10 +67,11 @@ export default function View() {
     const date = new Date(timeStamp);
     const localeDate = date.toLocaleString();
     const splitDate = localeDate.split(', ');
+    
     return html`
       <td>
-        <span class=date>${splitDate[0]}</span>
-        <span class=time>${splitDate[1]}</span>
+        <div class=date>${splitDate[0]}</div>
+        <div>${formatTime(splitDate[1])}</div>
       </td>
     `;
   }
@@ -92,7 +105,7 @@ export default function View() {
         <thead>
           <tr>
             <th>Version</th>
-            <th>Modified Date</th>
+            <th>Created</th>
             <th>Comment</th>
           </tr>
         </thead>
@@ -109,10 +122,10 @@ export default function View() {
   return html`
     <div id="content" class="container sk-version">
       <div class="comment-container">
-        <label for="comment">Comment:</label>
-        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment" onkeyup="${onChangeComment}"></textarea>
+        <textarea value="${comment}" id="comment" name="comment" placeholder="Add comment here" onkeyup="${onChangeComment}"></textarea>
+        <button id="create" onClick="${onClickCreate}">Create version</button>
       </div>
-      <button id="create" onClick="${onClickCreate}">Create Version</button>
+     
       ${renderError()}
       <div class="table-container">
         ${renderList()}

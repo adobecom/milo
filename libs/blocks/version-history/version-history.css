@@ -19,6 +19,7 @@ table {
   width: 100%;
 }
 
+
 .table-container {
   height: 248px;
   overflow-y: auto;
@@ -26,11 +27,16 @@ table {
 
 table th,
 table td {
-  padding: 12px;
+  padding: 12px 0;
+  border-bottom: 0.5px solid #a59e9e;
 }
 
 table th {
   text-align: left;
+  color: #a59e9e;
+  text-transform: uppercase;
+  font-size: 16px;
+  padding: 4px 0;
 }
 
 button,
@@ -54,28 +60,49 @@ a.button {
 }
 
 tr > th:first-child, tr > td:first-child {
-  padding-left: 24px;
+  padding-left: 24px 0;
 }
 
 #status {
   color: #EFEFEF;
 }
 
-.comment-container label {
-  display: block;
-  margin-bottom: 0.5em;
-  font-weight: bold;
-  color: #EFEFEF;
+.comment-container {
+  position: relative;
+}
+
+.comment-container button {
+  position: absolute;
+  right: 10px;
+  bottom: 4px;
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  color: #FFF;
+  background: #FF1593;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  background-position: 12px center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px;
+  width: 140px;
+  clip-path: polygon(0% 0%, 12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), 100% 100%, 0% 100%, 0% 100%);
+  box-sizing: border-box;
 }
 
 .comment-container textarea {
   display: inline-block;
-  width: 96%;
-  height: 5em;
+  width: calc(100% - 12px);
+  height: 10em;
   padding: 0.5em;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 5px;
   resize: vertical;
+  background-color: #242424;
+  color: #FFF;
 }
 
 #create {
@@ -86,15 +113,17 @@ tr > th:first-child, tr > td:first-child {
 .link {
   cursor: pointer;
   text-decoration: underline;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 table tr {
-  background-color: #EFEFEF;
-  color: #242424;
+  background-color: #000;
+  color: #FFF;
 }
 
 .container {
-  padding: 20px;
+  padding: 10px;
   width: calc(100% - 40px);
 }
 
@@ -105,14 +134,10 @@ table tr {
   margin-right: 4px;
 }
 
-.time {
-  font-style: italic;
-}
-
 .sk-version {
-  width: 418px;
+  width: 438px;
   height: 460px;
-  background: #303030;
+  background: #000;
   color: #FFF;
   overflow: hidden;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
@@ -122,4 +147,6 @@ table tr {
 .error {
   color: #f53f3f
 }
+
+
 
