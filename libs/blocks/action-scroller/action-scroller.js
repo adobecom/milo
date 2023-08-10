@@ -46,7 +46,7 @@ function setBlockProps(el, columns) {
     ? attrs.style
       .split(', ')
       .map((style) => style.replaceAll(' ', '-'))
-        .join(' ')
+      .join(' ')
     : '';
   const gridAlign =
     [...el.classList].filter((cls) => cls.toLowerCase().includes(ALIGN)) ??
