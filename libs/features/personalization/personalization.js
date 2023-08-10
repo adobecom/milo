@@ -338,8 +338,6 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   let entitlements = [];
   if (hasEntitlementPrefix || hasEntitlementTag) {
     entitlements = await getFlatEntitlements();
-    // TODO: remove this
-    console.log(entitlements);
   }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some((name) => {
