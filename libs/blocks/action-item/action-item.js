@@ -19,8 +19,7 @@ import { createTag } from '../../utils/utils.js';
 
 function getLayout(elems) {
   const link = elems.length > 1 ? elems[elems.length - 1] : null;
-  const href = link?.innerText.trim() || null;
-  return { foreground: elems[0], href };
+  return { foreground: elems[0], link };
 }
 
 function handleFloatIcon(picture, icon) {
@@ -38,26 +37,27 @@ function handleFloatBtn(picture, content) {
   picture.appendChild(btn);
 }
 
-function decorateLink(href) {
-  let attrs = { href };
-  if (href.includes('#_blank')) {
-    attrs.href = href.replace('#_blank', '');
+function decorateLink(link) {
+  const anchor = link.querySelector('a');
+  let attrs = { href: anchor.href };
+  if (attrs.href.includes('#_blank') || anchor.target === '_blank') {
+    attrs.href = anchor.href.replace('#_blank', '');
     attrs = { ...attrs, target: '_blank' };
   }
   return attrs;
 }
 
-function getContent(el, variants, href) {
-  const columns = el.querySelectorAll(':scope > div');
+function getContent(el, variants, link) {
   const pictures = el.querySelectorAll('picture');
   const text = el.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   const mainPic = pictures[0];
   const picture = mainPic?.parentElement;
   picture?.classList.add('main-image');
+  const wrapLink = link && !variants.contains('float-button');
+  const tag = wrapLink ? 'a' : 'div';
+  let attrs = wrapLink ? decorateLink(link) : {};
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
-  if (variants.contains('float-button')) handleFloatBtn(picture, columns[1]);
-  const tag = href ? 'a' : 'div';
-  let attrs = href ? decorateLink(href) : {};
+  if (variants.contains('float-button')) handleFloatBtn(picture, link);
   if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
   const content = createTag(tag, { ...attrs }, text ?? picture);
   return content;
@@ -66,7 +66,7 @@ function getContent(el, variants, href) {
 export default function init(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (!elems.length) return;
-  const { foreground, href } = getLayout(elems);
-  const content = getContent(foreground, el.classList, href);
+  const { foreground, link } = getLayout(elems);
+  const content = getContent(foreground, el.classList, link);
   el.replaceChildren(content);
 }
