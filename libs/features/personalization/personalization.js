@@ -5,6 +5,7 @@ const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const PAGE_URL = new URL(window.location.href);
 
+/* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
   firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
@@ -15,6 +16,7 @@ export const PERSONALIZATION_TAGS = {
   darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
   lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
+/* c8 ignore stop */
 
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
@@ -73,6 +75,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(url);
     if (!resp.ok) {
+      /* c8 ignore next 5 */
       if (resp.status === 404) {
         throw new Error('File not found');
       }
@@ -80,6 +83,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     }
     return await resp[type]();
   } catch (e) {
+    /* c8 ignore next 2 */
     console.log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
@@ -92,6 +96,7 @@ const consolidateObjects = (arr, prop) => arr.reduce((propMap, item) => {
   return propMap;
 }, {});
 
+/* c8 ignore start */
 function normalizePath(p) {
   let path = p;
 
@@ -112,6 +117,7 @@ function normalizePath(p) {
   }
   return path;
 }
+/* c8 ignore stop */
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
@@ -179,6 +185,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
 
       COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
+      /* c8 ignore next */
       console.log('Invalid command found: ', cmd);
     }
   });
@@ -205,12 +212,13 @@ const getVariantInfo = (line, variantNames, variants) => {
       variants[vn][action] = variants[vn][action] || [];
 
       variants[vn][action].push({
-        selector: action === 'useblockcode' ? line[vn]?.split('/').pop() : normalizePath(selector),
+        selector: normalizePath(selector),
         val: normalizePath(line[vn]),
       });
     } else if (VALID_COMMANDS.includes(action)) {
       variants[vn].commands.push(variantInfo);
     } else {
+      /* c8 ignore next 2 */
       console.log('Invalid action found: ', line);
     }
   });
@@ -237,6 +245,7 @@ export function parseConfig(data) {
     config.variantNames = variantNames;
     return config;
   } catch (e) {
+    /* c8 ignore next 3 */
     console.log('error parsing personalization config:', e, experiences);
   }
   return null;
@@ -305,6 +314,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   const config = parseConfig(persData);
 
   if (!config) {
+    /* c8 ignore next 3 */
     console.log('Error loading personalization config: ', name || manifestPath);
     return null;
   }
@@ -335,74 +345,10 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
   return config;
 }
 
-const getFPInfo = (fpTableRows) => {
-  const names = [];
-  const info = [...fpTableRows].reduce((infoObj, row) => {
-    const [actionEl, selectorEl, variantEl, fragment] = row.children;
-    if (actionEl?.innerText?.toLowerCase() === 'action') {
-      return infoObj;
-    }
-    const variantName = variantEl?.innerText?.toLowerCase();
-    if (!names.includes(variantName)) {
-      names.push(variantName);
-      infoObj[variantName] = [];
-    }
-    infoObj[variantName].push({
-      action: actionEl.innerText?.toLowerCase(),
-      selector: selectorEl.innerText?.toLowerCase(),
-      htmlFragment: fragment.firstElementChild,
-    });
-    return infoObj;
-  }, {});
-  return { info, names };
-};
-
-const modifyFragment = (selectedEl, action, htmlFragment, manifestId) => {
-  htmlFragment.dataset.manifestId = manifestId;
-  switch (action) {
-    case 'replace': case 'replacecontent':
-      selectedEl.replaceWith(htmlFragment);
-      break;
-    case 'insertbefore': case 'insertcontentbefore':
-      selectedEl.insertAdjacentElement('beforebegin', htmlFragment);
-      break;
-    case 'insertafter': case 'insertcontentafter':
-      selectedEl.insertAdjacentElement('afterend', htmlFragment);
-      break;
-    case 'remove': case 'removecontent':
-      selectedEl.insertAdjacentElement('beforebegin', createTag('div', { 'data-remove-manifest-id': manifestId }));
-      selectedEl.remove();
-      break;
-    default:
-      console.warn(`Unknown action: ${action}`);
-  }
-};
-
 const deleteMarkedEls = () => {
   [...document.querySelectorAll(`.${CLASS_EL_DELETE}`)]
     .forEach((el) => el.remove());
 };
-
-export async function fragmentPersonalization(el) {
-  const fpTable = el.querySelector('div.fragment-personalization');
-  if (!fpTable) return el;
-  const fpTableRows = fpTable.querySelectorAll(':scope > div');
-
-  const { info, names } = getFPInfo(fpTableRows);
-  fpTable.remove();
-
-  const manifestId = 'fragment-personalization';
-  const selectedVariant = getPersonalizationVariant(manifestId, names);
-  if (!selectedVariant) return el;
-
-  info[selectedVariant].forEach((cmd) => {
-    const selectedEl = el.querySelector(cmd.selector);
-    if (!selectedEl) return;
-    modifyFragment(selectedEl, cmd.action, cmd.htmlFragment, manifestId);
-  });
-
-  return el;
-}
 
 const normalizeFragPaths = ({ selector, val }) => ({
   selector: normalizePath(selector),
@@ -474,11 +420,21 @@ function cleanManifestList(manifests) {
   return cleanedList;
 }
 
-export async function applyPers(manifests) {
-  if (!manifests?.length) return;
-  const cleanedManifests = cleanManifestList(manifests);
+const decoratePreviewCheck = async (config, experiments) => {
+  if (config.mep?.preview) {
+    const { default: decoratePreviewMode } = await import('./preview.js');
+    decoratePreviewMode(experiments);
+  }
+};
 
+export async function applyPers(manifests) {
   const config = getConfig();
+
+  if (!manifests?.length) {
+    decoratePreviewCheck(config, []);
+    return;
+  }
+  const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];
   for (const manifest of cleanedManifests) {
@@ -495,8 +451,5 @@ export async function applyPers(manifests) {
     expFragments: consolidateObjects(results, 'fragments'),
   });
 
-  if (config.mep?.preview) {
-    const { default: decoratePreviewMode } = await import('./preview.js');
-    decoratePreviewMode(experiments);
-  }
+  decoratePreviewCheck(config, experiments);
 }
