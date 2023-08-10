@@ -89,7 +89,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
     const text = content.textContent.trim().toLowerCase();
     if (key && content) rdx[key] = { content, text };
     }
-    return rdx;
+  return rdx;
   }, {});
 
 export default async function init(el) {
