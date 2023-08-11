@@ -59,6 +59,7 @@ const MILO_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-selector',
   'tiktok',
   'twitter',
   'video',
