@@ -49,9 +49,7 @@ export default function init(el) {
     if (image) image.classList.add('image');
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
-    if (image.querySelector('video')) {
-      applyHoverPlay(image.querySelector('video'));
-    }
+    if (image.querySelector('video')) applyHoverPlay(image.querySelector('video'));
     container.append(row);
   });
   el.append(container);

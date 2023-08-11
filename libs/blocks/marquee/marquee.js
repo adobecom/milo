@@ -135,10 +135,7 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-    if (media.querySelector('video')) {
-      applyHoverPlay(media.querySelector('video'));
-    }
-
+    if (media.querySelector('video')) applyHoverPlay(media.querySelector('video'));
     if (media.querySelector('a[href$=".mp4"]')) {
       decorateVideo(media);
     } else {
