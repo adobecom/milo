@@ -17,10 +17,15 @@ export const fetchVersions = async () => {
   });
   // Fetching current version details
   const response = await fetch(url, options);
-  const documentData = await response.json();
+  const jsonRes = await response.json();
 
-  const { CheckInComment, TimeLastModified, UIVersionLabel, ServerRelativeUrl, ID } = documentData;
-  const currentVersion = {
+  if (!jsonRes.ok) {
+    const message = jsonRes['odata.error']?.message.value || 'error';
+    window.lana?.log(message);
+  }
+
+  const { CheckInComment, TimeLastModified, UIVersionLabel, ServerRelativeUrl, ID } = jsonRes;
+   const currentVersion = {
     ID,
     CheckInComment,
     Url: ServerRelativeUrl,

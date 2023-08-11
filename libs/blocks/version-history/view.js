@@ -4,14 +4,9 @@ import loginToSharePoint from '../../tools/sharepoint/login.js';
 
 const baseUrl = 'https://adobe.sharepoint.com';
 const scope = [`${baseUrl}/.default`];
-const telemetry = {
-  application: {
-    appName: 'Adobe Version history'
-  },
-};
+const telemetry = { application: { appName: 'Adobe Version history' } };
 
-
-function formatTime(inputTime) {
+function formatTime(inputTime = '') {
   const [hours, minutes] = inputTime.split(':');
   let formattedHours = String(Number(hours) % 12);
   if (formattedHours === '0') {
@@ -67,7 +62,7 @@ export default function View() {
     const date = new Date(timeStamp);
     const localeDate = date.toLocaleString();
     const splitDate = localeDate.split(', ');
-    
+
     return html`
       <td>
         <div class=date>${splitDate[0]}</div>

@@ -29,7 +29,7 @@ export function getMSALConfig(telemetry) {
       try {
         await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
       } catch (err) {
-        console.log(err);
+        window.lana?.log(err);
       }
       msalConfig = {
         login,
