@@ -58,7 +58,6 @@ export default function init(el) {
     // subcopy
     const actionArea = row.querySelector('p.action-area');
     if (actionArea?.nextElementSibling?.tagName === 'P') {
-      updateInnerHtml(actionArea.nextElementSibling, 'strong', '');
       actionArea.nextElementSibling.className = 'subcopy';
     }
 
