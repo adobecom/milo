@@ -56,7 +56,7 @@ function decorateLayout(el) {
   const media = foreground.querySelector(':scope > div:not([class])');
   if (!el.classList.contains('notification')) {
     media?.classList.add('image');
-    if (media.querySelector('video')) {
+    if (media?.querySelector('video')) {
       applyHoverPlay(media.querySelector('video'));
     }
   }
