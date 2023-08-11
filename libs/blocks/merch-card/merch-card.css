@@ -20,6 +20,9 @@
   min-width: 378px;
   max-width: 378px;
 }
+.merch-card p {
+  margin-bottom: 8px;
+}
 
 @media only screen and (max-width: 1400px) {
   .merch-card.segment-blade {
