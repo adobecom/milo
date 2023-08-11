@@ -98,7 +98,6 @@
 
 .body-xxs {
   font-size: var(--type-heading-xxs-size);
-  color: var(--link-color-dark);
   line-height: var(--type-body-xs-lh);
 }
 
