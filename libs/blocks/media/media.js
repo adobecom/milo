@@ -25,12 +25,6 @@ const blockTypeSizes = {
   xlarge: ['xxl', 'm', 'l'],
 };
 
-function updateInnerHtml(el, tag, replaceValue) {
-  let innerHtml = el.innerHTML;
-  innerHtml = innerHtml.replace(`<${tag}>`, replaceValue).replace(`</${tag}>`, replaceValue);
-  el.innerHTML = innerHtml;
-}
-
 export default function init(el) {
   decorateBlockAnalytics(el);
   el.classList.add('con-block');
@@ -76,7 +70,6 @@ export default function init(el) {
       links.forEach((link) => {
         link.parentElement.className = 'subcopy-link';
         link.className = 'body-xxs';
-        updateInnerHtml(link, 'strong', '');
       });
     }
 

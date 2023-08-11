@@ -130,7 +130,6 @@ div[class*="-up"] .media .foreground > .media-row {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-body-s-lh);
   margin-top: var(--spacing-xs);
-  color: #2C2C2C;
 }
 
 .media h3.heading-xs {
