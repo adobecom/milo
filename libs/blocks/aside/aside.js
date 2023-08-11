@@ -57,8 +57,7 @@ function decorateLayout(el) {
   if (!el.classList.contains('notification')) {
     media?.classList.add('image');
     if (media.querySelector('video')) {
-      const video = media.querySelector('video');
-      applyHoverPlay(video);
+      applyHoverPlay(media.querySelector('video'));
     }
   }
   const picture = text?.querySelector('picture');

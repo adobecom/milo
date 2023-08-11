@@ -50,8 +50,7 @@ export default function init(el) {
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
     if (image.querySelector('video')) {
-      const video = image.querySelector('video');
-      applyHoverPlay(video);
+      applyHoverPlay(image.querySelector('video'));
     }
     container.append(row);
   });
