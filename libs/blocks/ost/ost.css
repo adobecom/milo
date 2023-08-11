@@ -31,3 +31,7 @@ body.tool-ost .ost>div {
 .price-unit-type::before {
   content: " ";
 }
+
+.spectrum-TabsPanel-tabpanel_3e140b > div > div>:last-child{
+  margin-top: -20px;
+}
