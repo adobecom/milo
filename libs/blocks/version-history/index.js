@@ -25,7 +25,7 @@ export const fetchVersions = async () => {
   }
 
   const { CheckInComment, TimeLastModified, UIVersionLabel, ServerRelativeUrl, ID } = jsonRes;
-   const currentVersion = {
+  const currentVersion = {
     ID,
     CheckInComment,
     Url: ServerRelativeUrl,
