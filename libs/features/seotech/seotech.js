@@ -21,9 +21,13 @@ export async function getVideoObject(url, seotechAPIUrl) {
   return body.videoObject;
 }
 
-export async function getStructuredData(url, seotechAPIUrl) {
-  const dataUrl = new URL(url)?.href;
-  const apiUrl = `${seotechAPIUrl}/api/v1/web/seotech/getStructuredData?url=${dataUrl}`;
+export async function getStructuredData(url, sheetUrl, seotechAPIUrl) {
+  const apiUrl = new URL(seotechAPIUrl);
+  apiUrl.pathname = '/api/v1/web/seotech/getStructuredData';
+  apiUrl.searchParams.set('url', url);
+  if (sheetUrl) {
+    apiUrl.searchParams.set('sheetUrl', sheetUrl);
+  }
   const resp = await fetch(apiUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
   if (!resp.ok) {
@@ -43,7 +47,9 @@ export async function appendScriptTag({ getMetadata, createTag, getConfig }) {
 
   const prs = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    prs.push(getStructuredData(window.location.href, seotechAPIUrl)
+    const pageUrl = `${window.location.origin}${window.location.pathname}`;
+    const sheetUrl = (new URLSearchParams(window.location.search)).get('seotech-sheet-url');
+    prs.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
       .then((r) => r.forEach((obj) => append(obj)))
       .catch((e) => logError(e.message)));
   }

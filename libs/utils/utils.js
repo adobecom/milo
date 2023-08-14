@@ -890,9 +890,7 @@ export async function loadArea(area = document) {
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
-    const seotechStructuredData = getMetadata('seotech-structured-data');
-    const seotechVideoUrl = getMetadata('seotech-video-url');
-    if (seotechStructuredData === 'on' || seotechVideoUrl) {
+    if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
       import('../features/seotech/seotech.js').then((module) => module.default({ getMetadata, createTag, getConfig }));
     }
     const richResults = getMetadata('richresults');
