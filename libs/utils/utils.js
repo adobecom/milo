@@ -685,7 +685,6 @@ export async function loadIms() {
       onError: reject,
     };
     loadScript('https://auth.services.adobe.com/imslib/imslib.min.js');
-    console.log('ims load start', performance.now() - window.utilsloaded);
   });
   return imsLoaded;
 }

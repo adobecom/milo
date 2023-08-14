@@ -26,6 +26,9 @@ export const ENTITLEMENT_TAGS = {
   lightroom: (ents) => ents.lightroomcc,
 };
 
+const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
+const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
+
 // Replace any non-alpha chars except comma, space and hyphen
 const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
 
@@ -281,15 +284,18 @@ export const loadEntitlements = (() => {
   });
 })();
 
-// remove underscores from entitlement names
-const rmUs = (obj) => Object.entries(obj).reduce((newObj, [key, val]) => {
+const removeUnderscores = (obj) => Object.entries(obj).reduce((newObj, [key, val]) => {
   newObj[key.replaceAll('_', '')] = val;
   return newObj;
 }, {});
 
 const getFlatEntitlements = async () => {
   const ents = await loadEntitlements();
-  return { ...rmUs(ents.arrangment_codes), ...rmUs(ents.clouds), ...rmUs(ents.fulfilled_codes) };
+  return {
+    ...removeUnderscores(ents.arrangment_codes),
+    ...removeUnderscores(ents.clouds),
+    ...removeUnderscores(ents.fulfilled_codes),
+  };
 };
 
 const checkForParamMatch = (paramStr) => {
@@ -324,8 +330,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     if (manifest) return manifest;
   }
 
-  const personalizationTags = Object.keys(PERSONALIZATION_TAGS);
-  const entitlementTags = Object.keys(ENTITLEMENT_TAGS);
+
   const variantInfo = variantNames.reduce((acc, name) => {
     const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
     acc[name] = vNames;
@@ -334,22 +339,24 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }, { allNames: [] });
 
   const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
-  const hasEntitlementTag = entitlementTags.some((tag) => variantInfo.allNames.includes(tag));
+  const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
   let entitlements = [];
   if (hasEntitlementPrefix || hasEntitlementTag) {
     entitlements = await getFlatEntitlements();
   }
 
-  const matchingVariant = variantNames.find((variant) => variantInfo[variant].some((name) => {
+  const matchVariant = (name) => {
     if (name === variantLabel) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
-    if (entitlementTags.includes(name)) {
+    if (entitlementKeys.includes(name)) {
       return ENTITLEMENT_TAGS[name](entitlements);
     }
-    return personalizationTags.includes(name) && PERSONALIZATION_TAGS[name]();
-  }));
+    return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+  };
+
+  const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
 }
 
