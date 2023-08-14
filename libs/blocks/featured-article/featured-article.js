@@ -1,5 +1,6 @@
 import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
 import fetchTaxonomy from '../../scripts/taxonomy.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 export default async function init(el) {
   const a = el.querySelector('a');
@@ -26,7 +27,7 @@ export default async function init(el) {
 
   const pic = doc.body.querySelector('picture');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
-  const categoryLink = createTag('a', { href: categoryTaxonomy.link }, categoryTaxonomy.name);
+  const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy.link) }, categoryTaxonomy.name);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' }, categoryLink);
   const text = doc.body.querySelector('h1, h2, h3').textContent;
   const title = createTag('h3', null, text);
