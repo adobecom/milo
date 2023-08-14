@@ -9,6 +9,7 @@ const PAGE_URL = new URL(window.location.href);
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
+  all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
   firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
   android: () => navigator.userAgent.includes('Android'),
