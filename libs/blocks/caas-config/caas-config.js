@@ -963,9 +963,8 @@ const init = async (el) => {
 };
 
 export {
-  /* eslint-disable no-restricted-exports */
+  // eslint-disable-next-line no-restricted-exports
   init as default,
-  /* eslint-enable no-restricted-exports */
   cloneObj,
   getHashConfig,
   isValidUuid,
