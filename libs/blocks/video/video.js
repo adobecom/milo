@@ -4,17 +4,16 @@ function getAttrs(hash) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash.includes('hoverplay');
-  let attrs = '';
   if (isAutoplay && !isAutoplayOnce) {
-    attrs = 'playsinline autoplay loop muted';
-  } else if (playOnHover && isAutoplayOnce) {
-    attrs = 'playsinline autoplay muted data-hoverplay';
-  } else if (isAutoplayOnce) {
-    attrs = 'playsinline autoplay muted';
-  } else {
-    attrs = 'playsinline controls';
+    return 'playsinline autoplay loop muted';
   }
-  return attrs;
+  if (playOnHover && isAutoplayOnce) {
+    return 'playsinline autoplay muted data-hoverplay';
+  }
+  if (isAutoplayOnce) {
+    return 'playsinline autoplay muted';
+  }
+  return 'playsinline controls';
 }
 
 export default function init(a) {
