@@ -876,8 +876,6 @@ export async function loadArea(area = document) {
         loadPostLCP(config);
       });
     } else if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
-
-
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
     delete section.el.dataset.idx;
