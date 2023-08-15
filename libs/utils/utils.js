@@ -874,7 +874,7 @@ export async function loadArea(area = document) {
     if (window.PostLCPevnt && isDoc && section.el.dataset.idx === '0') {
       window.addEventListener(config.PostLCPevnt, () => {
         loadPostLCP(config);
-       });
+      });
     } else if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
 
 
