@@ -96,6 +96,11 @@
   line-height: var(--type-body-xs-lh);
 }
 
+.body-xxs {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
 .detail-xl {
   font-size: var(--type-detail-l-size);
   line-height: var(--type-detail-l-lh);
