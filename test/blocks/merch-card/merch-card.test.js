@@ -7,7 +7,17 @@ describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
     await init(document.querySelector('.merch-card'));
+    const inner = document.querySelector('.consonant-SegmentBlade-inner');
+    const cardFooter = inner.querySelector('.consonant-CardFooter');
+    const buttons = cardFooter.querySelectorAll('.con-button');
+
     expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
+    expect(inner.querySelector('.consonant-SegmentBlade-title')).to.be.exist;
+    expect(inner.querySelector('.consonant-SegmentBlade-description')).to.be.exist;
+    expect(cardFooter.querySelector('.con-button')).to.be.exist;
+    expect(buttons.length).to.be.equal(2);
+    expect(buttons[0].textContent).to.be.equal('Learn More');
+    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
   describe('Wrapper', async () => {
@@ -32,7 +42,22 @@ describe('Merch Card', () => {
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
     await init(document.querySelector('.special-offers'));
+    const inner = document.querySelector('.consonant-SpecialOffers-inner');
+    const cardFooter = inner.querySelector('.consonant-CardFooter');
+    const ribbon = document.querySelector('.consonant-SpecialOffers-ribbon');
+    const buttons = cardFooter.querySelectorAll('.con-button');
+
     expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
+    expect(inner.querySelector('.consonant-SpecialOffers-title')).to.be.exist;
+    expect(inner.querySelector('.consonant-SpecialOffers-description')).to.be.exist;
+    expect(document.querySelector('.consonant-SpecialOffers-iconWrapper')).to.be.exist;
+    expect(ribbon).to.be.exist;
+    expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
+    expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
+    expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
+    expect(buttons.length).to.be.equal(2);
+    expect(buttons[0].textContent).to.be.equal('Learn More');
+    expect(buttons[1].textContent).to.be.equal('Save now');
   });
 
   describe('Plans Card', () => {
@@ -40,9 +65,34 @@ describe('Merch Card', () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
     });
 
-    it('is supported', async () => {
-      await init(document.querySelector('.merch-card'));
-      expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
+    it('Supports Plans card', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
+      await init(document.querySelector('.plans'));
+      const inner = document.querySelector('.consonant-PlansCard-inner');
+      const cardFooter = inner.querySelector('.consonant-CardFooter');
+      const ribbon = document.querySelector('.consonant-PlansCard-ribbon');
+      const buttons = cardFooter.querySelectorAll('.con-button');
+      const secureWrapper = cardFooter.querySelector('.secure-transaction-wrapper');
+      const checkBoxContainer = cardFooter.querySelector('.checkbox-container');
+      const plansCard = document.querySelector('.consonant-ProductCard');
+
+      expect(plansCard).to.be.exist;
+      expect(plansCard.style.border).to.be.equal('1px solid rgb(237, 204, 45)');
+      expect(inner.querySelector('.consonant-PlansCard-title')).to.be.exist;
+      expect(inner.querySelector('.consonant-PlansCard-description')).to.be.exist;
+      expect(document.querySelector('.consonant-PlansCard-iconWrapper')).to.be.exist;
+      expect(ribbon).to.be.exist;
+      expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
+      expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
+      expect(ribbon.textContent).to.be.equal('LOREM IPSUM DOLOR');
+      expect(buttons.length).to.be.equal(2);
+      expect(buttons[0].textContent).to.be.equal('Learn More');
+      expect(buttons[1].textContent).to.be.equal('Save now');
+      expect(secureWrapper).to.be.exist;
+      expect(secureWrapper.querySelector('.secure-transaction-icon')).to.be.exist;
+      expect(secureWrapper.querySelector('.secure-transaction-label').textContent).to.be.equal('Secure transaction');
+      expect(checkBoxContainer.querySelector('.checkMark')).to.be.exist;
+      expect(checkBoxContainer.querySelector('.checkbox-label').textContent).to.be.equal('Lorem ipsum dolor sit amet');
     });
 
     it('does not display undefined if no content', async () => {

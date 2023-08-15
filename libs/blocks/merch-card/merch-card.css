@@ -96,28 +96,6 @@
   white-space: nowrap;
 }
 
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-label {
-  font-size: 12px;
-  margin-left: 11px;
-  color: #505050;
-  vertical-align: middle;
-  width: 100%;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon {
-  display: inline-block;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon-img {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  height: 15px;
-  width: 12px;
-}
-
 .merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
   display: flex;
   flex: 1;
@@ -127,6 +105,30 @@
   white-space: nowrap;
 }
 
+.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-label {
+  font-size: 12px;
+  margin-left: 11px;
+  color: #505050;
+  vertical-align: middle;
+  width: 100%;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  height: 15px;
+  width: 12px;
+}
 
 .merch-card.special-offers,
 .merch-card.segment,
@@ -352,6 +354,7 @@ h5 {
   font-size: 12px;
   margin-left: 10px;
   color: #505050;
+  flex-shrink: 0;
 }
 
 .merch-card .consonant-CardFooter .checkbox-container input[type="checkbox"] {
@@ -367,6 +370,7 @@ h5 {
   background: #fff;
   border-radius: 2px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .merch-card .consonant-CardFooter .checkbox-container input[type="checkbox"]:checked + .checkmark {
