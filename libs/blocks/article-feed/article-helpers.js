@@ -1,5 +1,6 @@
 import { getConfig } from '../../utils/utils.js';
 import * as taxonomyLibrary from '../../scripts/taxonomy.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 /*
  *
@@ -262,7 +263,7 @@ export function getArticleTaxonomy(article) {
 export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = updateLinkWithLangRoot([getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#'));
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
