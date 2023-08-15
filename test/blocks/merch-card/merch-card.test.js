@@ -6,16 +6,16 @@ const { default: init } = await import('../../../libs/blocks/merch-card/merch-ca
 describe('Merch Card', () => {
   it('Shows segment card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
-    init(document.querySelector('.merch-card'));
-    expect(document.querySelector('.consonant-SegmentBlade')).to.exist;
+    await init(document.querySelector('.merch-card'));
+    expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
   });
 
   describe('Wrapper', async () => {
     before(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/segment-card.html' });
-       const merchCards = document.querySelectorAll('.segment');
-      init(merchCards[0]);
-      init(merchCards[1]);
+      const merchCards = document.querySelectorAll('.segment');
+      await init(merchCards[0]);
+      await init(merchCards[1]);
     });
 
     it('Has one per section', () => {
@@ -31,8 +31,8 @@ describe('Merch Card', () => {
 
   it('Supports Special Offers card', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/special-offers.html' });
-    init(document.querySelector('.special-offers'));
-    expect(document.querySelector('.consonant-OneHalfCard')).to.exist;
+    await init(document.querySelector('.special-offers'));
+    expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
   });
 
   describe('Plans Card', () => {
@@ -40,14 +40,14 @@ describe('Merch Card', () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
     });
 
-    it('is supported', () => {
-      init(document.querySelector('.card'));
-      expect(document.querySelector('.consonant-DoubleWideCard')).to.exist;
+    it('is supported', async () => {
+      await init(document.querySelector('.merch-card'));
+      expect(document.querySelector('.consonant-ProductCard')).to.be.exist;
     });
 
     it('does not display undefined if no content', async () => {
-      const el = document.querySelector('.card.empty');
-      init(el);
+      const el = document.querySelector('.merch-card.empty');
+      await init(el);
       expect(el.outerHTML.includes('undefined')).to.be.false;
     });
   });

@@ -112,8 +112,8 @@ const addInner = (el, cardType, merchCard) => {
   const rows = Array.from(el.querySelectorAll('p'));
   const styles = Array.from(el.classList);
   const merch = styles.includes('merch-card');
-  const links = merch ? el.querySelector(':scope > div > div > p:last-of-type')
-    .querySelectorAll('a') : el.querySelectorAll('a');
+  const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
+  const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
 
   const inner = el.querySelector(':scope > div:not([class])');
   inner.classList.add(`consonant-${cardType}-inner`);
@@ -205,7 +205,7 @@ const init = (el) => {
   }
   decorateRibbon(el, cardType);
   image?.parentElement.remove();
-  decorateButtons(ctas);
+  if (ctas) decorateButtons(ctas);
   addInner(el, cardType, merchCard);
   decorateIcon(el, icons, cardType);
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
