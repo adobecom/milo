@@ -17,13 +17,6 @@ import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
-const decorateVideo = (container, src) => {
-  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-    <source src="${src}" type="video/mp4" />
-  </video>`;
-  container.classList.add('has-video');
-};
-
 const decorateBlockBg = (block, node) => {
   const viewports = ['mobile-only', 'tablet-only', 'desktop-only'];
   const childCount = node.childElementCount;
@@ -40,11 +33,6 @@ const decorateBlockBg = (block, node) => {
     if (childCount === 3) {
       child.classList.add(viewports[index]);
     }
-    const videoElement = child.querySelector('a[href$=".mp4"]');
-    if (videoElement) {
-      decorateVideo(child, videoElement.href || videoElement.src);
-    }
-
     const pic = child.querySelector('picture');
     if (pic && (child.childElementCount === 2 || child.textContent)) {
       const { handleFocalpoint } = await import('../section-metadata/section-metadata.js');
@@ -99,25 +87,25 @@ function decorateMultipleIconArea(iconArea) {
   if (iconArea.childElementCount > 1) iconArea.classList.add('icon-area-multiple');
 }
 
+function fixVideoAutoPlay(el) {
+  el.querySelectorAll('a[href$=".mp4"]').forEach((link) => {
+    link.href = `${link.href}#autoplay`;
+  });
+  el.querySelectorAll('video[controls]').forEach((video) => {
+    video.removeAttribute('controls');
+    video.setAttribute('autoplay');
+    video.setAttribute('muted');
+  });
+}
+
 function extendButtonsClass(text) {
   const buttons = text.querySelectorAll('.con-button');
   if (buttons.length === 0) return;
   buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
-const decorateImage = (media) => {
-  media.classList.add('image');
-
-  const imageLink = media.querySelector('a');
-  const picture = media.querySelector('picture');
-
-  if (imageLink && picture) {
-    imageLink.textContent = '';
-    imageLink.append(picture);
-  }
-};
-
 export default function init(el) {
+  fixVideoAutoPlay(el);
   decorateBlockAnalytics(el);
   const isLight = el.classList.contains('light');
   if (!isLight) el.classList.add('dark');
@@ -132,16 +120,6 @@ export default function init(el) {
   const text = headline.closest('div');
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-
-  if (media) {
-    media.classList.add('media');
-
-    if (media.querySelector('a[href$=".mp4"]')) {
-      decorateVideo(media);
-    } else {
-      decorateImage(media);
-    }
-  }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
