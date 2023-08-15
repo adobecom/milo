@@ -28,4 +28,3 @@ export default function init(a) {
   applyHoverPlay(videoElem);
   a.remove();
 }
-
