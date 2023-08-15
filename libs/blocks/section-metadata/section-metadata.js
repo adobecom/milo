@@ -37,21 +37,15 @@ function handleTopHeight(section) {
 
 async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
-  switch (sticky) {
-    case 'sticky-top': {
-      const { debounce } = await import('../../utils/action.js');
-      window.addEventListener(
-        'resize',
-        debounce(() => handleTopHeight(section)),
-      );
-      main.prepend(section);
-      break;
-    }
-    case 'sticky-bottom':
-      main.append(section);
-      break;
-    default:
-      break;
+  if (sticky === 'sticky-top') {
+    const { debounce } = await import('../../utils/action.js');
+    window.addEventListener(
+      'resize',
+      debounce(() => handleTopHeight(section)),
+    );
+    main.prepend(section);
+  } else if (sticky === 'sticky-bottom') {
+    main.append(section);
   }
 }
 
