@@ -272,15 +272,21 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   return config;
 }
 
-export const loadEntitlements = (() => {
-  let entitlements;
+const fetchEntitlements = async () => {
+  const [{ default: getUserEntitlements }] = await Promise.all([
+    import('../../blocks/global-navigation/utilities/getUserEntitlements.js'),
+    loadIms(),
+  ]);
+  return getUserEntitlements();
+};
+
+export const getEntitlements = (() => {
+  let ents;
   return (async () => {
-    if (!entitlements) {
-      const { default: getUserEntitlements } = await import('../../blocks/global-navigation/utilities/getUserEntitlements.js');
-      await loadIms();
-      entitlements = getUserEntitlements();
+    if (!ents) {
+      ents = await fetchEntitlements();
     }
-    return entitlements;
+    return ents;
   });
 })();
 
@@ -290,9 +296,11 @@ const removeUnderscores = (obj) => Object.entries(obj).reduce((newObj, [key, val
 }, {});
 
 const getFlatEntitlements = async () => {
-  const ents = await loadEntitlements();
+  if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) return {};
+
+  const ents = await getEntitlements();
   return {
-    ...removeUnderscores(ents.arrangment_codes),
+    ...removeUnderscores(ents.arrangement_codes),
     ...removeUnderscores(ents.clouds),
     ...removeUnderscores(ents.fulfilled_codes),
   };
@@ -330,7 +338,6 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
     if (manifest) return manifest;
   }
 
-
   const variantInfo = variantNames.reduce((acc, name) => {
     const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
     acc[name] = vNames;
@@ -341,7 +348,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
-  let entitlements = [];
+  let entitlements = {};
   if (hasEntitlementPrefix || hasEntitlementTag) {
     entitlements = await getFlatEntitlements();
   }
@@ -497,7 +504,7 @@ export async function applyPers(manifests) {
     return;
   }
 
-  loadEntitlements();
+  getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];

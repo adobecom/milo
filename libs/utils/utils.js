@@ -965,5 +965,3 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
-
-window.utilsloaded = performance.now();
