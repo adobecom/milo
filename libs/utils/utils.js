@@ -871,7 +871,12 @@ export async function loadArea(area = document) {
     window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (window.PostLCPevnt && isDoc && section.el.dataset.idx === '0') {
+      window.addEventListener(config.PostLCPevnt, () => {
+        loadPostLCP(config);
+       });
+    } else if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
