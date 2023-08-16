@@ -1,3 +1,5 @@
+import { getMetadata } from '../utils/utils.js';
+
 /**
  * Checks if an element contains a non-empty text node.
  *
@@ -83,17 +85,6 @@ function updateParserModel(parser, pattern, score, markerSymbol = '#') {
   } else if (latter.length === 2) {
     parser.model.set(`BW3:${latter}`, score);
   }
-}
-
-/**
- * Get metadata
- * @param {*} name The name of metadata.
- * @returns metadata content
- */
-function getMetadata(name) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = document.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta?.content;
 }
 
 /**
