@@ -14,7 +14,6 @@ import {
   loadArea,
   loadLana,
   setConfig,
-  scrollToHashedElement,
 } from '../utils/utils.js';
 
 // Production Domain
