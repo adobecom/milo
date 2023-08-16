@@ -5,6 +5,9 @@ import {
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
+const LS_ENT_KEY = 'milo:entitlements';
+const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
+const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 0.5; // 1/2 hour
 const PAGE_URL = new URL(window.location.href);
 
 /* c8 ignore start */
@@ -280,11 +283,25 @@ const fetchEntitlements = async () => {
   return getUserEntitlements();
 };
 
+const loadEntsFromLocalStorage = () => {
+  const ents = localStorage.getItem(LS_ENT_KEY);
+  const expireDate = localStorage.getItem(LS_ENT_EXPIRE_KEY);
+  if (!ents || !expireDate || (Date.now() - expireDate) > ENT_CACHE_EXPIRE) return null;
+  return JSON.parse(ents);
+};
+
 export const getEntitlements = (() => {
   let ents;
   return (async () => {
+    ents = loadEntsFromLocalStorage();
     if (!ents) {
       ents = await fetchEntitlements();
+      setTimeout(() => {
+        const a = performance.now();
+        localStorage.setItem(LS_ENT_KEY, JSON.stringify(ents));
+        localStorage.setItem(LS_ENT_EXPIRE_KEY, Date.now());
+        console.log('Entitlements loaded in', performance.now() - a, 'ms');
+      }, 5000);
     }
     return ents;
   });
