@@ -28,7 +28,7 @@ export async function getStructuredData(url, sheetUrl, seotechAPIUrl) {
   if (sheetUrl) {
     apiUrl.searchParams.set('sheetUrl', sheetUrl);
   }
-  const resp = await fetch(apiUrl, { headers: { 'Content-Type': 'application/json' } });
+  const resp = await fetch(apiUrl.href, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
   if (!resp.ok) {
     throw new Error(`Failed to fetch structured data: ${body?.error}`);
@@ -36,7 +36,8 @@ export async function getStructuredData(url, sheetUrl, seotechAPIUrl) {
   return body.objects;
 }
 
-export async function appendScriptTag({ getMetadata, createTag, getConfig }) {
+export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
+  const windowUrl = new URL(locationUrl);
   const seotechAPIUrl = getConfig()?.env?.name === 'prod'
     ? SEOTECH_API_URL_PROD : SEOTECH_API_URL_STAGE;
 
@@ -47,8 +48,8 @@ export async function appendScriptTag({ getMetadata, createTag, getConfig }) {
 
   const prs = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    const pageUrl = `${window.location.origin}${window.location.pathname}`;
-    const sheetUrl = (new URLSearchParams(window.location.search)).get('seotech-sheet-url');
+    const pageUrl = `${windowUrl.origin}${windowUrl.pathname}`;
+    const sheetUrl = (new URLSearchParams(windowUrl.search)).get('seotech-sheet-url');
     prs.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
       .then((r) => r.forEach((obj) => append(obj)))
       .catch((e) => logError(e.message)));

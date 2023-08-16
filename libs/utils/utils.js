@@ -891,7 +891,9 @@ export async function loadArea(area = document) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
     if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
-      import('../features/seotech/seotech.js').then((module) => module.default({ getMetadata, createTag, getConfig }));
+      import('../features/seotech/seotech.js').then((module) => module.default(
+        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+      ));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {
