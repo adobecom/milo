@@ -564,7 +564,7 @@ const FilterPanel = ({ tagsData }) => {
         <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
       <//>
       <!-- End nested multifield -->
-      
+
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
@@ -739,8 +739,10 @@ const CopyBtn = () => {
   };
 
   const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state, fgKeyReplacer))}`;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    return url.href;
   };
 
   const copyConfig = () => {
