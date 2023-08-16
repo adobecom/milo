@@ -7,3 +7,9 @@
 .quiz-results.show {
   visibility: unset;
 }
+
+@media screen and (min-width: 1200px) { 
+  .section.mobileOnly {
+    display: none;
+  }
+}
