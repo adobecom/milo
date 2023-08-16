@@ -3,18 +3,23 @@ import { getReqOptions } from '../../tools/sharepoint/msal.js';
 const href = new URL(window.location.href);
 const urlParams = new URLSearchParams(href.search);
 const referrer = urlParams.get('referrer');
-const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
-const sourceId = decodeURIComponent(sourceDoc);
-
-const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
 const contentType = 'application/json;odata=verbose';
 const accept = 'application/json;odata=nometadata';
 
+function getUrl(sourceUrl) {
+  const sourceDoc = sourceUrl?.match(/sourcedoc=([^&]+)/)[1];
+  const sourceId = decodeURIComponent(sourceDoc);
+  return `https://adobe.sharepoint.com/:w:/r/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
+}
+
 export const fetchVersions = async () => {
+  
   const options = getReqOptions({
     accept,
     contentType,
   });
+  const url = getUrl(referrer);
+
   // Fetching current version details
   const response = await fetch(url, options);
   const jsonRes = await response.json();
@@ -33,7 +38,6 @@ export const fetchVersions = async () => {
     Created: TimeLastModified,
     VersionLabel: UIVersionLabel,
   };
-
   const versions = await fetch(`${url}/Versions`, options);
   const { value = [] } = await versions.json();
   const versionHistory = [...value, currentVersion];
@@ -46,6 +50,8 @@ export const createHistoryTag = async (comment = '') => {
     accept,
     contentType,
   });
+  const url = getUrl(referrer);
+
   const res = await fetch(`${url}/Publish('Through API: ${comment}')`, callOptions);
 
   if (!res.ok) {
@@ -53,4 +59,18 @@ export const createHistoryTag = async (comment = '') => {
     const message = error['odata.error']?.message.value || 'error';
     throw new Error(message);
   }
+};
+
+export const addVersion = async () => {
+  const sk = document.querySelector('helix-sidekick');
+  const statusJson = JSON.parse(sk.getAttribute('status'));
+  const sourceUrl = statusJson?.edit?.url;
+  const url = getUrl(sourceUrl);
+
+  const options = getReqOptions({
+    method: 'POST',
+    accept: 'application/json; odata=nometadata',
+    contentType: 'application/json;odata=verbose',
+  });
+  await fetch(`${url}/Publish('Last Published version')`, { ...options, keepalive: true });
 };

@@ -11,7 +11,7 @@ import {
   configJson,
 } from './mockFetch.js';
 import View from '../../../libs/blocks/version-history/view.js';
-import { setStatus, siteConfig } from '../../../libs/tools/sharepoint/state.js';
+import { siteConfig } from '../../../libs/tools/sharepoint/state.js';
 
 describe('View', () => {
   before(() => {
@@ -44,7 +44,6 @@ describe('View', () => {
   it('should display text area', async () => {
     const commentElem = await waitForElement('.comment-container');
     const textAreaElem = commentElem.querySelector('textarea');
-    setStatus('config', 'info', 'displayed', '', 100);
     const clock = sinon.useFakeTimers({
       toFake: ['setTimeout'],
       shouldAdvanceTime: true,

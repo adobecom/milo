@@ -1,5 +1,5 @@
 /* global msal */
-import { user, spAccessToken } from './state.js';
+import { spAccessToken } from './state.js';
 import { getMSALConfig } from './msal.js';
 
 export default async function loginToSharePoint(scope = [], telemetry = {}) {
@@ -12,7 +12,6 @@ export default async function loginToSharePoint(scope = [], telemetry = {}) {
     await pca.loginPopup(msalConfig.login);
     [account] = pca.getAllAccounts();
   }
-  user.value = account.username;
 
   const scopes = scope;
   const reqDetails = { account, scopes };

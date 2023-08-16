@@ -1,6 +1,6 @@
 import '../../tools/loc/lib/msal-browser.js';
 import loginToSharePoint from '../tools/sharepoint/login.js';
-import { getReqOptions } from '../tools/sharepoint/msal.js';
+import { addVersion } from '../blocks/version-history/index.js';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
@@ -25,22 +25,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
 
     const { getModal } = await import('../blocks/modal/modal.js');
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
-  };
-
-  const addVersion = async () => {
-    const sk = document.querySelector('helix-sidekick');
-    const statusJson = JSON.parse(sk.getAttribute('status'));
-    const sourceUrl = statusJson?.edit?.url;
-    const sourceCode = sourceUrl?.match(/sourcedoc=([^&]+)/)[1];
-    const sourceId = decodeURIComponent(sourceCode);
-    const url = `https://adobe.sharepoint.com/sites/adobecom/_api/web/GetFileById('${sourceId}')`;
-
-    const options = getReqOptions({
-      method: 'POST',
-      accept: 'application/json; odata=nometadata',
-      contentType: 'application/json;odata=verbose',
-    });
-    await fetch(`${url}/Publish('Last Published version')`, { ...options, keepalive: true });
   };
 
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
