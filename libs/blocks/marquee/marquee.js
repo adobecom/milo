@@ -93,8 +93,8 @@ function fixVideoAutoPlay(el) {
   });
   el.querySelectorAll('video[controls]').forEach((video) => {
     video.removeAttribute('controls');
-    video.setAttribute('autoplay');
-    video.setAttribute('muted');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('muted', '');
   });
 }
 
