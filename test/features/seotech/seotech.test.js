@@ -33,7 +33,6 @@ describe('seotech', () => {
     });
 
     it('should append JSON-LD', async () => {
-      // console.log(window.location);
       const locationUrl = 'http://localhost:2000/?seotech-sheet-url=http://foo';
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
