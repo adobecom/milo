@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
   createContext,
@@ -895,7 +896,8 @@ const Configurator = ({ rootEl }) => {
         setIsCaasLoaded(true);
       })
       .catch((e) => {
-        /* c8 ignore next */
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
         console.log('Error loading script: ', e);
       });
   }, []);
