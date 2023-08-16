@@ -148,8 +148,9 @@ export default function init(el) {
 
   const size = getBlockSize(el);
   const buttonClass = (size === 'large')
-  && !(el.classList.contains('standard')
-  || el.classList.contains('compact')) ? 'button-xl' : 'button-l';
+    && !(el.classList.contains('standard') || el.classList.contains('compact'))
+    ? 'button-xl'
+    : 'button-l';
   decorateButtons(text, buttonClass);
   const headings = text.querySelectorAll('h1, h2, h3, h4, h5, h6');
   decorateLinkAnalytics(text, headings);

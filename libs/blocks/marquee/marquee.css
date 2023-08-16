@@ -56,7 +56,7 @@
 
 .marquee .icon-area picture,
 .marquee .icon-area a {
-  display: contents;
+  display: flex;
 }
 
 .marquee .icon-area img {
@@ -255,16 +255,13 @@
 
 .marquee .icon-area.icon-area-multiple {
   display: flex;
+  gap: var(--spacing-s);
 }
 
 .marquee .icon-area.icon-area-multiple img {
   height: 40px;
   max-height: 40px;
   max-width: 114px;
-}
-
-.marquee .icon-area.icon-area-multiple > :not(:last-child) img {
-  margin: 0 var(--spacing-s) 0 0;
 }
 
 .marquee.large .text .action-area {
