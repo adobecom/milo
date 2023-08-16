@@ -750,10 +750,12 @@ export function scrollToHashedElement() {
   const elementId = hash.slice(1);
   const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   if (!targetElement) return;
-  // const position = targetElement.getBoundingClientRect();
+  const position = targetElement.getBoundingClientRect();
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  targetElement.scrollIntoView(true);
-  window.scroll(0, window.scrollY - bufferHeight);
+  window.scrollTo({
+    top: position.top - bufferHeight,
+    behavior: 'smooth',
+  });
 }
 
 export async function loadDeferred(area, blocks, config) {
