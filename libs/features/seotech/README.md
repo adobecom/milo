@@ -30,6 +30,6 @@ Metadata Properties:
 - `seotech-sheet-url`: url of Franklin Spreadsheet JSON (Optional)
 
 You can also specify `seotech-sheet-url` as a query parameter.
-SEOTECH will search for _/structured-data.json_ at the root of the current page.
+Otherwise SEOTECH will search for _/structured-data.json_ at the root of the current page.
 
 Please see For more details see [SEOTECH](https://wiki.corp.adobe.com/display/seoteam/SEOTECH+API) (Corp Only) for list of supported structured data.
