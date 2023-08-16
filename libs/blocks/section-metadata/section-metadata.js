@@ -37,18 +37,16 @@ function handleTopHeight(section) {
   section.style.top = `${headerHeight}px`;
 }
 
-function promoIntersectObserve(el, startPoint, options = {}) {
-  let abovePromoStart = false;
+function promoIntersectObserve(el, stickySectionEl, options = {}) {
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
         observer.unobserve(entry.target);
         return;
       }
-      const isPromoStart = startPoint && entry.target === startPoint;
-      abovePromoStart = isPromoStart
-        ? (entry.isIntersecting || entry.boundingClientRect.y > 0)
-        : abovePromoStart;
+      const isPromoStart = stickySectionEl && entry.target === stickySectionEl;
+      const abovePromoStart = (isPromoStart && entry.isIntersecting)
+                        || (stickySectionEl && stickySectionEl.getBoundingClientRect().y > 0);
       if (entry.isIntersecting || (isPromoStart && abovePromoStart)) el.classList.add('hide-sticky-section');
       else if (!abovePromoStart) el.classList.remove('hide-sticky-section');
     });
@@ -59,13 +57,13 @@ function promoIntersectObserve(el, startPoint, options = {}) {
 function handleStickyPromobar(section) {
   const main = document.querySelector('main');
   section.classList.add('hide-sticky-section');
-  let startPoint = null;
+  let stickySectionEl = null;
   if (main.children[0] !== section) {
-    startPoint = createTag('div', { class: 'section show-sticky-section' });
-    main.insertBefore(startPoint, section);
+    stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
+    main.insertBefore(stickySectionEl, section);
   }
-  const io = promoIntersectObserve(section, startPoint);
-  if (startPoint) io.observe(startPoint);
+  const io = promoIntersectObserve(section, stickySectionEl);
+  if (stickySectionEl) io.observe(stickySectionEl);
   io.observe(document.querySelector('footer'));
 }
 
