@@ -6,16 +6,8 @@ import { getMetadata } from '../utils/utils.js';
  * @param {HTMLElement} element - The HTMLElement to check.
  * @returns true if the element contains a non-empty text node, false otherwise.
  */
-function hasTextNode(element) {
-  for (let i = 0; i < element.childNodes.length; i += 1) {
-    const child = element.childNodes[i];
-    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== '') {
-      return true;
-    }
-  }
-
-  return false;
-}
+const hasTextNode = (element) => [...element.childNodes]
+  .some(({ nodeType, textContent }) => nodeType === Node.TEXT_NODE && textContent.trim() !== '');
 
 /**
  * Recursively finds all elements that contain non-empty text nodes.
@@ -25,26 +17,18 @@ function hasTextNode(element) {
  * @returns An array of DHTMLElements that contain non-empty text nodes.
  */
 function findTextElements(element = document.body) {
-  let result = [];
-
-  if (
-    element.classList.contains('jpwordwrap-disabled')
-    || element.tagName.toLowerCase() === 'header'
-    || element.tagName.toLowerCase() === 'footer'
+  const tagName = element.tagName.toLowerCase();
+  if (tagName === 'header' || tagName === 'footer'
+    || element.classList.contains('jpwordwrap-disabled')
   ) {
     return [];
   }
 
-  for (let i = 0; i < element.children.length; i += 1) {
-    const child = element.children[i];
-    if (hasTextNode(child)) {
-      result.push(child);
-    } else {
-      result = result.concat(findTextElements(child));
-    }
-  }
-
-  return result;
+  return Array.from(element.children).reduce((result, child) => (
+    hasTextNode(child)
+      ? [...result, child]
+      : [...result, ...findTextElements(child)]
+  ), []);
 }
 
 /**
