@@ -19,3 +19,17 @@ Video Platforms:
 - BYO HTML5: TBD
 
 See [video-metadata](../../blocks/video-metadata/) if you need to define a specific VideoObject on your page.
+
+## Structured Data
+
+This feature queries the SEOTECH service for structured data that should be added to the page.
+
+Metadata Properties:
+
+- `seotech-structured-data`: `on` to enable SEOTECH lookup
+- `seotech-sheet-url`: url of Franklin Spreadsheet JSON (Optional)
+
+You can also specify `seotech-sheet-url` as a query parameter.
+SEOTECH will search for _/structured-data.json_ at the root of the current page.
+
+Please see For more details see [SEOTECH](https://wiki.corp.adobe.com/display/seoteam/SEOTECH+API) (Corp Only) for list of supported structured data.

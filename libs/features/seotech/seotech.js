@@ -49,7 +49,7 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
   const prs = [];
   if (getMetadata('seotech-structured-data') === 'on') {
     const pageUrl = `${windowUrl.origin}${windowUrl.pathname}`;
-    const sheetUrl = (new URLSearchParams(windowUrl.search)).get('seotech-sheet-url');
+    const sheetUrl = (new URLSearchParams(windowUrl.search)).get('seotech-sheet-url') || getMetadata('seotech-sheet-url');
     prs.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
       .then((r) => r.forEach((obj) => append(obj)))
       .catch((e) => logError(e.message)));
