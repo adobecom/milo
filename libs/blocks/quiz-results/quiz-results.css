@@ -9,7 +9,7 @@
 }
 
 @media screen and (min-width: 1200px) { 
-  .section.mobileOnly {
+  .section.mobile-only {
     display: none;
   }
 }
