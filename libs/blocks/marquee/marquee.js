@@ -104,6 +104,16 @@ function extendButtonsClass(text) {
   buttons.forEach((button) => { button.classList.add('button-justified-mobile'); });
 }
 
+const decorateImage = (media) => {
+  const imageLink = media.querySelector('a');
+  const picture = media.querySelector('picture');
+
+  if (imageLink && picture) {
+    imageLink.textContent = '';
+    imageLink.append(picture);
+  }
+};
+
 export default function init(el) {
   fixVideoAutoPlay(el);
   decorateBlockAnalytics(el);
@@ -120,7 +130,10 @@ export default function init(el) {
   const text = headline.closest('div');
   text.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-
+  if (media) {
+    media.classList.add('media');
+    decorateImage(media);
+  }
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
 
