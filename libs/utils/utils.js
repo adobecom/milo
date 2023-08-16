@@ -750,12 +750,14 @@ export function scrollToHashedElement() {
   const elementId = hash.slice(1);
   const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   if (!targetElement) return;
-  const position = targetElement.getBoundingClientRect();
+  // const position = targetElement.getBoundingClientRect();
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  window.scrollTo({
-    top: position.top - bufferHeight,
-    behavior: 'smooth',
-  });
+  // window.scrollTo({
+  //   top: position.top - bufferHeight,
+  //   behavior: 'smooth',
+  // });
+  targetElement.scrollIntoView(true);
+  window.scroll(0, window.scrollY - bufferHeight);
 }
 
 export async function loadDeferred(area, blocks, config) {
@@ -778,7 +780,7 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
-  scrollToHashedElement();
+  // scrollToHashedElement();
 }
 
 function initSidekick() {
@@ -820,6 +822,11 @@ function decorateMeta() {
 }
 
 export async function loadArea(area = document) {
+  const currentHash = window.location.hash;
+  window.onload = function() {
+    // e.preventDefault();
+    history.replaceState({}, document.title, window.location.pathname);
+  };
   const isDoc = area === document;
 
   if (isDoc) {
@@ -895,6 +902,8 @@ export async function loadArea(area = document) {
 
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
+  window.location.hash = currentHash;
+  scrollToHashedElement();
 }
 
 export function loadDelayed() {

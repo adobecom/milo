@@ -149,9 +149,9 @@ const eagerLoad = (img) => {
 
 (async function loadPage() {
   performance.mark('loadpage');
-  window.addEventListener('load', (e) => {
-    e.preventDefault();
-  });
+  // window.addEventListener('load', (e) => {
+  //   e.preventDefault();
+  // });
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
