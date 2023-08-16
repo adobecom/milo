@@ -30,7 +30,7 @@ const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
 const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
 
 // Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
+const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -290,19 +290,14 @@ export const getEntitlements = (() => {
   });
 })();
 
-const removeUnderscores = (obj) => Object.entries(obj).reduce((newObj, [key, val]) => {
-  newObj[key.replaceAll('_', '')] = val;
-  return newObj;
-}, {});
-
 const getFlatEntitlements = async () => {
   if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) return {};
 
   const ents = await getEntitlements();
   return {
-    ...removeUnderscores(ents.arrangement_codes),
-    ...removeUnderscores(ents.clouds),
-    ...removeUnderscores(ents.fulfilled_codes),
+    ...ents.arrangement_codes,
+    ...ents.clouds,
+    ...ents.fulfilled_codes,
   };
 };
 
