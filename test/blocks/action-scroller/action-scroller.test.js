@@ -44,7 +44,7 @@ describe('action scrollers', () => {
         });
 
         it('can scroll next', async () => {
-          const scrollArea = scroller.querySelector('.section.scrolling');
+          const scrollArea = scroller.querySelector('.scroller');
           const nextBtn = scroller.querySelector('.next-button');
           nextBtn.click();
           await delay(200);
@@ -52,7 +52,7 @@ describe('action scrollers', () => {
           expect(scrolled).to.be.true;
         });
         it('can scroll previous', async () => {
-          const scrollArea = scroller.querySelector('.section.scrolling');
+          const scrollArea = scroller.querySelector('.scroller');
           const prevBtn = scroller.querySelector('.previous-button');
           const initScrollPos = scrollArea.scrollLeft;
           prevBtn.click();
