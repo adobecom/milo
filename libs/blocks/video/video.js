@@ -23,7 +23,7 @@ export default function init(a) {
         <source src=".${pathname}" type="video/mp4" />
       </video>`;
   a.insertAdjacentHTML('afterend', video);
-  const videoElem = document.querySelector('video');
+  const videoElem = document.body.querySelector(`source[src=".${pathname}"]`)?.parentElement;
   applyHoverPlay(videoElem);
   a.remove();
 }

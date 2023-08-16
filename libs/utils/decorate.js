@@ -100,8 +100,9 @@ export function decorateTextOverrides(el, options = ['-heading', '-body', '-deta
 }
 
 export function applyHoverPlay(video) {
-  if (video.hasAttribute('data-hoverplay')) {
+  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
+    video.setAttribute('data-mouseevent', true);
   }
 }

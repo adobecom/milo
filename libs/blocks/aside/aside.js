@@ -56,7 +56,8 @@ function decorateLayout(el) {
   const media = foreground.querySelector(':scope > div:not([class])');
   if (media && !el.classList.contains('notification')) {
     media.classList.add('image');
-    if (media.querySelector('video')) applyHoverPlay(media.querySelector('video'));
+    const video = media.querySelector('video');
+    if (video) applyHoverPlay(video);
   }
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
