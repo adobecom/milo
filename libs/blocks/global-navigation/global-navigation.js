@@ -78,8 +78,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     dropdownElem.classList.add('feds-signIn-dropdown');
 
-    // TODO we don't have a good way of adding config properties to links
-    const dropdownSignIn = dropdownElem.querySelector('[href="https://adobe.com?sign-in=true"]');
+    const dropdownSignIn = dropdownElem.querySelector('[href$="?sign-in=true"]');
 
     if (dropdownSignIn) {
       dropdownSignIn.addEventListener('click', (e) => {
@@ -585,10 +584,11 @@ class Gnav {
           </a>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+        const tag = isSectionMenu ? 'section' : 'div';
         const triggerTemplate = toFragment`
-          <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
+          <${tag} class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
-          </div>`;
+          </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {

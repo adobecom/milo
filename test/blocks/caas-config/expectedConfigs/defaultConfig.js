@@ -37,6 +37,7 @@ const defaultConfig = {
     ctaAction: '_blank',
     additionalRequestParams: {},
   },
+  headers: [],
   hideCtaIds: [
     '',
   ],

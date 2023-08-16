@@ -59,6 +59,7 @@ const MILO_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-selector',
   'tiktok',
   'twitter',
   'video',
@@ -375,12 +376,27 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
+function checkForExpBlock(name, expBlocks) {
+  const expBlock = expBlocks?.[name];
+  if (!expBlock) return null;
+
+  const blockName = expBlock.split('/').pop();
+  return { blockPath: expBlock, blockName };
+}
+
 export async function loadBlock(block) {
-  const name = block.classList[0];
+  let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
+  let path = `${base}/blocks/${name}`;
+
+  const expBlock = checkForExpBlock(name, expBlocks);
+  if (expBlock) {
+    name = expBlock.blockName;
+    path = expBlock.blockPath;
+  }
+
   const blockPath = `${path}/${name}`;
 
   const styleLoaded = new Promise((resolve) => {
@@ -769,8 +785,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
