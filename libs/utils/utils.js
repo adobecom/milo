@@ -752,12 +752,13 @@ export function scrollToHashedElement() {
   if (!targetElement) return;
   // const position = targetElement.getBoundingClientRect();
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  window.scrollBy(0, -bufferHeight);
   // window.scrollTo({
   //   top: position.top - bufferHeight,
   //   behavior: 'smooth',
   // });
-  targetElement.scrollIntoView(true);
-  window.scroll(0, window.scrollY - bufferHeight);
+  // targetElement.scrollIntoView(true);
+  // window.scroll(0, window.scrollY - bufferHeight);
 }
 
 export async function loadDeferred(area, blocks, config) {
