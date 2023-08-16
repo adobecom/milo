@@ -41,6 +41,11 @@
   width: 100%;
 }
 
+.five-up .icon-block .foreground .text-content {
+  text-align: left;
+  padding-bottom: var(--spacing-xs);
+}
+
 .icon-block .foreground .text-content .action-area.supplemental-text {
   margin-top: var(--spacing-s);
   margin-bottom: 0;
@@ -93,7 +98,7 @@
 }
 
 .icon-block.bio .foreground {
-  text-align: left;
+  text-align: start;
   border-top: 1px solid #D5D5D5;
   border-bottom: 1px solid #D5D5D5;
 }
@@ -236,12 +241,8 @@
 }
 
 .icon-block.vertical .foreground {
-  text-align: left;
+  text-align: start;
   margin-bottom: var(--spacing-s);
-}
-
-[dir="rtl"] .icon-block .foreground {
-  text-align: right;
 }
 
 .icon-block.fullwidth .foreground,
@@ -263,11 +264,6 @@
 .icon-block.vertical.center .foreground .text-content .icon-area {
   margin-left: auto;
   margin-right: auto;
-}
-
-.five-up .foreground .text-content {
-  text-align: left;
-  padding-bottom: var(--spacing-xs);
 }
 
 .five-up .foreground .text-content .body-m {
@@ -431,9 +427,10 @@
 
 .icon-block.inline .foreground .text-content {
   flex-flow: row nowrap;
-  text-align: left;
+  text-align: start;
   gap: 16px;
 }
+
 
 .icon-block.inline .body-s.action-area {
   padding-top: 24px;
