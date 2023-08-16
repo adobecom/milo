@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { getMetadata } from '../utils/utils.js';
 
 /**
