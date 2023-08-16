@@ -192,6 +192,7 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       featuredCards: ['a', 'b'],
+      headers: [],
       hideCtaIds: [''],
       filterPanel: {
         enabled: true,
@@ -385,6 +386,7 @@ describe('getConfig', () => {
         reservoir: { sample: 3, pool: 1000 },
       },
       featuredCards: ['a', 'b'],
+      headers: [],
       hideCtaIds: [''],
       filterPanel: {
         enabled: true,
