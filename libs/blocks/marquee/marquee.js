@@ -13,7 +13,7 @@
 /*
  * Marquee - v6.0
  */
-import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, applyHoverPlay } from '../../utils/decorate.js';
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -133,6 +133,8 @@ export default function init(el) {
   if (media) {
     media.classList.add('media');
     decorateImage(media);
+    const video = media.querySelector('video');
+    if (video) applyHoverPlay(video);
   }
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground.classList.contains('media')) el.classList.add('row-reversed');
