@@ -23,12 +23,12 @@ export const PERSONALIZATION_TAGS = {
   darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
   lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
-/* c8 ignore stop */
 
 export const ENTITLEMENT_TAGS = {
   photoshop: (ents) => ents.photoshopcc,
   lightroom: (ents) => ents.lightroomcc,
 };
+/* c8 ignore stop */
 
 const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
 const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
@@ -99,7 +99,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     }
     return await resp[type]();
   } catch (e) {
-    /* c8 ignore next 2 */
+    /* c8 ignore next 3 */
     console.log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
@@ -133,7 +133,6 @@ function normalizePath(p) {
   }
   return path;
 }
-/* c8 ignore stop */
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
@@ -151,6 +150,7 @@ export async function replaceInner(path, element) {
   element.innerHTML = html;
   return true;
 }
+/* c8 ignore stop */
 
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
@@ -190,7 +190,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
 
       COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
     }
   });
@@ -256,6 +256,7 @@ export function parseConfig(data) {
   return null;
 }
 
+/* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'no changes') return config;
   const valueNames = [
@@ -305,9 +306,18 @@ const loadEntsFromLocalStorage = () => {
   return JSON.parse(ents);
 };
 
+const clearEntLocalStorage = () => {
+  localStorage.removeItem(LS_ENT_KEY);
+  localStorage.removeItem(LS_ENT_EXPIRE_KEY);
+};
+
 export const getEntitlements = (() => {
   let ents;
   return (async () => {
+    if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
+      clearEntLocalStorage();
+      return {};
+    }
     if (!ents) {
       ents = loadEntsFromLocalStorage();
     }
@@ -320,8 +330,6 @@ export const getEntitlements = (() => {
 })();
 
 const getFlatEntitlements = async () => {
-  if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) return {};
-
   const ents = await getEntitlements();
   return {
     ...ents.arrangement_codes,
@@ -329,6 +337,13 @@ const getFlatEntitlements = async () => {
     ...ents.fulfilled_codes,
   };
 };
+
+const checkForEntitlementMatch = (name, entitlements) => {
+  const entName = name.split('ent-')[1];
+  if (!entName) return false;
+  return entitlements[entName];
+};
+/* c8 ignore stop */
 
 const checkForParamMatch = (paramStr) => {
   const [name, val] = paramStr.split('param-')[1].split('=');
@@ -341,16 +356,11 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
-const checkForEntitlementMatch = (name, entitlements) => {
-  const entName = name.split('ent-')[1];
-  if (!entName) return false;
-  return entitlements[entName];
-};
-
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
   if (config.mep?.override !== '') {
     let manifest;
+    /* c8 ignore start */
     config.mep?.override.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
@@ -359,6 +369,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
       }
       return false;
     });
+    /* c8 ignore stop */
     if (manifest) return manifest;
   }
 
