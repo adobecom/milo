@@ -44,9 +44,9 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         observer.unobserve(entry.target);
         return;
       }
-      const isPromoStart = stickySectionEl && entry.target === stickySectionEl;
+      const isPromoStart = entry.target === stickySectionEl;
       const abovePromoStart = (isPromoStart && entry.isIntersecting)
-                        || (stickySectionEl && stickySectionEl.getBoundingClientRect().y > 0);
+                        || stickySectionEl?.getBoundingClientRect().y > 0;
       if (entry.isIntersecting || (isPromoStart && abovePromoStart)) el.classList.add('hide-sticky-section');
       else if (!abovePromoStart) el.classList.remove('hide-sticky-section');
     });
