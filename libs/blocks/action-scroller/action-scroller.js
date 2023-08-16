@@ -4,7 +4,6 @@ const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 const [NAV, ALIGN] = ['navigation', 'grid-align'];
-const gridStyle = 'section scrolling no-padding auto-up no-row-gap';
 const defaultItemWidth = 106;
 const defaultGridGap = 32;
 
@@ -36,7 +35,7 @@ function setBlockProps(el, columns) {
     ?? 'grid-align-start';
   el.style.setProperty('--action-scroller-columns', columns);
   el.style.setProperty('--action-scroller-item-width', itemWidth);
-  return `${gridStyle} ${gridAlign} ${overrides}`;
+  return `scroller ${gridAlign} ${overrides}`;
 }
 
 function handleScroll(el, btn) {

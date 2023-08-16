@@ -10,11 +10,12 @@
   position: relative;
 }
 
-.action-scroller .section.scrolling {
+.action-scroller .scroller {
   display: grid;
   grid-template-columns: repeat(var(--action-scroller-columns), 1fr);
   grid-auto-columns: minmax(var(--action-scroller-column-width), 1fr);
   grid-auto-flow: column;
+  gap: var(--spacing-m);
   padding: 0 var(--action-scroller-mobile-padding);
   overflow-x: auto;
   -ms-overflow-style: none;
@@ -49,11 +50,11 @@
 }
 
 
-.action-scroller .section.scrolling::-webkit-scrollbar {
+.action-scroller .scroller::-webkit-scrollbar {
   display: none;
 }
 
-.action-scroller .section.scrolling .action-item {
+.action-scroller .scroller .action-item {
   width: var(--action-scroller-column-width);
 }
 
