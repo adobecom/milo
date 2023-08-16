@@ -32,6 +32,6 @@ body.tool-ost .ost>div {
   content: " ";
 }
 
-.spectrum-TabsPanel-tabpanel_3e140b > div > div>:last-child{
-  margin-top: -28px;
+.spectrum-Button_e2d99e {
+  margin-top: -28px !important;
 }
