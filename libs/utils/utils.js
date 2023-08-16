@@ -750,15 +750,8 @@ export function scrollToHashedElement() {
   const elementId = hash.slice(1);
   const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   if (!targetElement) return;
-  // const position = targetElement.getBoundingClientRect();
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   window.scrollBy(0, -bufferHeight);
-  // window.scrollTo({
-  //   top: position.top - bufferHeight,
-  //   behavior: 'smooth',
-  // });
-  // targetElement.scrollIntoView(true);
-  // window.scroll(0, window.scrollY - bufferHeight);
 }
 
 export async function loadDeferred(area, blocks, config) {
@@ -824,8 +817,7 @@ function decorateMeta() {
 
 export async function loadArea(area = document) {
   const currentHash = window.location.hash;
-  window.onload = function() {
-    // e.preventDefault();
+  window.onload = function () {
     history.replaceState({}, document.title, window.location.pathname);
   };
   const isDoc = area === document;
@@ -900,11 +892,10 @@ export async function loadArea(area = document) {
     const { default: delayed } = await import('../scripts/delayed.js');
     delayed([getConfig, getMetadata, loadScript, loadStyle]);
   }
-
-  // Load everything that can be deferred until after all blocks load.
-  await loadDeferred(area, areaBlocks, config);
   window.location.hash = currentHash;
   scrollToHashedElement();
+  // Load everything that can be deferred until after all blocks load.
+  await loadDeferred(area, areaBlocks, config);
 }
 
 export function loadDelayed() {
