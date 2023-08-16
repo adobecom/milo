@@ -14,7 +14,7 @@
  * media - consonant v5.1
  */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -49,6 +49,8 @@ export default function init(el) {
     if (image) image.classList.add('image');
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
+    const imageVideo = image.querySelector('video');
+    if (imageVideo) applyHoverPlay(imageVideo);
 
     // lists
     if (row.querySelector('ul')) {
