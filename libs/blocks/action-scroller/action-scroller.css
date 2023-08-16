@@ -37,10 +37,6 @@
   -webkit-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
   -webkit-mask-position: 0 0, 100% 0;
   -webkit-mask-repeat: no-repeat, no-repeat;
-  -moz-mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
-  -moz-mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
-  -moz-mask-position: 0 0, 100% 0;
-  -moz-mask-repeat: no-repeat, no-repeat;
   /* stylelint-enable property-no-vendor-prefix */
 
   mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
