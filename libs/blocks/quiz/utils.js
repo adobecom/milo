@@ -49,7 +49,7 @@ export const getQuizData = async () => {
     );
     return [questions, dataStrings];
   } catch (ex) {
-    console.log('Error while fetching data : ', ex);
+    window.lana?.log(`ERROR: Fetching data for quiz flow ${ex}`);
   }
   return [];
 };
@@ -317,15 +317,15 @@ export const findMatchForSelections = (results, selections) => {
     return defaultResult;
   }
   // Case 2 - when you have clauses grouped with parenthesis.
-  const probableMatches = [];
-  results.forEach((rule) => {
-    if (rule.result.indexOf('(') !== -1 && rule.result.split('&').length === userSelectionLen) {
-      probableMatches.push(rule);
+  const probableMatches = results.reduce((match, rule) => {
+    if (rule.result.includes('(') && rule.result.split('&').length === userSelectionLen) {
+      match.push(rule);
     }
-  });
+    return match;
+  }, []);
 
   probableMatches.forEach((rule) => {
-    const productList = rule !== undefined ? rule.result.split('&') : [];
+    const productList = rule ? rule.result.split('&') : [];
     if (productList.length) {
       const isCompoundProductsMatched = selections.primary.every(
         (product, index) => productList[index].includes(product),
@@ -384,6 +384,7 @@ export const handleNext = (questionsData, selectedQuestion, userInputSelections,
         // RESET the queue and add only the next question.
         if (flowStepsList.includes('RESET')) { // Reset to intial question
           nextQuizViews = []; // Resetting the nextQuizViews
+          // eslint-disable-next-line no-param-reassign
           userFlow = []; // Resetting the userFlow as well
           lastStopValue = 'RESET';
         }
@@ -414,6 +415,7 @@ export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
     const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion.questions}/${selectedCardNames.join('/')}`;
     return btnAnalytics;
   }
+  return '';
 };
 
 export const getAnalyticsDataForLocalStorage = (answers) => {
