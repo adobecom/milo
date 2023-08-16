@@ -25,8 +25,8 @@ export const PERSONALIZATION_TAGS = {
 };
 
 export const ENTITLEMENT_TAGS = {
-  photoshop: (ents) => ents.photoshopcc,
-  lightroom: (ents) => ents.lightroomcc,
+  photoshop: (ents) => ents.photoshop_cc,
+  lightroom: (ents) => ents.lightroom_cc,
 };
 /* c8 ignore stop */
 
