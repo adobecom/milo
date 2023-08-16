@@ -286,7 +286,7 @@ export const findMatchForSelections = (results, selections) => {
   const defaultResult = [];
 
   results.forEach((destination) => {
-    if (destination.result.indexOf('&') === -1) {
+    if (destination.result.indexOf('(') === -1) {
       matchResults.push(destination.result);
     }
     if (destination.result === 'default') {
@@ -317,24 +317,28 @@ export const findMatchForSelections = (results, selections) => {
     return defaultResult;
   }
   // Case 2 - when you have clauses grouped with parenthesis.
-  const compoundResults = results.find((destination) => {
-    if (destination.result.indexOf('(') !== -1 && destination.result.split('&').length === userSelectionLen) {
-      return destination;
+  const probableMatches = [];
+  results.forEach((rule) => {
+    if (rule.result.indexOf('(') !== -1 && rule.result.split('&').length === userSelectionLen) {
+      probableMatches.push(rule);
     }
   });
 
-  const productList = compoundResults !== undefined ? compoundResults.result.split('&') : [];
-
-  if (productList.length) {
-    const isCompoundProductsMatched = selections.primary.every(
-      (product, index) => productList[index].includes(product),
-    );
-    if (isCompoundProductsMatched) {
-      recommendations.push(compoundResults);
-      return recommendations;
+  probableMatches.forEach((rule) => {
+    const productList = rule !== undefined ? rule.result.split('&') : [];
+    if (productList.length) {
+      const isCompoundProductsMatched = selections.primary.every(
+        (product, index) => productList[index].includes(product),
+      );
+      if (isCompoundProductsMatched) {
+        recommendations.push(rule);
+      }
     }
-  }
+  });
 
+  if (recommendations.length) {
+    return recommendations;
+  }
   return defaultResult;
 };
 
