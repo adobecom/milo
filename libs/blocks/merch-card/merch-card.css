@@ -257,19 +257,19 @@
   justify-content: center;
 }
 
-.merch-card.special-offer .consonant-SpecialOffers-description p,
-.merch-card.special-offer .consonant-PlansCard-description p {
+.merch-card.special-offers .consonant-SpecialOffers-description p,
+.merch-card.special-offers .consonant-PlansCard-description p {
   font-size: 14px;
 }
 
-.merch-card.special-offer .consonant-CardFooter {
+.merch-card.special-offers .consonant-CardFooter {
   margin-top: 0;
   padding-top: 0;
   justify-content: center;
   box-sizing: border-box;
 }
 
-.merch-card.special-offer h4 {
+.merch-card.special-offers h4 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
