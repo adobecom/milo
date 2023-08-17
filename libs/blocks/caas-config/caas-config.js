@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
   createContext,
@@ -410,8 +411,10 @@ const TagsPanel = ({ tagsData }) => {
   `;
 };
 
-const CardsPanel = () => {
+const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
+
+  const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
     context.dispatch({
@@ -449,6 +452,7 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate${isValidUuid} />
     <//>
+    <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
 
@@ -561,7 +565,7 @@ const FilterPanel = ({ tagsData }) => {
         <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
       <//>
       <!-- End nested multifield -->
-      
+
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
@@ -696,9 +700,8 @@ const getInitialState = () => {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
-      } catch (e) {
-        // Do nothing
-      }
+      // eslint-disable-next-line no-empty
+      } catch (e) {}
     }
   }
 
@@ -737,8 +740,10 @@ const CopyBtn = () => {
   };
 
   const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state, fgKeyReplacer))}`;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    return url.href;
   };
 
   const copyConfig = () => {
@@ -814,7 +819,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'Cards',
-    content: html`<${CardsPanel} />`,
+    content: html`<${CardsPanel} tagsData=${tagsData} />`,
   },
   {
     title: 'Sort',
@@ -890,9 +895,10 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
-        /* c8 ignore next */
-        console.log('Error loading script: ', error);
+      .catch((e) => {
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
+        console.log('Error loading script: ', e);
       });
   }, []);
 
@@ -961,6 +967,7 @@ const init = async (el) => {
 };
 
 export {
+  // eslint-disable-next-line no-restricted-exports
   init as default,
   cloneObj,
   getHashConfig,

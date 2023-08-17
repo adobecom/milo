@@ -41,6 +41,7 @@ const defaultConfig = {
   hideCtaIds: [
     '',
   ],
+  hideCtaTags: [],
   featuredCards: [
     '',
   ],

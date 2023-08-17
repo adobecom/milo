@@ -285,6 +285,7 @@ const RequiredPanel = () => {
   };
 
   if (!Object.keys(langOptions).length) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       getObjFromAPI('/faas/api/locale').then((data) => {
         data.forEach((l) => {

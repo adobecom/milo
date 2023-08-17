@@ -14,7 +14,7 @@
 * Aside - v5.1
 */
 
-import { decorateBlockBg, decorateBlockText } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, applyHoverPlay } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -54,7 +54,11 @@ function decorateLayout(el) {
   const text = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   const media = foreground.querySelector(':scope > div:not([class])');
-  if (!el.classList.contains('notification')) media?.classList.add('image');
+  if (media && !el.classList.contains('notification')) {
+    media.classList.add('image');
+    const video = media.querySelector('video');
+    if (video) applyHoverPlay(video);
+  }
   const picture = text?.querySelector('picture');
   const iconArea = picture ? (picture.closest('p') || createTag('p', null, picture)) : null;
   iconArea?.classList.add('icon-area');
