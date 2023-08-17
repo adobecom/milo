@@ -20,4 +20,4 @@ jobs:
           npm install
 
           # Check for unsupported functions in the code
-          npx eslint .
+          npx eslint --no-eslintrc -c .eslintrc-code-compatibility.js .
