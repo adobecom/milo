@@ -82,10 +82,8 @@
   cursor: pointer;
   outline: none;
   border-radius: 100%;
-  border-style: solid;
-  border-width: 1px;
   background-color: var(--action-scroller-button-color);
-  border-color: var(--action-scroller-button-border-color);
+  border: 1px solid var(--action-scroller-button-border-color);
   height: var(--action-scroller-button-size);
   width: var(--action-scroller-button-size);
   top: calc(50% - var(--action-scroller-button-size) / 2);
