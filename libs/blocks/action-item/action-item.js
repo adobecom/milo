@@ -1,11 +1,6 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-function getLayout(elems) {
-  const link = elems.length > 1 ? elems[elems.length - 1] : null;
-  return { foreground: elems[0], link };
-}
-
 function handleFloatIcon(picture, icon) {
   if (!picture || !icon) return;
   icon.classList.add('floated-icon');
@@ -21,14 +16,10 @@ function handleFloatBtn(picture, content) {
   picture.appendChild(btn);
 }
 
-function decorateLink(link) {
+function getLinkAttrs(link) {
   const anchor = link.querySelector('a');
-  let attrs = { href: anchor.href };
-  if (attrs.href.includes('#_blank') || anchor.target === '_blank') {
-    attrs.href = anchor.href.replace('#_blank', '');
-    attrs = { ...attrs, target: '_blank' };
-  }
-  return attrs;
+  if (!anchor) return {};
+  return Object.fromEntries(Array.from(anchor.attributes).map((attr) => [attr.name, attr.value]));
 }
 
 function getContent(el, variants, link) {
@@ -39,7 +30,7 @@ function getContent(el, variants, link) {
   picture?.classList.add('main-image');
   const wrapLink = link && !variants.contains('float-button');
   const tag = wrapLink ? 'a' : 'div';
-  let attrs = wrapLink ? decorateLink(link) : {};
+  let attrs = wrapLink ? getLinkAttrs(link) : {};
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, link);
   if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
@@ -50,7 +41,7 @@ function getContent(el, variants, link) {
 export default function init(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (!elems.length) return;
-  const { foreground, link } = getLayout(elems);
-  const content = getContent(foreground, el.classList, link);
+  const link = elems.length > 1 ? elems[elems.length - 1] : null;
+  const content = getContent(elems[0], el.classList, link);
   el.replaceChildren(content);
 }
