@@ -28,6 +28,7 @@ export function createLinkMarkup(
   type,
   { offer_id: offerId, name: offerName, commitment, planType },
   placeholderOptions,
+  promotionCode,
   location = window.location,
 ) {
   const { ctaText = 'buy-now' } = placeholderOptions;
@@ -42,6 +43,10 @@ export function createLinkMarkup(
     url.searchParams.set('osi', offerSelectorId);
     url.searchParams.set('offerId', offerId);
     url.searchParams.set('type', type);
+
+    if (promotionCode) {
+      url.searchParams.set('promo', promotionCode);
+    }
 
     if (commitment === 'PERPETUAL') {
       url.searchParams.set('perp', true);
