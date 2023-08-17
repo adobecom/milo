@@ -49,6 +49,7 @@ module.exports = {
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
+    'libs/utils/lana.js',
   ],
   plugins: [
     'chai-friendly',
