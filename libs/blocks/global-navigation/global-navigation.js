@@ -290,18 +290,15 @@ class Gnav {
         this.el.removeEventListener('click', this.loadDelayed);
         this.el.removeEventListener('keydown', this.loadDelayed);
         const [
-          { appLauncher },
           ProfileDropdown,
           Search,
         ] = await Promise.all([
-          loadBlock('../features/appLauncher/appLauncher.js'),
           loadBlock('../features/profile/dropdown.js'),
           loadBlock('../features/search/gnav-search.js'),
           loadStyles('features/profile/dropdown.css'),
           loadStyles('features/search/gnav-search.css'),
         ]);
         this.ProfileDropdown = ProfileDropdown;
-        this.appLauncher = appLauncher;
         this.Search = Search;
         resolve();
       } catch (e) {

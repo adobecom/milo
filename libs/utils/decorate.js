@@ -98,6 +98,7 @@ export function decorateTextOverrides(el, options = ['-heading', '-body', '-deta
   });
 }
 
+
 export function decorateIconStack(el) {
   const ulElems = el.querySelectorAll('ul');
   if (!ulElems.length) return;
@@ -114,4 +115,12 @@ export function decorateIconStack(el) {
     linkText.prepend(linkImg.querySelector('picture'));
     linkImg.remove();
   });
+
+export function applyHoverPlay(video) {
+  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
+    video.addEventListener('mouseenter', () => { video.play(); });
+    video.addEventListener('mouseleave', () => { video.pause(); });
+    video.setAttribute('data-mouseevent', true);
+  }
+
 }

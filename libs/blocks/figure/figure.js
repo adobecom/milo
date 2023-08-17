@@ -21,6 +21,7 @@ export function buildFigure(blockEl) {
       }
       const video = clone.querySelector('video');
       if (video) {
+        import('../../utils/decorate.js').then(({ applyHoverPlay }) => applyHoverPlay(video));
         figEl.prepend(video);
       }
       const caption = clone.querySelector('em');
