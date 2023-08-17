@@ -1,4 +1,4 @@
-a[href*='/tools/caas#'] {
+a[href*='/tools/caas#'], a[href*='/tools/caas?'] {
   visibility: hidden !important;
 }
 
