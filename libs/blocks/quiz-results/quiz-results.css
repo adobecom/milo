@@ -8,14 +8,8 @@
   visibility: unset;
 }
 
-@media screen and (min-width: 600px) { 
-  .section.mobile-only {
-    display: none;
-  }
-}
-
-@media screen and (min-width: 900px) { 
-  .section.tablet-only {
+@media screen and (max-width: 600px) { 
+  .section.tablet-only,.section.desktop-only,.section.desktop-only-l {
     display: none;
   }
 }
