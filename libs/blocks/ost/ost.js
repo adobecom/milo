@@ -108,7 +108,6 @@ export async function loadOstEnv() {
       locale = getLocale(locales, url.pathname);
       ({ country, language } = getTacocatEnv(ENV_PROD, locale));
     } catch (e) {
-      console.error('OST, failed to get env:', e.message);
       ({ country, language } = getTacocatEnv());
     }
 
@@ -124,9 +123,7 @@ export async function loadOstEnv() {
             if (content) metadata[value] = content;
           },
         );
-      } catch (e) {
-        console.error('OST, failed to get metadata:', e.message);
-      }
+      } catch { // do nothing // }
     }
   }
 
