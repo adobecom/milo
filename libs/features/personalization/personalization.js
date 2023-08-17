@@ -1,12 +1,19 @@
 /* eslint-disable no-console */
-import { createTag, getConfig, loadLink, loadScript, updateConfig } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadIms, loadLink, loadScript, updateConfig,
+} from '../../utils/utils.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
+const LS_ENT_KEY = 'milo:entitlements';
+const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
+const ENT_CACHE_EXPIRE = 1000 * 60 * 60 * 3; // 3 hours
+const ENT_CACHE_REFRESH = 1000 * 60 * 3; // 3 minutes
 const PAGE_URL = new URL(window.location.href);
 
 /* c8 ignore start */
 export const PERSONALIZATION_TAGS = {
+  all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Mobile'),
   firefox: () => navigator.userAgent.includes('Firefox') && !navigator.userAgent.includes('Mobile'),
   android: () => navigator.userAgent.includes('Android'),
@@ -16,10 +23,18 @@ export const PERSONALIZATION_TAGS = {
   darkmode: () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
   lightmode: () => !PERSONALIZATION_TAGS.darkmode(),
 };
+
+export const ENTITLEMENT_TAGS = {
+  photoshop: (ents) => ents.photoshop_cc,
+  lightroom: (ents) => ents.lightroom_cc,
+};
 /* c8 ignore stop */
 
+const personalizationKeys = Object.keys(PERSONALIZATION_TAGS);
+const entitlementKeys = Object.keys(ENTITLEMENT_TAGS);
+
 // Replace any non-alpha chars except comma, space and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- ,=]/g;
+const RE_KEY_REPLACE = /[^a-z0-9\- _,=]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -45,7 +60,8 @@ const createFrag = (url, manifestId) => {
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
     .insertAdjacentElement('afterend', createFrag(target, manifestId)),
-  insertcontentbefore: (el, target, manifestId) => el.insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+  insertcontentbefore: (el, target, manifestId) => el
+    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -83,7 +99,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     }
     return await resp[type]();
   } catch (e) {
-    /* c8 ignore next 2 */
+    /* c8 ignore next 3 */
     console.log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
@@ -117,7 +133,6 @@ function normalizePath(p) {
   }
   return path;
 }
-/* c8 ignore stop */
 
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
@@ -135,17 +150,7 @@ export async function replaceInner(path, element) {
   element.innerHTML = html;
   return true;
 }
-
-const checkForParamMatch = (paramStr) => {
-  const [name, val] = paramStr.split('param-')[1].split('=');
-  if (!name) return false;
-  const searchParamVal = PAGE_URL.searchParams.get(name);
-  if (searchParamVal !== null) {
-    if (val) return val === searchParamVal;
-    return true; // if no val is set, just check for existence of param
-  }
-  return false;
-};
+/* c8 ignore stop */
 
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
@@ -185,7 +190,7 @@ function handleCommands(commands, manifestId, rootEl = document) {
 
       COMMANDS[cmd.action](selectorEl, cmd.target, manifestId);
     } else {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       console.log('Invalid command found: ', cmd);
     }
   });
@@ -251,6 +256,7 @@ export function parseConfig(data) {
   return null;
 }
 
+/* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'no changes') return config;
   const valueNames = [
@@ -271,30 +277,133 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   return config;
 }
 
-function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+const fetchEntitlements = async () => {
+  const [{ default: getUserEntitlements }] = await Promise.all([
+    import('../../blocks/global-navigation/utilities/getUserEntitlements.js'),
+    loadIms(),
+  ]);
+  return getUserEntitlements();
+};
+
+const setEntLocalStorage = (ents) => {
+  localStorage.setItem(LS_ENT_KEY, JSON.stringify(ents));
+  localStorage.setItem(LS_ENT_EXPIRE_KEY, Date.now());
+};
+
+const loadEntsFromLocalStorage = () => {
+  const ents = localStorage.getItem(LS_ENT_KEY);
+  const expireDate = localStorage.getItem(LS_ENT_EXPIRE_KEY);
+  const now = Date.now();
+  if (!ents || !expireDate || (now - expireDate) > ENT_CACHE_EXPIRE) return null;
+  if ((now - expireDate) > ENT_CACHE_REFRESH) {
+    // refresh entitlements in background
+    setTimeout(() => {
+      fetchEntitlements().then((newEnts) => {
+        setEntLocalStorage(newEnts);
+      });
+    }, 5000);
+  }
+  return JSON.parse(ents);
+};
+
+const clearEntLocalStorage = () => {
+  localStorage.removeItem(LS_ENT_KEY);
+  localStorage.removeItem(LS_ENT_EXPIRE_KEY);
+};
+
+export const getEntitlements = (() => {
+  let ents;
+  let logoutEventSet;
+  return (async () => {
+    if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
+      clearEntLocalStorage();
+      return {};
+    }
+    if (!ents) {
+      ents = loadEntsFromLocalStorage();
+    }
+    if (!ents) {
+      ents = await fetchEntitlements();
+      setEntLocalStorage(ents);
+    }
+    if (!logoutEventSet) {
+      window.addEventListener('feds:signOut', clearEntLocalStorage);
+      logoutEventSet = true;
+    }
+    return ents;
+  });
+})();
+
+const getFlatEntitlements = async () => {
+  const ents = await getEntitlements();
+  return {
+    ...ents.arrangement_codes,
+    ...ents.clouds,
+    ...ents.fulfilled_codes,
+  };
+};
+
+const checkForEntitlementMatch = (name, entitlements) => {
+  const entName = name.split('ent-')[1];
+  if (!entName) return false;
+  return entitlements[entName];
+};
+/* c8 ignore stop */
+
+const checkForParamMatch = (paramStr) => {
+  const [name, val] = paramStr.split('param-')[1].split('=');
+  if (!name) return false;
+  const searchParamVal = PAGE_URL.searchParams.get(name);
+  if (searchParamVal !== null) {
+    if (val) return val === searchParamVal;
+    return true; // if no val is set, just check for existence of param
+  }
+  return false;
+};
+
+async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
-  let manifestFound = false;
   if (config.mep?.override !== '') {
-    config.mep?.override.split(',').forEach((item) => {
+    let manifest;
+    /* c8 ignore start */
+    config.mep?.override.split(',').some((item) => {
       const pair = item.trim().split('--');
       if (pair[0] === manifestPath && pair.length > 1) {
-        // eslint-disable-next-line prefer-destructuring
-        manifestFound = pair[1];
+        [, manifest] = pair;
+        return true;
       }
+      return false;
     });
-    if (manifestFound) return manifestFound;
+    /* c8 ignore stop */
+    if (manifest) return manifest;
   }
 
-  const tagNames = Object.keys(PERSONALIZATION_TAGS);
-  const matchingVariant = variantNames.find((variant) => {
-    // handle multiple variants that are space / comma delimited
-    const names = variant.split(',').map((v) => v.trim()).filter(Boolean);
-    return names.some((name) => {
-      if (name === variantLabel) return true;
-      if (name.startsWith('param-')) return checkForParamMatch(name);
-      return tagNames.includes(name) && PERSONALIZATION_TAGS[name]();
-    });
-  });
+  const variantInfo = variantNames.reduce((acc, name) => {
+    const vNames = name.split(',').map((v) => v.trim()).filter(Boolean);
+    acc[name] = vNames;
+    acc.allNames = [...acc.allNames, ...vNames];
+    return acc;
+  }, { allNames: [] });
+
+  const hasEntitlementPrefix = variantInfo.allNames.some((name) => name.startsWith('ent-'));
+  const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
+
+  let entitlements = {};
+  if (hasEntitlementPrefix || hasEntitlementTag) {
+    entitlements = await getFlatEntitlements();
+  }
+
+  const matchVariant = (name) => {
+    if (name === variantLabel) return true;
+    if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.startsWith('ent-')) return checkForEntitlementMatch(name, entitlements);
+    if (entitlementKeys.includes(name)) {
+      return ENTITLEMENT_TAGS[name](entitlements);
+    }
+    return personalizationKeys.includes(name) && PERSONALIZATION_TAGS[name]();
+  };
+
+  const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
 }
 
@@ -319,7 +428,7 @@ export async function getPersConfig(name, variantLabel, manifestData, manifestPa
     return null;
   }
 
-  const selectedVariantName = getPersonalizationVariant(
+  const selectedVariantName = await getPersonalizationVariant(
     manifestPath,
     config.variantNames,
     variantLabel,
@@ -434,6 +543,8 @@ export async function applyPers(manifests) {
     decoratePreviewCheck(config, []);
     return;
   }
+
+  getEntitlements();
   const cleanedManifests = cleanManifestList(manifests);
 
   let results = [];
