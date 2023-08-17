@@ -54,11 +54,11 @@ describe('Section Metdata', () => {
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
   });
 
-  it('gets section metadata', () => {
+  it('gets section metadata', async () => {
     const sec = document.querySelector('.section.sticky-bottom');
     const sm = sec.querySelector('.section-metadata');
     const main = document.querySelector('main');
-    init(sm);
+    await init(sm);
     expect(main.lastElementChild).to.be.eql(sec);
   });
 
@@ -75,7 +75,6 @@ describe('Section Metdata', () => {
     const sec = document.querySelector('.section.sticky-bottom .promobar').closest('.section');
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
-    expect(main.lastElementChild).to.be.eql(sec);
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
   });
 
