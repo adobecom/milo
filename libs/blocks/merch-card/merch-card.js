@@ -38,9 +38,7 @@ const createDescription = (rows, cardType) => {
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div');
   titleWrapper.classList.add(`consonant-${cardType}-title`);
-  titles?.forEach((title) => {
-    titleWrapper.appendChild(title);
-  });
+  titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
 
@@ -199,7 +197,7 @@ const init = (el) => {
     }
   });
   addWrapper(el, section, cardType);
-  merchCard.classList.add('consonant-Card', 'consonant-ProductCard');
+  merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
   if (image) {
     addBackgroundImg(image, cardType, merchCard);
   }

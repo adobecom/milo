@@ -13,7 +13,7 @@ export const addBackgroundImg = (picture, cardType, card) => {
   card.append(imageDiv);
 };
 
-export const getUpFromSectionMetadata = (section) => {
+const getUpFromSectionMetadata = (section) => {
   const sectionMetadata = section.querySelector('.section-metadata');
   if (!sectionMetadata) return null;
   const metadata = getMetadata(sectionMetadata);

@@ -1,10 +1,4 @@
 /* stylelint-disable selector-class-pattern */
-/* stylelint-disable-next-line selector-class-pattern */
-@media only screen and (min-width: 680px) {
-  .consonant-CardsGrid--2up {
-      grid-template-columns: repeat(auto-fit,minmax(380px,max-content)) !important;
-  }
-}
 .merch-card.consonant-Card {
   border-radius: 16px;
 }
@@ -15,25 +9,15 @@
   flex-direction: column;
   min-height: 222px;
   width: 100%;
-  max-width: 100%;
   flex: 1;
   min-width: 378px;
   max-width: 378px;
-}
-.merch-card p {
-  margin-bottom: 8px;
-}
-
-@media only screen and (max-width: 1400px) {
-  .merch-card.segment-blade {
-    min-width: 317px;
-    max-width: 317px;
-  }
 }
 
 .consonant-CardsGrid--oneup .merch-card.consonant-Card {
   max-width: 100%;
 }
+
 .merch-card.consonant-Card .consonant-CardFooter {
   padding-top: 0;
 }
@@ -45,6 +29,7 @@
 .consonant-CardsGrid--2up .merch-card {
   width: 378px;
 }
+
 .merch-card .consonant-CardFooter-row {
   display: flex;
   width: 100%;
@@ -52,10 +37,6 @@
   align-items: center;
   height: 32px;
   white-space: nowrap;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
-  justify-content: flex-start;
 }
 
 .merch-card [data-cells="1"]:not(.consonant-CardFooter-row--fluid) .consonant-CardFooter-cell {
@@ -86,48 +67,6 @@
 
 .merch-card .consonant-CardFooter .consonant-CardFooter-row .alt-cta-button--inactive {
   display: none;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper {
-  display: flex;
-  width: 100%;
-  align-items: inherit;
-  height: 32px;
-  white-space: nowrap;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  justify-content: flex-start;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-label {
-  font-size: 12px;
-  margin-left: 11px;
-  color: #505050;
-  vertical-align: middle;
-  width: 100%;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon {
-  display: inline-block;
-  vertical-align: middle;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.merch-card .consonant-CardFooter .standard-wrapper .secure-transaction-wrapper .secure-transaction-icon-img {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  height: 15px;
-  width: 12px;
 }
 
 .merch-card.special-offers,
@@ -169,6 +108,32 @@
   font-weight: 700;
 }
 
+.merch-card h3, h4 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.merch-card h1,
+.merch-card h2,
+.merch-card h3,
+.merch-card h4,
+.merch-card h5,
+.merch-card h6 {
+  line-height: 1.25;
+  margin-top: 0;
+  color: #000;
+}
+
+.merch-card h2 {
+  font-size: 28px;
+  margin-bottom: 7px;
+}
+
+.merch-card h5 {
+  font-size: 18px;
+  margin-bottom: 4.5px;
+}
+
 .merch-card .consonant-PlansCard-title h2 {
   font-size: 24px;
   line-height: 30px;
@@ -182,8 +147,6 @@
 }
 
 .merch-card .consonant-PlansCard-title h3 {
-  font-size: 18px;
-  font-weight: 700;
   margin-bottom: 8px;
   line-height: 22.5px;
 }
@@ -221,8 +184,9 @@
   line-height: 1.5;
   margin-top: 0;
 }
+
 .merch-card .consonant-PlansCard-description {
-  margin-bottom: 18px
+  margin-bottom: 18px;
 }
 
 .merch-card .consonant-SegmentBlade-description span.placeholder-resolved,
@@ -267,7 +231,7 @@
   max-width: 150px;
   line-height: 16px;
   text-align: center;
-  padding: 8px 11px 8px 11px;
+  padding: 8px 11px;
   border-radius: 5px 0 0 5px;
 }
 
@@ -279,7 +243,7 @@
   align-items: center;
 }
 
-p {
+.merch-card p {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
@@ -288,72 +252,86 @@ p {
   color: #000;
 }
 
-.merch-card h1,
-.merch-card h2,
-.merch-card h3,
-.merch-card h4,
-.merch-card h5,
-.merch-card h6 {
-  font-weight: 700;
-  line-height: 1.25;
-  margin-top: 0;
-  color: #000;
-}
-
-h2 {
-  font-size: 28px;
-  margin-bottom: 7px;
-}
-
-h3, h4 {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-h5 {
-  font-size: 18px;
-  margin-bottom: 4.5px;
-}
-
 .merch-card .consonant-SpecialOffers-inner,
 .merch-card .consonant-PlansCard-inner {
   justify-content: center;
 }
+
 .merch-card.special-offer .consonant-SpecialOffers-description p,
 .merch-card.special-offer .consonant-PlansCard-description p {
   font-size: 14px;
 }
+
 .merch-card.special-offer .consonant-CardFooter {
   margin-top: 0;
   padding-top: 0;
   justify-content: center;
+  box-sizing: border-box;
 }
-.merch-card.special-offer h4 {
-  font-size: 18px;
-}
+
 .merch-card.special-offer h4 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
+.merch-card .consonant-CardFooter .standard-wrapper,
 .merch-card .consonant-CardFooter .checkbox-container {
   display: flex;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.merch-card .consonant-CardFooter .checkbox-container {
   justify-content: flex-start;
-  position: relative;
   margin-bottom: 12px;
   cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
+
+.merch-card .consonant-CardFooter .standard-wrapper {
+  height: 32px;
+  white-space: nowrap;
+}
+
+.merch-card .secure-transaction-wrapper {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 1;
+}
+
+.merch-card .secure-transaction-label {
+  font-size: 12px;
+  color: #505050;
+  margin-left: 12px;
+}
+
+.merch-card .secure-transaction-icon {
+  display: inline-block;
+}
+
+.merch-card .secure-transaction-icon-img {
+  display: block;
+  height: 15px;
+  width: 12px;
+}
+
 
 .merch-card .consonant-CardFooter .checkbox-container .checkbox-label {
   font-size: 12px;
-  margin-left: 10px;
   color: #505050;
+  white-space: nowrap;
+}
+
+.merch-card .secure-transaction-label,
+.merch-card .consonant-CardFooter .checkbox-container .checkbox-label {
+  flex-grow: 1;
+  margin-left: 12px;
+}
+
+.merch-card .secure-transaction-icon,
+.merch-card .checkbox-container .checkmark {
   flex-shrink: 0;
 }
 
@@ -370,11 +348,36 @@ h5 {
   background: #fff;
   border-radius: 2px;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .merch-card .consonant-CardFooter .checkbox-container input[type="checkbox"]:checked + .checkmark {
   background-color: #2680eb;
   background-image: url('./img/check-mark-small.svg');
   border-color: #2680eb;
+}
+
+@media only screen and (min-width: 680px) {
+  .consonant-CardsGrid--2up {
+    grid-template-columns: repeat(auto-fit, minmax(380px, max-content)) !important;
+  }
+}
+
+@media only screen and (min-width: 540px) {
+  .consonant-CardsGrid--4up {
+    grid-template-columns: repeat(auto-fit, minmax(260px, max-content)) !important;
+  }
+}
+
+@media only screen and (max-width: 1400px) {
+  .merch-card.segment-blade {
+    min-width: 317px;
+    max-width: 317px;
+  }
+}
+
+@media only screen and (min-width: 1220px) {
+  .merch-card.plans {
+    min-width: 260px;
+    max-width: 260px;
+  }
 }
