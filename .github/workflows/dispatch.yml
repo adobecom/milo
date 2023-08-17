@@ -8,6 +8,7 @@ on:
 jobs:
   dispatch-dc:
     name: Dispatch DC workflow
+    if: github.repository == 'adobecom/milo'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
