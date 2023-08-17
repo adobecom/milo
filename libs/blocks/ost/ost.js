@@ -123,7 +123,7 @@ export async function loadOstEnv() {
             if (content) metadata[value] = content;
           },
         );
-      } catch { // do nothing // }
+      } catch { /* do nothing */ }
     }
   }
 
