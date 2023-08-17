@@ -122,6 +122,7 @@
       "url": "/tools/version-history",
       "isPalette": true,
       "passReferrer": true,
+      "passConfig": true,
       "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
       "includePaths": [ "**.docx**", "**.xlsx**" ]
     }

@@ -2,6 +2,12 @@ import { signal } from '../../deps/htm-preact.js';
 
 const CONFIG = '/.milo/config.json';
 
+const urlParams = new URLSearchParams(window.location.search);
+const owner = urlParams.get('owner') || 'adobecom';
+const repo = urlParams.get('repo') || 'milo';
+const ref = urlParams.get('ref') || 'main';
+const origin = `https://${ref}--${repo}--${owner}.hlx.page`;
+
 // Signals
 export const siteConfig = signal(null);
 export const spAccessToken = signal();
