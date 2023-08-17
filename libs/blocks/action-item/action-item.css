@@ -1,3 +1,7 @@
+.action-item {
+  display: flex;
+}
+
 .action-item img {
   display: block;
   max-height: 240px;
@@ -91,11 +95,7 @@
   align-self: center;
 }
 
-.action-item.zoom {
-  display: flex;
-}
-
-.action-item.zoom .main-image {
+.action-item .main-image {
   flex-grow: 1;
   position: relative;
 }
@@ -118,6 +118,10 @@
 .action-item.zoom a:focus-visible picture:not(.floated-icon) {
   outline-color: -webkit-focus-ring-color;
   outline-style: auto;
+}
+
+.action-item:not(.float-button) a {
+  width: 100%;
 }
 
 .action-item a:not(.con-button):focus-visible {
