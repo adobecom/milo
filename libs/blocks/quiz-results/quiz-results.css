@@ -8,20 +8,40 @@
   visibility: unset;
 }
 
-@media screen and (max-width: 600px) { 
-  .section.tablet-only,.section.desktop-only,.section.desktop-only-l {
+@media screen and (max-width: 599px) { 
+  .tablet-portrait-up,.tablet-landscape-up, 
+  .desktop-up,.big-desktop-up {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .tablet-portrait-up,.tablet-landscape-up, 
+  .desktop-up,.big-desktop-up {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .tablet-portrait-up,
+  .tablet-landscape-up,.desktop-up,
+  .big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .section.desktop-only {
+  .tablet-portrait-up,
+  .tablet-landscape-up,.desktop-up,
+  .big-desktop-up {
     display: none;
   }
 }
 
-@media screen and (min-width: 1440px) {
-  .section.desktop-only-l {
+@media screen and (min-width: 1800px) {
+  .tablet-portrait-up,
+  .tablet-landscape-up,.desktop-up,
+  .big-desktop-up {
     display: none;
   }
 }
