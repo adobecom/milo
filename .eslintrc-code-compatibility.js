@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  extends: ['plugin:compat/recommended', 'plugin:ecmalist/recommended'],
+  extends: ['plugin:compat/recommended', 'plugin:ecmalist/recommended', 'plugin:react-hooks/recommended'],
   settings: { es: { aggressive: true } },
   env: { browser: true, mocha: true },
   parser: '@babel/eslint-parser',
