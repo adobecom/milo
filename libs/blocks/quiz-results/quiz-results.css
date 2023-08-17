@@ -16,32 +16,33 @@
 }
 
 @media screen and (min-width: 600px) {
-  .section.tablet-portrait-up,.section.tablet-landscape-up, 
+  .section.phone-only,
+  .section.tablet-landscape-up,
   .section.desktop-up,.section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 900px) {
+  .section.phone-only,
   .section.tablet-portrait-up,
-  .section.tablet-landscape-up,.section.desktop-up,
-  .section.big-desktop-up {
+  .section.desktop-up,.section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .section.tablet-portrait-up,
-  .section.tablet-landscape-up,.section.desktop-up,
+  .section.phone-only,
+  .section.tablet-portrait-up,.section.tablet-landscape-up,
   .section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 1800px) {
-  .section.tablet-portrait-up,
-  .section.tablet-landscape-up,.section.desktop-up,
-  .section.big-desktop-up {
+  .section.phone-only,
+  .section.tablet-portrait-up,.section.tablet-landscape-up,
+  .section.desktop-up {
     display: none;
   }
 }
