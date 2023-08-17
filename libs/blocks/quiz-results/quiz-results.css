@@ -8,41 +8,38 @@
   visibility: unset;
 }
 
+.section.phone-only,
+.section.tablet-portrait-up,.section.tablet-landscape-up, 
+.section.desktop-up,.section.big-desktop-up {
+  visibility: hidden;
+}
+
 @media screen and (max-width: 599px) { 
-  .section.tablet-portrait-up,.section.tablet-landscape-up, 
-  .section.desktop-up,.section.big-desktop-up {
-    display: none;
+  .section.section.phone-only {
+    display: unset;
   }
 }
 
 @media screen and (min-width: 600px) {
-  .section.phone-only,
-  .section.tablet-landscape-up,
-  .section.desktop-up,.section.big-desktop-up {
-    display: none;
+  .section.tablet-portrait-up {
+    display: unset;
   }
 }
 
 @media screen and (min-width: 900px) {
-  .section.phone-only,
-  .section.tablet-portrait-up,
-  .section.desktop-up,.section.big-desktop-up {
-    display: none;
+  .section.tablet-landscape-up {
+    display: unset;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .section.phone-only,
-  .section.tablet-portrait-up,.section.tablet-landscape-up,
   .section.desktop-up {
-    display: none;
+    display: unset;
   }
 }
 
 @media screen and (min-width: 1800px) {
-  .section.phone-only,
-  .section.tablet-portrait-up,.section.tablet-landscape-up,
   .section.big-desktop-up {
-    display: none;
+    display: unset;
   }
 }
