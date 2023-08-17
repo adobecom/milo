@@ -21,6 +21,11 @@
   color: inherit;
 }
 
+.section.hide-sticky-section,
+.section.close-sticky-section {
+  display: none;
+}
+
 .section.has-background {
   background-color: unset;
 }
