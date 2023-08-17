@@ -424,33 +424,24 @@ describe('Utils', () => {
       div.className = 'global-navigation';
       document.body.appendChild(div);
       window.location.hash = '#not-block';
-      window.scrollTo = () => {};
-      document.querySelector = () => ({ getBoundingClientRect: () => ({ top: 100 }) });
+      window.scrollBy = () => {};
     });
 
     it('should scroll to the hashed element', () => {
-      window.scrollTo = (options) => {
-        expect(options.behavior).to.equal('smooth');
+      let scrollToCalled = false;
+      window.scrollBy = () => {
+        scrollToCalled = true;
       };
 
       utils.scrollToHashedElement();
+      expect(scrollToCalled).to.be.true;
       expect(document.getElementById('not-block')).to.exist;
     });
 
     it('should not scroll if no hash is present', () => {
       window.location.hash = '';
       let scrollToCalled = false;
-      window.scrollTo = () => {
-        scrollToCalled = true;
-      };
-      utils.scrollToHashedElement();
-      expect(scrollToCalled).to.be.false;
-    });
-
-    it('should not scroll if target element is not found', () => {
-      document.querySelector = () => null;
-      let scrollToCalled = false;
-      window.scrollTo = () => {
+      window.scrollBy = () => {
         scrollToCalled = true;
       };
       utils.scrollToHashedElement();

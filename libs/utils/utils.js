@@ -774,7 +774,6 @@ export async function loadDeferred(area, blocks, config) {
     sampleRUM.observe(blocks);
     sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
-  // scrollToHashedElement();
 }
 
 function initSidekick() {
@@ -817,9 +816,8 @@ function decorateMeta() {
 
 export async function loadArea(area = document) {
   const currentHash = window.location.hash;
-  window.onload = function () {
-    history.replaceState({}, document.title, window.location.pathname);
-  };
+  // remove the hash from URL, to stop scrolling the screen before the blocks loads
+  window.history.replaceState({}, document.title, window.location.pathname);
   const isDoc = area === document;
 
   if (isDoc) {
@@ -892,6 +890,8 @@ export async function loadArea(area = document) {
     const { default: delayed } = await import('../scripts/delayed.js');
     delayed([getConfig, getMetadata, loadScript, loadStyle]);
   }
+
+  // placing the hash back to scroll the screen.
   window.location.hash = currentHash;
   scrollToHashedElement();
   // Load everything that can be deferred until after all blocks load.
