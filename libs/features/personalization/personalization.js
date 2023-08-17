@@ -313,6 +313,7 @@ const clearEntLocalStorage = () => {
 
 export const getEntitlements = (() => {
   let ents;
+  let logoutEventSet;
   return (async () => {
     if (window.adobeIMS && !window.adobeIMS.isSignedInUser()) {
       clearEntLocalStorage();
@@ -324,6 +325,10 @@ export const getEntitlements = (() => {
     if (!ents) {
       ents = await fetchEntitlements();
       setEntLocalStorage(ents);
+    }
+    if (!logoutEventSet) {
+      window.addEventListener('feds:signOut', clearEntLocalStorage);
+      logoutEventSet = true;
     }
     return ents;
   });
