@@ -19,7 +19,7 @@ function handleFloatBtn(picture, content) {
 function getLinkAttrs(link) {
   const anchor = link.querySelector('a');
   if (!anchor) return {};
-  return Object.fromEntries(Array.from(anchor.attributes).map((attr) => [attr.name, attr.value]));
+  return Object.fromEntries([...anchor.attributes].map((attr) => [attr.name, attr.value]));
 }
 
 function getContent(el, variants, link) {
