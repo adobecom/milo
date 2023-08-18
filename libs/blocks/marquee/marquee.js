@@ -17,7 +17,7 @@ const decorateVideo = (container, src) => {
     const { pathname, hash } = src;
     const attrs = getVideoAttrs(hash);
     container.innerHTML = `<video ${attrs}>
-          <source src=".${pathname}" type="video/mp4" />
+          <source src="${pathname}" type="video/mp4" />
         </video>`;
   }
   return container.firstChild;
