@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
   createContext,
@@ -564,7 +565,7 @@ const FilterPanel = ({ tagsData }) => {
         <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
       <//>
       <!-- End nested multifield -->
-      
+
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
@@ -739,8 +740,10 @@ const CopyBtn = () => {
   };
 
   const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state, fgKeyReplacer))}`;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    return url.href;
   };
 
   const copyConfig = () => {
@@ -893,7 +896,8 @@ const Configurator = ({ rootEl }) => {
         setIsCaasLoaded(true);
       })
       .catch((e) => {
-        /* c8 ignore next */
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
         console.log('Error loading script: ', e);
       });
   }, []);
