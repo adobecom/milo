@@ -213,7 +213,7 @@ class Gnav {
   ims = async () => loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
-      lanaLog({ message: 'GNAV: Error with IMS', e });
+      if (e?.message !== 'IMS timeout') lanaLog({ message: 'GNAV: Error with IMS', e });
     });
 
   decorateTopNav = () => {
