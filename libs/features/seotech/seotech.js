@@ -46,20 +46,20 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
     document.head.append(script);
   };
 
-  const prs = [];
+  const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
     const pageUrl = `${windowUrl.origin}${windowUrl.pathname}`;
     const sheetUrl = (new URLSearchParams(windowUrl.search)).get('seotech-sheet-url') || getMetadata('seotech-sheet-url');
-    prs.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
-      .then((r) => r.forEach((obj) => append(obj)))
+    promises.push(getStructuredData(pageUrl, sheetUrl, seotechAPIUrl)
+      .then((objects) => objects.forEach((obj) => append(obj)))
       .catch((e) => logError(e.message)));
   }
   if (getMetadata('seotech-video-url')) {
-    prs.push(getVideoObject(getMetadata('seotech-video-url'), seotechAPIUrl)
-      .then((r) => append(r))
+    promises.push(getVideoObject(getMetadata('seotech-video-url'), seotechAPIUrl)
+      .then((videoObject) => append(videoObject))
       .catch((e) => logError(e.message)));
   }
-  return Promise.all(prs);
+  return Promise.all(promises);
 }
 
 export default appendScriptTag;
