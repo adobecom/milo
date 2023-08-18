@@ -42,7 +42,8 @@ const decorateBlockBg = (block, node) => {
     const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
     if (videoElement) {
       const video = decorateVideo(child, videoElement.href || videoElement.src);
-      if (video.firstElementChild?.src.includes('autoplay1')) {
+      const hash = video.firstElementChild?.src.split('#')[1];
+      if (hash?.includes('autoplay1')) {
         video.removeAttribute('loop');
       }
     }
