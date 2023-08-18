@@ -11,7 +11,7 @@
 .section.phone-only,
 .section.tablet-portrait-up,.section.tablet-landscape-up, 
 .section.desktop-up,.section.big-desktop-up {
-  visibility: none;
+  display: none;
 }
 
 @media screen and (max-width: 599px) { 
