@@ -24,7 +24,6 @@ function getLinkAttrs(link) {
 
 function getContent(el, variants, link) {
   const pictures = el.querySelectorAll('picture');
-  const text = el.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   const mainPic = pictures[0];
   const picture = mainPic?.parentElement;
   picture?.classList.add('main-image');
@@ -34,7 +33,7 @@ function getContent(el, variants, link) {
   if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
   if (variants.contains('float-button')) handleFloatBtn(picture, link);
   if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
-  const content = createTag(tag, { ...attrs }, text ?? picture);
+  const content = createTag(tag, { ...attrs }, picture.closest('div'));
   return content;
 }
 
