@@ -17,11 +17,36 @@ import { decorateButtons, getBlockSize, applyHoverPlay } from '../../utils/decor
 import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
+function getAttrs(hash) {
+  const isAutoplay = hash?.includes('autoplay');
+  const isAutoplayOnce = hash?.includes('autoplay1');
+  const playOnHover = hash.includes('hoverplay');
+  if (isAutoplay && !isAutoplayOnce) {
+    return 'playsinline autoplay loop muted';
+  }
+  if (playOnHover && isAutoplayOnce) {
+    return 'playsinline autoplay muted data-hoverplay';
+  }
+  if (isAutoplayOnce) {
+    return 'playsinline autoplay muted';
+  }
+  return 'playsinline controls';
+}
+
 const decorateVideo = (container, src) => {
-  container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
-    <source src="${src}" type="video/mp4" />
-  </video>`;
-  container.classList.add('has-video');
+  if (typeof src === 'string') {
+    // no special attrs handling
+    container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
+      <source src="${src}" type="video/mp4" />
+    </video>`;
+    container.classList.add('has-video');
+  } else {
+    const { pathname, hash } = src;
+    const attrs = getAttrs(hash);
+    container.innerHTML = `<video ${attrs}>
+          <source src=".${pathname}" type="video/mp4" />
+        </video>`;
+  }
   return container.firstChild;
 };
 
@@ -137,8 +162,9 @@ export default function init(el) {
   if (media) {
     media.classList.add('media');
     let video = media.querySelector('video');
-    if (media.querySelector('a[href*=".mp4"]')) {
-      video = decorateVideo(media, media.querySelector('a').href);
+    const videoLink = media.querySelector('a[href*=".mp4"]');
+    if (videoLink) {
+      video = decorateVideo(media, videoLink);
     } else {
       decorateImage(media);
     }
