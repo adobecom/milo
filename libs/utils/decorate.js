@@ -89,13 +89,30 @@ function applyTextOverrides(el, override) {
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter(
-    (elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0,
-  );
+  const overrides = [...el.classList]
+    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
+  });
+}
+
+export function decorateIconStack(el) {
+  const ulElems = el.querySelectorAll('ul');
+  if (!ulElems.length) return;
+  const stackEl = ulElems[ulElems.length - 1];
+  stackEl.classList.add('icon-stack-area', 'body-s');
+  el.classList.add('icon-stack');
+  const items = stackEl.querySelectorAll('li');
+  [...items].forEach((i) => {
+    const links = i.querySelectorAll('a');
+    if (links.length <= 1) return;
+    const picIndex = links[0].querySelector('a picture') ? 0 : 1;
+    const linkImg = links[picIndex];
+    const linkText = links[1 - picIndex];
+    linkText.prepend(linkImg.querySelector('picture'));
+    linkImg.remove();
   });
 }
 
