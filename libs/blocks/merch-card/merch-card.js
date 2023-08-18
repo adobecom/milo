@@ -103,8 +103,7 @@ const decorateFooter = (el, cardType) => {
   };
 
   decorateAlternativeCta();
-  cardFooter.querySelectorAll('.consonant-CardFooter-cell')
-    .forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
+  cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
 const addInner = (el, cardType, merchCard) => {
