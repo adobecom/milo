@@ -208,7 +208,7 @@ const init = (el) => {
   decorateIcon(el, icons, cardType);
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
-  if (innerCleanup.classList.length === 0) {
+  if (innerCleanup.classList.length === 0) innerCleanup.remove();
     innerCleanup.remove();
   }
 };
