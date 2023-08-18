@@ -160,7 +160,14 @@ export async function getModal(details, custom) {
   });
 
   dialog.append(close);
-  document.body.append(dialog);
+
+  const existingDialog = document.getElementsByClassName('dialog-modal');
+  if (existingDialog.length > 0) {
+    document.body.insertBefore(dialog, existingDialog[0]);
+  } else {
+    document.body.append(dialog);
+  }
+
   firstFocusable.focus({ preventScroll: true, ...focusVisible });
   window.dispatchEvent(loadedEvent);
 
