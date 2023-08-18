@@ -197,9 +197,7 @@ const init = (el) => {
   });
   addWrapper(el, section, cardType);
   merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
-  if (image) {
-    addBackgroundImg(image, cardType, merchCard);
-  }
+  if (image) addBackgroundImg(image, cardType, merchCard);
   decorateRibbon(el, cardType);
   image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
