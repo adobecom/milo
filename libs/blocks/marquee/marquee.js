@@ -22,6 +22,7 @@ const decorateVideo = (container, src) => {
     <source src="${src}" type="video/mp4" />
   </video>`;
   container.classList.add('has-video');
+  return container.firstChild;
 };
 
 const decorateBlockBg = (block, node) => {
@@ -135,13 +136,13 @@ export default function init(el) {
 
   if (media) {
     media.classList.add('media');
-    const video = media.querySelector('video');
-    if (video) applyHoverPlay(video);
+    let video = media.querySelector('video');
     if (media.querySelector('a[href*=".mp4"]')) {
-      decorateVideo(media, media.querySelector('a').href);
+      video = decorateVideo(media, media.querySelector('a').href);
     } else {
       decorateImage(media);
     }
+    if (video) applyHoverPlay(video);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
