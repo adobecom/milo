@@ -49,8 +49,8 @@ function decorateStaticLinks(el) {
 
 function decorateMedia(el) {
   if (!(el.classList.contains('medium') || el.classList.contains('large'))) return;
-  const allMedia = Array.from(el.querySelectorAll('div > p video, div > p picture'));
-  allMedia.some((media) => {
+  const allMedia = el.querySelectorAll('div > p video, div > p picture');
+  [...allMedia].some((media) => {
     const parentP = media.closest('p');
     const siblingP = parentP?.nextElementSibling;
     if (!siblingP || siblingP.nodeName !== 'P') return false;
@@ -132,7 +132,7 @@ function decorateLayout(el) {
     const isSplit = el.classList.contains('split');
     asideMedia.classList.add(`${isSplit ? 'split-' : ''}image`);
     if (isSplit) {
-      const position = Array.from(asideMedia.parentNode.children).indexOf(asideMedia);
+      const position = [...asideMedia.parentNode.children].indexOf(asideMedia);
       el.classList.add(`split${!position ? '-right' : '-left'}`);
       foreground.parentElement.appendChild(asideMedia);
     }
