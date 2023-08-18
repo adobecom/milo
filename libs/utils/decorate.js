@@ -89,10 +89,20 @@ function applyTextOverrides(el, override) {
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+  const overrides = [...el.classList].filter(
+    (elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0,
+  );
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
   });
+}
+
+export function applyHoverPlay(video) {
+  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
+    video.addEventListener('mouseenter', () => { video.play(); });
+    video.addEventListener('mouseleave', () => { video.pause(); });
+    video.setAttribute('data-mouseevent', true);
+  }
 }

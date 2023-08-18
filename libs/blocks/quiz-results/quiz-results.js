@@ -45,7 +45,6 @@ export const loadingErrorText = 'Could not load quiz results:';
 
 export default async function init(el, debug = null, localStoreKey = null) {
   const data = getMetadata(el);
-  const metaData = el.querySelectorAll('div');
   const params = new URL(document.location).searchParams;
   const quizUrl = data['quiz-url'];
   const BASIC_KEY = 'basicFragments';
@@ -56,6 +55,8 @@ export default async function init(el, debug = null, localStoreKey = null) {
   // handle these two query param values in this way to facilitate unit tests
   localStoreKey ??= params.get('quizKey');
   debug ??= params.get('debug');
+
+  el.replaceChildren();
 
   let results = localStorage.getItem(localStoreKey);
   if (!results) {
@@ -82,12 +83,8 @@ export default async function init(el, debug = null, localStoreKey = null) {
 
     loadFragments(el, basic);
   } else {
+    window.lana.log(`${loadingErrorText} The quiz-results block is misconfigured`);
     return;
-  }
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const div of metaData) {
-    div.remove();
   }
 
   if (data.style) {
