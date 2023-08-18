@@ -14,10 +14,10 @@ const decorateVideo = (container, src) => {
     </video>`;
     container.classList.add('has-video');
   } else {
-    const { pathname, hash } = src;
+    const { href, hash } = src;
     const attrs = getVideoAttrs(hash);
     container.innerHTML = `<video ${attrs}>
-          <source src="${pathname}" type="video/mp4" />
+          <source src="${href}" type="video/mp4" />
         </video>`;
   }
   return container.firstChild;
