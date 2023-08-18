@@ -1,14 +1,12 @@
 import { decorateButtons } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
-function handleFloatIcon(picture, icon) {
-  if (!picture || !icon) return;
+function floatIcon(picture, icon) {
   icon.classList.add('floated-icon');
   picture.appendChild(icon);
 }
 
-function handleFloatBtn(picture, content) {
-  if (!picture || !content) return;
+function floatButton(picture, content) {
   decorateButtons(content);
   const btn = content.querySelector('.con-button');
   if (!btn) return;
@@ -30,8 +28,8 @@ function getContent(el, variants, link) {
   const wrapLink = link && !variants.contains('float-button');
   const tag = wrapLink ? 'a' : 'div';
   let attrs = wrapLink ? getLinkAttrs(link) : {};
-  if (variants.contains('float-icon')) handleFloatIcon(picture, pictures[1]);
-  if (variants.contains('float-button')) handleFloatBtn(picture, link);
+  if (variants.contains('float-icon') && pictures.length > 1) floatIcon(picture, pictures[1]);
+  if (variants.contains('float-button') && link) floatButton(picture, link);
   if (variants.contains('static-links')) attrs = { ...attrs, class: 'static' };
   const content = createTag(tag, { ...attrs }, picture.closest('div'));
   return content;
