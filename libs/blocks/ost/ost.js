@@ -84,13 +84,39 @@ export function createLinkMarkup(
   return link;
 }
 
-export async function loadOstEnv() {
-  const searchParameters = new URLSearchParams(window.location.search);
+export function extractSearchParams(searchString) {
+  const searchParameters = new URLSearchParams(searchString);
+  const promotionCode = searchParameters.get('promo');
+  if (promotionCode) {
+    // currently promotion code is stored only in the merch link.
+    // we don't have access to the context of the merch link here
+    // so we cannot deduce the effective promo code.
+    searchParameters.delete('promo');
+    searchParameters.set('storedPromoOverride', promotionCode);
+  }
   const aosAccessToken = searchParameters.get('token');
   searchParameters.delete('token');
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
+
+  return {
+    searchParameters,
+    aosAccessToken,
+    owner,
+    referrer,
+    repo,
+  };
+}
+
+export async function loadOstEnv() {
+  const {
+    searchParameters,
+    aosAccessToken,
+    owner,
+    referrer,
+    repo,
+  } = extractSearchParams(window.location.search);
 
   let country;
   let language;
