@@ -3,6 +3,7 @@ import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const {
   miloLibs,
@@ -29,9 +30,7 @@ const createDescription = (rows, cardType) => {
   const descriptions = rows.slice(0, rows.length - 1);
   const descriptionWrapper = createTag('div');
   descriptionWrapper.classList.add(`consonant-${cardType}-description`);
-  descriptions?.forEach((description) => {
-    descriptionWrapper.appendChild(description);
-  });
+  descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
   return descriptionWrapper;
 };
 
@@ -44,12 +43,17 @@ const createTitle = (titles, cardType) => {
 
 const decorateFooter = (el, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
-
+  const replacePlaceHolder = async (key, defaultValue) => {
+    const replacedKey = await replaceKey(key, getConfig(), defaultValue);
+    return { replacedKey };
+  };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const text = createTag('span', { class: 'secure-transaction-label' }, 'Secure transaction');
-    const secureElement = createTag('span', { class: 'secure-transaction-icon' }, SECURE_TRANSACTION_IMG);
-    secureTransactionWrapper.append(secureElement, text);
+    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
+      const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+      const secureElement = createTag('span', { class: 'secure-transaction-icon' }, SECURE_TRANSACTION_IMG);
+      secureTransactionWrapper.append(secureElement, label);
+    });
     return secureTransactionWrapper;
   };
 
@@ -100,9 +104,7 @@ const decorateFooter = (el, cardType) => {
 
   decorateAlternativeCta();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell')
-    .forEach((cell) => {
-      cell.classList.add(`consonant-${cardType}-cell`);
-    });
+    .forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
 const addInner = (el, cardType, merchCard) => {
@@ -175,9 +177,7 @@ const init = (el) => {
   let image;
   const icons = [];
   let row = el.querySelector(':scope > div');
-  if (row.children.length >= 2) {
-    row = el.querySelectorAll(':scope > *')[1];
-  }
+  if (row.children.length >= 2) row = el.querySelectorAll(':scope > *')[1];
   const allPElems = row.querySelectorAll('p');
   const ctas = allPElems[allPElems.length - 1];
   const styles = Array.from(el.classList);
