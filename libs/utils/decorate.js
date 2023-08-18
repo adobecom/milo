@@ -117,6 +117,7 @@ export function decorateIconStack(el) {
 }
 
 export function applyHoverPlay(video) {
+  if (!video) return;
   if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
