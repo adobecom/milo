@@ -412,7 +412,7 @@ export const transformToFlowData = (userSelection) => {
 export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   const selectedCardNames = Object.keys(selectedCards);
   if (selectedCardNames.length > 0) {
-    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion.questions}/${selectedCardNames.join('/')}`;
+    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
     return btnAnalytics;
   }
   return '';
