@@ -5,8 +5,6 @@ const fragMap = {};
 
 const removeHash = (url) => (url?.endsWith('#_dnt') ? url : url?.split('#')[0]);
 
-// TODO: Can we just use a simple list of loaded fragments?
-
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
     const node = tree.find(href);
@@ -44,11 +42,7 @@ export default async function init(a) {
   const resp = await fetch(`${a.href}.plain.html`);
   if (resp.ok) {
     const html = await resp.text();
-    let doc = (new DOMParser()).parseFromString(html, 'text/html');
-    if (doc.querySelector('.fragment-personalization')) {
-      const { fragmentPersonalization } = await import('../../features/personalization/personalization.js');
-      doc = await fragmentPersonalization(doc);
-    }
+    const doc = (new DOMParser()).parseFromString(html, 'text/html');
     const sections = doc.querySelectorAll('body > div');
     if (sections.length > 0) {
       const fragment = createTag('div', { class: 'fragment', 'data-path': relHref });

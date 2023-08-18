@@ -28,6 +28,7 @@ export function createLinkMarkup(
   type,
   { offer_id: offerId, name: offerName, commitment, planType },
   placeholderOptions,
+  promotionCode,
   location = window.location,
 ) {
   const { ctaText = 'buy-now' } = placeholderOptions;
@@ -42,6 +43,10 @@ export function createLinkMarkup(
     url.searchParams.set('osi', offerSelectorId);
     url.searchParams.set('offerId', offerId);
     url.searchParams.set('type', type);
+
+    if (promotionCode) {
+      url.searchParams.set('promo', promotionCode);
+    }
 
     if (commitment === 'PERPETUAL') {
       url.searchParams.set('perp', true);
@@ -79,13 +84,39 @@ export function createLinkMarkup(
   return link;
 }
 
-export async function loadOstEnv() {
-  const searchParameters = new URLSearchParams(window.location.search);
+export function extractSearchParams(searchString) {
+  const searchParameters = new URLSearchParams(searchString);
+  const promotionCode = searchParameters.get('promo');
+  if (promotionCode) {
+    // currently promotion code is stored only in the merch link.
+    // we don't have access to the context of the merch link here
+    // so we cannot deduce the effective promo code.
+    searchParameters.delete('promo');
+    searchParameters.set('storedPromoOverride', promotionCode);
+  }
   const aosAccessToken = searchParameters.get('token');
   searchParameters.delete('token');
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
+
+  return {
+    searchParameters,
+    aosAccessToken,
+    owner,
+    referrer,
+    repo,
+  };
+}
+
+export async function loadOstEnv() {
+  const {
+    searchParameters,
+    aosAccessToken,
+    owner,
+    referrer,
+    repo,
+  } = extractSearchParams(window.location.search);
 
   let country;
   let language;
@@ -103,7 +134,6 @@ export async function loadOstEnv() {
       locale = getLocale(locales, url.pathname);
       ({ country, language } = getTacocatEnv(ENV_PROD, locale));
     } catch (e) {
-      console.error('OST, failed to get env:', e.message);
       ({ country, language } = getTacocatEnv());
     }
 
@@ -119,9 +149,7 @@ export async function loadOstEnv() {
             if (content) metadata[value] = content;
           },
         );
-      } catch (e) {
-        console.error('OST, failed to get metadata:', e.message);
-      }
+      } catch { /* do nothing */ }
     }
   }
 

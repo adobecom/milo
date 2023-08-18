@@ -522,7 +522,7 @@ header.global-navigation {
     padding: 0 8px;
   }
 
-  .feds-navItem--section {
+  .feds-navItem--section:only-of-type {
     border-left: 1px solid var(--feds-borderColor--light);
     border-right: 1px solid var(--feds-borderColor--light);
   }

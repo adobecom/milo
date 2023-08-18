@@ -59,6 +59,7 @@ const MILO_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-selector',
   'tiktok',
   'twitter',
   'video',
@@ -88,11 +89,6 @@ const AUTO_BLOCKS = [
   { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
-  local: {
-    name: 'local',
-    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-  },
   stage: {
     name: 'stage',
     ims: 'stg1',
@@ -112,6 +108,11 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
+ENVS.local = {
+  ...ENVS.stage,
+  name: 'local',
+};
+
 const LANGSTORE = 'langstore';
 
 const PAGE_URL = new URL(window.location.href);
@@ -375,12 +376,27 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
+function checkForExpBlock(name, expBlocks) {
+  const expBlock = expBlocks?.[name];
+  if (!expBlock) return null;
+
+  const blockName = expBlock.split('/').pop();
+  return { blockPath: expBlock, blockName };
+}
+
 export async function loadBlock(block) {
-  const name = block.classList[0];
+  let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
+  let path = `${base}/blocks/${name}`;
+
+  const expBlock = checkForExpBlock(name, expBlocks);
+  if (expBlock) {
+    name = expBlock.blockName;
+    path = expBlock.blockPath;
+  }
+
   const blockPath = `${path}/${name}`;
 
   const styleLoaded = new Promise((resolve) => {
@@ -736,7 +752,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    // load the personalization only
+    loadIms().catch(() => {});
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -769,8 +785,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
