@@ -41,7 +41,10 @@ const decorateBlockBg = (block, node) => {
     }
     const videoElement = child.querySelector('a[href*=".mp4"], video source[src$=".mp4"]');
     if (videoElement) {
-      decorateVideo(child, videoElement.href || videoElement.src);
+      const video = decorateVideo(child, videoElement.href || videoElement.src);
+      if (video.firstElementChild?.src.includes('autoplay1')) {
+        video.removeAttribute('loop');
+      }
     }
 
     const pic = child.querySelector('picture');
