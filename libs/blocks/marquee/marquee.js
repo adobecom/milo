@@ -7,7 +7,7 @@ import { decorateBlockAnalytics, decorateLinkAnalytics } from '../../martech/att
 import { createTag } from '../../utils/utils.js';
 
 const decorateVideo = (container, src) => {
-  if (typeof src === 'string') {
+  if (typeof src === 'string' || src?.href.endsWith('.mp4')) {
     // no special attrs handling
     container.innerHTML = `<video preload="metadata" playsinline autoplay muted loop>
       <source src="${src}" type="video/mp4" />
