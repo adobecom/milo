@@ -744,8 +744,7 @@ async function loadPostLCP(config) {
   loadFonts(config.locale, loadStyle);
 }
 
-export function scrollToHashedElement() {
-  const { hash } = window.location;
+export function scrollToHashedElement(hash) {
   if (!hash) return;
   const elementId = hash.slice(1);
   const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
@@ -816,8 +815,11 @@ function decorateMeta() {
 
 export async function loadArea(area = document) {
   const currentHash = window.location.hash;
+
+  if (area === document) {
   // remove the hash from URL, to stop scrolling the screen before the blocks loads
-  window.history.replaceState({}, document.title, window.location.pathname);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
   const isDoc = area === document;
 
   if (isDoc) {
@@ -893,7 +895,9 @@ export async function loadArea(area = document) {
 
   // placing the hash back to scroll the screen.
   window.location.hash = currentHash;
-  scrollToHashedElement();
+  if (currentHash) {
+    scrollToHashedElement(currentHash);
+  }
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
 }

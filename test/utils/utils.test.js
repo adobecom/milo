@@ -433,7 +433,7 @@ describe('Utils', () => {
         scrollToCalled = true;
       };
 
-      utils.scrollToHashedElement();
+      utils.scrollToHashedElement('#not-block');
       expect(scrollToCalled).to.be.true;
       expect(document.getElementById('not-block')).to.exist;
     });
@@ -444,7 +444,7 @@ describe('Utils', () => {
       window.scrollBy = () => {
         scrollToCalled = true;
       };
-      utils.scrollToHashedElement();
+      utils.scrollToHashedElement('');
       expect(scrollToCalled).to.be.false;
     });
   });
