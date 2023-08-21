@@ -66,7 +66,7 @@ const decorateFooter = (el, cardType) => {
       buttonToRemove.classList.remove('button--inactive');
     };
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    const secureTransactionSign = el.querySelector('h6#secure-transaction');
+    const secureTransactionSign = el.querySelector('h6[id^="secure-transaction"]');
     if (secureTransactionSign) {
       const standardWrapper = createTag('div', { class: 'standard-wrapper' });
       const secureTransactionWrapper = decorateWithSecureTransactionSign(secureTransactionSign);
