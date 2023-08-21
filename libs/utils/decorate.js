@@ -106,12 +106,36 @@ function applyTextOverrides(el, override) {
 }
 
 export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail']) {
-  const overrides = [...el.classList].filter(
-    (elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0,
-  );
+  const overrides = [...el.classList]
+    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override);
     el.classList.remove(override);
   });
+}
+
+export function getVideoAttrs(hash) {
+  const isAutoplay = hash?.includes('autoplay');
+  const isAutoplayOnce = hash?.includes('autoplay1');
+  const playOnHover = hash?.includes('hoverplay');
+  if (isAutoplay && !isAutoplayOnce) {
+    return 'playsinline autoplay loop muted';
+  }
+  if (playOnHover && isAutoplayOnce) {
+    return 'playsinline autoplay muted data-hoverplay';
+  }
+  if (isAutoplayOnce) {
+    return 'playsinline autoplay muted';
+  }
+  return 'playsinline controls';
+}
+
+export function applyHoverPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
+    video.addEventListener('mouseenter', () => { video.play(); });
+    video.addEventListener('mouseleave', () => { video.pause(); });
+    video.setAttribute('data-mouseevent', true);
+  }
 }

@@ -454,7 +454,9 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
+const initChart = ({
+  chartWrapper, chartType, data, series, size, ...rest
+}) => {
   const themeName = getTheme(size);
   const options = { chartType, processedData: data, series, size, ...rest };
   const chartOptions = getChartOptions(options);

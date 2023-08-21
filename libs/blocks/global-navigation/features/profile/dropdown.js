@@ -161,10 +161,9 @@ class ProfileDropdown {
       </li>
     `;
 
-    // TODO consumers might want to execute their own logic before a sign out
-    // we might want to provide them a way to do so here
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut();
     });
 

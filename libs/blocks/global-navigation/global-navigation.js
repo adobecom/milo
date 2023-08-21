@@ -78,14 +78,15 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     dropdownElem.classList.add('feds-signIn-dropdown');
 
-    // TODO we don't have a good way of adding config properties to links
-    const dropdownSignIn = dropdownElem.querySelector('[href="https://adobe.com?sign-in=true"]');
+    const dropdownSignIn = dropdownElem.querySelector('[href$="?sign-in=true"]');
 
     if (dropdownSignIn) {
       dropdownSignIn.addEventListener('click', (e) => {
         e.preventDefault();
         signIn();
       });
+    } else {
+      lanaLog({ message: 'Sign in link not found in dropdown.' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -212,6 +213,10 @@ class Gnav {
   ims = async () => loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
+      if (e?.message === 'IMS timeout') {
+        window.addEventListener('onImsLibInstance', () => this.imsReady());
+        return;
+      }
       lanaLog({ message: 'GNAV: Error with IMS', e });
     });
 
@@ -289,18 +294,15 @@ class Gnav {
         this.el.removeEventListener('click', this.loadDelayed);
         this.el.removeEventListener('keydown', this.loadDelayed);
         const [
-          { appLauncher },
           ProfileDropdown,
           Search,
         ] = await Promise.all([
-          loadBlock('../features/appLauncher/appLauncher.js'),
           loadBlock('../features/profile/dropdown.js'),
           loadBlock('../features/search/gnav-search.js'),
           loadStyles('features/profile/dropdown.css'),
           loadStyles('features/search/gnav-search.css'),
         ]);
         this.ProfileDropdown = ProfileDropdown;
-        this.appLauncher = appLauncher;
         this.Search = Search;
         resolve();
       } catch (e) {
@@ -315,7 +317,6 @@ class Gnav {
   imsReady = async () => {
     const tasks = [
       this.decorateProfile,
-      this.decorateAppLauncher,
     ];
     try {
       for await (const task of tasks) {
@@ -375,17 +376,6 @@ class Gnav {
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
-  };
-
-  decorateAppLauncher = () => {
-    // const appLauncherBlock = this.body.querySelector('.app-launcher');
-    // if (appLauncherBlock) {
-    //   await this.loadDelayed();
-    //   this.appLauncher(
-    //     decoratedElem,
-    //     appLauncherBlock,
-    //   );
-    // }
   };
 
   loadSearch = () => {
@@ -486,7 +476,7 @@ class Gnav {
 
     // Create final template
     const decoratedElem = toFragment`
-      <a href="${link.getAttribute('href')}" class="${classPrefix}" daa-ll="${analyticsValue}">
+      <a href="${localizeLink(link.getAttribute('href'))}" class="${classPrefix}" daa-ll="${analyticsValue}">
         ${imageEl}
         ${labelEl}
       </a>`;
@@ -514,7 +504,7 @@ class Gnav {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper id="feds-nav-wrapper"">
+      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
         ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
@@ -595,10 +585,11 @@ class Gnav {
           </a>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+        const tag = isSectionMenu ? 'section' : 'div';
         const triggerTemplate = toFragment`
-          <div class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
+          <${tag} class="feds-navItem${isSectionMenu ? ' feds-navItem--section' : ''}">
             ${dropdownTrigger}
-          </div>`;
+          </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {

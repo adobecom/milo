@@ -1,0 +1,467 @@
+:root {
+  --border-color: #D9D9D9;
+  --highlight-background: #F3D949;
+  --hover-border-color: #357BEB;
+  --section-head-background: #E6E6E6;
+  --checkmark-color: #268E6C;
+}
+
+.table,
+.table.merch {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px 0;
+  border-color: var(--border-color);
+}
+
+.table > .row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 50%);
+}
+
+.table .col {
+  min-height: 27px;
+  border-left: 1px var(--border-color) solid;
+  border-top: 1px var(--border-color) solid;
+}
+
+.table .col:last-child {
+  border-right: 1px var(--border-color) solid;
+}
+
+.table .row:last-child .col {
+  border-bottom: 1px var(--border-color) solid;
+}
+
+.table .col,
+.table .col p {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.table .col p {
+  margin: 0;
+}
+
+.table .col p picture {
+  margin-right: 8px;
+}
+
+.table.merch .col {
+  border-top: 1px var(--border-color) solid;
+  border-left: 1px var(--border-color) solid;
+  border-right: 1px var(--border-color) solid;
+}
+
+.table.merch .col.border-bottom {
+  border-bottom: 1px var(--border-color) solid;
+}
+
+.table .row-highlight .col.col-highlight {
+  border-color: transparent;
+}
+
+.table.collapse .section-head-collaped .col {
+  border-bottom: 1px var(--border-color) solid;
+}
+
+/* highlight */
+.table .row-highlight .col-highlight {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  background-color: var(--highlight-background);
+  border: 1px solid var(--highlight-background);
+  padding: 10px 30px;
+  text-transform: capitalize;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.table .row-highlight .col-highlight.hidden {
+  visibility: hidden;
+}
+
+/* heading */
+.table .row-heading .col-heading.hidden {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.table .row-heading .col-heading:last-child {
+  border-top-right-radius: 15px;
+}
+
+.table .row-heading .col-heading.no-rounded:last-child {
+  border-top-right-radius: 0;
+}
+
+.table .section-row .col.section-row-title,
+.table .section-row .col.section-row-title p {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+}
+
+.table:not(.merch) .section-row .col:not(.section-row-title),
+.table .row-heading .col.col-heading {
+  text-align: center;
+}
+
+.table .row-heading .col.col-heading {
+  background-color: var(--color-white);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.table .row-heading .col.col-heading .buttons-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.table .row-heading .col.col-heading .buttons-wrapper > * {
+  margin: 12px 6px;
+}
+
+.table .row-heading .col-heading.top-left-rounded {
+  border-top-left-radius: 15px;
+}
+
+.table .row-heading .col-heading.top-right-rounded {
+  border-top-right-radius: 15px;
+}
+
+.table .row-heading .col-1.col-heading:not(.no-rounded) {
+  border-top-left-radius: 15px;
+}
+
+.table .row-heading .col-heading .heading-title {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+  font-weight: bold;
+  margin: var(--spacing-xxs) 0;
+}
+
+.table .row-heading .col-heading .pricing {
+  font-size: var(--type-heading-m-size);
+  line-height: var(--type-heading-m-lh);
+  font-weight: bold;
+  margin: var(--spacing-xxs) 0;
+}
+
+/* section */
+.table .divider {
+  display: none;
+}
+
+.table .section-head .col {
+  background-color: var(--section-head-background);
+  padding: 28px 24px;
+}
+
+.table .section-row .col {
+  padding: 16px 24px;
+}
+
+.table .section-head-title.point-cursor {
+  cursor: pointer;
+}
+
+.table .section-head .section-head-title > :not(.icon) {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-heading-s-lh);
+  width: calc(100% - 20px);
+}
+
+.table .section-head .section-head-title,
+.table .section-row .section-row-title,
+.table.merch .section-head .col-merch,
+.table.merch .section-row .col-merch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table.collapse .section-row.hidden {
+  display: none;
+}
+
+.table:not(.merch) .section-head > :not(:first-child) {
+  border-left-color: transparent;
+}
+
+.table:not(.merch) .section-head > :not(:last-child) {
+  border-right-color: transparent;
+}
+
+.table .light {
+  color: var(--color-white);
+}
+
+/* icons */
+.table .icon-milo-info {
+  height: 18px;
+}
+
+.table .icon-milo-info:hover {
+  cursor: pointer;
+}
+
+.table .icon-milo-info:hover path,
+.table .active .icon-milo-info path {
+  color: var(--hover-border-color);
+}
+
+.table .icon-milo-checkmark {
+  color: var(--checkmark-color);
+  width: 23px;
+  height: 100%;
+}
+
+.table .icon.expand {
+  background-color: transparent;
+  border: 0;
+  background-image: url('../../ui/img/expand2.svg');
+  background-repeat: no-repeat;
+  background-position: center right;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.table .section-head-title:hover .icon.expand {
+  filter: invert(41%) sepia(22%) saturate(100) hue-rotate(203deg) brightness(96%) contrast(93%);
+}
+
+.table .icon.expand[aria-expanded=true] {
+  background-image: url('../../ui/img/collapse2.svg');
+}
+
+.table .row-highlight .col-highlight.transparent-border {
+  border-color: transparent;
+}
+
+/* hover */
+@media (min-width: 900px) {
+  .table .col.hover {
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
+  }
+
+  .table .row-highlight .col-highlight {
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-right-color: transparent;
+  }
+
+  .table .row-highlight .col-highlight.hover {
+    border-top: 1px solid var(--hover-border-color);
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
+  }
+
+  .table .row-heading .col-heading.hover {
+    border-top: 1px solid var(--hover-border-color);
+  }
+
+  .table .row:last-child .col.hover,
+  .table .col.hover.hover-border-bottom {
+    border-bottom: 1px solid var(--hover-border-color);
+  }
+
+  .table .col.no-top-border.hover {
+    border-top-color: var(--border-color);
+  }
+
+  .table .section-head .col.hover {
+    border-right: 1px solid var(--hover-border-color);
+    border-left: 1px solid var(--hover-border-color);
+  }
+
+  .table .row:not(.section-head) .col:not(.col-highlight):not(.hidden).hover {
+    background-color: var(--color-gray-100);
+  }
+
+  .table.merch .col.hover {
+    border-left: 1px solid var(--hover-border-color);
+    border-right: 1px solid var(--hover-border-color);
+  }
+
+  .table.merch .col.border-bottom.hover {
+    border-bottom: 1px solid var(--hover-border-color);
+  }
+}
+
+/* scroll */
+header.global-navigation {
+  z-index: 2;
+}
+
+.table .row-highlight,
+.table .row-heading {
+  position: sticky;
+  z-index: 1;
+  background-color: var(--color-white);
+  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.table:not(.merch) .row-heading.active,
+.table.merch .row-heading.active .col-heading {
+  transition-duration: 400ms;
+  box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);
+}
+
+.top-border-transparent {
+  border-top: 1px solid transparent;
+}
+
+/* Start tablet styles */
+@media (max-width: 899px) {
+  .table,
+  .table.merch {
+    margin: 0 30px;
+  }
+
+  .table:not(.merch) .row .section-head-title,
+  .table:not(.merch) .row .section-row-title {
+    border-right: 1px solid var(--border-color);
+  }
+
+  .table:not(.merch) .section-head {
+    display: block;
+  }
+
+  .table .section-head .col:not(.section-head-title),
+  .table:not(.merch) .col-heading.col-1,
+  .table:not(.merch) .row-highlight .col-highlight.col-1 {
+    display: none;
+  }
+
+  .table:not(.merch) .section-row-title {
+    grid-row: 1;
+    grid-column: 1 / x;
+    background-color: var(--color-gray-100);
+  }
+
+  .table .row-heading .col:nth-child(n+1) {
+    padding: 20px;
+  }
+}
+
+/* Start mobile styles */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  margin: 20px 30px 0;
+}
+
+.filter-wrapper {
+  text-align: center;
+}
+
+.filter {
+  border: none;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  appearance: none;
+  position: relative;
+  padding-right: 30px;
+  background: url("../../ui/img/chevron-wide-black.svg") no-repeat 100%;
+}
+
+@media (min-width: 769px) {
+  .table-section .filters {
+    display: none;
+  }
+
+  .table.merch .filters {
+    display: grid;
+  }
+
+  .table > .row {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .table.merch > .row {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-m);
+  }
+}
+
+/* table merch */
+@media (min-width: 900px) {
+  .table-merch-section .filters {
+    display: none;
+  }
+}
+
+.table.merch > .row {
+  grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
+  gap: var(--spacing-xs);
+}
+
+.table.merch .row-heading .col-heading:not(.no-rounded) {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.table.merch .section-head .col.section-head-title ,
+.table.merch .row-heading .col.col-heading {
+  text-align: left;
+}
+
+.table.merch .col,
+.table.merch .row-heading .col.col-heading {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.table.merch .row-heading .col.col-heading .buttons-wrapper {
+  justify-content: flex-start;
+}
+
+.table.merch .row-heading .col.col-heading .buttons-wrapper > * {
+  margin: 12px 12px 12px 0;
+}
+
+.table.merch .col.no-borders {
+  visibility: hidden;
+}
+
+.table.merch .section-head .col {
+  padding: 24px;
+}
+
+.table.merch .col-merch .col-merch-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border: none;
+}
+
+.table.merch .col-merch .col-merch-content picture {
+  display: flex;
+  width: 30px;
+  margin-right: 16px;
+}
+
+@media (max-width: 400px) {
+  .table,
+  .table.merch {
+    margin: 0 2px;
+    min-width: 395px;
+  }
+
+  .table.merch .col-merch .col-merch-content {
+    flex-direction: column;
+  }
+}

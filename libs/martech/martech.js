@@ -1,6 +1,6 @@
-const TARGET_TIMEOUT_MS = 2000;
+import { getConfig, loadLink, loadScript } from '../utils/utils.js';
 
-let utils;
+const TARGET_TIMEOUT_MS = 2000;
 
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
@@ -90,24 +90,22 @@ const getDtmLib = (env) => ({
   edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
   url:
     env.name === 'prod'
-      ? 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      // TODO: This is a custom launch script for milo-target - update before merging to main
-      : 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
+      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
 });
 
-export default async function init({ persEnabled = false, persManifests, utils: ogUtils }) {
-  utils = ogUtils;
-  const config = utils.getConfig();
+export default async function init({ persEnabled = false, persManifests }) {
+  const config = getConfig();
 
   const { url, edgeConfigId } = getDtmLib(config.env);
-  utils.loadLink(url, { as: 'script', rel: 'preload' });
+  loadLink(url, { as: 'script', rel: 'preload' });
 
   if (persEnabled) {
-    utils.loadLink(
+    loadLink(
       `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
       { as: 'script', rel: 'modulepreload' },
     );
-    utils.loadLink(
+    loadLink(
       `${config.miloLibs || config.codeRoot}/features/personalization/manifest-utils.js`,
       { as: 'script', rel: 'modulepreload' },
     );
@@ -129,17 +127,20 @@ export default async function init({ persEnabled = false, persManifests, utils: 
   };
   window.edgeConfigId = edgeConfigId;
 
-  await utils.loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
+  await loadScript(`${config.miloLibs || config.codeRoot}/deps/martech.main.standard.min.js`);
   // eslint-disable-next-line no-underscore-dangle
   window._satellite.track('pageload');
 
   if (persEnabled) {
-    const targetManifests = await getTargetPersonalization(utils);
+    const targetManifests = await getTargetPersonalization();
     if (targetManifests || persManifests?.length) {
-      const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
-      const manifests = preloadManifests({ targetManifests, persManifests }, utils);
-      const { applyPers } = await import('../features/personalization/personalization.js');
-      await applyPers(manifests, utils);
+      const [{ preloadManifests }, { applyPers, getEntitlements }] = await Promise.all([
+        import('../features/personalization/manifest-utils.js'),
+        import('../features/personalization/personalization.js'),
+      ]);
+      getEntitlements();
+      const manifests = preloadManifests({ targetManifests, persManifests });
+      await applyPers(manifests);
     }
   }
 }

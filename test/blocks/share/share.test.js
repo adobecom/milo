@@ -61,7 +61,7 @@ describe('Share', () => {
     expect(re).to.exist;
     expect(tw).to.not.exist;
   });
-  it("Inline variant (with inline siblings) creates an inline-wrapper element", async () => {
+  it('Inline variant (with inline siblings) creates an inline-wrapper element', async () => {
     const section = document.querySelector('.section.inline-has-siblings');
     const shareEls = section.querySelectorAll('.share.inline');
     shareEls.forEach(async (shareEl) => {
@@ -74,5 +74,12 @@ describe('Share', () => {
     const shareEl = section.querySelector('.share.inline');
     await init(shareEl);
     expect(shareEl.parentElement.classList.contains('inline-wrapper')).to.be.false;
+  });
+  it('Tracking attribute is added to the links in DOM', async () => {
+    const shareEl = document.querySelector('.share');
+    const links = shareEl.querySelectorAll('a');
+    links.forEach((link) => {
+      expect(link.hasAttribute('daa-ll'));
+    });
   });
 });
