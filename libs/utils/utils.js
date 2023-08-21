@@ -815,16 +815,14 @@ function decorateMeta() {
 
 export async function loadArea(area = document) {
   const currentHash = window.location.hash;
-
-  if (area === document) {
-  // remove the hash from URL, to stop scrolling the screen before the blocks loads
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
   const isDoc = area === document;
 
   if (isDoc) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
+    if (currentHash) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }
 
   const config = getConfig();
@@ -893,9 +891,9 @@ export async function loadArea(area = document) {
     delayed([getConfig, getMetadata, loadScript, loadStyle]);
   }
 
-  // placing the hash back to scroll the screen.
-  window.location.hash = currentHash;
   if (currentHash) {
+    // placing the hash back to scroll the screen.
+    window.location.hash = currentHash;
     scrollToHashedElement(currentHash);
   }
   // Load everything that can be deferred until after all blocks load.
