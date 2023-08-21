@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring */
-import { decorateButtons } from '../../utils/decorate.js';
+import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
@@ -27,6 +27,7 @@ const getPodType = (styles) => {
 
 const createDescription = (rows, cardType) => {
   const descriptions = rows.slice(0, rows.length - 1);
+  console.log('createDesc', rows, descriptions);
   const descriptionWrapper = createTag('div', { class: `consonant-${cardType}-description` });
   descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
   return descriptionWrapper;
@@ -176,6 +177,7 @@ const init = (el) => {
   const styles = Array.from(el.classList);
   const cardType = getPodType(styles);
   const merchCard = el;
+  decorateBlockHrs(allPElems);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
     const width = imgNode.width;

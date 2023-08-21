@@ -84,6 +84,7 @@
   padding: 16px;
 }
 
+
 .merch-card hr {
   background-color: #E1E1E1;
   border: none;
@@ -346,6 +347,24 @@
   background-color: #2680eb;
   background-image: url('./img/check-mark-small.svg');
   border-color: #2680eb;
+}
+
+/* (uar) */
+.merch-card.uar hr {
+  height: 2px;
+}
+
+.merch-card.uar .consonant-CardFooter hr {
+  height: 0;
+}
+
+/* transparent bg */
+.merch-card.transparent-bg {
+  background-color: rgba(255 255 255 / 70%);
+}
+
+.merch-card.transparent-bg div[class$="-inner"] {
+  background-color: transparent;
 }
 
 @media only screen and (min-width: 680px) {
