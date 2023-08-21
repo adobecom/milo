@@ -116,7 +116,24 @@ export function decorateIconStack(el) {
   });
 }
 
+export function getVideoAttrs(hash) {
+  const isAutoplay = hash?.includes('autoplay');
+  const isAutoplayOnce = hash?.includes('autoplay1');
+  const playOnHover = hash?.includes('hoverplay');
+  if (isAutoplay && !isAutoplayOnce) {
+    return 'playsinline autoplay loop muted';
+  }
+  if (playOnHover && isAutoplayOnce) {
+    return 'playsinline autoplay muted data-hoverplay';
+  }
+  if (isAutoplayOnce) {
+    return 'playsinline autoplay muted';
+  }
+  return 'playsinline controls';
+}
+
 export function applyHoverPlay(video) {
+  if (!video) return;
   if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
