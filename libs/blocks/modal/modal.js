@@ -161,7 +161,7 @@ export async function getModal(details, custom) {
 
   dialog.append(close);
 
-  const existingDialog = document.getElementsByClassName('dialog-modal');
+  const existingDialog = document.getElementsByClassName('dialog-modal commerce-frame');
   if (existingDialog.length > 0) {
     document.body.insertBefore(dialog, existingDialog[0]);
   } else {
