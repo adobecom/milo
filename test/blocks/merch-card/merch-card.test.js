@@ -90,7 +90,7 @@ describe('Merch Card', () => {
       expect(buttons[1].textContent).to.be.equal('Save now');
       expect(secureWrapper).to.be.exist;
       expect(secureWrapper.querySelector('.secure-transaction-icon')).to.be.exist;
-      expect(secureWrapper.querySelector('.secure-transaction-label').textContent).to.be.equal('Secure transaction');
+      expect(secureWrapper.querySelector('.secure-transaction-label').textContent).to.be.equal('{{secure-transaction}}');
       expect(checkBoxContainer.querySelector('.checkMark')).to.be.exist;
       expect(checkBoxContainer.querySelector('.checkbox-label').textContent).to.be.equal('Lorem ipsum dolor sit amet');
     });
