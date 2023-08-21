@@ -28,15 +28,13 @@ const getPodType = (styles) => {
 
 const createDescription = (rows, cardType) => {
   const descriptions = rows.slice(0, rows.length - 1);
-  const descriptionWrapper = createTag('div');
-  descriptionWrapper.classList.add(`consonant-${cardType}-description`);
+  const descriptionWrapper = createTag('div', { class: `consonant-${cardType}-description` });
   descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
   return descriptionWrapper;
 };
 
 const createTitle = (titles, cardType) => {
-  const titleWrapper = createTag('div');
-  titleWrapper.classList.add(`consonant-${cardType}-title`);
+  const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
   titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
@@ -153,13 +151,10 @@ const decorateRibbon = (el, cardType) => {
 const decorateIcon = (el, icons, cardType) => {
   if (!icons) return;
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
-  const iconWrapper = document.createElement('div');
-  iconWrapper.classList.add(`consonant-${cardType}-iconWrapper`);
+  const iconWrapper = createTag('div', { class: `consonant-${cardType}-iconWrapper` });
   icons?.forEach((icon) => {
     const url = icon.querySelector('img').src;
-    const iconDiv = document.createElement('div');
-    iconDiv.style.backgroundImage = `url(${url})`;
-    iconDiv.classList.add('consonant-MerchCard-ProductIcon');
+    const iconDiv = createTag('div', { class: 'consonant-MerchCard-ProductIcon', style: `background-image: url(${url})` });
     iconWrapper.appendChild(iconDiv);
     icon.parentNode?.remove();
   });

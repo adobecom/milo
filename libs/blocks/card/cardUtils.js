@@ -6,11 +6,7 @@ const DOUBLE_WIDE = 'DoubleWideCard';
 
 export const addBackgroundImg = (picture, cardType, card) => {
   const url = picture.querySelector('img').src;
-  const imageDiv = document.createElement('div');
-
-  imageDiv.style.backgroundImage = `url(${url})`;
-  imageDiv.classList.add(`consonant-${cardType}-img`);
-  card.append(imageDiv);
+  card.append(createTag('div', { class: `consonant-${cardType}-img`, style: `background-image: url(${url})` }));
 };
 
 const getUpFromSectionMetadata = (section) => {
@@ -42,12 +38,11 @@ export const addFooter = (links, container, merch) => {
 };
 
 export const addWrapper = (el, section, cardType) => {
-  const card = el.classList[0];
   const gridCl = 'consonant-CardsGrid';
   const prevGrid = section.querySelector(`.consonant-Wrapper .${gridCl}`);
 
   if (prevGrid) return;
-
+  const card = el.classList[0];
   let upClass = getUpFromSectionMetadata(section);
   // Authored w/ a typed out number reference... 'two-up' vs. '2-up'
   const list = ['two-up', 'three-up', 'four-up', 'five-up'];
