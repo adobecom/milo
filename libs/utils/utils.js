@@ -59,6 +59,7 @@ const MILO_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-selector',
   'tiktok',
   'twitter',
   'video',
@@ -88,11 +89,6 @@ const AUTO_BLOCKS = [
   { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
-  local: {
-    name: 'local',
-    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-  },
   stage: {
     name: 'stage',
     ims: 'stg1',
@@ -112,6 +108,11 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
+ENVS.local = {
+  ...ENVS.stage,
+  name: 'local',
+};
+
 const LANGSTORE = 'langstore';
 
 const PAGE_URL = new URL(window.location.href);
@@ -751,7 +752,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    // load the personalization only
+    loadIms().catch(() => {});
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -784,8 +785,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
@@ -889,9 +890,10 @@ export async function loadArea(area = document) {
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
     }
-    const seotechVideoUrl = getMetadata('seotech-video-url');
-    if (seotechVideoUrl) {
-      import('../features/seotech/seotech.js').then((module) => module.default(seotechVideoUrl, { createTag, getConfig }));
+    if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
+      import('../features/seotech/seotech.js').then((module) => module.default(
+        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+      ));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

@@ -160,7 +160,7 @@ const formatted = {
     document_cloud: true,
     experience_cloud: true,
   },
-  arrangment_codes: {
+  arrangement_codes: {
     dm_data_launch_ml: true,
     dm_analytics_enterprise_ml: true,
     dm_audience_manager_enterprise_ml: true,
