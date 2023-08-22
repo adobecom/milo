@@ -9,7 +9,7 @@ describe('table and tablemetadata', () => {
   beforeEach(() => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
-    window.dispatchEvent(new Event('milo:icons:loaded'));
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
   });
 
   describe('standard table', () => {

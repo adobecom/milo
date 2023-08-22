@@ -1,3 +1,5 @@
+import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
+
 function buildCaption(pEl) {
   const figCaptionEl = document.createElement('figcaption');
   pEl.classList.add('caption');
@@ -19,8 +21,21 @@ export function buildFigure(blockEl) {
       if (picture) {
         figEl.prepend(picture);
       }
-      const video = clone.querySelector('video');
+      let video = clone.querySelector('video');
+      const videoLink = clone.querySelector('a[href*=".mp4"]');
+      if (videoLink) {
+        const { href, hash } = videoLink;
+        const attrs = getVideoAttrs(hash);
+        const videoElem = `<video ${attrs}>
+          <source src="${href}" type="video/mp4" />
+        </video>`;
+        videoLink.insertAdjacentHTML('afterend', videoElem);
+        videoLink.remove();
+        video = clone.querySelector('video');
+      }
       if (video) {
+        video.removeAttribute('data-mouseevent');
+        applyHoverPlay(video);
         figEl.prepend(video);
       }
       const caption = clone.querySelector('em');

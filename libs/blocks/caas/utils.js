@@ -6,6 +6,7 @@ const URL_ENCODED_COMMA = '%2C';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
+const requestHeaders = [];
 
 export function getPageLocale(currentPath, locales = pageLocales) {
   const possibleLocale = currentPath.split('/')[1];
@@ -272,6 +273,35 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
   };
 }
 
+/**
+ * Finds the matching tuple and returns its index.
+ * Looks for 'X-Adobe-Floodgate' in [['X-Adobe-Floodgate', 'pink'], ['a','b']]
+ * @param {*} fgHeader fgHeader
+ * @returns tupleIndex
+ */
+const findTupleIndex = (fgHeader) => {
+  const matchingTupleIndex = requestHeaders.findIndex((element) => element[0] === fgHeader);
+  return matchingTupleIndex;
+};
+
+/**
+ * Adds the floodgate header to the Config of ConsonantCardCollection
+ * headers: [['X-Adobe-Floodgate', 'pink'], ['OtherHeader', 'Value']]
+ * @param {*} state state
+ * @returns requestHeaders
+ */
+const addFloodgateHeader = (state) => {
+  const fgHeader = 'X-Adobe-Floodgate';
+  const fgHeaderValue = 'pink';
+
+  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
+  requestHeaders.splice(findTupleIndex(fgHeader, 1));
+  if (state.fetchCardsFromFloodgateTree) {
+    requestHeaders.push([fgHeader, fgHeaderValue]);
+  }
+  return requestHeaders;
+};
+
 export function arrayToObj(input = []) {
   const obj = {};
   if (!Array.isArray(input)) {
@@ -303,6 +333,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const featuredCards = state.featuredCards && state.featuredCards.reduce(getContentIdStr, '');
   const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
   const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
+  const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
@@ -310,6 +341,8 @@ export const getConfig = async (originalState, strs = {}) => {
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags);
+
+  const caasRequestHeaders = addFloodgateHeader(state);
 
   const config = {
     collection: {
@@ -367,6 +400,7 @@ export const getConfig = async (originalState, strs = {}) => {
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
+    hideCtaTags,
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
@@ -479,6 +513,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    headers: caasRequestHeaders,
   };
   return config;
 };
@@ -509,6 +544,7 @@ export const defaultState = {
   analyticsTrackImpression: false,
   andLogicTags: [],
   autoCountryLang: false,
+  fetchCardsFromFloodgateTree: false,
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
@@ -539,7 +575,9 @@ export const defaultState = {
   filtersCustom: [],
   filtersShowEmpty: false,
   gutter: '4x',
+  headers: [],
   hideCtaIds: [],
+  hideCtaTags: [],
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
