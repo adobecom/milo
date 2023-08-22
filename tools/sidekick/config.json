@@ -119,9 +119,9 @@
       "title": "Firefly",
       "environments": [ "edit" ],
       "includePaths": [ "**.docx**" ],
-      "url": "https://poc-firefly--milo--adobecom.hlx.page/drafts/osahin/poc-tools/firefly",
+      "url": "https://localhost:3000/drafts/osahin/poc-tools/firefly",
       "isPalette": true,
-      "paletteRect": "top: 60px; left: 7%; height: 500px; width: 85vw;"
+      "paletteRect": "top: 60px; left: 7%; height: 900px; width: 85vw;"
     }
   ]
 }
