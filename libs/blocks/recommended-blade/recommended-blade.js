@@ -170,7 +170,7 @@ import { createTag } from '../../utils/utils.js';
 
 
 export default async function init(el) {
-  const divs = document.querySelectorAll('.spectra-ml > div');
+  const divs = document.querySelectorAll('.recommended-blade > div');
   let map = {};
   for(let div of divs){
     let a = div.querySelectorAll('div');
