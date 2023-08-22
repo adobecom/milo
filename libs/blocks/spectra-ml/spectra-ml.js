@@ -2,12 +2,12 @@ import { createTag, loadScript, loadStyle } from '../../utils/utils.js';
 
 export default async function init(el) {
   const divs = document.querySelectorAll('.spectra-ml > div');
-  let map = {};
+  let props = {};
   for(let div of divs){
     let a = div.querySelectorAll('div');
     let key = a[0].innerText;
     let val = a[1].innerText;
-    map[key] =val;
+    props[key] =val;
   }
   el.innerHTML = '';
   const helloEl = createTag('div', { id: 'someDivId'}, '');
@@ -19,7 +19,7 @@ export default async function init(el) {
       layout: {
         type: '3up', // Can be "2up", "3up", "4up", "5up";
         gutter: '4x', // Can be "2x", "3x", "4x";
-        container: 'carousel', // Can be "83Percent", "1200MaxWidth", "32Margin";
+        container: props.layout || 'carousel' // 'carousel', // Can be "83Percent", "1200MaxWidth", "32Margin";
       },
       lazyLoad: false,
       button: {
@@ -261,13 +261,12 @@ export default async function init(el) {
     onCardSaved: function(){},
     onCardUnsaved: function(){},
     spectra: {
-      input: map["input"] || document.querySelector('meta[name="description"]').content || "I am trying to color an image in 3 different colors and make it even for each color. The problem is how to do that because selection tool doesnt allow me to do so. Also the middle of the image has an emblem and i need to leave that untouched. Is there any way to do this? Image of what i am trying to color is posted.",
-      fiCode: map["fiCode"] || "photoshop_cc",
-      metadataImportance: map["metadataImportance"] || 0.25,
-      limit: map["limit"] || 9,
-      cleaning: map["cleaning"] || "no",
-      locale: map["locale"] || "en-US"
-
+      input: props.input || document.querySelector('meta[name="description"]').content || "I am trying to color an image in 3 different colors and make it even for each color. The problem is how to do that because selection tool doesnt allow me to do so. Also the middle of the image has an emblem and i need to leave that untouched. Is there any way to do this? Image of what i am trying to color is posted.",
+      fiCode: props.fiCode || "photoshop_cc",
+      metadataImportance: props.metadataImportance || 0.25,
+      limit: props.limit || 9,
+      cleaning: props.cleaning || "no",
+      locale: props.locale || "en-US",
     }
   };
 
