@@ -22,6 +22,16 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  const localeFlowListener = async () => {
+    console.log("Locale Flow Listener");
+    const localeFlow = createTag('div', { class: 'locale-flow' });
+    const content = await loadBlock(localeFlow);
+
+    const { getModal }  = await import('../blocks/modal/modal.js');
+    getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
+  
+  };
+
   // Support for legacy manifest v2 - Delete once everyone is migrated to v3
   document.addEventListener('send-to-caas', async (e) => {
     const { host, project, branch, repo, owner } = e.detail;
@@ -35,4 +45,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
+  sk.addEventListener('locale-flow', localeFlowListener);
 }
