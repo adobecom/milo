@@ -113,6 +113,15 @@
       "environments": ["dev","preview", "live", "prod"],
       "event": "send-to-caas",
       "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
+    },
+    {
+      "id": "firefly",
+      "title": "Firefly",
+      "environments": [ "edit" ],
+      "includePaths": [ "**.docx**" ],
+      "url": "https://milo.adobe.com/tools/tag-selector",
+      "isPalette": true,
+      "paletteRect": "top: 60px; left: 7%; height: 500px; width: 85vw;"
     }
   ]
 }
