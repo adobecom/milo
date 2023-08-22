@@ -3,7 +3,10 @@ import Tree from '../../utils/tree.js';
 
 const fragMap = {};
 
-const removeHash = (url) => (url?.endsWith('#_dnt') ? url : url?.split('#')[0]);
+const removeHash = (url) => {
+  const urlNoHash = url.split('#')[0];
+  return url.includes('#_dnt') ? `${urlNoHash}#_dnt` : urlNoHash;
+};
 
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
