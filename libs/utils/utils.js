@@ -821,6 +821,7 @@ export async function loadArea(area = document) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     if (currentHash) {
+      // remove the hash from URL, to stop scrolling the screen before the blocks loads
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }
@@ -858,6 +859,12 @@ export async function loadArea(area = document) {
     delete section.el.dataset.idx;
   }
 
+  if (currentHash) {
+    // placing the hash back to scroll the screen.
+    window.location.hash = currentHash;
+    scrollToHashedElement(currentHash);
+  }
+
   // Post section loading on document
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
@@ -889,12 +896,6 @@ export async function loadArea(area = document) {
 
     const { default: delayed } = await import('../scripts/delayed.js');
     delayed([getConfig, getMetadata, loadScript, loadStyle]);
-  }
-
-  if (currentHash) {
-    // placing the hash back to scroll the screen.
-    window.location.hash = currentHash;
-    scrollToHashedElement(currentHash);
   }
   // Load everything that can be deferred until after all blocks load.
   await loadDeferred(area, areaBlocks, config);
