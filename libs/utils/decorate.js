@@ -85,7 +85,6 @@ export const decorateBlockHrs = (els) => {
     const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
     e.textContent = '';
     e.appendChild(hrElem);
-    e.parentElement?.classList.add('divider');
   });
 };
 

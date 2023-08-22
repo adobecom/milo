@@ -27,7 +27,6 @@ const getPodType = (styles) => {
 
 const createDescription = (rows, cardType) => {
   const descriptions = rows.slice(0, rows.length - 1);
-  console.log('createDesc', rows, descriptions);
   const descriptionWrapper = createTag('div', { class: `consonant-${cardType}-description` });
   descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
   return descriptionWrapper;

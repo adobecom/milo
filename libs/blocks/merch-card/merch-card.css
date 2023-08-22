@@ -351,11 +351,12 @@
 
 /* (uar) */
 .merch-card.uar hr {
-  height: 2px;
+  margin: var(--spacing-xs) 0;
 }
 
 .merch-card.uar .consonant-CardFooter hr {
   height: 0;
+  margin: var(--spacing-xxs) 0 0;
 }
 
 /* transparent bg */
@@ -365,6 +366,19 @@
 
 .merch-card.transparent-bg div[class$="-inner"] {
   background-color: transparent;
+}
+
+/* inline headline */
+.merch-card.inline-headline .consonant-SegmentBlade-inner {
+  display: grid;
+  column-gap: 12px;
+  align-items: center;
+  grid-template-columns: 40px 1fr;
+}
+
+.merch-card.inline-headline .consonant-SegmentBlade-description,
+.merch-card.inline-headline .consonant-CardFooter {
+  grid-column: span 2;
 }
 
 @media only screen and (min-width: 680px) {
