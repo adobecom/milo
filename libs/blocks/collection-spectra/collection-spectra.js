@@ -262,7 +262,7 @@ export default async function init(el) {
     onCardUnsaved: function(){},
     spectra: {
       input: props.input || document.querySelector('meta[name="description"]').content || "I am trying to color an image in 3 different colors and make it even for each color. The problem is how to do that because selection tool doesnt allow me to do so. Also the middle of the image has an emblem and i need to leave that untouched. Is there any way to do this? Image of what i am trying to color is posted.",
-      ficode: props.ficode || "photoshop_cc",
+      fiCode: props.ficode || "photoshop_cc",
       metadataImportance: props.metadataImportance || 0.25,
       limit: props.limit || 9,
       cleaning: props.cleaning || "no",
