@@ -36,7 +36,7 @@ const Ratings = ({
         const hoveredRating = parseInt(fieldSetMouseOut.event.target.value, 10);
         setCurrentRating(hoveredRating);
         if (onRatingHover) onRatingHover({ rating: hoveredRating });
-        
+
         // Delay display of tooltips unless one is currently showing
         if (hoverIndex) {
           clearTimeout(timeoutId);
@@ -46,7 +46,7 @@ const Ratings = ({
           setTimeoutId(
             setTimeout(() => {
               setHoverIndex(hoveredRating);
-            }, tooltipDelay)
+            }, tooltipDelay),
           );
         }
       }
@@ -114,7 +114,7 @@ const Ratings = ({
         starString=${starString}
         starStringPlural=${starStringPlural}
         tooltip=${tooltip}
-      />`
+      />`,
     );
   }
 

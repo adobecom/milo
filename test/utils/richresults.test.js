@@ -54,7 +54,7 @@ describe('Rich Results', () => {
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.be.null;
-    expect( console.error.calledWith('Type Unsupported is not supported') ).to.be.true;
+    expect(console.error.calledWith('Type Unsupported is not supported')).to.be.true;
   });
 
   it('add the Site Search Box rich results', async () => {
@@ -70,9 +70,9 @@ describe('Rich Results', () => {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: 'https://query.example.com/search?q={search_term_string}'
+          urlTemplate: 'https://query.example.com/search?q={search_term_string}',
         },
-        'query-input': 'required name=search_term_string'
+        'query-input': 'required name=search_term_string',
       }],
     };
     expect(actual).to.deep.equal(expected);

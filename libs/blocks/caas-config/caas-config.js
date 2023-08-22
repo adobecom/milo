@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* global ClipboardItem */
 import {
   createContext,
@@ -42,7 +43,7 @@ const getHashConfig = () => {
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   return parseEncodedConfig(encodedConfig);
-}
+};
 
 const caasFilesLoaded = loadCaasFiles();
 
@@ -64,7 +65,7 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
-    'custom-card': 'Custom Card'
+    'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -80,8 +81,8 @@ const defaultOptions = {
     carousel: 'Carousel',
   },
   ctaActions: {
-    '_blank': 'New Tab',
-    '_self': 'Same Tab',
+    _blank: 'New Tab',
+    _self: 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -191,13 +192,16 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
+  detailsTextOption: {
+    default: 'Default',
+    modifiedDate: 'Modified Date',
+  },
 };
 
-const getTagList = (root) =>
-  Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = tag.title;
-    return options;
-  }, {});
+const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
+  options[tag.tagID] = tag.title;
+  return options;
+}, {});
 
 const getTagTree = (root) => {
   const options = Object.entries(root).reduce((opts, [, tag]) => {
@@ -238,7 +242,7 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
+const Input = ({ label, type = 'text', prop, defaultValue = '', title }) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -339,6 +343,7 @@ const UiPanel = () => html`
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
@@ -358,11 +363,11 @@ const UiPanel = () => html`
 `;
 
 const TagsPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
   if (!tagsData) return '';
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const allTags = getTagTree(tagsData);
-  const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
     context.dispatch({
@@ -406,8 +411,10 @@ const TagsPanel = ({ tagsData }) => {
   `;
 };
 
-const CardsPanel = () => {
+const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
+
+  const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
     context.dispatch({
@@ -445,6 +452,7 @@ const CardsPanel = () => {
     >
       <${FormInput} name="contentId" onValidate${isValidUuid} />
     <//>
+    <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
 
@@ -514,7 +522,7 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
   `;
-  
+
   const FilterBuildPanel = html`
     <${FilterOptions}>
     <${MultiField}
@@ -557,7 +565,7 @@ const FilterPanel = ({ tagsData }) => {
         <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
       <//>
       <!-- End nested multifield -->
-      
+
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
     <//>
   `;
@@ -608,15 +616,13 @@ const PaginationPanel = () => {
   `;
 };
 
-const TargetPanel = () =>
-  html`
+const TargetPanel = () => html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
     <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
-const AnalyticsPanel = () =>
-  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+const AnalyticsPanel = () => html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
   <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
@@ -644,6 +650,7 @@ const AdvancedPanel = () => {
 
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Input} label="Fetch Cards from Floodgate Content Tree" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
     <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
@@ -687,12 +694,13 @@ const getInitialState = () => {
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    // For backwards compatibilty: Check that localStorage state exists 
+    // For backwards compatibilty: Check that localStorage state exists
     // and it contains the new filtersCustom attribute before using it
     if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
+      // eslint-disable-next-line no-empty
       } catch (e) {}
     }
   }
@@ -705,6 +713,16 @@ const getInitialState = () => {
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
 };
+
+/**
+ * Removes the JSON key "fetchCardsFromFloodgateTree" from the Copied URL to Caas.
+ * Caas Collection will determine if the content should be served from floodgate
+ * based on  metadata.xslx logic in caas-libs
+ * @param {*} key jsonKey
+ * @param {*} value jsonValue
+ * @returns replacedJson
+ */
+const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
 
 /* c8 ignore start */
 const CopyBtn = () => {
@@ -722,8 +740,10 @@ const CopyBtn = () => {
   };
 
   const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = utf8ToB64(JSON.stringify(state, fgKeyReplacer));
+    return url.href;
   };
 
   const copyConfig = () => {
@@ -776,8 +796,8 @@ const CopyBtn = () => {
   return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
-        ? 'is-success'
-        : ''}"
+  ? 'is-success'
+  : ''}"
       onClick=${copyConfig}
     >
       ${btnText}
@@ -799,7 +819,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'Cards',
-    content: html`<${CardsPanel} />`,
+    content: html`<${CardsPanel} tagsData=${tagsData} />`,
   },
   {
     title: 'Sort',
@@ -875,9 +895,10 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
-        /* c8 ignore next */
-        console.log('Error loading script: ', error);
+      .catch((e) => {
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
+        console.log('Error loading script: ', e);
       });
   }, []);
 
@@ -946,6 +967,7 @@ const init = async (el) => {
 };
 
 export {
+  // eslint-disable-next-line no-restricted-exports
   init as default,
   cloneObj,
   getHashConfig,

@@ -6,6 +6,7 @@ export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
+  overflowingTopNav: '.feds-topnav--overflowing',
   navItem: '.feds-navItem',
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
@@ -33,17 +34,10 @@ export function toFragment(htmlStrings, ...values) {
 export const getFedsPlaceholderConfig = () => {
   const { locale } = getConfig();
   let libOrigin = 'https://milo.adobe.com';
+  const { origin } = window.location;
 
-  if (window.location.origin.includes('localhost')) {
-    libOrigin = `${window.location.origin}`;
-  }
-
-  if (window.location.origin.includes('.hlx.page')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.page';
-  }
-
-  if (window.location.origin.includes('.hlx.live')) {
-    libOrigin = 'https://main--milo--adobecom.hlx.live';
+  if (origin.includes('localhost') || origin.includes('.hlx.')) {
+    libOrigin = `https://main--milo--adobecom.hlx.${origin.includes('hlx.live') ? 'live' : 'page'}`;
   }
 
   return {
@@ -65,8 +59,13 @@ export function getAnalyticsValue(str, index) {
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
+  const explicitExperience = experiencePath?.split('/').pop();
+  if (explicitExperience?.length) return explicitExperience;
 
-  return experiencePath?.split('/').pop() || '';
+  const { imsClientId } = getConfig();
+  if (imsClientId?.length) return imsClientId;
+
+  return '';
 }
 
 export function loadStyles(path) {
@@ -131,6 +130,7 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem) {
   const activeClass = selectors.activeDropdown.replace('.', '');
@@ -188,10 +188,13 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export const lanaLog = ({ message, e = '' }) => window.lana.log(`${message} ${e.reason || e.error || e.message || e}`, {
-  clientId: 'feds-milo',
-  sampleRate: 1,
-});
+export const lanaLog = ({ message, e = '' }) => {
+  const url = getMetadata('gnav-source');
+  window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
+    clientId: 'feds-milo',
+    sampleRate: 1,
+  });
+};
 
 export const logErrorFor = async (fn, message) => {
   try {

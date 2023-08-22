@@ -5,6 +5,8 @@
 # Milo Core (alphabetical order)
 /fstab.yaml @adobecom/admins
 /libs/features/ @adobecom/admins
+/libs/features/seotech/ @hparra
+/libs/features/title-append/ @hparra
 /libs/martech/ @adobecom/admins
 /libs/scripts/ @adobecom/admins
 /libs/utils/ @adobecom/admins
@@ -25,6 +27,7 @@
 /libs/blocks/icon-block/ @elan-tbx
 /libs/blocks/local-nav/ @seanchoi-dev
 /libs/blocks/marketo/ @Brandon32
+/libs/blocks/marketo-config/ @Brandon32
 /libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
 /libs/blocks/media/ @ryanmparrish
 /libs/blocks/merch/ @3ch023 @honstar @VKniaz @npeltier
@@ -32,6 +35,7 @@
 /libs/blocks/quote/ @ryanmparrish
 /libs/blocks/table-of-contents/ @Brandon32
 /libs/blocks/tabs/ @ryanmparrish
+/libs/blocks/tag-selector/ @meganthecoder
 /libs/blocks/text/ @ryanmparrish
 /libs/blocks/video-metadata/ @hparra
 /libs/blocks/z-pattern/ @ryanmparrish
@@ -39,5 +43,3 @@
 # Milo Tools (alphabetical order)
 /tools/caas-import/ @chrischrischris
 /tools/send-to-caas/ @chrischrischris
-
-

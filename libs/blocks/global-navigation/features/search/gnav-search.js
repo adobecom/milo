@@ -9,6 +9,7 @@ import {
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig } from '../../../../utils/utils.js';
+import { debounce } from '../../../../utils/action.js';
 
 const CONFIG = {
   suggestions: {
@@ -20,17 +21,6 @@ const CONFIG = {
     inputIsPopulated: 'feds-search-input--isPopulated',
   },
 };
-
-function debounceCallback(callback, time = 150) {
-  if (typeof callback !== 'function') return undefined;
-
-  let timeout = null;
-
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => callback(...args), time);
-  };
-}
 
 const { locale } = getConfig();
 const [, country = 'US'] = locale.ietf.split('-');
@@ -144,7 +134,7 @@ class Search {
       });
   }
 
-  onSearchInput = debounceCallback(() => {
+  onSearchInput = debounce(() => {
     const query = this.getQuery();
 
     if (!query.length) {
@@ -184,7 +174,7 @@ class Search {
           this.parent.classList.remove(CONFIG.selectors.hasResults);
         }
       });
-  });
+  }, 150);
 
   getQuery() {
     const query = this.input.value.trim();

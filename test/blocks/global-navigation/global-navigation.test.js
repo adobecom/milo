@@ -3,18 +3,24 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, selectors, isElementVisible, mockRes, viewports } from './test-utilities.js';
-import { isDesktop } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import brandOnlyNav from './mocks/global-navigation-only-brand.plain.js';
 import nonSvgBrandOnlyNav from './mocks/global-navigation-only-non-svg-brand.plain.js';
+import longNav from './mocks/global-navigation-long.plain.js';
+import noLogoBrandOnlyNav from './mocks/global-navigation-only-brand-no-image.plain.js';
+import globalNavigationMock from './mocks/global-navigation.plain.js';
 
 const ogFetch = window.fetch;
 
 // TODO
 // - test localization
-// - test breadcrumbs SEO
 
 describe('global navigation', () => {
+  before(() => {
+    document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
+  });
+
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();
@@ -94,6 +100,12 @@ describe('global navigation', () => {
         const brandImage = document.querySelector(`${selectors.brandImage} img`);
         expect(isElementVisible(brandImage)).to.equal(true);
         expect(brandImage.getAttribute('alt')).to.equal('Alternative text');
+      });
+
+      it('should not render an image if the "no-logo" modifier is used', async () => {
+        await createFullGlobalNavigation({ globalNavigation: noLogoBrandOnlyNav });
+        const brandImage = document.querySelector(`${selectors.brandImage}`);
+        expect(isElementVisible(brandImage)).to.equal(false);
       });
     });
 
@@ -688,7 +700,6 @@ describe('global navigation', () => {
 
       it('renders the sign in button and dropdown on click', async () => {
         await createFullGlobalNavigation({ signedIn: false });
-
         const signIn = document.querySelector(selectors.signIn);
         expect(isElementVisible(signIn)).to.equal(true);
         expect(signIn.getAttribute('aria-haspopup')).to.equal('true');
@@ -712,6 +723,28 @@ describe('global navigation', () => {
 
         const signInDropdown = document.querySelector(selectors.signInDropdown);
         const dropdownSignIn = signInDropdown.querySelector('[href="https://adobe.com?sign-in=true"]');
+
+        window.adobeIMS = { signIn: sinon.spy() };
+
+        dropdownSignIn.click();
+
+        expect(window.adobeIMS.signIn.callCount).to.equal(1);
+
+        window.adobeIMS = undefined;
+      });
+
+      it('calls ims when clicking a link with a special href, ensuring it only verifies the end of the string', async () => {
+        const mockWithNewSignInHref = globalNavigationMock.replace('https://adobe.com?sign-in=true', 'i-messed-this-up/?sign-in=true');
+        await createFullGlobalNavigation({
+          signedIn: false,
+          globalNavigation: mockWithNewSignInHref,
+        });
+        const signIn = document.querySelector(selectors.signIn);
+
+        signIn.click();
+
+        const signInDropdown = document.querySelector(selectors.signInDropdown);
+        const dropdownSignIn = signInDropdown.querySelector('[href$="?sign-in=true"]');
 
         window.adobeIMS = { signIn: sinon.spy() };
 
@@ -871,7 +904,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.mobile);
       isDesktop.dispatchEvent(new Event('change'));
@@ -879,7 +912,7 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).previousElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.navWrapper).firstElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
 
       await setViewport(viewports.smallDesktop);
       isDesktop.dispatchEvent(new Event('change'));
@@ -887,7 +920,32 @@ describe('global navigation', () => {
       expect(document.querySelector(selectors.mainNav).nextElementSibling)
         .to.equal(document.querySelector(selectors.search));
       expect(document.querySelector(selectors.topNavWrapper).lastElementChild)
-        .to.equal(document.querySelector(selectors.breadCrumbsWrapper));
+        .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
+    });
+
+    it('should add a modifier class when nav content overflows', async () => {
+      const getOverflowingTopnav = () => document.querySelector(selectors.overflowingTopNav);
+
+      await createFullGlobalNavigation();
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await createFullGlobalNavigation({ globalNavigation: longNav });
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.wide);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
+
+      await setViewport(viewports.smallDesktop);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+
+      await setViewport(viewports.mobile);
+      isTangentToViewport.dispatchEvent(new Event('change'));
+
+      expect(getOverflowingTopnav()).to.equal(null);
     });
   });
 });
