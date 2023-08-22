@@ -258,8 +258,10 @@ export function loadLink(href, { as, callback, crossorigin, rel } = {}) {
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     link.setAttribute('href', href);
     if (callback) {
-      link.onload = (e) => callback(e.type);
-      link.onerror = (e) => callback(e.type);
+      link.addEventListener('error', (e) => callback(e.type));
+      link.addEventListener('load', (e) => callback(e.type));
+      // link.onload = (e) => callback(e.type);
+      // link.onerror = (e) => callback(e.type);
     }
     document.head.appendChild(link);
   } else if (callback) {

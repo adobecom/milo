@@ -4,6 +4,7 @@ import {
 } from '../../utils/utils.js';
 
 const CLASS_EL_DELETE = 'p13n-deleted';
+const CLASS_EL_FRAG = 'p13n-frag';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const LS_ENT_KEY = 'milo:entitlements';
 const LS_ENT_EXPIRE_KEY = 'milo:entitlements:expire';
@@ -49,8 +50,20 @@ const DATA_TYPE = {
   TEXT: 'text',
 };
 
-const createFrag = (url, manifestId) => {
+const createFrag = (url, manifestId, originalEl) => {
   const a = createTag('a', { href: url }, url);
+  a.fragCallback = (status) => {
+    console.log(a, status);
+    if (originalEl && status === 'loaded' && originalEl.classList.contains(CLASS_EL_FRAG)) {
+      originalEl.remove();
+    } else if (originalEl && originalEl.classList.contains(CLASS_EL_FRAG)) {
+      originalEl.classList.remove(CLASS_EL_FRAG, CLASS_EL_REPLACE);
+      if (manifestId) {
+        originalEl.dataset.error = `Error loading fragment: ${status}`;
+        originalEl.dataset.manifestId = manifestId;
+      }
+    }
+  };
   if (manifestId) a.dataset.manifestId = manifestId;
   const p = createTag('p', undefined, a);
   loadLink(`${url}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
@@ -59,9 +72,9 @@ const createFrag = (url, manifestId) => {
 
 const COMMANDS = {
   insertcontentafter: (el, target, manifestId) => el
-    .insertAdjacentElement('afterend', createFrag(target, manifestId)),
+    .insertAdjacentElement('afterend', createFrag(target, manifestId, el)),
   insertcontentbefore: (el, target, manifestId) => el
-    .insertAdjacentElement('beforebegin', createFrag(target, manifestId)),
+    .insertAdjacentElement('beforebegin', createFrag(target, manifestId, el)),
   removecontent: (el, target, manifestId) => {
     if (target === 'false') return;
     if (manifestId) {
@@ -72,8 +85,8 @@ const COMMANDS = {
   },
   replacecontent: (el, target, manifestId) => {
     if (el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(target, manifestId));
-    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+    el.insertAdjacentElement('beforebegin', createFrag(target, manifestId, el));
+    el.classList.add(CLASS_EL_FRAG, CLASS_EL_REPLACE);
   },
 };
 
@@ -137,7 +150,7 @@ function normalizePath(p) {
 const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
   const reg = new RegExp(`^${pattern}$`, 'i');
-  return reg.test(inputStr);
+  return reg.test(inputStr?.trim());
 };
 
 export async function replaceInner(path, element) {
@@ -196,12 +209,16 @@ function handleCommands(commands, manifestId, rootEl = document) {
   });
 }
 
+const pageFilterMatch = (pageFilter, path) => pageFilter
+  .split(',')
+  .some((filter) => matchGlob(filter, path));
+
 const getVariantInfo = (line, variantNames, variants) => {
   const action = line.action?.toLowerCase();
   const { selector } = line;
-  const pageFilter = line['page filter'] || line['page filter optional'];
+  const pageFilter = line['page filter'] || line['page filter optional'] || line.pagefilter;
 
-  if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
+  if (pageFilter && !pageFilterMatch(pageFilter, new URL(window.location).pathname)) return;
 
   variantNames.forEach((vn) => {
     if (!line[vn]) return;

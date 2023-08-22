@@ -288,6 +288,7 @@ body[data-mep-highlight='true'] [data-removed-manifest-id] {
 
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
+body[data-mep-highlight='true'] [data-error]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: 'content updated by: ' attr(data-manifest-id);
   font-size: 14px !important;
@@ -320,6 +321,15 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
   content: 'content was removed by: ' attr(data-removed-manifest-id);
   background-color: #ffe0e4 !important;
   border: 1px solid #ef3726;
+}
+
+body[data-mep-highlight='true'] [data-error]::before {
+  content: 'manifest: ' attr(data-manifest-id) '\A' attr(data-error);
+  background-color: #d2cbff !important;
+  border: 1px solid #6626ef;
+  left: unset;
+  right: 5px;
+  white-space: pre-wrap;
 }
 
 body[data-mep-highlight='true'] main[data-manifest-id]::before {

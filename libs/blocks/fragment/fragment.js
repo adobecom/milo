@@ -57,6 +57,7 @@ export default async function init(a) {
         import('../../features/personalization/add-fragment-link-headers.js')
           .then(({ default: addFragmentLinkHeaders }) => addFragmentLinkHeaders(fragment, a));
       }
+      if (a.fragCallback) a.fragCallback('loaded');
       a.parentElement.replaceChild(fragment, a);
 
       await loadArea(fragment);
@@ -64,6 +65,7 @@ export default async function init(a) {
       window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
     }
   } else {
+    if (a.fragCallback) a.fragCallback(resp?.status || 'unknown error');
     window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
   }
 }
