@@ -234,9 +234,11 @@ function createPreviewPill(manifests) {
 function addMarkerData(manifests) {
   manifests.forEach((manifest) => {
     manifest?.selectedVariant.useblockcode?.forEach((item) => {
-      document.querySelectorAll(`.${item.selector}`).forEach((el) => {
-        el.dataset.codeManifestId = manifest.manifest;
-      });
+      if (item.selector) {
+        document.querySelectorAll(`.${item.selector}`).forEach((el) => {
+          el.dataset.codeManifestId = manifest.manifest;
+        });
+      }
     });
     manifest?.selectedVariant.updatemetadata?.forEach((item) => {
       if (item.selector === 'gnav-source') {

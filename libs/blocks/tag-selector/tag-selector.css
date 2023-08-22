@@ -76,3 +76,36 @@
   background: transparent;
   border: none;
 }
+
+.tag-selector .spinner {
+  margin-top: 10px;
+  border: 2px dotted var(--color-gray-100);
+  border-bottom: 2px dotted var(--color-gray-200);
+  border-left: 2px dotted var(--color-gray-400);
+  border-top: 2px dotted var(--color-gray-800);
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
