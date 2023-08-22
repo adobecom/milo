@@ -119,7 +119,7 @@
       "title": "Firefly",
       "environments": [ "edit" ],
       "includePaths": [ "**.docx**" ],
-      "url": "https://milo.adobe.com/tools/tag-selector",
+      "url": "https://poc-firefly--milo--adobecom.hlx.page/drafts/osahin/poc-tools/firefly",
       "isPalette": true,
       "paletteRect": "top: 60px; left: 7%; height: 500px; width: 85vw;"
     }
