@@ -45,5 +45,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', preflightListener);
-  sk.addEventListener('locale-flow', localeFlowListener);
+  sk.addEventListener('custom:locale-flow', localeFlowListener);
 }
