@@ -228,7 +228,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
     const { hash } = url;
-    if (hash === '#_dnt') return processedHref.split('#')[0];
+    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
