@@ -7,7 +7,7 @@ import {
   getFileMetadata,
   saveFileAndUpdateMetadata,
 } from './sharepoint.js';
-import { getUrlInfo, loadingON, simulatePreview, stripExtension } from './utils.js';
+import { getUrlInfo, isExcel, loadingON, simulatePreview, stripExtension } from './utils.js';
 
 async function persistDoc(srcPath, docx, dstPath) {
   try {
@@ -205,7 +205,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       // 1. if regional file exists but there are no changes in regional doc 
       // AND
       // 2. if the doc at the regional was not previously merged
-      if (skipDocMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)) {
+      if (isExcel(filePath) || skipDocMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)) {
         await saveFileAndUpdateMetadata(
           filePath,
           file.blob,

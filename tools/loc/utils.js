@@ -141,3 +141,7 @@ export async function fetchProjectFile(url, retryAttempt) {
   }
   return response;
 }
+
+export function isExcel(filePath) {
+  return filePath.endsWith('.xlsx');
+}
