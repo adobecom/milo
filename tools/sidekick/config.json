@@ -119,7 +119,7 @@
       "title": "Firefly",
       "environments": [ "edit" ],
       "includePaths": [ "**.docx**" ],
-      "url": "https://localhost:3000/drafts/osahin/poc-tools/firefly",
+      "url": "http://localhost:3000/drafts/osahin/poc-tools/firefly",
       "isPalette": true,
       "paletteRect": "top: 60px; left: 7%; height: 900px; width: 85vw;"
     }
