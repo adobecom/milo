@@ -28,7 +28,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const content = await loadBlock(localeFlow);
 
     const { getModal }  = await import('../blocks/modal/modal.js');
-    getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
+    getModal(null, { id: 'locale-flow', content, closeEvent: 'closeModal' });
   
   };
 
