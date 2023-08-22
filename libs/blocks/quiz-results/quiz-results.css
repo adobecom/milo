@@ -8,14 +8,14 @@
   visibility: unset;
 }
 
-.quiz-results .mobile-first,
+.quiz-results .phone-only,
 .quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up,
-.quiz-results .section.desktop-up, .quiz-results .section.big-desktop-up {
+.quiz-results .section.desktop-up, .quiz-results .big-desktop-up {
   display: none;
 }
 
 @media screen and (max-width: 599px) { 
-  .quiz-results .mobile-first {
+  .quiz-results .phone-only {
     display: block;
   }
 }
