@@ -39,7 +39,7 @@ export default async function init(el) {
       resultsPerPage: '5',
       endpoint: "https://cchome-stage.adobe.io/ucs/v3/users/me/surfaces/community/contents/recommendations/context/discussions?locale=en-US",
       totalCardsToShow: '55',
-      cardStyle: "half-height", // available options: "1:2", "3:4", "full-card", "half-height", "custom-card", "product", "double-wide";
+      cardStyle: props.cardStyle || "half-height", // available options: "1:2", "3:4", "full-card", "half-height", "custom-card", "product", "double-wide";
       showTotalResults: 'true',
       i18n: {
         prettyDateIntervalFormat: '{LLL} {dd} | {timeRange} {timeZone}',
