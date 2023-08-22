@@ -5,8 +5,8 @@ export default async function init(el) {
   let props = {};
   for(let div of divs){
     let a = div.querySelectorAll('div');
-    let key = a[0].innerText;
-    let val = a[1].innerText;
+    let key = a[0].innerText.toLocaleLowerCase();
+    let val = a[1].innerText.toLocaleLowerCase();
     props[key] =val;
   }
   el.innerHTML = '';
@@ -36,9 +36,9 @@ export default async function init(el) {
           description: "On Demand"
         }
       },
-      resultsPerPage: '5',
+      resultsPerPage: props.resultsPerPage || '5',
       endpoint: "https://cchome-stage.adobe.io/ucs/v3/users/me/surfaces/community/contents/recommendations/context/discussions?locale=en-US",
-      totalCardsToShow: '55',
+      totalCardsToShow: props.limit || '55',
       cardStyle: props.cardStyle || "half-height", // available options: "1:2", "3:4", "full-card", "half-height", "custom-card", "product", "double-wide";
       showTotalResults: 'true',
       i18n: {
