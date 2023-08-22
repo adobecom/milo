@@ -8,16 +8,9 @@
   visibility: unset;
 }
 
-.section.phone-only,
-.section.tablet-portrait-up, .section.tablet-landscape-up, 
+.section.tablet-portrait-up, .section.tablet-landscape-up,
 .section.desktop-up, .section.big-desktop-up {
   display: none;
-}
-
-@media screen and (max-width: 599px) { 
-  .section.phone-only {
-    display: block;
-  }
 }
 
 @media screen and (min-width: 600px) {
@@ -25,7 +18,8 @@
     display: block;
   }
 
-  .section.tablet-landscape-up, 
+  .section.phone-only,
+  .section.tablet-landscape-up,
   .section.desktop-up, .section.big-desktop-up {
     display: none;
   }
@@ -36,6 +30,7 @@
     display: block;
   }
 
+  .section.phone-only,
   .section.tablet-portrait-up,
   .section.desktop-up, .section.big-desktop-up {
     display: none;
@@ -47,7 +42,8 @@
     display: block;
   }
 
-  .section.tablet-portrait-up, .section.tablet-landscape-up, 
+  .section.phone-only,
+  .section.tablet-portrait-up, .section.tablet-landscape-up,
   .section.big-desktop-up {
     display: none;
   }
@@ -58,6 +54,7 @@
     display: block;
   }
 
+  .section.phone-only,
   .section.tablet-portrait-up, .section.tablet-landscape-up, 
   .section.desktop-up {
     display: none;
