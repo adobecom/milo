@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefly</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Generation</h1>
+        <input type="text" id="textInput" placeholder="Enter your text">
+        <input type="text" id="numInput" placeholder="Enter number of images">
+        <button id="generateButton">Generate Image</button>
+        <div class="image-container">
+            <!-- <img id="outputImage" alt="Generated Image" src = "https://backdrop-stg.senseiasml.io/backdrop/image/78b47850d43a431c96d2b0bbb30e64ed_output.png
+            "> -->
+            <a id="dynamicLink" href="#" target="_blank">
+            <p id="dynamicText">Generated Image link would be displayed here</p>
+        </a>
+        </div>
+    </div>
+    <script src="fireflyApi.js"></script>
+</body>
+</html>
