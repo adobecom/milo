@@ -5,8 +5,8 @@ export default async function init(el) {
   let props = {};
   for(let div of divs){
     let a = div.querySelectorAll('div');
-    let key = a[0].innerText;
-    let val = a[1].innerText;
+    let key = a[0].innerText.toLocaleLowerCase();
+    let val = a[1].innerText.toLocaleLowerCase();
     props[key] =val;
   }
   el.innerHTML = '';
@@ -36,9 +36,9 @@ export default async function init(el) {
           description: "On Demand"
         }
       },
-      resultsPerPage: '5',
+      resultsPerPage: props.resultsPerPage || '5',
       endpoint: "https://cchome-stage.adobe.io/ucs/v3/users/me/surfaces/community/contents/recommendations/context/discussions?locale=en-US",
-      totalCardsToShow: '55',
+      totalCardsToShow: props.limit || '55',
       cardStyle: props.cardStyle || "half-height", // available options: "1:2", "3:4", "full-card", "half-height", "custom-card", "product", "double-wide";
       showTotalResults: 'true',
       i18n: {
@@ -262,7 +262,7 @@ export default async function init(el) {
     onCardUnsaved: function(){},
     spectra: {
       input: props.input || document.querySelector('meta[name="description"]').content || "I am trying to color an image in 3 different colors and make it even for each color. The problem is how to do that because selection tool doesnt allow me to do so. Also the middle of the image has an emblem and i need to leave that untouched. Is there any way to do this? Image of what i am trying to color is posted.",
-      fiCode: props.fiCode || "photoshop_cc",
+      fiCode: props.ficode || "photoshop_cc",
       metadataImportance: props.metadataImportance || 0.25,
       limit: props.limit || 9,
       cleaning: props.cleaning || "no",
