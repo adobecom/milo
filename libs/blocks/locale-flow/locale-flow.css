@@ -1,0 +1,20 @@
+.locale-flow-form {
+  height: 400px;
+}
+
+.selected-container {
+  display: flex;
+  flex-direction: row;
+}
+.selected-container .selected {
+  margin-right: 4px;
+  border: solid grey 2px;
+}
+
+.selected-container .selected:hover {
+  background: grey;
+}
+
+.selected span {
+  margin-right: 6px;
+}
