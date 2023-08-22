@@ -8,58 +8,58 @@
   visibility: unset;
 }
 
-.section.phone-only,
-.section.tablet-portrait-up,.section.tablet-landscape-up, 
-.section.desktop-up,.section.big-desktop-up {
+.quiz-results .section.phone-only,
+.quiz-results .section.tablet-portrait-up,.quiz-results .section.tablet-landscape-up, 
+.quiz-results .section.desktop-up,.quiz-results .section.big-desktop-up {
   display: none;
 }
 
 @media screen and (max-width: 599px) { 
-  .section.section.phone-only {
+  .quiz-results .section.phone-only {
     display: block;
   }
 }
 
 @media screen and (min-width: 600px) {
-  .section.tablet-portrait-up {
+  .quiz-results .section.tablet-portrait-up {
     display: block;
   }
 
-  .section.tablet-landscape-up, 
-  .section.desktop-up,.section.big-desktop-up {
+  .quiz-results .section.tablet-landscape-up, 
+  .quiz-results .section.desktop-up,.quiz-results .section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 900px) {
-  .section.tablet-landscape-up {
+  .quiz-results .section.tablet-landscape-up {
     display: block;
   }
 
-  .section.tablet-portrait-up,
-  .section.desktop-up,.section.big-desktop-up {
+  .quiz-results .section.tablet-portrait-up,
+  .quiz-results .section.desktop-up,.quiz-results .section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .section.desktop-up {
+  .quiz-results .section.desktop-up {
     display: block;
   }
 
-  .section.tablet-portrait-up,.section.tablet-landscape-up, 
-  .section.big-desktop-up {
+  .quiz-results .section.tablet-portrait-up,.quiz-results .section.tablet-landscape-up, 
+  .quiz-results .section.big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 1800px) {
-  .section.big-desktop-up {
+  .quiz-results .section.big-desktop-up {
     display: block;
   }
 
-  .section.tablet-portrait-up,.section.tablet-landscape-up, 
-  .section.desktop-up {
+  .quiz-results .section.tablet-portrait-up,.quiz-results .section.tablet-landscape-up, 
+  .quiz-results .section.desktop-up {
     display: none;
   }
 }
