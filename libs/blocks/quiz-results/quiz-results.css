@@ -8,31 +8,31 @@
   visibility: unset;
 }
 
-.section.tablet-portrait-up, .section.tablet-landscape-up,
-.section.desktop-up, .section.big-desktop-up {
+.quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up,
+.quiz-results .section.desktop-up, .quiz-results .section.big-desktop-up {
   display: none;
 }
 
 @media screen and (min-width: 600px) {
-  .section.tablet-portrait-up {
+  .quiz-results .tablet-portrait-up {
     display: block;
   }
 
-  .section.phone-only,
-  .section.tablet-landscape-up,
-  .section.desktop-up, .section.big-desktop-up {
+  .quiz-results .mobile-first,
+  .quiz-results .tablet-landscape-up,
+  .quiz-results .desktop-up, .quiz-results .big-desktop-up {
     display: none;
   }
 }
 
 @media screen and (min-width: 900px) {
-  .section.tablet-landscape-up {
+  .quiz-results .tablet-landscape-up {
     display: block;
   }
 
-  .section.phone-only,
-  .section.tablet-portrait-up,
-  .section.desktop-up, .section.big-desktop-up {
+  .quiz-results .mobile-first,
+  .quiz-results .tablet-portrait-up,
+  .quiz-results .desktop-up, .quiz-results .big-desktop-up {
     display: none;
   }
 }
@@ -42,21 +42,21 @@
     display: block;
   }
 
-  .section.phone-only,
-  .section.tablet-portrait-up, .section.tablet-landscape-up,
-  .section.big-desktop-up {
+  .quiz-results .mobile-first,
+  .quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up,
+  .quiz-results .big-desktop-up {
     display: none;
   }
 }
 
-@media screen and (min-width: 1800px) {
-  .section.big-desktop-up {
+@media screen and (min-width: 1440px) {
+  .quiz-results .big-desktop-up {
     display: block;
   }
 
-  .section.phone-only,
-  .section.tablet-portrait-up, .section.tablet-landscape-up, 
-  .section.desktop-up {
+  .quiz-results .mobile-first,
+  .quiz-results .tablet-portrait-up, .quiz-results .tablet-landscape-up, 
+  .quiz-results .desktop-up {
     display: none;
   }
 }
