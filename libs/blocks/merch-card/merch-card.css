@@ -351,12 +351,12 @@
 
 /* (uar) */
 .merch-card.uar hr {
-  margin: var(--spacing-xs) 0;
+  margin: var(--spacing-xxs) 0;
 }
 
 .merch-card.uar .consonant-CardFooter hr {
   height: 0;
-  margin: var(--spacing-xxs) 0 0;
+  margin-bottom: none;
 }
 
 /* background opacity 70 */
