@@ -191,8 +191,8 @@ export default function init(el) {
 
   createIntersectionObserver({
     el,
-    callback: (el) => {
-      loadMarketo(el, formData);
+    callback: (target) => {
+      loadMarketo(target, formData);
     },
   });
 }
