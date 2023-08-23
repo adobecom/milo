@@ -26,7 +26,7 @@ const fireflyState = {
   },
 };
 
-const NUM_RESULTS = 4;
+const NUM_RESULTS = 3;
 const RESULTS_ROTATION = 3;
 const MONITOR_INTERVAL = 2000;
 const AVG_GENERATION_TIME = 30000;
@@ -34,24 +34,40 @@ const PROGRESS_ANIMATION_DURATION = 1000;
 const PROGRESS_BAR_LINGER_DURATION = 500;
 const REQUEST_GENERATION_RETRIES = 3;
 
-function getTemplateBranchUrl(result) {
-  const { thumbnail } = result;
-  return `https://prod-search.creativecloud.adobe.com/express?express=true&protocol=https&imageHref=${thumbnail}`;
-}
-
 function createTemplate(result) {
-  const templateBranchUrl = getTemplateBranchUrl(result);
   const templateWrapper = createTag('div', { class: 'generated-template-wrapper' });
   const hoverContainer = createTag('div', { class: 'hover-container' });
 
   const CTAButton = createTag('a', {
-    class: 'cta-button button accent',
+    class: 'cta-button con-button blue button-l',
     target: '_blank',
     href: '#',
   });
-  CTAButton.textContent = 'Edit this template';
-  CTAButton.addEventListener('click', (e) => {
+  CTAButton.textContent = 'Copy';
+  let isCopying = false;
+  hoverContainer.addEventListener('click', async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    CTAButton.textContent = 'Copying...';
+    isCopying = true;
+    const permission = await navigator.permissions.query({ name: 'clipboard-write' });
+    if (permission.state !== 'granted') navigator.clipboard.writeText(result);
+    const response = await fetch(result);
+    const blob = await response.blob();
+    const data = [new ClipboardItem({ [blob.type]: blob })];
+    await navigator.clipboard.write(data).then(
+      () => { CTAButton.textContent = 'Copied!'; },
+      (error) => {
+        navigator.clipboard.writeText(result);
+        console.error('Error copying image to clipboard:', error);
+      },
+    );
+
+    isCopying = false;
+  });
+
+  hoverContainer.addEventListener('mouseover', (e) => {
+    if ((e.toElement === CTAButton || e.toElement === hoverContainer) && !isCopying) CTAButton.textContent = 'Copy';
   });
   hoverContainer.append(CTAButton);
 
@@ -65,9 +81,6 @@ function createTemplate(result) {
   hoverContainer.append(feedbackRow);
 
   templateWrapper.append(createTag('img', { src: result, class: 'generated-template-image' }));
-  hoverContainer.addEventListener('click', () => {
-    window.open(templateBranchUrl, '_blank').focus();
-  });
   templateWrapper.append(hoverContainer);
   return templateWrapper;
 }
@@ -182,6 +195,7 @@ export async function fetchResults(modalContent) {
     query,
     fetchingState,
   } = fireflyState;
+
   const { searchPositionMap } = fetchingState;
   if (!fetchingState.progressManager) {
     const updateProgressBar = (percentage) => {

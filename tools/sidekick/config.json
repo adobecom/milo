@@ -121,7 +121,7 @@
       "includePaths": [ "**.docx**" ],
       "url": "http://localhost:3000/drafts/osahin/poc-tools/firefly",
       "isPalette": true,
-      "paletteRect": "top: 60px; left: 7%; height: 900px; width: 85vw;"
+      "paletteRect": "top: 60px; left: 7%; height: 720px; width: 85vw;"
     }
   ]
 }
