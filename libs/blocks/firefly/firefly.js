@@ -15,7 +15,6 @@ import {
   requestGeneration,
   monitorGeneration,
   MONITOR_STATUS,
-  FEEDBACK_CATEGORIES,
 } from './firefly-api.js';
 import useProgressManager from './progress-manager.js';
 // import { openFeedbackModal } from './feedback-modal.js';
@@ -36,88 +35,9 @@ const PROGRESS_ANIMATION_DURATION = 1000;
 const PROGRESS_BAR_LINGER_DURATION = 500;
 const REQUEST_GENERATION_RETRIES = 3;
 
-// function getVoteHandler(result, category, feedbackState) {
-//   return async (e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     try {
-//       const { error } = await postFeedback(
-//         result.id,
-//         category,
-//         'Rate this result: thumbs_down',
-//       );
-//       if (error) throw new Error(error);
-//       feedbackState.category = category;
-//       feedbackState.showThankyou();
-//     } catch (err) {
-//       // eslint-disable-next-line no-console
-//       console.error(err);
-//     }
-//   };
-// }
-
-export function createRateResultWrapper(result, feedbackState) {
-  const wrapper = createTag('div', { class: 'feedback-rate' });
-  wrapper.append('Rate this result');
-  const downvoteLink = createTag('button', { class: 'feedback-rate-button' });
-  const upvoteLink = createTag('button', { class: 'feedback-rate-button' });
-  downvoteLink.append('👎');
-  upvoteLink.append('👍');
-  downvoteLink.addEventListener(
-    'click',
-    // getVoteHandler(result, FEEDBACK_CATEGORIES.THUMBS_DOWN, feedbackState),
-  );
-  upvoteLink.addEventListener(
-    'click',
-    // getVoteHandler(result, FEEDBACK_CATEGORIES.THUMBS_UP, feedbackState),
-  );
-  wrapper.append(downvoteLink);
-  wrapper.append(upvoteLink);
-  return wrapper;
-}
-
-export function createReportWrapper(result, feedbackState) {
-  const wrapper = createTag('div', { class: 'feedback-report' });
-  wrapper.append('Report');
-  const reportButton = createTag('button', { class: 'feedback-report-button' });
-  reportButton.append('🚩');
-  wrapper.append(reportButton);
-  reportButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    feedbackState.category = FEEDBACK_CATEGORIES.REPORT_ABUSE;
-    // openFeedbackModal(result, feedbackState);
-  });
-  return wrapper;
-}
-
 function getTemplateBranchUrl(result) {
   const { thumbnail } = result;
   return `https://prod-search.creativecloud.adobe.com/express?express=true&protocol=https&imageHref=${thumbnail}`;
-}
-
-function createThankyouWrapper(result, feedbackState) {
-  const wrapper = createTag('div', { class: 'feedback-thankyou' });
-  wrapper.append('Thank you');
-  const tellMoreButton = createTag('a', { class: 'feedback-tell-more secondary button', href: '#', target: '_blank' });
-  tellMoreButton.textContent = 'Tell us more'; // TODO: use placeholders
-  tellMoreButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // openFeedbackModal(result, feedbackState);
-  });
-
-  const closeButton = createTag('button', { class: 'feedback-close-button' });
-  // TODO poc
-  // closeButton.append(getIconElement('close-button-x'));
-  closeButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    feedbackState.hideThankyou();
-  });
-  wrapper.append(tellMoreButton);
-  wrapper.append(closeButton);
-  return wrapper;
 }
 
 function createTemplate(result) {
@@ -137,31 +57,15 @@ function createTemplate(result) {
   hoverContainer.append(CTAButton);
 
   const feedbackRow = createTag('div', { class: 'feedback-row' });
-  const feedbackState = {};
-  const rateResultButton = createRateResultWrapper(result, feedbackState);
-  const reportButton = createReportWrapper(result, feedbackState);
-  const thankyouWrapper = createThankyouWrapper(result, feedbackState);
-  feedbackState.hideThankyou = () => {
-    reportButton.style.display = 'flex';
-    rateResultButton.style.display = 'flex';
-    thankyouWrapper.style.display = 'none';
-  };
-  feedbackState.showThankyou = () => {
-    reportButton.style.display = 'none';
-    rateResultButton.style.display = 'none';
-    thankyouWrapper.style.display = 'flex';
-  };
-  feedbackRow.append(rateResultButton);
-  feedbackRow.append(reportButton);
-  feedbackRow.append(thankyouWrapper);
+
   feedbackRow.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
   });
-  feedbackState.hideThankyou();
+
   hoverContainer.append(feedbackRow);
 
-  templateWrapper.append(createTag('img', { src: result.thumbnail, class: 'generated-template-image' }));
+  templateWrapper.append(createTag('img', { src: result, class: 'generated-template-image' }));
   hoverContainer.addEventListener('click', () => {
     window.open(templateBranchUrl, '_blank').focus();
   });
@@ -188,7 +92,7 @@ async function waitForGeneration(jobId) {
       } catch (err) {
         // ignore and keep trying
       }
-      const { status, results, reason } = res || {};
+      const { status, results } = res || {};
       if (!status) {
         progressManager.update(0);
       } else if (!status || status === MONITOR_STATUS.IN_PROGRESS) {
@@ -199,9 +103,9 @@ async function waitForGeneration(jobId) {
         setTimeout(() => {
           resolve(results);
         }, PROGRESS_ANIMATION_DURATION + PROGRESS_BAR_LINGER_DURATION);
-      } else if (status === MONITOR_STATUS.FAILED || reason) {
+      } else if (status === MONITOR_STATUS.FAILED) {
         clearInterval(fetchingState.intervalId);
-        reject(new Error(JSON.stringify({ status, reason })));
+        reject(new Error(JSON.stringify({ status })));
       } else {
         clearInterval(fetchingState.intervalId);
         reject(new Error(JSON.stringify({ status, results, reason: 'unexpected status' })));
@@ -360,10 +264,7 @@ export async function fetchResults(modalContent) {
 }
 
 export function renderResults(modalContent) {
-  const { fetchingState: { results }, modalContent: currModal } = fireflyState;
-  if (modalContent !== currModal) {
-    return;
-  }
+  const { fetchingState: { results } } = fireflyState;
   const oldLoader = modalContent.querySelector('.loader-wrapper');
   if (oldLoader) {
     oldLoader.style.display = 'none';
@@ -382,7 +283,6 @@ export function renderResults(modalContent) {
   generatedTitle.textContent = 'Here\'s results';
   const generatedRow = createTag('div', { class: 'generated-row' });
   results
-    .filter((result) => result.generated)
     .map((result) => createTemplate(result))
     .forEach((image) => {
       generatedRow.append(image);
@@ -394,7 +294,6 @@ export function renderResults(modalContent) {
 
 function createModalSearch(modalContent) {
   const aceState = fireflyState;
-  const { query } = aceState;
   const searchForm = createTag('form', { class: 'search-form' });
   const searchBar = createTag('input', {
     class: 'search-bar',
@@ -402,20 +301,21 @@ function createModalSearch(modalContent) {
     placeholder: 'Describe what you want to generate...',
     enterKeyHint: 'Search',
   });
-  searchBar.value = query;
+  // TODO demo just to quickly generate results while developing
+  searchBar.value = 'A poster about a robot that sits on a tree';
+  aceState.value = 'A poster about a robot that sits on a tree';
   searchForm.append(searchBar);
 
   const refreshText = 'Refresh results';
   const button = createTag('a', {
     href: '#',
     title: refreshText,
-    class: 'con-button blue button-l disabled',
+    class: 'con-button blue button-l', // TODO add disabled class initially
     target: '_blank',
   });
   button.textContent = refreshText;
   searchForm.append(button);
   button.addEventListener('click', async (e) => {
-    debugger;
     e.preventDefault();
     if (!searchBar.value || button.classList.contains('disabled')) {
       return;
@@ -442,6 +342,7 @@ function createModalSearch(modalContent) {
 
   return searchForm;
 }
+
 function createTitleRow() {
   const titleRow = createTag('div', { class: 'modal-title-row' });
   const title = createTag('h1');
