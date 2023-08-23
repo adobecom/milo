@@ -3,11 +3,16 @@
   width: 400px;
 }
 
+form {
+  margin-left 12px;
+}
+
 .selected-container {
   display: flex;
   flex-direction: row;
   margin: 12px 12px 12px 0;
 }
+
 .selected-container .selected {
   margin-right: 6px;
   border-radius: 8px;
