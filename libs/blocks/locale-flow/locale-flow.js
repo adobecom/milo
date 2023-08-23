@@ -60,6 +60,7 @@ const createForm = () => {
   submitButton.textContent = "Submit";
 
   submitButton.addEventListener('click', async (event) => {
+    event.preventDefault();
     const url = 'http://localhost:80/translate';
     const data = {
       url: `${window.location.origin}${window.location.pathname}.md`,
