@@ -223,8 +223,9 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media .icon-stack-area li picture,
-.media .icon-stack-area .flex-link picture {
-  width: var(--icon-size-m);
+.media .icon-stack-area .flex-link picture img{
+  min-width: var(--icon-size-m);
+  max-width: var(--icon-size-m);
 }
 
 .media .icon-stack-area > li::before {
