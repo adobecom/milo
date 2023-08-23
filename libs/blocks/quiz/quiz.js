@@ -55,7 +55,9 @@ const App = () => {
       const hasInValidParam = Object.keys(initialUrlParams)
         .some((key) => !VALID_QUESTIONS.includes(key) && !KNOWN_PARAMS.includes(key));
 
-      const lastParamKey = Object.keys(initialUrlParams)[Object.keys(initialUrlParams).length - 1];
+      const filteredParams = Object.keys(initialUrlParams)
+        .filter((key) => !KNOWN_PARAMS.includes(key));
+      const lastParamKey = filteredParams[filteredParams.length - 1];
       const selectedCardOptions = {};
       if (hasInValidParam) {
         setUserFlow([questions.questions.data[0].questions]);
@@ -172,12 +174,14 @@ const App = () => {
    */
   useLayoutEffect(() => {
     if (Object.keys(urlParam).length > 0 && btnClicked === true) {
-      const urlParamList = Object.keys(urlParam).map((key) => {
+      let urlParamList = Object.keys(urlParam).map((key) => {
         const paramList = [...urlParam[key]];
         if (paramList.length) {
           return `${key}=${paramList.join(',')}`;
         }
-      }).filter((item) => !!item);
+      }).filter((item) => !!item && !KNOWN_PARAMS.includes(item.split('=')[0]));
+      const knownParamsList = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
+      urlParamList = [...urlParamList, ...knownParamsList];
       window.history.pushState('', '', `?${urlParamList.join('&')}`);
       setBtnClicked(false);
     }

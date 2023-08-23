@@ -218,7 +218,10 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+export const getRedirectUrl = (destinationPage, primaryProducts) => {
+  const separator = destinationPage.includes('?') ? '&' : '?';
+  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+};
 
 export const parseResultData = async (answers) => {
   const results = await fetchContentOfFile(RESULTS_EP_NAME);
