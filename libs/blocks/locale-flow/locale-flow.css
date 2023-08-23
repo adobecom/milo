@@ -12,6 +12,7 @@
   margin-right: 6px;
   border-radius: 8px;
   border: solid grey 2px;
+  cursor: pointer;
 }
 
 .selected-container .selected:hover {
