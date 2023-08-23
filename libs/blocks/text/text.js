@@ -23,6 +23,15 @@ const blockTypeSizes = {
   },
 };
 
+function checkForFormat(el) {
+  const hasFormat = el.querySelector('h1, h2, h3, h4, h5, h6, p');
+  if (!hasFormat) {
+    // const closest = el.querySelector()
+    const wrapped = createTag('p', null, el.children[0]);
+    el.replaceChildren(wrapped);
+  }
+}
+
 export default function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -44,7 +53,10 @@ export default function init(el) {
   });
   const config = blockTypeSizes[blockType][size];
   decorateBlockText(el, config);
-  rows.forEach((row) => { row.classList.add('foreground'); });
+  rows.forEach((row) => {
+    checkForFormat(row);
+    row.classList.add('foreground');
+  });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
   if (el.classList.contains('vertical')) {
