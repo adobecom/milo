@@ -53,9 +53,34 @@ const createForm = () => {
       selectedLocales.push(l);
       redrawSelected();
     }
-  })
+  });
+
+  const submitButton = document.createElement('button');
+  submitButton.classList.add('submit');
+  submitButton.textContent = "Submit";
+
+  submitButton.addEventListener('click', async (event) => {
+    const url = 'localhost:80/translate';
+    const data = {
+      url: `${window.location.href}.md`,
+      selectedLocales
+    };
+    const resp = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    const response = resp.json();
+    if (response.status === 200) {
+      alert("Translation running")
+    } else {
+      alert("Translation failed");
+    }
+  });
+
   form.appendChild(select);
   form.appendChild(selectedContainer);
+  form.appendChild(submitButton);
+
   return form;
 }
 
