@@ -11,12 +11,10 @@
  */
 
 import { createTag } from '../../utils/utils.js';
-import {
-  requestGeneration,
-  monitorGeneration,
-  MONITOR_STATUS,
-} from './firefly-api.js';
+import { ImageGenerator, MONITOR_STATUS } from './nethraa/fireflyApi.js';
 import useProgressManager from './progress-manager.js';
+
+const imageGenerator = new ImageGenerator();
 // import { openFeedbackModal } from './feedback-modal.js';
 const fireflyState = {
   fetchingState: {
@@ -88,7 +86,7 @@ async function waitForGeneration(jobId) {
       tries -= 1;
       let res = null;
       try {
-        res = await monitorGeneration(jobId);
+        res = await imageGenerator.monitorGeneration(jobId);
       } catch (err) {
         // ignore and keep trying
       }
@@ -235,8 +233,8 @@ export async function fetchResults(modalContent) {
   try {
     let jobId;
     await retry(REQUEST_GENERATION_RETRIES, async () => {
-      const generationRes = await requestGeneration(requestConfig);
-      const { status, jobId: generatedJobId } = generationRes;
+      const res = await imageGenerator.startJob(requestConfig.query, requestConfig.num_results);
+      const { status, jobId: generatedJobId } = res;
       if (![MONITOR_STATUS.COMPLETED, MONITOR_STATUS.IN_PROGRESS].includes(status)) {
         throw new Error(`Error requesting generation: ${generatedJobId} ${status}`);
       }

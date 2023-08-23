@@ -36,7 +36,14 @@ function assignValuesToList(list, array) {
   }
   return list;
 }
-export default class ImageGenerator {
+
+AbortSignal.timeout ??= function timeout(ms) {
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+};
+
+export class ImageGenerator {
   constructor() {
     this.currentJob = null;
     this.status = 'pending';
@@ -85,3 +92,9 @@ export default class ImageGenerator {
     return { status, results: srcImageListFinal };
   }
 }
+
+export const MONITOR_STATUS = Object.freeze({
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'DONE',
+  FAILED: 'CANCELED',
+});
