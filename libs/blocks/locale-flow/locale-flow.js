@@ -68,6 +68,9 @@ const createForm = () => {
     const resp = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
     const response = resp.json();
     console.info(response);
