@@ -31,9 +31,10 @@ const createForm = () => {
       const cross = document.createElement('span');
       cross.textContent = 'x';
       selected.addEventListener('click', (event) => {
-        if(!notSelected(event.target.textContent))
+        if(!notSelected(event.target.textContent)) {
           selectedLocales = selectedLocales.filter(x => x!==event.target.textContent);
           selected.remove();
+        }
       });
       selected.replaceChildren(text, cross)
       return selected;

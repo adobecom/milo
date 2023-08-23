@@ -1,13 +1,16 @@
 .locale-flow-form {
-  height: 400px;
+  height: 250px;
+  width: 400px;
 }
 
 .selected-container {
   display: flex;
   flex-direction: row;
+  margin: 12px;
 }
 .selected-container .selected {
-  margin-right: 4px;
+  margin-right: 6px;
+  border-radius: 8px;
   border: solid grey 2px;
 }
 
@@ -17,4 +20,5 @@
 
 .selected span {
   margin-right: 6px;
+  margin-left: 6px;
 }
