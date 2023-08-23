@@ -94,13 +94,13 @@ const App = () => {
     function handlePopState(event) {
       setUrlParam(event.state);
       const params = getUrlParams();
-      const lastParamKey = Object.keys(params)[Object.keys(params).length - 1];
+      const filteredKeys = Object.keys(params).filter((key) => !KNOWN_PARAMS.includes(key));
+      const lastParamKey = filteredKeys[filteredKeys.length - 1];
       if (lastParamKey) {
         let optionValues = params[lastParamKey];
         if (typeof optionValues !== 'string') {
           optionValues = optionValues.toString(); // Convert to string if it's not
         }
-        // optionValues = decodeURIComponent(optionValues); // Decode the URI component
         const selectedOptions = optionValues.split(',').reduce((acc, val) => {
           acc[val] = true;
           return acc;
