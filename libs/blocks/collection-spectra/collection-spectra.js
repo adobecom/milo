@@ -272,7 +272,7 @@ export default async function init(el) {
       limit: props.limit || 9,
       cleaning: props.cleaning || "no",
       locale: props.locale || "en-US",
-      endpoint: "uci"
+      endpoint: props.endpoint || "ucs"
     }
   };
 
