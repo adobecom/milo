@@ -13,6 +13,7 @@
 import { createTag } from '../../utils/utils.js';
 import { ImageGenerator, MONITOR_STATUS } from './nethraa/fireflyApi.js';
 import useProgressManager from './progress-manager.js';
+import { queryConversations } from './firefly-api-conversations.js';
 
 const imageGenerator = new ImageGenerator();
 // import { openFeedbackModal } from './feedback-modal.js';
@@ -304,7 +305,7 @@ function createModalSearch(modalContent) {
   aceState.value = 'A poster about a robot that sits on a tree';
   searchForm.append(searchBar);
 
-  const refreshText = 'Refresh results';
+  const refreshText = 'Genrate results';
   const button = createTag('a', {
     href: '#',
     title: refreshText,
@@ -319,11 +320,24 @@ function createModalSearch(modalContent) {
       return;
     }
     aceState.query = searchBar.value;
+    // TODO - add the GPT
+    if (searchBar.value.length > 120) {
+      const queries = queryConversations(searchBar.value);
+      return;
+    }
     await fetchResults(modalContent);
     renderResults(modalContent);
   });
 
   searchBar.addEventListener('input', () => {
+    if (searchBar.value.length > 120) {
+      button.title = 'AI suggested images';
+      button.textContent = 'AI suggested images';
+    } else {
+      button.title = 'Generate results';
+      button.textContent = 'Generate results';
+    }
+
     if (!searchBar.value) {
       button.classList.add('disabled');
     } else {

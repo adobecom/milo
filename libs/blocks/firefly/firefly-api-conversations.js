@@ -27,7 +27,7 @@ function queryConversationsOptions(article) {
   return options;
 }
 
-async function queryConversations(article) {
+export async function queryConversations(article) {
   // eslint-disable-next-line no-return-await, implicit-arrow-linebreak
   await fetch('https://firefall-stage.adobe.io/v1/chat/completions', queryConversationsOptions(article))
     .then((response) => response.json())
