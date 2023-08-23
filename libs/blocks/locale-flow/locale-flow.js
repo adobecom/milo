@@ -62,7 +62,7 @@ const createForm = () => {
   submitButton.addEventListener('click', async (event) => {
     const url = 'http://localhost:80/translate';
     const data = {
-      url: `${window.location.href}.md`,
+      url: `${window.location.origin}${window.location.pathname}.md`,
       selectedLocales
     };
     const resp = await fetch(url, {
