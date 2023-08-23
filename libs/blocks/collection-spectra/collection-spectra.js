@@ -1,7 +1,7 @@
 import { createTag, loadScript, loadStyle } from '../../utils/utils.js';
 
 export default async function init(el) {
-  const divs = document.querySelectorAll('.collection-spectra > div');
+  const divs = el.querySelectorAll('.collection-spectra > div');
   let props = {};
   for(let div of divs){
     let a = div.querySelectorAll('div');
@@ -10,10 +10,11 @@ export default async function init(el) {
     props[key] =val;
   }
   el.innerHTML = '';
-  const collectionEl = createTag('div', { id: 'someDivId'}, '');
+  const collectionId = `collection-${Math.floor(Math.random() * 10000)}`;
+  const collectionEl = createTag('div', { id: collectionId }, '');
   el.append(collectionEl);
 
-  const endpoint = props.source && !props.source.includes('community') ? 
+  const endpoint = props.source && !props.source.toLocaleLowerCase().includes('community') ?
     "https://adobe.com/NEED/URL/FOR/THIS/TO&WORK=PROPERLY" :
     "https://cchome-stage.adobe.io/ucs/v3/users/me/surfaces/community/contents/recommendations/context/discussions?locale=en-US" 
 
@@ -277,6 +278,6 @@ export default async function init(el) {
   loadStyle('/libs/blocks/collection-spectra/caas-ui.css');
   loadScript('/libs/blocks/collection-spectra/caas-ui.js')
     .then(() => {
-      const consonantCardCollection = new ConsonantCardCollection(config, document.getElementById("someDivId"));
+      const consonantCardCollection = new ConsonantCardCollection(config, document.getElementById(collectionId));
     });
 }
