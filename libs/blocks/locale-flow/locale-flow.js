@@ -70,11 +70,7 @@ const createForm = () => {
       body: JSON.stringify(data),
     });
     const response = resp.json();
-    if (response.status === 200) {
-      alert("Translation running")
-    } else {
-      alert("Translation failed");
-    }
+    console.info(response);
   });
 
   form.appendChild(select);
