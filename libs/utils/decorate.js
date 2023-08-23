@@ -119,7 +119,7 @@ export function decorateIconStack(el) {
 export function getVideoAttrs(hash) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
-  const playOnHover = hash.includes('hoverplay');
+  const playOnHover = hash?.includes('hoverplay');
   if (isAutoplay && !isAutoplayOnce) {
     return 'playsinline autoplay loop muted';
   }
