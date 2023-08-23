@@ -51,11 +51,11 @@ const App = () => {
       dataStrings.questions.data.forEach((question) => {
         strMap[question.q] = question;
       });
-
-      const hasInValidParam = Object.keys(initialUrlParams)
+      const initialUrlParamsKeys = Object.keys(initialUrlParams);
+      const hasInValidParam = initialUrlParamsKeys
         .some((key) => !VALID_QUESTIONS.includes(key) && !KNOWN_PARAMS.includes(key));
 
-      const filteredParams = Object.keys(initialUrlParams)
+      const filteredParams = initialUrlParamsKeys
         .filter((key) => !KNOWN_PARAMS.includes(key));
       const lastParamKey = filteredParams[filteredParams.length - 1];
       const selectedCardOptions = {};
@@ -110,11 +110,13 @@ const App = () => {
         setSelectedCards(selectedOptions);
       }
     }
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
+    if (isDataLoaded) {
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [isDataLoaded]);
 
   useEffect(() => {
     if (userFlow.length) {
