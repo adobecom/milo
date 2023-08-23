@@ -49,7 +49,7 @@ export default async function init(el) {
       i18n: {
         prettyDateIntervalFormat: '{LLL} {dd} | {timeRange} {timeZone}',
         totalResultsText: '{total} Results',
-        title: 'Recommended for you',
+        title: 'More like this',
         titleHeadingLevel: 'h2',
         cardTitleAccessibilityLevel: '3',
         onErrorTitle: 'Sorry there was a system error.',
