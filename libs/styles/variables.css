@@ -105,6 +105,11 @@
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
 
+  /* aspect ratios */
+  --aspect-ratio-square: 1/1;
+  --aspect-ratio-standard: 4/3;
+  --aspect-ratio-wide: 16/9;
+
   /* icon sizes */
   --icon-size-xxl: 80px;
   --icon-size-xl: 64px;
