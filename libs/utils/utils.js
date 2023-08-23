@@ -183,7 +183,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
-      config.useDotHtml = conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html');
+      config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
+        && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       return config;
     },
     (conf) => (config = conf),
