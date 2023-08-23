@@ -199,6 +199,9 @@ div[class*="-up"] .media .foreground > .media-row {
   width: auto;
 }
 
+.media.bio .avatar img {
+  object-fit: cover;
+}
 
 /* icon-stack-area */
 .media .icon-stack-area {
@@ -235,10 +238,6 @@ div[class*="-up"] .media .foreground > .media-row {
 .media.static-links .icon-stack-area li a {
   color: inherit;
   text-decoration: underline;
-}
-
-.media.bio .avatar img {
-  object-fit: cover;
 }
 
 .media.large.bio .avatar img {

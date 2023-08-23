@@ -26,18 +26,17 @@ export function decorateButtons(el, size) {
 
 export function decorateIconStack(el) {
   const ulElems = el.querySelectorAll(':scope > ul');
-  if (ulElems.length) {
-    const iconStackArea = ulElems[ulElems.length - 1];
-    iconStackArea.classList.add('icon-stack-area', 'body-s');
-    const items = iconStackArea.querySelectorAll(':scope > li');
-    [...items].forEach((i) => {
-      if (i.childElementCount === 2 && i.children[0].tagName === 'PICTURE' && i.children[1]?.tagName === 'A') {
-        const aTag = i.children[1];
-        aTag.prepend(i.children[0]);
-        aTag.classList.add('flex-link');
-      }
-    });
-  }
+  if (!ulElems.length) return;
+  const stackEl = ulElems[ulElems.length - 1];
+  stackEl.classList.add('icon-stack-area', 'body-s');
+  const items = stackEl.querySelectorAll('li');
+  [...items].forEach((i) => {
+    if (i.childElementCount === 2 && i.children[0].tagName === 'PICTURE' && i.children[1]?.tagName === 'A') {
+      const aTag = i.children[1];
+      aTag.prepend(i.children[0]);
+      aTag.classList.add('flex-link');
+    }
+  });
 }
 
 export function decorateIconArea(el) {
