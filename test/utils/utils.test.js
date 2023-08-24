@@ -422,4 +422,37 @@ describe('Utils', () => {
       expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });
+
+  describe('useDotHtml', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.body.innerHTML = await readFile({ path: './mocks/useDotHtml.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should add .html to relative links when enabled', async () => {
+      utils.setConfig({ useDotHtml: true, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.true;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.contain('.html');
+      });
+    });
+
+    it('should not add .html to relative links when disabled', async () => {
+      utils.setConfig({ useDotHtml: false, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.false;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.not.contain('.html');
+      });
+    });
+  });
 });
