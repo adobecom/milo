@@ -1,4 +1,5 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
+import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -77,10 +78,23 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
+function getElemsByType(el, type) {
+  const hasElemType = el.querySelectorAll(`[class^="${type}"]`)?.length;
+  if (!hasElemType) {
+    const elem = el.querySelector(':scope > div');
+    const text = [...elem.children].find((child) => child.innerText.trim() !== '');
+    if (text) {
+      const wrap = createTag('p', { class: type }, text.innerText);
+      text.replaceChildren(wrap);
+    }
+  }
+  return el.querySelectorAll(`[class^="${type}"]`);
+}
+
 function applyTextOverrides(el, override) {
   const parts = override.split('-');
   const type = parts[1];
-  const els = el.querySelectorAll(`[class^="${type}"]`);
+  const els = getElemsByType(el, type);
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
