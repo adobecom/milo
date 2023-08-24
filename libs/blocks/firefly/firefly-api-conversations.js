@@ -1,6 +1,5 @@
 import secrets from './secrets.js';
 
-const regex = /^\d+\./gm;
 const conversationOptions = {
   method: 'POST',
   headers: { ...secrets },
@@ -33,7 +32,15 @@ function queryConversationsOptions(article, qty) {
         },
         {
           role: 'system',
-          content: `Your output will be a JS array of ${qty} images ['...', '...', ...] make sure to only pass the array and no additional text`,
+          content: `Your output will be a JS array of ${qty} image prompts ['...', '...', ...]`,
+        },
+        {
+          role: 'system',
+          content: 'Pass only array with no additional text',
+        },
+        {
+          role: 'system',
+          content: 'Each prompt to be less than 120 characters',
         },
         {
           role: 'user',
@@ -62,6 +69,7 @@ function toArray(input) {
   let match;
   const result = [];
 
+  // eslint-disable-next-line no-cond-assign
   while ((match = regex.exec(input)) !== null) {
     result.push(match[1]);
   }
@@ -69,6 +77,7 @@ function toArray(input) {
   return result;
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export async function queryConversations(article, qty) {
   // eslint-disable-next-line no-return-await, implicit-arrow-linebreak
   return await fetch('https://firefall-stage.adobe.io/v1/chat/completions', queryConversationsOptions(article, qty))
@@ -76,16 +85,3 @@ export async function queryConversations(article, qty) {
     .then((data) => toArray(data.generations[0][0].message.content))
     .catch((err) => console.error(err));
 }
-
-async function init() {
-  try {
-    console.log('test!!!');
-    // conversationsApi(); //testing with just query APIs
-    const keywords = await queryConversations('Enterprises are adopting Express to enhance the productivity of creative teams and empower marketing organizations to quickly and easily create on-brand content that stands out', 3);
-    console.log(keywords);
-  } catch {
-    // leave it blank for now
-  }
-}
-
-export default init;
