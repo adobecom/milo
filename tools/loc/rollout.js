@@ -75,7 +75,12 @@ async function persistDoc(srcPath, docx, dstPath) {
 async function persist(srcPath, mdast, dstPath) {
   try {
     const docx = await mdast2docx(mdast);
-    await persistDoc(srcPath, docx, dstPath);
+    // await persistDoc(srcPath, docx, dstPath);
+    await saveFileAndUpdateMetadata(
+      srcPath,
+      docx,
+      dstPath,
+    );
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log('Failed to save file', error);
@@ -116,10 +121,10 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
       mergedMdast.children.push(content);
     } else {
       const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
+      // addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
       mergedMdast.children.push(langstoreContent);
       const livecopyContent = hashToContentMap.get(livecopyProcessedMdast[index]);
-      addTrackChangesInfo('Regional Version', 'added', livecopyContent);
+      // addTrackChangesInfo('Regional Version', 'added', livecopyContent);
       mergedMdast.children.push(livecopyContent);
     }
   }
@@ -128,7 +133,7 @@ function getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast) {
   if (index < langstoreNowProcessedMdast.length) {
     for (; index < langstoreNowProcessedMdast.length; index += 1) {
       const langstoreContent = hashToContentMap.get(langstoreNowProcessedMdast[index]);
-      addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
+      //addTrackChangesInfo('Langstore Version', 'deleted', langstoreContent);
       mergedMdast.children.push(langstoreContent);
     }
   }
@@ -161,6 +166,8 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
 
   async function rolloutPerFolder(targetFolder) {
     // live copy path of where the file is getting rolled out to
+    const loc = targetFolder.split('/');
+    window.loc = loc[1];
     const livecopyFilePath = `${targetFolder}/${fileName}`;
     // holds the status of whether rollout was successful
     const status = { success: true, path: livecopyFilePath };
@@ -184,7 +191,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       const previouslyMerged = fileMetadata.RolloutStatus;
 
       // if regional file does not exist, just copy the langstore file to region
-      if (isfileNotFound) {
+      if (false /*isfileNotFound*/) {
         // just copy since regional document does not exist
         await copyFileAndUpdateMetadata(filePath, targetFolder);
         loadingON(`Rollout to ${livecopyFilePath} complete`);
@@ -195,7 +202,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       // 1. if regional file exists but there are no changes in regional doc 
       // AND
       // 2. if the doc at the regional was not previously merged
-      if (skipDocMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)) {
+      if (false /*skipDocMerge || (noRegionalChanges(fileMetadata) && !previouslyMerged)*/) {
         await saveFileAndUpdateMetadata(
           filePath,
           file.blob,
@@ -206,7 +213,7 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
       }
 
       // if regional file exists AND there are changes in the regional file, then merge process kicks in.
-      if (!langstorePrevVersion) {
+      if (false /*!langstorePrevVersion*/) {
         // if for some reason the RolloutVersion metadata info is not available in region, rollout is NOT performed
         // Cannot merge since we don't have rollout version info.
         // eslint-disable-next-line no-console
@@ -215,17 +222,16 @@ async function rollout(file, targetFolders, skipDocMerge = true) {
         // get MDAST of the current langstore file that needs to be rolled out
         const langstoreNow = await getMdast(filePathWithoutExtension);
         // get processed data Map for the current langstore file that needs to be rolled out
-        const langstoreNowProcessedMdast = await getProcessedMdast(langstoreNow);
-
+        //const langstoreNowProcessedMdast = await getProcessedMdast(langstoreNow);
         const liveCopyPath = `${targetFolder}/${fileName}`;
         // get MDAST of the livecopy file
-        const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
+        // const livecopy = await getMdast(liveCopyPath.substring(0, liveCopyPath.lastIndexOf('.')));
         // get processed data Map for the livecopy file
-        const livecopyProcessedMdast = await getProcessedMdast(livecopy);
+        // const livecopyProcessedMdast = await getProcessedMdast(livecopy);
         // get merged mdast
-        const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
+        // const livecopyMergedMdast = getMergedMdast(langstoreNowProcessedMdast, livecopyProcessedMdast);
         // save the merged livecopy file
-        await persist(filePath, livecopyMergedMdast, livecopyFilePath);
+        await persist(filePath, langstoreNow, livecopyFilePath);
         loadingON(`Rollout to ${livecopyFilePath} complete`);
       }
     } catch (error) {
