@@ -30,6 +30,7 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
+  const blockType = el.classList.contains('merch') ? 'merch' : false;
   const size = getBlockSize(el);
   const container = createTag('div', { class: 'container foreground' });
   rows.forEach((row) => {
@@ -39,7 +40,7 @@ export default function init(el) {
       const text = header.closest('div');
       text.classList.add('text');
       decorateAvatar(text);
-      decorateBlockText(text, blockTypeSizes[size], true);
+      decorateBlockText(text, blockTypeSizes[size], blockType);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');

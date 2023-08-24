@@ -47,7 +47,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], hasIconStack = false) {
+export function decorateBlockText(el, config = ['m', 's', 'm'], type = false) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
@@ -63,7 +63,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], hasIconStack = f
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
-  if (hasIconStack) decorateIconStack(el);
+  if (type && type === 'merch') decorateIconStack(el);
   decorateLinkAnalytics(el, headings);
 }
 
