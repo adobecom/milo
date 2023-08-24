@@ -31,10 +31,9 @@ export function decorateIconStack(el) {
   stackEl.classList.add('icon-stack-area', 'body-s');
   const items = stackEl.querySelectorAll('li');
   [...items].forEach((i) => {
-    if (i.childElementCount === 2 && i.children[0].tagName === 'PICTURE' && i.children[1]?.tagName === 'A') {
+    if (i.childElementCount === 2 && i.children[0].tagName === 'PICTURE' && i.children[1].tagName === 'A') {
       const aTag = i.children[1];
       aTag.prepend(i.children[0]);
-      aTag.classList.add('flex-link');
     }
   });
 }
@@ -47,7 +46,7 @@ export function decorateIconArea(el) {
   });
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = false) {
+export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
@@ -63,7 +62,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = false) {
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
   }
   decorateButtons(el);
-  if (type && type === 'merch') decorateIconStack(el);
+  if (type === 'merch') decorateIconStack(el);
   decorateLinkAnalytics(el, headings);
 }
 

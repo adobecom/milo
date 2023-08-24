@@ -30,7 +30,7 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
-  const blockType = el.classList.contains('merch') ? 'merch' : false;
+  const blockType = el.classList.contains('merch') ? 'merch' : null;
   const size = getBlockSize(el);
   const container = createTag('div', { class: 'container foreground' });
   rows.forEach((row) => {
