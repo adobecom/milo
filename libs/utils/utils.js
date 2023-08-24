@@ -740,8 +740,8 @@ async function checkForPageMods() {
   }
 
   const { env } = getConfig();
-  const { mep } = Object.fromEntries(PAGE_URL.searchParams);
-  if (mep !== undefined || (env.name !== 'prod' && (persEnabled || targetEnabled))) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
