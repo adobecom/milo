@@ -744,16 +744,14 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
-  const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || mepOverride === '' || previewPage) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       persEnabled,
       persManifests,
-      previewPage,
       targetEnabled,
     });
   }
