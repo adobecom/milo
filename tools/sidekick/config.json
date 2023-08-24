@@ -194,7 +194,8 @@
       "id": "localeflow-poc",
       "title": "LocaleFlow poc",
       "environments": [
-        "preview"
+        "preview",
+        "dev"
       ],
       "event": "locale-flow",
       "includePaths": [

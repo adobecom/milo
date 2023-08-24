@@ -5,57 +5,39 @@ const locales = ["English", "French", "German", "Japanese"];
 const createForm = () => {
 
   let selectedLocales = [];
-  const notSelected = (loc) => !selectedLocales.some(x => x === loc);
 
-  const form = document.createElement('form');
-  const formId = 'translation-form';
-  form.setAttribute('id', formId);
-  const select = document.createElement('select');
-  select.setAttribute('form', formId);
-  locales.forEach(loc => {
-    const opt = document.createElement('option');
-    opt.setAttribute('value', loc);
-    opt.textContent = loc;
-    select.appendChild(opt);
-  });
-  const selectedContainer = document.createElement('div');
-  selectedContainer.classList.add('selected-container');
-  
-  
-  const redrawSelected = () => {
-    const createSelected = (name) => {
-      const selected = document.createElement('div');
-      selected.classList.add('selected');
-      const text = document.createElement('span');
-      text.textContent = name;
-      const cross = document.createElement('span');
-      cross.textContent = 'x';
-      selected.addEventListener('click', (event) => {
-        const lang = selected.children[0].textContent
-        if(!notSelected(lang)) {
-          selectedLocales = selectedLocales.filter(x => x !== lang);
-          selected.remove();
-        }
-      });
-      selected.replaceChildren(text, cross)
-      return selected;
-    }
-    selectedContainer.innerHTML = '';
-    selectedLocales.forEach(l => {
-      selectedContainer.appendChild(createSelected(l));
-    });
-  };
-
-  select.addEventListener('change', (event) => {
-    event.preventDefault();
-    const l = event.target.value;
-    if(notSelected(l)) {
-      selectedLocales.push(l);
-      redrawSelected();
-    }
-  });
+  const selected = (loc) => selectedLocales.find(x => x === loc);
 
   const submitButton = document.createElement('button');
+  submitButton.disabled = true;
+  const setSubmitStatus = () => {
+    submitButton.disabled = !selectedLocales.length;
+  }
+
+  const title = createTag('h4', { class: 'title' });
+  title.textContent = 'Locales';
+
+  const form = createTag('div', { class: 'form' });
+  form.appendChild(title);
+  const localesContainer = createTag('div', { class: 'locales-container' });
+
+  locales.forEach(loc => {
+    const button = createTag('button', { class: 'locale-button' });
+    button.textContent = loc;
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      if(!selected(loc)) {
+        button.classList.add('selected');
+        selectedLocales.push(loc);
+      } else {
+        button.classList.remove('selected');
+        selectedLocales = selectedLocales.filter(x => x !== loc);
+      }
+      setSubmitStatus();
+    })
+    localesContainer.appendChild(button);
+  });
+
   submitButton.classList.add('submit');
   submitButton.textContent = "Submit";
 
@@ -74,11 +56,9 @@ const createForm = () => {
       }
     });
     const response = resp.json();
-    console.info(response);
   });
 
-  form.appendChild(select);
-  form.appendChild(selectedContainer);
+  form.appendChild(localesContainer);
   form.appendChild(submitButton);
 
   return form;
