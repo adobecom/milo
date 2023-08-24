@@ -389,6 +389,7 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 export async function loadBlock(block) {
+  if (block.classList.contains('hide-block')) return block;
   let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 

@@ -268,3 +268,7 @@ picture.bg-img img {
 .gnav-hide {
   opacity: 0;
 }
+
+.hide-block {
+  display: none !important;
+}
