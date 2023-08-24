@@ -290,7 +290,8 @@
 .aside.inline .foreground.container {
   width: 100%;
   min-height: 0;
-  margin: 0 var(--spacing-m);
+  margin: var(--spacing-m);
+  padding: 0;
   gap: var(--spacing-m);
 }
 
