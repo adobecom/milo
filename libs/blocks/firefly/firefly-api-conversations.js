@@ -23,7 +23,13 @@ function queryConversationsOptions(article, qty) {
       messages: [
         {
           role: 'system',
-          content: 'You are an AI assistant that generates short image ideas image AIs such as dall-e, firefly or midjourney from articles for Adobe a world known creative company.',
+          content: `Prompt for Image Ideas based on Article Content. Based on the essence, themes, and tone of the article, provide distinct and vivid image ideas that can enhance the reader's understanding and engagement with the article. The image descriptions should be creative, evocative, and resonate with the core message of the article. Example image descriptions to emulate:
+          - Sleeping bear in nightgown and nightcap.
+          - A human hat made of green, yellow, blue, green, purple orchids, set against a jungle background.
+          - Ultra HD, Cat wearing a yellow beanie, wearing sunglasses, eating a hamburger, modelling in a studio.
+          - Close-up of a mystic cat, akin to a phoenix, with red and black colors.
+          - Futuristic, inspired border town with neon lights on the edge of a calm reflecting lake on Mars, illuminated by bioluminescent plants and rocks at night.
+          - An old cottage overgrown with ancient trees.`,
         },
         {
           role: 'system',
@@ -40,8 +46,19 @@ function queryConversationsOptions(article, qty) {
 }
 
 function toArray(input) {
-  // Match anything between single quotes, this assumes no single quotes within the strings themselves.
-  const regex = /'([^']+)'/g;
+  // First, try to parse it as JSON, this will handle the majority of correctly formatted cases.
+  try {
+    const parsed = JSON.parse(input);
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch (e) {
+    // If it fails, proceed to regex extraction.
+  }
+
+  // Match anything between double or single quotes.
+  // This assumes no double or single quotes within the strings themselves.
+  const regex = /["']([^"']+)["']/g;
   let match;
   const result = [];
 
