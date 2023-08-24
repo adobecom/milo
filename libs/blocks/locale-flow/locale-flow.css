@@ -65,3 +65,15 @@ button.submit:disabled {
   border-color: #f4f4f4;
   color: #bcbcbc;
 }
+
+.downloads {
+  display: flex;
+  flex-direction:column;
+}
+
+.downloads a {
+  margin: 12px;
+}
+.downlaods span {
+  margin: 12px;
+}
