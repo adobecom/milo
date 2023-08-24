@@ -39,11 +39,16 @@ const createForm = () => {
   });
 
   submitButton.classList.add('submit');
-  submitButton.textContent = "Submit";
+  const submitText = createTag('span');
+  submitText.textContent = 'Translate'
+  submitButton.appendChild(submitText);
 
   submitButton.addEventListener('click', async (event) => {
     event.preventDefault();
     submitButton.disabled = true;
+    const loader = createTag('div', { class: 'loader' });
+    submitButton.appendChild(loader);
+    
     const url = 'http://localhost:80/translate';
     const body = {
       url: `${window.location.origin}${window.location.pathname}.plain.html`,
@@ -69,6 +74,7 @@ const createForm = () => {
         fail.textContent = `The ${loc} translation failed`;
         downloads.appendChild(data[loc].success ? link : fail);
       });
+      loader.remove();
       form.replaceChildren(downloads);
   });
 
