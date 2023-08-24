@@ -11,7 +11,7 @@
  */
 
 import { createTag } from '../../utils/utils.js';
-import { ImageGenerator, MONITOR_STATUS } from './nethraa/fireflyApi.js';
+import { ImageGenerator, MONITOR_STATUS, FEEDBACK_CATEGORIES } from './nethraa/fireflyApi.js';
 import useProgressManager from './progress-manager.js';
 import { queryConversations } from './firefly-api-conversations.js';
 
@@ -34,54 +34,96 @@ const PROGRESS_ANIMATION_DURATION = 1000;
 const PROGRESS_BAR_LINGER_DURATION = 500;
 const REQUEST_GENERATION_RETRIES = 3;
 
+export function createRateResultWrapper(result, feedbackState) {
+  const wrapper = createTag('div', { class: 'feedback-rate' });
+  wrapper.append('Rate this result');
+  const downvoteLink = createTag('button', { class: 'feedback-rate-button' });
+  const upvoteLink = createTag('button', { class: 'feedback-rate-button' });
+  downvoteLink.append('👎');
+  upvoteLink.append('👍');
+  downvoteLink.addEventListener(
+    'click',
+    () => {},
+  );
+  upvoteLink.addEventListener(
+    'click',
+    () => {},
+  );
+  wrapper.append(downvoteLink);
+  wrapper.append(upvoteLink);
+  return wrapper;
+}
+
+export function createReportWrapper(result, feedbackState) {
+  const wrapper = createTag('div', { class: 'feedback-report' });
+  wrapper.append('Report');
+  const reportButton = createTag('button', { class: 'feedback-report-button' });
+  reportButton.append('🚩');
+  wrapper.append(reportButton);
+  reportButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    feedbackState.category = FEEDBACK_CATEGORIES.REPORT_ABUSE;
+    // openFeedbackModal(result, feedbackState);
+  });
+  return wrapper;
+}
+
+function createThankyouWrapper(result, feedbackState) {
+  const wrapper = createTag('div', { class: 'feedback-thankyou' });
+  wrapper.append('Thank you');
+  const tellMoreButton = createTag('a', { class: 'feedback-tell-more secondary button', href: '#', target: '_blank' });
+  tellMoreButton.textContent = 'Tell us more'; // TODO: use placeholders
+  tellMoreButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // openFeedbackModal(result, feedbackState);
+  });
+
+  const closeButton = createTag('button', { class: 'feedback-close-button' });
+  // TODO poc
+  // closeButton.append(getIconElement('close-button-x'));
+  closeButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    feedbackState.hideThankyou();
+  });
+  wrapper.append(tellMoreButton);
+  wrapper.append(closeButton);
+  return wrapper;
+}
+
 function createTemplate(result) {
   const templateWrapper = createTag('div', { class: 'generated-template-wrapper' });
   const hoverContainer = createTag('div', { class: 'hover-container' });
 
-  const CTAButton = createTag('a', {
-    class: 'cta-button con-button blue button-l',
-    target: '_blank',
-    href: '#',
-  });
-  CTAButton.textContent = 'Copy';
-  let isCopying = false;
-  hoverContainer.addEventListener('click', async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    CTAButton.textContent = 'Copying...';
-    isCopying = true;
-    const permission = await navigator.permissions.query({ name: 'clipboard-write' });
-    if (permission.state !== 'granted') navigator.clipboard.writeText(result);
-    const response = await fetch(result);
-    const blob = await response.blob();
-    const data = [new ClipboardItem({ [blob.type]: blob })];
-    await navigator.clipboard.write(data).then(
-      () => { CTAButton.textContent = 'Copied!'; },
-      (error) => {
-        navigator.clipboard.writeText(result);
-        console.error('Error copying image to clipboard:', error);
-      },
-    );
-
-    isCopying = false;
-  });
-
-  hoverContainer.addEventListener('mouseover', (e) => {
-    if ((e.toElement === CTAButton || e.toElement === hoverContainer) && !isCopying) CTAButton.textContent = 'Copy';
-  });
-  hoverContainer.append(CTAButton);
-
   const feedbackRow = createTag('div', { class: 'feedback-row' });
-
+  const feedbackState = {};
+  const rateResultButton = createRateResultWrapper(result, feedbackState);
+  const reportButton = createReportWrapper(result, feedbackState);
+  const thankyouWrapper = createThankyouWrapper(result, feedbackState);
+  feedbackState.hideThankyou = () => {
+    reportButton.style.display = 'flex';
+    rateResultButton.style.display = 'flex';
+    thankyouWrapper.style.display = 'none';
+  };
+  feedbackState.showThankyou = () => {
+    reportButton.style.display = 'none';
+    rateResultButton.style.display = 'none';
+    thankyouWrapper.style.display = 'flex';
+  };
+  feedbackRow.append(rateResultButton);
+  feedbackRow.append(reportButton);
+  feedbackRow.append(thankyouWrapper);
   feedbackRow.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
   });
-
+  feedbackState.hideThankyou();
   hoverContainer.append(feedbackRow);
 
   templateWrapper.append(createTag('img', { src: result, class: 'generated-template-image' }));
-  templateWrapper.append(hoverContainer);
+  // templateWrapper.append(hoverContainer); TODO show feedback row?
   return templateWrapper;
 }
 
@@ -315,11 +357,17 @@ function createModalSearch(modalContent) {
     enterKeyHint: 'Search',
   });
   // TODO demo just to quickly generate results while developing
-  searchBar.value = 'A poster about a robot that sits on a tree';
-  aceState.value = 'A poster about a robot that sits on a tree';
+  searchBar.value = `Details and criteria
+  Self-funded stock assets contributed between January 1 and December 1 of 2022 were considered for the Artist Awards. In selecting Top Choice recipients and Honorees, we paid special attention to work that reflected the quality and values of Adobe Stock, offering high production value, aesthetic sophistication, stunning visuals, rarity and uniqueness, and commercial appeal. Each Top Choice recipient received a $1,000 gift.
+  
+  Top Choice recipients and Honorees were chosen at the sole discretion of Adobe, with input from industry experts and Adobe partners. There was no entry fee and no payment required to be considered or selected, or to accept an award.`;
+  aceState.value = `Details and criteria
+  Self-funded stock assets contributed between January 1 and December 1 of 2022 were considered for the Artist Awards. In selecting Top Choice recipients and Honorees, we paid special attention to work that reflected the quality and values of Adobe Stock, offering high production value, aesthetic sophistication, stunning visuals, rarity and uniqueness, and commercial appeal. Each Top Choice recipient received a $1,000 gift.
+  
+  Top Choice recipients and Honorees were chosen at the sole discretion of Adobe, with input from industry experts and Adobe partners. There was no entry fee and no payment required to be considered or selected, or to accept an award.`;
   searchForm.append(searchBar);
 
-  const refreshText = 'Genrate results';
+  const refreshText = 'Generate results';
   const button = createTag('a', {
     href: '#',
     title: refreshText,
@@ -336,7 +384,9 @@ function createModalSearch(modalContent) {
     aceState.query = searchBar.value;
     // TODO - add the GPT
     if (searchBar.value.length > 120) {
-      const queries = queryConversations(searchBar.value);
+      const queries = await queryConversations(searchBar.value, NUM_RESULTS);
+      console.log(queries);
+      console.log(queries[0]);
       return;
     }
     await fetchResults(modalContent);

@@ -98,3 +98,9 @@ export const MONITOR_STATUS = Object.freeze({
   COMPLETED: 'DONE',
   FAILED: 'CANCELED',
 });
+
+export const FEEDBACK_CATEGORIES = Object.freeze({
+  THUMBS_UP: 'thumbs_up',
+  THUMBS_DOWN: 'thumbs_down',
+  REPORT_ABUSE: 'report_abuse',
+});
