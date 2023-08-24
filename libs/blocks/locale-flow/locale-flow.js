@@ -63,7 +63,7 @@ const createForm = () => {
     event.preventDefault();
     const url = 'http://localhost:80/translate';
     const data = {
-      url: `${window.location.origin}${window.location.pathname}.md`,
+      url: `${window.location.origin}${window.location.pathname}.plain.html`,
       selectedLocales
     };
     const resp = await fetch(url, {
