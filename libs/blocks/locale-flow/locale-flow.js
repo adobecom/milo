@@ -56,7 +56,7 @@ const createForm = () => {
         "Content-Type": "application/json"
       }
     });
-    const response = resp.json();
+    const response = await resp.json();
     const { status, data } = response;
     if (response.status === 200) {
       const downloads = createTag('div', { class: 'downloads' });
@@ -72,6 +72,10 @@ const createForm = () => {
         downloads.appendChild(data[loc].success ? link : fail);
       });
       form.replaceChildren(downloads);
+    } else {
+      const callFailed = createTag('div');
+      callFailed.textContent = 'Failed to make translate call. Status: ' + status 
+      form.replaceChildren(callFailed);
     }
   });
 
