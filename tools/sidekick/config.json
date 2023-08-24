@@ -191,8 +191,8 @@
       ]
     },
     {
-      "id": "localeflow-poc",
-      "title": "LocaleFlow poc",
+      "id": "localeflow",
+      "title": "Translate",
       "environments": [
         "preview",
         "dev"
