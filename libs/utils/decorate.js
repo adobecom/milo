@@ -46,6 +46,12 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
+    if (!headings?.length && !emptyPs?.length) {
+      const wrapper = el.querySelector(':scope > div');
+      [...wrapper.children]
+        .filter((child) => child.textContent.trim() !== '')
+        .forEach((text) => text.classList.add(`body-${config[1]}`));
+    }
   }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
