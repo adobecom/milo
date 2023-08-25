@@ -101,24 +101,16 @@
   margin-bottom: var(--spacing-xxxl);
 }
 
-.aside.split .foreground.container .text {
-  margin: 0;
-  max-width: var(--grid-container-width);
-  padding: var(--spacing-xxxl) 0 var(--spacing-l) 0;
-}
-
-.aside.split.large .foreground.container .text {
-  padding: var(--spacing-l) 0 var(--spacing-xxxl) 0;
-}
-
 .aside .foreground.container .text {
   display: flex;
   flex-wrap: wrap;
   align-content: center;
 }
 
-.aside .foreground.container .image {
-  position: relative;
+.aside.split .foreground.container .text {
+  margin: 0;
+  max-width: var(--grid-container-width);
+  padding: var(--spacing-xxxl) 0 var(--spacing-l) 0;
 }
 
 .aside.notification .foreground.container .text {
@@ -127,11 +119,52 @@
   padding-bottom: 0;
 }
 
+.aside .foreground.container .image {
+  position: relative;
+}
+
+.aside.simple .foreground.container .text {
+  margin-bottom: 80px;
+}
+
+.aside .foreground.container>div {
+  flex-grow: 1;
+  flex-basis: 0;
+  min-width: 0;
+}
+
+.aside.notification .foreground.container>div {
+  flex-basis: 100%;
+}
+
+.aside .foreground.container .image,
+.aside .foreground.container div:has(.milo-video) {
+  display: flex;
+}
+
+.aside.inline .foreground.container .image,
+.aside.inline .foreground.container div:has(.milo-video),
+.aside.inline .foreground.container .text {
+  padding: 0;
+}
+
+.aside.split.large .foreground.container .text {
+  padding: var(--spacing-l) 0 var(--spacing-xxxl) 0;
+}
+
+.aside.split .icon-stack-area li,
+.aside.split .icon-stack-area li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bold;
+}
+
 .aside.notification .foreground.container .text a {
   white-space: nowrap;
 }
 
-.aside:not(.notification) .foreground.container .text > * {
+.aside:not(.notification) .foreground.container .text>* {
   width: 100%;
 }
 
@@ -155,21 +188,6 @@
   gap: var(--spacing-s);
   flex-wrap: wrap;
   align-items: center;
-}
-
-.aside .foreground.container > div {
-  flex-grow: 1;
-  flex-basis: 0;
-  min-width: 0;
-}
-
-.aside.notification .foreground.container > div {
-  flex-basis: 100%;
-}
-
-.aside .foreground.container .image,
-.aside .foreground.container div:has(.milo-video) {
-  display: flex;
 }
 
 .aside .foreground.container .icon-area {
@@ -207,13 +225,13 @@
   aspect-ratio: var(--aspect-ratio-standard);
 }
 
-.aside.split .icon-stack-area li img {
-  width: var(--icon-size-m);
+.aside.split .format img,
+.aside.split .format video {
   height: auto;
 }
 
-.aside.split .format img,
-.aside.split .format video {
+.aside.split .icon-stack-area li img {
+  width: var(--icon-size-m);
   height: auto;
 }
 
@@ -230,10 +248,6 @@
   width: auto;
   object-fit: cover;
   object-position: left top;
-}
-
-.aside.simple .foreground.container .text {
-  margin-bottom: 80px;
 }
 
 .aside.simple .foreground.container .image {
@@ -255,12 +269,6 @@
   z-index: 1;
 }
 
-.aside.inline .foreground.container .image,
-.aside.inline .foreground.container div:has(.milo-video),
-.aside.inline .foreground.container .text {
-  padding: 0;
-}
-
 .aside.split .background {
   position: relative;
 }
@@ -272,6 +280,10 @@
 .aside.split .foreground.container .image {
   margin: 0;
   display: none;
+}
+
+.aside.split .icon-stack-area li picture {
+  flex-shrink: 0;
 }
 
 .aside.notification .foreground.container img {
@@ -298,7 +310,8 @@
 .aside.inline .foreground.container {
   width: 100%;
   min-height: 0;
-  margin: 0 var(--spacing-m);
+  margin: var(--spacing-m);
+  padding: 0;
   gap: var(--spacing-m);
 }
 
@@ -332,7 +345,7 @@
   font-weight: normal;
 }
 
-.aside.notification .foreground.container .text .action-area > a {
+.aside.notification .foreground.container .text .action-area>a {
   margin-right: 0;
 }
 
@@ -388,6 +401,12 @@
   max-width: 1000px;
 }
 
+.aside.center:not(.notification) .foreground.container .text {
+  margin: 80px 0;
+  text-align: center;
+  padding: 0;
+}
+
 .aside.notification.center.small .foreground.container .text {
   text-align: left;
 }
@@ -433,7 +452,7 @@
 
 .aside.notification .foreground.container [data-align=center],
 .aside.notification.center .foreground.container,
-.aside.notification.center .foreground.container > * {
+.aside.notification.center .foreground.container>* {
   text-align: center;
   justify-content: center;
 }
@@ -443,7 +462,7 @@
 }
 
 .aside.notification.center.small .foreground.container .text,
-.aside.notification.center.small .foreground.container .text > * {
+.aside.notification.center.small .foreground.container .text>* {
   justify-content: flex-start;
 }
 
@@ -458,25 +477,7 @@
   list-style-type: none;
 }
 
-.aside.split .icon-stack-area li,
-.aside.split .icon-stack-area li a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: bold;
-}
-
-.aside.split .icon-stack-area li picture {
-  flex-shrink: 0;
-}
-
 .aside.center:not(.notification) .foreground.container {
-  padding: 0;
-}
-
-.aside.center:not(.notification) .foreground.container .text {
-  margin: 80px 0;
-  text-align: center;
   padding: 0;
 }
 
@@ -584,7 +585,7 @@
   .aside.split .tablet-wide video {
     aspect-ratio: var(--aspect-ratio-wide);
   }
-  
+
   .aside.split .tablet-standard img,
   .aside.split .tablet-standard video {
     aspect-ratio: var(--aspect-ratio-standard);
@@ -600,7 +601,7 @@
   }
 
   .aside.split .split-image img,
-  .aside.split .split-image video  {
+  .aside.split .split-image video {
     width: 60.5vw;
     max-width: 56%;
     position: absolute;
@@ -817,7 +818,7 @@
   .aside.split .desktop-wide video {
     aspect-ratio: var(--aspect-ratio-wide);
   }
-  
+
   .aside.split .desktop-standard img,
   .aside.split .desktop-standard video {
     aspect-ratio: var(--aspect-ratio-standard);
