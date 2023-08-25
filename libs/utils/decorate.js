@@ -51,20 +51,21 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
   decorateLinkAnalytics(el, headings);
 }
 
-export function decorateBlockBg(block, node) {
-  node.classList.add('background');
-  if (node.childElementCount > 1) {
-    const viewports = node.childElementCount === 2 ? [['mobile-only', 'tablet-only'], ['desktop-only']]
+export function decorateBlockBg(block, node, customLogic = () => {}) {
+  const childCount = node.childElementCount;
+  if (node.querySelector('img, a[href*=".mp4"]') || childCount > 1) {
+    node.classList.add('background');
+    const viewports = childCount === 2 ? [['mobile-only', 'tablet-only'], ['desktop-only']]
       : [['mobile-only'], ['tablet-only'], ['desktop-only']];
-    [...node.children].forEach((e, i) => {
-      /* c8 ignore next */
-      e.classList.add(...viewports[i]);
-      if (!e.querySelector(':scope img')) {
-        e.style.background = e.textContent;
-        e.textContent = '';
+    [...node.children].forEach((child, i) => {
+      if (childCount > 1) child.classList.add(...viewports[i]);
+      if (!child.querySelector('img, a[href*=".mp4"]')) {
+        child.style.background = child.textContent;
+        child.textContent = '';
       }
+      customLogic(child);
     });
-  } else if (!node.querySelector(':scope img')) {
+  } else {
     block.style.background = node.textContent;
     node.remove();
   }
