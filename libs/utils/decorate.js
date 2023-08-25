@@ -1,5 +1,4 @@
 import { decorateLinkAnalytics } from '../martech/attributes.js';
-import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -47,6 +46,12 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
     }
     const emptyPs = el.querySelectorAll(':scope p:not([class])');
     if (emptyPs) emptyPs.forEach((p) => { p.classList.add(`body-${config[1]}`); });
+    if (!headings?.length && !emptyPs?.length) {
+      const wrapper = el.querySelector(':scope > div');
+      [...wrapper.children]
+        .filter((child) => child.textContent.trim() !== '')
+        .forEach((text) => text.classList.add(`body-${config[1]}`));
+    }
   }
   decorateButtons(el);
   decorateLinkAnalytics(el, headings);
@@ -78,23 +83,23 @@ export function getBlockSize(el, defaultSize = 1) {
   return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
 }
 
-function getElemsByType(el, type) {
-  const hasElemType = el.querySelectorAll(`[class^="${type}"]`)?.length;
-  if (!hasElemType) {
-    const elem = el.querySelector(':scope > div');
-    const text = [...elem.children].find((child) => child.innerText.trim() !== '');
-    if (text) {
-      const wrap = createTag('p', { class: type }, text.innerText);
-      text.replaceChildren(wrap);
-    }
-  }
-  return el.querySelectorAll(`[class^="${type}"]`);
-}
+// function getElemsByType(el, type) {
+//   const hasElemType = el.querySelectorAll(`[class^="${type}"]`)?.length;
+//   if (!hasElemType) {
+//     const elem = el.querySelector(':scope > div');
+//     [...elem.children].filter((child) => child.textContent.trim() !== '').forEach((content) => {
+//       const inner = content.querySelector(':scope > div:not([class])');
+//       if (inner) inner.classList.add(type);
+//       else content.classList.add(type);
+//     });
+//   }
+//   return el.querySelectorAll(`[class^="${type}"]`);
+// }
 
 function applyTextOverrides(el, override) {
   const parts = override.split('-');
   const type = parts[1];
-  const els = getElemsByType(el, type);
+  const els = el.querySelectorAll(`[class^="${type}"]`);
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
