@@ -1,8 +1,13 @@
-import { render, html, useEffect, useState, useLayoutEffect } from '../../deps/htm-preact.js';
+import {
+  render, html, useEffect, useMemo, useState, useLayoutEffect,
+} from '../../deps/htm-preact.js';
 import { getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { GetQuizOption } from './quizoption.js';
 import { DecorateBlockBackground, DecorateBlockForeground } from './quizcontainer.js';
-import { initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData, getAnalyticsDataForBtn, getUrlParams } from './utils.js';
+import {
+  initConfigPathGlob, handleResultFlow, handleNext, transformToFlowData, getQuizData,
+  getAnalyticsDataForBtn, getUrlParams,
+} from './utils.js';
 import StepIndicator from './stepIndicator.js';
 
 const { codeRoot } = getConfig();
@@ -35,8 +40,8 @@ const App = () => {
   const [btnClicked, setBtnClicked] = useState(false);
   const initialUrlParams = getUrlParams();
   const [urlParam, setUrlParam] = useState(initialUrlParams);
-  const VALID_QUESTIONS = [];
-  const KNOWN_PARAMS = ['martech', 'milolibs', 'quiz-data'];
+  const VALID_QUESTIONS = useMemo(() => [], []);
+  const KNOWN_PARAMS = useMemo(() => ['martech', 'milolibs', 'quiz-data'], []);
 
   useEffect(() => {
     (async () => {
@@ -116,7 +121,8 @@ const App = () => {
         window.removeEventListener('popstate', handlePopState);
       };
     }
-  }, [isDataLoaded]);
+    return () => {};
+  }, [KNOWN_PARAMS, isDataLoaded]);
 
   useEffect(() => {
     if (userFlow.length) {
@@ -181,6 +187,7 @@ const App = () => {
         if (paramList.length) {
           return `${key}=${paramList.join(',')}`;
         }
+        return null; // Explicitly return null if the condition is not met
       }).filter((item) => !!item && !KNOWN_PARAMS.includes(item.split('=')[0]));
       const knownParamsList = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
       urlParamList = [...urlParamList, ...knownParamsList];
@@ -216,8 +223,9 @@ const App = () => {
 
     setNextQuizViewsExist(!!nextQuizViewsLen);
     setCurrentStep(currentStep + 1);
-    updateUserSelection((userSelection) => (
-      [...userSelection, { selectedQuestion, selectedCards }]));
+    updateUserSelection((prevUserSelection) => (
+      [...prevUserSelection, { selectedQuestion, selectedCards }]
+    ));
     setSelectedCards({});
     setSelectedQuestion(null);
     setCountOfSelectedCards(0);
@@ -235,6 +243,13 @@ const App = () => {
     }
   };
 
+  let minSelections = 0;
+  let maxSelections = 10;
+
+  if (selectedQuestion) {
+    minSelections = +selectedQuestion['min-selections'];
+    maxSelections = +selectedQuestion['max-selections'];
+  }
   /**
    * Handler of the option click. Updates the selected cards and the count of selected cards.
    * @param {Object} option - Selected option
@@ -258,6 +273,18 @@ const App = () => {
     setCountOfSelectedCards(Object.keys(newState).length);
   };
 
+  useEffect(() => {
+    const getStringValue = (propName) => {
+      if (!selectedQuestion) return '';
+      const question = stringQuestionList[selectedQuestion.questions];
+      return question ? question[propName] || '' : '';
+    };
+    const fragmentURL = getStringValue('footerFragment');
+    if (fragmentURL) {
+      loadFragments(fragmentURL);
+    }
+  }, [selectedQuestion, stringQuestionList]);
+
   if (!isDataLoaded || !selectedQuestion) {
     return html`<div>Loading</div>`;
   }
@@ -272,17 +299,6 @@ const App = () => {
     );
     return optionItem && optionItem[prop] ? optionItem[prop] : '';
   };
-
-  const minSelections = +selectedQuestion['min-selections'];
-  const maxSelections = +selectedQuestion['max-selections'];
-
-  const fragmentURL = getStringValue('footerFragment');
-
-  useEffect(() => {
-    if (fragmentURL) {
-      loadFragments(fragmentURL);
-    }
-  }, [fragmentURL]);
 
   return html`<div class="quiz-container">
                   <${StepIndicator} 
