@@ -16,7 +16,7 @@ export function decorateLinkAnalytics(textEl, headings) {
     if (classList.contains('con-button') && classList.contains('blue')) { linkType = 'filled'; }
     if (classList.contains('con-button') && classList.contains('outline')) { linkType = 'outline'; }
     const str = `${linkType}|${link.innerText} ${i + 1}`;
-    link.setAttribute('daa-ll', str);
+    link.setAttribute('daa-ll', str.replace(/\s+/g, ' ').trim());
   });
 }
 
