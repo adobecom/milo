@@ -12,7 +12,8 @@
 /* global */
 import { getUrlInfo } from './utils.js';
 
-const LOC_CONFIG = '/drafts/localization/configs/config.json';
+// Adding this to use stage config as config.xlsx contains prod config
+const LOC_CONFIG = '/drafts/localization/configs/config-stage.json';
 const DEFAULT_WORKFLOW = 'Standard';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 
