@@ -28,6 +28,8 @@ describe('Google Login', () => {
     document.body.innerHTML = '';
     initializeSpy.restore();
     promptSpy.restore();
+    delete window.adobeid;
+    delete window.google;
   });
 
   it('should create a placeholder to inject DOM markup', async () => {
@@ -69,7 +71,7 @@ describe('Google Login', () => {
     expect(document.getElementById('feds-googleLogin')).to.exist;
     signInWithSocialProviderSpy.restore();
     socialHeadlessSignInStub.restore();
-    window.DISABLE_PAGE_RELOAD = false;
+    delete window.DISABLE_PAGE_RELOAD;
   });
 
   it('should not initialize if IMS is not ready or user is already logged-in', async () => {
