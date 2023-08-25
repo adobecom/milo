@@ -51,19 +51,18 @@ export function decorateBlockText(el, config = ['m', 's', 'm']) {
   decorateLinkAnalytics(el, headings);
 }
 
-export function decorateBlockBg(block, node, customLogic = () => {}) {
+export function decorateBlockBg(block, node) {
   const childCount = node.childElementCount;
-  if (node.querySelector('img, a[href*=".mp4"]') || childCount > 1) {
+  if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
     node.classList.add('background');
     const viewports = childCount === 2 ? [['mobile-only', 'tablet-only'], ['desktop-only']]
       : [['mobile-only'], ['tablet-only'], ['desktop-only']];
     [...node.children].forEach((child, i) => {
       if (childCount > 1) child.classList.add(...viewports[i]);
-      if (!child.querySelector('img, a[href*=".mp4"]')) {
+      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
         child.style.background = child.textContent;
         child.textContent = '';
       }
-      customLogic(child);
     });
   } else {
     block.style.background = node.textContent;
