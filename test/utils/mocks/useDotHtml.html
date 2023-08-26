@@ -1,0 +1,34 @@
+<main>
+  <div id="linklist">
+    <!-- Relative URLs -->
+    <p><a href="http://localhost:2000">http://localhost:2000</a></p>
+    <p><a class="has-html"href="http://localhost:2000/test/page">http://localhost:2000/test/page</a></p>
+    <p><a href="http://localhost:2000/ends/in/slash/">http://localhost:2000/ends/in/slash/</a></p>
+    <p><a href="http://localhost:2000/test/img.jpg">http://localhost:2000/test/img.jpg</a></p>
+    <p><a class="has-html" href="/test/page">/test/page</a></p>
+    <p><a href="/ends/in/slash/">/ends/in/slash/</a></p>
+    <p><a href="/test/img.jpg">/test/img.jpg</a></p>
+
+    <p><a class="has-html" href="/test/page#_withhash">/test/page#_withhash</a></p>
+    <p><a class="has-html"href="http://localhost:2000/test/page#_anotherhash#here">http://localhost:2000/test/page#_anotherhash#here</a></p>
+    <!-- htmlExclude -->
+    <p><a id="excluded" href="/exclude/this/page">/exclude/this/page</a></p>
+    <!-- Auto Blocks -->
+    <p><a href="https://www.youtube.com/watch?v=0EWdoiU8BXw#_dnb">YouTube</a></p>
+    <p><a href="https://milo.adobe.com/fragments/mock#otis#_dnb">Open modal</a></p>
+    <p><a href="https://acrobatservices.adobe.com/view-sdk/PDFs/test.pdf">View PDF</a></p>
+    <!-- Fragments -->
+    <p><a href="https://milo.adobe.com/fragments/mock">https://milo.adobe.com/fragments/mock</a></p>
+    <p><a href="/fragments/relative/path">/fragments/relative/path</a></p>
+    <!-- SVGs -->
+    <p><a href="http://localhost:2000/img/favicon.svg">http://localhost:2000/img/favicon.svg</a></p>
+    <!-- #_blank -->
+    <p><a class="new-tab" href="https://www.adobe.com/test#_blank">New Tab</a></p>
+    <!-- invalid url -->
+    <p><a href="http://localhost:2000/[is/]invalid">Invalid URL</a></p>
+  </div>
+</main>
+
+<p><a href="https://test--milo--adobecom.hlx.page/test">Milo Test</a></p>
+<p><a href="https://milo.adobe.com/test">Milo Test</a></p>
+<p><a href="https://www.adobe.com/test">Milo Test</a></p>

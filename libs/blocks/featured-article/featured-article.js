@@ -1,6 +1,6 @@
 import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
-import fetchTaxonomy from '../../scripts/taxonomy.js';
-import { updateLinkWithLangRoot } from '../../utils/helpers.js';
+// import fetchTaxonomy from '../../scripts/taxonomy.js';
+// import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 export default async function init(el) {
   const a = el.querySelector('a');
@@ -19,15 +19,16 @@ export default async function init(el) {
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const category = getMetadata('article:tag', doc);
+  // const category = getMetadata('article:tag', doc);
 
   // load taxonomy to get link of article "category"
-  const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
-  const categoryTaxonomy = taxonomy.get(category) || 'News';
+  // const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+  // const categoryTaxonomy = taxonomy.get(category) || 'News';
 
   const pic = doc.body.querySelector('picture');
+  pic.querySelector('img').removeAttribute('loading');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
-  const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy.link) }, categoryTaxonomy.name);
+  const categoryLink = createTag('a', { href: '/fake' }, 'fake');
   const categoryEl = createTag('div', { class: 'featured-article-card-category' }, categoryLink);
   const text = doc.body.querySelector('h1, h2, h3').textContent;
   const title = createTag('h3', null, text);
