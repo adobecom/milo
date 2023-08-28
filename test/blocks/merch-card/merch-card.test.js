@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { waitForElement } from '../../helpers/waitfor.js';
 
 const { default: init } = await import('../../../libs/blocks/merch-card/merch-card.js');
 
@@ -92,6 +93,7 @@ describe('Merch Card', () => {
       expect(buttons[0].textContent).to.be.equal('Learn More');
       expect(buttons[1].textContent).to.be.equal('Save now');
       expect(secureWrapper).to.be.exist;
+      await waitForElement('.secure-transaction-icon');
       expect(secureWrapper.querySelector('.secure-transaction-icon')).to.be.exist;
       expect(secureWrapper.querySelector('.secure-transaction-label').textContent).to.be.equal('{{secure-transaction}}');
       expect(checkBoxContainer.querySelector('.checkMark')).to.be.exist;

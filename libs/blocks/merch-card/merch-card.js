@@ -3,6 +3,7 @@ import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -30,19 +31,23 @@ const createDescription = (rows, cardType) => {
 
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => {
-    if (!title.id.includes('secure-transaction')) titleWrapper.appendChild(title);
-  });
+  titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
 
-const decorateFooter = (el, cardType) => {
+const decorateFooter = (el, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
-  const decorateWithSecureTransactionSign = (secureTransaction) => {
+  const replacePlaceHolder = async (key, defaultValue) => {
+    const replacedKey = await replaceKey(key, getConfig(), defaultValue);
+    return { replacedKey } || 'Secure transaction';
+  };
+  const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const label = createTag('span', { class: 'secure-transaction-label' }, secureTransaction?.textContent);
-    const secureElement = createTag('span', { class: 'secure-transaction-icon' });
-    secureTransactionWrapper.append(secureElement, label);
+    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
+      const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+      const secureElement = createTag('span', { class: 'secure-transaction-icon' });
+      secureTransactionWrapper.append(secureElement, label);
+    });
     return secureTransactionWrapper;
   };
 
@@ -62,13 +67,11 @@ const decorateFooter = (el, cardType) => {
       buttonToRemove.classList.remove('button--inactive');
     };
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    const secureTransactionSign = el.querySelector('h6[id^="secure-transaction"]');
-    if (secureTransactionSign) {
+    if ([...el.classList].includes('secure')) {
       const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-      const secureTransactionWrapper = decorateWithSecureTransactionSign(secureTransactionSign);
+      const secureTransactionWrapper = decorateWithSecureTransactionSign();
       standardWrapper.append(secureTransactionWrapper, cardFooterRow);
       cardFooter?.append(standardWrapper);
-      secureTransactionSign.remove();
     }
 
     const altCta = [...el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]')].filter((data) => data.textContent?.trim() === 'alt-cta');
