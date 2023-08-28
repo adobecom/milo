@@ -826,7 +826,9 @@ function decorateMeta() {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
