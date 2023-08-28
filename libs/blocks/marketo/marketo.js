@@ -28,7 +28,6 @@ export const formValidate = (form) => {
   const formEl = form.getFormElem().get(0);
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
-  // scroll to first invalid input
 };
 
 export const decorateURL = (destination, baseURL = window.location) => {
