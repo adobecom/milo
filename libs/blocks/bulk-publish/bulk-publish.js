@@ -91,7 +91,7 @@ function bulkPreviewStatus(row) {
 
 function bulkDeleteStatus(row) {
   const status = row.status.delete === 403
-    ? 'Failed to Delete (Ensure the resource is deleted in Sharepoint)'
+    ? 'Failed to Delete (Ensure the resource is deleted in SharePoint)'
     : `Error - Status: ${row.status.delete}`;
   return row.status.delete !== 204 && row.status.delete !== undefined && html`
     <span class=page-status>${status}</span>
@@ -100,7 +100,7 @@ function bulkDeleteStatus(row) {
 
 function bulkUnpublishStatus(row) {
   const status = row.status.unpublish === 403
-    ? 'Failed to Unpublish (Probably because the resource still exists)'
+    ? 'Failed to Unpublish (Ensure the resource is deleted in SharePoint)'
     : `Error - Status: ${row.status.unpublish}`;
   return row.status.unpublish !== 204 && row.status.unpublish !== undefined && html`
     <span class=page-status>${status}</span>
