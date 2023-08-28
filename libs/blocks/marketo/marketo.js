@@ -78,7 +78,7 @@ const readyForm = (form) => {
 
   formEl.addEventListener('focus', (e) => {
     /* c8 ignore next 5 */
-    if (e.target.type === 'submit' || e.target.type === 'button') return;
+    if (!['text', 'email', 'tel', 'textarea'].includes(e.target.type)) return;
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
     const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
@@ -191,8 +191,8 @@ export default function init(el) {
 
   createIntersectionObserver({
     el,
-    callback: (el) => {
-      loadMarketo(el, formData);
+    callback: (target) => {
+      loadMarketo(target, formData);
     },
   });
 }

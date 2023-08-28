@@ -431,6 +431,17 @@ header.global-navigation {
   background-color: var(--feds-background-link--hover--light);;
 }
 
+#feds-googleLogin {
+  position: absolute;
+  top: 100%;
+  right: 0;
+}
+
+[dir = "rtl"] #feds-googleLogin {
+  left: 0;
+  right: auto;
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
   /* General */
