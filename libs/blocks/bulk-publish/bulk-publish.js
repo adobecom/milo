@@ -91,7 +91,7 @@ function bulkPreviewStatus(row) {
 
 function bulkDeleteStatus(row) {
   const status = row.status.delete === 403
-    ? 'Failed to Delete (Probably because the resource still exists)'
+    ? 'Failed to Delete (Ensure the resource is deleted in Sharepoint)'
     : `Error - Status: ${row.status.delete}`;
   return row.status.delete !== 204 && row.status.delete !== undefined && html`
     <span class=page-status>${status}</span>
@@ -123,23 +123,23 @@ function StatusRow({ row }) {
   const timeStamp = prettyDate();
   const errorStyle = 'status-error';
   const del = !!row.status.delete || !!row.status.unpublish;
-  const goodStatus = del ? 204 : 200;
-  const preview = del ? row.status.delete : row.status.preview;
-  const publish = del ? row.status.unpublish : row.status.publish;
+  const expectedStatus = del ? 204 : 200;
+  const previewStatus = del ? row.status.delete : row.status.preview;
+  const publishStatus = del ? row.status.unpublish : row.status.publish;
   const preStatus = del ? bulkDeleteStatus : bulkPreviewStatus;
   const pubStatus = del ? bulkUnpublishStatus : bulkPublishStatus;
 
-  const previewStatusError = preview === goodStatus ? '' : errorStyle;
-  const publishStatusError = publish === goodStatus ? '' : errorStyle;
+  const previewStatusError = previewStatus === expectedStatus ? '' : errorStyle;
+  const publishStatusError = publishStatus === expectedStatus ? '' : errorStyle;
 
   return html`
     <tr class="bulk-status-row">
       <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
       <td class="bulk-status-preview ${previewStatusError}">
-        ${preview === goodStatus && timeStamp} ${preStatus(row)}
+        ${previewStatus === expectedStatus && timeStamp} ${preStatus(row)}
       </td>
       <td class="bulk-status-publish ${publishStatusError}">
-        ${publish === goodStatus && timeStamp} ${pubStatus(row)}
+        ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
       </td>
     </tr>
   `;
