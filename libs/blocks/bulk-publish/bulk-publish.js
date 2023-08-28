@@ -91,7 +91,7 @@ function bulkPreviewStatus(row) {
 
 function bulkDeleteStatus(row) {
   const status = row.status.delete === 403
-    ? 'Failed to Delete (Probably because the resource still exists)'
+    ? 'Failed to Delete (Ensure the resource is deleted in Sharepoint)'
     : `Error - Status: ${row.status.delete}`;
   return row.status.delete !== 204 && row.status.delete !== undefined && html`
     <span class=page-status>${status}</span>
