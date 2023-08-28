@@ -51,8 +51,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
 
 export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
   const googleLogin = getMetadata('google-login')?.toLowerCase();
-  if (googleLogin !== 'on') return;
-  if (window.adobeIMS?.isSignedInUser()) return;
+  if (googleLogin !== 'on' || window.adobeIMS?.isSignedInUser()) return;
 
   const { default: initGoogleLogin } = await import('../features/google-login.js');
   initGoogleLogin(loadIms, getMetadata, loadScript);
