@@ -916,7 +916,7 @@ export async function loadArea(area = document) {
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle]);
+    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
 
   // Load everything that can be deferred until after all blocks load.
