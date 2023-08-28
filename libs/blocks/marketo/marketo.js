@@ -28,6 +28,7 @@ export const formValidate = (form) => {
   const formEl = form.getFormElem().get(0);
   formEl.classList.remove('hide-errors');
   formEl.classList.add('show-warnings');
+  // scroll to first invalid input
 };
 
 export const decorateURL = (destination, baseURL = window.location) => {
@@ -76,11 +77,16 @@ export const formSuccess = (form) => {
 const readyForm = (form) => {
   const formEl = form.getFormElem().get(0);
 
-  formEl.addEventListener('focus', (e) => {
-    /* c8 ignore next 5 */
-    if (!['text', 'email', 'tel', 'textarea'].includes(e.target.type)) return;
+  formEl.addEventListener('focus', ({ target }) => {
+    /* c8 ignore next 10 */
+    const isDesktop = window.innerWidth > 900;
+    const hasError = formEl.classList.contains('show-warnings');
+    const firstInvalidField = formEl.querySelector('.mktoRequired[aria-invalid=true]');
+    if (!['text', 'email', 'tel', 'textarea'].includes(target.type)
+      || (isDesktop && !(hasError && target === firstInvalidField))) return;
+
     const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = e.target?.getBoundingClientRect().top ?? 0;
+    const targetPosition = target?.getBoundingClientRect().top ?? 0;
     const offsetPosition = targetPosition + window.pageYOffset - pageTop - window.innerHeight / 2;
     window.scrollTo(0, offsetPosition);
   }, true);
