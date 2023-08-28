@@ -79,6 +79,11 @@ describe('Utils', () => {
         const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
     });
 
     describe('Fragments', () => {
@@ -398,6 +403,56 @@ describe('Utils', () => {
       await utils.loadArea();
       await waitFor(() => document.title === expected);
       expect(document.title).to.equal(expected);
+    });
+  });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should import feature when metadata is defined and error if invalid', async () => {
+      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      await utils.loadArea();
+      const lanaStub = sinon.stub(window.lana, 'log');
+      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
+    });
+  });
+
+  describe('useDotHtml', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.body.innerHTML = await readFile({ path: './mocks/useDotHtml.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should add .html to relative links when enabled', async () => {
+      utils.setConfig({ useDotHtml: true, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.true;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.contain('.html');
+      });
+    });
+
+    it('should not add .html to relative links when disabled', async () => {
+      utils.setConfig({ useDotHtml: false, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.false;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.not.contain('.html');
+      });
     });
   });
 });

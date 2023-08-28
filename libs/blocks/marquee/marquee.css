@@ -3,8 +3,11 @@
   color: #FFF;
   display: flex;
 }
+.marquee.large.standard {
+  min-height: 560px;
+}
 
-.marquee.small, .marquee.quiet, .marquee.inline {
+.marquee.small, .marquee.quiet, .marquee.inline, .marquee.large.compact {
   min-height: 360px;
 }
 

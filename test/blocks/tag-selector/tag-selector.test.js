@@ -1,18 +1,31 @@
 import { expect } from '@esm-bundle/chai';
-import { default as init } from '../../../libs/blocks/tag-selector/tag-selector.js';
-import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
-import { stubFetch } from '../caas-config/mockFetch.js';
-
-stubFetch();
+import init from '../../../libs/blocks/tag-selector/tag-selector.js';
+import { delay, waitForElement } from '../../helpers/waitfor.js';
+import { restoreFetch, stubFetch } from '../caas-config/mockFetch.js';
+import taxonomy from './taxonomy.js';
 
 describe('Tag Selector', () => {
   beforeEach(async () => {
-    document.body.innerHTML = '<div class="tag-selector"></div>';
+    stubFetch();
+    window.fetch.withArgs('./mocks/taxonomy.json').returns(
+      new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => taxonomy,
+        });
+      }),
+    );
+
+    document.body.innerHTML = '<div><div class="tag-selector"><div><div>Consumer Tags</div><div><a href="./mocks/taxonomy.json">./mocks/taxonomy.json</a></div></div></div>';
     await init(document.querySelector('.tag-selector'));
   });
 
+  afterEach(() => {
+    restoreFetch();
+  });
+
   it('loads caas tags by default', async () => {
-    const firstItem = await waitForElement('.tagselect-item [id^=caas]');
+    const firstItem = await waitForElement('.tagselect-item [data-tag=CaaS]');
     expect(firstItem).to.exist;
   });
 
@@ -48,5 +61,16 @@ describe('Tag Selector', () => {
     const secondCol = await waitForElement('.tagselect-picker-cols .col:nth-child(2)');
 
     expect(secondCol).to.exist;
+  });
+
+  it('shows consumer tags when clicked', async () => {
+    const button = await waitForElement('.tagselect-item [data-tag="Consumer Tags"]');
+
+    button.click();
+
+    const item = await waitForElement('.tagselect-picker-cols .tagselect-item');
+
+    expect(item).to.exist;
+    expect(item.dataset.key).to.equal('primaryproductname');
   });
 });

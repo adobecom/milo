@@ -6,6 +6,8 @@ const MILO_TEMPLATES = [
 ];
 const MILO_BLOCKS = [
   'accordion',
+  'action-item',
+  'action-scroller',
   'adobetv',
   'article-feed',
   'article-header',
@@ -59,6 +61,7 @@ const MILO_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-selector',
   'tiktok',
   'twitter',
   'video',
@@ -88,11 +91,6 @@ const AUTO_BLOCKS = [
   { 'offer-preview': '/tools/commerce' },
 ];
 const ENVS = {
-  local: {
-    name: 'local',
-    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-  },
   stage: {
     name: 'stage',
     ims: 'stg1',
@@ -112,10 +110,13 @@ const ENVS = {
     pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
   },
 };
-const LANGSTORE = 'langstore';
+ENVS.local = {
+  ...ENVS.stage,
+  name: 'local',
+};
 
+const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
-const DOT_HTML_PATH = PAGE_URL.pathname.endsWith('.html');
 
 function getEnv(conf) {
   const { host } = window.location;
@@ -184,6 +185,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
+      config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
+        && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       return config;
     },
     (conf) => (config = conf),
@@ -227,7 +230,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
     const { hash } = url;
-    if (hash === '#_dnt') return processedHref.split('#')[0];
+    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
@@ -270,7 +273,8 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlToCanonicalUrl() {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const canonEl = document.head.querySelector('link[rel="canonical"]');
   if (!canonEl) return;
   const canonUrl = new URL(canonEl.href);
@@ -281,7 +285,8 @@ export function appendHtmlToCanonicalUrl() {
 }
 
 export function appendHtmlToLink(link) {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const href = link.getAttribute('href');
   if (!href?.length) return;
 
@@ -375,12 +380,27 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
+function checkForExpBlock(name, expBlocks) {
+  const expBlock = expBlocks?.[name];
+  if (!expBlock) return null;
+
+  const blockName = expBlock.split('/').pop();
+  return { blockPath: expBlock, blockName };
+}
+
 export async function loadBlock(block) {
-  const name = block.classList[0];
+  let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  const path = expBlocks?.[name] ? `${expBlocks[name]}` : `${base}/blocks/${name}`;
+  let path = `${base}/blocks/${name}`;
+
+  const expBlock = checkForExpBlock(name, expBlocks);
+  if (expBlock) {
+    name = expBlock.blockName;
+    path = expBlock.blockPath;
+  }
+
   const blockPath = `${path}/${name}`;
 
   const styleLoaded = new Promise((resolve) => {
@@ -450,8 +470,9 @@ export function decorateImageLinks(el) {
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      const aTag = createTag('a', { href: url, class: 'image-link' }, pic);
-      picParent.append(aTag);
+      const aTag = createTag('a', { href: url, class: 'image-link' });
+      picParent.insertBefore(aTag, pic);
+      aTag.append(pic);
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
@@ -461,7 +482,13 @@ export function decorateImageLinks(el) {
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
-  const url = new URL(a.href);
+  let url;
+  try {
+    url = new URL(a.href);
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
+    return false;
+  }
   const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
@@ -471,6 +498,7 @@ export function decorateAutoBlock(a) {
         a.target = '_blank';
         return false;
       }
+
       if (key === 'fragment' && url.hash === '') {
         const { parentElement } = a;
         const { nodeName, innerHTML } = parentElement;
@@ -480,6 +508,13 @@ export function decorateAutoBlock(a) {
           parentElement.parentElement.replaceChild(div, parentElement);
         }
       }
+
+      // previewing a fragment page with mp4 video
+      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+        a.className = 'video link-block';
+        return false;
+      }
+
       // Modals
       if (key === 'fragment' && url.hash !== '') {
         a.dataset.modalPath = url.pathname;
@@ -584,7 +619,7 @@ async function decorateIcons(area, config) {
   const base = miloLibs || codeRoot;
   await new Promise((resolve) => { loadStyle(`${base}/features/icons/icons.css`, resolve); });
   const { default: loadIcons } = await import('../features/icons/icons.js');
-  loadIcons(icons, config);
+  await loadIcons(icons, config);
 }
 
 async function decoratePlaceholders(area, config) {
@@ -704,16 +739,14 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
-  const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || mepOverride === '' || previewPage) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       persEnabled,
       persManifests,
-      previewPage,
       targetEnabled,
     });
   }
@@ -721,7 +754,7 @@ async function checkForPageMods() {
   if (targetEnabled) {
     await loadMartech({ persEnabled: true, persManifests, targetMd });
   } else if (persManifests.length) {
-    // load the personalization only
+    loadIms().catch(() => {});
     const { preloadManifests } = await import('../features/personalization/manifest-utils.js');
     const manifests = preloadManifests({ persManifests }, { getConfig, loadLink });
 
@@ -754,8 +787,8 @@ export async function loadDeferred(area, blocks, config) {
 
   if (config.locale?.ietf === 'ja-JP') {
     // Japanese word-wrap
-    import('../features/japanese-word-wrap.js').then(({ controlLineBreaksJapanese }) => {
-      controlLineBreaksJapanese(config, area);
+    import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
+      controlJapaneseLineBreaks(config, area);
     });
   }
 
@@ -832,10 +865,12 @@ export async function loadArea(area = document) {
     const loaded = section.blocks.map((block) => loadBlock(block));
     areaBlocks.push(...section.blocks);
 
+    await decorateIcons(section.el, config);
+
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    await decorateIcons(section.el, config);
+    window.dispatchEvent(new Event('milo:LCP:loaded'));
 
     // Post LCP operations.
     if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
@@ -849,12 +884,18 @@ export async function loadArea(area = document) {
   if (isDoc) {
     const georouting = getMetadata('georouting') || config.geoRouting;
     if (georouting === 'on') {
+      // eslint-disable-next-line import/no-cycle
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
     }
     const appendage = getMetadata('title-append');
     if (appendage) {
       import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+    }
+    if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
+      import('../features/seotech/seotech.js').then((module) => module.default(
+        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+      ));
     }
     const richResults = getMetadata('richresults');
     if (richResults) {

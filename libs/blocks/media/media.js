@@ -14,7 +14,7 @@
  * media - consonant v5.1
  */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
 import { createTag } from '../../utils/utils.js';
 
@@ -49,6 +49,47 @@ export default function init(el) {
     if (image) image.classList.add('image');
     const img = image.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
+    const imageVideo = image.querySelector('video');
+    if (imageVideo) applyHoverPlay(imageVideo);
+
+    // lists
+    if (row.querySelector('ul')) {
+      el.querySelector('ul').classList.add('default-list');
+    }
+
+    // subcopy
+    const actionArea = row.querySelector('p.action-area');
+    if (actionArea?.nextElementSibling?.tagName === 'P') {
+      actionArea.nextElementSibling.className = 'subcopy';
+    }
+
+    // subcopy with links
+    if (actionArea?.nextElementSibling?.tagName === 'H3') {
+      actionArea.nextElementSibling.classList.remove('heading-m', 'body-xl');
+      actionArea.nextElementSibling.classList.add('heading-xs');
+      const links = row.querySelectorAll('h3.heading-xs ~ p.body-s a, h3.heading-xs ~ p.icon-area a');
+      links.forEach((link) => {
+        link.parentElement.className = 'subcopy-link';
+        link.className = 'body-xxs';
+      });
+    }
+
+    // qr code
+    if (row.closest('.qr-code')) {
+      const imgQRCode = row.querySelector('.text > p.body-s > picture > img');
+      if (imgQRCode) {
+        imgQRCode.classList.add('qr-code-img');
+      }
+      const qrCodeLinks = row.querySelectorAll('a');
+      const googleBtn = qrCodeLinks[0];
+      const appleBtn = qrCodeLinks[1];
+      googleBtn.textContent = '';
+      googleBtn.classList.add('google-play');
+      googleBtn.parentNode.classList.add('qr-button-container');
+      appleBtn.textContent = '';
+      appleBtn.classList.add('app-store');
+      appleBtn.parentNode.classList.add('qr-button-container');
+    }
     container.append(row);
   });
   el.append(container);

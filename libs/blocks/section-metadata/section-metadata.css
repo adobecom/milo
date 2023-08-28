@@ -17,6 +17,15 @@
   color: rgb(34 34 34);
 }
 
+.section.static-links a:not([class]) {
+  color: inherit;
+}
+
+.section.hide-sticky-section,
+.section.close-sticky-section {
+  display: none;
+}
+
 .section.has-background {
   background-color: unset;
 }
@@ -59,6 +68,10 @@
 
 .section.xs-spacing {
   padding: var(--spacing-xs) 0;
+}
+
+.section.xxs-spacing {
+  padding: var(--spacing-xxs) 0;
 }
 
 .section picture.section-background {
