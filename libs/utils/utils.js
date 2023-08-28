@@ -389,6 +389,11 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 export async function loadBlock(block) {
+  if (block.classList.contains('hide-block')) {
+    block.remove();
+    return null;
+  }
+
   let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
@@ -739,16 +744,14 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
-  const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || mepOverride === '' || previewPage) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       persEnabled,
       persManifests,
-      previewPage,
       targetEnabled,
     });
   }
@@ -823,7 +826,9 @@ function decorateMeta() {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
@@ -913,7 +918,7 @@ export async function loadArea(area = document) {
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle]);
+    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
 
   // Load everything that can be deferred until after all blocks load.
