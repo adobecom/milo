@@ -123,9 +123,9 @@ function StatusRow({ row }) {
   const timeStamp = prettyDate();
   const errorStyle = 'status-error';
   const del = !!row.status.delete || !!row.status.unpublish;
-  const goodStatus= del ? 204 : 200;
-  const preview = del ? row.status.delete : row.status.preview;
-  const publish = del ? row.status.unpublish :row.status.publish;
+  const expectedStatus = del ? 204 : 200;
+  const previewStatus = del ? row.status.delete : row.status.preview;
+  const publishStatus = del ? row.status.unpublish :row.status.publish;
   const preStatus = del ? bulkDeleteStatus : bulkPreviewStatus;
   const pubStatus = del ? bulkUnpublishStatus : bulkPublishStatus;
 
@@ -136,10 +136,10 @@ function StatusRow({ row }) {
     <tr class="bulk-status-row">
       <td class="bulk-status-url"><a href="${row.url}" target="_blank">${row.url}</a></td>
       <td class="bulk-status-preview ${previewStatusError}">
-        ${preview === goodStatus && timeStamp} ${preStatus(row)}
+        ${previewStatus === expectedStatus && timeStamp} ${preStatus(row)}
       </td>
       <td class="bulk-status-publish ${publishStatusError}">
-        ${publish === goodStatus && timeStamp} ${pubStatus(row)}
+        ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
       </td>
     </tr>
   `;
