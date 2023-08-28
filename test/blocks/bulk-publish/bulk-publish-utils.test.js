@@ -4,15 +4,15 @@ import { stub } from 'sinon';
 import {
   BULK_CONFIG_FILE_PATH,
   BULK_STORED_URL_IDX,
-  userIsAuthorized,
-  getAuthorizedUsers,
   executeActions,
+  getAuthorizedUsers,
   getCompletion,
-  getStoredOperation,
   getReport,
+  getStoredOperation,
   sendReport,
-  storeUrls,
   storeOperation,
+  storeUrls,
+  userIsAuthorized
 } from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
@@ -257,12 +257,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 0,
-        success: 0
+        success: 0,
       },
       unpublish: {
         total: 0,
-        success: 0
-      }
+        success: 0,
+      },
     };
     const expectedReport = [
       {
@@ -320,12 +320,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 0,
-        success: 0
+        success: 0,
       },
       unpublish: {
         total: 0,
-        success: 0
-      }
+        success: 0,
+      },
     };
     const expectedReport = [
       {
@@ -391,12 +391,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 0,
-        success: 0
+        success: 0,
       },
       unpublish: {
         total: 0,
-        success: 0
-      }
+        success: 0,
+      },
     };
     const expectedReport = [
       {
@@ -431,21 +431,15 @@ describe('Bulk preview and publish', () => {
     const expectedResults = [
       {
         url: EXISTING_PAGE_URL,
-        status: {
-          unpublish: 204,
-        },
+        status: { unpublish: 204 },
       },
       {
         url: NON_EXISTING_PAGE_URL,
-        status: {
-          unpublish: 404,
-        },
+        status: { unpublish: 404 },
       },
       {
         url: EXISTING_RESOURCE_PAGE_URL,
-        status: {
-          unpublish: 403,
-        },
+        status: { unpublish: 403 },
       },
     ];
     const expectedCompletion = {
@@ -459,12 +453,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 0,
-        success: 0
+        success: 0,
       },
       unpublish: {
         total: 3,
-        success: 1
-      }
+        success: 1,
+      },
     };
     const expectedReport = [
       {
@@ -507,7 +501,7 @@ describe('Bulk preview and publish', () => {
         url: EXISTING_RESOURCE_PAGE_URL,
         status: {
           unpublish: 403,
-          delete: 403
+          delete: 403,
         },
       },
     ];
@@ -522,12 +516,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 3,
-        success: 1
+        success: 1,
       },
       unpublish: {
         total: 3,
-        success: 1
-      }
+        success: 1,
+      },
     };
     const expectedReport = [
       {
@@ -572,12 +566,12 @@ describe('Bulk preview and publish', () => {
       },
       delete: {
         total: 0,
-        success: 0
+        success: 0,
       },
       unpublish: {
         total: 0,
-        success: 0
-      }
+        success: 0,
+      },
     };
     const expectedReport = [
       {

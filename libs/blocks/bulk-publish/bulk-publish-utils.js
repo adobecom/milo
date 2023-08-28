@@ -1,6 +1,6 @@
-import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../utils/utils.js';
-import { loadScript } from '../../utils/utils.js';
 import { getImsToken } from '../../../tools/utils/utils.js';
+import { loadScript } from '../../utils/utils.js';
+import { fetchWithTimeout, getLocalStorage, setLocalStorage } from '../utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 300;
@@ -132,11 +132,11 @@ export const getActionName = (action, useGerund) => {
 const executeAction = async (action, url) => {
   const operation = (action === 'preview' || action === 'delete') ? 'preview' : 'live';
   const siteAllowed = await siteIsSupported(url);
-    if (!siteAllowed) return UNSUPPORTED_SITE_STATUS;
+  if (!siteAllowed) return UNSUPPORTED_SITE_STATUS;
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
   const adminURL = `${ADMIN_BASE_URL}/${operation}/${owner}/${repo}/${branch}${pathname}`;
-  const method = (action === 'delete' || action === 'unpublish') ? 'DELETE' : 'POST'
+  const method = (action === 'delete' || action === 'unpublish') ? 'DELETE' : 'POST';
   const resp = await fetchWithTimeout(adminURL, { method });
   return resp.status;
 };
@@ -225,12 +225,12 @@ export const getCompletion = (results) => {
     },
     delete: {
       total: deleteTotal,
-      success: deleteSuccess
+      success: deleteSuccess,
     },
     unpublish: {
       total: unpublishTotal,
-      success: unpublishSuccess
-    }
+      success: unpublishSuccess,
+    },
   };
 };
 

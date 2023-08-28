@@ -1,20 +1,20 @@
-import { html, render, useState, useRef } from '../../deps/htm-preact.js';
+import { html, render, useRef, useState } from '../../deps/htm-preact.js';
 import { getMetadata } from '../../utils/utils.js';
 import {
   ANONYMOUS,
-  signOut,
-  getStoredUrlInput,
-  getActionName,
-  getUrls,
-  userIsAuthorized,
   executeActions,
+  getActionName,
   getCompletion,
+  getStoredOperation,
+  getStoredUrlInput,
+  getUrls,
+  getUser,
   sendReport,
   signIn,
-  getUser,
-  getStoredOperation,
-  storeUrls,
+  signOut,
   storeOperation,
+  storeUrls,
+  userIsAuthorized
 } from './bulk-publish-utils.js';
 
 const URLS_ENTRY_LIMIT = 1000;
@@ -123,9 +123,9 @@ function StatusRow({ row }) {
   const timeStamp = prettyDate();
   const errorStyle = 'status-error';
   const del = !!row.status.delete || !!row.status.unpublish;
-  const goodStatus= del ? 204 : 200;
+  const goodStatus = del ? 204 : 200;
   const preview = del ? row.status.delete : row.status.preview;
-  const publish = del ? row.status.unpublish :row.status.publish;
+  const publish = del ? row.status.unpublish : row.status.publish;
   const preStatus = del ? bulkDeleteStatus : bulkPreviewStatus;
   const pubStatus = del ? bulkUnpublishStatus : bulkPublishStatus;
 
@@ -150,11 +150,11 @@ function StatusContent({ resultsElt, result, submittedAction }) {
   const displayClass = 'did-bulk';
   const bulkPreviewed = name.includes('preview') || name === 'delete' ? displayClass : '';
   const bulkPublished = name.includes('publish') || name === 'delete' ? displayClass : '';
-  const del = name === 'delete' || name === 'unpublish'
+  const del = name === 'delete' || name === 'unpublish';
   const headings = {
-    pre:  del ? 'Deleted' : 'Previewed',
-    pub:  del ? 'UnPublished' : "Published"
-  }
+    pre: del ? 'Deleted' : 'Previewed',
+    pub: del ? 'UnPublished' : 'Published',
+  };
   return html`
     <table class="bulk-status-content" ref="${resultsElt}">
       ${result && html`
