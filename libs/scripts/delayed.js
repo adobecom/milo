@@ -48,6 +48,15 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     }
   });
 };
+
+export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
+  const googleLogin = getMetadata('google-login')?.toLowerCase();
+  if (googleLogin !== 'on' || window.adobeIMS?.isSignedInUser()) return;
+
+  const { default: initGoogleLogin } = await import('../features/google-login.js');
+  initGoogleLogin(loadIms, getMetadata, loadScript);
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -56,10 +65,12 @@ const loadDelayed = ([
   getMetadata,
   loadScript,
   loadStyle,
+  loadIms,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
     loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
+    loadGoogleLogin(getMetadata, loadIms, loadScript);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;

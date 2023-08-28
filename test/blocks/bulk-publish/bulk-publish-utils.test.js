@@ -4,22 +4,24 @@ import { stub } from 'sinon';
 import {
   BULK_CONFIG_FILE_PATH,
   BULK_STORED_URL_IDX,
-  userIsAuthorized,
-  getAuthorizedUsers,
   executeActions,
+  getAuthorizedUsers,
   getCompletion,
-  getStoredOperation,
   getReport,
+  getStoredOperation,
   sendReport,
-  storeUrls,
   storeOperation,
+  storeUrls,
+  userIsAuthorized,
 } from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
 const EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existing';
 const NON_EXISTING_PAGE_URL = 'https://main--milo--adobecom.hlx.page/nonexisting';
+const EXISTING_RESOURCE_PAGE_URL = 'https://main--milo--adobecom.hlx.page/existingresource';
 const NON_EXISTING_REPO_URL = 'https://main--nonexisting--adobecom.hlx.page/';
 const URLS = [EXISTING_PAGE_URL, NON_EXISTING_PAGE_URL, NON_EXISTING_REPO_URL];
+const DURLS = [EXISTING_PAGE_URL, NON_EXISTING_PAGE_URL, EXISTING_RESOURCE_PAGE_URL];
 
 const ogFetch = window.fetch;
 window.fetch = stub();
@@ -102,6 +104,84 @@ const stubPublishNonExistingPage = () => {
   );
 };
 
+const stubUnpublishExistingPage = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/live/adobecom/milo/main/existing';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 204,
+      });
+    }),
+  );
+};
+
+const stubDeleteExistingPage = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/preview/adobecom/milo/main/existing';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 204,
+      });
+    }),
+  );
+};
+
+const stubDeletePageWithExistingResource = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/preview/adobecom/milo/main/existingresource';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 403,
+      });
+    }),
+  );
+};
+
+const stubUnpublishPageWithExistingResource = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/live/adobecom/milo/main/existingresource';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 403,
+      });
+    }),
+  );
+};
+
+const stubUnpublishNonExistingPage = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/live/adobecom/milo/main/nonexisting';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 404,
+      });
+    }),
+  );
+};
+
+const stubDeleteNonExistingPage = () => {
+  const controller = new AbortController();
+  const adminUrl = 'https://admin.hlx.page/preview/adobecom/milo/main/nonexisting';
+  window.fetch.withArgs(adminUrl, { method: 'DELETE', signal: controller.signal }).returns(
+    new Promise((resolve) => {
+      resolve({
+        ok: true,
+        status: 404,
+      });
+    }),
+  );
+};
+
 const restoreFetch = () => {
   window.fetch = ogFetch;
 };
@@ -118,6 +198,12 @@ describe('Bulk preview and publish', () => {
     stubPreviewNonExistingPage();
     stubPublishExistingPage();
     stubPublishNonExistingPage();
+    stubDeleteExistingPage();
+    stubUnpublishExistingPage();
+    stubDeleteNonExistingPage();
+    stubUnpublishNonExistingPage();
+    stubDeletePageWithExistingResource();
+    stubUnpublishPageWithExistingResource();
   });
   after(() => {
     restoreFetch();
@@ -166,6 +252,14 @@ describe('Bulk preview and publish', () => {
         success: 1,
       },
       publish: {
+        total: 0,
+        success: 0,
+      },
+      delete: {
+        total: 0,
+        success: 0,
+      },
+      unpublish: {
         total: 0,
         success: 0,
       },
@@ -223,6 +317,14 @@ describe('Bulk preview and publish', () => {
       publish: {
         total: 3,
         success: 1,
+      },
+      delete: {
+        total: 0,
+        success: 0,
+      },
+      unpublish: {
+        total: 0,
+        success: 0,
       },
     };
     const expectedReport = [
@@ -287,6 +389,14 @@ describe('Bulk preview and publish', () => {
         total: 3,
         success: 1,
       },
+      delete: {
+        total: 0,
+        success: 0,
+      },
+      unpublish: {
+        total: 0,
+        success: 0,
+      },
     };
     const expectedReport = [
       {
@@ -304,6 +414,123 @@ describe('Bulk preview and publish', () => {
         domain: 'https://main--nonexisting--adobecom.hlx.page',
         urls: 2,
         success: 0,
+      },
+    ];
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
+  });
+
+  it('Bulk Unpublishes', async () => {
+    const operation = 'unpublish';
+    storeUrls(DURLS);
+    storeOperation(operation);
+    const results = await executeActions(false, () => {});
+    const completion = getCompletion(results);
+    const report = await getReport(results, operation);
+    const expectedResults = [
+      {
+        url: EXISTING_PAGE_URL,
+        status: { unpublish: 204 },
+      },
+      {
+        url: NON_EXISTING_PAGE_URL,
+        status: { unpublish: 404 },
+      },
+      {
+        url: EXISTING_RESOURCE_PAGE_URL,
+        status: { unpublish: 403 },
+      },
+    ];
+    const expectedCompletion = {
+      preview: {
+        total: 0,
+        success: 0,
+      },
+      publish: {
+        total: 0,
+        success: 0,
+      },
+      delete: {
+        total: 0,
+        success: 0,
+      },
+      unpublish: {
+        total: 3,
+        success: 1,
+      },
+    };
+    const expectedReport = [
+      {
+        timestamp: '2023-04-03T14:56:00.734Z',
+        email: 'anonymous',
+        action: 'Unpublish',
+        domain: 'https://main--milo--adobecom.hlx.page',
+        urls: 3,
+        success: 1,
+      },
+    ];
+    expect(results).to.deep.equals(expectedResults, 'results');
+    expect(completion).to.deep.equals(expectedCompletion, 'completion');
+    expect(getArrayWithDeletedProperty(report, 'timestamp')).to.deep.equals(getArrayWithDeletedProperty(expectedReport, 'timestamp'), 'report');
+  });
+
+  it('Bulk Deletes (which also unpublishes)', async () => {
+    const operation = 'unpublish&delete';
+    storeUrls(DURLS);
+    storeOperation(operation);
+    const results = await executeActions(false, () => {});
+    const completion = getCompletion(results);
+    const report = await getReport(results, operation);
+    const expectedResults = [
+      {
+        url: EXISTING_PAGE_URL,
+        status: {
+          unpublish: 204,
+          delete: 204,
+        },
+      },
+      {
+        url: NON_EXISTING_PAGE_URL,
+        status: {
+          unpublish: 404,
+          delete: 404,
+        },
+      },
+      {
+        url: EXISTING_RESOURCE_PAGE_URL,
+        status: {
+          unpublish: 403,
+          delete: 403,
+        },
+      },
+    ];
+    const expectedCompletion = {
+      preview: {
+        total: 0,
+        success: 0,
+      },
+      publish: {
+        total: 0,
+        success: 0,
+      },
+      delete: {
+        total: 3,
+        success: 1,
+      },
+      unpublish: {
+        total: 3,
+        success: 1,
+      },
+    };
+    const expectedReport = [
+      {
+        timestamp: '2023-04-03T14:56:00.734Z',
+        email: 'anonymous',
+        action: 'Delete',
+        domain: 'https://main--milo--adobecom.hlx.page',
+        urls: 6,
+        success: 2,
       },
     ];
     expect(results).to.deep.equals(expectedResults, 'results');
@@ -335,6 +562,14 @@ describe('Bulk preview and publish', () => {
       },
       publish: {
         total: 1,
+        success: 0,
+      },
+      delete: {
+        total: 0,
+        success: 0,
+      },
+      unpublish: {
+        total: 0,
         success: 0,
       },
     };
