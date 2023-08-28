@@ -14,7 +14,7 @@ import {
   signOut,
   storeOperation,
   storeUrls,
-  userIsAuthorized
+  userIsAuthorized,
 } from './bulk-publish-utils.js';
 
 const URLS_ENTRY_LIMIT = 1000;

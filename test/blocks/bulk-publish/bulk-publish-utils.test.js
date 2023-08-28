@@ -12,7 +12,7 @@ import {
   sendReport,
   storeOperation,
   storeUrls,
-  userIsAuthorized
+  userIsAuthorized,
 } from '../../../libs/blocks/bulk-publish/bulk-publish-utils.js';
 import { setLocalStorage } from '../../../libs/blocks/utils/utils.js';
 
