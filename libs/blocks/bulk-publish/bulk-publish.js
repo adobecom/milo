@@ -72,48 +72,45 @@ function prettyDate(date = new Date()) {
 }
 
 function bulkPublishStatus(row) {
-  const status = row.status.publish !== 200
-    ? `Error  - Status: ${row.status.publish}`
-    : '';
-  return row.status.publish !== 200 && row.status.publish !== undefined && html`
+  const success = row.status.publish === 200;
+  const status = success ? '' : `Error - Status: ${row.status.publish}`;
+  return !success && row.status.publish !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkPreviewStatus(row) {
-  const status = row.status.preview !== 200
-    ? `Error - Status: ${row.status.preview}`
-    : '';
+  const success = row.status.preview === 200;
+  const status = success ? '' : `Error - Status: ${row.status.preview}`;
   return row.status.preview !== 200 && row.status.preview !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkDeleteStatus(row) {
+  const success = row.status.delete === 204;
   const status = row.status.delete === 403
     ? 'Failed to Delete (Ensure the resource is deleted in SharePoint)'
     : `Error - Status: ${row.status.delete}`;
-  return row.status.delete !== 204 && row.status.delete !== undefined && html`
+  return !success && row.status.delete !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkUnpublishStatus(row) {
+  const success = row.status.unpublish === 204;
   const status = row.status.unpublish === 403
     ? 'Failed to Unpublish (Ensure the resource is deleted in SharePoint)'
     : `Error - Status: ${row.status.unpublish}`;
-  return row.status.unpublish !== 204 && row.status.unpublish !== undefined && html`
+  return !success && row.status.unpublish !== undefined && html`
     <span class=page-status>${status}</span>
   `;
 }
 
 function bulkIndexStatus(row) {
-  const status = !(row.status.index === 200 || row.status.index === 202)
-    ? `Error - Status: ${row.status.index}`
-    : '';
-  return !(row.status.index === 200 || row.status.index === 202) && row.status.index !== undefined && html`
-    <span class=page-status>${status}</span>
-  `;
+  const success = row.status.index === 200 || row.status.index === 202;
+  const status = success ? '' : `Error - Status: ${row.status.index}`;
+  return !success && row.status.index !== undefined && html`<span class=page-status>${status}</span>`;
 }
 
 function StatusTitle({ bulkTriggered, submittedAction, urlNumber }) {
@@ -140,8 +137,8 @@ function StatusRow({ row }) {
 
   const previewStatusError = previewStatus === expectedStatus ? '' : errorStyle;
   const publishStatusError = publishStatus === expectedStatus ? '' : errorStyle;
-  const indexStatusError = (row.status.index === 200 || row.status.index === 202) ? '' : errorStyle;
-
+  const indexSuccess = row.status.index === 200 || row.status.index === 202;
+  const indexStatusError = indexSuccess ? '' : errorStyle;
 
   return html`
     <tr class="bulk-status-row">
@@ -153,7 +150,7 @@ function StatusRow({ row }) {
         ${publishStatus === expectedStatus && timeStamp} ${pubStatus(row)}
       </td>
       <td class="bulk-status-index ${indexStatusError}">
-        ${(row.status.index === 200 || row.status.index === 202) && timeStamp} ${bulkIndexStatus(row)}
+        ${indexSuccess && timeStamp} ${bulkIndexStatus(row)}
       </td>
     </tr>
   `;

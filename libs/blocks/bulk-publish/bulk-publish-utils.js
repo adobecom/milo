@@ -114,22 +114,22 @@ export const getActionName = (action, useGerund) => {
   switch (action) {
     case null:
     case 'preview':
-      name = (!useGerund) ? 'Preview' : 'Previewing';
+      name = (useGerund) ? 'Previewing' : 'Preview';
       break;
     case 'publish':
-      name = (!useGerund) ? 'Publish' : 'Publishing';
+      name = (useGerund) ? 'Publishing' : 'Publish';
       break;
     case 'unpublish':
-      name = (!useGerund) ? 'Unpublish' : 'Unpublishing';
+      name = (useGerund) ? 'Unpublishing' : 'Unpublish';
       break;
     case 'unpublish&delete':
-      name = (!useGerund) ? 'Delete' : 'Deleting';
+      name = (useGerund) ? 'Deleting' : 'Delete';
       break;
     case 'index':
-      name = (!useGerund) ? 'Index' : 'Indexing';
+      name = (useGerund) ? 'Indexing' : 'Index';
       break;
     default:
-      name = (!useGerund) ? 'Preview & publish' : 'Previewing & publishing';
+      name = (useGerund) ? 'Previewing & publishing' : 'Preview & publish';
   }
   return name;
 };
