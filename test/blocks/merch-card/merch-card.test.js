@@ -67,7 +67,7 @@ describe('Merch Card', () => {
 
     it('Supports Plans card', async () => {
       document.body.innerHTML = await readFile({ path: './mocks/plans-card.html' });
-      await init(document.querySelector('.plans'));
+      await init(document.querySelector('.plans.icons'));
       const inner = document.querySelector('.consonant-PlansCard-inner');
       const cardFooter = inner.querySelector('.consonant-CardFooter');
       const ribbon = document.querySelector('.consonant-PlansCard-ribbon');
@@ -75,12 +75,15 @@ describe('Merch Card', () => {
       const secureWrapper = cardFooter.querySelector('.secure-transaction-wrapper');
       const checkBoxContainer = cardFooter.querySelector('.checkbox-container');
       const plansCard = document.querySelector('.consonant-ProductCard');
+      const iconsWrapper = document.querySelector('.consonant-PlansCard-iconWrapper');
+      const icons = iconsWrapper.querySelectorAll('.consonant-MerchCard-ProductIcon');
 
       expect(plansCard).to.be.exist;
       expect(plansCard.style.border).to.be.equal('1px solid rgb(237, 204, 45)');
       expect(inner.querySelector('.consonant-PlansCard-title')).to.be.exist;
       expect(inner.querySelector('.consonant-PlansCard-description')).to.be.exist;
-      expect(document.querySelector('.consonant-PlansCard-iconWrapper')).to.be.exist;
+      expect(iconsWrapper).to.be.exist;
+      expect(icons.length).to.be.equal(2);
       expect(ribbon).to.be.exist;
       expect(ribbon.style.backgroundColor).to.be.equal('rgb(237, 204, 45)');
       expect(ribbon.style.color).to.be.equal('rgb(0, 0, 0)');
