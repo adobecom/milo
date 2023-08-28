@@ -8,7 +8,7 @@ export function decorateBlockAnalytics(blockEl) {
 
 export function decorateLinkAnalytics(textEl, headings) {
   const headingText = [...headings].map((heading) => heading.textContent);
-  textEl.setAttribute('daa-lh', headingText.join('|'));
+  textEl.setAttribute('daa-lh', headingText.join('|').replace(/\s+/g, ' ').trim());
   const links = textEl.querySelectorAll('a, button');
   links.forEach((link, i) => {
     let linkType = 'link';
