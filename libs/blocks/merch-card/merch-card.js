@@ -39,18 +39,14 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const replacePlaceHolder = async (key, defaultValue) => {
     const replacedKey = await replaceKey(key, getConfig(), defaultValue);
-    if (typeof replacedKey === 'string') {
-      return replacedKey;
-    }
     return { replacedKey };
   };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
-      const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
-      const secureElement = createTag('span', { class: 'secure-transaction-icon' });
-      secureTransactionWrapper.append(secureElement, label);
-    });
+    const { replacedKey } = replacePlaceHolder('secure-transaction');
+    const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+    const secureElement = createTag('span', { class: 'secure-transaction-icon' });
+    secureTransactionWrapper.append(secureElement, label);
     return secureTransactionWrapper;
   };
 
