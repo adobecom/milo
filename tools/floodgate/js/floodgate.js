@@ -32,6 +32,13 @@ async function triggerUpdateFragments() {
   loadingON(status);
 }
 
+async function deleteFloodgateDir(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const deleteStatus = await postData(config.sp.aioDeleteAction, params);
+  updateProjectStatusUI({ deleteStatus });
+}
+
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
@@ -50,7 +57,11 @@ async function fetchStatusAction(project, config) {
   // fetch promote status
   params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
-  updateProjectStatusUI({ copyStatus, promoteStatus });
+  // fetch delete status
+  const DELETE_ACTION = 'deleteAction~';
+  params = { projectRoot: `${DELETE_ACTION}${config.sp.fgRootFolder}` };
+  const deleteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUI({ copyStatus, promoteStatus, deleteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -84,6 +95,11 @@ function setListeners(project, config) {
     floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
+  const handleDeleteConfirm = ({ target }) => {
+    modal.style.display = 'none';
+    deleteFloodgateDir(project, config);
+    target.removeEventListener('click', handleDeleteConfirm);
+  };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
     promoteContentAction(project, config);
@@ -96,6 +112,11 @@ function setListeners(project, config) {
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleFloodgateConfirm);
   });
   document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
+  document.querySelector('#delete button').addEventListener('click', (e) => {
+    modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
+    modal.style.display = 'block';
+    document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleDeleteConfirm);
+  });
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
