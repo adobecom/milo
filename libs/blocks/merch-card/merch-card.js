@@ -35,7 +35,7 @@ const createTitle = (titles, cardType) => {
   return titleWrapper;
 };
 
-const decorateFooter = (el, cardType) => {
+const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const replacePlaceHolder = async (key, defaultValue) => {
     const replacedKey = await replaceKey(key, getConfig(), defaultValue);
@@ -65,6 +65,9 @@ const decorateFooter = (el, cardType) => {
   };
 
   const decorateAlternativeCta = () => {
+    const altCtaRegex = /href="([^"]*)"/g;
+    if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
+
     const toggleButtonActiveState = (buttonToAdd, buttonToRemove) => {
       buttonToAdd.classList.add('button--inactive');
       buttonToRemove.classList.remove('button--inactive');
@@ -77,10 +80,6 @@ const decorateFooter = (el, cardType) => {
       cardFooter?.append(standardWrapper);
     }
 
-    const altCta = [...el.querySelectorAll('.merch-card > div > div')].filter((div) => div.textContent?.trim() === 'alt-cta');
-    const altCtaMetaData = altCta[0]?.parentElement?.nextElementSibling?.querySelectorAll('div > div');
-    const altCtaRegex = /href="([^"]*)"/g;
-    if (altCtaMetaData?.length !== 2 || !altCtaMetaData[1]?.innerHTML?.match(altCtaRegex)) return;
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
     const altCtaButton = originalCtaButton.cloneNode(true);
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
@@ -96,15 +95,13 @@ const decorateFooter = (el, cardType) => {
     });
     cardFooterRow.append(altCtaButton);
     cardFooter.prepend(checkboxContainer);
-    altCta[0].parentNode.remove();
     altCtaMetaData[0].parentNode.remove();
   };
-
-  decorateAlternativeCta();
+  if (altCtaMetaData !== null) decorateAlternativeCta();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
-const addInner = (el, cardType, merchCard) => {
+const addInner = (el, altCta, cardType, merchCard) => {
   const titles = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')];
   const rows = [...el.querySelectorAll('p')];
   const styles = [...el.classList];
@@ -120,31 +117,28 @@ const addInner = (el, cardType, merchCard) => {
   inner.prepend(title);
   inner.append(description);
   addFooter(links, inner, merchCard);
-  decorateFooter(el, cardType);
+  decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
 };
 
-const decorateRibbon = (el, cardType) => {
+const decorateRibbon = (el, ribbonMetadata, cardType) => {
   const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-  [...el.querySelectorAll('div')].forEach((div) => {
-    const ribbonMetadata = div.querySelectorAll('div');
-    if (ribbonMetadata.length !== 2 || !ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
-    const ribbonStyle = ribbonMetadata[0].innerText;
-    const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
-    const ribbonWrapper = ribbonMetadata[0].parentNode;
-    const ribbon = ribbonMetadata[1];
-    ribbon.classList.add(`consonant-${cardType}-ribbon`);
-    ribbon.style.backgroundColor = ribbonBgColor;
-    ribbon.style.color = ribbonTextColor;
-    el.style.border = `1px solid ${ribbonBgColor}`;
-    const picture = el.querySelector(`.consonant-${cardType}-img`);
-    if (picture) {
-      picture.insertAdjacentElement('afterend', ribbon);
-    } else {
-      el.insertAdjacentElement('beforeend', ribbon);
-    }
-    ribbonWrapper.remove();
-  });
+  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
+  const ribbonStyle = ribbonMetadata[0].innerText;
+  const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
+  const ribbonWrapper = ribbonMetadata[0].parentNode;
+  const ribbon = ribbonMetadata[1];
+  ribbon.classList.add(`consonant-${cardType}-ribbon`);
+  ribbon.style.backgroundColor = ribbonBgColor;
+  ribbon.style.color = ribbonTextColor;
+  el.style.border = `1px solid ${ribbonBgColor}`;
+  const picture = el.querySelector(`.consonant-${cardType}-img`);
+  if (picture) {
+    picture.insertAdjacentElement('afterend', ribbon);
+  } else {
+    el.insertAdjacentElement('beforeend', ribbon);
+  }
+  ribbonWrapper.remove();
 };
 
 const decorateIcon = (el, icons, cardType) => {
@@ -169,8 +163,11 @@ const init = (el) => {
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-  let row = el.querySelector(':scope > div');
-  if (row.children.length >= 2) row = el.querySelectorAll(':scope > *')[1];
+  const rows = el.querySelectorAll(':scope > *');
+  const ribbonMetadata = rows[0].children?.length === 2 ? rows[0].children : null;
+  const row = rows[ribbonMetadata === null ? 0 : 1];
+  const altCta = rows[rows.length - 1].children?.length === 2
+    ? rows[rows.length - 1].children : null;
   const allPElems = row.querySelectorAll('p');
   const ctas = allPElems[allPElems.length - 1];
   const styles = [...el.classList];
@@ -192,10 +189,10 @@ const init = (el) => {
   addWrapper(el, section, cardType);
   merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
   if (image) addBackgroundImg(image, cardType, merchCard);
-  decorateRibbon(el, cardType);
+  if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);
   image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
-  addInner(el, cardType, merchCard);
+  addInner(el, altCta, cardType, merchCard);
   decorateIcon(el, icons, cardType);
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];
