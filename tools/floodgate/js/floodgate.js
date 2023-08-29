@@ -52,17 +52,13 @@ async function promoteContentAction(project, config) {
 
 async function fetchStatusAction(project, config) {
   // fetch copy status
-  let params = {
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.rootFolders,
-  };
+  let params = { type: 'copy', projectExcelPath: project.excelPath, shareUrl: config.sp.shareUrl };
   const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
-  params = { projectRoot: config.sp.fgRootFolder };
+  params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
   // fetch delete status
-  const DELETE_ACTION = 'deleteAction~';
-  params = { projectRoot: `${DELETE_ACTION}${config.sp.fgRootFolder}` };
+  params = { type: 'delete', fgShareUrl: config.sp.fgShareUrl };
   const deleteStatus = await postData(config.sp.aioStatusAction, params);
   updateProjectStatusUI({ copyStatus, promoteStatus, deleteStatus });
 }
