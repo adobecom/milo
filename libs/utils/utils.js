@@ -114,7 +114,9 @@ ENVS.local = {
   ...ENVS.stage,
   name: 'local',
 };
-
+const PLAY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
+                    <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
+                    `;
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
@@ -460,11 +462,24 @@ export function decorateSVG(a) {
   }
 }
 
+export function decorateModalImageLinks(picParent, a) {
+  const pic = picParent.querySelector('picture');
+  const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
+  const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIcon);
+  const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' }, playCircle);
+  const d = createTag('span', { class: 'modal-img-link' });
+  picParent.insertBefore(d, pic);
+  a.classList.add('play-btn');
+  a.append(playContainer);
+  d.append(pic);
+  d.append(a);
+}
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
-    const [source, alt] = img.alt.split('|');
+    const [source, alt, playBtn] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
       if (alt?.trim().length) img.alt = alt.trim();
@@ -472,7 +487,12 @@ export function decorateImageLinks(el) {
       const picParent = pic.parentElement;
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
-      aTag.append(pic);
+      if (playBtn) {
+        decorateModalImageLinks(picParent, aTag);
+      }
+      else {
+        aTag.append(pic);
+      }
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
@@ -520,7 +540,7 @@ export function decorateAutoBlock(a) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
-        a.className = 'modal link-block';
+        a.className = `modal link-block ${[...a.classList].join(' ')}`;
         return true;
       }
 
