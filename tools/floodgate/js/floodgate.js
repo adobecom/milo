@@ -58,8 +58,7 @@ async function fetchStatusAction(project, config) {
   params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
   // fetch delete status
-  const DELETE_ACTION = 'deleteAction~';
-  params = { projectRoot: `${DELETE_ACTION}${config.sp.fgRootFolder}` };
+  params = { type: 'delete', fgShareUrl: config.sp.fgShareUrl };
   const deleteStatus = await postData(config.sp.aioStatusAction, params);
   updateProjectStatusUI({ copyStatus, promoteStatus, deleteStatus });
 }
