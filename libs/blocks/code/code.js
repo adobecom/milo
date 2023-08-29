@@ -1,15 +1,15 @@
-import { getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import * as utils from '../../utils/utils.js';
 
-const HIGHLIGHT_JS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js';
-const FONT_CSS = 'https://use.typekit.net/vih2anh.css';
-const SIZE_VARIANTS = ['small', 'medium', 'large'];
+export const HIGHLIGHT_JS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js';
+export const FONT_CSS = 'https://use.typekit.net/vih2anh.css';
+export const SIZE_VARIANTS = ['small', 'medium', 'large'];
+
+export function getThemeUrl(theme = 'default') {
+  return `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/${theme}.min.css`;
+}
 
 function logError(msg) {
   window.lana?.log(`Code: ${msg}`, { tags: 'errorType=code' });
-}
-
-function getThemeUrl(theme = 'default') {
-  return `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/${theme}.min.css`;
 }
 
 function getSizeVariant(el) {
@@ -20,7 +20,7 @@ function getLanguageVariant(el) {
   return [...el.classList].find((v) => ![...SIZE_VARIANTS, 'code'].includes(v));
 }
 
-export default async function init(el) {
+export default async function init(el, { getMetadata, loadScript, loadStyle } = utils) {
   const codeEl = el.querySelector('pre code');
   if (!codeEl) {
     logError('monospaced text block not found');

@@ -1,0 +1,19 @@
+<div class="code javascript large">
+  <div>
+    <div>
+      <div>export default async function init(el) {
+const language = [...el.classList].find((v) =&gt; v !== 'code');
+console.log(language)
+const codeEl = el.querySelector('pre code');
+if (!codeEl) {
+console.error(`Did you remember to monospace in document? ${codeEl}`);
+return;
+}
+await loadStyle(HIGHLIGHT_CSS);
+await loadScript('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js');
+hljs.highlightElement(codeEl);
+}
+</div>
+    </div>
+  </div>
+</div>

@@ -8,7 +8,6 @@
 .code pre {
   white-space-collapse: preserve;
   text-wrap: nowrap;
-  /* margin: 0; */
 }
 
 .code code {
