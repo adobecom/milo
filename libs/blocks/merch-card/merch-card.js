@@ -123,12 +123,11 @@ const addInner = (el, cardType, merchCard) => {
 };
 
 const decorateRibbon = (el, cardType) => {
-  const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
-
-  if (ribbonMetadata.length >= 2) {
-    const ribbonStyle = ribbonMetadata[0].outerText;
-    const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-    if (!ribbonStyleRegex.test(ribbonStyle)) return;
+  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  [...el.querySelectorAll('div')].forEach((div) => {
+    const ribbonMetadata = div.querySelectorAll('div');
+    if (ribbonMetadata.length !== 2 || !ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
+    const ribbonStyle = ribbonMetadata[0].innerText;
     const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
     const ribbonWrapper = ribbonMetadata[0].parentNode;
     const ribbon = ribbonMetadata[1];
@@ -143,7 +142,7 @@ const decorateRibbon = (el, cardType) => {
       el.insertAdjacentElement('beforeend', ribbon);
     }
     ribbonWrapper.remove();
-  }
+  });
 };
 
 const decorateIcon = (el, icons, cardType) => {
