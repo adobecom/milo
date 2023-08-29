@@ -91,6 +91,7 @@ const AUTO_BLOCKS = [
   { merch: '/tools/ost?' },
   { 'offer-preview': '/tools/commerce' },
 ];
+
 const ENVS = {
   stage: {
     name: 'stage',
@@ -500,50 +501,54 @@ export function decorateAutoBlock(a) {
     window.lana?.log(`Cannot make URL from decorateAutoBlock - ${a?.href}: ${e.toString()}`);
     return false;
   }
-  const href = hostname === url.hostname ? `${url.pathname}${url.search}${url.hash}` : a.href;
+
+  const href = hostname === url.hostname
+    ? `${url.pathname}${url.search}${url.hash}`
+    : a.href;
+
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
-    if (match) {
-      if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
-        a.target = '_blank';
-        return false;
-      }
+    if (!match) return false;
 
-      if (key === 'fragment' && url.hash === '') {
-        const { parentElement } = a;
-        const { nodeName, innerHTML } = parentElement;
-        const noText = innerHTML === a.outerHTML;
-        if (noText && nodeName === 'P') {
-          const div = createTag('div', null, a);
-          parentElement.parentElement.replaceChild(div, parentElement);
-        }
-      }
+    if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
+      a.target = '_blank';
+      return false;
+    }
 
-      // previewing a fragment page with mp4 video
-      if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
-        a.className = 'video link-block';
-        return false;
+    const isInlineFrag = url.hash.includes('#_inline');
+    if (key === 'fragment' && (url.hash === '' || isInlineFrag)) {
+      const { parentElement } = a;
+      const { nodeName, innerHTML } = parentElement;
+      const noText = innerHTML === a.outerHTML;
+      if (noText && nodeName === 'P') {
+        const div = createTag('div', null, a);
+        parentElement.parentElement.replaceChild(div, parentElement);
       }
+    }
 
-      // Modals
-      if (key === 'fragment' && url.hash !== '') {
-        a.dataset.modalPath = url.pathname;
-        a.dataset.modalHash = url.hash;
-        a.href = url.hash;
-        a.className = 'modal link-block';
-        return true;
-      }
+    // previewing a fragment page with mp4 video
+    if (key === 'fragment' && a.textContent.match('media_.*.mp4')) {
+      a.className = 'video link-block';
+      return false;
+    }
 
-      // slack uploaded mp4s
-      if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
-        return false;
-      }
-
-      a.className = `${key} link-block`;
+    // Modals
+    if (key === 'fragment' && url.hash !== '' && !isInlineFrag) {
+      a.dataset.modalPath = url.pathname;
+      a.dataset.modalHash = url.hash;
+      a.href = url.hash;
+      a.className = 'modal link-block';
       return true;
     }
-    return false;
+
+    // slack uploaded mp4s
+    if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+      return false;
+    }
+
+    a.className = `${key} link-block`;
+    return true;
   });
 }
 
@@ -655,17 +660,43 @@ async function loadFooter() {
   await loadBlock(footer);
 }
 
+function decorateSection(section, idx) {
+  let links = decorateLinks(section);
+  decorateDefaults(section);
+  const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
+
+  const blockLinks = [...blocks].reduce((blkLinks, block) => {
+    links.forEach((link) => {
+      if (!block.contains(link)) return;
+
+      if (link.classList.contains('fragment')) {
+        link.href = `${link.href}#_inline`;
+        blkLinks.inlineFrags.push(link);
+      } else if (link.classList.contains('link-block')) {
+        blkLinks.autoBlocks.push(link);
+      }
+    });
+    return blkLinks;
+  }, { inlineFrags: [], autoBlocks: [] });
+
+  const embeddedLinks = [...blockLinks.inlineFrags, ...blockLinks.autoBlocks];
+  if (embeddedLinks.length) {
+    links = links.filter((link) => !embeddedLinks.includes(link));
+  }
+  section.className = 'section';
+  section.dataset.status = 'decorated';
+  section.dataset.idx = idx;
+  return {
+    blocks: [...links, ...blocks],
+    el: section,
+    idx,
+    preloadLinks: blockLinks.autoBlocks,
+  };
+}
+
 function decorateSections(el, isDoc) {
   const selector = isDoc ? 'body > main > div' : ':scope > div';
-  return [...el.querySelectorAll(selector)].map((section, idx) => {
-    const links = decorateLinks(section);
-    decorateDefaults(section);
-    const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
-    section.className = 'section';
-    section.dataset.status = 'decorated';
-    section.dataset.idx = idx;
-    return { el: section, blocks: [...links, ...blocks] };
-  });
+  return [...el.querySelectorAll(selector)].map(decorateSection);
 }
 
 function decorateFooterPromo(config) {
@@ -863,6 +894,84 @@ function decorateMeta() {
   });
 }
 
+function decorateDocumentExtras(config) {
+  decorateMeta();
+  decorateHeader();
+  decorateFooterPromo(config);
+
+  import('./samplerum.js').then(({ addRumListeners }) => {
+    addRumListeners();
+  });
+}
+
+async function documentPostSectionLoading(config) {
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (georouting === 'on') {
+    // eslint-disable-next-line import/no-cycle
+    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+    loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+  }
+  const appendage = getMetadata('title-append');
+  if (appendage) {
+    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+  }
+  if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
+    import('../features/seotech/seotech.js').then((module) => module.default(
+      { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+    ));
+  }
+  const richResults = getMetadata('richresults');
+  if (richResults) {
+    const { default: addRichResults } = await import('../features/richresults.js');
+    addRichResults(richResults, { createTag, getMetadata });
+  }
+  loadFooter();
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
+  if (config.experiment?.selectedVariant?.scripts?.length) {
+    config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
+  }
+  initSidekick();
+
+  const { default: delayed } = await import('../scripts/delayed.js');
+  delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+}
+
+async function processSection(section, config, isDoc) {
+  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
+  if (inlineFrags.length) {
+    const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
+    const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
+    await Promise.all(fragPromises);
+    const newlyDecoratedSection = decorateSection(section.el, section.idx);
+    section.blocks = newlyDecoratedSection.blocks;
+    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+  }
+
+  if (section.preloadLinks.length) {
+    const preloads = section.preloadLinks.map((block) => loadBlock(block));
+    await Promise.all(preloads);
+  }
+
+  const loaded = section.blocks.map((block) => loadBlock(block));
+
+  await decorateIcons(section.el, config);
+
+  // Only move on to the next section when all blocks are loaded.
+  await Promise.all(loaded);
+
+  if (isDoc && section.el.dataset.idx === '0') {
+    window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
+    loadPostLCP(config);
+  }
+
+  // Show the section when all blocks inside are done.
+  delete section.el.dataset.status;
+  delete section.el.dataset.idx;
+
+  return section.blocks;
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
@@ -875,75 +984,26 @@ export async function loadArea(area = document) {
   await decoratePlaceholders(area, config);
 
   if (isDoc) {
-    decorateMeta();
-    decorateHeader();
-    decorateFooterPromo(config);
-
-    import('./samplerum.js').then(({ addRumListeners }) => {
-      addRumListeners();
-    });
+    decorateDocumentExtras(config);
   }
 
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
   for (const section of sections) {
-    const loaded = section.blocks.map((block) => loadBlock(block));
-    areaBlocks.push(...section.blocks);
-
-    await decorateIcons(section.el, config);
-
-    // Only move on to the next section when all blocks are loaded.
-    await Promise.all(loaded);
-
-    if (isDoc && section.el.dataset.idx === '0') {
-      window.dispatchEvent(new Event(MILO_EVENTS.LCP_LOADED));
-      loadPostLCP(config);
-    }
-
-    // Show the section when all blocks inside are done.
-    delete section.el.dataset.status;
-    delete section.el.dataset.idx;
+    const sectionBlocks = await processSection(section, config, isDoc);
+    areaBlocks.push(...sectionBlocks);
   }
+
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);
   }
 
-  // Post section loading on document
   if (isDoc) {
-    const georouting = getMetadata('georouting') || config.geoRouting;
-    if (georouting === 'on') {
-      // eslint-disable-next-line import/no-cycle
-      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-      loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
-    }
-    const appendage = getMetadata('title-append');
-    if (appendage) {
-      import('../features/title-append/title-append.js').then((module) => module.default(appendage));
-    }
-    if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
-      import('../features/seotech/seotech.js').then((module) => module.default(
-        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
-      ));
-    }
-    const richResults = getMetadata('richresults');
-    if (richResults) {
-      const { default: addRichResults } = await import('../features/richresults.js');
-      addRichResults(richResults, { createTag, getMetadata });
-    }
-    loadFooter();
-    const { default: loadFavIcon } = await import('./favicon.js');
-    loadFavIcon(createTag, getConfig(), getMetadata);
-    if (config.experiment?.selectedVariant?.scripts?.length) {
-      config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
-    }
-    initSidekick();
-
-    const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+    await documentPostSectionLoading(config);
   }
-  // Load everything that can be deferred until after all blocks load.
+
   await loadDeferred(area, areaBlocks, config);
 }
 
