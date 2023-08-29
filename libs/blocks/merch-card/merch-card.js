@@ -74,28 +74,27 @@ const decorateFooter = (el, styles, cardType) => {
       cardFooter?.append(standardWrapper);
     }
 
-    const altCta = [...el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]')].filter((data) => data.textContent?.trim() === 'alt-cta');
+    const altCta = [...el.querySelectorAll('.merch-card > div > div')].filter((div) => div.textContent?.trim() === 'alt-cta');
     const altCtaMetaData = altCta[0]?.parentElement?.nextElementSibling?.querySelectorAll('div > div');
     const altCtaRegex = /href="([^"]*)"/g;
-    if (altCtaMetaData?.length === 2 && altCtaMetaData[1]?.innerHTML?.match(altCtaRegex)) {
-      const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
-      const altCtaButton = originalCtaButton.cloneNode(true);
-      const checkboxContainer = createCheckbox(altCtaMetaData[0]);
+    if (altCtaMetaData?.length !== 2 || !altCtaMetaData[1]?.innerHTML?.match(altCtaRegex)) return;
+    const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+    const altCtaButton = originalCtaButton.cloneNode(true);
+    const checkboxContainer = createCheckbox(altCtaMetaData[0]);
 
-      altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
-      altCtaButton.classList.add('button--inactive');
-      checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
-        if (event.target.checked) {
-          toggleButtonActiveState(originalCtaButton, altCtaButton);
-        } else {
-          toggleButtonActiveState(altCtaButton, originalCtaButton);
-        }
-      });
-      cardFooterRow.append(altCtaButton);
-      cardFooter.prepend(checkboxContainer);
-      altCta[0].parentNode.remove();
-      altCtaMetaData[0].parentNode.remove();
-    }
+    altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
+    altCtaButton.classList.add('button--inactive');
+    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
+      if (event.target.checked) {
+        toggleButtonActiveState(originalCtaButton, altCtaButton);
+      } else {
+        toggleButtonActiveState(altCtaButton, originalCtaButton);
+      }
+    });
+    cardFooterRow.append(altCtaButton);
+    cardFooter.prepend(checkboxContainer);
+    altCta[0].parentNode.remove();
+    altCtaMetaData[0].parentNode.remove();
   };
 
   decorateAlternativeCta();
