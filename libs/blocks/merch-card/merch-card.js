@@ -31,13 +31,11 @@ const createDescription = (rows, cardType) => {
 
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => {
-    if (!title.id.includes('secure-transaction')) titleWrapper.appendChild(title);
-  });
+  titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
 
-const decorateFooter = (el, cardType) => {
+const decorateFooter = (el, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const replacePlaceHolder = async (key, defaultValue) => {
     const replacedKey = await replaceKey(key, getConfig(), defaultValue);
@@ -45,12 +43,11 @@ const decorateFooter = (el, cardType) => {
   };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    replacePlaceHolder('secure-transaction')
-      .then(({ replacedKey }) => {
-        const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
-        const secureElement = createTag('span', { class: 'secure-transaction-icon' });
-        secureTransactionWrapper.append(secureElement, label);
-      });
+    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
+      const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+      const secureElement = createTag('span', { class: 'secure-transaction-icon' });
+      secureTransactionWrapper.append(secureElement, label);
+    });
     return secureTransactionWrapper;
   };
 
