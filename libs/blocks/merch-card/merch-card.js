@@ -35,10 +35,13 @@ const createTitle = (titles, cardType) => {
   return titleWrapper;
 };
 
-const decorateFooter = (el, styles, cardType) => {
+const decorateFooter = (el, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const replacePlaceHolder = async (key, defaultValue) => {
     const replacedKey = await replaceKey(key, getConfig(), defaultValue);
+    if (typeof replacedKey === 'string') {
+      return replacedKey;
+    }
     return { replacedKey };
   };
   const decorateWithSecureTransactionSign = () => {
