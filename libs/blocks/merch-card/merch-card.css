@@ -103,7 +103,7 @@
   border-radius: 16px;
 }
 
-.merch-card div[class$="-inner"]{
+.merch-card div[class$="-inner"] {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
