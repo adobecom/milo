@@ -39,15 +39,16 @@ const decorateFooter = (el, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
   const replacePlaceHolder = async (key, defaultValue) => {
     const replacedKey = await replaceKey(key, getConfig(), defaultValue);
-    return { replacedKey } || 'Secure transaction';
+    return { replacedKey };
   };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
-      const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
-      const secureElement = createTag('span', { class: 'secure-transaction-icon' });
-      secureTransactionWrapper.append(secureElement, label);
-    });
+    replacePlaceHolder('secure-transaction')
+      .then(({ replacedKey }) => {
+        const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+        const secureElement = createTag('span', { class: 'secure-transaction-icon' });
+        secureTransactionWrapper.append(secureElement, label);
+      });
     return secureTransactionWrapper;
   };
 
@@ -123,12 +124,12 @@ const addInner = (el, cardType, merchCard) => {
 };
 
 const decorateRibbon = (el, cardType) => {
-  const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
-
-  if (ribbonMetadata.length >= 2) {
-    const ribbonStyle = ribbonMetadata[0].outerText;
-    const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-    if (!ribbonStyleRegex.test(ribbonStyle)) return;
+  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  [...el.querySelectorAll('div')].forEach((div) => {
+    const ribbonMetadata = div.querySelectorAll('div');
+    if (!(ribbonMetadata.length === 2
+      || ribbonStyleRegex.test(ribbonMetadata[0]?.innerText))) return;
+    const ribbonStyle = ribbonMetadata[0].innerText;
     const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
     const ribbonWrapper = ribbonMetadata[0].parentNode;
     const ribbon = ribbonMetadata[1];
@@ -143,7 +144,7 @@ const decorateRibbon = (el, cardType) => {
       el.insertAdjacentElement('beforeend', ribbon);
     }
     ribbonWrapper.remove();
-  }
+  });
 };
 
 const decorateIcon = (el, icons, cardType) => {
