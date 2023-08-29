@@ -467,17 +467,18 @@ export function decorateSVG(a) {
   }
 }
 
-export function decorateModalImageLinks(picParent, a) {
-  const pic = picParent.querySelector('picture');
+export function decorateModalImageLinks(el, a, btnSize) {
+  const pic = el.querySelector('picture');
   const playIcon = createTag('div', { class: 'play-icon-container', 'aria-label': 'play' }, PLAY_ICON);
   const playCircle = createTag('div', { class: 'play-btn-circle', 'aria-label': 'play' }, playIcon);
   const playContainer = createTag('div', { class: 'play-container', 'aria-label': 'play' }, playCircle);
-  const d = createTag('span', { class: 'modal-img-link' });
-  picParent.insertBefore(d, pic);
+  const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
+  el.insertBefore(imgLinkContainer, pic);
   a.classList.add('play-btn');
+  if (btnSize) a.classList.add(btnSize);
   a.append(playContainer);
-  d.append(pic);
-  d.append(a);
+  imgLinkContainer.append(pic);
+  imgLinkContainer.append(a);
 }
 
 export function decorateImageLinks(el) {
@@ -492,10 +493,11 @@ export function decorateImageLinks(el) {
       const picParent = pic.parentElement;
       const aTag = createTag('a', { href: url, class: 'image-link' });
       picParent.insertBefore(aTag, pic);
-      if (playBtn) {
-        decorateModalImageLinks(picParent, aTag);
-      }
-      else {
+      if (playBtn?.includes(':play')) {
+        const playBtnFormat = playBtn.split(':')[1];
+        const playBtnSize = playBtnFormat.includes('-') ? playBtnFormat.split('-')[1] : '';
+        decorateModalImageLinks(picParent, aTag, playBtnSize);
+      } else {
         aTag.append(pic);
       }
     } catch (e) {
