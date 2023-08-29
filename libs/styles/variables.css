@@ -30,6 +30,7 @@
 
   /* Fonts */
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --code-font-family: 'Source Code Pro', source-code-pro, monospace;
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
   /* Spacing */
@@ -96,6 +97,15 @@
   --type-detail-m-lh: 15px;
   --type-detail-s-size: 10px;
   --type-detail-s-lh: 12px;
+
+  /* Code */
+  --type-code-all-weight: 400;
+  --type-code-l-size: 18px;
+  --type-code-l-lh: 27px;
+  --type-code-m-size: 16px;
+  --type-code-m-lh: 24px;
+  --type-code-s-size: 14px;
+  --type-code-s-lh: 21px;
 
   /* grid sizes */
   --grid-container-width: 83.4%;

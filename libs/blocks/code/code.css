@@ -1,4 +1,20 @@
+/* https://consonant.adobe.com/1975e5ba1/p/216c7e-typography/t/244b88 */
+
 .code {
-  font-size: 10px;
-  line-height: 10px;
+  margin: 0 auto;
+  max-width: var(--grid-container-width);
+}
+
+.code pre {
+  white-space-collapse: preserve;
+  text-wrap: nowrap;
+  /* margin: 0; */
+}
+
+.code code {
+  font-family: var(--code-font-family);
+}
+
+.code pre code.hljs {
+  padding: inherit;
 }
