@@ -6,6 +6,8 @@ const MILO_TEMPLATES = [
 ];
 const MILO_BLOCKS = [
   'accordion',
+  'action-item',
+  'action-scroller',
   'adobetv',
   'article-feed',
   'article-header',
@@ -114,9 +116,7 @@ ENVS.local = {
 };
 
 const LANGSTORE = 'langstore';
-
 const PAGE_URL = new URL(window.location.href);
-const DOT_HTML_PATH = PAGE_URL.pathname.endsWith('.html');
 
 function getEnv(conf) {
   const { host } = window.location;
@@ -185,6 +185,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         console.log('Invalid or missing locale:', e);
       }
       config.locale.contentRoot = `${origin}${config.locale.prefix}${config.contentRoot ?? ''}`;
+      config.useDotHtml = !PAGE_URL.origin.includes('.hlx.')
+        && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       return config;
     },
     (conf) => (config = conf),
@@ -228,7 +230,7 @@ export function localizeLink(href, originHostName = window.location.hostname) {
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
     const { hash } = url;
-    if (hash === '#_dnt') return processedHref.split('#')[0];
+    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
@@ -271,7 +273,8 @@ export function loadStyle(href, callback) {
 }
 
 export function appendHtmlToCanonicalUrl() {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const canonEl = document.head.querySelector('link[rel="canonical"]');
   if (!canonEl) return;
   const canonUrl = new URL(canonEl.href);
@@ -282,7 +285,8 @@ export function appendHtmlToCanonicalUrl() {
 }
 
 export function appendHtmlToLink(link) {
-  if (!DOT_HTML_PATH) return;
+  const { useDotHtml } = getConfig();
+  if (!useDotHtml) return;
   const href = link.getAttribute('href');
   if (!href?.length) return;
 
@@ -385,6 +389,11 @@ function checkForExpBlock(name, expBlocks) {
 }
 
 export async function loadBlock(block) {
+  if (block.classList.contains('hide-block')) {
+    block.remove();
+    return null;
+  }
+
   let name = block.classList[0];
   const { miloLibs, codeRoot, expBlocks } = getConfig();
 
@@ -735,16 +744,14 @@ async function checkForPageMods() {
       .filter((path) => path?.trim());
   }
 
-  const { mep: mepOverride } = Object.fromEntries(PAGE_URL.searchParams);
   const { env } = getConfig();
-  const previewPage = env?.name === 'stage' || env?.name === 'local';
-  if (mepOverride || mepOverride === '' || previewPage) {
+  const mep = PAGE_URL.searchParams.get('mep');
+  if (mep !== null || (env?.name !== 'prod' && (persEnabled || targetEnabled))) {
     const { default: addPreviewToConfig } = await import('../features/personalization/add-preview-to-config.js');
     persManifests = await addPreviewToConfig({
       pageUrl: PAGE_URL,
       persEnabled,
       persManifests,
-      previewPage,
       targetEnabled,
     });
   }
@@ -819,7 +826,9 @@ function decorateMeta() {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
     try {
       const url = new URL(meta.content);
-      meta.setAttribute('content', `${origin}${url.pathname}${url.search}${url.hash}`);
+      const localizedLink = localizeLink(`${origin}${url.pathname}`);
+      const localizedURL = localizedLink.includes(origin) ? localizedLink : `${origin}${localizedLink}`;
+      meta.setAttribute('content', `${localizedURL}${url.search}${url.hash}`);
     } catch (e) {
       window.lana?.log(`Cannot make URL from metadata - ${meta.content}: ${e.toString()}`);
     }
@@ -909,7 +918,7 @@ export async function loadArea(area = document) {
     initSidekick();
 
     const { default: delayed } = await import('../scripts/delayed.js');
-    delayed([getConfig, getMetadata, loadScript, loadStyle]);
+    delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
   }
 
   // Load everything that can be deferred until after all blocks load.

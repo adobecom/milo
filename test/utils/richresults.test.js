@@ -1,9 +1,13 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { loadArea } from '../../libs/utils/utils.js';
+import { loadArea, setConfig } from '../../libs/utils/utils.js';
 
 describe('Rich Results', () => {
+  beforeEach(() => {
+    setConfig({});
+  });
+
   it('add the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
     await loadArea(document);
