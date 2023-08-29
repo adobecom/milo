@@ -910,7 +910,7 @@ export async function loadArea(area = document) {
       addRichResults(richResults, { createTag, getMetadata });
     }
     loadFooter();
-    import('./favicon.js').then((module) => module.default(createTag, getConfig(), getMetadata));
+    import('./favicon.js').then((module) => module.default({ getConfig, getMetadata }));
     if (config.experiment?.selectedVariant?.scripts?.length) {
       config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
     }

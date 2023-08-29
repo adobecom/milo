@@ -1,5 +1,5 @@
-export default function loadFavicon(createTag, config, getMetadata) {
-  const { codeRoot } = config;
+export default function loadFavicon({ getConfig, getMetadata }) {
+  const { codeRoot } = getConfig();
   const name = getMetadata('favicon') || 'favicon';
   const favBase = `${codeRoot}/img/favicons/${name}`;
 
