@@ -223,7 +223,7 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 .media .icon-stack-area li picture,
-.media .icon-stack-area a picture img{
+.media .icon-stack-area a picture img {
   min-width: var(--icon-size-m);
   max-width: var(--icon-size-m);
 }
@@ -367,5 +367,4 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.large.bio .avatar img {
     height: 120px;
   }
-
 }
