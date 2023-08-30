@@ -96,24 +96,9 @@ const App = () => {
   }, [setQuestionData, setStringData, setStringQuestionList, setQuestionList]);
 
   useEffect(() => {
-    function handlePopState(event) {
-      setUrlParam(event.state);
-      const params = getUrlParams();
-      const filteredKeys = Object.keys(params).filter((key) => !KNOWN_PARAMS.includes(key));
-      const lastParamKey = filteredKeys[filteredKeys.length - 1];
-      if (lastParamKey) {
-        let optionValues = params[lastParamKey];
-        if (typeof optionValues !== 'string') {
-          optionValues = optionValues.toString(); // Convert to string if it's not
-        }
-        const selectedOptions = optionValues.split(',').reduce((acc, val) => {
-          acc[val] = true;
-          return acc;
-        }, {});
-        setCountOfSelectedCards(Object.keys(selectedOptions).length);
-        setUserFlow([lastParamKey]);
-        setSelectedCards(selectedOptions);
-      }
+    function handlePopState() {
+      const currentURL = window.location.href;
+      window.location.href = currentURL;
     }
     if (isDataLoaded) {
       window.addEventListener('popstate', handlePopState);
@@ -191,7 +176,13 @@ const App = () => {
       }).filter((item) => !!item && !KNOWN_PARAMS.includes(item.split('=')[0]));
       const knownParamsList = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
       urlParamList = [...urlParamList, ...knownParamsList];
-      window.history.pushState('', '', `?${urlParamList.join('&')}`);
+      const validParams = KNOWN_PARAMS.filter((key) => key in urlParam).map((key) => `${key}=${urlParam[key].join(',')}`);
+      if (validParams.length === 1 && btnClicked === false) {
+        const newURL = knownParamsList && knownParamsList.length > 0 ? `?${knownParamsList.join('&')}` : '';
+        window.history.pushState('', '', newURL);
+      } else {
+        window.history.pushState('', '', `?${urlParamList.join('&')}`);
+      }
       setBtnClicked(false);
     }
   }, [urlParam]);
