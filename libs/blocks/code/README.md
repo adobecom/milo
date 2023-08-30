@@ -4,7 +4,7 @@ The `code` block allows you create a formatted block of programming code, comple
 
 ## Use
 
-Paste code into block and format code as monospaced text. Block will not render and error if text is not monospaced. See "Tips" for more details.
+Paste code into the block and format the code as monospaced text. The block will not render and will log an error if text is not monospaced. See "Tips" for more details.
 
 ## Variants
 
