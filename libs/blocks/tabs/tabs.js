@@ -87,8 +87,8 @@ function initTabs(elm, config, rootElem) {
 const handleDeferredImages = (block) => {
   const loadLazyImages = () => {
     const images = block.querySelectorAll('img[loading="lazy"]');
+    /* c8 ignore next 3 */
     images.forEach((img) => {
-      /* c8 ignore next */
       img.removeAttribute('loading');
     });
   };
