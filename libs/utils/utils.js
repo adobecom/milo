@@ -115,6 +115,8 @@ ENVS.local = {
   name: 'local',
 };
 
+export const EVENT_MILO_DEFERRED = 'milo:deferred';
+export const EVENT_MILO_LCP_LOADED = 'milo:LCP:loaded';
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
 
@@ -783,7 +785,7 @@ async function loadPostLCP(config) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event('milo:deferred');
+  const event = new Event(EVENT_MILO_DEFERRED);
   area.dispatchEvent(event);
   if (config.links === 'on') {
     const path = `${config.contentRoot || ''}${getMetadata('links-path') || '/seo/links.json'}`;
@@ -877,10 +879,10 @@ export async function loadArea(area = document) {
     // Only move on to the next section when all blocks are loaded.
     await Promise.all(loaded);
 
-    window.dispatchEvent(new Event('milo:LCP:loaded'));
-
-    // Post LCP operations.
-    if (isDoc && section.el.dataset.idx === '0') { loadPostLCP(config); }
+    if (isDoc && section.el.dataset.idx === '0') {
+      window.dispatchEvent(new Event(EVENT_MILO_LCP_LOADED));
+      loadPostLCP(config);
+    }
 
     // Show the section when all blocks inside are done.
     delete section.el.dataset.status;
