@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 
-import init, { HIGHLIGHT_JS, FONT_CSS, getThemeUrl } from '../../../libs/blocks/code/code.js';
+import init, { HIGHLIGHT_JS, FONT_CSS } from '../../../libs/blocks/code/code.js';
 
 describe('Code', () => {
   beforeEach(async () => {
@@ -23,19 +23,14 @@ describe('Code', () => {
   it('should render code block', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     const lanaStub = stub(window.lana, 'log');
-    const getMetadata = stub()
-      .withArgs('code-theme-name')
-      .returns('github');
     const loadStyle = stub()
       .withArgs(FONT_CSS)
-      .returns(null)
-      .withArgs(getThemeUrl('github'))
       .returns(null);
     const highlightElement = stub();
     const loadScript = stub()
       .withArgs(HIGHLIGHT_JS)
       .callsFake(() => { window.hljs = { highlightElement }; });
-    const utils = { getMetadata, loadStyle, loadScript };
+    const utils = { loadStyle, loadScript };
 
     const codeBlock = document.querySelector('.code');
     await init(codeBlock, utils);
@@ -46,8 +41,7 @@ describe('Code', () => {
     expect(codeEl.classList.contains('javascript')).to.be.true;
 
     expect(lanaStub.called).to.be.false;
-    expect(getMetadata.calledOnce).to.be.true;
-    expect(loadStyle.calledTwice).to.be.true;
+    expect(loadStyle.calledOnce).to.be.true;
     expect(loadScript.calledOnce).to.be.true;
     expect(highlightElement.calledOnce).to.be.true;
   });

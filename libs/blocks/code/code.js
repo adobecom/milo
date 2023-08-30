@@ -4,10 +4,6 @@ export const HIGHLIGHT_JS = '/libs/deps/highlight.min.js';
 export const FONT_CSS = 'https://use.typekit.net/vih2anh.css';
 export const SIZE_VARIANTS = ['small', 'medium', 'large'];
 
-export function getThemeUrl(theme = 'default') {
-  return `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/${theme}.min.css`;
-}
-
 function logError(msg) {
   window.lana?.log(`Code: ${msg}`, { tags: 'errorType=code' });
 }
@@ -20,13 +16,12 @@ function getLanguageVariant(el) {
   return [...el.classList].find((v) => ![...SIZE_VARIANTS, 'code'].includes(v));
 }
 
-export default async function init(el, { getMetadata, loadScript, loadStyle } = utils) {
+export default async function init(el, { loadScript, loadStyle } = utils) {
   const codeEl = el.querySelector('pre code');
   if (!codeEl) {
     logError('monospaced text block not found');
     return;
   }
-  const theme = getMetadata('code-theme-name') || 'default';
   const size = getSizeVariant(el) || 'medium';
   const lang = getLanguageVariant(el);
   codeEl.classList.add(`code-${size[0]}`);
@@ -36,7 +31,6 @@ export default async function init(el, { getMetadata, loadScript, loadStyle } = 
   await Promise.all([
     loadScript(HIGHLIGHT_JS),
     loadStyle(FONT_CSS),
-    loadStyle(getThemeUrl(theme)),
   ]);
 
   /* global hljs */
