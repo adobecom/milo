@@ -1,52 +1,44 @@
 /* eslint-disable prefer-destructuring */
-import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
+import { decorateButtons } from '../../utils/decorate.js';
 import { loadStyle, getConfig, createTag } from '../../utils/utils.js';
 import { addBackgroundImg, addWrapper, addFooter } from '../card/cardUtils.js';
 import { decorateLinkAnalytics } from '../../martech/attributes.js';
+import { replaceKey } from '../../features/placeholders.js';
 
-const {
-  miloLibs,
-  codeRoot,
-} = getConfig();
+const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
-const SECURE_TRANSACTION_IMG = `<img class="secure-transaction-icon-img" loading="lazy" alt="secure-transaction-icon icon" src="${base}/blocks/merch-card/img/secure-transaction-icon.svg" height="12" width="15">`;
 
 const SEGMENT_BLADE = 'SegmentBlade';
 const SPECIAL_OFFERS = 'SpecialOffers';
 const PLANS_CARD = 'PlansCard';
-
+const cardTypes = {
+  segment: SEGMENT_BLADE,
+  'special-offers': SPECIAL_OFFERS,
+  plans: PLANS_CARD,
+};
 const getPodType = (styles) => {
-  const cardTypes = {
-    segment: SEGMENT_BLADE,
-    'special-offers': SPECIAL_OFFERS,
-    plans: PLANS_CARD,
-  };
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
-const createDescription = (rows, cardType) => {
-  const descriptions = rows.slice(0, rows.length - 1);
-  const descriptionWrapper = createTag('div', { class: `consonant-${cardType}-description` });
-  descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
-  return descriptionWrapper;
-};
+const createDescription = (rows, cardType) => createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
 
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
-  titles?.forEach((title) => {
-    if (!title.id.includes('secure-transaction')) titleWrapper.appendChild(title);
-  });
+  titles?.forEach((title) => titleWrapper.appendChild(title));
   return titleWrapper;
 };
 
-const decorateFooter = (el, cardType) => {
+const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
-  const decorateWithSecureTransactionSign = (secureTransaction) => {
+  const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const label = createTag('span', { class: 'secure-transaction-label' }, secureTransaction?.textContent);
-    const secureElement = createTag('span', { class: 'secure-transaction-icon' }, SECURE_TRANSACTION_IMG);
+    const label = createTag('span', { class: 'secure-transaction-label' });
+    const secureElement = createTag('span', { class: 'secure-transaction-icon' });
     secureTransactionWrapper.append(secureElement, label);
+    replaceKey('secure-transaction', getConfig()).then((replacedKey) => {
+      label.textContent = replacedKey;
+    });
     return secureTransactionWrapper;
   };
 
@@ -61,52 +53,39 @@ const decorateFooter = (el, cardType) => {
   };
 
   const decorateAlternativeCta = () => {
-    const toggleButtonActiveState = (buttonToAdd, buttonToRemove) => {
-      buttonToAdd.classList.add('button--inactive');
-      buttonToRemove.classList.remove('button--inactive');
-    };
+    const altCtaRegex = /href=".*"/;
+    if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
+
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    const secureTransactionSign = el.querySelector('h6[id^="secure-transaction"]');
-    if (secureTransactionSign) {
+    if (el.classList.contains('secure')) {
       const standardWrapper = createTag('div', { class: 'standard-wrapper' });
-      const secureTransactionWrapper = decorateWithSecureTransactionSign(secureTransactionSign);
+      const secureTransactionWrapper = decorateWithSecureTransactionSign();
       standardWrapper.append(secureTransactionWrapper, cardFooterRow);
       cardFooter?.append(standardWrapper);
-      secureTransactionSign.remove();
     }
 
-    const altCta = Array.from(el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]')).filter((data) => data.textContent?.trim() === 'alt-cta');
-    const altCtaMetaData = altCta[0]?.parentElement?.nextElementSibling?.querySelectorAll('div > div');
-    const altCtaRegex = /href="([^"]*)"/g;
-    if (altCtaMetaData?.length === 2 && altCtaMetaData[1]?.innerHTML?.match(altCtaRegex)) {
-      const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
-      const altCtaButton = originalCtaButton.cloneNode(true);
-      const checkboxContainer = createCheckbox(altCtaMetaData[0]);
+    const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
+    const altCtaButton = originalCtaButton.cloneNode(true);
+    const checkboxContainer = createCheckbox(altCtaMetaData[0]);
 
-      altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
-      altCtaButton.classList.add('button--inactive');
-      checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
-        if (event.target.checked) {
-          toggleButtonActiveState(originalCtaButton, altCtaButton);
-        } else {
-          toggleButtonActiveState(altCtaButton, originalCtaButton);
-        }
-      });
-      cardFooterRow.append(altCtaButton);
-      cardFooter.prepend(checkboxContainer);
-      altCta[0].parentNode.remove();
-      altCtaMetaData[0].parentNode.remove();
-    }
+    altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
+    altCtaButton.classList.add('button--inactive');
+    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
+      originalCtaButton.classList.toggle('button--inactive', checked);
+      altCtaButton.classList.toggle('button--inactive', !checked);
+    });
+    cardFooterRow.append(altCtaButton);
+    cardFooter.prepend(checkboxContainer);
+    altCtaMetaData[0].parentNode.remove();
   };
-
-  decorateAlternativeCta();
+  if (altCtaMetaData !== null) decorateAlternativeCta();
   cardFooter.querySelectorAll('.consonant-CardFooter-cell').forEach((cell) => cell.classList.add(`consonant-${cardType}-cell`));
 };
 
-const addInner = (el, cardType, merchCard) => {
-  const titles = Array.from(el.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-  const rows = Array.from(el.querySelectorAll('p'));
-  const styles = Array.from(el.classList);
+const addInner = (el, altCta, cardType, merchCard) => {
+  const titles = [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')];
+  const rows = [...el.querySelectorAll('p')];
+  const styles = [...el.classList];
   const merch = styles.includes('merch-card');
   const pElement = merch && el.querySelector(':scope > div > div > p:last-of-type');
   const links = pElement ? pElement.querySelectorAll('a') : el.querySelectorAll('a');
@@ -119,32 +98,28 @@ const addInner = (el, cardType, merchCard) => {
   inner.prepend(title);
   inner.append(description);
   addFooter(links, inner, merchCard);
-  decorateFooter(el, cardType);
+  decorateFooter(el, altCta, cardType);
   merchCard.append(inner);
 };
 
-const decorateRibbon = (el, cardType) => {
-  const ribbonMetadata = el.querySelectorAll('div > div[data-align="center"][data-valign="middle"]');
-
-  if (ribbonMetadata.length >= 2) {
-    const ribbonStyle = ribbonMetadata[0].outerText;
-    const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
-    if (!ribbonStyleRegex.test(ribbonStyle)) return;
-    const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
-    const ribbonWrapper = ribbonMetadata[0].parentNode;
-    const ribbon = ribbonMetadata[1];
-    ribbon.classList.add(`consonant-${cardType}-ribbon`);
-    ribbon.style.backgroundColor = ribbonBgColor;
-    ribbon.style.color = ribbonTextColor;
-    el.style.border = `1px solid ${ribbonBgColor}`;
-    const picture = el.querySelector(`.consonant-${cardType}-img`);
-    if (picture) {
-      picture.insertAdjacentElement('afterend', ribbon);
-    } else {
-      el.insertAdjacentElement('beforeend', ribbon);
-    }
-    ribbonWrapper.remove();
+const decorateRibbon = (el, ribbonMetadata, cardType) => {
+  const ribbonStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  if (!ribbonStyleRegex.test(ribbonMetadata[0]?.innerText)) return;
+  const ribbonStyle = ribbonMetadata[0].innerText;
+  const [ribbonBgColor, ribbonTextColor] = ribbonStyle.split(', ');
+  const ribbonWrapper = ribbonMetadata[0].parentNode;
+  const ribbon = ribbonMetadata[1];
+  ribbon.classList.add(`consonant-${cardType}-ribbon`);
+  ribbon.style.backgroundColor = ribbonBgColor;
+  ribbon.style.color = ribbonTextColor;
+  el.style.border = `1px solid ${ribbonBgColor}`;
+  const picture = el.querySelector(`.consonant-${cardType}-img`);
+  if (picture) {
+    picture.insertAdjacentElement('afterend', ribbon);
+  } else {
+    el.insertAdjacentElement('beforeend', ribbon);
   }
+  ribbonWrapper.remove();
 };
 
 const decorateIcon = (el, icons, cardType) => {
@@ -169,18 +144,19 @@ const init = (el) => {
   const images = el.querySelectorAll('picture');
   let image;
   const icons = [];
-  let row = el.querySelector(':scope > div');
-  if (row.children.length >= 2) row = el.querySelectorAll(':scope > *')[1];
+  const rows = el.querySelectorAll(':scope > *');
+  const ribbonMetadata = rows[0].children?.length === 2 ? rows[0].children : null;
+  const row = rows[ribbonMetadata === null ? 0 : 1];
+  const altCta = rows[rows.length - 1].children?.length === 2
+    ? rows[rows.length - 1].children : null;
   const allPElems = row.querySelectorAll('p');
   const ctas = allPElems[allPElems.length - 1];
-  const styles = Array.from(el.classList);
+  const styles = [...el.classList];
   const cardType = getPodType(styles);
   const merchCard = el;
-  decorateBlockHrs(allPElems);
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
-    const width = imgNode.width;
-    const height = imgNode.height;
+    const { width, height } = imgNode;
     const isSquare = Math.abs(width - height) <= 10;
     if (img) {
       if (isSquare) {
@@ -193,10 +169,10 @@ const init = (el) => {
   addWrapper(el, section, cardType);
   merchCard.classList.add('consonant-Card', 'consonant-ProductCard', `consonant-${cardType}`);
   if (image) addBackgroundImg(image, cardType, merchCard);
-  decorateRibbon(el, cardType);
+  if (ribbonMetadata !== null) decorateRibbon(el, ribbonMetadata, cardType);
   image?.parentElement.remove();
   if (ctas) decorateButtons(ctas);
-  addInner(el, cardType, merchCard);
+  addInner(el, altCta, cardType, merchCard);
   decorateIcon(el, icons, cardType);
   const inner = el.querySelector(`.consonant-${cardType}-inner`);
   const innerCleanup = inner.querySelectorAll(':scope > div')[1];

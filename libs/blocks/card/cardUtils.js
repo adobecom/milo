@@ -31,9 +31,8 @@ export const addFooter = (links, container, merch) => {
 
   container.insertAdjacentHTML('beforeend', footer);
   links.forEach((link) => {
-    if (link.parentElement && document.body.contains(link.parentElement)) {
-      link.parentElement.remove();
-    }
+    const { parentElement } = link;
+    if (parentElement && document.body.contains(parentElement)) parentElement.remove();
   });
 };
 
