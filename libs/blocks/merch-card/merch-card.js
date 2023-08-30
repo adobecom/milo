@@ -65,10 +65,10 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     }
 
     const originalCtaButton = cardFooterRow.querySelector('.consonant-CardFooter-cell--right');
-    const altCtaButton = originalCtaButton.cloneNode(true);
     const checkboxContainer = createCheckbox(altCtaMetaData[0]);
-
-    altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
+    const altCtaButtonData = altCtaMetaData[1];
+    decorateButtons(altCtaButtonData);
+    const altCtaButton = createTag('div', { class: originalCtaButton.classList }, altCtaButtonData.innerHTML);
     altCtaButton.classList.add('button--inactive');
     checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
       originalCtaButton.classList.toggle('button--inactive', checked);
