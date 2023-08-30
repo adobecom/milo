@@ -162,7 +162,7 @@ const init = (block) => {
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
-  allSections.forEach((e, i) => {
+  allSections.forEach((e) => {
     const sectionMetadata = e.querySelector(':scope > .section-metadata');
     if (!sectionMetadata) return;
     const smRows = sectionMetadata.querySelectorAll(':scope > div');
