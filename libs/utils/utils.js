@@ -750,7 +750,11 @@ export function scrollToHashedElement(hash) {
   const targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   if (!targetElement) return;
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  window.scrollBy(0, -bufferHeight);
+  const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+  window.scrollTo({
+    top: topOffset - bufferHeight,
+    behavior: 'smooth',
+  });
 }
 
 export async function loadDeferred(area, blocks, config) {
@@ -820,9 +824,8 @@ export async function loadArea(area = document) {
   if (isDoc) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
-    if (currentHash) {
-      // remove the hash from URL, to stop scrolling the screen before the blocks loads
-      window.history.replaceState({}, document.title, window.location.pathname);
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
     }
   }
 
@@ -861,7 +864,6 @@ export async function loadArea(area = document) {
 
   if (currentHash) {
     // placing the hash back to scroll the screen.
-    window.location.hash = currentHash;
     scrollToHashedElement(currentHash);
   }
 
