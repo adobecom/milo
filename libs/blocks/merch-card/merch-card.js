@@ -11,23 +11,17 @@ const base = miloLibs || codeRoot;
 const SEGMENT_BLADE = 'SegmentBlade';
 const SPECIAL_OFFERS = 'SpecialOffers';
 const PLANS_CARD = 'PlansCard';
-
+const cardTypes = {
+  segment: SEGMENT_BLADE,
+  'special-offers': SPECIAL_OFFERS,
+  plans: PLANS_CARD,
+};
 const getPodType = (styles) => {
-  const cardTypes = {
-    segment: SEGMENT_BLADE,
-    'special-offers': SPECIAL_OFFERS,
-    plans: PLANS_CARD,
-  };
   const authoredType = styles?.find((style) => style in cardTypes);
   return cardTypes[authoredType] || SEGMENT_BLADE;
 };
 
-const createDescription = (rows, cardType) => {
-  const descriptions = rows.slice(0, rows.length - 1);
-  const descriptionWrapper = createTag('div', { class: `consonant-${cardType}-description` });
-  descriptions?.forEach((description) => descriptionWrapper.appendChild(description));
-  return descriptionWrapper;
-};
+const createDescription = (rows, cardType) => createTag('div', { class: `consonant-${cardType}-description` }, rows.slice(0, rows.length - 1));
 
 const createTitle = (titles, cardType) => {
   const titleWrapper = createTag('div', { class: `consonant-${cardType}-title` });
@@ -37,16 +31,12 @@ const createTitle = (titles, cardType) => {
 
 const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   const cardFooter = el.querySelector('.consonant-CardFooter');
-  const replacePlaceHolder = async (key, defaultValue) => {
-    const replacedKey = await replaceKey(key, getConfig(), defaultValue);
-    return { replacedKey };
-  };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
     const label = createTag('span', { class: 'secure-transaction-label' });
     const secureElement = createTag('span', { class: 'secure-transaction-icon' });
     secureTransactionWrapper.append(secureElement, label);
-    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
+    replaceKey('secure-transaction', getConfig()).then((replacedKey) => {
       label.textContent = replacedKey;
     });
     return secureTransactionWrapper;
@@ -63,15 +53,11 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   };
 
   const decorateAlternativeCta = () => {
-    const altCtaRegex = /href="([^"]*)"/g;
+    const altCtaRegex = /href=".*"/;
     if (!altCtaRegex.test(altCtaMetaData[1]?.innerHTML)) return;
 
-    const toggleButtonActiveState = (buttonToAdd, buttonToRemove) => {
-      buttonToAdd.classList.add('button--inactive');
-      buttonToRemove.classList.remove('button--inactive');
-    };
     const cardFooterRow = el.querySelector('.consonant-CardFooter-row');
-    if ([...el.classList].includes('secure')) {
+    if (el.classList.contains('secure')) {
       const standardWrapper = createTag('div', { class: 'standard-wrapper' });
       const secureTransactionWrapper = decorateWithSecureTransactionSign();
       standardWrapper.append(secureTransactionWrapper, cardFooterRow);
@@ -84,12 +70,9 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
 
     altCtaButton.innerHTML = altCtaMetaData[1].innerHTML;
     altCtaButton.classList.add('button--inactive');
-    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
-      if (event.target.checked) {
-        toggleButtonActiveState(originalCtaButton, altCtaButton);
-      } else {
-        toggleButtonActiveState(altCtaButton, originalCtaButton);
-      }
+    checkboxContainer.querySelector('input[type="checkbox"]').addEventListener('change', ({ target: { checked } }) => {
+      originalCtaButton.classList.toggle('button--inactive', checked);
+      altCtaButton.classList.toggle('button--inactive', !checked);
     });
     cardFooterRow.append(altCtaButton);
     cardFooter.prepend(checkboxContainer);
@@ -173,8 +156,7 @@ const init = (el) => {
   const merchCard = el;
   images.forEach((img) => {
     const imgNode = img.querySelector('img');
-    const width = imgNode.width;
-    const height = imgNode.height;
+    const { width, height } = imgNode;
     const isSquare = Math.abs(width - height) <= 10;
     if (img) {
       if (isSquare) {
