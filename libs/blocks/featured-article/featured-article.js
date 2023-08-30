@@ -6,7 +6,7 @@ function createCategoryLink(doc, categoryEl) {
   const category = getMetadata('article:tag', doc);
   return fetchTaxonomy(getConfig(), '/topics')
     .then((taxonomy) => {
-      const categoryTaxonomy = taxonomy.get(category) || 'News';
+      const categoryTaxonomy = taxonomy.get(category) || taxonomy.get('News');
       const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy.link) }, categoryTaxonomy.name);
       categoryEl.append(categoryLink);
     });
