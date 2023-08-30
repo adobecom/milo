@@ -452,7 +452,7 @@
 
 .aside.notification .foreground.container [data-align=center],
 .aside.notification.center .foreground.container,
-.aside.notification.center .foreground.container>* {
+.aside.notification.center .foreground.container > * {
   text-align: center;
   justify-content: center;
 }
