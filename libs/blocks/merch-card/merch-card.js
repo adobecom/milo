@@ -43,10 +43,12 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
   };
   const decorateWithSecureTransactionSign = () => {
     const secureTransactionWrapper = createTag('div', { class: 'secure-transaction-wrapper' });
-    const { replacedKey } = replacePlaceHolder('secure-transaction');
-    const label = createTag('span', { class: 'secure-transaction-label' }, replacedKey);
+    const label = createTag('span', { class: 'secure-transaction-label' });
     const secureElement = createTag('span', { class: 'secure-transaction-icon' });
     secureTransactionWrapper.append(secureElement, label);
+    replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
+      label.textContent = replacedKey;
+    }).catch(() => {});
     return secureTransactionWrapper;
   };
 
