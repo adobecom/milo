@@ -258,12 +258,17 @@
   background-color: transparent;
 }
 
-/* inline headling */
+/* inline-heading */
 .merch-card.inline-heading .consonant-SegmentBlade-inner {
   display: grid;
   column-gap: 12px;
   align-items: center;
   grid-template-columns: 40px 1fr;
+}
+
+.merch-card.inline-heading .consonant-SegmentBlade-description,
+.merch-card.inline-heading .consonant-CardFooter {
+  grid-column: span 2;
 }
 
 .merch-card.special-offers .consonant-CardFooter {
