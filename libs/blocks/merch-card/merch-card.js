@@ -48,7 +48,7 @@ const decorateFooter = (el, altCtaMetaData, styles, cardType) => {
     secureTransactionWrapper.append(secureElement, label);
     replacePlaceHolder('secure-transaction').then(({ replacedKey }) => {
       label.textContent = replacedKey;
-    }).catch(() => {});
+    });
     return secureTransactionWrapper;
   };
 
