@@ -1,6 +1,6 @@
-import { getLocalStorage, setLocalStorage, fetchWithTimeout } from '../utils/utils.js';
-import { loadScript } from '../../utils/utils.js';
 import { getImsToken } from '../../../tools/utils/utils.js';
+import { loadScript } from '../../utils/utils.js';
+import { fetchWithTimeout, getLocalStorage, setLocalStorage } from '../utils/utils.js';
 
 export const ADMIN_BASE_URL = 'https://admin.hlx.page';
 const THROTTLING_DELAY_MS = 300;
@@ -117,6 +117,12 @@ export const getActionName = (action, useGerund) => {
     case 'publish':
       name = (!useGerund) ? 'Publish' : 'Publishing';
       break;
+    case 'unpublish':
+      name = (!useGerund) ? 'Unpublish' : 'Unpublishing';
+      break;
+    case 'unpublish&delete':
+      name = (!useGerund) ? 'Delete' : 'Deleting';
+      break;
     default:
       name = (!useGerund) ? 'Preview & publish' : 'Previewing & publishing';
   }
@@ -124,13 +130,14 @@ export const getActionName = (action, useGerund) => {
 };
 
 const executeAction = async (action, url) => {
-  const operation = (action === 'preview') ? 'preview' : 'live';
+  const operation = (action === 'preview' || action === 'delete') ? 'preview' : 'live';
   const siteAllowed = await siteIsSupported(url);
   if (!siteAllowed) return UNSUPPORTED_SITE_STATUS;
   const { hostname, pathname } = new URL(url);
   const [branch, repo, owner] = hostname.split('.')[0].split('--');
   const adminURL = `${ADMIN_BASE_URL}/${operation}/${owner}/${repo}/${branch}${pathname}`;
-  const resp = await fetchWithTimeout(adminURL, { method: 'POST' });
+  const method = (action === 'delete' || action === 'unpublish') ? 'DELETE' : 'POST';
+  const resp = await fetchWithTimeout(adminURL, { method });
   return resp.status;
 };
 
@@ -189,14 +196,23 @@ export const executeActions = async (resume, setResult) => {
 export const getCompletion = (results) => {
   let previewTotal = 0;
   let publishTotal = 0;
+  let deleteTotal = 0;
+  let unpublishTotal = 0;
   let previewSuccess = 0;
   let publishSuccess = 0;
+  let deleteSuccess = 0;
+  let unpublishSuccess = 0;
+
   results.forEach((result) => {
     const { status } = result;
     if (status.preview) previewTotal += 1;
     if (status.publish) publishTotal += 1;
+    if (status.delete) deleteTotal += 1;
+    if (status.unpublish) unpublishTotal += 1;
     if (status.preview === 200) previewSuccess += 1;
     if (status.publish === 200) publishSuccess += 1;
+    if (status.delete === 204) deleteSuccess += 1;
+    if (status.unpublish === 204) unpublishSuccess += 1;
   });
   return {
     preview: {
@@ -206,6 +222,14 @@ export const getCompletion = (results) => {
     publish: {
       total: publishTotal,
       success: publishSuccess,
+    },
+    delete: {
+      total: deleteTotal,
+      success: deleteSuccess,
+    },
+    unpublish: {
+      total: unpublishTotal,
+      success: unpublishSuccess,
     },
   };
 };
@@ -226,15 +250,15 @@ export const getReport = async (results, action) => {
         success: 0,
       };
     }
-    if (action === 'preview&publish') {
+    if (action === 'preview&publish' || action === 'unpublish&delete') {
       origins[origin].total += 2;
     } else {
       origins[origin].total += 1;
     }
-    if (result.status.preview === 200) {
+    if (result.status.preview === 200 || result.status.delete === 204) {
       origins[origin].success += 1;
     }
-    if (result.status.publish === 200) {
+    if (result.status.publish === 200 || result.status.unpublish === 204) {
       origins[origin].success += 1;
     }
   });
