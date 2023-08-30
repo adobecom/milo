@@ -19,6 +19,7 @@
   line-height: 1;
   white-space: nowrap;
   z-index: 1;
+  transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
 }
 
 [dir = "rtl"] .feds-profile-menu {
