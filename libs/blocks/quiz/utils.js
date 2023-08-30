@@ -218,7 +218,10 @@ const getNestedFragments = (resultResources, productCodes, fragKey) => {
   return fragArray;
 };
 
-export const getRedirectUrl = (destinationPage, primaryProducts) => `${destinationPage}?primary=${primaryProducts}&quizKey=${quizKey}`;
+export const getRedirectUrl = (destinationPage, primaryProducts) => {
+  const separator = destinationPage.includes('?') ? '&' : '?';
+  return `${destinationPage}${separator}primary=${primaryProducts}&quizKey=${quizKey}`;
+};
 
 export const parseResultData = async (answers) => {
   const results = await fetchContentOfFile(RESULTS_EP_NAME);
@@ -412,7 +415,7 @@ export const transformToFlowData = (userSelection) => {
 export const getAnalyticsDataForBtn = (selectedQuestion, selectedCards) => {
   const selectedCardNames = Object.keys(selectedCards);
   if (selectedCardNames.length > 0) {
-    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion.questions}/${selectedCardNames.join('/')}`;
+    const btnAnalytics = `Filters|${analyticsType}|${selectedQuestion?.questions}/${selectedCardNames.join('/')}`;
     return btnAnalytics;
   }
   return '';
