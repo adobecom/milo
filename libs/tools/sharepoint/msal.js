@@ -1,53 +1,44 @@
+import getServiceConfig from '../../utils/service-config.js';
 import { loadScript, getConfig } from '../../utils/utils.js';
-import { getSiteConfig, spAccessToken } from './state.js';
+import { accessToken, accessTokenExtra } from './state.js';
 
-let msalConfig;
-
-const login = { redirectUri: '/tools/loc/spauth' };
-const siteKeys = ['clientId', 'authority', 'site', 'root', 'driveId'];
-const cache = {
-  cacheLocation: 'sessionStorage',
-  storeAuthStateInCookie: false,
+const BASE_CONFIG = {
+  login: { redirectUri: '/tools/loc/spauth' },
+  cache: {
+    cacheLocation: 'sessionStorage',
+    storeAuthStateInCookie: false,
+  },
 };
 
-export function getMSALConfig(telemetry) {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve) => {
-    if (!msalConfig) {
-      const { configs = {} } = await getSiteConfig();
-      const { data = [] } = configs;
-      const configValues = {};
-      siteKeys.forEach((key) => {
-        const currentData = data.find((item) => (item.key === `prod.sharepoint.${key}`));
-        configValues[key] = currentData?.value;
-      });
-      const { clientId, authority, site, root, driveId } = configValues;
-      const auth = { clientId, authority };
-      const config = getConfig();
-      const base = config.miloLibs || config.codeRoot;
+export async function getMSALConfig(telemetry) {
+  try {
+    const { base } = getConfig();
+    await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
 
-      try {
-        await loadScript(`${base}/deps/msal-browser-2.34.0.js`);
-      } catch (err) {
-        window.lana?.log(err);
-      }
-      msalConfig = {
-        login,
-        auth,
-        cache,
-        telemetry,
-        site,
-        baseUri: driveId ? `${site}/drives/${driveId}/root:${root}` : `${site}/drive/root:${root}`,
+    const { sharepoint } = await getServiceConfig(window.location.origin);
 
-      };
-      resolve(msalConfig);
-    }
-    resolve(msalConfig);
-  });
+    const auth = {
+      clientId: sharepoint.clientId,
+      authority: sharepoint.authority,
+    };
+
+    return { ...BASE_CONFIG, auth, telemetry };
+  } catch (err) {
+    window.lana?.log(err);
+    return { error: 'There was an error authenticating with Microsoft.' };
+  }
 }
 
-export function getReqOptions({ body = null, method = 'GET', contentType = 'application/json', accept = 'application/json' } = {}) {
-  const bearer = `Bearer ${spAccessToken.value}`;
+export function getReqOptions(
+  {
+    body,
+    method = 'GET',
+    contentType = 'application/json',
+    accept = 'application/json',
+    extra = false,
+  } = {},
+) {
+  const bearer = `Bearer ${extra ? accessTokenExtra.value : accessToken.value}`;
   const headerOpts = { Authorization: bearer, 'Content-Type': contentType, Accept: accept };
   const headers = new Headers(headerOpts);
   const options = { method, headers };
