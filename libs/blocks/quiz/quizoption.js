@@ -18,7 +18,7 @@ export const OptionCard = ({
           ${cardIcon && cardIconHtml}
           ${coverImage && coverImageHtml}
         <div data-valign="middle">  
-          <h3 id="lorem-ipsum-dolor-sit-amet-3" class="consonant-OneHalfCard-title">${title}</h3>
+          <h3 class="consonant-OneHalfCard-title">${title}</h3>
           <p class="consonant-OneHalfCard-text">${text}</p>
         </div>
       </div>
