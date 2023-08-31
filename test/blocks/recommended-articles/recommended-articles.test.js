@@ -33,4 +33,12 @@ describe('creates feature article block', () => {
     const articleCards = articles[2].querySelector('.articles-cards');
     expect(articleCards).to.be.null;
   });
+
+  it('sets default taxonomy path to "topics"', async () => {
+    config.locale.contentRoot = '/test/blocks/recommended-articles/mocks';
+    config.taxonomyRoot = undefined;
+    await init(articles[1]);
+    const categoryLink = document.querySelector('.recommended-articles-content-wrapper .article-card-category a');
+    expect(categoryLink.href.includes('/topics/')).to.be.true;
+  });
 });

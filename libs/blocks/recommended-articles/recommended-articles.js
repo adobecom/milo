@@ -82,7 +82,9 @@ export default async function init(blockEl) {
   }
   blockEl.innerHTML = '';
 
-  const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+  const config = getConfig();
+  const taxonomyRoot = config.taxonomyRoot || '/topics';
+  const taxonomy = await fetchTaxonomy(config, taxonomyRoot);
   const unresolvedPromises = recommendedArticleLinks.map((article) => getArticleDetails(article));
   let articles = [];
   articles = await Promise.all(unresolvedPromises);
