@@ -15,6 +15,7 @@ import { getConfig as getFloodgateConfig } from '../floodgate/js/config.js';
 let accessToken;
 const BATCH_REQUEST_LIMIT = 20;
 const BATCH_DELAY_TIME = 200;
+const itemIdMap = {};
 
 const getAccessToken = () => accessToken;
 
@@ -465,22 +466,31 @@ async function saveFileAndUpdateMetadata(srcPath, file, dest, customMetadata = {
   throw new Error(`Could not upload file ${dest}`);
 }
 
+async function executeGQL(url, opts) {
+  const options = await getAuthorizedRequestOption(opts);
+  const res = await fetchWithRetry(url, options);
+  if (!res.ok) {
+    throw new Error(`Failed to execute ${url}`);
+  }
+  return res.json();
+}
+
+async function getItemId(uri, path) {
+  const key = `~${uri}~${path}~`;
+  itemIdMap[key] = itemIdMap[key] || await executeGQL(`${uri}${path}?$select=id`);
+  return itemIdMap[key]?.id;
+}
+
 async function updateExcelTable(excelPath, tableName, values) {
   const { sp } = await getConfig();
-
-  const options = getAuthorizedRequestOption({
-    body: JSON.stringify({ values }),
-    method: sp.api.excel.update.method,
-  });
-
-  const res = await fetchWithRetry(
-    `${sp.api.excel.update.baseURI}${excelPath}:/workbook/tables/${tableName}/rows/add`,
-    options,
-  );
-  if (res.ok) {
-    return res.json();
+  const itemId = await getItemId(sp.api.file.get.baseURI, excelPath);
+  if (itemId) {
+    return executeGQL(`${sp.api.excel.update.baseItemsURI}/${itemId}/workbook/tables/${tableName}/rows`, {
+      body: JSON.stringify({ values }),
+      method: sp.api.excel.update.method,
+    });
   }
-  throw new Error(`Failed to update excel sheet ${excelPath} table ${tableName}.`);
+  return {};
 }
 
 async function addWorksheetToExcel(excelPath, worksheetName) {
