@@ -1,18 +1,4 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
-
-/*
- * media - consonant v5.1
- */
+/* media - consonant v6 */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
 import { decorateBlockAnalytics } from '../../martech/attributes.js';
@@ -25,6 +11,15 @@ const blockTypeSizes = {
   xlarge: ['xxl', 'm', 'l'],
 };
 
+function decorateAvatar(el) {
+  // is the first row a picture only
+  const childElements = el.children[0]?.children;
+  if (childElements.length !== 1) return;
+  [...childElements].forEach((e, i) => {
+    if (e.localName !== null && e.localName === 'picture') childElements[i].classList.add('avatar');
+  });
+}
+
 export default function init(el) {
   decorateBlockAnalytics(el);
   el.classList.add('con-block');
@@ -35,6 +30,7 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
+  const blockType = el.classList.contains('merch') ? 'merch' : null;
   const size = getBlockSize(el);
   const container = createTag('div', { class: 'container foreground' });
   rows.forEach((row) => {
@@ -43,7 +39,8 @@ export default function init(el) {
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
-      decorateBlockText(text, blockTypeSizes[size]);
+      decorateAvatar(text);
+      decorateBlockText(text, blockTypeSizes[size], blockType);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
@@ -51,11 +48,6 @@ export default function init(el) {
     if (header && img?.alt === '') img.alt = header.textContent;
     const imageVideo = image.querySelector('video');
     if (imageVideo) applyHoverPlay(imageVideo);
-
-    // lists
-    if (row.querySelector('ul')) {
-      el.querySelector('ul').classList.add('default-list');
-    }
 
     // subcopy
     const actionArea = row.querySelector('p.action-area');
