@@ -392,6 +392,15 @@ describe('Utils', () => {
       });
       expect(io instanceof IntersectionObserver).to.be.true;
     });
+
+    it('should remove any blocks with the hide-block class from the DOM', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      const hiddenQuoteBlock = document.querySelector('.quote.hide-block');
+      expect(hiddenQuoteBlock).to.exist;
+      const block = await utils.loadBlock(hiddenQuoteBlock);
+      expect(block).to.be.null;
+      expect(document.querySelector('.quote.hide-block')).to.be.null;
+    });
   });
 
   describe('title-append', async () => {

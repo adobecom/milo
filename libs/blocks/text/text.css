@@ -10,6 +10,8 @@
 .text-block p,
 .text-block [class^="body-"] { margin: var(--spacing-xs) 0; }
 
+.text-block [class^="body-"]:only-child { margin: 0; }
+
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
