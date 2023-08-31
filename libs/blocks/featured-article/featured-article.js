@@ -30,9 +30,14 @@ export default async function init(el) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const pic = doc.body.querySelector('picture');
-  pic.querySelector('img').removeAttribute('loading');
+  const img = pic.querySelector('img');
+  img.removeAttribute('loading');
   const featuredImg = createTag('div', { class: 'featured-article-card-image' }, pic);
   const categoryEl = createTag('div', { class: 'featured-article-card-category' });
+  img.addEventListener('load', () => {
+    // Load category link after block has been displayed to speed up LCP
+    createCategoryLink(categoryEl, getMetadata('article:tag', doc));
+  });
   const text = doc.body.querySelector('h1, h2, h3').textContent;
   const title = createTag('h3', null, text);
   const body = createTag('div', { class: 'featured-article-card-body' });
@@ -43,7 +48,4 @@ export default async function init(el) {
 
   body.append(categoryEl, title, description, date);
   a.append(featuredImg, body);
-
-  // Load category link after block has been displayed to speed up LCP
-  createCategoryLink(categoryEl, getMetadata('article:tag', doc));
 }
