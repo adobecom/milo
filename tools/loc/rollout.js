@@ -65,7 +65,18 @@ function processMdast(nodes) {
   return arrayWithContentHash;
 }
 
+export const removeLabelForType = (node, type) => {
+  if (node.children) {
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i];
+      if (child.type === type && child.label) child.label = "";
+      removeLabelForType(child, type);
+    }
+  }
+};
+
 async function getProcessedMdast(mdast) {
+  removeLabelForType(mdast, 'image')
   const nodes = mdast.children || [];
   return processMdast(nodes);
 }
