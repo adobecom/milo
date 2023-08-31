@@ -11,6 +11,7 @@ export const selectors = {
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  imsSignIn: '[qa="gnav-ims-sign-in"]',
 };
 
 export function toFragment(htmlStrings, ...values) {
