@@ -42,6 +42,7 @@ const MILO_BLOCKS = [
   'marquee-anchors',
   'media',
   'merch',
+  'merch-card',
   'modal',
   'modal-metadata',
   'pdf-viewer',
