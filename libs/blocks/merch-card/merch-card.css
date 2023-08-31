@@ -1,0 +1,268 @@
+/* stylelint-disable selector-class-pattern */
+.merch-card hr {
+  background-color: var(--color-gray-200);
+  border: none;
+  height: 1px;
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}
+
+.merch-card p {
+  font-size: var(--type-body-xs-size);
+  font-weight: 400;
+  line-height: 1.5;
+  margin-bottom: var(--spacing-xxs);
+  margin-top: 0;
+  color: var(--color-black);
+}
+
+.merch-card h1,
+.merch-card h2,
+.merch-card h3,
+.merch-card h4,
+.merch-card h5,
+.merch-card h6 {
+  line-height: 1.25;
+  margin-top: 0;
+  color: var(--color-black);
+}
+
+.merch-card h2 {
+  font-size: var(--type-heading-l-size);
+  margin-bottom: var(--spacing-xxs);
+}
+
+.merch-card h3,
+.merch-card h4 {
+  font-size: var(--type-heading-xs-size);
+  margin-bottom: var(--spacing-xxs);
+}
+
+.merch-card h5 {
+  font-size: var(--type-heading-xs-size);
+}
+
+.merch-card .consonant-MerchCard-ProductIcon {
+  background-size: contain;
+  background-repeat: no-repeat;
+  position: relative;
+  margin-right: var(--spacing-xxs);
+  margin-bottom: var(--spacing-xxs);
+  display: block;
+  float: left;
+  width: 40px;
+  height: 40px;
+}
+
+.merch-card div[class$="-title"] {
+  font-size: var(--type-heading-xs-lh);
+  font-weight: var(--type-heading-all-weight);
+}
+
+.merch-card .consonant-PlansCard-title h2 {
+  font-size: var(--type-heading-m-size);
+  line-height: var(--type-heading-l-lh);
+}
+
+.merch-card .consonant-SpecialOffers-title h3,
+.merch-card .consonant-PlansCard-title h3 {
+  margin-bottom: 0;
+}
+
+.merch-card .consonant-PlansCard-title h3 {
+  margin-bottom: var(--spacing-xxs);
+  line-height: var(--type-heading-s-lh);
+}
+
+.merch-card .consonant-SpecialOffers-title h4,
+.merch-card .consonant-PlansCard-title h4 {
+  font-size: var(--type-heading-xxs-size);
+}
+
+.merch-card .consonant-SpecialOffers-title h5,
+.merch-card .consonant-PlansCard-title h5,
+.merch-card .consonant-SegmentBlade-title h5 {
+  font-size: var(--type-heading-xxs-size);
+  font-weight: 500;
+}
+
+.merch-card.segment-blade {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 222px;
+  width: 100%;
+  flex: 1;
+  min-width: 378px;
+  max-width: 378px;
+}
+
+.merch-card.special-offers,
+.merch-card.segment,
+.merch-card.plans {
+  border-radius: 16px;
+}
+
+.merch-card div[class$="-inner"] {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 16px 16px 20px;
+  border-radius: 4px;
+  background-color: var(--color-white);
+  text-decoration: none;
+}
+
+.merch-card .consonant-PlansCard-inner {
+  padding: var(--spacing-xs);
+}
+
+.merch-card div[class$="-prices"] {
+  font-size: var(--type-body-s-size);
+  line-height: 24px;
+  margin-bottom: var(--spacing-xxs);
+}
+
+.merch-card div[class$="-description"] {
+  font-size: var(--type-heading-xs-size);
+  line-height: 1.5;
+  margin-top: 0;
+}
+
+.merch-card .consonant-SegmentBlade-description span.placeholder-resolved,
+.merch-card .consonant-SpecialOffers-description span.placeholder-resolved,
+.merch-card .consonant-PlansCard-description span.placeholder-resolved {
+  font-size: var(--type-heading-xs-size);;
+}
+
+.merch-card .consonant-SegmentBlade-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-card .consonant-SpecialOffers-description span.placeholder-resolved[data-template="priceStrikethrough"],
+.merch-card .consonant-PlansCard-description span.placeholder-resolved[data-template="priceStrikethrough"] {
+  font-size: var(--type-body-xs-size);
+}
+
+.merch-card.consonant-SpecialOffers-Card {
+  border-radius: 16px;
+}
+
+.merch-card .consonant-SpecialOffers-img,
+.merch-card .consonant-PlansCard-img {
+  flex-grow: 1;
+  position: relative;
+  width: 100%;
+  min-height: 213px;
+  max-height: 213px;
+  background-color: var(--background-color);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.merch-card div[class$="-ribbon"] {
+  position: absolute;
+  top: 16px;
+  right: 0;
+  font-size: var(--type-heading-xxs-size);
+  font-weight: 500;
+  max-width: 150px;
+  line-height: 16px;
+  text-align: center;
+  padding: 8px 11px;
+  border-radius: 5px 0 0 5px;
+}
+
+.merch-card .consonant-SpecialOffers-inner,
+.merch-card .consonant-PlansCard-inner {
+  justify-content: center;
+}
+
+.merch-card.special-offers .consonant-SpecialOffers-description p,
+.merch-card.special-offers .consonant-PlansCard-description p {
+  font-size: var(--type-body-xs-size);
+}
+
+.merch-card.special-offers h4 {
+  font-size: var(--type-body-xxs-size);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.merch-card .checkbox-container {
+  cursor: pointer;
+  margin-bottom: var(--spacing-xs);
+}
+
+.merch-card .checkbox-container,
+.merch-card .secure-transaction-wrapper {
+  display: grid;
+  grid-template-columns: 12px auto;
+  gap: var(--spacing-xxs);
+}
+
+.merch-card .checkbox-label,
+.merch-card .secure-transaction-label {
+  font-size: var(--type-body-xxs-size);
+  line-height: 1.3;
+  color: var(--color-gray-700);
+}
+
+.merch-card .secure-transaction-icon {
+  height: 15px;
+  width: 12px;
+  background: url('/libs/img/ui/secure-transaction.svg') no-repeat left center;
+}
+
+.merch-card .secure-transaction-label {
+  white-space: nowrap;
+}
+
+.merch-card .checkbox-container input[type="checkbox"] {
+  display: none;
+}
+
+.merch-card .checkbox-container .checkmark {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #757575;
+  background: #fff;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.merch-card .checkbox-container input[type="checkbox"]:checked + .checkmark {
+  background-color: var(--color-accent);
+  background-image: url('/libs/img/ui/checkmark-white-small.svg');
+  border-color: var(--color-accent);
+}
+
+.merch-card.special-offers .consonant-CardFooter {
+  margin-top: 0;
+  padding-top: 0;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.merch-card .consonant-CardFooter .standard-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+
+.merch-card .consonant-CardFooter-row,
+.merch-card .consonant-CardFooter-cell {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-left: auto;
+  height: auto;
+  width: auto;
+}
+
+.merch-card .consonant-CardFooter-row .button--inactive {
+  display: none;
+}

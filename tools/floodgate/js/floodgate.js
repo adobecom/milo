@@ -32,6 +32,13 @@ async function triggerUpdateFragments() {
   loadingON(status);
 }
 
+async function deleteFloodgateDir(project, config) {
+  const params = getParams(project, config);
+  params.spToken = getAccessToken();
+  const deleteStatus = await postData(config.sp.aioDeleteAction, params);
+  updateProjectStatusUI({ deleteStatus });
+}
+
 async function promoteContentAction(project, config) {
   const params = getParams(project, config);
   params.spToken = getAccessToken();
@@ -45,15 +52,15 @@ async function promoteContentAction(project, config) {
 
 async function fetchStatusAction(project, config) {
   // fetch copy status
-  let params = {
-    projectExcelPath: project.excelPath,
-    projectRoot: config.sp.rootFolders,
-  };
+  let params = { type: 'copy', projectExcelPath: project.excelPath, shareUrl: config.sp.shareUrl };
   const copyStatus = await postData(config.sp.aioStatusAction, params);
   // fetch promote status
-  params = { projectRoot: config.sp.fgRootFolder };
+  params = { type: 'promote', fgShareUrl: config.sp.fgShareUrl };
   const promoteStatus = await postData(config.sp.aioStatusAction, params);
-  updateProjectStatusUI({ copyStatus, promoteStatus });
+  // fetch delete status
+  params = { type: 'delete', fgShareUrl: config.sp.fgShareUrl };
+  const deleteStatus = await postData(config.sp.aioStatusAction, params);
+  updateProjectStatusUI({ copyStatus, promoteStatus, deleteStatus });
 }
 
 async function refreshPage(config, projectDetail, project) {
@@ -87,6 +94,11 @@ function setListeners(project, config) {
     floodgateContentAction(project, config);
     target.removeEventListener('click', handleFloodgateConfirm);
   };
+  const handleDeleteConfirm = ({ target }) => {
+    modal.style.display = 'none';
+    deleteFloodgateDir(project, config);
+    target.removeEventListener('click', handleDeleteConfirm);
+  };
   const handlePromoteConfirm = ({ target }) => {
     modal.style.display = 'none';
     promoteContentAction(project, config);
@@ -99,6 +111,11 @@ function setListeners(project, config) {
     document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleFloodgateConfirm);
   });
   document.querySelector('#updateFragments button').addEventListener('click', triggerUpdateFragments);
+  document.querySelector('#delete button').addEventListener('click', (e) => {
+    modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
+    modal.style.display = 'block';
+    document.querySelector('#fg-modal #yes-btn').addEventListener('click', handleDeleteConfirm);
+  });
   document.querySelector('#promoteFiles button').addEventListener('click', (e) => {
     modal.getElementsByTagName('p')[0].innerText = `Confirm to ${e.target.textContent}`;
     modal.style.display = 'block';
