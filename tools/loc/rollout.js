@@ -29,7 +29,7 @@ async function persist(srcPath, mdast, dstPath) {
 }
 
 // MWPW-135315: remove after franklin fix for bold issue
- export const getLeaf = (node, type, parent=null) => {
+ const getLeaf = (node, type, parent=null) => {
   if (node?.type === type || !node.children) return {parent, node};
 
   if (node.children) {
@@ -42,7 +42,7 @@ async function persist(srcPath, mdast, dstPath) {
 };
 
 // MWPW-135315: remove after franklin fix for bold issue
-export const addBoldHeaders = (mdast) => {
+const addBoldHeaders = (mdast) => {
   const tables = mdast.children.filter((child) => child.type === 'gridTable'); // gets all block
   const tableMap = tables.forEach((table) => {
     var {node, parent} = getLeaf(table, 'text'); // gets first text node i.e. header
