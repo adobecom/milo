@@ -1,15 +1,15 @@
 import { getMetadata, createTag, getConfig } from '../../utils/utils.js';
-import fetchTaxonomy from '../../scripts/taxonomy.js';
-import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
-function createCategoryLink(doc, categoryEl) {
-  const category = getMetadata('article:tag', doc);
-  return fetchTaxonomy(getConfig(), '/topics')
-    .then((taxonomy) => {
-      const categoryTaxonomy = taxonomy.get(category) || taxonomy.get('News');
-      const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy?.link) }, categoryTaxonomy?.name);
-      categoryEl.append(categoryLink);
-    });
+async function createCategoryLink(el, category = 'News') {
+  const promises = [import('../../scripts/taxonomy.js'), import('../../utils/helpers.js')];
+  Promise.all(promises).then(async ([taxonomyMod, helpersMod]) => {
+    const fetchTaxonomy = taxonomyMod.default;
+    const { updateLinkWithLangRoot } = helpersMod;
+    const taxonomy = await fetchTaxonomy(getConfig(), '/topics');
+    const categoryTaxonomy = taxonomy.get(category);
+    const categoryLink = createTag('a', { href: updateLinkWithLangRoot(categoryTaxonomy?.link) }, categoryTaxonomy?.name);
+    el.append(categoryLink);
+  });
 }
 
 export default async function init(el) {
@@ -45,5 +45,5 @@ export default async function init(el) {
   a.append(featuredImg, body);
 
   // Load category link after block has been displayed to speed up LCP
-  createCategoryLink(doc, categoryEl);
+  createCategoryLink(categoryEl, getMetadata('article:tag', doc));
 }
