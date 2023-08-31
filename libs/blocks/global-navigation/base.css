@@ -34,7 +34,6 @@
   display: flex;
   align-items: center;
   padding: 12px;
-  border: none;
   color: var(--feds-color-link--light);
   white-space: nowrap;
   flex-shrink: 0;

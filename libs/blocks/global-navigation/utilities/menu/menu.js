@@ -9,7 +9,7 @@ import {
   trigger,
   isDesktop,
 } from '../utilities.js';
-import { decorateLinks } from '../../../../utils/utils.js';
+import { decorateLinks, localizeLink } from '../../../../utils/utils.js';
 import { replaceText } from '../../../../features/placeholders.js';
 
 const decorateHeadline = (elem) => {
@@ -74,7 +74,6 @@ const decorateLinkGroup = (elem, index) => {
       ${imageElem}
       ${contentElem}
     </a>`;
-  if (link?.target) linkGroup.target = link.target;
 
   return linkGroup;
 };
@@ -173,6 +172,7 @@ const decoratePromo = (elem, index) => {
 };
 
 const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
+  decorateLinks(content);
   const hasMultipleColumns = content.children.length > 1;
 
   // The resulting template structure should follow these rules:
@@ -264,7 +264,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
   if (config.type === 'asyncDropdownTrigger') {
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
-    const res = await fetch(`${pathElement.href}.plain.html`);
+    const path = localizeLink(pathElement.href);
+    const res = await fetch(`${path}.plain.html`);
     if (res.status !== 200) return;
     const content = await res.text();
     const parsedContent = await replaceText(content, getFedsPlaceholderConfig(), /{{(.*?)}}/g, 'feds');
@@ -274,8 +275,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
         </div>
       </div>`;
 
-    // Content has been fetched dynamically, need to decorate links
-    decorateLinks(menuTemplate);
     await decorateColumns({ content: menuTemplate.firstElementChild });
     config.template.classList.add('feds-navItem--megaMenu');
   }

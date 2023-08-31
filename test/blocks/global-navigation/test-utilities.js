@@ -13,7 +13,7 @@ import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { isElementVisible, selectors as keyboardSelectors } from '../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
-import { selectors as baseSelectors, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { selectors as baseSelectors } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 export { isElementVisible };
 
@@ -84,28 +84,13 @@ export const config = {
   locales,
 };
 
-const defaultBreadcrumbsEl = () => toFragment`
-  <div class="breadcrumbs">
-    <div>
-      <div>
-        <ul>
-          <li><a href="/drafts/osahin/document">Home</a></li>
-          <li><a href="https://milo.adobe.com/">Drafts</a></li>
-          <li>Marquee</li>
-        </ul>
-      </div>
-    </div>
-  </div>`;
-
 /**
  *
  * @param {Object} param0
- * @param {String} param0.viewport Sets viewport: "mobile" | "smallDesktop" | "desktop"
+ * @param {String} param0.mode Sets viewport: "mobile" | "smallDesktop" | "desktop"
  * @param {Object} param0.placeholders Supply custom placeholders - mocks/placeholders.js
- * @param {Boolean} param0.signedIn Set to false to simulate a signed out user
- * @param {Object} param0.customConfig Set a custom config; a default one is used if not specified
- * @param {Element} param0.breadcrumbsEl Use a custom breadcrumbs element
  * @param {String} param0.globalNavigation Render a gnav, default mocks/global-navigation.plain.js
+ * @param {Boolean} param0.signedIn Set to false to simulate a signed out user
  * @description Creates a full global navigation instance. CAUTION: Search is not fully created.
  * @returns global navigation instance
  */
@@ -113,15 +98,13 @@ export const createFullGlobalNavigation = async ({
   viewport = 'desktop',
   placeholders,
   signedIn = true,
-  customConfig = config,
-  breadcrumbsEl = defaultBreadcrumbsEl(),
   globalNavigation,
 } = {}) => {
   const clock = sinon.useFakeTimers({
     // Intercept setTimeout and call the function immediately
     toFake: ['setTimeout'],
   });
-  setConfig(customConfig);
+  setConfig(config);
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
   window.fetch = stub().callsFake((url) => {
@@ -143,11 +126,20 @@ export const createFullGlobalNavigation = async ({
       }),
     ),
   };
-
-  document.body.replaceChildren(toFragment`
+  document.body.innerHTML = `
     <header class="global-navigation has-breadcrumbs" daa-im="true" daa-lh="gnav|milo">
-      ${breadcrumbsEl}
-    </header>`);
+      <div class="breadcrumbs">
+        <div>
+          <div>
+            <ul>
+              <li><a href="/drafts/osahin/document">Home</a></li>
+              <li><a href="https://milo.adobe.com/">Drafts</a></li>
+              <li>Marquee</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>`;
 
   await Promise.all([
     loadStyles('../../../../libs/styles/styles.css'),
