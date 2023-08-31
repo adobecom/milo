@@ -6,6 +6,12 @@ function dynamicTypekit(kitId, d = document) {
   return h;
 }
 
+export function loadTypeKitFont(cssFile, loadStyle) {
+  return new Promise((resolve) => {
+    loadStyle(`https://use.typekit.net/${cssFile}`, resolve);
+  });
+}
+
 /**
  * Set the fonts of the page.
  *
@@ -17,9 +23,7 @@ function dynamicTypekit(kitId, d = document) {
 export default function loadFonts(locale, loadStyle) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
-    return new Promise((resolve) => {
-      loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
-    });
+    return loadTypeKitFont(locale.tk, loadStyle);
   }
   return dynamicTypekit(locale.tk);
 }

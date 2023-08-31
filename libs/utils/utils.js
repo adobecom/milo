@@ -784,8 +784,12 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  import('./fonts.js').then((module) => {
+    module.default(config.locale, loadStyle);
+    if (document.querySelector('code')) {
+      module.loadTypeKitFont('vih2anh.css', loadStyle);
+    }
+  });
 }
 
 export async function loadDeferred(area, blocks, config) {

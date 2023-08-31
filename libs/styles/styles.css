@@ -100,6 +100,13 @@
   --type-detail-s-size: 10px;
   --type-detail-s-lh: 12px;
 
+  /* Code */
+  --type-code-all-weight: 400;
+  --type-code-all-lh: 1.5;
+  --type-code-l-size: 18px;
+  --type-code-m-size: 16px;
+  --type-code-s-size: 14px;
+
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
@@ -190,9 +197,13 @@
 .detail-xl,
 .detail-l,
 .detail-m,
-.detail-s {
+.detail-s,
+.code-l,
+.code-m,
+.code-s {
   margin: 0;
 }
+
 
 .heading-xxxl {
   font-size: var(--type-heading-xxxl-size);
@@ -290,6 +301,25 @@
 .detail-s {
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.code-l {
+  font-size: var(--type-code-l-size);
+}
+
+.code-m {
+  font-size: var(--type-code-m-size);
+}
+
+.code-s {
+  font-size: var(--type-code-s-size);
+}
+
+.code-l,
+.code-m,
+.code-s {
+  font-weight: var(--type-code-all-weight);
+  line-height: var(--type-code-all-lh);
 }
 
 .con-button {
@@ -666,6 +696,15 @@ a.static:hover {
 img {
   max-width: 100%;
   height: auto;
+}
+
+code {
+  font-family: var(--code-font-family);
+  line-height: var(--type-code-all-lh);
+}
+
+pre code {
+  display: block;
 }
 
 /* Tooltip */
